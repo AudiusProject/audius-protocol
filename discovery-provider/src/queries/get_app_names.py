@@ -2,8 +2,8 @@ import logging
 from functools import reduce
 
 from sqlalchemy import asc, desc, func
-from src.models.metrics.app_name_metrics import AppNameMetrics
-from src.models.metrics.route_metrics import RouteMetrics
+from src.models.metrics.app_name_metrics import AppNameMetric
+from src.models.metrics.route_metrics import RouteMetric
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
@@ -27,13 +27,13 @@ def get_app_names(args):
     with db.scoped_session() as session:
         app_names = (
             session.query(
-                AppNameMetrics.application_name,
-                func.sum(AppNameMetrics.count).label("count"),
-                func.count(AppNameMetrics.ip.distinct()),
+                AppNameMetric.application_name,
+                func.sum(AppNameMetric.count).label("count"),
+                func.count(AppNameMetric.ip.distinct()),
             )
-            .filter(AppNameMetrics.timestamp > args.get("start_time"))
-            .group_by(AppNameMetrics.application_name)
-            .order_by(desc("count"), asc(AppNameMetrics.application_name))
+            .filter(AppNameMetric.timestamp > args.get("start_time"))
+            .group_by(AppNameMetric.application_name)
+            .order_by(desc("count"), asc(AppNameMetric.application_name))
             .limit(args.get("limit"))
             .offset(args.get("offset"))
             .all()
@@ -49,10 +49,10 @@ def get_app_names(args):
             existing_unique_count = reduce(lambda x, y: x + y["unique_count"], names, 0)
             total_requests = (
                 session.query(
-                    func.sum(RouteMetrics.count).label("count"),
-                    func.count(RouteMetrics.ip.distinct()),
+                    func.sum(RouteMetric.count).label("count"),
+                    func.count(RouteMetric.ip.distinct()),
                 )
-                .filter(RouteMetrics.timestamp > args.get("start_time"))
+                .filter(RouteMetric.timestamp > args.get("start_time"))
                 .first()
             )
             unknown_count = total_requests[0] - existing_count

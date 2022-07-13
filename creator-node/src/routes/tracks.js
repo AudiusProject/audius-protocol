@@ -26,7 +26,6 @@ const {
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
-  syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware,
   ensureValidSPMiddleware
@@ -50,7 +49,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
       if (req.fileSizeError || req.fileFilterError) {
@@ -202,7 +200,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     handleResponse(async (req, res) => {
       const metadataJSON = req.body.metadata
 
@@ -316,7 +313,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     handleResponse(async (req, res) => {
       const {
         blockchainTrackId,
