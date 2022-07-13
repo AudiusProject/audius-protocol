@@ -18,8 +18,11 @@ class Challenge(Base, RepresentableMixin):
     __tablename__ = "challenges"
 
     # Identifies this challenge
-    id = Column(String, primary_key=True, nullable=False, index=True)
-    type = Column(Enum(ChallengeType), nullable=False)
+    id = Column(String, primary_key=True)
+    type = Column(
+        Enum(ChallengeType),
+        nullable=False,
+    )
     # The amount of wAudio to disburse (8 decimals)
     amount = Column(String, nullable=False)
     # Whether the challenge is currently active
