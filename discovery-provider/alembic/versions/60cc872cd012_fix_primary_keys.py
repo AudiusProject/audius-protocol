@@ -28,8 +28,26 @@ def upgrade():
         ALTER TABLE plays_archive DROP CONSTRAINT IF EXISTS plays_archive_id_pkey;
         ALTER TABLE plays_archive ADD CONSTRAINT plays_archive_id_pkey PRIMARY KEY (id);
 
+        -- Remove duplicates from remixes
+        DELETE
+        FROM "stems" T1
+        USING "stems" T2
+        WHERE
+            T1.ctid < T2.ctid
+            AND T1.parent_track_id = T2.parent_track_id
+            AND T1.child_track_id = T2.child_track_id;
+
         ALTER TABLE remixes DROP CONSTRAINT IF EXISTS remixes_pkey;
         ALTER TABLE remixes ADD CONSTRAINT remixes_pkey PRIMARY KEY (parent_track_id, child_track_id);
+
+        -- Remove duplicates from stems
+        DELETE
+        FROM "stems" T1
+        USING "stems" T2
+        WHERE
+            T1.ctid < T2.ctid
+            AND T1.parent_track_id = T2.parent_track_id
+            AND T1.child_track_id = T2.child_track_id;
 
         ALTER TABLE stems DROP CONSTRAINT IF EXISTS stems_pkey;
         ALTER TABLE stems ADD CONSTRAINT stems_pkey PRIMARY KEY (parent_track_id, child_track_id);

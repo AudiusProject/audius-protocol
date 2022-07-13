@@ -22,6 +22,14 @@ def upgrade():
     connection = op.get_bind()
     connection.execute(
         """
+        -- Repair missing table
+        CREATE TABLE IF NOT EXISTS aggregate_monthly_plays (
+            play_item_id INTEGER NOT NULL,
+            timestamp DATE NOT NULL,
+            count INTEGER NOT NULL,
+            PRIMARY KEY (play_item_id, timestamp)
+        );
+
         ALTER TABLE "eth_blocks" ALTER COLUMN "created_at" SET DEFAULT CURRENT_TIMESTAMP;
         ALTER TABLE "eth_blocks" ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
 
