@@ -5,6 +5,7 @@ const FormData = require('form-data')
 
 const config = require('../../config.js')
 const Utils = require('../../utils')
+const asyncRetry = require('../../utils/asyncRetry')
 const { logger: genericLogger } = require('../../logging')
 const {
   generateTimestampAndSignatureForSPVerification
@@ -202,7 +203,7 @@ class TrackTranscodeHandoffManager {
       `Polling for transcode and segments with uuid=${uuid}...`
     )
 
-    return Utils.asyncRetry({
+    return asyncRetry({
       logger: TrackTranscodeHandoffManager.logger,
       asyncFn: async (bail, num) => {
         if (num === 50) {
@@ -593,7 +594,7 @@ class TrackTranscodeHandoffManager {
       return resp
     }
 
-    return Utils.asyncRetry({ logger, asyncFn, logLabel, options })
+    return asyncRetry({ logger, asyncFn, logLabel, options })
   }
 }
 

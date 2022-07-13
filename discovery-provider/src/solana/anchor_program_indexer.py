@@ -9,7 +9,7 @@ from solana.transaction import Transaction
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.indexing.audius_data_tx import AudiusDataTx
-from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.solana.anchor_parser import AnchorParser
@@ -320,9 +320,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
 
         with self.db.scoped_session() as session:
             cnode_endpoint_dict = dict(
-                session.query(URSMContentNode.cnode_sp_id, URSMContentNode.endpoint)
+                session.query(UrsmContentNode.cnode_sp_id, UrsmContentNode.endpoint)
                 .filter(
-                    URSMContentNode.is_current == True,
+                    UrsmContentNode.is_current == True,
                 )
                 .all()
             )

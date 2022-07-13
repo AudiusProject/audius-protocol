@@ -45,11 +45,11 @@ module.exports = async function (
 
   /**
    * Ensure access to each wallet, then acquire redis lock for duration of sync
-   * @notice - there's a bug where redisKey is set to the last element of `walletPublicKeys` - this code only works when `walletPublicKeys.length === 1` 🤦‍♂️
+   * @notice - there's a bug where logPrefix is set to the last element of `walletPublicKeys` - this code only works when `walletPublicKeys.length === 1` 🤦‍♂️
    */
-  let redisKey
+  let logPrefix
   for (const wallet of walletPublicKeys) {
-    redisKey = redis.WalletWriteLock.getKey(wallet)
+    logPrefix = `[secondarySyncFromPrimary][wallet=${wallet}]`
     try {
       await redis.WalletWriteLock.acquire(
         wallet,
@@ -111,7 +111,7 @@ module.exports = async function (
 
     if (resp.status !== 200) {
       logger.error(
-        redisKey,
+        logPrefix,
         `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`,
         walletPublicKeys
       )
@@ -131,7 +131,7 @@ module.exports = async function (
     }
 
     logger.info(
-      redisKey,
+      logPrefix,
       `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${
         localMaxClockVal + 1
       }`
@@ -175,7 +175,7 @@ module.exports = async function (
         userReplicaSet = [...new Set(userReplicaSet)]
       } catch (e) {
         logger.error(
-          redisKey,
+          logPrefix,
           `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
         )
       }
@@ -205,7 +205,7 @@ module.exports = async function (
       } else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
         logger.info(
-          redisKey,
+          logPrefix,
           `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`
         )
         continue
@@ -227,7 +227,7 @@ module.exports = async function (
        */
       try {
         logger.info(
-          redisKey,
+          logPrefix,
           `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`
         )
 
@@ -298,7 +298,7 @@ module.exports = async function (
 
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         logger.info(
-          redisKey,
+          logPrefix,
           `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`
         )
 
@@ -331,7 +331,7 @@ module.exports = async function (
             i + FileSaveMaxConcurrency
           )
           logger.info(
-            redisKey,
+            logPrefix,
             `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
               i + FileSaveMaxConcurrency
             } out of total ${trackFiles.length}...`
@@ -361,7 +361,7 @@ module.exports = async function (
             })
           )
         }
-        logger.info(redisKey, 'Saved all track files to disk.')
+        logger.info(logPrefix, 'Saved all track files to disk.')
 
         // Save all non-track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
@@ -370,7 +370,7 @@ module.exports = async function (
             i + FileSaveMaxConcurrency
           )
           logger.info(
-            redisKey,
+            logPrefix,
             `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
               i + FileSaveMaxConcurrency
             } out of total ${nonTrackFiles.length}...`
@@ -416,7 +416,7 @@ module.exports = async function (
             })
           )
         }
-        logger.info(redisKey, 'Saved all non-track files to disk.')
+        logger.info(logPrefix, 'Saved all non-track files to disk.')
 
         /**
          * Handle scenario where failed to retrieve/save > 0 CIDs
@@ -432,7 +432,7 @@ module.exports = async function (
           // Throw error if failure threshold not yet reached
           if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
             const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
-            logger.error(redisKey, errorMsg)
+            logger.error(logPrefix, errorMsg)
             throw new Error(errorMsg)
 
             // If max failure threshold reached, continue with sync and reset failure count
@@ -443,7 +443,7 @@ module.exports = async function (
             )
 
             logger.info(
-              redisKey,
+              logPrefix,
               `User Sync continuing with ${numCIDsThatFailedSaveFileOp} skipped files, since SyncRequestMaxUserFailureCountBeforeSkip (${SyncRequestMaxUserFailureCountBeforeSkip}) reached.`
             )
           }
@@ -463,7 +463,7 @@ module.exports = async function (
           })),
           { transaction }
         )
-        logger.info(redisKey, 'Saved all ClockRecord entries to DB')
+        logger.info(logPrefix, 'Saved all ClockRecord entries to DB')
 
         await models.File.bulkCreate(
           nonTrackFiles.map((file) => {
@@ -478,7 +478,7 @@ module.exports = async function (
           }),
           { transaction }
         )
-        logger.info(redisKey, 'Saved all non-track File entries to DB')
+        logger.info(logPrefix, 'Saved all non-track File entries to DB')
 
         await models.Track.bulkCreate(
           fetchedCNodeUser.tracks.map((track) => ({
@@ -487,7 +487,7 @@ module.exports = async function (
           })),
           { transaction }
         )
-        logger.info(redisKey, 'Saved all Track entries to DB')
+        logger.info(logPrefix, 'Saved all Track entries to DB')
 
         await models.File.bulkCreate(
           trackFiles.map((trackFile) => {
@@ -501,7 +501,7 @@ module.exports = async function (
           }),
           { transaction }
         )
-        logger.info(redisKey, 'Saved all track File entries to DB')
+        logger.info(logPrefix, 'Saved all track File entries to DB')
 
         await models.AudiusUser.bulkCreate(
           fetchedCNodeUser.audiusUsers.map((audiusUser) => ({
@@ -510,12 +510,12 @@ module.exports = async function (
           })),
           { transaction }
         )
-        logger.info(redisKey, 'Saved all AudiusUser entries to DB')
+        logger.info(logPrefix, 'Saved all AudiusUser entries to DB')
 
         await transaction.commit()
 
         logger.info(
-          redisKey,
+          logPrefix,
           `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${numCIDsThatFailedSaveFileOp} skipped.`
         )
 
@@ -523,7 +523,7 @@ module.exports = async function (
         await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
       } catch (e) {
         logger.error(
-          redisKey,
+          logPrefix,
           `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`,
           e
         )
@@ -546,7 +546,7 @@ module.exports = async function (
         await redis.WalletWriteLock.release(wallet)
       } catch (e) {
         logger.warn(
-          redisKey,
+          logPrefix,
           `Failure to release write lock for ${wallet} with error ${e.message}`
         )
       }
@@ -554,7 +554,7 @@ module.exports = async function (
 
     if (errorObj) {
       logger.error(
-        redisKey,
+        logPrefix,
         `Sync complete for wallets: ${walletPublicKeys.join(
           ','
         )}. Status: Error, message: ${errorObj.message}. Duration sync: ${
@@ -563,7 +563,7 @@ module.exports = async function (
       )
     } else {
       logger.info(
-        redisKey,
+        logPrefix,
         `Sync complete for wallets: ${walletPublicKeys.join(
           ','
         )}. Status: Success. Duration sync: ${

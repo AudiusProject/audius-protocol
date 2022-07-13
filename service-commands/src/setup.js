@@ -823,6 +823,11 @@ const allUp = async ({
         )}s`.info
       )
     }
+    console.log(
+      'Local only step - registering content nodes in ServiceProviderFactory'
+    )
+    await runParallel(nodeRegisterCommands)
+
     console.log('Provisioning DNs in parallel'.info)
     await runParallel(
       discoveryNodeUpCommands,
@@ -830,12 +835,12 @@ const allUp = async ({
       discoveryNodeRegisterCommands
     )
     console.log('Provisioning CNs, identity, etc in parallel'.info)
-    await runParallel(
-      nodeUpCommands,
-      nodeHealthCheckCommands,
-      nodeRegisterCommands
-    )
+    await runParallel(nodeUpCommands, nodeHealthCheckCommands)
   } else {
+    console.log(
+      'Local only step - registering content nodes in ServiceProviderFactory'
+    )
+    await runInSequence(nodeRegisterCommands.flat())
     console.log('Provisioning DNs in sequence.'.info)
     await runInSequence(discoveryNodeUpCommands.flat())
     console.log('Health checking DNs'.info)
@@ -846,8 +851,6 @@ const allUp = async ({
     await runInSequence(nodeUpCommands.flat())
     console.log('Health checking services'.info)
     await runInSequence(nodeHealthCheckCommands.flat())
-    console.log('Registering services'.info)
-    await runInSequence(nodeRegisterCommands.flat())
   }
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)

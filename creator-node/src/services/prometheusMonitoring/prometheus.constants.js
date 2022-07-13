@@ -39,7 +39,8 @@ let MetricNames = {
     'route_post_tracks_duration_seconds',
   ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_monitoring_duration_seconds',
-  FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts'
+  FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
+  WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -72,7 +73,7 @@ const MetricLabels = Object.freeze({
     reconfigType: [
       'one_secondary', // Only one secondary was replaced in the user's replica set
       'multiple_secondaries', // Both secondaries were replaced in the user's replica set
-      'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes,
+      'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
     ]
   },
@@ -89,6 +90,31 @@ const MetricLabels = Object.freeze({
       'new_sync_request_enqueued', // Sync found because all other conditions were met
       'sync_request_already_enqueued', // Sync was found but a duplicate request has already been enqueued so no need to enqueue another
       'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
+    ]
+  },
+  [MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
+    // Whether or not write quorum is enabled/enforced
+    enforceWriteQuorum: ['false', 'true'],
+    // Whether or not write quorum is ignored for this specific route (even if it's enabled in general).
+    // If it's ignored, it will still attempt replication but not fail the request if replication fails
+    ignoreWriteQuorum: ['false', 'true'],
+    // The route that triggered write quorum
+    route: [
+      // Routes that use write quorum but don't enforce it (ignoreWriteQuorum should be true):
+      '/image_upload',
+      '/audius_users',
+      '/playlists',
+      '/tracks',
+      // Routes that strictly enforce write quorum (ignoreWriteQuorum should be false)
+      '/audius_users/metadata',
+      '/playlists/metadata',
+      '/tracks/metadata'
+    ],
+    result: [
+      'succeeded', // Data was replicated to one or more secondaries
+      'failed_short_circuit', // Failed before attempting to sync because some basic condition wasn't met (node not primary, missing wallet, or manual syncs disabled)
+      'failed_uncaught_error', // Failed due to some uncaught exception. This should never happen
+      'failed_sync' // Failed to reach 2/3 quorum because no syncs were successful
     ]
   }
 })
@@ -169,6 +195,22 @@ const Metrics = Object.freeze({
       name: MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE,
       help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
       labelNames: MetricLabelNames[MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]
+    }
+  },
+  [MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
+    metricType: MetricTypes.HISTOGRAM,
+    metricConfig: {
+      name: MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM,
+      help: 'Seconds spent attempting to replicate data to a secondary node for write quorum',
+      labelNames:
+        MetricLabelNames[MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM],
+      // 5 buckets in the range of 1 second to max seconds before timing out write quorum
+      buckets: exponentialBucketsRange(
+        1,
+        config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs') /
+          1000,
+        5
+      )
     }
   }
 })
