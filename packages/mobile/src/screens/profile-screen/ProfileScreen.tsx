@@ -106,12 +106,17 @@ export const ProfileScreen = () => {
 
   const topbarLeft = isOwner ? (
     <View style={styles.topBarIcons}>
-      <TopBarIconButton icon={IconSettings} onPress={handlePressSettings} />
+      <TopBarIconButton
+        icon={IconSettings}
+        onPress={handlePressSettings}
+        hitSlop={{ right: 2 }}
+      />
       <TopBarIconButton
         styles={{ root: styles.iconCrownRoot, icon: styles.iconCrown }}
         fill={accentOrange}
         icon={IconCrown}
         onPress={handlePressAudio}
+        hitSlop={{ left: 2 }}
       />
     </View>
   ) : undefined
