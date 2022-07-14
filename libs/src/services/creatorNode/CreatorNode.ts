@@ -159,6 +159,7 @@ export class CreatorNode {
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
+  writeQuorumEnabled: boolean
   connected: boolean
   connecting: boolean
   authToken: null
@@ -175,6 +176,7 @@ export class CreatorNode {
    * @param passList whether or not to include only specified nodes (default null)
    * @param blockList whether or not to exclude any nodes (default null)
    * @param monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+   * @param writeQuorumEnabled whether or not to enforce waiting for replication to 2/3 nodes when writing data
    */
   constructor(
     web3Manager: Web3Manager,
@@ -185,7 +187,8 @@ export class CreatorNode {
     schemas: Schemas,
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
-    monitoringCallbacks: MonitoringCallbacks = {}
+    monitoringCallbacks: MonitoringCallbacks = {},
+    writeQuorumEnabled = false
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
@@ -203,6 +206,7 @@ export class CreatorNode {
     this.passList = passList
     this.blockList = blockList
     this.monitoringCallbacks = monitoringCallbacks
+    this.writeQuorumEnabled = writeQuorumEnabled
   }
 
   async init() {
@@ -821,6 +825,8 @@ export class CreatorNode {
       }
 
       axiosRequestObj.headers = axiosRequestObj.headers || {}
+
+      axiosRequestObj.headers['Enforce-Write-Quorum'] = this.writeQuorumEnabled
 
       if (this.authToken) {
         axiosRequestObj.headers['X-Session-ID'] = this.authToken

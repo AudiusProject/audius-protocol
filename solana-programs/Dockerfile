@@ -1,66 +1,36 @@
-FROM ubuntu:20.04
-
-ENV NODE_VERSION="v14.18.1"
-ENV HOME="/root"
-ENV PATH="${HOME}/.nvm/versions/node/${NODE_VERSION}/bin:${PATH}"
+FROM rust:1.60.0
 
 WORKDIR /usr/src/app
 
-RUN ln -snf /usr/share/zoneinfo/UTC /etc/localtime && \
-    echo UTC > /etc/timezone
+ENV PATH="/root/solana-release/bin:${PATH}"
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get install -y jq build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
+    npm install -g yarn @project-serum/anchor-cli@0.24.1 && \
+    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.10.11/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
 
-RUN apt-get update && \
-    apt-get install -y jq curl build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git python-is-python3 python3-pip && \
-    pip3 install --no-cache-dir web3 && \
-    curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+COPY anchor/audius-data/package.json anchor/audius-data/yarn.lock anchor/audius-data/
+RUN cd anchor/audius-data && yarn install
 
-ENV PATH="/root/.cargo/bin:${PATH}"
+ENV CARGO_INCREMENTAL=1
 
-RUN rustup install 1.55.0 && \
-    sh -c "$(curl -sSfL https://release.solana.com/v1.9.13/install)"
+ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
+ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
+ARG CLAIMABLE_TOKENS_PRIVATE_KEY
+ARG REWARD_MANAGER_PRIVATE_KEY
+ARG AUDIUS_DATA_PRIVATE_KEY
 
-ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"
-
-# Install node / npm / yarn.
-RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
-ENV NVM_DIR="${HOME}/.nvm"
-RUN . $NVM_DIR/nvm.sh && \
-    nvm install ${NODE_VERSION} && \
-    nvm use ${NODE_VERSION} && \
-    nvm alias default node && \
-    npm install -g yarn
-
-# Install anchor.
-RUN cargo install --git https://github.com/project-serum/anchor --tag v0.24.1 anchor-cli --locked
-
-COPY audius_eth_registry audius_eth_registry
-COPY track_listen_count track_listen_count
-COPY cli cli
-COPY claimable-tokens claimable-tokens
-COPY reward-manager reward-manager
-
-RUN cd audius_eth_registry && \
-    cargo build-bpf && \
-    cd ../track_listen_count && \
-    cargo build-bpf  && \
-    cd ../cli && \
-    cargo build && \
-    cd ../claimable-tokens/program && \
-    cargo build-bpf && \
-    cd ../cli && \
-    cargo build && \
-    cd ../../reward-manager/program && \
-    cargo build-bpf && \
-    cd ../cli && \
-    cargo build
+COPY . .
+RUN --mount=type=cache,target=/usr/src/app/target-cache \
+    --mount=type=cache,target=/root/.cache/solana \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    CARGO_TARGET_DIR=/usr/src/app/target-cache ./scripts/build.sh && \
+    mkdir -p target target/debug anchor/audius-data/target && \
+    cp -r target-cache/deploy target/ && \
+    cp target-cache/debug/*-cli target/debug && \
+    cp -r target-cache/deploy anchor/audius-data/target/
 
 ARG BUILD_ID
 LABEL prune=true
 LABEL build=$BUILD_ID
-COPY anchor anchor
-RUN cd anchor/audius-data && \
-    anchor build 
 
-COPY start.sh ./
-
-CMD [ "bash", "start.sh" ]
+CMD [ "./scripts/deploy.sh" ]
