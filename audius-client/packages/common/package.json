@@ -2,21 +2,15 @@
   "name": "@audius/common",
   "version": "0.0.0",
   "description": "Common utilities and store for web and mobile.",
-  "author": "Dylan Jeffers <dylan@audius.co>",
+  "private": "true",
+  "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
-  "license": "ISC",
+  "license": "",
   "main": "src/index.ts",
   "module": "dist/index.es.js",
-  "directories": {
-    "lib": "lib",
-    "test": "__tests__"
-  },
   "files": [
     "src"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AudiusProject/audius-client.git"
