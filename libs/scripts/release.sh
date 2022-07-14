@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 # Finds the lastest commit in libs that looks like a version commit,
 # and gets the list of commits after that (with PR #)
@@ -20,7 +20,7 @@ function git-libs-changelog () {
 # commits with the relevant changelog, and pushes
 function bump-libs () {
     # Make sure master is up to date
-    git checkout master --ff-only
+    git checkout master -f
     git pull
 
     # Working directory clean
