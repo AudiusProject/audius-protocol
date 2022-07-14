@@ -1,4 +1,11 @@
-import { ComponentType, useCallback, useMemo, useRef, useState } from 'react'
+import {
+  ComponentType,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
 import { merge } from 'lodash'
 import {
@@ -138,14 +145,14 @@ const useStyles = makeStyles(
           fontSize: 18
         },
         icon: {
-          height: spacing(7),
-          width: spacing(7)
+          height: spacing(8),
+          width: spacing(8)
         },
         iconLeft: {
-          marginRight: spacing(2)
+          marginRight: spacing(1)
         },
         iconRight: {
-          marginLeft: spacing(2)
+          marginLeft: spacing(1)
         }
       }
     }
@@ -189,7 +196,7 @@ const useStyles = makeStyles(
   }
 )
 
-export type ButtonProps = RNButtonProps &
+export type ButtonProps = Omit<RNButtonProps, 'title'> &
   PressableProps & {
     icon?: ComponentType<SvgProps>
     iconPosition?: 'left' | 'right'
@@ -208,6 +215,7 @@ export type ButtonProps = RNButtonProps &
     haptics?: boolean | 'light' | 'medium'
     url?: string
     corners?: 'rounded' | 'pill'
+    title: ReactNode
   }
 
 export const Button = (props: ButtonProps) => {
@@ -341,7 +349,10 @@ export const Button = (props: ButtonProps) => {
             stylesProp?.button
           ]}
           accessibilityRole='button'
-          accessibilityLabel={accessibilityLabel ?? noText ? title : undefined}
+          accessibilityLabel={
+            accessibilityLabel ??
+            (noText && typeof title === 'string' ? title : undefined)
+          }
           onPress={handlePress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}

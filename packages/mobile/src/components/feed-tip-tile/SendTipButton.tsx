@@ -19,7 +19,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginTop: spacing(4)
   },
   sendTipButtonTitleContainer: {
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center'
@@ -67,23 +66,14 @@ export const SendTipButton = ({ receiver }: SendTipButtonProps) => {
   return (
     <View style={styles.sendTipButton}>
       <Button
-        // @ts-ignore: react native title wants string but we need Element
         title={
           <View style={styles.sendTipButtonTitleContainer}>
             <Text
-              style={
-                isActive
-                  ? [styles.sendTipButtonTitle, styles.textWhite]
-                  : styles.sendTipButtonTitle
-              }>
+              style={[styles.sendTipButtonTitle, isActive && styles.textWhite]}>
               {messages.sendTipToPrefix}
             </Text>
             <Text
-              style={
-                isActive
-                  ? [styles.buttonReceiverName, styles.textWhite]
-                  : styles.buttonReceiverName
-              }
+              style={[styles.buttonReceiverName, isActive && styles.textWhite]}
               numberOfLines={1}>
               {receiver.name}
             </Text>
