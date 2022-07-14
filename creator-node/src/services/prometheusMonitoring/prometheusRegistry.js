@@ -22,6 +22,7 @@ class PrometheusRegistry {
     // Expose metric names from class for access throughout application
     this.metricNames = { ...METRIC_NAMES }
 
+    // Used to match on routes with route params
     this.routeRegexes = []
 
     // A mapping of the regex to metric name
@@ -83,11 +84,15 @@ class PrometheusRegistry {
           key: `${name}_HISTOGRAM`.toUpperCase(),
           value: name
         })
-        this.addRouteRegex({
-          path,
-          method,
-          regex
-        })
+
+        // Only add regexes for routes with route params
+        if (path.includes(':')) {
+          this.addRouteRegex({
+            path,
+            method,
+            regex
+          })
+        }
       } catch (e) {
         genericLogger.warn(
           `DurationTracking || Could not add metrics for ${path} with method ${method}: ${e.message}`
