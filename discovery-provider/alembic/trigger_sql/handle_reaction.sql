@@ -14,7 +14,7 @@ begin
       ARRAY [sender_user_id],
       new.timestamp,
       'reaction',
-          'reaction:' || 'reaction_to:' || new.reacted_to,
+      'reaction:' || 'reaction_to:' || new.reacted_to || ':slot:' || new.slot,
       ('{ "sender_wallet": "' || new.sender_wallet || '",  "reaction_type": "' || new.reaction_type || '",  "reacted_to": "' || new.reacted_to || '",  "reaction_value": ' || new.reaction_value ||  '}')::json
     );
   end if;

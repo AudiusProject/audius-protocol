@@ -13,14 +13,16 @@ begin
         new.slot,
         ARRAY [new.sender_user_id],
         user_bank_tx.created_at,
-        'supporter_rank_up', 'supporter_rank_up:' || new.rank || new.slot,
+        'supporter_rank_up',
+        'supporter_rank_up:' || new.rank || new.slot,
         ('{ "sender_user_id": ' || new.sender_user_id || ',  "receiver_user_id": ' || new.receiver_user_id || ',  "rank": ' || new.rank ||  '}')::json
       ),
       (
         new.slot,
         ARRAY [new.receiver_user_id],
         user_bank_tx.created_at,
-        'supporting_rank_up', 'supporting_rank_up:' || new.rank || new.slot,
+        'supporting_rank_up',
+        'supporting_rank_up:' || new.rank || new.slot,
         ('{ "sender_user_id": ' || new.sender_user_id || ',  "receiver_user_id": ' || new.receiver_user_id || ',  "rank": ' || new.rank ||  '}')::json
       );
   end if;
