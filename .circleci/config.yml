@@ -114,12 +114,11 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "a4:99:2e:fa:80:31:dc:23:25:7b:a5:70:3f:08:5f:fa"
+            - "8b:39:b6:63:d1:8f:55:55:3e:77:0d:37:99:79:d6:50"
       - run:
           name: Bump and Publish Libs
           command: |
-            cd "$PROTOCOL_DIR/libs/"
-            ./scripts/release.sh
+            /home/ubuntu/audius-protocol/libs/scripts/release.sh
 
   test-mad-dog-e2e:
     parameters:
