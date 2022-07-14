@@ -198,15 +198,12 @@ export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => 
 // The number of users whose primary content node clock value is null
 export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
-        SELECT COUNT(*) as user_count
-        FROM (
-            (SELECT * FROM network_monitoring_users WHERE run_id = :run_id) AS nm_users
-            JOIN 
-            (SELECT * FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS nm_cnodes
-            ON nm_users.spid = nm_cnodes.spid
-        ) AS nm_user_cnodes
-        WHERE 
-            nm_user_cnodes.endpoint like '%.audius.co';
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE 
+        run_id = :run_id
+    AND 
+        primary_clock_value IS NULL;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id },
