@@ -112,7 +112,9 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
     // The only reason this fn call would err is because `routeDurationStopTimer()` does not exist, which means
     // that the duration middleware didn't occur. This shouldn't happen, but if it does, this is the
     // last minute safe guard try/catch
-    logger.warn(`Could not call stop timer fn: ${e.message}`)
+    logger.warn(
+      `DurationTracking || Could not call stop timer fn: ${e.message}`
+    )
   }
 
   res.status(resp.statusCode).send(resp.object)
