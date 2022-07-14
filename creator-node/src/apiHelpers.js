@@ -104,9 +104,16 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   // headers through axios
   res.set('Access-Control-Expose-Headers', 'CN-Request-ID')
 
-  req.routeDurationStopTimer(req.logger, {
-    code: resp.statusCode ? resp.statusCode : 200
-  })
+  try {
+    req.routeDurationStopTimer(req.logger, {
+      code: resp.statusCode ? resp.statusCode : 200
+    })
+  } catch (e) {
+    // The only reason this fn call would err is because `routeDurationStopTimer()` does not exist, which means
+    // that the duration middleware didn't occur. This shouldn't happen, but if it does, this is the
+    // last minute safe guard try/catch
+    logger.warn(`Could not call stop timer fn: ${e.message}`)
+  }
 
   res.status(resp.statusCode).send(resp.object)
 })
