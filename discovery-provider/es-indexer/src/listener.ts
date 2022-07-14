@@ -11,6 +11,7 @@ import {
 import { Client } from 'pg'
 import { logger } from './logger'
 import { LISTEN_TABLES } from './setup'
+import { dialPg } from './conn'
 
 export class PendingUpdates {
   userIds: Set<number> = new Set()
@@ -51,7 +52,6 @@ const handlers = {
     if (!row.play_item_id) return // when could this happen?
     pending.trackIds.add(row.play_item_id)
   },
-  // TODO: can we do trigger on agg playlist matview?
   saves: (save: SaveRow) => {
     pending.saves.push(save)
     if (save.save_type == 'track') {
@@ -108,4 +108,17 @@ export async function startListener() {
 
   await client.query(sql)
   logger.info({ tables }, 'LISTEN')
+
+  // re-index all playlists every 12 hours
+  setInterval(allPlaylistsInterval, 1000 * 60 * 60 * 12)
+}
+
+async function allPlaylistsInterval() {
+  logger.info(`marking all playlist ids stale`)
+
+  const pg = dialPg()
+  const r = await pg.query(
+    `select playlist_id from playlists where is_current = true`
+  )
+  r.rows.map((row) => pending.playlistIds.add(row.playlist_id))
 }

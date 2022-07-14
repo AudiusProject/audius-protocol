@@ -36,41 +36,25 @@ export async function setupTriggers() {
   const client = await dialPg().connect()
   const tables = LISTEN_TABLES
 
-  const count = await client.query(`
-    SELECT count(*)
-    FROM information_schema.routines
-    WHERE routine_name = '${functionName}';`)
-  let skip = count.rows[0].count == 1
+  // create function
+  logger.info(`creating plpgsql function`)
+  await client.query(trigger)
 
-  // skip = false
+  // create triggers
+  logger.info({ tables }, `creating triggers`)
+  await Promise.all(tables.map(createTrigger))
 
-  if (skip) {
-    logger.info(`function ${functionName} already exists... skipping`)
-  } else {
-    // drop existing triggers
-    logger.info({ tables }, `dropping any existing triggers`)
-    await Promise.all(
-      tables.map((t) =>
-        client.query(`drop trigger if exists trg_${t} on ${t};`)
-      )
-    )
-
-    // create function
-    logger.info(`creating plpgsql function`)
-    await client.query(trigger)
-
-    // create triggers
-    logger.info({ tables }, `creating triggers`)
-    if (process.argv[2] !== 'drop') {
-      await Promise.all(
-        tables.map((t) =>
-          client.query(`
-        create trigger trg_${t}
-          after insert or update on ${t}
-          for each row execute procedure ${functionName}();`)
-        )
-      )
-    }
+  async function createTrigger(tableName: string) {
+    logger.info({ tableName, functionName }, `creating trigger`)
+    client.query(`
+      do $$ begin
+        create trigger trg_${tableName}
+        after insert or update on ${tableName}
+        for each row execute procedure ${functionName}();
+      exception
+        when others then null;
+      end $$;
+    `)
   }
 
   client.release()

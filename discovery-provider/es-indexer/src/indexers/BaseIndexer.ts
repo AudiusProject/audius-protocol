@@ -120,10 +120,13 @@ export abstract class BaseIndexer<RowType> {
 
   async indexIds(ids: Array<number>) {
     if (!ids.length) return
-    let sql = this.baseSelect()
-    sql += ` and ${this.tableName}.${this.idColumn} in (${ids.join(',')}) `
-    const result = await dialPg().query(sql)
-    await this.indexRows(result.rows)
+    const chunks = chunk(ids, this.batchSize)
+    for (let chunk of chunks) {
+      let sql = this.baseSelect()
+      sql += ` and ${this.tableName}.${this.idColumn} in (${chunk.join(',')}) `
+      const result = await dialPg().query(sql)
+      await this.indexRows(result.rows)
+    }
   }
 
   async catchup(checkpoint?: BlocknumberCheckpoint) {

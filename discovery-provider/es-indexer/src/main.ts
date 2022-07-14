@@ -6,6 +6,7 @@ import { TrackIndexer } from './indexers/TrackIndexer'
 import { UserIndexer } from './indexers/UserIndexer'
 import { PendingUpdates, startListener, takePending } from './listener'
 import { logger } from './logger'
+import { performance } from 'perf_hooks'
 import { setupTriggers } from './setup'
 import {
   ensureSaneCluterSettings,
@@ -82,8 +83,10 @@ async function start() {
   while (true) {
     const pending = takePending()
     if (pending) {
+      let before = performance.now()
       await processPending(pending)
-      logger.info('processed new updates')
+      const processPendingMs = (performance.now() - before).toFixed(0)
+      logger.info({ processPendingMs }, 'processPending finished')
     }
     // free up event loop + batch queries to postgres
     await new Promise((r) => setTimeout(r, 500))
