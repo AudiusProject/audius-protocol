@@ -112,8 +112,11 @@ jobs:
       - image: circleci/node:14.17.5
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "a4:99:2e:fa:80:31:dc:23:25:7b:a5:70:3f:08:5f:fa"
       - run:
-          name: Release Libs
+          name: Bump and Publish Libs
           command: |
             cd "$PROTOCOL_DIR/libs/"
             ./scripts/release.sh
