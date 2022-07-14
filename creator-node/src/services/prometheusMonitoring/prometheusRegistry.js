@@ -14,6 +14,8 @@ const {
 
 class PrometheusRegistry {
   constructor() {
+    this.initialized = false
+
     // Use default global registry to register metrics
     this.registry = PrometheusClient.register
 
@@ -40,11 +42,11 @@ class PrometheusRegistry {
     this.getDurationTrackingMetricName =
       this.getDurationTrackingMetricName.bind(this)
 
-    this.init()
+    this.initMetricsFromConstantsFile()
   }
 
   // Instantiates PrometheusRegistry with the imported custom metrics
-  init() {
+  initMetricsFromConstantsFile() {
     for (const { metricType: MetricType, metricConfig } of Object.values(
       METRICS
     )) {
@@ -162,6 +164,16 @@ class PrometheusRegistry {
   /** Returns single metric instance by name */
   getMetric(name) {
     return this.registry.getSingleMetric(name)
+  }
+
+  // This is to prevent any metric usage before the metrics are properly initialized
+  isInitialized() {
+    return this.initialized
+  }
+
+  // This is set that the PrometheusRegistry is done initializing
+  doneInitializing() {
+    this.initialized = true
   }
 }
 

@@ -206,55 +206,76 @@ class ServiceRegistry {
         (element.handle && element.handle.stack)
     )
 
-    // uggo clean this up pls
+    // Create metrics from routes
     const parsedRoutes = []
     routes.forEach((element) => {
-      let path, method
+      let path, method, regex
+      // For routes instantiated in /routes
       if (element.route && element.route.path) {
         path = element.route.path
         method = Object.keys(element.route.methods)[0]
+        regex = element.regexp
 
         // For routes with multiple mappings, ex.: /ipfs/:cid, /content/:cid
         if (Array.isArray(path)) {
           path.forEach((p) => {
-            if (p.includes(':')) {
-              this.prometheusRegistry.addRouteRegex({
-                path: p,
-                regex: element.regexp,
-                method
-              })
-            }
-            parsedRoutes.push({ path: p, method, regexp: element.regexp })
+            collectRouteData({
+              prometheusRegistry: this.prometheusRegistry,
+              path: p,
+              method,
+              regex
+            })
           })
         } else {
-          if (path.includes(':')) {
-            this.prometheusRegistry.addRouteRegex({
-              path,
-              regex: element.regexp,
-              method
-            })
-          }
-          parsedRoutes.push({ path, method, regexp: element.regexp })
+          collectRouteData({
+            prometheusRegistry: this.prometheusRegistry,
+            path,
+            method,
+            regex
+          })
         }
       } else {
+        // For routes instantiated with the express router
         const routerRoutes = element.handle.stack
         routerRoutes.forEach((routerRoute) => {
           path = routerRoute.route.path
           method = Object.keys(routerRoute.route.methods)[0]
+          regex = routerRoute.regexp
 
-          if (path.includes(':')) {
-            this.prometheusRegistry.addRouteRegex({
+          if (Array.isArray(path)) {
+            path.forEach((p) => {
+              collectRouteData({
+                prometheusRegistry: this.prometheusRegistry,
+                path: p,
+                method,
+                regex
+              })
+            })
+          } else {
+            collectRouteData({
+              prometheusRegistry: this.prometheusRegistry,
               path,
-              regex: element.regexp,
-              method
+              method,
+              regex
             })
           }
-          parsedRoutes.push({ path, method, regexp: element.regexp })
         })
+      }
+
+      function collectRouteData({ prometheusRegistry, path, method, regex }) {
+        if (path.includes(':')) {
+          prometheusRegistry.addRouteRegex({
+            path,
+            regex,
+            method
+          })
+        }
+        parsedRoutes.push({ path, method, regex })
       }
     })
 
     await this.prometheusRegistry.addRoutesDurationTracking(parsedRoutes)
+    this.prometheusRegistry.doneInitializing()
   }
 
   /**
