@@ -7,6 +7,9 @@ jobs:
       context: Audius Mobile Client
       requires:
         - mobile-init
+      filters:
+        branches:
+          only: /(^main|^release.*)$/
 
   - mobile-build-staging-web-app:
       context: Audius Mobile Client
@@ -27,8 +30,14 @@ jobs:
       context: Audius Mobile Client
       requires:
         - mobile-build-production-web-app
+      filters:
+        branches:
+          only: /(^main|^release.*)$/
 
   - mobile-build-upload-production-android:
       context: Audius Mobile Client
       requires:
         - mobile-build-production-web-app
+      filters:
+        branches:
+          only: /(^main|^release.*)$/
