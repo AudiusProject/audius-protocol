@@ -48,7 +48,7 @@ export const generateMetrics = async (run_id: number) => {
     partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount)
     unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount)
     nullPrimaryUsersCountGauge.set({ run_id }, usersWithNullPrimaryClock)
-
+    
     // Record duration for generating metrics and export to prometheus
     endTimer({ run_id: run_id })
 
