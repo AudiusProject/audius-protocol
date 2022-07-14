@@ -8,6 +8,7 @@ import {
     partiallySyncedUsersCountGauge,
     primaryUserCountGauge,
     unsyncedUsersCountGauge,
+    usersWithAllFoundationNodeReplicaSetGauge,
 } from "../prometheus"
 import { getEnv } from "../utils"
 import {
@@ -16,7 +17,8 @@ import {
     getFullySyncedUsersCount,
     getPartiallySyncedUsersCount,
     getUnsyncedUsersCount,
-    getUsersWithNullPrimaryClock
+    getUsersWithNullPrimaryClock,
+    getUsersWithAllFoundationNodeReplicaSetCount
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
@@ -37,6 +39,8 @@ export const generateMetrics = async (run_id: number) => {
 
     const usersWithNullPrimaryClock = await getUsersWithNullPrimaryClock(run_id)
 
+    const usersWithAllFoundationNodeReplicaSetCount = await getUsersWithAllFoundationNodeReplicaSetCount(run_id)
+
     allUserCount.forEach(({ endpoint, count }) => {
         allUserCountGauge.set({ endpoint, run_id }, count)
     })
@@ -48,6 +52,7 @@ export const generateMetrics = async (run_id: number) => {
     partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount)
     unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount)
     nullPrimaryUsersCountGauge.set({ run_id }, usersWithNullPrimaryClock)
+    usersWithAllFoundationNodeReplicaSetGauge.set({ run_id }, usersWithAllFoundationNodeReplicaSetCount)
 
     // Record duration for generating metrics and export to prometheus
     endTimer({ run_id: run_id })

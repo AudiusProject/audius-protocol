@@ -77,3 +77,9 @@ export const userBatchDurationGauge = new client.Gauge({
     help: 'the amount of time it takes to fetch and save a user batch',
     labelNames: ['run_id', 'endpoint'],
 })
+
+export const usersWithAllFoundationNodeReplicaSetGauge = new client.Gauge({
+    name: 'audius_nm_users_with_all_foundation_node_replica_set',
+    help: 'the number of users whose entire replica set is made of foundation nodes',
+    labelNames: ['run_id']
+})
