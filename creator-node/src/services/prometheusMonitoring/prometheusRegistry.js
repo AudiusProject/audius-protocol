@@ -20,8 +20,10 @@ class PrometheusRegistry {
     // Expose metric names from class for access throughout application
     this.metricNames = { ...METRIC_NAMES }
 
-    // A mapping of the route to the route regex
-    this.routeToRouteRegex = {}
+    this.routeRegexes = []
+
+    // A mapping of the regex to metric name
+    this.routeRegexToMetricName = {}
 
     // Ensure clean state for registry
     this.registry.clear()
@@ -90,23 +92,8 @@ class PrometheusRegistry {
       const { path, method } = route
 
       // Create metrics to track duration and status code for every route
-      if (Array.isArray(path)) {
-        // For routes with the same path but different methods
-        // Example: '/ipfs/:cid' and '/content/:cid'
-        for (const p of path) {
-          await addDurationTracking({
-            path: p,
-            method
-          })
-        }
-      } else {
-        await addDurationTracking({ path, method })
-      }
+      await addDurationTracking({ path, method })
     }
-  }
-
-  addMetricName({ key, value }) {
-    this.metricNames[key] = value
   }
 
   /**
@@ -132,12 +119,39 @@ class PrometheusRegistry {
     this.registry.registerMetric(metric)
   }
 
+  addMetricName({ key, value }) {
+    this.metricNames[key] = value
+  }
+
+  addRouteRegex({ path, regex, method }) {
+    if (!this.routeRegexToMetricName[regex]) {
+      this.routeRegexToMetricName[regex] = this.getDurationTrackingMetricName(
+        path,
+        method
+      )
+      this.routeRegexes.push(regex)
+    }
+  }
+
   /** Getters */
 
   getDurationTrackingMetricName(path, method) {
     return `${NAMESPACE_PREFIX}_api_${method.toLowerCase()}_${_.snakeCase(
       path
     )}_seconds`
+  }
+
+  // Some routes need to be matched because of route params
+  // This method matches against the regex and hopefully returns a match
+  getDurationTrackingMetricNameFromRegexMap(path) {
+    for (const regex of this.routeRegexes) {
+      const match = path.match(regex)
+      if (match) {
+        return this.routeRegexToMetricName[regex]
+      }
+    }
+
+    return null
   }
 
   /** Returns current data for all metrics */

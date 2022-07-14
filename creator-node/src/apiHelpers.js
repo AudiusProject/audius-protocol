@@ -60,11 +60,16 @@ module.exports.handleResponseWithHeartbeat = (func) => {
       // Await the work of the endpoint
       const resp = await func(req, res, next)
 
+      req.routeDurationStopTimer(req.logger, {
+        code: resp.statusCode ? resp.statusCode : 200
+      })
+
       clearInterval(heartbeatInterval)
 
       sendResponseWithHeartbeatTerminator(req, res, resp)
       next()
     } catch (error) {
+      req.routeDurationStopTimer(req.logger, { code: 500 })
       sendResponseWithHeartbeatTerminator(req, res, errorResponse(500, error))
     }
   }

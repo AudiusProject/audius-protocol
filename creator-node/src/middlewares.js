@@ -26,14 +26,22 @@ async function durationTrackingMiddleware(req, res, next) {
 
   let endTimer
   try {
-    const metricName = prometheusRegistry.getDurationTrackingMetricName(
+    let metricName = prometheusRegistry.getDurationTrackingMetricName(
       path,
       method
     )
-    const metric = prometheusRegistry.getMetric(metricName)
+    let metric = prometheusRegistry.getMetric(metricName)
+
+    if (!metric) {
+      metricName =
+        prometheusRegistry.getDurationTrackingMetricNameFromRegexMap(path)
+      metric = prometheusRegistry.getMetric(metricName)
+    }
 
     endTimer = metric.startTimer()
   } catch (e) {
+    // TODO: wait till iniitaliased toa dd middleware?
+
     req.logger.warn(`Could not create timer for ${path}: ${e.message}`)
   }
 

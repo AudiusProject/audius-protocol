@@ -206,6 +206,7 @@ class ServiceRegistry {
         (element.handle && element.handle.stack)
     )
 
+    // uggo clean this up pls
     const parsedRoutes = []
     routes.forEach((element) => {
       let path, method
@@ -213,13 +214,41 @@ class ServiceRegistry {
         path = element.route.path
         method = Object.keys(element.route.methods)[0]
 
-        parsedRoutes.push({ path, method, regexp: element.regexp })
+        // For routes with multiple mappings, ex.: /ipfs/:cid, /content/:cid
+        if (Array.isArray(path)) {
+          path.forEach((p) => {
+            if (p.includes(':')) {
+              this.prometheusRegistry.addRouteRegex({
+                path: p,
+                regex: element.regexp,
+                method
+              })
+            }
+            parsedRoutes.push({ path: p, method, regexp: element.regexp })
+          })
+        } else {
+          if (path.includes(':')) {
+            this.prometheusRegistry.addRouteRegex({
+              path,
+              regex: element.regexp,
+              method
+            })
+          }
+          parsedRoutes.push({ path, method, regexp: element.regexp })
+        }
       } else {
         const routerRoutes = element.handle.stack
         routerRoutes.forEach((routerRoute) => {
           path = routerRoute.route.path
           method = Object.keys(routerRoute.route.methods)[0]
 
+          if (path.includes(':')) {
+            this.prometheusRegistry.addRouteRegex({
+              path,
+              regex: element.regexp,
+              method
+            })
+          }
           parsedRoutes.push({ path, method, regexp: element.regexp })
         })
       }
