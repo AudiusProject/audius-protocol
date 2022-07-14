@@ -21,9 +21,4 @@ export interface Logger {
    * Write a 'debug' level log.
    */
   debug?: (message: any, ...optionalParams: any[]) => any
-
-  /**
-   * Write a 'verbose' level log.
-   */
-  verbose?: (message: any, ...optionalParams: any[]) => any
 }
