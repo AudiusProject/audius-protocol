@@ -1,7 +1,7 @@
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES, JOB_NAMES } = require('./stateMachineConstants')
 const {
-  MetricRecordType
+  METRIC_RECORD_TYPE
 } = require('../prometheusMonitoring/prometheus.constants')
 
 /**
@@ -174,9 +174,9 @@ const recordMetrics = (prometheusRegistry, logger, metricsToRecord = []) => {
     try {
       const { metricName, metricType, metricValue, metricLabels } = metricInfo
       const metric = prometheusRegistry.getMetric(metricName)
-      if (metricType === MetricRecordType.HISTOGRAM_OBSERVE) {
+      if (metricType === METRIC_RECORD_TYPE.HISTOGRAM_OBSERVE) {
         metric.observe(metricLabels, metricValue)
-      } else if (metricType === MetricRecordType.GAUGE_INC) {
+      } else if (metricType === METRIC_RECORD_TYPE.GAUGE_INC) {
         metric.inc(metricLabels, metricValue)
       } else {
         logger.error(`Unexpected metric type: ${metricType}`)

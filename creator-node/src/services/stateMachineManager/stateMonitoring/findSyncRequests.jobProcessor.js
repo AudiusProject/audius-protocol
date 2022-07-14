@@ -2,7 +2,7 @@ const _ = require('lodash')
 
 const config = require('../../../config')
 const {
-  MetricNames
+  METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const { makeGaugeIncToRecord } = require('../stateMachineUtils')
@@ -123,7 +123,7 @@ module.exports = async function ({
       for (const [labelValue, metricValue] of Object.entries(resultCountMap)) {
         metricsToRecord.push(
           makeGaugeIncToRecord(
-            MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE,
+            METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE,
             metricValue,
             { result: labelValue }
           )

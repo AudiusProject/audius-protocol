@@ -5,7 +5,7 @@ const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
 const {
-  MetricNames
+  METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
 const {
   retrieveClockValueForUserFromReplica,
@@ -130,7 +130,7 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
     )
   metricsToRecord.push(
     makeHistogramToRecord(
-      MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
+      METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
       (Date.now() - startWaitingForCompletion) / 1000, // Metric is in seconds
       {
         syncType: _.snakeCase(syncType),
