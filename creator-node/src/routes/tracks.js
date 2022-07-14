@@ -42,21 +42,6 @@ const TranscodingQueue = require('../TranscodingQueue')
 const readFile = promisify(fs.readFile)
 
 module.exports = function (app) {
-  app.get(
-    '/vicky/:poo/:sigh',
-    durationTrackingMiddleware,
-    handleResponse(async (req, res) => {
-      try {
-        req.routeDurationStopTimer({ code: 200 })
-        return successResponse({
-          done: 'done'
-        })
-      } catch (e) {
-        req.routeDurationStopTimer({ code: 500 })
-        return errorResponseServerError('bad')
-      }
-    })
-  )
   /**
    * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
    * @note this track content route is used in conjunction with the polling.

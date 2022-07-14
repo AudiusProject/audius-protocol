@@ -174,7 +174,7 @@ class PrometheusRegistry {
     return this.initialized
   }
 
-  // This is set that the PrometheusRegistry is done initializing
+  // This is to mark the PrometheusRegistry as done with initializing
   doneInitializing() {
     this.initialized = true
   }
