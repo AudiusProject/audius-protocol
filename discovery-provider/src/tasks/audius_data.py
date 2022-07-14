@@ -70,11 +70,6 @@ def audius_data_state_update(
                 logger.info(
                     f"index.py | AudiusData state update: {user_id}, entity_id={entity_id}, entity_type={entity_type}, action={action}, metadata_cid={metadata_cid}, metadata={metadata} signer={signer}"
                 )
-
-                is_playlist = entity_type == EntityType.PLAYLIST.value
-                logger.info(
-                    f"index.py | AudiusData - playlist_events_lookup {playlist_events_lookup}, is_playlist={is_playlist}, entity_type={entity_type}, expected={EntityType.PLAYLIST}, actions={Action.CREATE},{Action.DELETE},{Action.UPDATE}"
-                )
                 # Handle playlist creation
                 if entity_type == EntityType.PLAYLIST.value:
                     playlist_id = entity_id
