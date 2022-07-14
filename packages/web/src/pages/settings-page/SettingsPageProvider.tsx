@@ -50,6 +50,8 @@ import {
   SubPage
 } from './components/mobile/SettingsPage'
 
+const isStaging = process.env.REACT_APP_ENVIRONMENT === 'staging'
+
 const messages = {
   title: 'Settings',
   description: 'Configure your Audius account'
@@ -165,7 +167,7 @@ class SettingsPage extends PureComponent<
       tier
     } = this.props
 
-    const showMatrix = tier === 'gold' || tier === 'platinum'
+    const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
 
     const childProps = {
       title: messages.title,

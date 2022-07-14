@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
-import { Button, useMediaQueryListener } from '@audius/stems'
+import { Button, IconButton, useMediaQueryListener } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconClose } from 'assets/img/iconClose.svg'
+import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { Name } from 'common/models/Analytics'
 import { User } from 'common/models/User'
@@ -40,7 +40,8 @@ const messages = {
   wasTippedBy: 'Was Tipped By',
   andOthers: (num: number) => `& ${num} ${num > 1 ? 'others' : 'other'}`,
   sendTipToPrefix: 'SEND TIP TO ',
-  sendTip: 'SEND TIP'
+  sendTip: 'SEND TIP',
+  dismissButton: 'Dismiss tip tile'
 }
 
 const SkeletonTile = () => (
@@ -170,9 +171,12 @@ const DismissTipButton = () => {
   }, [dispatch, account, tipToDisplay, record])
 
   return (
-    <div className={styles.dismissButton} onClick={handleClick}>
-      <IconClose className={styles.dismissIcon} />
-    </div>
+    <IconButton
+      aria-label={messages.dismissButton}
+      className={styles.dismissButton}
+      onClick={handleClick}
+      icon={<IconRemove className={styles.dismissIcon} />}
+    />
   )
 }
 
