@@ -952,6 +952,5 @@ module.exports = {
   issueAndWaitForSecondarySyncRequests,
   getOwnEndpoint,
   getCreatorNodeEndpoints,
-  durationTrackingMiddleware,
-  why
+  durationTrackingMiddleware
 }
