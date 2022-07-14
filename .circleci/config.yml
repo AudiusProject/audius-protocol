@@ -377,12 +377,12 @@ jobs:
           POSTGRES_DB: audius_discovery
       - image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
         environment:
-          - network.host=0.0.0.0
-          - discovery.type=single-node
-          - cluster.name=docker-cluster
-          - node.name=cluster1-node1
-          - xpack.security.enabled=false
-          - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+          network.host: '0.0.0.0'
+          discovery.type: 'single-node'
+          cluster.name: 'docker-cluster'
+          node.name: 'cluster1-node1'
+          xpack.security.enabled: 'false'
+          ES_JAVA_OPTS: '-Xms512m -Xmx512m'
       - image: ipfs/go-ipfs:release
         # Bring up ganache
       - image: redis:3.0-alpine
@@ -663,7 +663,7 @@ jobs:
         type: string
       logspout-tag:
         type: string
-        default: ""
+        default: ''
     steps:
       - checkout
       - setup_remote_docker:
@@ -794,7 +794,7 @@ workflows:
       - docker-build-and-push:
           name: build-logspout
           repo: logspout
-          logspout-tag: "true"
+          logspout-tag: 'true'
           requires:
             - hold-build-logspout
       - hold-bake-gcp-dev-image:
