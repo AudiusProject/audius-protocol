@@ -176,7 +176,7 @@ export class EntityManager extends Base {
     try {
       const userId: number = parseInt(this.userStateManager.getCurrentUserId())
       const updateAction = Action.UPDATE
-      const entityType = 'Playlist'
+      const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID;
       if (coverArt) {
