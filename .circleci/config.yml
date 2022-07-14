@@ -827,7 +827,7 @@ workflows:
           type: approval
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^jc-inf-86$)/
       - publish-libs:
           context: Audius Libs
           name: publish-libs
@@ -835,7 +835,7 @@ workflows:
             - hold-publish-libs
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^jc-inf-86$)/
 
   # test master at midnight daily
   test-nightly:
