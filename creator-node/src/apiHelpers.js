@@ -17,10 +17,6 @@ module.exports.handleResponse = (func) => {
         throw new Error('Invalid response returned by function')
       }
 
-      req.routeDurationStopTimer(req.logger, {
-        code: resp.statusCode ? resp.statusCode : 200
-      })
-
       sendResponse(req, res, resp)
       next()
     } catch (error) {
@@ -75,6 +71,8 @@ module.exports.handleResponseWithHeartbeat = (func) => {
   }
 }
 
+// NOTE: To automate stopping the route duration timer, must manually set
+// the `req.stopTimerInSendResponse` flag to `true`
 const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   const duration = getDuration(req)
   let logger = createChildLogger(req.logger, {
@@ -107,6 +105,10 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   // set custom CORS headers that's required if you want to response
   // headers through axios
   res.set('Access-Control-Expose-Headers', 'CN-Request-ID')
+
+  req.routeDurationStopTimer(req.logger, {
+    code: resp.statusCode ? resp.statusCode : 200
+  })
 
   res.status(resp.statusCode).send(resp.object)
 })
