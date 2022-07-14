@@ -33,7 +33,7 @@ const mergePrimaryAndSecondaryEnabled = config.get(
 )
 
 console.log(
-  `SIDTEST thisContentNodeEndpoint: ${thisContentNodeEndpoint} MERGEPRIMARYAYNDSECONDARYENABLED: ${mergePrimaryAndSecondaryEnabled}`
+  `SIDTEST maxSyncMonitoringDurationInMs: ${maxSyncMonitoringDurationInMs} thisContentNodeEndpoint: ${thisContentNodeEndpoint} MERGEPRIMARYAYNDSECONDARYENABLED: ${mergePrimaryAndSecondaryEnabled}`
 )
 
 /**
@@ -96,11 +96,15 @@ module.exports = async function ({
 
   const logMsgString = `(${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
 
+  console.log(`SIDTEST 1 - ${logMsgString}`)
+
   /**
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
    * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting
    */
   SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
+
+  console.log(`SIDTEST 2`)
 
   /**
    * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
@@ -124,6 +128,7 @@ module.exports = async function ({
       jobsToEnqueue: {}
     }
   }
+  console.log(`SIDTEST 3`)
 
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
     // Short-circuit if this syncMode is disabled
@@ -159,10 +164,14 @@ module.exports = async function ({
     }
   }
 
+  console.log(`SIDTEST 4`)
+
   // primaryClockValue is used in additionalSyncIsRequired() call below
   const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
     userWallet
   ]
+
+  console.log(`SIDTEST 5`)
 
   logger.info(
     `------------------Process SYNC | ${logMsgString} | Primary clock value ${primaryClockValue}------------------`
@@ -182,12 +191,15 @@ module.exports = async function ({
       }
       await axios(syncRequestParametersForceResync)
     } else {
+      console.log(`SIDTEST 6`)
       await axios(syncRequestParameters)
     }
   } catch (e) {
     // Axios request will throw on non-200 response -> swallow error to ensure below logic is executed
     logger.error(`${logMsgString} || Error issuing sync request: ${e.message}`)
   }
+
+  console.log(`SIDTEST 1`)
 
   // Wait until has sync has completed (within time threshold)
   const startWaitingForCompletion = Date.now()
@@ -366,6 +378,7 @@ const _additionalSyncIsRequired = async (
 
     // Delay between retries
     await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
+    console.log(`timeout issued`)
   }
 
   const monitoringTimeMs = Date.now() - startTimeMs
