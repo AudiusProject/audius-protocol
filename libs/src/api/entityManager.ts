@@ -64,6 +64,8 @@ export class EntityManager extends Base {
     logger: Console
   }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
     try {
+      console.log(`asdf createPlaylist`)
+
       const ownerId: number = parseInt(this.userStateManager.getCurrentUserId())
       const createAction = Action.CREATE
       const entityType = EntityType.PLAYLIST
@@ -225,6 +227,8 @@ export class EntityManager extends Base {
     action: Action
     metadataMultihash: string
   }): Promise<{ txReceipt: {blockHash: string, blockNumber: number}; error: any }> {
+    console.log(`asdf manageEntity`)
+
     let error: string = ''
     let resp: any
     try {
