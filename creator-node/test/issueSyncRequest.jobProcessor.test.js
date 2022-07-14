@@ -155,7 +155,6 @@ describe('test issueSyncRequest job processor', function () {
     config.set('spID', 1)
     originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
     config.set('creatorNodeEndpoint', primary)
-    config.set('maxSyncMonitoringDurationInMs', 100)
     logger = {
       info: sandbox.stub(),
       warn: sandbox.stub(),
@@ -183,6 +182,7 @@ describe('test issueSyncRequest job processor', function () {
   }) {
 
     const stubs = {
+      '../../../config': config,
       './stateReconciliationUtils': {
         getNewOrExistingSyncReq: getNewOrExistingSyncReqStub
       },
@@ -300,10 +300,12 @@ describe('test issueSyncRequest job processor', function () {
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
 
-  it.only('requires additional sync when secondary updates clock value but clock value is still behind primary', async function () {
+  it('requires additional sync when secondary updates clock value but clock value is still behind primary', async function () {
     const primaryClockValue = 5
     const initialSecondaryClockValue = 2
     const finalSecondaryClockValue = 3
+
+    config.set('maxSyncMonitoringDurationInMs', 100)
 
     const expectedSyncReqToEnqueue = 'expectedSyncReqToEnqueue'
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
@@ -502,7 +504,6 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
-    console.log(`SIDTEST RESULT: ${JSON.stringify(result)}`)
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {})
     expect(result).to.not.have.deep.property('metricsToRecord')
@@ -510,7 +511,9 @@ describe('test issueSyncRequest job processor', function () {
   })
 
   describe('test SYNC_MODES.MergePrimaryAndSecondary', function () {
-    syncMode = SYNC_MODES.MergePrimaryAndSecondary
+    beforeEach(async function () {
+      syncMode = SYNC_MODES.MergePrimaryAndSecondary
+    })
 
     it('Issues correct sync when primarySyncFromSecondary() succeeds and no additional sync is required', async function () {
       const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
@@ -522,6 +525,8 @@ describe('test issueSyncRequest job processor', function () {
         .returns(0)
   
       const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
+
+      config.set('mergePrimaryAndSecondaryEnabled', true)
 
       const primarySyncFromSecondaryStub = sandbox.stub().callsFake((args) => {
         const { wallet: walletParam, secondary: secondaryParam } = args
@@ -565,9 +570,13 @@ describe('test issueSyncRequest job processor', function () {
       )
       expect(result.metricsToRecord[0].metricValue).to.be.a('number')
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
+      expect(primarySyncFromSecondaryStub).to.have.been.calledOnceWithExactly({
+        wallet,
+        secondary
+      })
     })
 
-    it.skip('primarySyncFromSecondary errors', async function () {
+    it('primarySyncFromSecondary errors', async function () {
       const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
         throw new Error('getNewOrExistingSyncReq was not expected to be called')
       })
@@ -578,6 +587,8 @@ describe('test issueSyncRequest job processor', function () {
   
       const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
 
+      config.set('mergePrimaryAndSecondaryEnabled', true)
+
       const primarySyncFromSecondaryError = new Error('Sync failure')
       const primarySyncFromSecondaryStub = sandbox.stub().callsFake((args) => {
         const { wallet: walletParam, secondary: secondaryParam } = args
@@ -586,16 +597,12 @@ describe('test issueSyncRequest job processor', function () {
         }
         throw new Error(`primarySyncFromSecondary was not expected to be called with the given args`)
       })
-
-      // const configStub = config
-      config.set('mergePrimaryAndSecondaryEnabled', false)
   
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
         getSecondaryUserSyncFailureCountForTodayStub,
         retrieveClockValueForUserFromReplicaStub,
         primarySyncFromSecondaryStub,
-        // configStub
       })
   
       // Make the axios request succeed
@@ -612,11 +619,11 @@ describe('test issueSyncRequest job processor', function () {
         message: `primarySyncFromSecondary failed with error: ${primarySyncFromSecondaryError.message}`
       })
       expect(result).to.have.deep.property('jobsToEnqueue', {})
-      expect(result.metricsToRecord).to.have.lengthOf(0)
+      expect(result).to.not.have.deep.property('metricsToRecord')
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     })
 
-    it.skip('mergePrimaryAndSecondaryEnabled = false', async function () {
+    it('mergePrimaryAndSecondaryEnabled = false', async function () {
       const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
         throw new Error('getNewOrExistingSyncReq was not expected to be called')
       })
@@ -626,6 +633,8 @@ describe('test issueSyncRequest job processor', function () {
         .returns(0)
   
       const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
+
+      config.set('mergePrimaryAndSecondaryEnabled', false)
 
       const primarySyncFromSecondaryStub = sandbox.stub().callsFake((args) => {
         throw new Error(`primarySyncFromSecondary was not expected to be called with the given args`)
@@ -648,11 +657,9 @@ describe('test issueSyncRequest job processor', function () {
         syncMode,
         syncRequestParameters
       })
-      expect(result).to.have.deep.property('error', {
-        message: `primarySyncFromSecondary failed with error: ${primarySyncFromSecondaryError.message}`
-      })
+      expect(result).to.have.deep.property('error', {})
       expect(result).to.have.deep.property('jobsToEnqueue', {})
-      expect(result.metricsToRecord).to.have.lengthOf(0)
+      expect(result).to.not.have.deep.property('metricsToRecord')
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     })
   })
