@@ -120,8 +120,7 @@ jobs:
       - run:
           name: Bump and Publish Libs
           command: |
-            ls
-            pwd
+            export PROTOCOL_DIR=/home/circleci/project
             libs/scripts/release.sh
 
   test-mad-dog-e2e:
