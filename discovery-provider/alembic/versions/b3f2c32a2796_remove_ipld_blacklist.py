@@ -18,8 +18,8 @@ def upgrade():
     connection = op.get_bind()
     connection.execute(
         """
-        DROP TABLE IF EXISTS ipld_blacklist_blocks;
         DROP TABLE IF EXISTS ipld_blacklists;
+        DROP TABLE IF EXISTS ipld_blacklist_blocks;
         """
     )
 
