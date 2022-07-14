@@ -32,6 +32,10 @@ const mergePrimaryAndSecondaryEnabled = config.get(
   'mergePrimaryAndSecondaryEnabled'
 )
 
+console.log(
+  `SIDTEST thisContentNodeEndpoint: ${thisContentNodeEndpoint} MERGEPRIMARYAYNDSECONDARYENABLED: ${mergePrimaryAndSecondaryEnabled}`
+)
+
 /**
  * Processes a job to issue a sync request from a user's primary (this node) to a user's secondary with syncType and syncMode
  * Secondary is specified in param.syncRequestParameters
@@ -56,7 +60,9 @@ module.exports = async function ({
     'method' in syncRequestParameters &&
     'data' in syncRequestParameters
   if (!isValidSyncJobData) {
-    const errorMsg = `Invalid sync data found: ${syncRequestParameters}`
+    const errorMsg = `Invalid sync data found: ${JSON.stringify(
+      syncRequestParameters
+    )}`
     logger.error(errorMsg)
     return {
       error: {
@@ -120,6 +126,7 @@ module.exports = async function ({
   }
 
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+    // Short-circuit if this syncMode is disabled
     if (!mergePrimaryAndSecondaryEnabled) {
       logger.info(
         `${logMsgString} || Sync mode is disabled - Will not issue sync request`
@@ -129,13 +136,17 @@ module.exports = async function ({
         jobsToEnqueue: {}
       }
     }
+
     /**
      * For now, if primarySyncFromSecondary fails, we just log & error without any retries
      * Eventually should make this more robust, but proceeding with caution
      */
 
     // Sync primary content from secondary and set secondary sync flag to forceResync before proceeding
-    const error = await primarySyncFromSecondary(secondaryEndpoint, userWallet)
+    const error = await primarySyncFromSecondary({
+      wallet: userWallet,
+      secondary: secondaryEndpoint
+    })
 
     if (error) {
       return {
@@ -209,8 +220,7 @@ module.exports = async function ({
       userWallet,
       secondaryEndpoint,
       primaryEndpoint: thisContentNodeEndpoint,
-      syncType,
-      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+      syncType
     })
     if (duplicateSyncReq && !_.isEmpty(duplicateSyncReq)) {
       error = {

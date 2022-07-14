@@ -56,13 +56,13 @@ describe('test issueSyncRequest job processor param validation', function () {
     const method = 'post'
     const data = { wallet: [wallet] }
     const syncRequestParameters = {
-      // Missing baseURL
+      // Missing secondary
       url,
       method,
       data
     }
 
-    const expectedErrorMessage = `Invalid sync data found: ${syncRequestParameters}`
+    const expectedErrorMessage = `Invalid sync data found: ${JSON.stringify(syncRequestParameters)}`
 
     // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
     await expect(
@@ -85,12 +85,12 @@ describe('test issueSyncRequest job processor param validation', function () {
 
   it('catches bad wallet in data', async function () {
     const wallet = '0x123456789'
-    const baseURL = 'http://some_cn.co'
+    const secondary = 'http://some_cn.co'
     const url = '/sync'
     const method = 'post'
     const data = { wallet } // Bad wallet -- should be an array
     const syncRequestParameters = {
-      baseURL,
+      baseURL: secondary,
       url,
       method,
       data
@@ -128,10 +128,8 @@ describe('test issueSyncRequest job processor', async function () {
     syncType,
     syncMode,
     primary,
+    secondary,
     wallet,
-    baseURL,
-    url,
-    method,
     data,
     syncRequestParameters
 
@@ -157,14 +155,12 @@ describe('test issueSyncRequest job processor', async function () {
     primary = 'http://primary_cn.co'
     wallet = '0x123456789'
 
-    baseURL = 'http://some_cn.co'
-    url = '/sync'
-    method = 'post'
-    data = { wallet: [wallet] }
+    secondary = 'http://some_cn.co'
+    data =  { wallet: [wallet] }
     syncRequestParameters = {
-      baseURL,
-      url,
-      method,
+      baseURL: secondary,
+      url: '/sync',
+      method: 'post',
       data
     }
   })
@@ -182,11 +178,12 @@ describe('test issueSyncRequest job processor', async function () {
     getNewOrExistingSyncReqStub,
     getSecondaryUserSyncFailureCountForTodayStub,
     retrieveClockValueForUserFromReplicaStub,
-    primarySyncFromSecondaryStub
+    primarySyncFromSecondaryStub,
+    configStub = config
   }) {
 
     const stubs = {
-      '../../../config': config,
+      '../../../config': configStub,
       './stateReconciliationUtils': {
         getNewOrExistingSyncReq: getNewOrExistingSyncReqStub
       },
@@ -230,7 +227,7 @@ describe('test issueSyncRequest job processor', async function () {
     const primarySyncFromSecondaryStub = sandbox.stub().returns(null)
 
     // Make the axios request succeed
-    nock(baseURL).post('/sync', data).reply(200)
+    nock(secondary).post('/sync', data).reply(200)
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
       getNewOrExistingSyncReqStub,
@@ -246,7 +243,6 @@ describe('test issueSyncRequest job processor', async function () {
       syncMode,
       syncRequestParameters
     })
-    console.log(`SIDTEST RESULT: ${JSON.stringify(result)}`)
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {})
     expect(result.metricsToRecord).to.have.lengthOf(1)
@@ -287,7 +283,7 @@ describe('test issueSyncRequest job processor', async function () {
       retrieveClockValueForUserFromReplicaStub
     })
 
-    const expectedErrorMessage = `(${syncType})(${syncMode}) User ${wallet} | Secondary: ${baseURL} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${failureThreshold}). Will not issue further syncRequests today.`
+    const expectedErrorMessage = `(${syncType})(${syncMode}) User ${wallet} | Secondary: ${secondary} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${failureThreshold}). Will not issue further syncRequests today.`
 
     // Verify job outputs the correct results: error and no sync issued (nock will error if a network req was made)
     const result = await issueSyncRequestJobProcessor({
@@ -305,7 +301,7 @@ describe('test issueSyncRequest job processor', async function () {
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
 
-  it('requires additional sync when secondary updates clock value but clock value is still behind primary', async function () {
+  it.only('requires additional sync when secondary updates clock value but clock value is still behind primary', async function () {
     const primaryClockValue = 5
     const initialSecondaryClockValue = 2
     const finalSecondaryClockValue = 3
@@ -314,10 +310,11 @@ describe('test issueSyncRequest job processor', async function () {
 
     const expectedSyncReqToEnqueue = 'expectedSyncReqToEnqueue'
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+      console.log(`GETNEWOREXISTINGARGS: ${JSON.stringify(args)}`)
       const { userWallet, secondaryEndpoint, syncType: syncTypeArg } = args
       if (
         userWallet === wallet &&
-        secondaryEndpoint === baseURL &&
+        secondaryEndpoint === secondary &&
         syncTypeArg === syncType
       ) {
         return { syncReqToEnqueue: expectedSyncReqToEnqueue }
@@ -349,7 +346,7 @@ describe('test issueSyncRequest job processor', async function () {
       .resolves([{ walletPublicKey: wallet, clock: primaryClockValue }])
 
     // Make the axios request succeed
-    nock(baseURL).post('/sync', data).reply(200)
+    nock(secondary).post('/sync', data).reply(200)
 
     // Verify job outputs the correct results: an additional sync
     const result = await issueSyncRequestJobProcessor({
@@ -378,7 +375,7 @@ describe('test issueSyncRequest job processor', async function () {
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
       userWallet: wallet,
-      secondaryEndpoint: baseURL,
+      secondaryEndpoint: secondary,
       primaryEndpoint: primary,
       syncType,
       syncMode
@@ -387,7 +384,7 @@ describe('test issueSyncRequest job processor', async function () {
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
     expect(recordSuccessStub).to.have.been.calledOnceWithExactly(
-      baseURL,
+      secondary,
       wallet,
       syncType
     )
@@ -405,7 +402,7 @@ describe('test issueSyncRequest job processor', async function () {
       const { userWallet, secondaryEndpoint, syncType: syncTypeArg } = args
       if (
         userWallet === wallet &&
-        secondaryEndpoint === baseURL &&
+        secondaryEndpoint === secondary &&
         syncTypeArg === syncType
       ) {
         return { syncReqToEnqueue: expectedSyncReqToEnqueue }
@@ -434,7 +431,7 @@ describe('test issueSyncRequest job processor', async function () {
       .resolves([{ walletPublicKey: wallet, clock: primaryClockValue }])
 
     // Make the axios request succeed
-    nock(baseURL).post('/sync', data).reply(200)
+    nock(secondary).post('/sync', data).reply(200)
 
     // Verify job outputs the correct results: an additional sync
     const result = await issueSyncRequestJobProcessor({
@@ -463,7 +460,7 @@ describe('test issueSyncRequest job processor', async function () {
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
       userWallet: wallet,
-      secondaryEndpoint: baseURL,
+      secondaryEndpoint: secondary,
       primaryEndpoint: primary,
       syncType,
       syncMode
@@ -472,14 +469,62 @@ describe('test issueSyncRequest job processor', async function () {
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
     expect(recordFailureStub).to.have.been.calledOnceWithExactly(
-      baseURL,
+      secondary,
       wallet,
       syncType
     )
     expect(recordSuccessStub).to.have.not.been.called
   })
 
-  it.skip('SyncMode.None')
+  it.skip('SyncMode.None', async function () {
+    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+      throw new Error('getNewOrExistingSyncReq was not expected to be called')
+    })
+
+    const getSecondaryUserSyncFailureCountForTodayStub = sandbox
+      .stub()
+      .returns(0)
+
+    const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
+
+    const primarySyncFromSecondaryStub = sandbox.stub().returns(null)
+
+    // Make the axios request succeed
+    nock(secondary).post('/sync', data).reply(200)
+
+    const issueSyncRequestJobProcessor = getJobProcessorStub({
+      getNewOrExistingSyncReqStub,
+      getSecondaryUserSyncFailureCountForTodayStub,
+      retrieveClockValueForUserFromReplicaStub,
+      primarySyncFromSecondaryStub
+    })
+
+    // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
+    const result = await issueSyncRequestJobProcessor({
+      logger,
+      syncType,
+      syncMode,
+      syncRequestParameters
+    })
+    console.log(`SIDTEST RESULT: ${JSON.stringify(result)}`)
+    expect(result).to.have.deep.property('error', {})
+    expect(result).to.have.deep.property('jobsToEnqueue', {})
+    expect(result.metricsToRecord).to.have.lengthOf(1)
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricName',
+      'audius_cn_issue_sync_request_monitoring_duration_seconds'
+    )
+    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      syncType: 'manual',
+      reason_for_additional_sync: 'none'
+    })
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricType',
+      'HISTOGRAM_OBSERVE'
+    )
+    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
+    expect(getNewOrExistingSyncReqStub).to.not.have.been.called
+  })
 
   describe('test SYNC_MODES.MergePrimaryAndSecondary', async function () {
     syncMode = SYNC_MODES.MergePrimaryAndSecondary
@@ -495,7 +540,13 @@ describe('test issueSyncRequest job processor', async function () {
   
       const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
 
-      const primarySyncFromSecondaryStub = sandbox.stub().returns(null)
+      const primarySyncFromSecondaryStub = sandbox.stub().callsFake((args) => {
+        const { wallet: walletParam, secondary: secondaryParam } = args
+        if (walletParam === wallet && secondaryParam === secondary) {
+          return
+        }
+        throw new Error(`primarySyncFromSecondary was not expected to be called with the given args`)
+      })
   
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
@@ -505,7 +556,7 @@ describe('test issueSyncRequest job processor', async function () {
       })
   
       // Make the axios request succeed
-      nock(baseURL).post('/sync', data).reply(200)
+      nock(secondary).post('/sync', data).reply(200)
   
       // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
       const result = await issueSyncRequestJobProcessor({
@@ -533,6 +584,93 @@ describe('test issueSyncRequest job processor', async function () {
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     })
 
-    it.skip('mergePrimaryAndSecondaryEnabled = false')
+    it('primarySyncFromSecondary errors', async function () {
+      const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+        throw new Error('getNewOrExistingSyncReq was not expected to be called')
+      })
+  
+      const getSecondaryUserSyncFailureCountForTodayStub = sandbox
+        .stub()
+        .returns(0)
+  
+      const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
+
+      const primarySyncFromSecondaryError = new Error('Sync failure')
+      const primarySyncFromSecondaryStub = sandbox.stub().callsFake((args) => {
+        const { wallet: walletParam, secondary: secondaryParam } = args
+        if (walletParam === wallet && secondaryParam === secondary) {
+          return primarySyncFromSecondaryError
+        }
+        throw new Error(`primarySyncFromSecondary was not expected to be called with the given args`)
+      })
+
+      const configStub = config
+      configStub.set('mergePrimaryAndSecondaryEnabled', false)
+  
+      const issueSyncRequestJobProcessor = getJobProcessorStub({
+        getNewOrExistingSyncReqStub,
+        getSecondaryUserSyncFailureCountForTodayStub,
+        retrieveClockValueForUserFromReplicaStub,
+        primarySyncFromSecondaryStub,
+        configStub
+      })
+  
+      // Make the axios request succeed
+      nock(secondary).post('/sync', data).reply(200)
+  
+      // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
+      const result = await issueSyncRequestJobProcessor({
+        logger,
+        syncType,
+        syncMode,
+        syncRequestParameters
+      })
+      expect(result).to.have.deep.property('error', {
+        message: `primarySyncFromSecondary failed with error: ${primarySyncFromSecondaryError.message}`
+      })
+      expect(result).to.have.deep.property('jobsToEnqueue', {})
+      expect(result.metricsToRecord).to.have.lengthOf(0)
+      expect(getNewOrExistingSyncReqStub).to.not.have.been.called
+    })
+
+    it.skip('mergePrimaryAndSecondaryEnabled = false', async function () {
+      const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+        throw new Error('getNewOrExistingSyncReq was not expected to be called')
+      })
+  
+      const getSecondaryUserSyncFailureCountForTodayStub = sandbox
+        .stub()
+        .returns(0)
+  
+      const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
+
+      const primarySyncFromSecondaryStub = sandbox.stub().callsFake((args) => {
+        throw new Error(`primarySyncFromSecondary was not expected to be called with the given args`)
+      })
+  
+      const issueSyncRequestJobProcessor = getJobProcessorStub({
+        getNewOrExistingSyncReqStub,
+        getSecondaryUserSyncFailureCountForTodayStub,
+        retrieveClockValueForUserFromReplicaStub,
+        primarySyncFromSecondaryStub
+      })
+  
+      // Make the axios request succeed
+      nock(secondary).post('/sync', data).reply(200)
+  
+      // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
+      const result = await issueSyncRequestJobProcessor({
+        logger,
+        syncType,
+        syncMode,
+        syncRequestParameters
+      })
+      expect(result).to.have.deep.property('error', {
+        message: `primarySyncFromSecondary failed with error: ${primarySyncFromSecondaryError.message}`
+      })
+      expect(result).to.have.deep.property('jobsToEnqueue', {})
+      expect(result.metricsToRecord).to.have.lengthOf(0)
+      expect(getNewOrExistingSyncReqStub).to.not.have.been.called
+    })
   })
 })
