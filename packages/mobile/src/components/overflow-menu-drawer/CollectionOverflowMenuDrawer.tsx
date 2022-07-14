@@ -1,9 +1,9 @@
+import type { ID } from '@audius/common'
 import {
   FavoriteSource,
   RepostSource,
   ShareSource
 } from 'audius-client/src/common/models/Analytics'
-import { ID } from 'audius-client/src/common/models/Identifiers'
 import { CommonState } from 'audius-client/src/common/store'
 import { publishPlaylist } from 'audius-client/src/common/store/cache/collections/actions'
 import { getCollection } from 'audius-client/src/common/store/cache/collections/selectors'

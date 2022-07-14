@@ -1,6 +1,6 @@
 // Auto-increment the uid so that items with the
 
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
 
 // same kind, id, and source have unique IDs
 let count = 0

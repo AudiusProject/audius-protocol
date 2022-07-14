@@ -1,7 +1,7 @@
+import { ID } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { ID } from 'common/models/Identifiers'
 import { formatCount } from 'common/utils/formatUtil'
 import {
   setUsers,

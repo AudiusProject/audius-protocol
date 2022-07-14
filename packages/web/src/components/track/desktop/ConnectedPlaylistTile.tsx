@@ -8,6 +8,7 @@ import {
   ReactChildren
 } from 'react'
 
+import { UID, ID } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -22,7 +23,6 @@ import {
   PlaybackSource,
   Name
 } from 'common/models/Analytics'
-import { UID, ID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
 import { getUserHandle } from 'common/store/account/selectors'
 import {

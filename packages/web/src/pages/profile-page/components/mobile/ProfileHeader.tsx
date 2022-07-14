@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 
+import { ID } from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -16,7 +17,6 @@ import Linkify from 'linkifyjs/react'
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import { Name } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import {
   CoverPhotoSizes,
   ProfilePictureSizes,

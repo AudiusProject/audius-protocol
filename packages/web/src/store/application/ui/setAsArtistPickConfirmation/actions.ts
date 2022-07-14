@@ -1,4 +1,4 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
 
 // actions
 export const SHOW_SET_AS_ARTIST_PICK_CONFIRMATION = 'SET_AS_ARTIST_PICK/SHOW'

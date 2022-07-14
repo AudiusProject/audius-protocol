@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { Supporter } from 'common/models/Tipping'
 import { User } from 'common/models/User'
 import { BNWei, StringAudio, StringWei } from 'common/models/Wallet'

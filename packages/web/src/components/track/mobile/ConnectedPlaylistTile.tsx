@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo, MouseEvent } from 'react'
 
+import { ID } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -12,7 +13,6 @@ import {
   ShareSource
 } from 'common/models/Analytics'
 import { FavoriteType } from 'common/models/Favorite'
-import { ID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
 import {

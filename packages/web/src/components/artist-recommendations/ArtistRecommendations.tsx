@@ -7,13 +7,13 @@ import {
   useMemo
 } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconClose } from 'assets/img/iconRemove.svg'
 import { FollowSource, Name } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
 import { User } from 'common/models/User'
 import { CommonState } from 'common/store'

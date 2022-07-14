@@ -1,8 +1,8 @@
+import { UID, ID } from '@audius/common'
 import { Moment } from 'moment'
 
 import { Collection } from 'common/models/Collection'
 import { Favorite } from 'common/models/Favorite'
-import { UID, ID } from 'common/models/Identifiers'
 import { LineupState } from 'common/models/Lineup'
 import { LineupTrack } from 'common/models/Track'
 

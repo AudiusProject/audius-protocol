@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { StemCategory, StemUpload } from 'common/models/Stems'
 import { Track, StemTrack } from 'common/models/Track'
 

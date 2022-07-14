@@ -1,8 +1,8 @@
 import { memo, useEffect, useCallback, useContext } from 'react'
 
+import { ID, UID } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 
-import { ID, UID } from 'common/models/Identifiers'
 import { LineupTrack } from 'common/models/Track'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'

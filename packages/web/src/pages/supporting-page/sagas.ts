@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
-import { ID } from 'common/models/Identifiers'
 import { User, UserMetadata } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import { setSupportingForUser } from 'common/store/tipping/slice'

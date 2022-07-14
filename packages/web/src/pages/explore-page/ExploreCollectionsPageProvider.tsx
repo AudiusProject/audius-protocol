@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, ComponentType } from 'react'
 
+import { ID } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
@@ -7,7 +8,6 @@ import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { FavoriteType } from 'common/models/Favorite'
-import { ID } from 'common/models/Identifiers'
 import {
   getCollections,
   getStatus

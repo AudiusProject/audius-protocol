@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react'
 
+import { ID } from '@audius/common'
 import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -10,7 +11,6 @@ import {
   ButtonType,
   useDownloadTrackButtons
 } from 'common/hooks/useDownloadTrackButtons'
-import { ID } from 'common/models/Identifiers'
 import { toast } from 'common/store/ui/toast/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'

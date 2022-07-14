@@ -1,4 +1,4 @@
-import { ID, PlayableType } from 'common/models/Identifiers'
+import { ID, PlayableType } from '@audius/common'
 
 export type EmbedModalState = {
   isOpen: boolean

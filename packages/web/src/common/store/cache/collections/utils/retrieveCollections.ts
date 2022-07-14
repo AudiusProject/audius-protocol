@@ -1,3 +1,4 @@
+import { ID } from '@audius/common'
 import { call, select } from 'redux-saga/effects'
 
 import {
@@ -5,7 +6,6 @@ import {
   CollectionMetadata,
   UserCollectionMetadata
 } from 'common/models/Collection'
-import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { Track } from 'common/models/Track'
 import { CommonState } from 'common/store'

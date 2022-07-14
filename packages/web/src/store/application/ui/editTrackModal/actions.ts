@@ -1,4 +1,4 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
 
 export const OPEN = 'APPLICATION/UI/EDIT_TRACK_MODAL/OPEN'
 export const CLOSE = 'APPLICATION/UI/EDIT_TRACK_MODAL/CLOSE'

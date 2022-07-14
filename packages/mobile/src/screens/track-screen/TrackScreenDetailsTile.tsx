@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import type { UID } from '@audius/common'
 import {
   FavoriteSource,
   RepostSource,
@@ -8,7 +9,6 @@ import {
   PlaybackSource
 } from 'audius-client/src/common/models/Analytics'
 import { FavoriteType } from 'audius-client/src/common/models/Favorite'
-import { UID } from 'audius-client/src/common/models/Identifiers'
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'

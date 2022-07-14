@@ -1,3 +1,4 @@
+import { ID } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -8,7 +9,6 @@ import {
   RepostSource,
   FavoriteSource
 } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import { publishPlaylist } from 'common/store/cache/collections/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'

@@ -1,5 +1,6 @@
+import { CID } from '@audius/common'
+
 import { FavoriteType } from 'common/models/Favorite'
-import { CID } from 'common/models/Identifiers'
 import {
   CoverArtSizes,
   CoverPhotoSizes,

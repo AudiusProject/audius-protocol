@@ -5,6 +5,7 @@ import {
   useState
 } from 'react'
 
+import { ID } from '@audius/common'
 import {
   IconCaretRight,
   IconFolder,
@@ -18,7 +19,6 @@ import { useSpring, animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 
 import { Name } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import { PlaylistLibraryFolder } from 'common/models/PlaylistLibrary'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import Draggable from 'components/dragndrop/Draggable'

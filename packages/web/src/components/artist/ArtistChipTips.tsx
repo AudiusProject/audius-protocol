@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
+import { ID } from '@audius/common'
 import { IconTrophy, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
-import { ID } from 'common/models/Identifiers'
 import { StringWei } from 'common/models/Wallet'
 import {
   getOptimisticSupporters,

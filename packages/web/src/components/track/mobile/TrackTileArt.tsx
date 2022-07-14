@@ -1,9 +1,9 @@
 import { memo } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 
 import { useLoadImageWithTimeout } from 'common/hooks/useImageSize'
-import { ID } from 'common/models/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import { Remix } from 'common/models/Track'
 import CoSign from 'components/co-sign/CoSign'

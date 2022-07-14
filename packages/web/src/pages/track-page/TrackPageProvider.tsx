@@ -1,5 +1,6 @@
 import { Component, ComponentType } from 'react'
 
+import { ID, CID, PlayableType } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -13,7 +14,6 @@ import {
   PlaybackSource
 } from 'common/models/Analytics'
 import { FavoriteType } from 'common/models/Favorite'
-import { ID, CID, PlayableType } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'

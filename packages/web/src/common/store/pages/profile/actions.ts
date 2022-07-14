@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { User, UserMetadata } from 'common/models/User'
 import { Nullable } from 'common/utils/typeUtils'
 

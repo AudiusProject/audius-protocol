@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { matchPath } from 'react-router-dom'
 
-import { ID } from 'common/models/Identifiers'
 import { TabRoute } from 'common/store/pages/profile/types'
 import { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } from 'utils/route'
 

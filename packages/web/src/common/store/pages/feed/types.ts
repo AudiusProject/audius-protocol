@@ -1,5 +1,6 @@
+import { ID } from '@audius/common'
+
 import FeedFilter from 'common/models/FeedFilter'
-import { ID } from 'common/models/Identifiers'
 import { LineupState } from 'common/models/Lineup'
 import TimeRange from 'common/models/TimeRange'
 

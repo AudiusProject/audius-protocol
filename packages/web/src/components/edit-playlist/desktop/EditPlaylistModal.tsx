@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { ID } from '@audius/common'
 import {
   IconPlaylists,
   Modal,
@@ -12,7 +13,6 @@ import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { ID } from 'common/models/Identifiers'
 import { fetchSavedPlaylists } from 'common/store/account/reducer'
 import {
   deletePlaylist,

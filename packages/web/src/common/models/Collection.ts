@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
-import { CID, ID, UID } from 'common/models/Identifiers'
+import { CID, ID, UID } from '@audius/common'
+
 import { CoverArtSizes } from 'common/models/ImageSizes'
 import { Repost } from 'common/models/Repost'
 import { Nullable } from 'common/utils/typeUtils'

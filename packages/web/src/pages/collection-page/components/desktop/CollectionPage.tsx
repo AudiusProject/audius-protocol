@@ -1,7 +1,8 @@
 import { ChangeEvent } from 'react'
 
+import { ID } from '@audius/common'
+
 import { Collection, SmartCollection, Variant } from 'common/models/Collection'
-import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
 import {

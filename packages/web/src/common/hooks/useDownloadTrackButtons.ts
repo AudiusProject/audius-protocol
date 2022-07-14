@@ -1,7 +1,7 @@
+import { ID } from '@audius/common'
 import moment from 'moment'
 import { useSelector as reduxUseSelector, shallowEqual } from 'react-redux'
 
-import { ID } from 'common/models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from 'common/models/Stems'
 import { Track, StemTrack } from 'common/models/Track'
 import { CommonState } from 'common/store'

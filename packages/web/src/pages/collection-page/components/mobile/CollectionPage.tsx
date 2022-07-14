@@ -1,7 +1,8 @@
 import { memo, useEffect, useContext } from 'react'
 
+import { ID } from '@audius/common'
+
 import { Collection, SmartCollection, Variant } from 'common/models/Collection'
-import { ID } from 'common/models/Identifiers'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'

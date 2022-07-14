@@ -1,5 +1,6 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
+import { ID, UID, PlayableType } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
@@ -16,7 +17,6 @@ import {
 } from 'common/models/Analytics'
 import { Collection, SmartCollection } from 'common/models/Collection'
 import { FavoriteType } from 'common/models/Favorite'
-import { ID, UID, PlayableType } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
 import {

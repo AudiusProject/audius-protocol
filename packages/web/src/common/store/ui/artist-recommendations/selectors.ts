@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { CommonState } from 'common/store'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { createDeepEqualSelector } from 'common/utils/selectorHelpers'

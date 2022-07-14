@@ -1,6 +1,6 @@
+import { ID, CID } from '@audius/common'
 import cn from 'classnames'
 
-import { ID, CID } from 'common/models/Identifiers'
 import { LineupState } from 'common/models/Lineup'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'

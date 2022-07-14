@@ -1,8 +1,8 @@
+import type { ID } from '@audius/common'
 import {
   FollowSource,
   ShareSource
 } from 'audius-client/src/common/models/Analytics'
-import { ID } from 'audius-client/src/common/models/Identifiers'
 import { CommonState } from 'audius-client/src/common/store'
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 import {

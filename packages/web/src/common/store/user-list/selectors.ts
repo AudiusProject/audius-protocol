@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { createSelector } from '@reduxjs/toolkit'
 
-import { ID } from 'common/models/Identifiers'
 import {
   getOptimisticSupporters,
   getOptimisticSupporting,

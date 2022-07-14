@@ -1,5 +1,6 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
+import { ID, UID } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import moment from 'moment'
@@ -9,7 +10,6 @@ import { Dispatch } from 'redux'
 
 import { Name, FollowSource, ShareSource } from 'common/models/Analytics'
 import { BadgeTier } from 'common/models/BadgeTier'
-import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
 import { getAccountUser } from 'common/store/account/selectors'

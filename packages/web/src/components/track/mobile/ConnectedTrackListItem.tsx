@@ -1,11 +1,11 @@
 import { memo } from 'react'
 
+import { ID } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { FavoriteSource, RepostSource } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import { getUserId } from 'common/store/account/selectors'
 import { getUserFromTrack } from 'common/store/cache/users/selectors'
 import {

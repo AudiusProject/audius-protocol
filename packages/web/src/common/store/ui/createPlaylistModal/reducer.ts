@@ -1,4 +1,4 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
 
 import { OPEN, CLOSE } from './actions'
 import { CreatePlaylistModalState } from './types'

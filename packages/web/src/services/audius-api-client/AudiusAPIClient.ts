@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import TimeRange from 'common/models/TimeRange'
 import { StemTrackMetadata } from 'common/models/Track'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
