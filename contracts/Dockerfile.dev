@@ -1,0 +1,21 @@
+FROM node:16 as builder
+COPY package*.json ./
+RUN npm install --loglevel verbose
+
+FROM node:16-slim
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /node_modules ./node_modules
+COPY . .
+
+ARG bootstrapSPIds
+ARG bootstrapSPDelegateWallets
+ARG bootstrapSPOwnerWallets
+
+RUN ./scripts/setup-predeployed-ganache.sh /usr/db
+
+HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
+    CMD node -e "require('http').request('http://localhost:8545').end()" || exit 1
+
+CMD ["npx", "ganache", "--server.host", "0.0.0.0", "--database.dbPath", "/usr/db", "--wallet.deterministic", "--wallet.totalAccounts", "50"]

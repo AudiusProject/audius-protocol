@@ -77,3 +77,4 @@ export const userBatchDurationGauge = new client.Gauge({
     help: 'the amount of time it takes to fetch and save a user batch',
     labelNames: ['run_id', 'endpoint'],
 })
+

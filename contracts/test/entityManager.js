@@ -1,6 +1,6 @@
 import * as _lib from './_lib/lib.js'
 import {
-    AudiusData,
+    EntityManager,
     AdminUpgradeabilityProxy
 } from './_lib/artifacts.js'
 
@@ -20,7 +20,7 @@ const encodeCall = (name, args, values) => {
 
 const toBN = (val) => web3.utils.toBN(val)
 
-contract('AudiusData', async (accounts) => {
+contract('EntityManager', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     const proxyAdminAddress = accounts[25]
@@ -28,11 +28,11 @@ contract('AudiusData', async (accounts) => {
 
     let networkId
     // Contract objects
-    let audiusDataContract
+    let entityManagerContract
 
     beforeEach(async () => {
         // Deploy logic contract
-        const deployLogicTx = await AudiusData.new({ from: deployer })
+        const deployLogicTx = await EntityManager.new({ from: deployer })
         const logicAddress = deployLogicTx.address
         networkId = await web3.eth.net.getId()
         let initializeContractData = encodeCall(
@@ -53,7 +53,7 @@ contract('AudiusData', async (accounts) => {
            { from: deployer }
         )
 
-        audiusDataContract = await AudiusData.at(proxyContractDeployTx.address)
+        entityManagerContract = await EntityManager.at(proxyContractDeployTx.address)
    })
 
    it('Manage entity', async () => {
@@ -65,7 +65,7 @@ contract('AudiusData', async (accounts) => {
      const nonce = signatureSchemas.getNonce()
      const signatureData = signatureSchemas.generators.getManageEntityData(
         networkId,
-        audiusDataContract.address,
+        entityManagerContract.address,
         userId,
         entityType,
         entityId,
@@ -74,7 +74,7 @@ contract('AudiusData', async (accounts) => {
         nonce
      )
      const sig = await eth_signTypedData(testSigner, signatureData)
-     let manageTx = await audiusDataContract.manageEntity(
+     let manageTx = await entityManagerContract.manageEntity(
         userId,
         entityType,
         entityId,
@@ -85,7 +85,7 @@ contract('AudiusData', async (accounts) => {
     )
     await expectEvent.inTransaction(
         manageTx.tx,
-        AudiusData,
+        EntityManager,
         'ManageEntity',
         {
             _userId: toBN(userId),
@@ -98,14 +98,14 @@ contract('AudiusData', async (accounts) => {
 
    it('Verifier basic test', async () => {
         await expectRevert(
-           audiusDataContract.manageIsVerified(1, false),
+           entityManagerContract.manageIsVerified(1, false),
            'Invalid verifier'
         )
 
-        let verifyTx = await audiusDataContract.manageIsVerified(1, true, { from: verifierAddress })
+        let verifyTx = await entityManagerContract.manageIsVerified(1, true, { from: verifierAddress })
         await expectEvent.inTransaction(
             verifyTx.tx,
-            AudiusData,
+            EntityManager,
             'ManageIsVerified',
             {
                 _userId: toBN(1),

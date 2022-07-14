@@ -16,7 +16,7 @@ import {
     getFullySyncedUsersCount,
     getPartiallySyncedUsersCount,
     getUnsyncedUsersCount,
-    getUsersWithNullPrimaryClock
+    getUsersWithNullPrimaryClock,
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {

@@ -46,8 +46,8 @@ domains.getUserReplicaSetManagerDomain = function (chainId, contractAddress) {
   return getDomainData('User Replica Set Manager', '1', chainId, contractAddress)
 }
 
-domains.getAudiusDataDomain = function (chainId, contractAddress) {
-  return getDomainData("Audius Data", "1", chainId, contractAddress)
+domains.getEntityManagerDomain = function (chainId, contractAddress) {
+  return getDomainData("Entity Manager", "1", chainId, contractAddress)
 }
 
 const schemas = {}
@@ -885,7 +885,7 @@ generators.getManageUserData = function (
     nonce,
   }
   return getRequestData(
-    domains.getAudiusDataDomain,
+    domains.getEntityManagerDomain,
     chainId,
     contractAddress,
     'ManageUser',
@@ -913,7 +913,7 @@ generators.getManageEntityData = function(
     nonce
   }
   return getRequestData(
-    domains.getAudiusDataDomain,
+    domains.getEntityManagerDomain,
     chainId,
     contractAddress,
     'ManageEntity',

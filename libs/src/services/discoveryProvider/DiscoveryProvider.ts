@@ -1182,7 +1182,7 @@ export class DiscoveryProvider {
    */
   async getHealthyDiscoveryProviderEndpoint(attemptedRetries: number) {
     let endpoint = this.discoveryProviderEndpoint as string
-    if (attemptedRetries > this.selectionRequestRetries) {
+    if (attemptedRetries > this.selectionRequestRetries || !endpoint) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
       console.info(`Attempted max retries with endpoint ${endpoint}`)
       this.serviceSelector.addUnhealthy(endpoint)
