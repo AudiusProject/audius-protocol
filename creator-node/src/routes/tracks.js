@@ -2,7 +2,6 @@ const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('buffer')
 const { promisify } = require('util')
-const _ = require('lodash')
 
 const config = require('../config')
 const models = require('../models')
