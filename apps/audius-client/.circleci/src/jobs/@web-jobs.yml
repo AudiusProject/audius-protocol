@@ -123,8 +123,7 @@ web-test-staging:
     - run:
         name: serve and run prober tests
         command: |
-          npm install serve
-          node node_modules/serve/bin/serve.js -l 3001 -s packages/web/build-staging &
+          npx serve -l 3001 -s packages/web/build-staging &
           cd probers
           npm run test:ci
 
