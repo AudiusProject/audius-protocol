@@ -164,7 +164,8 @@ describe('test findSyncRequests job processor', function () {
         userWallet: wallet,
         primaryEndpoint: primary,
         secondaryEndpoint: secondary1,
-        syncType
+        syncType,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
       },
       /**
        * note - this value can be anything as it's outside scope of this integration test suite
@@ -308,7 +309,8 @@ describe('test findSyncRequests job processor', function () {
         userWallet: wallet,
         primaryEndpoint: primary,
         secondaryEndpoint: secondary1,
-        syncType
+        syncType,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
       },
       output: { duplicateSyncReq: expectedDuplicateSyncReq }
     }]
@@ -798,7 +800,8 @@ describe('test findSyncRequests job processor', function () {
       userWallet: wallet,
       primaryEndpoint: primary,
       secondaryEndpoint: secondary1,
-      syncType
+      syncType,
+      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
     }
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
       throw new Error(expectedErrorMsg)
@@ -936,7 +939,8 @@ describe('test findSyncRequests job processor', function () {
         userWallet: wallet,
         primaryEndpoint: primary,
         secondaryEndpoint: secondary1,
-        syncType
+        syncType,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
       },
       output: { syncReqToEnqueue: expectedSyncReqToEnqueue }
     }, {
@@ -944,7 +948,8 @@ describe('test findSyncRequests job processor', function () {
         userWallet: wallet,
         primaryEndpoint: primary,
         secondaryEndpoint: secondary2,
-        syncType
+        syncType,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
       },
       output: { duplicateSyncReq: expectedDuplicateSyncReq }
     }]
@@ -1181,7 +1186,8 @@ describe('test findSyncRequests job processor', function () {
           userWallet: wallet1,
           primaryEndpoint: CN1,
           secondaryEndpoint: CN2,
-          syncType
+          syncType,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
         },
         output: { syncReqToEnqueue: expectedSyncReqToEnqueueWallet1 }
       }, // wallet2
@@ -1190,7 +1196,8 @@ describe('test findSyncRequests job processor', function () {
           userWallet: wallet2,
           primaryEndpoint: CN1,
           secondaryEndpoint: CN3,
-          syncType
+          syncType,
+          syncMode: SYNC_MODES.MergePrimaryAndSecondary
         },
         output: { syncReqToEnqueue: expectedSyncReqToEnqueueWallet2 }
       }
