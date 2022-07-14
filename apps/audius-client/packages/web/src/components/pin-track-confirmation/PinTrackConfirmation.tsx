@@ -1,10 +1,10 @@
 import { memo } from 'react'
 
+import { ID } from '@audius/common'
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ID } from 'common/models/Identifiers'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   setArtistPick,

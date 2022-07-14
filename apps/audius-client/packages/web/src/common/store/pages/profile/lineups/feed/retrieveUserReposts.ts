@@ -1,7 +1,7 @@
+import { ID } from '@audius/common'
 import { all } from 'redux-saga/effects'
 
 import { UserCollection } from 'common/models/Collection'
-import { ID } from 'common/models/Identifiers'
 import { Track, UserTrackMetadata } from 'common/models/Track'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'

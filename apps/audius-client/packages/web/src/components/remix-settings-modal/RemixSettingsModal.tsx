@@ -1,9 +1,9 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
 
+import { ID } from '@audius/common'
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { debounce } from 'lodash'
 
-import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'

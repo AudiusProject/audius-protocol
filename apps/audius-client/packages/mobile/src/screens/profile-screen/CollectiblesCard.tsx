@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
+import type { ID } from '@audius/common'
 import { Collectible } from 'audius-client/src/common/models/Collectible'
-import { ID } from 'audius-client/src/common/models/Identifiers'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { setCollectible } from 'audius-client/src/common/store/ui/collectible-details/slice'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'

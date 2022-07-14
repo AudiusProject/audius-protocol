@@ -1,5 +1,6 @@
+import { ID, UID } from '@audius/common'
+
 import { Collection } from 'common/models/Collection'
-import { ID, UID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 
 export const CREATE_PLAYLIST = 'CREATE_PLAYLIST'

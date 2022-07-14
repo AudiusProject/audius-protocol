@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { UserListStoreState } from 'common/store/user-list/types'
 
 export type MutualsOwnState = {

@@ -1,8 +1,8 @@
 import { useMemo, ReactNode, RefObject } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 
-import { ID } from 'common/models/Identifiers'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'utils/clientUtil'
 import { getCurrentThemeColors } from 'utils/theme/theme'

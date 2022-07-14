@@ -1,6 +1,7 @@
+import { ID } from '@audius/common'
+
 import { Nullable } from 'common/utils/typeUtils'
 
-import { ID } from './Identifiers'
 import { StringWei } from './Wallet'
 
 export type Supporter = {

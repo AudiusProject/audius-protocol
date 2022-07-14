@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { CommonState } from 'common/store'
 
 export const getSaved = (state: CommonState) => state.pages.savedPage

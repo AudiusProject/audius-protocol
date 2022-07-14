@@ -1,4 +1,5 @@
-import { ID, UID } from 'common/models/Identifiers'
+import { ID, UID } from '@audius/common'
+
 import { Lineup } from 'common/models/Lineup'
 import TimeRange from 'common/models/TimeRange'
 import { Track } from 'common/models/Track'

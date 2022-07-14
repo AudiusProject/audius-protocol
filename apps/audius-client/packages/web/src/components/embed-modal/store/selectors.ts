@@ -1,4 +1,5 @@
-import { PlayableType } from 'common/models/Identifiers'
+import { PlayableType } from '@audius/common'
+
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { AppState } from 'store/types'

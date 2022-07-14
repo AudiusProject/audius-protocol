@@ -1,6 +1,5 @@
+import { ID } from '@audius/common'
 import { createReducer, ActionType } from 'typesafe-actions'
-
-import { ID } from 'common/models/Identifiers'
 
 import * as actions from './actions'
 

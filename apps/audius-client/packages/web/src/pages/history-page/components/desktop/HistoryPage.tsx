@@ -1,8 +1,8 @@
 import { ChangeEvent, memo } from 'react'
 
+import { ID } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
-import { ID } from 'common/models/Identifiers'
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

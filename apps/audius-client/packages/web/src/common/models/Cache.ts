@@ -1,4 +1,5 @@
-import { ID, UID } from 'common/models/Identifiers'
+import { ID, UID } from '@audius/common'
+
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
 

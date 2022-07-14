@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { call, select } from 'typed-redux-saga/macro'
 
-import { ID } from 'common/models/Identifiers'
 import { User, UserMetadata } from 'common/models/User'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'

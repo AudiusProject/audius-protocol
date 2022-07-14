@@ -1,3 +1,4 @@
+import { ID } from '@audius/common'
 import {
   all,
   call,
@@ -8,7 +9,6 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import {
   PlaylistIdentifier,

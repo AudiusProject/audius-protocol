@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { ID } from '@audius/common'
 import { IconShare, IconButton } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { ShareSource } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { Nullable } from 'common/utils/typeUtils'
 

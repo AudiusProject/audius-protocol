@@ -1,10 +1,10 @@
 import { memo, useEffect } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 import { animated, useSpring } from 'react-spring'
 
 import Color from 'common/models/Color'
-import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
 import Draggable from 'components/dragndrop/Draggable'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

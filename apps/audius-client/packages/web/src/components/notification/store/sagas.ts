@@ -1,3 +1,4 @@
+import { ID } from '@audius/common'
 import moment from 'moment'
 import { eventChannel } from 'redux-saga'
 import {
@@ -13,7 +14,6 @@ import {
 } from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { FeatureFlags, IntKeys } from 'common/services/remote-config'

@@ -1,10 +1,10 @@
+import { ID } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { FollowSource, ShareSource } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import * as socialActions from 'common/store/social/users/actions'
 import { profilePage } from 'utils/route'
 

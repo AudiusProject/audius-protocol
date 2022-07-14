@@ -1,3 +1,4 @@
+import { ID } from '@audius/common'
 import BN from 'bn.js'
 import {
   call,
@@ -10,7 +11,6 @@ import {
 } from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import {
   RecentTipsStorage,

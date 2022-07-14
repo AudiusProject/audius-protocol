@@ -1,5 +1,6 @@
+import { CID, ID, UID } from '@audius/common'
+
 import { Favorite } from 'common/models/Favorite'
-import { CID, ID, UID } from 'common/models/Identifiers'
 import { CoverArtSizes } from 'common/models/ImageSizes'
 import { Repost } from 'common/models/Repost'
 import { User, UserMetadata } from 'common/models/User'

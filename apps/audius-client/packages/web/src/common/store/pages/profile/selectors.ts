@@ -1,7 +1,7 @@
+import { ID } from '@audius/common'
 import moment from 'moment'
 
 import { UserCollection } from 'common/models/Collection'
-import { ID } from 'common/models/Identifiers'
 import { CommonState } from 'common/store'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUser, getUsers } from 'common/store/cache/users/selectors'

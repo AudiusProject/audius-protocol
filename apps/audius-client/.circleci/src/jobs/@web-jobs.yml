@@ -32,6 +32,8 @@ web-init:
           - packages/web/node_modules
           - packages/stems/node_modules
           - packages/stems/dist
+          - packages/common/node_modules
+          - packages/common/dist
 
 web-build-demo:
   working_directory: ~/audius-client

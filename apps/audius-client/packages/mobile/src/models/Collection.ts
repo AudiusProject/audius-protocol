@@ -1,4 +1,4 @@
-import { CID } from 'audius-client/src/common/models/Identifiers'
+import type { CID } from '@audius/common'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 
 export type CollectionImage = {

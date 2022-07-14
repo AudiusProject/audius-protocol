@@ -1,9 +1,9 @@
 import { memo, useCallback } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
-import { ID } from 'common/models/Identifiers'
 import { CoverArtSizes } from 'common/models/ImageSizes'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 

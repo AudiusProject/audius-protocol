@@ -1,10 +1,10 @@
 import { MouseEvent, useState, useEffect, useCallback, ReactNode } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import { ID } from 'common/models/Identifiers'
 import {
   ProfilePictureSizes,
   SquareSizes,

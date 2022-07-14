@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { matchPath } from 'react-router-dom'
 
-import { ID } from 'common/models/Identifiers'
 import { PLAYLIST_PAGE, ALBUM_PAGE, PLAYLIST_ID_PAGE } from 'utils/route'
 
 import { decodeHashId } from './hashIds'

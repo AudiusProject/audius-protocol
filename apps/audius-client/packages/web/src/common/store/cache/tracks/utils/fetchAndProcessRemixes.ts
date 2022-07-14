@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { select, call, put } from 'typed-redux-saga/macro'
 
-import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { UserTrackMetadata } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'

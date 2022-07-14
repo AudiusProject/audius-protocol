@@ -1,6 +1,7 @@
+import { ID, UID } from '@audius/common'
+
 import Cache from 'common/models/Cache'
 import { Collection } from 'common/models/Collection'
-import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'

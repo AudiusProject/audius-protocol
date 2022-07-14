@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { ID } from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -10,7 +11,6 @@ import {
 import cn from 'classnames'
 
 import { Name } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
 import Status from 'common/models/Status'
 import { BooleanKeys } from 'common/services/remote-config'

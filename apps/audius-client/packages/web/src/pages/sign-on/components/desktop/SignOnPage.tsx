@@ -1,5 +1,6 @@
 import { Suspense, useEffect } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 import { animated } from 'react-spring'
 import { Transition } from 'react-spring/renderprops'
@@ -10,7 +11,6 @@ import imageSignUp3 from 'assets/img/4-Conductor-4-3.jpg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import imagePhone from 'assets/img/imagePhone.png'
 import CTAImage from 'assets/img/signUpCTA.png'
-import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
 import {

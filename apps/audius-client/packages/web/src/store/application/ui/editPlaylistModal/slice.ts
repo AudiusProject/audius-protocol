@@ -1,6 +1,5 @@
+import { ID } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-import { ID } from 'common/models/Identifiers'
 
 export type EditPlaylistModalState = {
   isOpen: boolean

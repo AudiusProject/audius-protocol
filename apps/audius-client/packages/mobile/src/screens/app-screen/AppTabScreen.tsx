@@ -1,9 +1,9 @@
 import { useContext, useEffect } from 'react'
 
+import type { ID } from '@audius/common'
 import { EventArg, NavigationState } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { FavoriteType } from 'audius-client/src/common/models/Favorite'
-import { ID } from 'audius-client/src/common/models/Identifiers'
 import { NotificationType } from 'audius-client/src/common/store/notifications/types'
 import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { MessageType } from 'audius-client/src/services/native-mobile-interface/types'

@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import BN from 'bn.js'
 
-import { ID } from 'common/models/Identifiers'
 import { BNWei, StringWei, WalletAddress } from 'common/models/Wallet'
 import { stringWeiToBN } from 'common/utils/wallet'
 import AudiusBackend from 'services/AudiusBackend'

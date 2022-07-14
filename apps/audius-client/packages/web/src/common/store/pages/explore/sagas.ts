@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { call, put, takeEvery } from 'redux-saga/effects'
 
-import { ID } from 'common/models/Identifiers'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'

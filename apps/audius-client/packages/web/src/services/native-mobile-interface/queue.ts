@@ -1,4 +1,5 @@
-import { ID, UID } from 'common/models/Identifiers'
+import { ID, UID } from '@audius/common'
+
 import { RepeatMode } from 'common/store/queue/types'
 
 import { NativeMobileMessage } from './helpers'

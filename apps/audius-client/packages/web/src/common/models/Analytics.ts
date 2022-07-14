@@ -1,5 +1,6 @@
+import { ID, PlayableType } from '@audius/common'
+
 import FeedFilter from 'common/models/FeedFilter'
-import { ID, PlayableType } from 'common/models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from 'common/models/Services'
 import TimeRange from 'common/models/TimeRange'
 import {

@@ -1,9 +1,9 @@
 import { ReactNode } from 'react'
 
+import type { ID, UID } from '@audius/common'
 import { PlaybackSource } from 'audius-client/src/common/models/Analytics'
 import { Collection } from 'audius-client/src/common/models/Collection'
 import { FavoriteType } from 'audius-client/src/common/models/Favorite'
-import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'

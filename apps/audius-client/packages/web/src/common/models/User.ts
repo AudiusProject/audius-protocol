@@ -1,6 +1,7 @@
+import { CID, ID } from '@audius/common'
+
 import { Collectible, CollectiblesMetadata } from 'common/models/Collectible'
 import Color from 'common/models/Color'
-import { CID, ID } from 'common/models/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
 import { PlaylistLibrary } from 'common/models/PlaylistLibrary'
 import {

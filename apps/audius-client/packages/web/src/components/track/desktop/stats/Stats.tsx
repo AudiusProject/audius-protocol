@@ -1,12 +1,12 @@
 import { memo, useMemo, MouseEvent } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
 import { Favorite } from 'common/models/Favorite'
-import { ID } from 'common/models/Identifiers'
 import { Repost } from 'common/models/Repost'
 import { CommonState } from 'common/store'
 import { getUsers } from 'common/store/cache/users/selectors'

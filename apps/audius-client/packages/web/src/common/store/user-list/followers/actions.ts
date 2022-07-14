@@ -1,6 +1,5 @@
+import { ID } from '@audius/common'
 import { createCustomAction } from 'typesafe-actions'
-
-import { ID } from 'common/models/Identifiers'
 
 export const SET_FOLLOWERS = 'FOLLOWERS_USER_PAGE/SET_FOLLOWERS'
 export const GET_FOLLOWERS_ERROR = 'FOLLOWERS_USER_PAGE/GET_FOLLOWERS_ERROR'

@@ -1,8 +1,8 @@
+import { ID } from '@audius/common'
 import { PayloadAction } from '@reduxjs/toolkit'
 
 import { ShareSource } from 'common/models/Analytics'
 import { Collection } from 'common/models/Collection'
-import { ID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
 import { Nullable } from 'common/utils/typeUtils'

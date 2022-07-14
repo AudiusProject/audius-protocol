@@ -1,9 +1,9 @@
+import { ID } from '@audius/common'
 import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
 import { WalletLinkProvider } from 'walletlink'
 
 import { Chain } from 'common/models/Chain'
-import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { BNWei, WalletAddress } from 'common/models/Wallet'
 import { BooleanKeys } from 'common/services/remote-config'

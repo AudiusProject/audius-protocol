@@ -1,8 +1,8 @@
+import { ID } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
-import { ID } from 'common/models/Identifiers'
 import { encodeUrlName } from 'common/utils/formatUtil'
 
 /**

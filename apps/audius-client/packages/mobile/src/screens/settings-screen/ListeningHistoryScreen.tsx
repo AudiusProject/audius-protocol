@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
+import type { ID, UID } from '@audius/common'
 import { Name, PlaybackSource } from 'audius-client/src/common/models/Analytics'
-import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import Status from 'audius-client/src/common/models/Status'
 import { makeGetTableMetadatas } from 'audius-client/src/common/store/lineup/selectors'
 import { tracksActions } from 'audius-client/src/common/store/pages/history-page/lineups/tracks/actions'

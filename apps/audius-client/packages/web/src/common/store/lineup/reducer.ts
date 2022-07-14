@@ -1,6 +1,6 @@
+import { UID } from '@audius/common'
 import { Reducer } from 'redux'
 
-import { UID } from 'common/models/Identifiers'
 import { LineupState, LineupStateTrack, Order } from 'common/models/Lineup'
 import Status from 'common/models/Status'
 import {

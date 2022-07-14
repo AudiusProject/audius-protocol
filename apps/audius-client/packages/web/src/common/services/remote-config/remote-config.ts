@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import optimizely from '@optimizely/optimizely-sdk'
 
-import { ID } from 'common/models/Identifiers'
 import {
   remoteConfigIntDefaults,
   remoteConfigStringDefaults,

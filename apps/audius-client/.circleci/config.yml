@@ -70,6 +70,8 @@ jobs:
             - ./packages/mobile/node_modules
             - ./packages/stems/node_modules
             - ./packages/stems/dist
+            - ./packages/common/node_modules
+            - ./packages/common/dist
 
   # Bump version and create release branch
   generate-release:

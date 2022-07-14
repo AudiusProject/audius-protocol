@@ -1,9 +1,9 @@
 import { memo, MouseEvent } from 'react'
 
+import { UID, ID } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import { UID, ID } from 'common/models/Identifiers'
 import { EnhancedCollectionTrack } from 'common/store/cache/collections/selectors'
 import { formatSeconds } from 'common/utils/timeUtil'
 import { ArtistPopover } from 'components/artist/ArtistPopover'

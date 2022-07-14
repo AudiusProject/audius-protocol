@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import isEmpty from 'lodash/isEmpty'
 
-import { ID } from 'common/models/Identifiers'
 import {
   PlaylistLibrary,
   PlaylistLibraryIdentifier,
