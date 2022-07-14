@@ -34,7 +34,6 @@ function bump-libs () {
     version=$(npm version patch)
 
     # Build libs
-    export NODE_OPTIONS=--max_old_space_size=4096
     npm i
     npm run build
 
