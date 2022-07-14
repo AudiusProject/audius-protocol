@@ -216,7 +216,8 @@ module.exports = async function ({
       userWallet,
       secondaryEndpoint,
       primaryEndpoint: thisContentNodeEndpoint,
-      syncType
+      syncType,
+      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
     })
     if (duplicateSyncReq && !_.isEmpty(duplicateSyncReq)) {
       error = {

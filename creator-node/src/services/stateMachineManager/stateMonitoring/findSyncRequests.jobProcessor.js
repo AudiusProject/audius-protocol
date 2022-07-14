@@ -293,7 +293,8 @@ async function _findSyncsForUser(
           userWallet: wallet,
           primaryEndpoint: thisContentNodeEndpoint,
           secondaryEndpoint: secondary,
-          syncType: SyncType.Recurring
+          syncType: SyncType.Recurring,
+          syncMode
         })
 
         if (!_.isEmpty(syncReqToEnqueue)) {

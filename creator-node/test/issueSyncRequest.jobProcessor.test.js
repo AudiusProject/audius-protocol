@@ -309,11 +309,12 @@ describe('test issueSyncRequest job processor', function () {
 
     const expectedSyncReqToEnqueue = 'expectedSyncReqToEnqueue'
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
-      const { userWallet, secondaryEndpoint, syncType: syncTypeArg } = args
+      const { userWallet, secondaryEndpoint, syncType: syncTypeArg, syncMode: syncModeArg } = args
       if (
         userWallet === wallet &&
         secondaryEndpoint === secondary &&
-        syncTypeArg === syncType
+        syncTypeArg === syncType &&
+        syncModeArg === syncMode
       ) {
         return { syncReqToEnqueue: expectedSyncReqToEnqueue }
       }
@@ -375,7 +376,8 @@ describe('test issueSyncRequest job processor', function () {
       userWallet: wallet,
       secondaryEndpoint: secondary,
       primaryEndpoint: primary,
-      syncType
+      syncType,
+      syncMode
     })
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
@@ -396,11 +398,12 @@ describe('test issueSyncRequest job processor', function () {
 
     const expectedSyncReqToEnqueue = 'expectedSyncReqToEnqueue'
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
-      const { userWallet, secondaryEndpoint, syncType: syncTypeArg } = args
+      const { userWallet, secondaryEndpoint, syncType: syncTypeArg, syncMode: syncModeArg } = args
       if (
         userWallet === wallet &&
         secondaryEndpoint === secondary &&
-        syncTypeArg === syncType
+        syncTypeArg === syncType &&
+        syncModeArg === syncMode
       ) {
         return { syncReqToEnqueue: expectedSyncReqToEnqueue }
       }
@@ -459,7 +462,8 @@ describe('test issueSyncRequest job processor', function () {
       userWallet: wallet,
       secondaryEndpoint: secondary,
       primaryEndpoint: primary,
-      syncType
+      syncType,
+      syncMode
     })
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
@@ -662,5 +666,7 @@ describe('test issueSyncRequest job processor', function () {
       expect(result).to.not.have.deep.property('metricsToRecord')
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     })
+
+    it.skip('requires additional sync when secondary updates clock value but is still behind primary')
   })
 })
