@@ -108,7 +108,6 @@ jobs:
               --storage-location=us
 
   publish-libs:
-    context: Audius Libs
     docker:
       - image: circleci/node:14.17.5
     steps:
