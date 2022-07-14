@@ -5,7 +5,7 @@ import "./SigningLogicInitializable.sol";
 
 
 /** @title Contract for Audius User Data management */
-contract AudiusData is SigningLogicInitializable {
+contract EntityManager is SigningLogicInitializable {
 
     /// @notice Address permissioned to verify users
     address verifierAddress;
@@ -39,7 +39,7 @@ contract AudiusData is SigningLogicInitializable {
         );
         verifierAddress = _verifierAddress;
         SigningLogicInitializable.initialize(
-            "Audius Data",
+            "Entity Manager",
             "1",
             _networkId
         );

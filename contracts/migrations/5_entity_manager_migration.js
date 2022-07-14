@@ -2,7 +2,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const contractConfig = require('../contract-config.js')
 const abi = require('ethereumjs-abi')
-const AudiusData = artifacts.require('AudiusData')
+const EntityManager = artifacts.require('EntityManager')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
 // Generate encoded arguments for proxy initialization
@@ -17,8 +17,8 @@ module.exports = (deployer, network, accounts) => {
       const config = contractConfig[network]
       const proxyAdminAddress = config.blacklisterAddress || accounts[accounts.length - 1]
         const networkId = await web3.eth.net.getId()
-        console.log(`Deploying AudiusData to ${networkId}`)
-        const deployLogicTx = await deployer.deploy(AudiusData)
+        console.log(`Deploying EntityManager to ${networkId}`)
+        const deployLogicTx = await deployer.deploy(EntityManager)
         const logicContractAddress = deployLogicTx.address
         console.log(logicContractAddress)
         const verifierAddress = config.verifierAddress || accounts[0]
@@ -40,18 +40,19 @@ module.exports = (deployer, network, accounts) => {
             proxyAdminAddress,
             initializeData
         )
-        let audiusDataProxyAddress = deployedProxyTx.address
-        console.log(`AudiusData Proxy Contract deployed at ${audiusDataProxyAddress}`)
-        process.env.dataContractsAudiusDataProxyAddress = audiusDataProxyAddress
+        let entityManagerProxyAddress = deployedProxyTx.address
+        console.log(`EntityManager Proxy Contract deployed at ${entityManagerProxyAddress}`)
+        process.env.entityManagerProxyAddress = entityManagerProxyAddress
         const outputFilePath = path.join(__dirname, 'migration-output.json')
         fs.removeSync(outputFilePath)
         const registryAddress = process.env.dataContractsRegistryAddress
         const ursmAddress = process.env.dataContractsUrsmAddress
         const outputValues = {
-            audiusDataProxyAddress,
+            entityManagerProxyAddress,
             registryAddress,
             ursmAddress
         }
+        fs.removeSync(outputFilePath)
         console.log(`Migration output values: ${JSON.stringify(outputValues)}`)
         fs.writeFile(outputFilePath, JSON.stringify(outputValues), (err) => {
         if (err != null) {
