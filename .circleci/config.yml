@@ -794,7 +794,7 @@ workflows:
   # 3. click "Trigger Pipeline"
   # 4. Add boolean paramter "full_ci" and set to true
   hold-workflows:
-    when: << pipeline.parameters.full_ci >>
+    # when: << pipeline.parameters.full_ci >>
     jobs:
       - hold-test-mad-dog-e2e-full:
           type: approval
