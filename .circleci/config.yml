@@ -390,6 +390,7 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8556', '-a', '100', '-l', '8000000']
+    resource_class: medium+
     steps:
       - checkout
       - diff-if-necessary:
