@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Set, Tuple
+from xml.dom.minidom import Entity
 
 from sqlalchemy.orm.session import Session, make_transient
 from src.database_task import DatabaseTask
@@ -46,6 +47,7 @@ def audius_data_state_update(
     playlist_ids: Set[int] = set()
 
     for tx_receipt in audius_data_txs:
+        logger.info(f"AudiusData.py | Processing {tx_receipt}")
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in audius_data_event_types_arr:
             audius_data_event_tx = get_audius_data_events_tx(
@@ -70,9 +72,12 @@ def audius_data_state_update(
                     f"index.py | AudiusData state update: {user_id}, entity_id={entity_id}, entity_type={entity_type}, action={action}, metadata_cid={metadata_cid}, metadata={metadata} signer={signer}"
                 )
 
+                is_playlist = entity_type == EntityType.PLAYLIST.value
+                logger.info(f"index.py | AudiusData - playlist_events_lookup {playlist_events_lookup}, is_playlist={is_playlist}, entity_type={entity_type}, expected={EntityType.PLAYLIST}, actions={Action.CREATE},{Action.DELETE},{Action.UPDATE}")
                 # Handle playlist creation
-                if entity_type == EntityType.PLAYLIST:
+                if entity_type == EntityType.PLAYLIST.value:
                     playlist_id = entity_id
+                    logger.info(f"index.py | AudiusData - playlist detected, id={playlist_id}")
                     # look up or populate existing record
                     if playlist_id in playlist_events_lookup:
                         existing_playlist_record = playlist_events_lookup[playlist_id][
@@ -89,6 +94,7 @@ def audius_data_state_update(
                         )
 
                     if action == Action.CREATE or Action.UPDATE:
+                        logger.info(f"index.py | AudiusData - handling {action}, events_lookup={playlist_events_lookup}")
                         playlist_record = parse_playlist_create_data_event(
                             update_task,
                             entry,
@@ -123,7 +129,7 @@ def audius_data_state_update(
     changed_entity_ids["playlist"] = playlist_ids
 
     for playlist_id, value_obj in playlist_events_lookup.items():
-        logger.info(f"index.py | playlists.py | Adding {value_obj['playlist']})")
+        logger.info(f"index.py | AudiusData | playlists.py | Adding {value_obj['playlist']})")
         if value_obj["events"]:
             invalidate_old_playlist(session, playlist_id)
             session.add(value_obj["playlist"])
