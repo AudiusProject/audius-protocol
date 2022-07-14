@@ -87,6 +87,10 @@ class ServiceRegistry {
     )
   }
 
+  async initLibs() {
+    this.libs = this.libs || (await this._initAudiusLibs())
+  }
+
   /**
    * These services do not need to be awaited and do not require the server.
    */

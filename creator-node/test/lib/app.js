@@ -52,7 +52,8 @@ function getServiceRegistryMock (libsClient, blacklistManager) {
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
     syncQueue: new SyncQueue(nodeConfig, redisClient),
-    nodeConfig
+    nodeConfig,
+    initLibs: async function () {}
   }
 }
 
