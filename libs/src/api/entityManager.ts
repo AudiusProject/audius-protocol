@@ -10,6 +10,11 @@ export enum EntityType {
   PLAYLIST = 'Playlist'
 }
 
+// Minimum playlist ID, intentionally higher than legacy playlist ID range
+const MIN_PLAYLIST_ID = 400000
+// Maximum playlist ID, reflects postgres max integer value
+const MAX_PLAYLIST_ID = 2147483647
+
 /*
   API surface for updated data contract interactions.
   Provides simplified entity management in a generic fashion
@@ -24,18 +29,26 @@ export class EntityManager extends Base {
   }
 
   /**
+   * Generate random integer between two known values
+   */
+  getRandomInt(min: number, max: number): number {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min);
+  }
+
+  /**
    * Calculate an unoccupied playlist ID
    * Maximum value is postgres integer max (2147483647)
    * Minimum value is artificially set to 400000
    */
   async getValidPlaylistId(): Promise<number> {
-    let playlistId: number = 10
+    let playlistId: number = this.getRandomInt(MIN_PLAYLIST_ID, MAX_PLAYLIST_ID)
     let validIdFound: boolean = false
     while (!validIdFound) {
-      const resp = await this.discoveryProvider.getPlaylists(1, 0, [playlistId])
+      const resp: any = await this.discoveryProvider.getPlaylists(1, 0, [playlistId])
       if (resp.length !== 0) {
-        // TODO: Playlist ID Min offset
-        playlistId = Math.floor(Math.random() * 2147483647)
+        playlistId = this.getRandomInt(MIN_PLAYLIST_ID, MAX_PLAYLIST_ID)
       } else {
         validIdFound = true
       }
@@ -122,9 +135,9 @@ export class EntityManager extends Base {
     try {
       const resp = await this.manageEntity({
         userId,
-        entityType: 'Playlist',
+        entityType: EntityType.PLAYLIST,
         entityId: playlistId,
-        action: 'Delete',
+        action: Action.DELETE,
         metadataMultihash: ''
       })
       logger.info(`DeletePlaylistData - ${JSON.stringify(resp)}`)
