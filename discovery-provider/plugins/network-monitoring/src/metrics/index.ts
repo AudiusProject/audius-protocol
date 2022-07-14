@@ -18,7 +18,7 @@ import {
     getPartiallySyncedUsersCount,
     getUnsyncedUsersCount,
     getUsersWithNullPrimaryClock,
-    getUsersWithAllFoundationNodeReplicaSetCount
+    getUsersWithAllFoundationNodeReplicaSetCount,
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
