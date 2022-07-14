@@ -36,9 +36,6 @@ function bump-libs () {
     # Publishing dry run
     npm publish . --access public --dry-run
 
-    # Publish
-    # npm publish . --access public
-
     # Configure git client
     git config --global user.email "audius-infra@audius.co"
     git config --global user.name "audius-infra"
@@ -56,6 +53,22 @@ $(git-libs-changelog)"
     git push -u origin libs-$version
 }
 
+function publish-libs () {
+    version=$(jq -r '"v\(.version)"' package.json)
+
+    git checkout master
+    git merge --no-ff libs-$version
+    # git push -u origin master
+
+    # clean up release branches
+    # git branch -d libs-$version
+    # git push origin :libs-$version
+
+    # Publish
+    # npm publish . --access public
+}
+
 
 cd $PROTOCOL_DIR/libs
 bump-libs
+publish-libs
