@@ -56,8 +56,14 @@ $(git-libs-changelog)"
 function publish-libs () {
     version=$(jq -r '"v\(.version)"' package.json)
 
-    git checkout master
-    git merge --no-ff jc-libs-$version
+    git checkout master -f
+    git pull
+    git merge --no-ff jc-libs-$version -m "Bump libs to $version
+
+## Changelog
+
+$(git-libs-changelog)"
+
     # git push -u origin master
 
     # clean up release branches
