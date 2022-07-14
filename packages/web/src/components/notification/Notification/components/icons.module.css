@@ -86,7 +86,7 @@
   height: 24px;
 }
 
-.iconTip g path {
+.iconTip path {
   fill: var(--secondary);
 }
 
