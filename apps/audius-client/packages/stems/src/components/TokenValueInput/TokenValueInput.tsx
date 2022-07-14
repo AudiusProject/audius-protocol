@@ -26,7 +26,8 @@ const formatValue = (value: string | undefined) => {
 }
 
 const inputPaddingRight = 16
-export const TokenValueInput: React.FC<TokenValueInputProps> = ({
+
+export const TokenValueInput = ({
   className,
   labelClassName,
   inputClassName,
