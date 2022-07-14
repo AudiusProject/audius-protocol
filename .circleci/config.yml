@@ -110,7 +110,7 @@ jobs:
   publish-libs:
     docker:
       - image: circleci/node:14.17.5
-    resource_class: medium+
+    resource_class: large
     steps:
       - checkout
       - diff-if-necessary:
