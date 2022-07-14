@@ -38,6 +38,9 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     fill: palette.neutralLight5,
     height: spacing(4),
     width: spacing(4)
+  },
+  placeholderText: {
+    color: palette.neutralLight4
   }
 }))
 
@@ -86,6 +89,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
           autoComplete='off'
           autoCorrect={false}
           returnKeyType='search'
+          placeholderTextColor={styles.placeholderText.color}
           {...other}
         />
         {clearable ? (
