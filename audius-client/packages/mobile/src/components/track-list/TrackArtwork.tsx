@@ -1,4 +1,4 @@
-import { ID } from 'audius-client/src/common/models/Identifiers'
+import type { ID } from '@audius/common'
 import {
   CoverArtSizes,
   SquareSizes

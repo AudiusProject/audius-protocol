@@ -1,6 +1,7 @@
 import { useEffect, useContext } from 'react'
 
-import { CID, ID } from 'common/models/Identifiers'
+import { CID, ID } from '@audius/common'
+
 import { LineupState } from 'common/models/Lineup'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'

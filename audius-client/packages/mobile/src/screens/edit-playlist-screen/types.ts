@@ -1,4 +1,4 @@
-import { ID } from 'audius-client/src/common/models/Identifiers'
+import type { ID } from '@audius/common'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { getTracks } from 'common/store/ui/createPlaylistModal/selectors'
 

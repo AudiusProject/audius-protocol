@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID } from 'common/models/Identifiers'
 import { StemUploadWithFile } from 'common/models/Stems'
 
 const initialState = {

@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { Notification } from 'common/store/notifications/types'
 
 export const FETCH_NOTIFICATIONS = 'NOTIFICATION/FETCH_NOTIFICATIONS'

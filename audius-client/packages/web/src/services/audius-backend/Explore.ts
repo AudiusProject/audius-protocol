@@ -1,6 +1,7 @@
+import { ID } from '@audius/common'
+
 import { Collection } from 'common/models/Collection'
 import FeedFilter from 'common/models/FeedFilter'
-import { ID } from 'common/models/Identifiers'
 import { Track, UserTrack } from 'common/models/Track'
 import AudiusBackend, {
   IDENTITY_SERVICE,

@@ -1,4 +1,4 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
 
 export enum Status {
   SHARE_STARTED,

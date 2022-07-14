@@ -1,11 +1,11 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
+import { ID } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useParams } from 'react-router'
 import { Dispatch } from 'redux'
 
-import { ID } from 'common/models/Identifiers'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import { tracksActions } from 'common/store/pages/remixes/lineup/actions'
 import {

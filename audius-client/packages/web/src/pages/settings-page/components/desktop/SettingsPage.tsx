@@ -1,5 +1,6 @@
 import { Component } from 'react'
 
+import { ID } from '@audius/common'
 import {
   Modal,
   Button,
@@ -12,7 +13,6 @@ import {
 import cn from 'classnames'
 
 import audiusIcon from 'assets/img/audiusIcon.png'
-import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes } from 'common/models/ImageSizes'
 import { OS } from 'common/models/OS'
 import Theme from 'common/models/Theme'

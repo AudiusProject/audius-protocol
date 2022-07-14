@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { LineupState } from 'common/models/Lineup'
 import TimeRange from 'common/models/TimeRange'
 

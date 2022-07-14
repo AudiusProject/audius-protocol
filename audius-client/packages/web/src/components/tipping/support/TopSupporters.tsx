@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
+import { ID } from '@audius/common'
 import { IconTrophy } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { getProfileUser } from 'common/store/pages/profile/selectors'

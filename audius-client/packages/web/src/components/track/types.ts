@@ -1,8 +1,9 @@
 import { MouseEvent, ReactNode } from 'react'
 
+import { ID, UID } from '@audius/common'
+
 import { PlaybackSource } from 'common/models/Analytics'
 import { Favorite } from 'common/models/Favorite'
-import { ID, UID } from 'common/models/Identifiers'
 import { CoverArtSizes } from 'common/models/ImageSizes'
 import { Repost } from 'common/models/Repost'
 import { FieldVisibility, LineupTrack, Remix } from 'common/models/Track'

@@ -3,9 +3,11 @@
   "private": true,
   "scripts": {
     "link": "lerna link",
-    "postinstall": "lerna bootstrap --no-ci && lerna run build --scope=@audius/stems && npm run install-hooks",
+    "postinstall": "lerna bootstrap --no-ci && npm run build && npm run install-hooks",
+    "build": "lerna run build --scope=@audius/stems --scope=@audius/common",
     "install-hooks": "mookme init --only-hook --skip-types-selection",
-    "lint": "lerna run lint"
+    "lint": "lerna run lint",
+    "lint:fix": "lerna run lint:fix"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "5.30.6",

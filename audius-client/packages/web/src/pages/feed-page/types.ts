@@ -1,5 +1,6 @@
+import { ID, UID } from '@audius/common'
+
 import FeedFilter from 'common/models/FeedFilter'
-import { ID, UID } from 'common/models/Identifiers'
 import { Lineup } from 'common/models/Lineup'
 import { User } from 'common/models/User'
 

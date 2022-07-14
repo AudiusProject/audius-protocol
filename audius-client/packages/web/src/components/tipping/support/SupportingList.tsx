@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
+import { ID } from '@audius/common'
 import { IconArrow } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
-import { ID } from 'common/models/Identifiers'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
 import { getOptimisticSupporting } from 'common/store/tipping/selectors'
 import { stringWeiToBN } from 'common/utils/wallet'

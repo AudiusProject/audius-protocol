@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { ID } from 'audius-client/src/common/models/Identifiers'
+import type { ID } from '@audius/common'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
 import { getOptimisticSupportingForUser } from 'audius-client/src/common/store/tipping/selectors'
 import { SupportingMapForUser } from 'audius-client/src/common/store/tipping/types'

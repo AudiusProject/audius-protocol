@@ -1,4 +1,5 @@
-import { ID } from 'common/models/Identifiers'
+import { ID } from '@audius/common'
+
 import { getAccountUser } from 'common/store/account/selectors'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
 import { makeGetTierAndVerifiedForUser } from 'common/store/wallet/utils'

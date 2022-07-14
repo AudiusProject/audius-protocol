@@ -1,5 +1,6 @@
 import { useEffect, useContext, ReactNode } from 'react'
 
+import { ID, UID } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
@@ -9,7 +10,6 @@ import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
 import { useSelectTierInfo } from 'common/hooks/wallet'
 import { Collection } from 'common/models/Collection'
-import { ID, UID } from 'common/models/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
 import { LineupState } from 'common/models/Lineup'
 import Status from 'common/models/Status'

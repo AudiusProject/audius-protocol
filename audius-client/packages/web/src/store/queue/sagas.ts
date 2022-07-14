@@ -1,3 +1,4 @@
+import { ID, UID } from '@audius/common'
 import {
   all,
   call,
@@ -8,7 +9,6 @@ import {
 } from 'typed-redux-saga/macro'
 
 import { Name, PlaybackSource } from 'common/models/Analytics'
-import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { LineupState } from 'common/models/Lineup'
 import { User } from 'common/models/User'

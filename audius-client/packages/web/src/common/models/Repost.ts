@@ -1,4 +1,4 @@
-import { ID } from './Identifiers'
+import { ID } from '@audius/common'
 
 export type Repost = {
   repost_item_id: number

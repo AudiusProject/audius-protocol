@@ -1,6 +1,6 @@
 import { ReactElement } from 'react'
 
-import { ID, UID } from 'audius-client/src/common/models/Identifiers'
+import type { ID, UID } from '@audius/common'
 import Kind from 'audius-client/src/common/models/Kind'
 import { Lineup as LineupData } from 'audius-client/src/common/models/Lineup'
 import { LineupActions } from 'audius-client/src/common/store/lineup/actions'

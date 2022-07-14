@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { FavoriteSource, Name, PlaybackSource } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { pause, play } from 'common/store/queue/slice'

@@ -7,6 +7,7 @@ import {
   ComponentType
 } from 'react'
 
+import { ID, UID } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -18,7 +19,6 @@ import {
   Name,
   PlaybackSource
 } from 'common/models/Analytics'
-import { ID, UID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { getUserId } from 'common/store/account/selectors'
 import { makeGetTableMetadatas } from 'common/store/lineup/selectors'

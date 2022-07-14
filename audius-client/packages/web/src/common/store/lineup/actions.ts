@@ -1,4 +1,5 @@
-import { ID, UID } from 'common/models/Identifiers'
+import { ID, UID } from '@audius/common'
+
 import { TrackMetadata } from 'common/models/Track'
 
 export const FETCH_LINEUP_METADATAS = 'FETCH_LINEUP_METADATAS'

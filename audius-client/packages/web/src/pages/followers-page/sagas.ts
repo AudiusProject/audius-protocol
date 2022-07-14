@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { put, select } from 'typed-redux-saga/macro'
 
-import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import { getFollowersError } from 'common/store/user-list/followers/actions'

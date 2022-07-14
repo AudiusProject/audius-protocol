@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { ID } from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -13,7 +14,6 @@ import {
   Name,
   ShareSource
 } from 'common/models/Analytics'
-import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'

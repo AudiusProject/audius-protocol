@@ -1,6 +1,6 @@
+import { UID } from '@audius/common'
 import { createSelector } from 'reselect'
 
-import { UID } from 'common/models/Identifiers'
 import { CommonState } from 'common/store'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'

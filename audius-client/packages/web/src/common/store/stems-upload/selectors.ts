@@ -1,6 +1,6 @@
+import { ID } from '@audius/common'
 import { createSelector } from 'reselect'
 
-import { ID } from 'common/models/Identifiers'
 import { CommonState } from 'common/store'
 
 const getBase = (state: CommonState) => state.stemsUpload

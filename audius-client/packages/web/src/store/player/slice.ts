@@ -1,8 +1,8 @@
+import { UID, ID } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import NativeMobileAudio from 'audio/NativeMobileAudio'
 import { Collectible } from 'common/models/Collectible'
-import { UID, ID } from 'common/models/Identifiers'
 import { Nullable } from 'common/utils/typeUtils'
 
 import { AudioState } from './types'

@@ -1,6 +1,6 @@
+import { ID, UID } from '@audius/common'
 import { createSelector } from 'reselect'
 
-import { ID, UID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { CommonState } from 'common/store'
 import { getCollection as getCachedCollection } from 'common/store/cache/collections/selectors'

@@ -1,6 +1,5 @@
+import { ID } from '@audius/common'
 import { createCustomAction } from 'typesafe-actions'
-
-import { ID } from 'common/models/Identifiers'
 
 import { RepostType } from './types'
 

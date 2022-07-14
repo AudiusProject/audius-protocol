@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
+import { ID } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import RemixSettingsModal from 'components/remix-settings-modal/RemixSettingsModal'
 import { AppState } from 'store/types'

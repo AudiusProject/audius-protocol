@@ -1,7 +1,7 @@
+import { ID } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 
-import { ID } from 'common/models/Identifiers'
 import { asLineup } from 'common/store/lineup/reducer'
 
 import { PREFIX as remixesTracksPrefix } from './lineup/actions'

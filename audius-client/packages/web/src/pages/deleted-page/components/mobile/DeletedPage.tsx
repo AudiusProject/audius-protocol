@@ -1,6 +1,6 @@
+import { ID, PlayableType } from '@audius/common'
 import { Button, ButtonType, IconUser } from '@audius/stems'
 
-import { ID, PlayableType } from 'common/models/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import { Playable } from 'common/models/Playable'
 import { User } from 'common/models/User'

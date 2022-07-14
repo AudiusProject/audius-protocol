@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 
+import type { ID } from '@audius/common'
 import { Supporting } from 'audius-client/src/common/models/Tipping'
 import { stringWeiToBN } from 'audius-client/src/common/utils/wallet'
 import { MAX_PROFILE_SUPPORTING_TILES } from 'audius-client/src/utils/constants'
-import { ID } from 'common/models/Identifiers'
 import { getOptimisticSupportingForUser } from 'common/store/tipping/selectors'
 import { FlatList } from 'react-native'
 

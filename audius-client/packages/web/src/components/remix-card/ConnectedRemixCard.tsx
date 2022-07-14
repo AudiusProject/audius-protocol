@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { ID } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUserFromTrack } from 'common/store/cache/users/selectors'

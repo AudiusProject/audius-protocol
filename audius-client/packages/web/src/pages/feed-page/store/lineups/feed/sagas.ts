@@ -1,8 +1,8 @@
+import { ID } from '@audius/common'
 import { select, all } from 'redux-saga/effects'
 
 import { Collection, UserCollectionMetadata } from 'common/models/Collection'
 import FeedFilter from 'common/models/FeedFilter'
-import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import {
   LineupTrack,

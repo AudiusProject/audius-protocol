@@ -1,9 +1,9 @@
 import { ReactNode } from 'react'
 
+import { ID } from '@audius/common'
 import cn from 'classnames'
 
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import { ID } from 'common/models/Identifiers'
 import {
   ProfilePictureSizes,
   SquareSizes,
