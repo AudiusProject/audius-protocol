@@ -3,13 +3,13 @@
 **Network Monitoring** refers to network-wide metrics we collect from a discovery node and aggregate to assess the health of the entire network.
 
 Some examples of network-wide metrics are
-* The number of CID on each CN that have been replicated at least once
-* The number of CID on each CN that have NOT been replicated at least once
-* The number of users with a specific CN as their primary
-* The number of users with a specific CN in their replica set
-* CID replication across the CNs
+* The number of CID on each Content Node that have been replicated at least once
+* The number of CID on each Content Node that have NOT been replicated at least once
+* The number of users with a specific Content Node as their primary
+* The number of users with a specific Content Node in their replica set
+* CID replication across the Content Nodes
 * CID replication factor
-* The number of users with their data syncs across 0, 1, 2, or 3 CNs
+* The number of users with their data syncs across 0, 1, 2, or 3 Content Nodes
 
 These metrics are exposed on the route `{HOSTNAME}:9091/metrics` and are updated on a nightly basis. When first starting up network monitoring, metrics are made available after the first job completes. Network monitoring jobs last around 2 hours on the production Audius network.
 
