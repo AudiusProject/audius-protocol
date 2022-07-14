@@ -93,7 +93,7 @@ def audius_data_state_update(
                             txhash,
                         )
 
-                    if action == Action.CREATE or Action.UPDATE:
+                    if action == Action.CREATE.value or Action.UPDATE.value:
                         logger.info(f"index.py | AudiusData - handling {action}, events_lookup={playlist_events_lookup}")
                         playlist_record = parse_playlist_create_data_event(
                             update_task,
@@ -105,7 +105,7 @@ def audius_data_state_update(
                             session,
                         )
 
-                    elif Action.DELETE:
+                    elif Action.DELETE.value:
                         existing_playlist_record.is_delete = True
                         playlist_record = existing_playlist_record
 
