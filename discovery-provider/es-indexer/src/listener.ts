@@ -51,7 +51,6 @@ const handlers = {
     if (!row.play_item_id) return // when could this happen?
     pending.trackIds.add(row.play_item_id)
   },
-  // TODO: can we do trigger on agg playlist matview?
   saves: (save: SaveRow) => {
     pending.saves.push(save)
     if (save.save_type == 'track') {
