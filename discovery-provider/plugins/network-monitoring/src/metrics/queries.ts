@@ -199,11 +199,49 @@ export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => 
 export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
-        FROM network_monitoring_users
+        FROM (
+            (SELECT * FROM network_monitoring_users WHERE run_id = :run_id) AS nm_users
+            JOIN 
+            (SELECT * FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS nm_cnodes
+            ON nm_users.spid = nm_cnodes.spid
+        ) AS nm_user_cnodes
         WHERE 
-            run_id = :run_id
-        AND 
-            primary_clock_value IS NULL;
+            nm_user_cnodes.endpoint like '%.audius.co';
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id },
+    })
+
+    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+
+    return usersCount
+}
+
+export const getUsersWithAllFoundationNodeReplicaSetCount = async (run_id: number): Promise<number> => {
+    const usersResp: unknown[] = await sequelizeConn.query(`
+    SELECT COUNT(*) as user_count
+    FROM (
+        (
+            (
+                (SELECT user_id, primaryspid, secondary1spid, secondary2spid FROM network_monitoring_users WHERE run_id = :run_id) AS nm_users
+                JOIN 
+                (SELECT spid AS primaryspid, endpoint AS primary_endpoint FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS nm_cnodes_prim
+                ON nm_users.primaryspid = nm_cnodes_prim.primaryspid
+            ) AS first_join
+            JOIN
+            (SELECT spid AS secondary1spid, endpoint AS secondary1_endpoint FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS nm_cnodes_sec1
+            ON first_join.secondary1spid = nm_cnodes_sec1.secondary1spid
+        ) AS sec1_join
+        JOIN
+        (SELECT spid AS secondary2spid, endpoint AS secondary2_endpoint FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS nm_cnodes_sec2
+        ON  sec1_join.secondary2spid = nm_cnodes_sec2.secondary2spid
+    ) AS nm_user_cnodes
+    WHERE 
+        nm_user_cnodes.primary_endpoint like '%.audius.co'
+    AND
+        nm_user_cnodes.secondary1_endpoint like '%.audius.co'
+    AND
+        nm_user_cnodes.secondary2_endpoint like '%.audius.co';
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id },
