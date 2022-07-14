@@ -26,7 +26,7 @@ const getNewOrExistingSyncReq = ({
     userWallet,
     secondaryEndpoint
   )
-  if (duplicateSyncJobInfo) {
+  if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
@@ -98,14 +98,15 @@ const issueSyncRequestsUntilSynced = async (
   })
   if (!_.isEmpty(duplicateSyncReq)) {
     // Log duplicate and return
-    logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
+    logger.info(`issueSyncRequestsUntilSynced: Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
     const { jobName, jobData } = syncReqToEnqueue
+    logger.info(`issueSyncRequestsUntilSynced: jobData: ${JSON.stringify(jobData)}`)
     await queue.add(jobName, jobData)
   } else {
     // Log error that the sync request couldn't be created and return
-    logger.error(`Failed to create manual sync request`)
+    logger.error(`issueSyncRequestsUntilSynced: Failed to create manual sync request ${{ userWallet, secondaryUrl, primaryUrl }}`)
     return
   }
 
@@ -123,7 +124,7 @@ const issueSyncRequestsUntilSynced = async (
       })
       const { clockValue: secondaryClockVal, syncInProgress } =
         secondaryClockStatusResp.data.data
-
+      logger.info(`issueSyncRequestsUntilSynced: clock value from ${secondaryUrl}: ${secondaryClockVal}, primaryCLockValue: ${primaryClockVal}`)
       // If secondary is synced, return successfully
       if (secondaryClockVal >= primaryClockVal) {
         return
