@@ -73,7 +73,7 @@ const titlesMap: { [key in TippingSendStatus]?: JSX.Element | string } = {
   )
 }
 
-const ModalContent = (pageNumber: number) => {
+const renderModalContent = (pageNumber: number) => {
   switch (pageNumber) {
     case 0:
       return <SendTip />
@@ -99,6 +99,23 @@ const defaultTransitions = {
   initial: { opacity: 1, transform: 'translate3d(0%, 0, 0)' },
   enter: { opacity: 1, transform: 'translate3d(0%, 0 ,0)' }
 }
+
+const nextScreenTransition = {
+  ...defaultTransitions,
+  // Next screen enters from right
+  from: { opacity: 0, transform: 'translate3d(100%, 0, 0)' },
+  // Current screen leaves on left
+  leave: { opacity: 0, transform: 'translate3d(-100%, 0, 0)' }
+}
+
+const previousScreenTransition = {
+  ...defaultTransitions,
+  // Previous screen enters from left
+  from: { opacity: 0, transform: 'translate3d(-100%, 0, 0)' },
+  // Current screen leaves on right
+  leave: { opacity: 0, transform: 'translate3d(100%, 0, 0)' }
+}
+
 export const TipAudioModal = () => {
   const dispatch = useDispatch()
   const sendStatus = useSelector(getSendStatus)
@@ -112,20 +129,9 @@ export const TipAudioModal = () => {
     !previousSendStatus ||
     !sendStatus ||
     statusOrder[sendStatus] >= statusOrder[previousSendStatus]
-      ? {
-          ...defaultTransitions,
-          // Next screen enters from right
-          from: { opacity: 0, transform: 'translate3d(100%, 0, 0)' },
-          // Current screen leaves on left
-          leave: { opacity: 0, transform: 'translate3d(-100%, 0, 0)' }
-        }
-      : {
-          ...defaultTransitions,
-          // Previous screen enters from left
-          from: { opacity: 0, transform: 'translate3d(-100%, 0, 0)' },
-          // Current screen leaves on right
-          leave: { opacity: 0, transform: 'translate3d(100%, 0, 0)' }
-        }
+      ? nextScreenTransition
+      : previousScreenTransition
+
   return (
     <ModalDrawer
       isOpen={sendStatus !== null}
@@ -152,7 +158,7 @@ export const TipAudioModal = () => {
           {(item) => (style) =>
             (
               <animated.div style={{ ...style }}>
-                {ModalContent(item)}
+                {renderModalContent(item)}
               </animated.div>
             )}
         </Transition>

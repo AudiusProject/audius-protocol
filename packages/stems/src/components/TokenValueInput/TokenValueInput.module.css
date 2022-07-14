@@ -10,23 +10,24 @@
   line-height: 17px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #BEC5E0;
+  color: var(--neutral-light-4);
   margin-bottom: 11px;
 }
 
 .input {
   padding: 14px 16px;
   background: rgba(0, 0, 0, 0.05);
-  border: 1px solid #3F415B;
+  border: 1px solid var(--neutral-light-8);
   border-radius: 6px;
-  color: #BEC5E0;
+  color: var(--neutral);
   mix-blend-mode: normal;
   width: 100%;
   box-sizing: border-box;
 }
 
-.input::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-  color: #BEC5E0;
+.input::placeholder {
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: var(--neutral-light-4);
   mix-blend-mode: normal;
   opacity: 0.5;
 }
@@ -39,7 +40,7 @@
   position: absolute;
   bottom: 15px;
   right: 10px;
-  color: #777C96;
+  color: var(--neutral-light-4);
 }
 
 textarea {
