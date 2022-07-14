@@ -348,6 +348,21 @@ services:
     deploy:
       mode: global
 
+  # SOCKS5 proxy for use with client
+
+  socks5-proxy:
+    image: serjs/go-socks5-proxy:latest
+    ports:
+      - "1080:1080"
+
+  socks5-proxy-pac:
+    image: python:3.10.5
+    command: python /tmp/dev-tools/startup/socks5-proxy-pac.py
+    ports:
+      - "8080:80"
+    volumes:
+      - ./dev-tools:/tmp/dev-tools
+
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
