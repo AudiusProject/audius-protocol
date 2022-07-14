@@ -71,8 +71,6 @@ module.exports.handleResponseWithHeartbeat = (func) => {
   }
 }
 
-// NOTE: To automate stopping the route duration timer, must manually set
-// the `req.stopTimerInSendResponse` flag to `true`
 const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   const duration = getDuration(req)
   let logger = createChildLogger(req.logger, {
