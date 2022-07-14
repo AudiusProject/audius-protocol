@@ -11,7 +11,7 @@ import {
 import { hideTip } from 'audius-client/src/common/store/tipping/slice'
 import { View } from 'react-native'
 
-import IconClose from 'app/assets/images/iconClose.svg'
+import IconRemove from 'app/assets/images/iconRemove.svg'
 import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -31,7 +31,7 @@ import { ReceiverDetails } from './ReceiverDetails'
 import { SendTipButton } from './SendTipButton'
 import { SenderDetails } from './SenderDetails'
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   tile: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -48,6 +48,11 @@ const useStyles = makeStyles(({ spacing }) => ({
   skeleton: {
     padding: 12,
     paddingBottom: 0
+  },
+  iconRemove: {
+    height: spacing(6),
+    width: spacing(6),
+    fill: palette.neutralLight4
   }
 }))
 
@@ -106,13 +111,10 @@ export const FeedTipTile = () => {
       <LineupTileSkeleton />
     </View>
   ) : (
-    <Tile
-      styles={{
-        tile: styles.tile
-      }}>
+    <Tile styles={{ tile: styles.tile }}>
       <View style={styles.header}>
         <ReceiverDetails receiver={usersMap[tipToDisplay.receiver_id]} />
-        <IconClose onPress={handlePressClose} height={16} width={16} />
+        <IconRemove {...styles.iconRemove} onPress={handlePressClose} />
       </View>
       <SenderDetails
         senders={[

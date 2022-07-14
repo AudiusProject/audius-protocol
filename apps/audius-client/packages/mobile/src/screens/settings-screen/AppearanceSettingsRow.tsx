@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import Config from 'react-native-config'
 
 import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
 import { SegmentedControl } from 'app/components/core'
@@ -13,6 +14,8 @@ import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
+
+const isStaging = Config.ENVIRONMENT === 'staging'
 
 const messages = {
   appearance: 'Appearance',
@@ -36,7 +39,7 @@ export const AppearanceSettingsRow = () => {
     { key: Theme.DEFAULT, text: messages.light }
   ]
 
-  if (tier === 'gold' || tier === 'platinum') {
+  if (tier === 'gold' || tier === 'platinum' || isStaging) {
     appearanceOptions.push({ key: Theme.MATRIX, text: messages.matrix })
   }
 
