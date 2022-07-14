@@ -151,6 +151,7 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
   }
 }
 
+// TODO: manually add metric tracking here
 /**
  * Given a CID, return the appropriate file
  * 1. Check if file exists at expected storage path (current and legacy)

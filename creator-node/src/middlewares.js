@@ -21,21 +21,16 @@ const {
 
 async function durationTrackingMiddleware(req, res, next) {
   const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
-  const path = req.url
+  const path = req.logContext.requestUrl
   const method = req.method
 
   let endTimer
   try {
-    let metricName = prometheusRegistry.getDurationTrackingMetricName(path)
-    let metric = prometheusRegistry.getMetric(metricName)
-
-    if (!metric) {
-      metricName = prometheusRegistry.getDurationTrackingMetricNameWithMethod(
-        path,
-        method
-      )
-      metric = prometheusRegistry.getMetric(metricName)
-    }
+    const metricName = prometheusRegistry.getDurationTrackingMetricName(
+      path,
+      method
+    )
+    const metric = prometheusRegistry.getMetric(metricName)
 
     endTimer = metric.startTimer()
   } catch (e) {
@@ -957,5 +952,6 @@ module.exports = {
   issueAndWaitForSecondarySyncRequests,
   getOwnEndpoint,
   getCreatorNodeEndpoints,
-  durationTrackingMiddleware
+  durationTrackingMiddleware,
+  why
 }

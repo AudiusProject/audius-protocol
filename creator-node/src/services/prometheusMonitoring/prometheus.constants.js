@@ -90,7 +90,7 @@ const METRIC_LABELS = Object.freeze({
       'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
     ]
   },
-  [MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
+  [METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
     // Whether or not write quorum is enabled/enforced
     enforceWriteQuorum: ['false', 'true'],
     // Whether or not write quorum is ignored for this specific route (even if it's enabled in general).
@@ -195,13 +195,13 @@ const METRICS = Object.freeze({
       labelNames: MetricLabelNames[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]
     }
   },
-  [MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
-    metricType: MetricTypes.HISTOGRAM,
+  [METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM,
+      name: METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM,
       help: 'Seconds spent attempting to replicate data to a secondary node for write quorum',
       labelNames:
-        MetricLabelNames[MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM],
+        MetricLabelNames[METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM],
       // 5 buckets in the range of 1 second to max seconds before timing out write quorum
       buckets: exponentialBucketsRange(
         1,

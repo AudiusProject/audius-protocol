@@ -194,7 +194,11 @@ class ServiceRegistry {
     app.use('/health/bull', serverAdapter.getRouter())
   }
 
-  _setupRouteDurationTracking(app) {
+  /**
+   * Initializes the app with duration tracking metrics
+   * @param {Object} app
+   */
+  async _setupRouteDurationTracking(app) {
     // Get all routes on Content Node
     const routes = app._router.stack.filter(
       (element) =>
@@ -209,19 +213,19 @@ class ServiceRegistry {
         path = element.route.path
         method = Object.keys(element.route.methods)[0]
 
-        parsedRoutes.push({ path, method })
+        parsedRoutes.push({ path, method, regexp: element.regexp })
       } else {
         const routerRoutes = element.handle.stack
         routerRoutes.forEach((routerRoute) => {
           path = routerRoute.route.path
           method = Object.keys(routerRoute.route.methods)[0]
 
-          parsedRoutes.push({ path, method })
+          parsedRoutes.push({ path, method, regexp: element.regexp })
         })
       }
     })
 
-    this.prometheusRegistry.addRoutesDurationTracking(parsedRoutes)
+    await this.prometheusRegistry.addRoutesDurationTracking(parsedRoutes)
   }
 
   /**
@@ -307,14 +311,6 @@ class ServiceRegistry {
   async initServicesThatRequireServer(app) {
     const start = getStartTime()
 
-    try {
-      this._setupRouteDurationTracking(app)
-    } catch (e) {
-      this.logError(
-        `Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
-      )
-    }
-
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
@@ -358,6 +354,15 @@ class ServiceRegistry {
     } catch (e) {
       this.logError(
         `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
+      )
+    }
+
+    try {
+      await this._setupRouteDurationTracking(app)
+      this.logInfo('VICKY IS DONE WITH ROUTE DURRRRR')
+    } catch (e) {
+      this.logError(
+        `Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
       )
     }
 

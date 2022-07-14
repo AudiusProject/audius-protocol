@@ -1,6 +1,7 @@
 const PrometheusClient = require('prom-client')
 const _ = require('lodash')
 
+const { logger: genericLogger } = require('../../logging')
 const {
   NAMESPACE_PREFIX,
   METRICS,
@@ -19,6 +20,9 @@ class PrometheusRegistry {
     // Expose metric names from class for access throughout application
     this.metricNames = { ...METRIC_NAMES }
 
+    // A mapping of the route to the route regex
+    this.routeToRouteRegex = {}
+
     // Ensure clean state for registry
     this.registry.clear()
 
@@ -33,8 +37,6 @@ class PrometheusRegistry {
     this.addBasicHistogramMetric = this.addBasicHistogramMetric.bind(this)
     this.getDurationTrackingMetricName =
       this.getDurationTrackingMetricName.bind(this)
-    this.getDurationTrackingMetricNameWithMethod =
-      this.getDurationTrackingMetricNameWithMethod.bind(this)
 
     this.init()
   }
@@ -59,70 +61,48 @@ class PrometheusRegistry {
    *  metric config: {
    *    name: 'sync_status_walletpublickey_seconds',
    *    help: 'Duration for /sync_status_:walletpublickey',
-   *    labelNames: ['code', 'walletpublickey']
+   *    labelNames: ['code']
    *  }
    *
    * @param {Object[]} routes Array of objects that look like {path: the api route, method: the api method}
    */
-  addRoutesDurationTracking(routes) {
-    // Sets used to help create metrics with same paths but different methods
-    // Example: '/transcode_and_segment' has 'get' and 'post' method
-    const uniquePaths = new Set()
-    const overloadedPaths = new Set()
-    routes.forEach(({ path, method }) => {
-      if (uniquePaths.has(path)) {
-        overloadedPaths.add(path)
-      }
-
-      uniquePaths.add(path)
-    })
-
-    // Returns route params if any exist, i.e. ':cid' in the path '/ipfs/:cid'
-    function getLabels(path) {
-      const pathArr = path.split('/')
-      return pathArr
-        .filter((part) => part.includes(':'))
-        .map((part) => part.replace(/:/g, ''))
-    }
-
-    // function addDurationTracking({ path, method }) {
+  async addRoutesDurationTracking(routes) {
     const addDurationTracking = async ({ path, method }) => {
-      let name
-      if (overloadedPaths.has(path)) {
-        name = this.getDurationTrackingMetricNameWithMethod(path, method)
-      } else {
-        name = this.getDurationTrackingMetricName(path)
-      }
+      const name = this.getDurationTrackingMetricName(path, method)
 
-      const labels = getLabels(path)
-      this.addBasicHistogramMetric({
-        name,
-        doc: `Duration for ${path}`,
-        labels
-      })
-      this.addMetricName({
-        key: `${name}_HISTOGRAM`.toUpperCase(),
-        value: name
-      })
+      try {
+        this.addBasicHistogramMetric({
+          name,
+          doc: `Duration for ${path}`
+        })
+        this.addMetricName({
+          key: `${name}_HISTOGRAM`.toUpperCase(),
+          value: name
+        })
+      } catch (e) {
+        genericLogger.warn(
+          `Could not add metrics for ${path} with method ${method}: ${e.message}`
+        )
+      }
     }
 
-    routes.forEach((route) => {
+    for (const route of routes) {
       const { path, method } = route
 
       // Create metrics to track duration and status code for every route
       if (Array.isArray(path)) {
         // For routes with the same path but different methods
         // Example: '/ipfs/:cid' and '/content/:cid'
-        path.forEach((p) => {
-          addDurationTracking({
+        for (const p of path) {
+          await addDurationTracking({
             path: p,
             method
           })
-        })
+        }
       } else {
-        addDurationTracking({ path, method })
+        await addDurationTracking({ path, method })
       }
-    })
+    }
   }
 
   addMetricName({ key, value }) {
@@ -154,12 +134,10 @@ class PrometheusRegistry {
 
   /** Getters */
 
-  getDurationTrackingMetricName(path) {
-    return `${NAMESPACE_PREFIX}_api_${_.snakeCase(path)}_seconds`
-  }
-
-  getDurationTrackingMetricNameWithMethod(path, method) {
-    return `${NAMESPACE_PREFIX}_api_${method}_${_.snakeCase(path)}_seconds`
+  getDurationTrackingMetricName(path, method) {
+    return `${NAMESPACE_PREFIX}_api_${method.toLowerCase()}_${_.snakeCase(
+      path
+    )}_seconds`
   }
 
   /** Returns current data for all metrics */
