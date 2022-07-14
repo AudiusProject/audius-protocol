@@ -69,6 +69,7 @@ const HEX_ETH_SECRET_DECODING_ERROR: &str = "Ethereum secret decoding failed";
 fn command_init(
     config: &Config,
     reward_manager_keypair: Option<Keypair>,
+    reward_manager_token_keypair: Option<Keypair>,
     token_mint: Pubkey,
     min_votes: u8,
 ) -> CommandResult {
@@ -92,7 +93,7 @@ fn command_init(
         &audius_reward_manager::id(),
     ));
 
-    let reward_manager_token_acc = Keypair::new();
+    let reward_manager_token_acc = reward_manager_token_keypair.unwrap_or_else(Keypair::new);
     println!(
         "Reward manager token key created: {:?}",
         reward_manager_token_acc.pubkey()
@@ -602,6 +603,14 @@ fn main() {
                     .help("Reward manager keypair [default: new keypair]"),
             )
             .arg(
+                Arg::with_name("reward_manager_token_keypair")
+                    .long("token-keypair")
+                    .validator(is_keypair_or_ask_keyword)
+                    .value_name("PATH")
+                    .takes_value(true)
+                    .help("Reward manager token keypair [default: new keypair]"),
+            )
+            .arg(
                 Arg::with_name("token-mint")
                     .long("token-mint")
                     .validator(is_pubkey)
@@ -958,9 +967,10 @@ fn main() {
     let _ = match matches.subcommand() {
         ("init", Some(arg_matches)) => {
             let reward_manager_keypair = keypair_of(arg_matches, "reward_manager_keypair");
+            let reward_manager_token_keypair = keypair_of(arg_matches, "reward_manager_token_keypair");
             let token_mint: Pubkey = pubkey_of(arg_matches, "token-mint").unwrap();
             let min_votes: u8 = value_t_or_exit!(arg_matches, "min-votes", u8);
-            command_init(&config, reward_manager_keypair, token_mint, min_votes)
+            command_init(&config, reward_manager_keypair, reward_manager_token_keypair, token_mint, min_votes)
         }
         ("create-sender", Some(arg_matches)) => {
             let reward_manager: Pubkey = pubkey_of(arg_matches, "reward-manager").unwrap();
