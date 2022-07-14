@@ -1,0 +1,982 @@
+{
+  "data": {
+    "cnodeUsers": {
+      "b0a4c279-8c11-48b3-b6fa-65bca9b42846": {
+        "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+        "walletPublicKey": "0xadd36bad12002f1097cdb7ee24085c28e960fc32",
+        "lastLogin": null,
+        "latestBlockNumber": 10,
+        "clock": 37,
+        "createdAt": "2022-01-19T16:47:10.133Z",
+        "updatedAt": "2022-01-19T16:47:16.750Z",
+        "audiusUsers": [
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 2,
+            "blockchainId": "1",
+            "metadataFileUUID": "78afc0fb-6278-4d68-8888-430b7edc0064",
+            "metadataJSON": {
+              "testField": "testValue"
+            },
+            "coverArtFileUUID": null,
+            "profilePicFileUUID": null,
+            "createdAt": "2022-01-19T16:47:10.447Z",
+            "updatedAt": "2022-01-19T16:47:10.447Z"
+          }
+        ],
+        "tracks": [
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 37,
+            "blockchainId": "1",
+            "metadataFileUUID": "daca28dc-11f2-4d25-89a8-cb8b868d28bd",
+            "metadataJSON": {
+              "test": "field1",
+              "owner_id": 1,
+              "track_segments": [
+                {
+                  "duration": 6.016,
+                  "multihash": "QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ"
+                },
+                {
+                  "duration": 6.016,
+                  "multihash": "QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan"
+                },
+                {
+                  "duration": 6.016,
+                  "multihash": "QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik"
+                },
+                {
+                  "duration": 6.016,
+                  "multihash": "QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9"
+                },
+                {
+                  "duration": 6.016,
+                  "multihash": "QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA"
+                },
+                {
+                  "duration": 6.016,
+                  "multihash": "QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY"
+                },
+                {
+                  "duration": 6.016,
+                  "multihash": "QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk"
+                },
+                {
+                  "duration": 6.016,
+                  "multihash": "QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8"
+                },
+                {
+                  "duration": 5.994667,
+                  "multihash": "QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp"
+                },
+                {
+                  "duration": 1.456,
+                  "multihash": "QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas"
+                }
+              ]
+            },
+            "coverArtFileUUID": null,
+            "createdAt": "2022-01-19T16:47:16.753Z",
+            "updatedAt": "2022-01-19T16:47:16.753Z"
+          }
+        ],
+        "files": [
+          {
+            "fileUUID": "78afc0fb-6278-4d68-8888-430b7edc0064",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": null,
+            "multihash": "QmcyuCtU24R2N9Ejs5tsm7vebBhs3g6Qnhh6w3ZoEYBrUE",
+            "sourceFile": null,
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/BrU/QmcyuCtU24R2N9Ejs5tsm7vebBhs3g6Qnhh6w3ZoEYBrUE",
+            "type": "metadata",
+            "clock": 1,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:10.400Z",
+            "updatedAt": "2022-01-19T16:47:10.400Z"
+          },
+          {
+            "fileUUID": "0f976b75-336b-46db-b5d1-8cf4555d4028",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmRcVgkrvsyUeY3x3zvc6EhDSFjZJ8QD5qyKowHsPeWKFT",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/WKF/QmRcVgkrvsyUeY3x3zvc6EhDSFjZJ8QD5qyKowHsPeWKFT",
+            "type": "copy320",
+            "clock": 3,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.549Z",
+            "updatedAt": "2022-01-19T16:47:16.759Z"
+          },
+          {
+            "fileUUID": "a2c2cb83-43da-4147-a09c-668bbc02c7e5",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/TLk/QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku",
+            "type": "track",
+            "clock": 4,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.554Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "59a0e87c-bb87-469b-b1d7-e74fa725a85a",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/Kuk/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd",
+            "type": "track",
+            "clock": 5,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.558Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "58a399e4-3994-4577-b015-7c2bbccd96e9",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/28C/QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch",
+            "type": "track",
+            "clock": 6,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.563Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "ed5f80d5-6c48-432e-b037-357ec787bcd3",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/1vK/QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ",
+            "type": "track",
+            "clock": 7,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.567Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "75d9e248-893e-4ea4-a93e-d8d89cf903b9",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/xvg/QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP",
+            "type": "track",
+            "clock": 8,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.571Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "91da240b-f1c4-46a8-823f-f511557d2704",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/qgG/QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF",
+            "type": "track",
+            "clock": 9,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.575Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "2566005b-217d-4dcf-85f9-2836fd5fe30d",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/GMk/Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB",
+            "type": "track",
+            "clock": 10,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.580Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "1e56ea90-d85f-45da-b547-cfed497b7a5e",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/Bza/QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan",
+            "type": "track",
+            "clock": 11,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.584Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "27848af3-fa4d-445e-b996-eb435552bfd5",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/38t/QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr",
+            "type": "track",
+            "clock": 12,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.588Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "a98aea07-3a0e-4299-880d-da2e7c69e704",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/NDx/QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB",
+            "type": "track",
+            "clock": 13,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.592Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "0fc098bc-276c-494b-9f4c-8dac7c64eafc",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/MdW/QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi",
+            "type": "track",
+            "clock": 14,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.597Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "82346229-98b9-478f-9d55-0488cb352f59",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/c2i/QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik",
+            "type": "track",
+            "clock": 15,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.602Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "d7b18470-4bf1-45c8-8dd0-1d4b1da4d597",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/ZNj/QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH",
+            "type": "track",
+            "clock": 16,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.607Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "d26a3115-7c93-4b80-94e0-1a00ca40a8e4",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/n63/QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d",
+            "type": "track",
+            "clock": 17,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.611Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "16dd9336-899c-4b45-a4c7-cd6b80c9ef0a",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/sHo/QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh",
+            "type": "track",
+            "clock": 18,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.615Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "641024f8-d963-46a4-bd20-fbdc4a395f66",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/ZJK/QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9",
+            "type": "track",
+            "clock": 19,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.620Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "d08e3c0b-1ae6-445a-9686-2fe1ab4f10a0",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/Wmj/QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7",
+            "type": "track",
+            "clock": 20,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.624Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "5882f542-4170-4ea5-a26f-17eeeab87c91",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/SQ9/QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q",
+            "type": "track",
+            "clock": 21,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.628Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "64763fc5-b3d8-40d8-ab92-04c3fb74e974",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/Jto/QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot",
+            "type": "track",
+            "clock": 22,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.633Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "fef4d1cd-5365-469d-99e4-36ab6a6bf5bf",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/6EK/QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA",
+            "type": "track",
+            "clock": 23,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.637Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "f6cb0f07-92a5-4476-b2c7-b961ec669391",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/zHn/QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ",
+            "type": "track",
+            "clock": 24,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.642Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "9974f644-ccc9-4b5a-8f8a-1dba8446d7b7",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/VSE/QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx",
+            "type": "track",
+            "clock": 25,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.647Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "7ff369a5-3290-4439-825c-70a13526a3f5",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/QEL/QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF",
+            "type": "track",
+            "clock": 26,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.651Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "9125e4a0-b791-44db-9a9c-93d99c58be0b",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/5CP/QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY",
+            "type": "track",
+            "clock": 27,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.656Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "6f71b5f4-b3e1-4cf6-884e-71a36fe716ef",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/wDS/QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY",
+            "type": "track",
+            "clock": 28,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.660Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "93d60d20-4873-4d38-a57d-51ce22d31630",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/iRH/QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn",
+            "type": "track",
+            "clock": 29,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.664Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "1108cf26-5f2b-4302-9e84-da270df9f0f5",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/5TX/QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT",
+            "type": "track",
+            "clock": 30,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.668Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "cf05e17c-8c8a-4187-9a7c-7e59b13d01bc",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/VvS/QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk",
+            "type": "track",
+            "clock": 31,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.672Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "2606fbb7-3361-4f18-b16f-ece16d5ec5e9",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/LZX/QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy",
+            "type": "track",
+            "clock": 32,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.676Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "31120186-3eb0-4853-8063-27e648596660",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/TAE/QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8",
+            "type": "track",
+            "clock": 33,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.683Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "34ae93a9-780a-4e67-af00-e75efe697b28",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/XTd/QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp",
+            "type": "track",
+            "clock": 34,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.688Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "7ee73655-b365-4822-ab4d-84802f886614",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": 1,
+            "multihash": "QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas",
+            "sourceFile": "3f70aa4d-827e-4b8f-a7f0-13324f83deb3.mp3",
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/MFa/QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas",
+            "type": "track",
+            "clock": 35,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.692Z",
+            "updatedAt": "2022-01-19T16:47:16.765Z"
+          },
+          {
+            "fileUUID": "daca28dc-11f2-4d25-89a8-cb8b868d28bd",
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "trackBlockchainId": null,
+            "multihash": "QmcYCwJHfCScqDFEXd78hkdFbyn98mJWXhej4QhQx2aPaZ",
+            "sourceFile": null,
+            "fileName": null,
+            "dirMultihash": null,
+            "storagePath": "test_file_storage/files/aPa/QmcYCwJHfCScqDFEXd78hkdFbyn98mJWXhej4QhQx2aPaZ",
+            "type": "metadata",
+            "clock": 36,
+            "skipped": false,
+            "createdAt": "2022-01-19T16:47:16.727Z",
+            "updatedAt": "2022-01-19T16:47:16.727Z"
+          }
+        ],
+        "clockRecords": [
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 1,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:10.397Z",
+            "updatedAt": "2022-01-19T16:47:10.397Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 2,
+            "sourceTable": "AudiusUser",
+            "createdAt": "2022-01-19T16:47:10.445Z",
+            "updatedAt": "2022-01-19T16:47:10.445Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 3,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.547Z",
+            "updatedAt": "2022-01-19T16:47:16.547Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 4,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.552Z",
+            "updatedAt": "2022-01-19T16:47:16.552Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 5,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.557Z",
+            "updatedAt": "2022-01-19T16:47:16.557Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 6,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.561Z",
+            "updatedAt": "2022-01-19T16:47:16.561Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 7,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.566Z",
+            "updatedAt": "2022-01-19T16:47:16.566Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 8,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.570Z",
+            "updatedAt": "2022-01-19T16:47:16.570Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 9,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.574Z",
+            "updatedAt": "2022-01-19T16:47:16.574Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 10,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.578Z",
+            "updatedAt": "2022-01-19T16:47:16.578Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 11,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.582Z",
+            "updatedAt": "2022-01-19T16:47:16.582Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 12,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.586Z",
+            "updatedAt": "2022-01-19T16:47:16.586Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 13,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.591Z",
+            "updatedAt": "2022-01-19T16:47:16.591Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 14,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.595Z",
+            "updatedAt": "2022-01-19T16:47:16.595Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 15,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.601Z",
+            "updatedAt": "2022-01-19T16:47:16.601Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 16,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.605Z",
+            "updatedAt": "2022-01-19T16:47:16.605Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 17,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.609Z",
+            "updatedAt": "2022-01-19T16:47:16.609Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 18,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.614Z",
+            "updatedAt": "2022-01-19T16:47:16.614Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 19,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.618Z",
+            "updatedAt": "2022-01-19T16:47:16.618Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 20,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.622Z",
+            "updatedAt": "2022-01-19T16:47:16.622Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 21,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.627Z",
+            "updatedAt": "2022-01-19T16:47:16.627Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 22,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.631Z",
+            "updatedAt": "2022-01-19T16:47:16.631Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 23,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.636Z",
+            "updatedAt": "2022-01-19T16:47:16.636Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 24,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.640Z",
+            "updatedAt": "2022-01-19T16:47:16.640Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 25,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.645Z",
+            "updatedAt": "2022-01-19T16:47:16.645Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 26,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.650Z",
+            "updatedAt": "2022-01-19T16:47:16.650Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 27,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.654Z",
+            "updatedAt": "2022-01-19T16:47:16.654Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 28,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.658Z",
+            "updatedAt": "2022-01-19T16:47:16.658Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 29,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.662Z",
+            "updatedAt": "2022-01-19T16:47:16.662Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 30,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.666Z",
+            "updatedAt": "2022-01-19T16:47:16.666Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 31,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.670Z",
+            "updatedAt": "2022-01-19T16:47:16.670Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 32,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.674Z",
+            "updatedAt": "2022-01-19T16:47:16.674Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 33,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.681Z",
+            "updatedAt": "2022-01-19T16:47:16.681Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 34,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.686Z",
+            "updatedAt": "2022-01-19T16:47:16.686Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 35,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.691Z",
+            "updatedAt": "2022-01-19T16:47:16.691Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 36,
+            "sourceTable": "File",
+            "createdAt": "2022-01-19T16:47:16.725Z",
+            "updatedAt": "2022-01-19T16:47:16.725Z"
+          },
+          {
+            "cnodeUserUUID": "b0a4c279-8c11-48b3-b6fa-65bca9b42846",
+            "clock": 37,
+            "sourceTable": "Track",
+            "createdAt": "2022-01-19T16:47:16.751Z",
+            "updatedAt": "2022-01-19T16:47:16.751Z"
+          }
+        ],
+        "clockInfo": {
+          "requestedClockRangeMin": 0,
+          "requestedClockRangeMax": 9999,
+          "localClockMax": 37
+        }
+      }
+    },
+    "ipfsIDObj": {
+      "id": "QmZvtTwkaantxw5raytS8JLkQTpufdgvfeGFuzEwdfEdUt",
+      "publicKey": "CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCr5DuScNPNNMnSLv8RRqb2vKZPrAVnRp8xeUzOxYfY+ytf86RO5lkBU6y2/u6oRidteb/HPV7gtkDwouBejXgg1zNq8Ya6bleE62iTqtAwB7+lrrPgMKtblljFt0fY6G7gea13KazLVbH+Y9hQlAQoAsZwFFdWbVLXLejq/BLZsHe/vx6A6uA7TSdOjY8sjWP3E3KWUNxOPVFwdk1dSlOnQDbHVJ3vSUmi5zpMYKYr0SXHa5OG20gq/qaP1hIRKl3IU0NoGweyLhgGxAtDSugfXAPyvj3BIwjRHc9x8B7XlmpQxfamLWz4u5SbiTB4c09S1Pmsn4JXKGeOoFK00tWNAgMBAAE=",
+      "addresses": [
+        "/ip4/127.0.0.1/tcp/4001/ipfs/QmZvtTwkaantxw5raytS8JLkQTpufdgvfeGFuzEwdfEdUt",
+        "/ip4/172.17.0.2/tcp/4001/ipfs/QmZvtTwkaantxw5raytS8JLkQTpufdgvfeGFuzEwdfEdUt",
+        "/ip4/35.238.168.173/tcp/4001/ipfs/QmZvtTwkaantxw5raytS8JLkQTpufdgvfeGFuzEwdfEdUt"
+      ],
+      "agentVersion": "go-ipfs/0.4.23/6ce9a35",
+      "protocolVersion": "ipfs/0.1.0"
+    }
+  },
+  "signer": "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25",
+  "timestamp": "2022-01-19T16:47:16.799Z",
+  "signature": "0x89667da41c86dd726e403aeadca3f6944486cbb013eafadb86e191166d9720ae6059aa718c594cbc0dee392c231cce88e65ee8e0143206fbd5a302293f1003e91b"
+}

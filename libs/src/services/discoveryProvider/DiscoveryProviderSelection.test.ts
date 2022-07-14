@@ -426,7 +426,7 @@ describe('DiscoveryProviderSelection', () => {
       })
 
     const s = new DiscoveryProviderSelection(
-      {},
+      { localStorage },
       mockEthContracts([healthy1], '1.2.3')
     )
     const service = await s.select()
@@ -476,7 +476,7 @@ describe('DiscoveryProviderSelection', () => {
       })
 
     const s = new DiscoveryProviderSelection(
-      {},
+      { localStorage },
       mockEthContracts([healthy1, healthy2, initiallyUnhealthy], '1.2.3')
     )
     const firstService = await s.select()
