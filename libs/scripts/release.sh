@@ -19,6 +19,10 @@ function git-libs-changelog () {
 # Makes a new branch off the master branch and bumps libs,
 # commits with the relevant changelog, and pushes
 function bump-libs () {
+    # Configure git client
+    git config --global user.email "audius-infra@audius.co"
+    git config --global user.name "audius-infra"
+
     # Make sure master is up to date
     git checkout master -f
     git pull
@@ -35,10 +39,6 @@ function bump-libs () {
 
     # Publishing dry run
     npm publish . --access public --dry-run
-
-    # Configure git client
-    git config --global user.email "audius-infra@audius.co"
-    git config --global user.name "audius-infra"
 
     # Commit to a new branch
     git checkout -b libs-$version
