@@ -206,73 +206,51 @@ class ServiceRegistry {
         (element.handle && element.handle.stack)
     )
 
-    // Create metrics from routes
+    // Express routing is... unpredictable. Use a set to manage seen paths
+    const seenPaths = new Set()
     const parsedRoutes = []
     routes.forEach((element) => {
-      let path, method, regex
-      // For routes instantiated in /routes
-      if (element.route && element.route.path) {
-        path = element.route.path
-        method = Object.keys(element.route.methods)[0]
-        regex = element.regexp
-
-        // For routes with multiple mappings, ex.: /ipfs/:cid, /content/:cid
-        if (Array.isArray(path)) {
-          path.forEach((p) => {
-            collectRouteData({
-              prometheusRegistry: this.prometheusRegistry,
-              path: p,
-              method,
-              regex
-            })
-          })
-        } else {
-          collectRouteData({
-            prometheusRegistry: this.prometheusRegistry,
-            path,
-            method,
-            regex
-          })
-        }
+      if (element.name === 'router') {
+        // For routes initialized with the express router
+        element.handle.stack.forEach((e) => {
+          const path = e.route.path
+          const method = Object.keys(e.route.methods)[0]
+          const regex = e.regexp
+          addToParsedRoutes(path, method, regex)
+        })
       } else {
-        // For routes instantiated with the express router
-        const routerRoutes = element.handle.stack
-        routerRoutes.forEach((routerRoute) => {
-          path = routerRoute.route.path
-          method = Object.keys(routerRoute.route.methods)[0]
-          regex = routerRoute.regexp
+        // For all the other routes
+        const path = element.route.path
+        const method = Object.keys(element.route.methods)[0]
+        const regex = element.regexp
+        addToParsedRoutes(path, method, regex)
+      }
+    })
 
-          if (Array.isArray(path)) {
-            path.forEach((p) => {
-              collectRouteData({
-                prometheusRegistry: this.prometheusRegistry,
-                path: p,
-                method,
-                regex
-              })
-            })
-          } else {
-            collectRouteData({
-              prometheusRegistry: this.prometheusRegistry,
-              path,
+    function addToParsedRoutes(path, method, regex) {
+      // Routes may come in the form of an array (e.g. ['/ipfs/:CID', '/content/:CID'])
+      if (Array.isArray(path)) {
+        path.forEach((p) => {
+          if (!seenPaths.has(p + method)) {
+            seenPaths.add(p + method)
+            parsedRoutes.push({
+              path: p,
               method,
               regex
             })
           }
         })
-      }
-
-      function collectRouteData({ prometheusRegistry, path, method, regex }) {
-        if (path.includes(':')) {
-          prometheusRegistry.addRouteRegex({
+      } else {
+        if (!seenPaths.has(path + method)) {
+          seenPaths.add(path + method)
+          parsedRoutes.push({
             path,
-            regex,
-            method
+            method,
+            regex
           })
         }
-        parsedRoutes.push({ path, method, regex })
       }
-    })
+    }
 
     await this.prometheusRegistry.addRoutesDurationTracking(parsedRoutes)
     this.prometheusRegistry.doneInitializing()
@@ -409,10 +387,9 @@ class ServiceRegistry {
 
     try {
       await this._setupRouteDurationTracking(app)
-      this.logInfo('VICKY IS DONE WITH ROUTE DURRRRR')
     } catch (e) {
       this.logError(
-        `Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
+        `DurationTracking || Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
       )
     }
 
@@ -621,6 +598,10 @@ class ServiceRegistry {
 
     await audiusLibs.init()
     return audiusLibs
+  }
+
+  logDebug(msg) {
+    genericLogger.debug(`ServiceRegistry DEBUG || ${msg}`)
   }
 
   logInfo(msg) {

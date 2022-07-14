@@ -361,7 +361,6 @@ const getCID = async (req, res) => {
         stage: `FS_STATS_LEGACY_STORAGE_PATH_CID_NOT_FOUND`,
         time: `${Date.now() - startMs}ms`
       })
-      // continue
     }
 
     if (fileFoundOnFS) {
@@ -487,6 +486,7 @@ const getCID = async (req, res) => {
     })
 
     logGetCIDDecisionTree(decisionTree, req)
+    req.routeDurationStopTimer(req.logger)
     return fsStream
   } catch (e) {
     decisionTree.push({

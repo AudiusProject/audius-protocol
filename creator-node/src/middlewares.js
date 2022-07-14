@@ -25,16 +25,18 @@ async function durationTrackingMiddleware(req, res, next) {
   const method = req.method
 
   let endTimer = () => {
-    throw new Error(`Metric not yet initialized. Skipping duration tracking..`)
+    throw new Error(
+      'DurationTracking || Metric not yet initialized. Skipping duration tracking..'
+    )
   }
-
+  let metricName, metric
   if (prometheusRegistry.isInitialized()) {
     try {
-      let metricName = prometheusRegistry.getDurationTrackingMetricName(
+      metricName = prometheusRegistry.getDurationTrackingMetricName(
         path,
         method
       )
-      let metric = prometheusRegistry.getMetric(metricName)
+      metric = prometheusRegistry.getMetric(metricName)
 
       if (!metric) {
         metricName =
@@ -42,17 +44,25 @@ async function durationTrackingMiddleware(req, res, next) {
         metric = prometheusRegistry.getMetric(metricName)
       }
 
+      req.logger.debug(`DurationTracking || About to start timer for ${path}`)
+
       endTimer = metric.startTimer()
     } catch (e) {
-      req.logger.warn(`Could not create timer for ${path}: ${e.message}`)
+      req.logger.warn(
+        `DurationTracking || Could not create timer for ${path}: ${e.message}`
+      )
     }
   }
 
-  req.routeDurationStopTimer = function (logger, labels) {
+  req.routeDurationStopTimer = function (logger, labels = { code: 200 }) {
     try {
+      logger.debug(`DurationTracking || About to end timer for ${path}`)
       endTimer(labels)
+      logger.debug(`DurationTracking || Stopped timer for ${path}`)
     } catch (e) {
-      logger.warn(`Could not stop timer for ${path}: ${e.message}`)
+      logger.warn(
+        `DurationTracking || Could not stop timer for ${path}: ${e.message}`
+      )
     }
   }
 
