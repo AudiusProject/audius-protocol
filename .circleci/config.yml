@@ -826,15 +826,11 @@ workflows:
             branches:
               only: /(^master$)/
       - hold-publish-libs:
-          context:
-            - AudiusLibs
           type: approval
           filters:
             branches:
               only: /(^jc-inf-86$)/
       - publish-libs:
-          context:
-            - AudiusLibs
           name: publish-libs
           requires:
             - hold-publish-libs
