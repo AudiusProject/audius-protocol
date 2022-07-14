@@ -400,6 +400,7 @@ class AudiusLibs {
         localStorage: this.localStorage
       })
       this.hedgehog = hedgehogService.instance
+      await this.hedgehog.waitUntilReady()
     } else if (this.web3Config && !this.web3Config.useExternalWeb3) {
       throw new Error('Identity Service required for internal Web3')
     }

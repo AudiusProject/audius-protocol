@@ -32,7 +32,7 @@ declare module '@audius/hedgehog' {
     setAuthFn: SetAuthFn
     setUserFn: SetUserFn
     localStorage: LocalStorage
-    isReady: boolean
+    ready: boolean
     constructor(
       getFn: GetFn,
       setAuthFn: SetAuthFn,
@@ -41,6 +41,7 @@ declare module '@audius/hedgehog' {
       localStorage?: LocalStorage
     ): void
     isReady(): boolean
+    waitUntilReady(): Promise<void>
     async login(email: string, password: string): Promise<Wallet>
     async generateRecoveryInfo(): Promise<RecoveryInfo>
     getWallet(): Wallet
