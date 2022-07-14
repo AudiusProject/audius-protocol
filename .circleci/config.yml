@@ -116,7 +116,7 @@ jobs:
           service: libs
       - add_ssh_keys:
           fingerprints:
-            - "8b:39:b6:63:d1:8f:55:55:3e:77:0d:37:99:79:d6:50"
+            - "ee:b0:fd:fb:ba:c8:37:7a:f9:67:15:92:9f:02:97:3e"
       - run:
           name: Bump and Publish Libs
           command: |
