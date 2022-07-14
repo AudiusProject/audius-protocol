@@ -392,8 +392,8 @@ jobs:
         command: ['--port=8556', '-a', '100', '-l', '8000000']
     steps:
       - checkout
-      - diff-if-necessary:
-          service: discovery-provider
+      # - diff-if-necessary:
+      #     service: discovery-provider
       - restore_cache:
           keys:
             - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
