@@ -3,7 +3,7 @@ begin
 
   -- create a notification for the sender and reciever
   insert into notification
-    (slot, user_ids, timestamp, type, id, metadata)
+    (slot, user_ids, timestamp, type, specifier, metadata)
   values
     ( 
       new.slot,
@@ -23,6 +23,8 @@ begin
     );
 
   return null;
+exception
+  when others then return null;
 end;
 $$ language plpgsql;
 

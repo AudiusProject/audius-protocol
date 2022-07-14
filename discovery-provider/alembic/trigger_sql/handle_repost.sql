@@ -73,23 +73,28 @@ begin
     on conflict do nothing;
   end if;
 
-  -- create a notification for the reposted content's owner
-  if new.is_delete is false then
-	insert into notification
-		(blocknumber, user_ids, timestamp, type, id, metadata)
-		values
-		( 
-			new.blocknumber,
-			ARRAY [owner_user_id], 
-			new.created_at, 
-			'repost',
-			'repost:' || new.repost_item_id || ':type:'|| new.repost_type,
-			('{ "repost_item_id": ' || new.repost_item_id || ',  "user_id": ' || new.user_id || ',  "type": "' || new.repost_type ||  '"}')::json
-		);
-	end if;
+  begin
+    -- create a notification for the reposted content's owner
+    if new.is_delete is false then
+    insert into notification
+      (blocknumber, user_ids, timestamp, type, specifier, metadata)
+      values
+      (
+        new.blocknumber,
+        ARRAY [owner_user_id],
+        new.created_at,
+        'repost',
+        'repost:' || new.repost_item_id || ':type:'|| new.repost_type,
+        ('{ "repost_item_id": ' || new.repost_item_id || ',  "user_id": ' || new.user_id || ',  "type": "' || new.repost_type ||  '"}')::json
+      );
+    end if;
+	exception
+		when others then
+		raise notice 'Error creating repost notification';
+	end;
 
   return null;
-end; 
+end;
 $$ language plpgsql;
 
 

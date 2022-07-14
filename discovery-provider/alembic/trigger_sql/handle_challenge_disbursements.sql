@@ -4,20 +4,24 @@ declare
 begin
 
   select * into reward_manager_tx from reward_manager_txs where reward_manager_txs.signature = new.signature limit 1;
-
-  -- create a notification for the challenge disbursement
-  insert into notification
-    (slot, user_ids, timestamp, type, id, metadata)
-  values
-    (
-		new.slot,
-		ARRAY [new.user_id],
-		reward_manager_tx.created_at,
-		'challenge_reward', 'challenge_reward:' || new.user_id || ':' || new.specifier,
-		('{ "specifier": "' || new.specifier || '",  "challenge_id": "' || new.challenge_id || '",  "amount": ' || new.amount ||  '}')::json
-	);
 	
+  if reward_manager_tx is not null then
+	  -- create a notification for the challenge disbursement
+	  insert into notification
+		(slot, user_ids, timestamp, type, specifier, metadata)
+	  values
+		(
+			new.slot,
+			ARRAY [new.user_id],
+			reward_manager_tx.created_at,
+			'challenge_reward', 'challenge_reward:' || new.user_id || ':' || new.specifier,
+			('{ "specifier": "' || new.specifier || '",  "challenge_id": "' || new.challenge_id || '",  "amount": ' || new.amount ||  '}')::json
+		);
+  end if;
   return null;
+
+exception
+  when others then return null;
 end;
 $$ language plpgsql;
 

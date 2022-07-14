@@ -4,26 +4,30 @@ declare
 begin
   select * into user_bank_tx from user_bank_txs where user_bank_txs.slot = new.slot limit 1;
 
-  -- create a notification for the sender and reciever
-  insert into notification
-    (slot, user_ids, timestamp, type, id, metadata)
-  values
-    ( 
-      new.slot,
-      ARRAY [new.sender_user_id], 
-      user_bank_tx.created_at, 
-      'supporter_rank_up', 'supporter_rank_up:' || new.rank || new.slot,
-      ('{ "sender_user_id": ' || new.sender_user_id || ',  "receiver_user_id": ' || new.receiver_user_id || ',  "rank": ' || new.rank ||  '}')::json
-    ),
-    ( 
-      new.slot,
-      ARRAY [new.receiver_user_id],
-      user_bank_tx.created_at, 
-      'supporting_rank_up', 'supporting_rank_up:' || new.rank || new.slot,
-      ('{ "sender_user_id": ' || new.sender_user_id || ',  "receiver_user_id": ' || new.receiver_user_id || ',  "rank": ' || new.rank ||  '}')::json
-    );
-
+  if user_bank_tx is not null then
+    -- create a notification for the sender and reciever
+    insert into notification
+      (slot, user_ids, timestamp, type, specifier, metadata)
+    values
+      (
+        new.slot,
+        ARRAY [new.sender_user_id],
+        user_bank_tx.created_at,
+        'supporter_rank_up', 'supporter_rank_up:' || new.rank || new.slot,
+        ('{ "sender_user_id": ' || new.sender_user_id || ',  "receiver_user_id": ' || new.receiver_user_id || ',  "rank": ' || new.rank ||  '}')::json
+      ),
+      (
+        new.slot,
+        ARRAY [new.receiver_user_id],
+        user_bank_tx.created_at,
+        'supporting_rank_up', 'supporting_rank_up:' || new.rank || new.slot,
+        ('{ "sender_user_id": ' || new.sender_user_id || ',  "receiver_user_id": ' || new.receiver_user_id || ',  "rank": ' || new.rank ||  '}')::json
+      );
+  end if;
   return null;
+
+exception
+  when others then return null;
 end;
 $$ language plpgsql;
 

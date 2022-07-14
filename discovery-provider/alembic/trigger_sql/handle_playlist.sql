@@ -1,4 +1,9 @@
 create or replace function handle_playlist() returns trigger as $$
+declare
+  old_row playlists%rowtype;
+  delta int := 0;
+  track_owner_id int := 0;
+  track_item json;
 begin
 
   insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
@@ -30,6 +35,30 @@ begin
     where user_id = new.playlist_owner_id;
   end if;
 
+  begin
+    for track_item IN select jsonb_array_elements from jsonb_array_elements(new.playlist_contents -> 'track_ids')
+    loop
+      if (track_item->>'time')::double precision::int >= extract(epoch from new.updated_at)::int then
+        select owner_id into track_owner_id from tracks where is_current and track_id=(track_item->>'track')::int;
+        if track_owner_id != new.playlist_owner_id then
+          raise notice 'inserting';
+          insert into notification
+            (blocknumber, user_ids, timestamp, type, specifier, metadata)
+            values
+            (
+              new.blocknumber,
+              ARRAY [track_owner_id],
+              new.updated_at,
+              'trackAddedToPlaylist',
+              'trackAddedToPlaylist:playlistId:' || new.playlist_id || ':trackId:' || (track_item->>'track')::int || ':blocknumber:' || new.blocknumber,
+              ('{ "track_id": ' || (track_item->>'track')::int || ',  "playlist_id": ' || new.playlist_id ||  '}')::json
+            );
+        end if;
+      end if;
+    end loop;
+   exception
+     when others then raise notice 'broke';
+   end;
 
   return null;
 end;

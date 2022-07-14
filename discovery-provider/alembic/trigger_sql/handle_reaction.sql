@@ -5,20 +5,23 @@ begin
 
   select user_id into sender_user_id from users where users.wallet=new.sender_wallet and is_current limit 1;
   
-  -- create a notification for the challenge disbursement
-  insert into notification
-    (slot, user_ids, timestamp, type, id, metadata)
-  values
-    (
-		new.slot,
-		ARRAY [sender_user_id],
-		new.timestamp,
-		'reaction',
-        'reaction:' || 'reaction_to:' || new.reacted_to,
-		('{ "sender_wallet": "' || new.sender_wallet || '",  "reaction_type": "' || new.reaction_type || '",  "reacted_to": "' || new.reacted_to || '",  "reaction_value": ' || new.reaction_value ||  '}')::json
-	);
-	
+  if sender_user_id is not null then
+    insert into notification
+      (slot, user_ids, timestamp, type, specifier, metadata)
+    values
+      (
+      new.slot,
+      ARRAY [sender_user_id],
+      new.timestamp,
+      'reaction',
+          'reaction:' || 'reaction_to:' || new.reacted_to,
+      ('{ "sender_wallet": "' || new.sender_wallet || '",  "reaction_type": "' || new.reaction_type || '",  "reacted_to": "' || new.reacted_to || '",  "reaction_value": ' || new.reaction_value ||  '}')::json
+    );
+  end if;
   return null;
+
+exception
+  when others then return null;
 end;
 $$ language plpgsql;
 
