@@ -564,6 +564,7 @@ class App extends Component {
         <div
           ref={this.props.mainContentRef}
           id={MAIN_CONTENT_ID}
+          role='main'
           className={cn(styles.mainContentWrapper, {
             [styles.bannerMargin]: showBanner,
             [styles.mainContentWrapperMobile]: isMobileClient
