@@ -54,6 +54,8 @@ const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
 console.log(track, 'Track fetched!')
 ```
 
+> If your bundler doesn't automatically polyfill node libraries (like when using create-react-app v5) you will need to use the `web3` script tag instead of the `web3` npm package
+
 ### HTML + JS
 
 #### 1. Include the SDK script tag

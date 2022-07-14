@@ -155,8 +155,9 @@ def es_health():
 @bp.route("/celery_tasks_check", methods=["GET"])
 def celery_tasks_check():
     tasks = get_celery_tasks()
+    all_tasks = tasks.get("celery_tasks", [])
 
-    for task in tasks.get("celery_tasks", []):
+    for task in all_tasks.get("active_tasks", []):
         task["started_at_est_timestamp"] = convert_epoch_to_datetime(
             task.get("started_at")
         )

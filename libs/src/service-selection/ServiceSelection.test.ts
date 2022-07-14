@@ -249,7 +249,7 @@ describe('ServiceSelection withBackupCriteria', () => {
 describe('ServiceSelection withShortCircuit', () => {
   const shortcircuit = 'https://shortcircuit.audius.co'
   class ServiceSelectionWithShortCircuit extends ServiceSelection {
-    override shortcircuit() {
+    override async shortcircuit() {
       return shortcircuit
     }
   }
