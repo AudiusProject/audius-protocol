@@ -500,7 +500,7 @@ const config = convict({
     doc: 'Boolean flag indicating whether or not primary should reject write until 2/3 replication across replica set',
     format: Boolean,
     env: 'enforceWriteQuorum',
-    default: true
+    default: false
   },
   manualSyncsDisabled: {
     doc: 'Disables issuing of manual syncs in order to test state machine Recurring Sync logic.',
