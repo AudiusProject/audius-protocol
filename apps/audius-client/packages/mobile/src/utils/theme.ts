@@ -174,7 +174,7 @@ export const matrixTheme = {
   pageHeaderGradientColor2: '#09BD51',
   actionSheetText: '#21B404',
   accentRed: '#D0021B',
-  accentOrange: '#D0021B',
+  accentOrange: '#EFA947',
   skeleton: '#1B3714',
   statTileText: '#184F17'
 }

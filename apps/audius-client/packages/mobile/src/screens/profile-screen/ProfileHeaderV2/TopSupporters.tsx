@@ -72,6 +72,7 @@ export const TopSupporters = () => {
   const supportersForProfile: SupportersMapForUser =
     useSelectorWeb((state) => getOptimisticSupportersForUser(state, user_id)) ||
     {}
+
   const rankedSupporterIds = Object.keys(supportersForProfile)
     .sort((k1, k2) => {
       return (
@@ -81,6 +82,7 @@ export const TopSupporters = () => {
     })
     .map((k) => supportersForProfile[k as unknown as ID])
     .map((s) => s.sender_id)
+
   const rankedSupporters = useSelectorWeb((state) => {
     const usersMap = getUsers(state, { ids: rankedSupporterIds })
     return rankedSupporterIds.map((id) => usersMap[id]).filter(Boolean)

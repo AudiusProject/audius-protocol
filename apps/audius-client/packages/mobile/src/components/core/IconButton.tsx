@@ -1,5 +1,6 @@
 import {
   Animated,
+  Insets,
   StyleProp,
   TouchableOpacity,
   View,
@@ -22,6 +23,7 @@ export type IconButtonProps = {
   >
   isDisabled?: boolean
   onPress?: GestureResponderHandler
+  hitSlop?: Insets
 } & StylesProps<{ root?: StyleProp<ViewStyle>; icon?: StyleProp<ViewStyle> }>
 
 const useStyles = makeStyles(() => ({
@@ -30,6 +32,8 @@ const useStyles = makeStyles(() => ({
     width: 18
   }
 }))
+
+const defaultHitSlop = { top: 12, right: 12, bottom: 12, left: 12 }
 
 /**
  * A button with touchable feedback that is only an
@@ -44,7 +48,8 @@ export const IconButton = ({
   isDisabled,
   onPress,
   style,
-  styles: stylesProp
+  styles: stylesProp,
+  hitSlop
 }: IconButtonProps) => {
   const styles = useStyles()
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
@@ -61,7 +66,7 @@ export const IconButton = ({
         onPressOut={handlePressOut}
         disabled={isDisabled}
         activeOpacity={0.95}
-        hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}>
+        hitSlop={{ ...defaultHitSlop, ...hitSlop }}>
         <View
           style={[
             styles.icon,
