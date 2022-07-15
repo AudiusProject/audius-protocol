@@ -164,6 +164,27 @@ async function _handleIssueSyncRequest({
         message: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
       }
     }
+
+    /**
+     * For now, if primarySyncFromSecondary fails, we just log & error without any retries
+     * Eventually should make this more robust, but proceeding with caution
+     */
+
+    // Sync primary content from secondary and set secondary sync flag to forceResync before proceeding
+    const error = await primarySyncFromSecondary({
+      wallet: userWallet,
+      secondary: secondaryEndpoint
+    })
+
+    if (error) {
+      return {
+        error: {
+          message: `primarySyncFromSecondary failed with error: ${error.message}`
+        },
+        jobsToEnqueue: {}
+      }
+    } else {
+    }
   }
 
   /**

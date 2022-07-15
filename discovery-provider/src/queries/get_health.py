@@ -8,7 +8,6 @@ from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
-from src.models.indexing.ipld_blacklist_block import IpldBlacklistBlock
 from src.monitors import monitor_names, monitors
 from src.queries.get_balances import (
     IMMEDIATE_REFRESH_REDIS_PREFIX,
@@ -37,8 +36,6 @@ from src.utils.redis_constants import (
     latest_legacy_play_db_key,
     most_recent_indexed_block_hash_redis_key,
     most_recent_indexed_block_redis_key,
-    most_recent_indexed_ipld_block_hash_redis_key,
-    most_recent_indexed_ipld_block_redis_key,
     oldest_unarchived_play_key,
     trending_playlists_last_completion_redis_key,
     trending_tracks_last_completion_redis_key,
@@ -104,59 +101,6 @@ def _get_query_insights():
     )
 
     return query_insights, False
-
-
-# Returns the most current block in ipld blocks table and its associated block hash
-def _get_db_ipld_block_state():
-    ipld_block_number = 0
-    ipld_block_hash = ""
-
-    db = db_session.get_db_read_replica()
-    with db.scoped_session() as session:
-        db_ipld_block_query = (
-            session.query(IpldBlacklistBlock)
-            .filter(IpldBlacklistBlock.is_current == True)
-            .all()
-        )
-        assert (
-            len(db_ipld_block_query) == 1
-        ), "Expected SINGLE row in IPLD Blocks table marked as current"
-
-        ipld_block_number = db_ipld_block_query[0].number
-        ipld_block_hash = db_ipld_block_query[0].blockhash
-
-    return ipld_block_number, ipld_block_hash
-
-
-# Get the max blocknumber and blockhash indexed in ipld blacklist table. Uses redis cache by default.
-def get_latest_ipld_indexed_block(use_redis_cache=True):
-    redis = redis_connection.get_redis()
-    latest_indexed_ipld_block_num = None
-    latest_indexed_ipld_block_hash = None
-
-    if use_redis_cache:
-        latest_indexed_ipld_block_num = redis.get(
-            most_recent_indexed_ipld_block_redis_key
-        )
-        latest_indexed_ipld_block_hash = redis.get(
-            most_recent_indexed_ipld_block_hash_redis_key
-        )
-        if latest_indexed_ipld_block_num is not None:
-            latest_indexed_ipld_block_num = int(latest_indexed_ipld_block_num)
-
-    if latest_indexed_ipld_block_num is None or latest_indexed_ipld_block_hash is None:
-        (
-            latest_indexed_ipld_block_num,
-            latest_indexed_ipld_block_hash,
-        ) = _get_db_ipld_block_state()
-
-        # If there are no entries in the table, default to these values
-        if latest_indexed_ipld_block_num is None:
-            latest_indexed_ipld_block_num = 0
-        if latest_indexed_ipld_block_hash is None:
-            latest_indexed_ipld_block_hash = ""
-
-    return latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash
 
 
 class GetHealthArgs(TypedDict):
