@@ -23,7 +23,7 @@ module.exports = {
       return queryInterface.dropTable('users');
     */
     await queryInterface.sequelize.query(`
-      ALTER DATABASE audius_discovery SET DEFAULT_TRANSACTION_ISOLATION TO READ COMMITED; 
+      ALTER DATABASE audius_discovery SET DEFAULT_TRANSACTION_ISOLATION TO READ COMMITTED; 
     `)
   }
 }

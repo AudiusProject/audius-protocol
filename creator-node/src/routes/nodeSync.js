@@ -6,6 +6,7 @@ const {
   errorResponseServerError
 } = require('../apiHelpers')
 const config = require('../config')
+const retry = require('async-retry')
 
 module.exports = function (app) {
   /**
@@ -34,124 +35,134 @@ module.exports = function (app) {
 
       const transaction = await models.sequelize.transaction()
       try {
-        // Fetch cnodeUser for each walletPublicKey.
-        const cnodeUsers = await models.CNodeUser.findAll({
-          where: { walletPublicKey: walletPublicKeys },
-          transaction,
-          raw: true
-        })
-        const cnodeUserUUIDs = cnodeUsers.map(
-          (cnodeUser) => cnodeUser.cnodeUserUUID
-        )
-
-        // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files, clockRecords.
-
-        const [audiusUsers, tracks, files, clockRecords] = await Promise.all([
-          models.AudiusUser.findAll({
-            where: {
-              cnodeUserUUID: cnodeUserUUIDs,
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: requestedClockRangeMax
-              }
-            },
-            order: [['clock', 'ASC']],
-            transaction,
-            raw: true
-          }),
-          models.Track.findAll({
-            where: {
-              cnodeUserUUID: cnodeUserUUIDs,
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: requestedClockRangeMax
-              }
-            },
-            order: [['clock', 'ASC']],
-            transaction,
-            raw: true
-          }),
-          models.File.findAll({
-            where: {
-              cnodeUserUUID: cnodeUserUUIDs,
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: requestedClockRangeMax
-              }
-            },
-            order: [['clock', 'ASC']],
-            transaction,
-            raw: true
-          }),
-          models.ClockRecord.findAll({
-            where: {
-              cnodeUserUUID: cnodeUserUUIDs,
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: requestedClockRangeMax
-              }
-            },
-            order: [['clock', 'ASC']],
-            transaction,
-            raw: true
-          })
-        ])
-
-        await transaction.commit()
-
-        /** Bundle all data into cnodeUser objects to maximize import speed. */
-
-        const cnodeUsersDict = {}
-        cnodeUsers.forEach((cnodeUser) => {
-          // Add cnodeUserUUID data fields
-          cnodeUser.audiusUsers = []
-          cnodeUser.tracks = []
-          cnodeUser.files = []
-          cnodeUser.clockRecords = []
-
-          cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
-          const curCnodeUserClockVal = cnodeUser.clock
-
-          // Resets cnodeUser clock value to requestedClockRangeMax to ensure consistency with clockRecords data
-          // Also ensures secondary knows there is more data to sync
-          if (cnodeUser.clock > requestedClockRangeMax) {
-            // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
-            cnodeUser.clock = requestedClockRangeMax
-            req.logger.info(
-              `nodeSync.js#export - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`
+        await retry(
+          async () => {
+            // Fetch cnodeUser for each walletPublicKey.
+            const cnodeUsers = await models.CNodeUser.findAll({
+              where: { walletPublicKey: walletPublicKeys },
+              transaction,
+              raw: true
+            })
+            const cnodeUserUUIDs = cnodeUsers.map(
+              (cnodeUser) => cnodeUser.cnodeUserUUID
             )
+
+            // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files, clockRecords.
+
+            const [audiusUsers, tracks, files, clockRecords] =
+              await Promise.all([
+                models.AudiusUser.findAll({
+                  where: {
+                    cnodeUserUUID: cnodeUserUUIDs,
+                    clock: {
+                      [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                      [models.Sequelize.Op.lte]: requestedClockRangeMax
+                    }
+                  },
+                  order: [['clock', 'ASC']],
+                  transaction,
+                  raw: true
+                }),
+                models.Track.findAll({
+                  where: {
+                    cnodeUserUUID: cnodeUserUUIDs,
+                    clock: {
+                      [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                      [models.Sequelize.Op.lte]: requestedClockRangeMax
+                    }
+                  },
+                  order: [['clock', 'ASC']],
+                  transaction,
+                  raw: true
+                }),
+                models.File.findAll({
+                  where: {
+                    cnodeUserUUID: cnodeUserUUIDs,
+                    clock: {
+                      [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                      [models.Sequelize.Op.lte]: requestedClockRangeMax
+                    }
+                  },
+                  order: [['clock', 'ASC']],
+                  transaction,
+                  raw: true
+                }),
+                models.ClockRecord.findAll({
+                  where: {
+                    cnodeUserUUID: cnodeUserUUIDs,
+                    clock: {
+                      [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                      [models.Sequelize.Op.lte]: requestedClockRangeMax
+                    }
+                  },
+                  order: [['clock', 'ASC']],
+                  transaction,
+                  raw: true
+                })
+              ])
+
+            await transaction.commit()
+
+            /** Bundle all data into cnodeUser objects to maximize import speed. */
+
+            const cnodeUsersDict = {}
+            cnodeUsers.forEach((cnodeUser) => {
+              // Add cnodeUserUUID data fields
+              cnodeUser.audiusUsers = []
+              cnodeUser.tracks = []
+              cnodeUser.files = []
+              cnodeUser.clockRecords = []
+
+              cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
+              const curCnodeUserClockVal = cnodeUser.clock
+
+              // Resets cnodeUser clock value to requestedClockRangeMax to ensure consistency with clockRecords data
+              // Also ensures secondary knows there is more data to sync
+              if (cnodeUser.clock > requestedClockRangeMax) {
+                // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
+                cnodeUser.clock = requestedClockRangeMax
+                req.logger.info(
+                  `nodeSync.js#export - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`
+                )
+              }
+
+              cnodeUser.clockInfo = {
+                requestedClockRangeMin,
+                requestedClockRangeMax,
+                localClockMax: cnodeUser.clock
+              }
+            })
+
+            audiusUsers.forEach((audiusUser) => {
+              cnodeUsersDict[audiusUser.cnodeUserUUID].audiusUsers.push(
+                audiusUser
+              )
+            })
+            tracks.forEach((track) => {
+              cnodeUsersDict[track.cnodeUserUUID].tracks.push(track)
+            })
+            files.forEach((file) => {
+              cnodeUsersDict[file.cnodeUserUUID].files.push(file)
+            })
+            clockRecords.forEach((clockRecord) => {
+              cnodeUsersDict[clockRecord.cnodeUserUUID].clockRecords.push(
+                clockRecord
+              )
+            })
+
+            req.logger.info(
+              `Successful export for wallets ${walletPublicKeys} to source endpoint ${
+                sourceEndpoint || '(not provided)'
+              } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${
+                Date.now() - start
+              } ms`
+            )
+            return successResponse({ cnodeUsers: cnodeUsersDict })
+          },
+          {
+            retries: 3
           }
-
-          cnodeUser.clockInfo = {
-            requestedClockRangeMin,
-            requestedClockRangeMax,
-            localClockMax: cnodeUser.clock
-          }
-        })
-
-        audiusUsers.forEach((audiusUser) => {
-          cnodeUsersDict[audiusUser.cnodeUserUUID].audiusUsers.push(audiusUser)
-        })
-        tracks.forEach((track) => {
-          cnodeUsersDict[track.cnodeUserUUID].tracks.push(track)
-        })
-        files.forEach((file) => {
-          cnodeUsersDict[file.cnodeUserUUID].files.push(file)
-        })
-        clockRecords.forEach((clockRecord) => {
-          cnodeUsersDict[clockRecord.cnodeUserUUID].clockRecords.push(
-            clockRecord
-          )
-        })
-
-        req.logger.info(
-          `Successful export for wallets ${walletPublicKeys} to source endpoint ${
-            sourceEndpoint || '(not provided)'
-          } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${
-            Date.now() - start
-          } ms`
         )
-        return successResponse({ cnodeUsers: cnodeUsersDict })
       } catch (e) {
         req.logger.error(
           `Error in /export for wallets ${walletPublicKeys} to source endpoint ${
