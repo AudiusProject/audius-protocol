@@ -221,16 +221,6 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-              cd /home/ubuntu/audius-protocol;
-              git pull;
-              git checkout $CIRCLE_BRANCH;
-              cd ./service-commands;
-              npm i
-              cd ../mad-dog;
-              A run init-repos up;
-              A up;
-              npm run start << parameters.mad-dog-type >> verbose;
-              exit;
             EOF
 
   test-libs:
