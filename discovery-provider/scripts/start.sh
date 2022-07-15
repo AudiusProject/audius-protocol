@@ -109,7 +109,7 @@ if [ "$audius_db_run_migrations" != false ]; then
     alembic upgrade head
     echo "Finished running migrations"
 
-    sleep 20
+    sleep 60
 fi
 
 # start es-indexer
