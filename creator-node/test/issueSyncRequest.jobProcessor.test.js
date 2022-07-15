@@ -3,6 +3,7 @@ const chai = require('chai')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 const nock = require('nock')
+const _ = require('lodash')
 
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
@@ -16,6 +17,7 @@ const {
   SYNC_MODES
 } = stateMachineConstants
 const issueSyncRequestJobProcessor = require('../src/services/stateMachineManager/stateReconciliation/issueSyncRequest.jobProcessor')
+const { MetricNames } = require('../src/services/prometheusMonitoring/prometheus.constants')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -56,28 +58,41 @@ describe('test issueSyncRequest job processor param validation', function () {
     const method = 'post'
     const data = { wallet: [wallet] }
     const syncRequestParameters = {
-      // Missing secondary
+      // Missing `baseURL`
       url,
       method,
       data
     }
 
+    const syncType = SyncType.Manual
+
     const expectedErrorMessage = `Invalid sync data found: ${JSON.stringify(syncRequestParameters)}`
 
     // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
-    await expect(
-      issueSyncRequestJobProcessor({
-        logger,
-        syncType: 'anyDummyType',
-        syncMode,
-        syncRequestParameters
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      error: {
-        message: expectedErrorMessage
-      },
-      "jobsToEnqueue": {}
+    const result = await issueSyncRequestJobProcessor({
+      logger,
+      syncType,
+      syncMode,
+      syncRequestParameters
     })
+    expect(result).to.have.deep.property('error')
+    expect(result.error).to.have.deep.property('message', expectedErrorMessage)
+    expect(result).to.have.deep.property('jobsToEnqueue', {})
+    expect(result.metricsToRecord).to.have.lengthOf(1)
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricName',
+      MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
+    )
+    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      sync_mode: _.snakeCase(syncMode),
+      sync_type: _.snakeCase(syncType),
+      result: 'failure_validate_job_data'
+    })
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricType',
+      'HISTOGRAM_OBSERVE'
+    )
+    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(logger.error).to.have.been.calledOnceWithExactly(
       expectedErrorMessage
     )
@@ -95,23 +110,36 @@ describe('test issueSyncRequest job processor param validation', function () {
       method,
       data
     }
+    const syncType = SyncType.Manual
 
     const expectedErrorMessage = `Invalid sync data wallets (expected non-empty array): ${data.wallet}`
 
     // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
-    await expect(
-      issueSyncRequestJobProcessor({
-        logger,
-        syncType: 'anyDummyType',
-        syncMode,
-        syncRequestParameters
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      error: {
-        message: expectedErrorMessage
-      },
-      "jobsToEnqueue": {}
+    // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
+    const result = await issueSyncRequestJobProcessor({
+      logger,
+      syncType,
+      syncMode,
+      syncRequestParameters
     })
+    expect(result).to.have.deep.property('error')
+    expect(result.error).to.have.deep.property('message', expectedErrorMessage)
+    expect(result).to.have.deep.property('jobsToEnqueue', {})
+    expect(result.metricsToRecord).to.have.lengthOf(1)
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricName',
+      MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
+    )
+    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      sync_mode: _.snakeCase(syncMode),
+      sync_type: _.snakeCase(syncType),
+      result: 'failure_validate_job_data'
+    })
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricType',
+      'HISTOGRAM_OBSERVE'
+    )
+    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(logger.error).to.have.been.calledOnceWithExactly(
       expectedErrorMessage
     )
@@ -247,11 +275,12 @@ describe('test issueSyncRequest job processor', function () {
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
-      'audius_cn_issue_sync_request_monitoring_duration_seconds'
+      MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
-      syncType: 'manual',
-      reason_for_additional_sync: 'none'
+      sync_type: _.snakeCase(syncType),
+      sync_mode: _.snakeCase(syncMode),
+      result: 'success_secondary_caught_up'
     })
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricType',
@@ -282,7 +311,7 @@ describe('test issueSyncRequest job processor', function () {
       retrieveClockValueForUserFromReplicaStub
     })
 
-    const expectedErrorMessage = `(${syncType})(${syncMode}) User ${wallet} | Secondary: ${secondary} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${failureThreshold}). Will not issue further syncRequests today.`
+    const expectedErrorMessage = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${wallet} | Secondary: ${secondary} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${failureThreshold}). Will not issue further syncRequests today.`
 
     // Verify job outputs the correct results: error and no sync issued (nock will error if a network req was made)
     const result = await issueSyncRequestJobProcessor({
@@ -294,6 +323,22 @@ describe('test issueSyncRequest job processor', function () {
     expect(result).to.have.deep.property('error', {
       message: expectedErrorMessage
     })
+    expect(result).to.have.deep.property('jobsToEnqueue', {})
+    expect(result.metricsToRecord).to.have.lengthOf(1)
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricName',
+      MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
+    )
+    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      sync_type: _.snakeCase(syncType),
+      sync_mode: _.snakeCase(syncMode),
+      result: 'failure_secondary_failure_count_threshold_met'
+    })
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricType',
+      'HISTOGRAM_OBSERVE'
+    )
+    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(logger.error).to.have.been.calledOnceWithExactly(
       expectedErrorMessage
     )
@@ -354,6 +399,7 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
+    console.log(`sidtest result: ${JSON.stringify(result)}`)
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
       [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
@@ -361,11 +407,12 @@ describe('test issueSyncRequest job processor', function () {
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
-      'audius_cn_issue_sync_request_monitoring_duration_seconds'
+      MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
-      syncType: 'manual',
-      reason_for_additional_sync: 'secondary_progressed_too_slow'
+      sync_type: _.snakeCase(syncType),
+      sync_mode: _.snakeCase(syncMode),
+      result: 'success_secondary_partially_caught_up'
     })
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricType',
@@ -447,11 +494,12 @@ describe('test issueSyncRequest job processor', function () {
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
-      'audius_cn_issue_sync_request_monitoring_duration_seconds'
+      MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
-      syncType: 'manual',
-      reason_for_additional_sync: 'secondary_failed_to_progress'
+      sync_mode: _.snakeCase(syncMode),
+      sync_type: _.snakeCase(syncType),
+      result: 'failure_secondary_failed_to_progress'
     })
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricType',
@@ -510,7 +558,21 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {})
-    expect(result).to.not.have.deep.property('metricsToRecord')
+    expect(result.metricsToRecord).to.have.lengthOf(1)
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricName',
+      MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
+    )
+    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      sync_mode: _.snakeCase(syncMode),
+      sync_type: _.snakeCase(syncType),
+      result: 'success'
+    })
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricType',
+      'HISTOGRAM_OBSERVE'
+    )
+    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
 
@@ -562,11 +624,12 @@ describe('test issueSyncRequest job processor', function () {
       expect(result.metricsToRecord).to.have.lengthOf(1)
       expect(result.metricsToRecord[0]).to.have.deep.property(
         'metricName',
-        'audius_cn_issue_sync_request_monitoring_duration_seconds'
+        MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
       )
       expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
-        syncType: 'manual',
-        reason_for_additional_sync: 'none'
+        sync_type: _.snakeCase(syncType),
+        sync_mode: _.snakeCase(syncMode),
+        result: 'success_secondary_caught_up'
       })
       expect(result.metricsToRecord[0]).to.have.deep.property(
         'metricType',
@@ -623,7 +686,21 @@ describe('test issueSyncRequest job processor', function () {
         message: `primarySyncFromSecondary failed with error: ${primarySyncFromSecondaryError.message}`
       })
       expect(result).to.have.deep.property('jobsToEnqueue', {})
-      expect(result).to.not.have.deep.property('metricsToRecord')
+      expect(result.metricsToRecord).to.have.lengthOf(1)
+      expect(result.metricsToRecord[0]).to.have.deep.property(
+        'metricName',
+        MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
+      )
+      expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+        sync_mode: _.snakeCase(syncMode),
+        sync_type: _.snakeCase(syncType),
+        result: 'failure_primary_sync_from_secondary'
+      })
+      expect(result.metricsToRecord[0]).to.have.deep.property(
+        'metricType',
+        'HISTOGRAM_OBSERVE'
+      )
+      expect(result.metricsToRecord[0].metricValue).to.be.a('number')
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     })
 
@@ -663,7 +740,21 @@ describe('test issueSyncRequest job processor', function () {
       })
       expect(result).to.have.deep.property('error', {})
       expect(result).to.have.deep.property('jobsToEnqueue', {})
-      expect(result).to.not.have.deep.property('metricsToRecord')
+      expect(result.metricsToRecord).to.have.lengthOf(1)
+      expect(result.metricsToRecord[0]).to.have.deep.property(
+        'metricName',
+        MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
+      )
+      expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+        sync_mode: _.snakeCase(syncMode),
+        sync_type: _.snakeCase(syncType),
+        result: 'success_mode_disabled'
+      })
+      expect(result.metricsToRecord[0]).to.have.deep.property(
+        'metricType',
+        'HISTOGRAM_OBSERVE'
+      )
+      expect(result.metricsToRecord[0].metricValue).to.be.a('number')
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     })
 

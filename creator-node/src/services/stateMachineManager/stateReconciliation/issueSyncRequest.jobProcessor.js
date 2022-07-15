@@ -1,7 +1,6 @@
 const axios = require('axios')
 const _ = require('lodash')
 
-const { logger: genericLogger } = require('../../../logging')
 const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
@@ -21,6 +20,9 @@ const {
   SYNC_MODES
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
+const {
+  computeSyncModeForUserAndReplica
+} = require('../stateMonitoring/stateMonitoringUtils')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
@@ -47,7 +49,7 @@ module.exports = async function ({
   syncType,
   syncMode,
   syncRequestParameters,
-  logger = genericLogger
+  logger
 }) {
   let jobsToEnqueue = {}
   let metricsToRecord = []
@@ -71,6 +73,7 @@ module.exports = async function ({
   }
 
   // Determine if new sync request needs to be enqueued
+  let getNewOrExistingSyncReqError
   if (syncReqToEnqueueResp) {
     const {
       userWallet,
@@ -84,17 +87,18 @@ module.exports = async function ({
       syncType,
       syncMode: syncModeResp
     })
-    if (duplicateSyncReq && !_.isEmpty(duplicateSyncReq)) {
-      error = {
+    if (!_.isEmpty(duplicateSyncReq)) {
+      getNewOrExistingSyncReqError = {
         message:
           'Additional sync request was required but not able to be enqueued due to a duplicate',
         duplicateSyncReq
       }
-    } else if (syncReqToEnqueue && !_.isEmpty(syncReqToEnqueue)) {
-      jobsToEnqueue = syncReqToEnqueue
+    } else if (!_.isEmpty(syncReqToEnqueue)) {
+      jobsToEnqueue = { [QUEUE_NAMES.STATE_RECONCILIATION]: [syncReqToEnqueue] }
     }
   }
-  if (error) {
+  if (getNewOrExistingSyncReqError) {
+    error = getNewOrExistingSyncReqError
     logger.error(error.message)
   }
 
@@ -137,7 +141,7 @@ async function _handleIssueSyncRequest({
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryEndpoint = syncRequestParameters.baseURL
 
-  const logMsgString = `(${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
+  const logMsgString = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
 
   /**
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
@@ -189,6 +193,7 @@ async function _handleIssueSyncRequest({
     }
   }
 
+  console.log(`SIDTEST 1`)
   /**
    * Issue sync request to secondary
    * - If SyncMode = MergePrimaryAndSecondary - issue sync request with forceResync = true
@@ -223,6 +228,8 @@ async function _handleIssueSyncRequest({
     userWallet
   ]
 
+  console.log(`SIDTEST 2`)
+
   // Wait until has sync has completed (within time threshold)
   const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
     userWallet,
@@ -232,6 +239,8 @@ async function _handleIssueSyncRequest({
     syncMode,
     logger
   )
+
+  console.log(`SIDTEST 3`)
 
   return {
     result: outcome,
@@ -374,6 +383,8 @@ const _additionalSyncIsRequired = async (
     await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
   }
 
+  console.log(`SECONDARYCAUGHTUP: ${secondaryCaughtUpToPrimary}`)
+
   const monitoringTimeMs = Date.now() - startTimeMs
 
   /**
@@ -422,6 +433,7 @@ const _additionalSyncIsRequired = async (
 
   const response = { outcome }
   if (additionalSyncIsRequired) {
+    console.log(`SIDTEST WHY`)
     response.syncReqToEnqueue = {
       userWallet,
       secondaryEndpoint: secondaryUrl,

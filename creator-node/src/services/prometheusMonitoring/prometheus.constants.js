@@ -55,8 +55,8 @@ MetricNames = Object.freeze(
 
 const MetricLabels = Object.freeze({
   [MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
-    syncType: Object.values(SyncType).map(_.snakeCase),
-    syncMode: Object.values(SYNC_MODES).map(_.snakeCase),
+    sync_type: Object.values(SyncType).map(_.snakeCase),
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
     result: [
       'failure_validate_job_data',
       'success',
@@ -85,7 +85,7 @@ const MetricLabels = Object.freeze({
   },
 
   [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
-    syncMode: Object.values(SYNC_MODES).map(_.snakeCase),
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
     result: [
       'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
       'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
@@ -131,7 +131,7 @@ const MetricLabelNames = Object.freeze(
   Object.fromEntries(
     Object.entries(MetricLabels).map(([metric, metricLabels]) => [
       metric,
-      Object.keys(metricLabels).map(_.snakeCase)
+      Object.keys(metricLabels)
     ])
   )
 )
