@@ -11,6 +11,25 @@ export enum EntityType {
   PLAYLIST = 'Playlist'
 }
 
+export interface PlaylistOperationResponse {
+  /**
+   * Blockhash of playlist transaction
+   */
+  blockHash: Nullable<string>
+  /**
+   * Block number of playlist transaction
+   */
+  blockNumber: Nullable<number>
+  /**
+   * ID of playlist being modified
+   */
+  playlistId: Nullable<number>
+  /**
+   * String error message returned
+   */
+  error: Nullable<string>
+}
+
 // Minimum playlist ID, intentionally higher than legacy playlist ID range
 const MIN_PLAYLIST_ID = 400000
 // Maximum playlist ID, reflects postgres max integer value
@@ -60,6 +79,18 @@ export class EntityManager extends Base {
   }
 
   /**
+   * Playlist default response values
+   */
+  getDefaultPlaylistReponseValues(): PlaylistOperationResponse {
+    return {
+      blockHash: null,
+      blockNumber: null,
+      playlistId: null,
+      error: null
+    }
+  }
+
+  /**
    * Create a playlist using updated data contracts flow
    */
   async createPlaylist({
@@ -78,13 +109,9 @@ export class EntityManager extends Base {
     isPrivate: boolean
     coverArt: string
     logger: Console
-  }): Promise<{
-    blockHash: Nullable<string>
-    blockNumber: Nullable<number>
-    playlistId: Nullable<number>
-    error: Nullable<string>
-  }> {
-    let error = null
+  }): Promise<PlaylistOperationResponse> {
+    const responseValues: PlaylistOperationResponse =
+      this.getDefaultPlaylistReponseValues()
     try {
       const currentUserId: string | null =
         this.userStateManager.getCurrentUserId()
@@ -119,29 +146,22 @@ export class EntityManager extends Base {
       }
       const { metadataMultihash } =
         await this.creatorNode.uploadPlaylistMetadata(metadata)
-      const resp = await this.manageEntity({
+      const manageEntityResponse = await this.manageEntity({
         userId: userId,
         entityType,
         entityId,
         action: createAction,
         metadataMultihash
       })
-      logger.info(`CreatePlaylistData - ${JSON.stringify(resp)}`)
-      const txReceipt = resp.txReceipt
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber,
-        playlistId: entityId,
-        error
-      }
+      const txReceipt = manageEntityResponse.txReceipt
+      responseValues.blockHash = txReceipt.blockHash
+      responseValues.blockNumber = txReceipt.blockNumber
+      responseValues.playlistId = entityId
+      return responseValues
     } catch (e) {
-      error = (e as Error).message
-      return {
-        blockHash: null,
-        blockNumber: null,
-        playlistId: null,
-        error
-      }
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
     }
   }
 
@@ -150,13 +170,14 @@ export class EntityManager extends Base {
    */
   async deletePlaylist({
     playlistId,
-    userId,
-    logger = console
+    userId
   }: {
     playlistId: number
     userId: number
     logger: any
-  }): Promise<{ blockHash: any; blockNumber: any }> {
+  }): Promise<PlaylistOperationResponse> {
+    const responseValues: PlaylistOperationResponse =
+      this.getDefaultPlaylistReponseValues()
     try {
       const resp = await this.manageEntity({
         userId,
@@ -165,15 +186,15 @@ export class EntityManager extends Base {
         action: Action.DELETE,
         metadataMultihash: ''
       })
-      logger.info(`DeletePlaylistData - ${JSON.stringify(resp)}`)
       const txReceipt = resp.txReceipt
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber
-      }
+      responseValues.blockHash = txReceipt.blockHash
+      responseValues.blockNumber = txReceipt.blockNumber
+      responseValues.playlistId = playlistId
+      return responseValues
     } catch (e) {
-      logger.error(`Data delete playlist: err ${e}`)
-      throw e
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
     }
   }
 
@@ -198,12 +219,7 @@ export class EntityManager extends Base {
     isPrivate: boolean
     coverArt: string
     logger: Console
-  }): Promise<{
-    blockHash: Nullable<string>
-    blockNumber: Nullable<number>
-    playlistId: Nullable<number>
-    error: Nullable<string>
-  }> {
+  }): Promise<PlaylistOperationResponse> {
     let error = null
     try {
       const currentUserId: string | null =
