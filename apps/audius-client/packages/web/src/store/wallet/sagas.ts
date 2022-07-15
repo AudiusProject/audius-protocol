@@ -13,6 +13,7 @@ import {
 } from 'common/store/pages/token-dashboard/slice'
 import {
   getAccountBalance,
+  getFreezeUntilTime,
   getLocalBalanceDidChange
 } from 'common/store/wallet/selectors'
 import {
@@ -33,6 +34,11 @@ import { getErrorMessage } from 'utils/error'
 // TODO: handle errors
 const errors = {
   rateLimitError: 'Please wait before trying again'
+}
+
+function* getIsBalanceFrozen() {
+  const freezeUntil = yield* select(getFreezeUntilTime)
+  return freezeUntil && Date.now() < freezeUntil
 }
 
 /**
@@ -145,6 +151,11 @@ function* getWalletBalanceAndWallets() {
 function* fetchBalanceAsync() {
   const account = yield* select(getAccountUser)
   if (!account) return
+
+  // Opt out of balance refreshes if the balance
+  // is frozen due to a recent optimistic update
+  const isBalanceFrozen = yield* call(getIsBalanceFrozen)
+  if (isBalanceFrozen) return
 
   const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> =
     yield* select(getLocalBalanceDidChange)
