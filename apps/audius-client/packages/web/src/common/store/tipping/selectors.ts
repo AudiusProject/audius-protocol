@@ -77,16 +77,6 @@ const mergeMaps = <
   return mergedMap
 }
 
-export const getOptimisticSupporting = createSelector(
-  getSupporting,
-  getSupportingOverrides,
-  (supporting, supportingOverrides) =>
-    mergeMaps<SupportingMap>({
-      map: supporting,
-      mapOverrides: supportingOverrides
-    })
-)
-
 export const rerankSupportersMapForUser = (
   supportersForUser: SupportersMapForUser
 ) => {
@@ -156,6 +146,43 @@ export const getOptimisticSupporters = createSelector(
     const mergedUserIds = Object.keys(mergedMap) as unknown as ID[]
     for (const userId of mergedUserIds) {
       result[userId] = rerankSupportersMapForUser(mergedMap[userId])
+    }
+
+    return result
+  }
+)
+
+export const getOptimisticSupporting = createSelector(
+  getSupporting,
+  getSupportingOverrides,
+  getOptimisticSupporters,
+  (supporting, supportingOverrides, supportersMap) => {
+    /**
+     * Merge supporting maps
+     */
+    const mergedMap = mergeMaps<SupportingMap>({
+      map: supporting,
+      mapOverrides: supportingOverrides
+    })
+
+    /**
+     * Get updated ranking from optimistic supporters map
+     */
+    const result: SupportingMap = {}
+    const mergedUserIds = Object.keys(mergedMap) as unknown as ID[]
+    for (const userId of mergedUserIds) {
+      result[userId] = {}
+      const supportingUserIds = Object.keys(
+        mergedMap[userId]
+      ) as unknown as ID[]
+      for (const supportingUserId of supportingUserIds) {
+        result[userId][supportingUserId] = {
+          ...mergedMap[userId][supportingUserId],
+          rank:
+            supportersMap?.[supportingUserId]?.[userId]?.rank ||
+            mergedMap[userId][supportingUserId].rank
+        }
+      }
     }
 
     return result
