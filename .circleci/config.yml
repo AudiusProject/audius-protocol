@@ -29,13 +29,13 @@ commands:
       post-gcp-command:
         description: The command to run after exiting the gcp ssh session
         type: string
-      name:
+      command-name:
         description: The name of the step to display
         default: Spin up gcp instance and run command
         type: string
     steps:
       - run:
-          name: << parameters.name >>
+          name: << parameters.command-name >>
           # This has to be one large run block because CircleCI doesn't preserve state across run steps
           command: |
             # cleanup code setup before starting actual execution
@@ -96,7 +96,7 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - run-on-gcp:
-          name: Bake GCP Dev Image
+          command-name: Bake GCP Dev Image
           command: |
             # fail on error
             set -e;
@@ -141,7 +141,7 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - run-on-gcp:
-          name: Test mad-dog on GCP
+          command-name: Test mad-dog on GCP
           command: |
             cd /home/ubuntu/audius-protocol;
             git pull;
@@ -161,7 +161,7 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - run-on-gcp-instance:
-          name: Verify generated sdk types
+          command-name: Verify generated sdk types
           command: |
             A up -nc 0
             cd libs
