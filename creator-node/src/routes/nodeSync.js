@@ -38,7 +38,7 @@ module.exports = function (app) {
         isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
       })
       try {
-        await retry(
+        const cnodeUsersDict = await retry(
           async () => {
             // Fetch cnodeUser for each walletPublicKey.
             const cnodeUsers = await models.CNodeUser.findAll({
@@ -170,12 +170,15 @@ module.exports = function (app) {
                 Date.now() - start
               } ms`
             )
-            return successResponse({ cnodeUsers: cnodeUsersDict })
+
+            return cnodeUsersDict
           },
           {
             retries: 3
           }
         )
+
+        return successResponse({ cnodeUsers: cnodeUsersDict })
       } catch (e) {
         req.logger.error(
           `Error in /export for wallets ${walletPublicKeys} to source endpoint ${
