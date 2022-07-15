@@ -79,10 +79,7 @@ class ServiceRegistry {
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
 
-    this.trustedNotifierManager = new TrustedNotifierManager(
-      config,
-      this.libs
-    )
+    this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
 
     await this.trustedNotifierManager.init()
 
