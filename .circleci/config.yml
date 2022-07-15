@@ -215,9 +215,9 @@ jobs:
             # A setup ... || true is necessary because exit code returns 141 by default
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME --fast --spot-instance || true
 
-    - run:
-        name: Run sdk tests
-        command: |
+      - run:
+          name: Run sdk tests
+          command: |
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
