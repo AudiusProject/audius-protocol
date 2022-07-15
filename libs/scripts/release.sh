@@ -5,15 +5,14 @@ set -ex
 # Finds the lastest commit in libs that looks like a version commit,
 # and gets the list of commits after that (with PR #)
 function git-libs-changelog () {
-    # Find the latest release commit
-    release_commit=$(git log --grep "Bump libs" -i --oneline | awk 'NR==1{print $1}')
+    # Find the latest release commit by using the last time the first `version` key changed
+    version_line_number=$(grep -m 1 -n version package.json | cut -d: -f 1)
+    release_commit=$(git blame -L ${version_line_number},+1 --porcelain -- package.json | awk 'NR==1{ print $1 }')
 
     # Print the log as <author name> <commit message>,
     # then grab the PR # from within the () at the end of the message
     # and format it as "- (#PR) Author Name"
-    git log --pretty=format:"%an %s" $release_commit..HEAD -- . \
-        | awk '{print "-", $NF, "by", $1, $2}' \
-        | sed -E 's/\((#.*)\)/\1/g'
+    git log --pretty=format:"- %cs [%h] %s %an" $release_commit..HEAD
 }
 
 # Makes a new branch off the master branch and bumps libs,
@@ -47,7 +46,7 @@ function bump-libs () {
 
 ## Changelog
 
-$(git-libs-changelog)"
+${CHANGE_LOG}"
 
     # Push to the remote
     git push -u origin jc-libs-$version
@@ -62,7 +61,7 @@ function publish-libs () {
 
 ## Changelog
 
-$(git-libs-changelog)"
+${CHANGE_LOG}"
 
     # git push -u origin master
 
@@ -76,5 +75,6 @@ $(git-libs-changelog)"
 
 
 cd $PROTOCOL_DIR/libs
+CHANGE_LOG=$(git-libs-changelog)
 bump-libs
 publish-libs
