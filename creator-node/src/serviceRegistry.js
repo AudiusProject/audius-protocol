@@ -78,6 +78,10 @@ class ServiceRegistry {
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
 
+    this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
+
+    await this.trustedNotifierManager.init()
+
     this.synchronousServicesInitialized = true
 
     logInfoWithDuration(
@@ -95,14 +99,6 @@ class ServiceRegistry {
     // If error occurs in initializing these services, do not continue with app start up.
     try {
       await this.blacklistManager.init()
-
-      this.trustedNotifierManager = new TrustedNotifierManager(
-        config,
-        this.libs
-      )
-
-      await this.trustedNotifierManager.init()
-
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
     } catch (e) {
