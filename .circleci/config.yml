@@ -830,16 +830,16 @@ workflows:
               only: /(^master$)/
       - hold-publish-libs:
           type: approval
-          filters:
-            branches:
-              only: /(^master$)/
+          # filters:
+          #   branches:
+          #     only: /(^master$)/
       - publish-libs:
           name: publish-libs
           requires:
             - hold-publish-libs
-          filters:
-            branches:
-              only: /(^master$)/
+          # filters:
+          #   branches:
+          #     only: /(^master$)/
 
   # test master at midnight daily
   test-nightly:
