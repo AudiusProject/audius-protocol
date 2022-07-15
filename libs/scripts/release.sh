@@ -55,8 +55,8 @@ function bump-npm () {
     # Commit to a new branch, and tag
     git checkout -b ${STUB}-${VERSION}
     git add .
-    git commit -m $(commit-message)
-    git tag -a @audius/${STUB}@${VERSION} -m $(commit-message)
+    git commit -m "$(commit-message)"
+    git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
 
     # Push branch and tags to remote
     git push -u origin ${STUB}-${VERSION}
@@ -66,7 +66,7 @@ function bump-npm () {
 # Merge the created branch into master, then delete the branch
 function merge-bump () {
     git checkout master -f
-    git merge --no-ff ${STUB}-${VERSION} -m $(commit-message)
+    git merge --no-ff ${STUB}-${VERSION} -m "$(commit-message)"
 
     # git push -u origin master
 
