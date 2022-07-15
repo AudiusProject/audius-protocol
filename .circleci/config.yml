@@ -832,14 +832,14 @@ workflows:
           type: approval
           filters:
             branches:
-              only: /(^jc-inf-86$)/
+              only: /(^master$)/
       - publish-libs:
           name: publish-libs
           requires:
             - hold-publish-libs
           filters:
             branches:
-              only: /(^jc-inf-86$)/
+              only: /(^master$)/
 
   # test master at midnight daily
   test-nightly:
