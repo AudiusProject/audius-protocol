@@ -16,7 +16,6 @@ from src.solana.anchor_parser import AnchorParser
 from src.solana.audius_data_transaction_handlers import ParsedTx, transaction_handlers
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_program_indexer import SolanaProgramIndexer
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.helpers import split_list
 from src.utils.session_manager import SessionManager
@@ -311,11 +310,10 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # TODO existing user records will be passed in
     async def fetch_cid_metadata(
         self, parsed_transactions: List[ParsedTx]
-    ) -> Tuple[Dict[str, Dict], Set[str]]:
+    ) -> Dict[str, Dict]:
         cid_to_user_id: Dict[str, int] = {}
         cids_txhash_set: Set[Tuple[str, str]] = set()
         cid_to_entity_type: Dict[str, str] = {}  # cid -> entity type track / user
-        blacklisted_cids: Set[str] = set()
         user_replica_set: Dict[int, str] = {}
 
         with self.db.scoped_session() as session:
@@ -337,29 +335,24 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     and "metadata" in instruction["data"]
                 ):
                     cid = instruction["data"]["metadata"]
-                    if is_blacklisted_ipld(session, cid):
-                        blacklisted_cids.add(cid)
-                    else:
-                        cids_txhash_set.add((cid, transaction["tx_sig"]))
-                        if "user" in instruction["instruction_name"]:
-                            cid_to_entity_type[cid] = "user"
-                            # TODO add logic to use existing user records: account -> endpoint
-                            user_id = instruction["data"]["user_id"]
+                    cids_txhash_set.add((cid, transaction["tx_sig"]))
+                    if "user" in instruction["instruction_name"]:
+                        cid_to_entity_type[cid] = "user"
+                        # TODO add logic to use existing user records: account -> endpoint
+                        user_id = instruction["data"]["user_id"]
+                        cid_to_user_id[cid] = user_id
+                        # new user case
+                        if "replica_set" in instruction["data"]:
+                            endpoints = []
+                            for sp_id in instruction["data"]["replica_set"]:
+                                endpoints.append(cnode_endpoint_dict[sp_id])
+                            user_replica_set[user_id] = ",".join(endpoints)
+                    elif instruction["instruction_name"] == "manage_entity":
+                        entity_type = instruction["data"]["entity_type"]
+                        if entity_type.Track == type(entity_type):
+                            cid_to_entity_type[cid] = "track"
+                            user_id = instruction["data"]["user_id_seed_bump"].user_id
                             cid_to_user_id[cid] = user_id
-                            # new user case
-                            if "replica_set" in instruction["data"]:
-                                endpoints = []
-                                for sp_id in instruction["data"]["replica_set"]:
-                                    endpoints.append(cnode_endpoint_dict[sp_id])
-                                user_replica_set[user_id] = ",".join(endpoints)
-                        elif instruction["instruction_name"] == "manage_entity":
-                            entity_type = instruction["data"]["entity_type"]
-                            if entity_type.Track == type(entity_type):
-                                cid_to_entity_type[cid] = "track"
-                                user_id = instruction["data"][
-                                    "user_id_seed_bump"
-                                ].user_id
-                                cid_to_user_id[cid] = user_id
 
             # TODO use existing user records instead of querying here
             user_replica_set.update(
@@ -389,4 +382,4 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
 
         # TODO maybe add some more validation
         # check if track metadata's owner and instruction's user ID matches up?
-        return metadata_dict, blacklisted_cids
+        return metadata_dict

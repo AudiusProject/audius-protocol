@@ -62,7 +62,6 @@ track_factory = None
 social_feature_factory = None
 playlist_factory = None
 user_library_factory = None
-ipld_blacklist_factory = None
 user_replica_set_manager = None
 audius_data = None
 contract_addresses: Dict[str, Any] = defaultdict()
@@ -120,14 +119,6 @@ def init_contracts():
         abi=abi_values["UserLibraryFactory"]["abi"],
     )
 
-    ipld_blacklist_factory_address = registry_instance.functions.getContract(
-        bytes("IPLDBlacklistFactory", "utf-8")
-    ).call()
-    ipld_blacklist_factory_inst = web3.eth.contract(
-        address=user_library_factory_address,
-        abi=abi_values["UserLibraryFactory"]["abi"],
-    )
-
     user_replica_set_manager_address = registry_instance.functions.getContract(
         bytes("UserReplicaSetManager", "utf-8")
     ).call()
@@ -150,7 +141,6 @@ def init_contracts():
         "social_feature_factory": social_feature_factory_address,
         "playlist_factory": playlist_factory_address,
         "user_library_factory": user_library_factory_address,
-        "ipld_blacklist_factory": ipld_blacklist_factory_address,
         "user_replica_set_manager": user_replica_set_manager_address,
         "audius_data": audius_data_address,
     }
@@ -162,7 +152,6 @@ def init_contracts():
         social_feature_factory_inst,
         playlist_factory_inst,
         user_library_factory_inst,
-        ipld_blacklist_factory_inst,
         user_replica_set_manager_inst,
         audius_data_inst,
         contract_address_dict,
@@ -196,7 +185,6 @@ def create_celery(test_config=None):
     global social_feature_factory
     global playlist_factory
     global user_library_factory
-    global ipld_blacklist_factory
     global user_replica_set_manager
     global audius_data
     global contract_addresses
@@ -209,7 +197,6 @@ def create_celery(test_config=None):
         social_feature_factory,
         playlist_factory,
         user_library_factory,
-        ipld_blacklist_factory,
         user_replica_set_manager,
         audius_data,
         contract_addresses,
@@ -375,8 +362,6 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
-    ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
-    # default is 5 seconds
     indexing_interval_sec = int(
         shared_config["discprov"]["block_processing_interval_sec"]
     )
@@ -385,7 +370,6 @@ def configure_celery(celery, test_config=None):
     celery.conf.update(
         imports=[
             "src.tasks.index",
-            "src.tasks.index_blacklist",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
             "src.tasks.index_aggregate_monthly_plays",
@@ -416,10 +400,6 @@ def configure_celery(celery, test_config=None):
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
                 "schedule": timedelta(seconds=indexing_interval_sec),
-            },
-            "update_ipld_blacklist": {
-                "task": "update_ipld_blacklist",
-                "schedule": timedelta(seconds=ipld_interval),
             },
             "update_metrics": {
                 "task": "update_metrics",
@@ -577,7 +557,6 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
     redis_inst.delete("index_hourly_play_counts_lock")
-    redis_inst.delete("ipld_blacklist_lock")
     redis_inst.delete("update_discovery_lock")
     redis_inst.delete("aggregate_metrics_lock")
     redis_inst.delete("synchronize_metrics_lock")

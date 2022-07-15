@@ -17,7 +17,6 @@ from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -36,7 +35,6 @@ def user_state_update(
     block_timestamp,
     block_hash,
     ipfs_metadata,
-    blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
     begin_user_state_update = datetime.now()
@@ -94,7 +92,6 @@ def user_state_update(
                     session,
                     user_events_lookup,
                     update_task,
-                    blacklisted_cids,
                     block_number,
                     block_timestamp,
                     blockhash,
@@ -137,7 +134,6 @@ def process_user_txs_serial(
     session,
     user_events_lookup,
     update_task,
-    blacklisted_cids,
     block_number,
     block_timestamp,
     blockhash,
@@ -173,21 +169,17 @@ def process_user_txs_serial(
                 metadata_multihash = helpers.multihash_digest_to_cid(
                     helpers.get_tx_arg(entry, "_multihashDigest")
                 )
-                user_record = (
-                    parse_user_event(
-                        self,
-                        update_task,
-                        session,
-                        tx_receipt,
-                        block_number,
-                        entry,
-                        event_type,
-                        existing_user_record,
-                        ipfs_metadata[metadata_multihash],
-                        block_timestamp,
-                    )
-                    if metadata_multihash not in blacklisted_cids
-                    else None
+                user_record = parse_user_event(
+                    self,
+                    update_task,
+                    session,
+                    tx_receipt,
+                    block_number,
+                    entry,
+                    event_type,
+                    existing_user_record,
+                    ipfs_metadata[metadata_multihash],
+                    block_timestamp,
                 )
             else:
                 user_record = parse_user_event(
@@ -311,25 +303,11 @@ def parse_user_event(
         profile_photo_multihash = helpers.multihash_digest_to_cid(
             helpers.get_tx_arg(entry, "_profilePhotoDigest")
         )
-        is_blacklisted = is_blacklisted_ipld(session, profile_photo_multihash)
-        if is_blacklisted:
-            logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
-                f"{profile_photo_multihash} in indexing update user profile photo"
-            )
-            return None
         user_record.profile_picture = profile_photo_multihash
     elif event_type == user_event_types_lookup["update_cover_photo"]:
         cover_photo_multihash = helpers.multihash_digest_to_cid(
             helpers.get_tx_arg(entry, "_coverPhotoDigest")
         )
-        is_blacklisted = is_blacklisted_ipld(session, cover_photo_multihash)
-        if is_blacklisted:
-            logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
-                f"{cover_photo_multihash} in indexing update user cover photo"
-            )
-            return None
         user_record.cover_photo = cover_photo_multihash
     elif event_type == user_event_types_lookup["update_is_creator"]:
         user_record.is_creator = helpers.get_tx_arg(entry, "_isCreator")

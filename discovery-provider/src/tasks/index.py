@@ -5,7 +5,7 @@ import logging
 import time
 from datetime import datetime
 from operator import itemgetter, or_
-from typing import Any, Dict, Set, Tuple
+from typing import Any, Dict, Tuple
 
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -32,7 +32,6 @@ from src.queries.get_skipped_transactions import (
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.audius_data import audius_data_state_update
 from src.tasks.celery_app import celery
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.sort_block_transactions import sort_block_transactions
@@ -274,7 +273,6 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, audius_data_txs)
     track_contract = update_task.track_contract
     audius_data_contract = update_task.audius_data_contract
 
-    blacklisted_cids: Set[str] = set()
     cids_txhash_set: Tuple[str, Any] = set()
     cid_type: Dict[str, str] = {}  # cid -> entity type track / user
 
@@ -292,11 +290,8 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, audius_data_txs)
             for entry in user_events_tx:
                 event_args = entry["args"]
                 cid = helpers.multihash_digest_to_cid(event_args._multihashDigest)
-                if not is_blacklisted_ipld(session, cid):
-                    cids_txhash_set.add((cid, txhash))
-                    cid_type[cid] = "user"
-                else:
-                    blacklisted_cids.add(cid)
+                cids_txhash_set.add((cid, txhash))
+                cid_type[cid] = "user"
                 user_id = event_args._userId
                 cid_to_user_id[cid] = user_id
 
@@ -318,11 +313,8 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, audius_data_txs)
                         bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                     )
                     cid = multihash.to_b58_string(buf)
-                    if not is_blacklisted_ipld(session, cid):
-                        cids_txhash_set.add((cid, txhash))
-                        cid_type[cid] = "track"
-                    else:
-                        blacklisted_cids.add(cid)
+                    cids_txhash_set.add((cid, txhash))
+                    cid_type[cid] = "track"
                     cid_to_user_id[cid] = track_owner_id
 
         for tx_receipt in audius_data_txs:
@@ -391,7 +383,7 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, audius_data_txs)
     logger.info(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
-    return cid_metadata, blacklisted_cids
+    return cid_metadata
 
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
@@ -503,7 +495,6 @@ def process_state_changes(
     main_indexing_task,
     session,
     cid_metadata,
-    blacklisted_cids,
     tx_type_to_grouped_lists_map,
     block,
 ):
@@ -530,7 +521,6 @@ def process_state_changes(
             block_timestamp,
             block_hash,
             cid_metadata,
-            blacklisted_cids,
         ]
 
         (
@@ -685,7 +675,7 @@ def index_blocks(self, db, blocks_list):
                     fetch_ipfs_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    cid_metadata, blacklisted_cids = fetch_cid_metadata(
+                    cid_metadata = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
@@ -737,7 +727,6 @@ def index_blocks(self, db, blocks_list):
                         self,
                         session,
                         cid_metadata,
-                        blacklisted_cids,
                         txs_grouped_by_type,
                         block,
                     )

@@ -670,7 +670,6 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         autospec=True,
     )
     test_ipfs_metadata: Dict[str, Any] = {}
-    test_blacklisted_cids: Dict[str, Any] = {}
 
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         try:
@@ -690,7 +689,6 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                 test_block_timestamp,
                 block_hash,
                 test_ipfs_metadata,
-                test_blacklisted_cids,
             )
             assert len(updated_user_ids_set) == 1
             assert list(updated_user_ids_set)[0] == blessed_user_record.user_id
