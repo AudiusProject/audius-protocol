@@ -13,7 +13,7 @@ function git-changelog () {
     release_commit=$(git blame -L ${version_line_number},+1 --porcelain -- package.json | awk 'NR==1{ print $1 }')
 
     # Print the log as "- <commmiter short date> [<commit short hash>] <commit message> <author name>"
-    git log --pretty=format:"- %cd [%h] %s %an" --date=short $release_commit..HEAD
+    git log --pretty=format:"- %cd [%h] %s [%an]" --date=short $release_commit..HEAD
 }
 
 # formats a commit message using the bumped ${VERSION} and ${CHANGE_LOG}
@@ -66,7 +66,7 @@ function bump-npm () {
 # Merge the created branch into master, then delete the branch
 function merge-bump () {
     git checkout master -f
-    git merge --no-ff ${STUB}-${VERSION} -m "$(commit-message)"
+    git merge ${STUB}-${VERSION} -m "$(commit-message)"
 
     # git push -u origin master
 
