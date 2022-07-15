@@ -145,7 +145,7 @@ services:
 
   build-audius-libs:
     build: libs
-    command: sh -c "cp scripts/AudiusClaimDistributor.json scripts/Wormhole.json eth-contracts/ABIs/ && npm run dev"
+    command: sh -c "cp scripts/AudiusClaimDistributor.json scripts/Wormhole.json eth-contracts/ABIs/"
     volumes:
       - audius-libs:/usr/src/app
       - poa-contracts-abis:/usr/src/app/data-contracts/ABIs
