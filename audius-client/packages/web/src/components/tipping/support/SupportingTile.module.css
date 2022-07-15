@@ -76,6 +76,7 @@
   align-items: center;
   margin: 12px;
   gap: 4px;
+  margin-top: auto;
 }
 
 .profilePicture {
