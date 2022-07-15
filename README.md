@@ -65,36 +65,19 @@ Packages for developers to run and test Audius
 
 ## Development
 
-### Prerequisites
-
-* Install docker & docker-compose [https://docs.docker.com/get-docker](https://docs.docker.com/get-docker)
-* Install rust https://rustup.rs/
-* Install nvm & node (v14.17.5) https://github.com/nvm-sh/nvm
-
-### Running the protocol
-```bash
-git clone https://github.com/AudiusProject/audius-protocol.git
-cd audius-protocol
-# Add a line to your rc file of choice
-# export PROTOCOL_DIR=$(pwd)
-
-cd $PROTOCOL_DIR/service-commands
-npm i
-# This will install `A` to your command-line, an interface to the audius service-commands.
-# Ensure ~/.local/bin is in your PATH
-
-# Install all dependencies
-A init
-
-# Run the entire stack
-A up
-
-# Run an individual service
-A run discovery-provider up
-A run discovery-provider down
 ```
+# initial setup
+curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/master/dev-tools/setup.sh" | bash
 
-For more details on the `A` command and options, run `A --help` and checkout the service commands [README](https://github.com/AudiusProject/audius-protocol/tree/master/service-commands).
+# refresh terminal for docker
+exit
+
+# build and pull
+audius-compose build # About 10 minutes
+docker compose pull
+
+audius-compose up # About 20 seconds
+```
 
 
 ## Contributing
