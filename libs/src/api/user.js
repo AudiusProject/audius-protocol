@@ -58,7 +58,6 @@ class Users extends Base {
     this.addUser = this.addUser.bind(this)
     this.updateUser = this.updateUser.bind(this)
     this.updateCreator = this.updateCreator.bind(this)
-    this.upgradeToCreator = this.upgradeToCreator.bind(this)
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)

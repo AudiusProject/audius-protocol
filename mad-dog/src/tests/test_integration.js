@@ -22,7 +22,6 @@ const { EmitterBasedTest, Event } = require('../emitter.js')
 const {
   addUsers,
   ensureReplicaSetSyncIsConsistent,
-  upgradeUsersToCreators,
   delay
 } = require('../helpers.js')
 const {
@@ -448,8 +447,6 @@ module.exports = coreIntegration = async ({
       error: `User pre-track upload -- ${e.message}`
     }
   }
-
-  await upgradeUsersToCreators(executeAll, executeOne)
 
   if (enableFaultInjection) {
     // Create a MadDog instance, responsible for taking down nodes
