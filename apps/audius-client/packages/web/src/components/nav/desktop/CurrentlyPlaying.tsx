@@ -97,6 +97,7 @@ const CurrentlyPlaying = ({
         style={wrapperStyle}
         onClick={onClick}>
         <DynamicImage
+          useSkeleton={false}
           image={artworkLink ?? image}
           immediate={newTrack}
           className={styles.artwork}

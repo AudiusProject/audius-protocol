@@ -299,13 +299,6 @@ tr.deleted:hover td {
   color: var(--neutral);
 }
 
-.skeleton {
-  width: 100%;
-  height: 18px;
-  border-radius: 4px;
-  background-color: var(--skeleton);
-}
-
 .badges {
   display: inline-flex;
   align-items: center;
