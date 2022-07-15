@@ -19,6 +19,7 @@ loadABI('SocialFeatureFactory.json')
 loadABI('PlaylistFactory.json')
 loadABI('UserLibraryFactory.json')
 loadABI('UserReplicaSetManager.json')
+loadABI('EntityManager.json')
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- should just use esm
 export class AudiusABIDecoder {
@@ -32,7 +33,7 @@ export class AudiusABIDecoder {
     // namespace of functions)
     const abi = abiMap[contractName]
     if (!abi) {
-      throw new Error('Unrecognized contract name')
+      throw new Error(`Unrecognized contract name ${contractName}`)
     }
 
     let foundFunction: AbiItem | undefined

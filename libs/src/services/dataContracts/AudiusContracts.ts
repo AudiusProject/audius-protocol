@@ -9,6 +9,7 @@ import { PlaylistFactoryClient } from './PlaylistFactoryClient'
 import { UserLibraryFactoryClient } from './UserLibraryFactoryClient'
 import { IPLDBlacklistFactoryClient } from './IPLDBlacklistFactoryClient'
 import { UserReplicaSetManagerClient } from './UserReplicaSetManagerClient'
+import { EntityManagerClient } from './EntityManagerClient'
 import type { Web3Manager } from '../web3Manager'
 import type { ContractClient } from '../contracts/ContractClient'
 
@@ -32,6 +33,7 @@ const IPLDBlacklistFactoryABI = Utils.importDataContractABI(
 const UserReplicaSetManagerABI = Utils.importDataContractABI(
   'UserReplicaSetManager.json'
 ).abi
+const EntityManagerABI = Utils.importDataContractABI('EntityManager.json').abi
 
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
@@ -45,6 +47,7 @@ const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 export class AudiusContracts {
   web3Manager: Web3Manager
   registryAddress: string
+  entityManagerAddress: string
   isServer: boolean
   logger: Logger
   RegistryClient: RegistryClient
@@ -54,6 +57,7 @@ export class AudiusContracts {
   PlaylistFactoryClient: PlaylistFactoryClient
   UserLibraryFactoryClient: UserLibraryFactoryClient
   IPLDBlacklistFactoryClient: IPLDBlacklistFactoryClient
+  EntityManagerClient: EntityManagerClient | undefined
   contractClients: ContractClient[]
   UserReplicaSetManagerClient: UserReplicaSetManagerClient | undefined | null
   contracts: Record<string, string> | undefined
@@ -62,11 +66,13 @@ export class AudiusContracts {
   constructor(
     web3Manager: Web3Manager,
     registryAddress: string,
+    entityManagerAddress: string,
     isServer: boolean,
     logger = console
   ) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
+    this.entityManagerAddress = entityManagerAddress
     this.isServer = isServer
     this.logger = logger
 
@@ -134,6 +140,18 @@ export class AudiusContracts {
       this.UserLibraryFactoryClient,
       this.IPLDBlacklistFactoryClient
     ]
+
+    if (this.entityManagerAddress) {
+      this.EntityManagerClient = new EntityManagerClient(
+        this.web3Manager,
+        EntityManagerABI,
+        'EntityManager',
+        this.getRegistryAddressForContract,
+        this.logger,
+        this.entityManagerAddress
+      )
+      this.contractClients.push(this.EntityManagerClient)
+    }
   }
 
   async init() {

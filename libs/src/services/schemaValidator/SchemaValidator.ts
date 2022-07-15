@@ -2,9 +2,11 @@ import { validate } from 'jsonschema'
 
 import TrackSchema from './schemas/trackSchema.json'
 import UserSchema from './schemas/userSchema.json'
+import PlaylistSchema from './schemas/playlistSchema.json'
 
 export const trackSchemaType = 'TrackSchema'
 export const userSchemaType = 'UserSchema'
+export const playlistSchemaType = 'PlaylistSchema'
 
 type SchemaConfig = {
   schema: {
@@ -18,11 +20,15 @@ type SchemaConfig = {
   validate?: (obj: Record<string, unknown>) => void
 }
 
-type SchemaType = typeof trackSchemaType | typeof userSchemaType
+type SchemaType =
+  | typeof trackSchemaType
+  | typeof userSchemaType
+  | typeof playlistSchemaType
 
 export type Schemas = {
   TrackSchema: SchemaConfig
   UserSchema: SchemaConfig
+  PlaylistSchema: SchemaConfig
 }
 
 export class SchemaValidator {
@@ -50,6 +56,10 @@ export class SchemaValidator {
       [userSchemaType]: {
         schema: UserSchema,
         baseDefinition: 'User'
+      },
+      [playlistSchemaType]: {
+        schema: PlaylistSchema,
+        baseDefinition: 'Playlist'
       }
     }
 

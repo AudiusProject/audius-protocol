@@ -1,0 +1,56 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$ref": "#/definitions/Playlist",
+    "definitions": {
+        "Playlist": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "playlist_id": {
+                    "type": ["integer", "null"],
+                    "default": null
+                },
+                "playlist_contents": {
+                    "type": ["array", "null"],
+                    "default": []
+                },
+                "playlist_name": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "playlist_image_sizes_multihash": {
+                    "type": ["string", "null"],
+                    "default": null,
+                    "$ref": "#/definitions/CID"
+                },
+                "description": {
+                    "type": ["string", "null"],
+                    "default": null
+                },
+                "is_album": {
+                    "type": "boolean",
+                    "default": null
+                },
+                "is_private": {
+                    "type": "boolean",
+                    "default": null
+                }
+            },
+            "required": [
+                "playlist_name",
+                "playlist_id",
+                "description",
+                "is_album",
+                "is_private"
+            ],
+            "title": "Playlist"
+        },
+        "CID": {
+            "type": ["string", "null"],
+            "minLength": 46,
+            "maxLength": 46,
+            "pattern": "^Qm[a-zA-Z0-9]{44}$",
+            "title": "CID"
+        }
+    }
+}
