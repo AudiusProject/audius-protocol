@@ -1,7 +1,8 @@
 import logging
+from collections import defaultdict
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
 from src.database_task import DatabaseTask
@@ -13,14 +14,20 @@ from src.utils.user_event_constants import audius_data_event_types_arr
 logger = logging.getLogger(__name__)
 
 
-class Action(Enum):
+class Action(str, Enum):
     CREATE = "Create"
     UPDATE = "Update"
     DELETE = "Delete"
 
+    def __str__(self) -> str:
+        return str.__str__(self)
 
-class EntityType(Enum):
+
+class EntityType(str, Enum):
     PLAYLIST = "Playlist"
+
+    def __str__(self) -> str:
+        return str.__str__(self)
 
 
 def audius_data_state_update(
@@ -35,8 +42,11 @@ def audius_data_state_update(
     _blacklisted_cids,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     num_total_changes = 0
+    event_blockhash = update_task.web3.toHex(block_hash)
+    block_datetime = datetime.utcfromtimestamp(block_timestamp)
+    block_integer_time = int(block_timestamp)
 
-    changed_entity_ids: Dict[str, Set[(int)]] = {}
+    changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
 
     if not audius_data_txs:
         return num_total_changes, changed_entity_ids
@@ -45,96 +55,124 @@ def audius_data_state_update(
     # This stores the playlist_ids created or updated in the set of transactions
     playlist_ids: Set[int] = set()
 
+    entity_type_action_to_events = defaultdict(list)
+    # collect events by entity type and action
     for tx_receipt in audius_data_txs:
-        logger.info(f"AudiusData.py | Processing {tx_receipt}")
+        logger.info(f"asdf AudiusData.py | Processing {tx_receipt}")
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in audius_data_event_types_arr:
+            logger.info(f"asdf event_type {event_type}")
+
             audius_data_event_tx = get_audius_data_events_tx(
                 update_task, event_type, tx_receipt
             )
-
-            processed_entries = 0
             # TODO: Batch reject operations for mismatched signer/userId
             for entry in audius_data_event_tx:
-                user_id = helpers.get_tx_arg(entry, "_userId")
-                entity_id = helpers.get_tx_arg(entry, "_entityId")
-                entity_type = helpers.get_tx_arg(entry, "_entityType")
-                action = helpers.get_tx_arg(entry, "_action")
-                metadata_cid = helpers.get_tx_arg(entry, "_metadata")
-                signer = helpers.get_tx_arg(entry, "_signer")
-                metadata = (
-                    ipfs_metadata[metadata_cid]
-                    if metadata_cid in ipfs_metadata
-                    else None
-                )
-                logger.info(
-                    f"index.py | AudiusData state update: {user_id}, entity_id={entity_id}, entity_type={entity_type}, action={action}, metadata_cid={metadata_cid}, metadata={metadata} signer={signer}"
-                )
-                # Handle playlist creation
-                if entity_type == EntityType.PLAYLIST.value:
-                    playlist_id = entity_id
-                    logger.info(
-                        f"index.py | AudiusData - playlist detected, id={playlist_id}"
-                    )
-                    # look up or populate existing record
-                    if playlist_id in playlist_events_lookup:
-                        existing_playlist_record = playlist_events_lookup[playlist_id][
-                            "playlist"
-                        ]
-                    else:
-                        existing_playlist_record = lookup_playlist_data_record(
-                            update_task,
-                            session,
-                            playlist_id,
-                            block_number,
-                            block_hash,
-                            txhash,
-                        )
+                logger.info(f"asdf entry {entry}")
+                event_args = {
+                    "user_id": helpers.get_tx_arg(entry, "_userId"),
+                    "signer": helpers.get_tx_arg(entry, "_signer"),
+                    "entity_type": helpers.get_tx_arg(entry, "_entityType"),
+                    "entity_id": helpers.get_tx_arg(entry, "_entityId"),
+                    "metadata": helpers.get_tx_arg(entry, "_metadata"),
+                    "action": helpers.get_tx_arg(entry, "_action"),
+                }
+                entity_type_action_to_events[
+                    (event_args["action"], event_args["entity_type"])
+                ].append(event_args)
+    logger.info(f"asdf entity_type_action_to_events {entity_type_action_to_events}")
 
-                    if action == Action.CREATE.value or Action.UPDATE.value:
-                        logger.info(
-                            f"index.py | AudiusData - handling {action}, events_lookup={playlist_events_lookup}"
-                        )
-                        playlist_record = parse_playlist_create_data_event(
-                            update_task,
-                            entry,
-                            user_id,
-                            existing_playlist_record,
-                            metadata,
-                            block_timestamp,
-                            session,
-                        )
-
-                    elif Action.DELETE.value:
-                        existing_playlist_record.is_delete = True
-                        playlist_record = existing_playlist_record
-
-                    if playlist_record is not None:
-                        if playlist_id not in playlist_events_lookup:
-                            playlist_events_lookup[playlist_id] = {
-                                "playlist": playlist_record,
-                                "events": [],
-                            }
-                        else:
-                            playlist_events_lookup[playlist_id][
-                                "playlist"
-                            ] = playlist_record
-                        playlist_events_lookup[playlist_id]["events"].append(event_type)
-                    playlist_ids.add(playlist_id)
-                processed_entries += 1
-
-            num_total_changes += processed_entries
-
-    # Update changed entity dictionary
-    changed_entity_ids["playlist"] = playlist_ids
-
-    for playlist_id, value_obj in playlist_events_lookup.items():
+    # validate events
+    for entity_type_action, events in entity_type_action_to_events.items():
+        action, entity_type = entity_type_action
+        logger.info(f"asdf validate entity_type {entity_type} {type(entity_type)}")
+        logger.info(f"asdf validate action {action} {type(action)}")
         logger.info(
-            f"index.py | AudiusData | playlists.py | Adding {value_obj['playlist']})"
+            f"asdf validate Action.CREATE {Action.CREATE} {action == Action.CREATE} {type(Action.CREATE)}"
         )
-        if value_obj["events"]:
-            invalidate_old_playlist(session, playlist_id)
-            session.add(value_obj["playlist"])
+        logger.info(
+            f"asdf validate EntityType.PLAYLIST {EntityType.PLAYLIST} {entity_type == EntityType.PLAYLIST} {type(EntityType.PLAYLIST)}"
+        )
+
+        if action == Action.CREATE and entity_type == EntityType.PLAYLIST:
+            # Create Playlist - ensure playlists don't already exists
+            events_playlist_ids = [event["entity_id"] for event in events]
+
+            existing_playlist_ids = set(
+                (
+                    session.query(Playlist.playlist_id)
+                    .filter(Playlist.playlist_id.in_(events_playlist_ids))
+                    .all()
+                )
+            )
+            logger.info(f"asdf validate existing_playlist_ids {existing_playlist_ids}")
+
+            valid_events = []
+            for event in events:
+                if event["entity_id"] not in existing_playlist_ids:
+                    valid_events.append(event)
+
+            entity_type_action_to_events[entity_type_action] = valid_events
+            logger.info(f"asdf validate valid_events {valid_events}")
+
+    # process events
+    logger.info(
+        f"asdf process entity_type_action_to_events {entity_type_action_to_events}"
+    )
+
+    for entity_type_action, events in entity_type_action_to_events.items():
+        action, entity_type = entity_type_action
+        logger.info(f"asdf process entity_type {entity_type}")
+        logger.info(f"asdf process action {action}")
+
+        if action == Action.CREATE and entity_type == EntityType.PLAYLIST:
+            create_playlist_records: List[Playlist] = []
+            metadata = ipfs_metadata[event["metadata"]]
+
+            for event in events:
+                logger.info(f"asdf process event {event}")
+                logger.info(f"asdf process metadata {metadata}")
+
+                track_ids = metadata.get("playlist_contents", [])
+                playlist_contents = []
+                for track_id in track_ids:
+                    playlist_contents.append(
+                        {"track": track_id, "time": block_integer_time}
+                    )
+                create_playlist_record = Playlist(
+                    playlist_id=event["entity_id"],
+                    playlist_owner_id=event["user_id"],
+                    is_album=metadata.get("is_album", False),
+                    description=metadata["description"],
+                    playlist_image_multihash=metadata["playlist_image_sizes_multihash"],
+                    playlist_image_sizes_multihash=metadata[
+                        "playlist_image_sizes_multihash"
+                    ],
+                    playlist_name=metadata["playlist_name"],
+                    is_private=metadata.get("is_private", False),
+                    playlist_contents={"track_ids": playlist_contents},
+                    created_at=block_datetime,
+                    updated_at=block_datetime,
+                    blocknumber=block_number,
+                    blockhash=event_blockhash,
+                    txhash=txhash,
+                    is_current=True,
+                    is_delete=False,
+                )
+                create_playlist_records.append(create_playlist_record)
+            logger.info(
+                f"asdf process create_playlist_records {create_playlist_records}"
+            )
+            session.bulk_save_objects(create_playlist_records)
+            num_total_changes += len(create_playlist_records)
+            changed_entity_ids["playlist"].update(
+                [
+                    create_playlist_record.playlist_id
+                    for create_playlist_record in create_playlist_records
+                ]
+            )
+    logger.info(f"asdf num_total_changes {num_total_changes}")
+    logger.info(f"asdf changed_entity_ids {changed_entity_ids}")
 
     return num_total_changes, changed_entity_ids
 
