@@ -25,3 +25,8 @@
   background-repeat: no-repeat;
   opacity: 0;
 }
+
+.skeleton {
+  position: absolute;
+  z-index: 5;
+}

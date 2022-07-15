@@ -30,6 +30,9 @@
 .profilePicture:hover {
   cursor: pointer;
 }
+.profilePictureSkeleton {
+  border-radius: 50%;
+}
 
 .text {
   margin: 0px 8px;

@@ -126,6 +126,7 @@ const ArtistChip = ({
           onNavigateAway={onNavigateAway}>
           <DynamicImage
             wrapperClassName={styles.profilePictureWrapper}
+            skeletonClassName={styles.profilePictureSkeleton}
             className={styles.profilePicture}
             image={profilePicture}
           />
@@ -133,6 +134,7 @@ const ArtistChip = ({
       ) : (
         <DynamicImage
           wrapperClassName={styles.profilePictureWrapper}
+          skeletonClassName={styles.profilePictureSkeleton}
           className={styles.profilePicture}
           image={profilePicture}
         />

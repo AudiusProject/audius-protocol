@@ -10,6 +10,7 @@ import cn from 'classnames'
 
 import transparentPlaceholderImg from 'assets/img/1x1-transparent.png'
 import useInstanceVar from 'common/hooks/useInstanceVar'
+import Skeleton from 'components/skeleton/Skeleton'
 
 import styles from './DynamicImage.module.css'
 
@@ -24,12 +25,16 @@ export type DynamicImageProps = {
   isUrl?: boolean
   // Classes to apply to the wrapper
   wrapperClassName?: string
+  // Classes to apply to the skeleton
+  skeletonClassName?: string
   // Styles to apply to the image itself
   imageStyle?: object
   // Whether or not to immediately animate
   immediate?: boolean
   // Immediately removes animating-out images
   immediatelyLeave?: boolean
+  // Whether or not to use a skeleton while loading
+  useSkeleton?: boolean
   // Whether or not to use the default placeholder
   usePlaceholder?: boolean
 } & ComponentPropsWithoutRef<'div'>
@@ -87,11 +92,13 @@ const DynamicImage = (props: DynamicImageProps) => {
     isUrl,
     wrapperClassName,
     className,
+    skeletonClassName,
     imageStyle,
     immediate,
     children,
     onClick,
     usePlaceholder = true,
+    useSkeleton = true,
     ...other
   } = props
   const first = useRef<HTMLDivElement>(null)
@@ -147,6 +154,9 @@ const DynamicImage = (props: DynamicImageProps) => {
 
   return (
     <div className={cn(styles.wrapper, wrapperClassName)} {...other}>
+      {useSkeleton && displayImage === placeholder ? (
+        <Skeleton className={cn(styles.skeleton, skeletonClassName)} />
+      ) : null}
       <div
         ref={first}
         className={cn(styles.image, className)}
