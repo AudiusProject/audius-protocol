@@ -64,8 +64,8 @@ const getUserReplicaSetManagerDomain: DomainFn = (chainId, contractAddress) => {
   )
 }
 
-const getAudiusDataDomain: DomainFn = (chainId, contractAddress) => {
-  return getDomainData("Audius Data", "1", chainId, contractAddress)
+const getEntityManagerDomain: DomainFn = (chainId, contractAddress) => {
+  return getDomainData('Entity Manager', '1', chainId, contractAddress)
 }
 
 export const domains = {
@@ -76,7 +76,7 @@ export const domains = {
   getUserLibraryFactoryDomain,
   getIPLDBlacklistFactoryDomain,
   getUserReplicaSetManagerDomain,
-  getAudiusDataDomain
+  getEntityManagerDomain
 }
 
 /* contract signing domain */
@@ -264,12 +264,12 @@ const updateReplicaSet = [
 ]
 
 const manageEntity = [
-  { name: 'userId', type: 'uint'},
-  { name: 'entityType', type: 'string'},
-  { name: 'entityId', type: 'uint'},
-  { name: 'action', type: 'string'},
-  { name: 'metadata', type: 'string'},
-  { name: 'nonce', type: 'bytes32'},
+  { name: 'userId', type: 'uint' },
+  { name: 'entityType', type: 'string' },
+  { name: 'entityId', type: 'uint' },
+  { name: 'action', type: 'string' },
+  { name: 'metadata', type: 'string' },
+  { name: 'nonce', type: 'bytes32' }
 ]
 
 export const schemas = {
@@ -1179,7 +1179,7 @@ const getManageEntityData = (
     nonce
   }
   return getRequestData(
-    domains.getAudiusDataDomain,
+    domains.getEntityManagerDomain,
     chainId,
     contractAddress,
     'ManageEntity',
