@@ -40,7 +40,7 @@ function bump-libs () {
     npm publish . --access public --dry-run
 
     # Commit to a new branch
-    git checkout -b jc-libs-$version
+    git checkout -b libs-$version
     git add .
     git commit -m "Bump libs to $version
 
@@ -49,7 +49,7 @@ function bump-libs () {
 ${CHANGE_LOG}"
 
     # Push to the remote
-    git push -u origin jc-libs-$version
+    git push -u origin libs-$version
 }
 
 function publish-libs () {
@@ -57,7 +57,7 @@ function publish-libs () {
 
     git checkout master -f
     git pull
-    git merge --no-ff jc-libs-$version -m "Bump libs to $version
+    git merge --no-ff libs-$version -m "Bump libs to $version
 
 ## Changelog
 
@@ -66,8 +66,8 @@ ${CHANGE_LOG}"
     # git push -u origin master
 
     # clean up release branches
-    # git branch -d jc-libs-$version
-    # git push origin :jc-libs-$version
+    # git branch -d libs-$version
+    # git push origin :libs-$version
 
     # Publish
     # npm publish . --access public
