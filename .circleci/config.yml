@@ -78,7 +78,7 @@ commands:
               exit;
             EOF
 
-          << parameters.post-gcp-command >>
+            << parameters.post-gcp-command >>
 
 
 # global parameters
