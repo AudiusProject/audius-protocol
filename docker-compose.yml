@@ -145,7 +145,7 @@ services:
 
   build-audius-libs:
     build: libs
-    command: sh -c "cp scripts/AudiusClaimDistributor.json scripts/Wormhole.json eth-contracts/ABIs/ && npm run dev"
+    command: sh -c "cp scripts/AudiusClaimDistributor.json scripts/Wormhole.json eth-contracts/ABIs/"
     volumes:
       - audius-libs:/usr/src/app
       - poa-contracts-abis:/usr/src/app/data-contracts/ABIs
@@ -347,6 +347,21 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+
+  # SOCKS5 proxy for use with client
+
+  socks5-proxy:
+    image: serjs/go-socks5-proxy:v0.0.3
+    ports:
+      - "1080:1080"
+
+  socks5-proxy-pac:
+    image: python:3.10.5
+    command: sh -c "head -n-1 /etc/hosts > /etc/hosts && python /tmp/dev-tools/startup/socks5-proxy-pac.py"
+    ports:
+      - "8080:80"
+    volumes:
+      - ./dev-tools:/tmp/dev-tools
 
 volumes:
   poa-contracts-abis:

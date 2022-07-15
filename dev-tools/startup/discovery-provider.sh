@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+export audius_enable_rsyslog=false
+
 export audius_discprov_url="http://$(hostname -i):5000"
 
 export audius_delegate_owner_wallet=$(printenv "DP${replica}_DELEGATE_OWNER_ADDRESS")
