@@ -2,6 +2,11 @@
   width: 100%;
 }
 
+.tracksTableContainer :global(.ant-table .ant-table-container:before),
+.tracksTableContainer :global(.ant-table .ant-table-container:after) {
+  display: none;
+}
+
 .table {
   overflow: hidden;
 }
