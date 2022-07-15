@@ -198,9 +198,25 @@ export class EntityManager extends Base {
     isPrivate: boolean
     coverArt: string
     logger: Console
-  }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
+  }): Promise<{
+    blockHash: Nullable<string>
+    blockNumber: Nullable<number>
+    playlistId: Nullable<number>
+    error: Nullable<string>
+  }> {
+    let error = null
     try {
-      const userId: number = parseInt(this.userStateManager.getCurrentUserId())
+      const currentUserId: string | null =
+        this.userStateManager.getCurrentUserId()
+      if (!currentUserId) {
+        return {
+          blockHash: null,
+          blockNumber: null,
+          playlistId: null,
+          error: 'Missing current user ID'
+        }
+      }
+      const userId: number = parseInt(currentUserId)
       const updateAction = Action.UPDATE
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
@@ -243,11 +259,17 @@ export class EntityManager extends Base {
       return {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber,
-        playlistId
+        playlistId,
+        error
       }
     } catch (e) {
-      logger.error(`Data update playlist: err ${e}`)
-      throw e
+      error = (e as Error).message
+      return {
+        blockHash: null,
+        blockNumber: null,
+        playlistId: null,
+        error
+      }
     }
   }
 
