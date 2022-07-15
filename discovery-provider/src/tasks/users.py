@@ -67,13 +67,16 @@ def user_state_update(
     for tx_receipt in user_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in user_event_types_arr:
+            print("raymont", event_type)
             user_events_tx = get_user_events_tx(update_task, event_type, tx_receipt)
             # if record does not get added, do not count towards num_total_changes
             for entry in user_events_tx:
+                print("raymont", user_events_tx)
                 user_id = helpers.get_tx_arg(entry, "_userId")
                 if user_id not in user_transactions_lookup:
                     user_transactions_lookup[user_id] = []
                 # Append to user level list
+                print("raymont", entry, event_type)
                 user_transactions_lookup[user_id].append(
                     (entry, event_type, tx_receipt, txhash)
                 )
@@ -112,6 +115,7 @@ def user_state_update(
     logger.info(
         f"index.py | users.py | There are {num_total_changes} events processed and {skipped_tx_count} skipped transactions."
     )
+    print("raymont after thread")
 
     # For each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
@@ -145,6 +149,7 @@ def process_user_txs_serial(
     user_ids,
     skipped_tx_count,
 ):
+    print("raymont process")
     metric = PrometheusMetric(PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS)
     processed_entries = 0
     for user_tx in user_txs:
@@ -154,6 +159,7 @@ def process_user_txs_serial(
             event_type = user_tx[1]
             tx_receipt = user_tx[2]
             txhash = user_tx[3]
+            print("raymont for usertx", event_type, entry, process_user_txs_start_time)
 
             # look up or populate existing record
             if user_id in user_events_lookup:
@@ -190,6 +196,7 @@ def process_user_txs_serial(
                     else None
                 )
             else:
+                print("raymont in else")
                 user_record = parse_user_event(
                     self,
                     update_task,
@@ -202,6 +209,7 @@ def process_user_txs_serial(
                     None,
                     block_timestamp,
                 )
+            print("raymont after user_record")
             # process user record
             if user_record is not None:
                 if user_id not in user_events_lookup:
@@ -215,18 +223,22 @@ def process_user_txs_serial(
                 user_ids.add(user_id)
 
             processed_entries += 1
-            metric.save_time(
-                {"scope": "user_tx"}, start_time=process_user_txs_start_time
-            )
+            print("raymont processed entries")
+            # metric.save_time(
+            #     {"scope": "user_tx"}, start_time=process_user_txs_start_time
+            # )
         except EntityMissingRequiredFieldError as e:
+            print("raymont skipping")
             logger.warning(f"Skipping tx {txhash} with error {e}")
             skipped_tx_count += 1
             add_node_level_skipped_transaction(session, block_number, blockhash, txhash)
             pass
         except Exception as e:
+            print("raymont error", e)
             logger.error("Error in parse user transaction")
             raise IndexingError("user", block_number, blockhash, txhash, str(e)) from e
 
+    print("raymont after process")
     return processed_entries
 
 
@@ -288,6 +300,7 @@ def parse_user_event(
     ipfs_metadata,
     block_timestamp,
 ):
+    print("raymont parse")
     # type specific field changes
     if event_type == user_event_types_lookup["add_user"]:
         handle_str = helpers.bytes32_to_str(helpers.get_tx_arg(entry, "_handle"))
@@ -452,12 +465,16 @@ def parse_user_event(
         user_record.cover_photo_sizes = user_record.cover_photo
         user_record.cover_photo = None
 
+    print('raymont parse done')
+
     if not all_required_fields_present(User, user_record):
+        print("raymont good error raised")
         raise EntityMissingRequiredFieldError(
             "user",
             user_record,
             f"Error parsing user {user_record} with entity missing required field(s)",
         )
+    print('raymont parse done2')
 
     return user_record
 

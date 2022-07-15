@@ -246,14 +246,25 @@ class PrometheusMetric:
         self.save(self.elapsed(start_time), labels)
 
     def save(self, value, labels=None):
+        print("raymont save time", labels, self.metric)
         this_metric = self.metric
+        print("raymont str func", this_metric.labels)
         if labels:
-            this_metric = this_metric.labels(**labels)
+            try:
+                # unpacked_labels = **labels
+                print("raymont making metric", this_metric)
+                this_metric = this_metric.labels(scope='user_tx')
+                print("raymont made metric")
+            except Exception as e:
+                print("raymont finally found it", e)
+                raise e
 
+        print("raymont save time 2")
         if isinstance(this_metric, Histogram):
             this_metric.observe(value)
         elif isinstance(this_metric, Gauge):
             this_metric.set(value)
+        print("raymont save time 3")
 
     @classmethod
     def register_collector(cls, name, collector_func):
