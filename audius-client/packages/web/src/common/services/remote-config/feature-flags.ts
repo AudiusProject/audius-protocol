@@ -64,5 +64,5 @@ export const flagCohortType: {
   [FeatureFlags.PLAYLIST_FOLDERS]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.TIPPING_ENABLED]: FeatureFlagCohortType.SESSION_ID,
-  [FeatureFlags.WRITE_QUORUM_ENABLED]: FeatureFlagCohortType.USER_ID
+  [FeatureFlags.WRITE_QUORUM_ENABLED]: FeatureFlagCohortType.SESSION_ID
 }
