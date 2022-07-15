@@ -164,17 +164,17 @@ jobs:
       - run-on-gcp:
           command-name: Verify generated sdk types
           command: |
-            sudo apt update
-            sudo apt install default-jre
+            sudo apt update;
+            sudo apt install default-jre;
 
             cd /home/ubuntu/audius-protocol;
             git pull;
             git checkout $CIRCLE_BRANCH;
-            A up -nc 0
+            A up -nc 0;
 
-            cd libs
-            npm run gen:dev
-            cd libs/src/sdk/api/generated
+            cd libs;
+            npm run gen:dev;
+            cd libs/src/sdk/api/generated;
 
             # Check if there are any changes generated
             if [ -z "$(git status . --porcelain)" ]; then 
