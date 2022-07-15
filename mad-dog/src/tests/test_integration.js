@@ -418,11 +418,6 @@ module.exports = coreIntegration = async ({
   // Check that certain MD fields in disc prov are what we expected it to be
   userMetadatas.forEach(user => {
     logger.info(`Checking initial metadata on signup for user=${user.user_id}...`)
-    if (user.is_creator) {
-      return {
-        error: `New user ${user.user_id} should not be a creator immediately after sign-up.`
-      }
-    }
 
     // make this if case stronger -- like query cn1-3 to make sure that data is there
     if (!user.creator_node_endpoint) {
@@ -550,11 +545,6 @@ module.exports = coreIntegration = async ({
   // Check that certain MD fields in disc node are what we expected it to be after uploading first track
   userMetadatas.forEach(user => {
     logger.info(`Checking post track upload metadata for user=${user.user_id}...`)
-    if (user.is_creator) {
-      return {
-        error: `User ${user.user_id} should be a creator after track upload.`
-      }
-    }
 
     if (!user.creator_node_endpoint) {
       return {
@@ -645,7 +635,7 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
  * Confirms replica set is synced, metadata is available from every replica.
  * Then uploads a photo and updates metadata, and performs validation once again.
  */
-async function checkUserMetadataAndClockValues ({
+async function checkUserMetadataAndClockValues({
   walletIndexes,
   walletIdMap,
   userMetadatas,
@@ -701,7 +691,7 @@ async function checkUserMetadataAndClockValues ({
   }
 }
 
-async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) {
+async function checkMetadataEquality({ endpoints, metadataMultihash, userId }) {
   logger.info(`Checking metadata across replica set is consistent user=${userId}...`)
   const start = Date.now()
 
@@ -727,7 +717,6 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
   logger.info(`Completed metadata check for user ${userId} in ${Date.now() - start}ms`)
 
   const fieldsToCheck = [
-    'is_creator',
     'creator_node_endpoint',
     'profile_picture_sizes',
     'bio'

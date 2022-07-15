@@ -331,8 +331,6 @@ def parse_user_event(
             )
             return None
         user_record.cover_photo = cover_photo_multihash
-    elif event_type == user_event_types_lookup["update_is_creator"]:
-        user_record.is_creator = helpers.get_tx_arg(entry, "_isCreator")
     elif event_type == user_event_types_lookup["update_is_verified"]:
         user_record.is_verified = helpers.get_tx_arg(entry, "_isVerified")
         if user_record.is_verified:

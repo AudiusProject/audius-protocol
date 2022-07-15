@@ -77,7 +77,6 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
         txhash=blessed_user_tx_hash,
         user_id=1,
         name="tobey maguire",
-        is_creator=False,
         is_current=True,
         updated_at=test_timestamp,
         created_at=test_timestamp,
@@ -89,7 +88,6 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
         user_id=2,
         name="birb",
         is_current=None,
-        is_creator=None,
         updated_at=test_timestamp,
         created_at=None,
     )

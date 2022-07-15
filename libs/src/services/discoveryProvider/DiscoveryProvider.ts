@@ -52,9 +52,9 @@ export type UserProfile = {
   handle: string
   verified: boolean
   profilePicture:
-    | { '150x150': string; '480x480': string; '1000x1000': string }
-    | null
-    | undefined
+  | { '150x150': string; '480x480': string; '1000x1000': string }
+  | null
+  | undefined
   sub: number
   iat: string
 }
@@ -182,7 +182,6 @@ export class DiscoveryProvider {
    * @param idsArray
    * @param walletAddress
    * @param handle
-   * @param isCreator null returns all users, true returns creators only, false returns users only
    * @returns {Object} {Array of User metadata Objects}
    * additional metadata fields on user objects:
    *  {Integer} track_count - track count for given user
@@ -204,7 +203,6 @@ export class DiscoveryProvider {
     idsArray?: string[],
     walletAddress?: string,
     handle?: string,
-    isCreator = null,
     minBlockNumber?: number
   ) {
     const req = Requests.getUsers(
@@ -213,7 +211,6 @@ export class DiscoveryProvider {
       idsArray,
       walletAddress,
       handle,
-      isCreator,
       minBlockNumber
     )
     return await this._makeRequest(req)
