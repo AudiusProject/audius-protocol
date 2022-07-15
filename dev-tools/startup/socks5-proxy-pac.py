@@ -14,21 +14,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-type", "application/x-ns-proxy-autoconfig")
         self.end_headers()
 
-        self.wfile.write(f"""
+        self.wfile.write(
+            f"""
         function FindProxyForURL(url, host) {{
             if (isInNet(host, "{IP_ADDRESS}", "255.255.0.0")) {{
-                return "SOCKS5 {self.headers.get("Host").split(":")[0]} 1080"
+                return "SOCKS5 {self.headers.get("Host").split(":")[0]}:1080"
             }}
 
             return "DIRECT";
         }}
-        """.encode())
+        """.encode()
+        )
 
 
 def main():
-    httpd = http.server.HTTPServer(('', 80), Handler)
+    httpd = http.server.HTTPServer(("", 80), Handler)
     httpd.serve_forever()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
