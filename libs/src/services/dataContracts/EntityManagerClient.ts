@@ -11,7 +11,7 @@ export class EntityManagerClient extends ContractClient {
     entityId: number,
     action: string,
     metadata: string
-  ) {
+  ): Promise<{ txReceipt: any }> {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
@@ -41,7 +41,6 @@ export class EntityManagerClient extends ContractClient {
       this.contractRegistryKey,
       contractAddress
     )
-    console.log(tx)
     return {
       txReceipt: tx
     }

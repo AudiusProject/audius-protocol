@@ -1,4 +1,5 @@
 import { Base, BaseConstructorArgs, Services } from './base'
+import type { Nullable } from '../utils'
 
 export enum Action {
   CREATE = 'Create',
@@ -46,7 +47,9 @@ export class EntityManager extends Base {
     let playlistId: number = this.getRandomInt(MIN_PLAYLIST_ID, MAX_PLAYLIST_ID)
     let validIdFound: boolean = false
     while (!validIdFound) {
-      const resp: any = await this.discoveryProvider.getPlaylists(1, 0, [playlistId])
+      const resp: any = await this.discoveryProvider.getPlaylists(1, 0, [
+        playlistId
+      ])
       if (resp.length !== 0) {
         playlistId = this.getRandomInt(MIN_PLAYLIST_ID, MAX_PLAYLIST_ID)
       } else {
@@ -75,9 +78,25 @@ export class EntityManager extends Base {
     isPrivate: boolean
     coverArt: string
     logger: Console
-  }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
+  }): Promise<{
+    blockHash: Nullable<string>
+    blockNumber: Nullable<number>
+    playlistId: Nullable<number>
+    error: Nullable<string>
+  }> {
+    let error = null
     try {
-      const ownerId: number = parseInt(this.userStateManager.getCurrentUserId())
+      const currentUserId: string | null =
+        this.userStateManager.getCurrentUserId()
+      if (!currentUserId) {
+        return {
+          blockHash: null,
+          blockNumber: null,
+          playlistId: null,
+          error: 'Missing current user ID'
+        }
+      }
+      const userId: number = parseInt(currentUserId)
       const createAction = Action.CREATE
       const entityType = EntityType.PLAYLIST
       const entityId = await this.getValidPlaylistId()
@@ -101,7 +120,7 @@ export class EntityManager extends Base {
       const { metadataMultihash } =
         await this.creatorNode.uploadPlaylistMetadata(metadata)
       const resp = await this.manageEntity({
-        userId: ownerId,
+        userId: userId,
         entityType,
         entityId,
         action: createAction,
@@ -112,11 +131,17 @@ export class EntityManager extends Base {
       return {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber,
-        playlistId: entityId
+        playlistId: entityId,
+        error
       }
     } catch (e) {
-      logger.error(`Data create playlist: err ${e}`)
-      throw e
+      error = (e as Error).message
+      return {
+        blockHash: null,
+        blockNumber: null,
+        playlistId: null,
+        error
+      }
     }
   }
 
@@ -151,6 +176,7 @@ export class EntityManager extends Base {
       throw e
     }
   }
+
   /**
    * Update a playlist using updated data contracts flow
    **/
@@ -178,7 +204,7 @@ export class EntityManager extends Base {
       const updateAction = Action.UPDATE
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
-      let dirCID;
+      let dirCID
       if (coverArt) {
         const updatedPlaylistImage = await this.creatorNode.uploadImage(
           coverArt,
@@ -187,7 +213,9 @@ export class EntityManager extends Base {
         dirCID = updatedPlaylistImage.dirCID
       }
 
-      const playlist = (await this.discoveryProvider.getPlaylists(1, 0, [playlistId]))[0]
+      const playlist: any = (
+        await this.discoveryProvider.getPlaylists(1, 0, [playlistId])
+      )[0]
 
       const metadata = {
         action: updateAction, // why include action here?
@@ -195,12 +223,14 @@ export class EntityManager extends Base {
         playlist_id: playlistId,
         playlist_contents: trackIds || playlist.playlist_contents,
         playlist_name: playlistName || playlist.playlist_name,
-        playlist_image_sizes_multihash: dirCID || playlist.playlist_image_sizes_multihash,
+        playlist_image_sizes_multihash:
+          dirCID || playlist.playlist_image_sizes_multihash,
         description: description || playlist.description,
         is_album: isAlbum || playlist.is_album,
         is_private: isPrivate || playlist.is_private
       }
-      const { metadataMultihash } = await this.creatorNode.uploadPlaylistMetadata(metadata)
+      const { metadataMultihash } =
+        await this.creatorNode.uploadPlaylistMetadata(metadata)
 
       const resp = await this.manageEntity({
         userId,
@@ -237,21 +267,23 @@ export class EntityManager extends Base {
     entityId: number
     action: Action
     metadataMultihash: string
-  }): Promise<{ txReceipt: {blockHash: string, blockNumber: number}; error: any }> {
-    let error: string = ''
+  }): Promise<
+    { txReceipt: any; error: null } | { txReceipt: null; error: string }
+  > {
+    let error = null
     let resp: any
     try {
-      resp = await this.contracts.EntityManagerClient.manageEntity(
+      resp = await this.contracts.EntityManagerClient?.manageEntity(
         userId,
         entityType,
         entityId,
         action,
         metadataMultihash
       )
+      return { txReceipt: resp.txReceipt, error }
     } catch (e) {
       error = (e as Error).message
-      console.log(error)
+      return { txReceipt: null, error }
     }
-    return { txReceipt: resp.txReceipt, error }
   }
 }

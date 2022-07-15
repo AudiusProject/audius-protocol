@@ -399,7 +399,7 @@ export class DiscoveryProvider {
     idsArray = null,
     targetUserId = null,
     withUsers = false
-  ) {
+  ): Promise<unknown> {
     const req = Requests.getPlaylists(
       limit,
       offset,
