@@ -125,7 +125,7 @@ module.exports = function (app) {
               )
               if (cnodeUser.clock !== maxClockRecordId) {
                 throw new Error(
-                  `Cannot sync - exported data is not consistent. Exported max clock val = ${cNodeUser.clock} and exported max ClockRecord val ${maxClockRecordId}`
+                  `Cannot sync - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecordId}`
                 )
               }
 
