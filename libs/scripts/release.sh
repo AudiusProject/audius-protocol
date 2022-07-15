@@ -76,6 +76,7 @@ function merge-bump () {
 
 # publish to npm
 function publish () {
+    echo
     # npm publish . --access public
 }
 
