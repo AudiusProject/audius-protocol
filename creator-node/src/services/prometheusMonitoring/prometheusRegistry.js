@@ -21,6 +21,8 @@ module.exports = class PrometheusRegistry {
     // Ensure clean state for registry
     this.registry.clear()
 
+    this.namespacePrefix = NamespacePrefix
+
     // Enable collection of default metrics (e.g. heap, cpu, event loop)
     PrometheusClient.collectDefaultMetrics({
       prefix: NamespacePrefix + 'default_'

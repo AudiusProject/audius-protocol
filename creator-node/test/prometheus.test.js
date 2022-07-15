@@ -23,9 +23,17 @@ describe('test Prometheus metrics', async function () {
   })
 
   it('Checks that GET /prometheus_metrics is healthy and exposes Default metrics', async function () {
+    await request(app).get('/health_check')
+    await request(app).get('/health_check')
+    await request(app).get('/users/clock_status')
+
     const resp = await request(app)
       .get('/prometheus_metrics')
       .expect(200)
+    console.log(`sidtest resp: ${resp.text}`)
+
     assert.ok(resp.text.includes(NamespacePrefix + 'default_' + 'process_cpu_user_seconds_total'))
+
+    assert.ok(resp.text.includes(NamespacePrefix + 'http_request_duration_seconds'))
   })
 })
