@@ -171,6 +171,68 @@ jobs:
               exit;
             EOF
 
+  test-sdk:
+    docker:
+      - image: audius/circleci-gcloud-bake:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      # This has to be one large run block because CircleCI doesn't preserve state across run steps
+      - run:
+          name: Setup GCP instance
+          command: |
+            # cleanup code setup before starting actual execution
+            cleanup() {
+              # Delete GCP box
+              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
+
+              # Delete GCP firewall
+              gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
+            }
+            trap cleanup EXIT
+
+            # authenticate into gcloud
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+
+            GCLOUD_VM_NAME=mad-dog-test-$(date +%s)
+            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
+
+            export PROTOCOL_DIR=/home/circleci/project
+            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
+            pwd "$PROTOCOL_DIR"
+            ls -la "$PROTOCOL_DIR"
+            cd "$PROTOCOL_DIR/service-commands/"
+            npm install --unsafe-perm
+
+            # add IP to firewall
+            CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
+            gcloud compute firewall-rules create $GCLOUD_VM_NAME --source-ranges "$CIRCLECI_IP" --action allow --rules all
+
+            # run A setup on remote dev box to clone protocol and install the prerequisites for A
+            # A setup ... || true is necessary because exit code returns 141 by default
+            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME --fast --spot-instance || true
+
+    - run:
+        name: Run sdk tests
+        command: |
+            # Run A up on remote box
+            GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              cd /home/ubuntu/audius-protocol;
+              git pull;
+              git checkout $CIRCLE_BRANCH;
+              cd ./service-commands;
+              npm i
+              cd ../mad-dog;
+              A run init-repos up;
+              A up;
+              npm run start << parameters.mad-dog-type >> verbose;
+              exit;
+            EOF
+
   test-libs:
     docker:
       # specify the version you desire here
@@ -449,7 +511,6 @@ jobs:
       - run:
           name: discovery provider tests
           command: |
-            sudo apt install default-jre
             cd discovery-provider
             export audius_ipfs_port=5001
             export audius_redis_url=redis://localhost:6379/0
@@ -461,9 +522,6 @@ jobs:
             export PROMETHEUS_MULTIPROC_DIR=/home/circleci/prometheus_data
             mkdir ${PROMETHEUS_MULTIPROC_DIR}
             ./scripts/circle-ci.sh
-            cd ../libs
-            npm install
-            npm run gen:dev
 
   test-identity-service:
     docker:
@@ -754,8 +812,8 @@ workflows:
       #     name: build-creator-node
       #     repo: creator-node
 
-      - test-discovery-provider:
-          name: test-discovery-provider
+      # - test-discovery-provider:
+      #     name: test-discovery-provider
       # - docker-build-and-push-updated:
       #     name: build-discovery-provider
       #     repo: discovery-provider
@@ -775,6 +833,11 @@ workflows:
       #     context:
       #       - GCP2
       #     mad-dog-type: test
+
+      - test-sdk:
+          context:
+            - GCP2
+
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
