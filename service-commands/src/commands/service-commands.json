@@ -43,7 +43,7 @@
   },
   "contracts-predeployed": {
     "up": [
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-a25931b955adce92676cec029661533f80013908",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-fd3ba540307ae1df8ece8ba5995a1954a414b2f9",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/identity-service/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",
