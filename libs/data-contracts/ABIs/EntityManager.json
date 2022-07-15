@@ -1,5 +1,5 @@
 {
-  "contractName": "AudiusData",
+  "contractName": "EntityManager",
   "abi": [
     {
       "constant": true,
