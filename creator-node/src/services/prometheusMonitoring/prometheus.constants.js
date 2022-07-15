@@ -54,17 +54,6 @@ MetricNames = Object.freeze(
 )
 
 const MetricLabels = Object.freeze({
-  [MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
-    // The type of sync issued -- manual or recurring
-    syncType: [_.snakeCase(SyncType.Manual), _.snakeCase(SyncType.Recurring)],
-    // The reason another sync is needed
-    reasonForAdditionalSync: [
-      'secondary_progressed_too_slow', // The secondary sync went through, but its clock value didn't increase enough
-      'secondary_failed_to_progress', // The secondary's clock value did not increase at all
-      'none' // No additional sync is required -- the first sync was successful
-    ]
-  },
-
   [MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     syncType: Object.values(SyncType).map(_.snakeCase),
     syncMode: Object.values(SYNC_MODES).map(_.snakeCase),
