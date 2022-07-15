@@ -12,7 +12,7 @@ function git-libs-changelog () {
     # Print the log as <author name> <commit message>,
     # then grab the PR # from within the () at the end of the message
     # and format it as "- (#PR) Author Name"
-    git log --pretty=format:"- ad: %ad cd: %cd  [%h] %s %an" --date=short $release_commit..HEAD
+    git log --pretty=format:"- %cd [%h] %s %an" --date=short $release_commit..HEAD
 }
 
 # Makes a new branch off the master branch and bumps libs,
