@@ -613,7 +613,6 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
             [],
             [],
             [],
-            [],
             [],  # second tx receipt
             [],
             [
@@ -626,7 +625,6 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                     )
                 },
             ],  # update name event
-            [],
             [],
             [],
             [],
