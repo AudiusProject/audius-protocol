@@ -52,9 +52,9 @@ export type UserProfile = {
   handle: string
   verified: boolean
   profilePicture:
-  | { '150x150': string; '480x480': string; '1000x1000': string }
-  | null
-  | undefined
+    | { '150x150': string; '480x480': string; '1000x1000': string }
+    | null
+    | undefined
   sub: number
   iat: string
 }
