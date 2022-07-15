@@ -46,19 +46,7 @@ const initializeApp = (port, serviceRegistry) => {
   app.use(readOnlyMiddleware)
   app.use(cors())
 
-  const prom = serviceRegistry.prometheusRegistry
-
-  const metricsMiddleware = promBundle({
-    // use existing registry for compatibility with custom metrics
-    promRegistry: prom.registry,
-    // override metric name to include namespace prefix
-    httpDurationMetricName: `${prom.namespacePrefix}http_request_duration_seconds`,
-    includeMethod: true,
-    includePath: true,
-    // do not register separate endpoint
-    autoregister: false
-  })
-  app.use(metricsMiddleware)
+  const prometheusRegistry = serviceRegistry.prometheusRegistry
 
   // Rate limit routes
   app.use('/users/', userReqLimiter)
@@ -71,11 +59,107 @@ const initializeApp = (port, serviceRegistry) => {
   app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
   app.use(getRateLimiterMiddleware())
 
+  // Metric tracking middleware
+  app.use(
+    promBundle({
+      // use existing registry for compatibility with custom metrics
+      promRegistry: prometheusRegistry.registry,
+      // override metric name to include namespace prefix
+      httpDurationMetricName: `${prometheusRegistry.namespacePrefix}http_request_duration_seconds`,
+      includeMethod: true,
+      includePath: true,
+      // do not register separate endpoint
+      autoregister: false,
+      normalizePath
+    })
+  )
+
   // import routes
   require('./routes')(app)
   app.use('/', healthCheckRoutes)
   app.use('/', contentBlacklistRoutes)
   app.use('/', replicaSetRoutes)
+
+  // Get all routes on Content Node
+  const routes = app._router.stack.filter(
+    (element) =>
+      (element.route && element.route.path) ||
+      (element.handle && element.handle.stack)
+  )
+
+  // Express routing is... unpredictable. Use a set to manage seen paths
+  const seenPaths = new Set()
+  const parsedRoutes = []
+  routes.forEach((element) => {
+    if (element.name === 'router') {
+      // For routes initialized with the express router
+      element.handle.stack.forEach((e) => {
+        const path = e.route.path
+        const method = Object.keys(e.route.methods)[0]
+        const regex = e.regexp
+        addToParsedRoutes(path, method, regex)
+      })
+    } else {
+      // For all the other routes
+      const path = element.route.path
+      const method = Object.keys(element.route.methods)[0]
+      const regex = element.regexp
+      addToParsedRoutes(path, method, regex)
+    }
+  })
+
+  function addToParsedRoutes(path, method, regex) {
+    // Routes may come in the form of an array (e.g. ['/ipfs/:CID', '/content/:CID'])
+    if (Array.isArray(path)) {
+      path.forEach((p) => {
+        if (!seenPaths.has(p + method)) {
+          if (p.includes(':')) {
+            seenPaths.add(p + method)
+            parsedRoutes.push({
+              path: p,
+              method,
+              regex
+            })
+          }
+        }
+      })
+    } else {
+      if (!seenPaths.has(path + method)) {
+        if (path.includes(':')) {
+          seenPaths.add(path + method)
+          parsedRoutes.push({
+            path,
+            method,
+            regex
+          })
+        }
+      }
+    }
+  }
+
+  // Note: routes that map to the same app logic will be under one key
+  // Example: /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
+  const regexes = parsedRoutes
+    .filter(({ path }) => path.includes(':'))
+    .map(({ path, regex }) => ({
+      regex,
+      path: path.replace(/:/g, '#')
+    }))
+
+  function normalizePath(req, opts) {
+    const path = promBundle.normalizePath(req, opts)
+    try {
+      for (const { regex, path: replacerPath } of regexes) {
+        const match = path.match(regex)
+        if (match) {
+          return replacerPath
+        }
+      }
+    } catch (e) {
+      req.logger.warn(`Could not match on regex: ${e.message}`)
+    }
+    return path
+  }
 
   app.use(errorHandler)
 
