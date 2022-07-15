@@ -3,4 +3,24 @@
   height: 100%;
   background-color: var(--skeleton);
   border-radius: 4px;
+  background-image: linear-gradient(
+    90deg,
+    var(--skeleton) 0%,
+    var(--skeleton) 32%,
+    var(--skeleton-highlight) 46%,
+    var(--skeleton-highlight) 54%,
+    var(--skeleton) 68%,
+    var(--skeleton) 100%
+  );
+  background-size: 400%;
+  animation: skeleton-anim 1.5s forwards infinite ease;
+}
+
+@keyframes skeleton-anim {
+  from {
+    background-position: right;
+  }
+  to {
+    background-position: left;
+  }
 }

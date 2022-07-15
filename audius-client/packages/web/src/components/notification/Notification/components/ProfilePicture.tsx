@@ -72,6 +72,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     <DynamicImage
       onClick={handleClick}
       wrapperClassName={cn(styles.profilePictureWrapper, className)}
+      skeletonClassName={styles.profilePictureSkeleton}
       className={styles.profilePicture}
       image={profilePicture}
     />

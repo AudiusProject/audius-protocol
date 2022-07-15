@@ -25,6 +25,9 @@
   align-items: center;
   justify-content: center;
 }
+.profilePictureSkeleton {
+  border-radius: 50%;
+}
 
 .profilePicture .overlay {
   position: absolute;

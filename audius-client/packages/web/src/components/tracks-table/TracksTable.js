@@ -15,6 +15,7 @@ import { formatCount } from 'common/utils/formatUtil'
 import { formatSeconds } from 'common/utils/timeUtil'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Draggable from 'components/dragndrop/Draggable'
+import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import TableDragHandle from 'components/tracks-table/TableDragHandle'
 import TableFavoriteButton from 'components/tracks-table/TableFavoriteButton'
@@ -167,9 +168,7 @@ const ShowLimitTab = (props) => {
   )
 }
 
-const Loading = (props) => {
-  return <div className={styles.skeleton} />
-}
+const Loading = (props) => <Skeleton height={18} />
 
 const DraggableRow = (props) => {
   const {

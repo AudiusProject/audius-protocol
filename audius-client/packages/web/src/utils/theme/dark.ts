@@ -64,7 +64,8 @@ const theme = {
   '--mask': 'rgba(36, 36, 52, .7)',
   '--skeleton-gradient':
     'linear-gradient(90deg, #393A54 25%, #35364F 37%, #393A54 63%)',
-  '--skeleton': '#393A54',
+  '--skeleton': 'var(--neutral-light-9)',
+  '--skeleton-highlight': 'var(--neutral-light-8)',
   '--profile-completion-shadow-1': 'rgba(0,0,0,0)',
   '--profile-completion-shadow-2': 'rgba(17, 17, 34, 0.15)',
 

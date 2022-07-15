@@ -117,7 +117,8 @@
     #f2f2f4 37%,
     #f7f7f9 63%
   );
-  --skeleton: #f7f7f9;
+  --skeleton: var(--neutral-light-9);
+  --skeleton-highlight: var(--neutral-light-8);
   --profile-completion-shadow-1: rgba(126, 27, 204, 0.05);
   --profile-completion-shadow-2: rgba(133, 129, 153, 0.2);
 
