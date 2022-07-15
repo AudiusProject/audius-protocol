@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
@@ -84,6 +85,10 @@ class ServiceRegistry {
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized synchronous services'
     )
+  }
+
+  async initLibs() {
+    this.libs = this.libs || (await this._initAudiusLibs())
   }
 
   /**
@@ -241,6 +246,8 @@ class ServiceRegistry {
                   value.length > 100
                     ? `[Truncated array with ${value.length} elements]`
                     : this._truncateBull(value, newDepth)
+              } else if (_.isEmpty(value)) {
+                json[key] = value
               } else {
                 const length = Object.keys(value).length
                 json[key] =

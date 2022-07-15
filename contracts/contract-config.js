@@ -10,6 +10,14 @@ module.exports = {
     userReplicaSetBootstrapAddress: null,
     registryAddress: '0xCfEB869F69431e42cdB54A4F4f105C19C080A601'
   },
+  predeploy: {
+    verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
+    blacklisterAddress: null,
+    bootstrapSPIds: process.env.bootstrapSPIds ? process.env.bootstrapSPIds.split(",") : [],
+    bootstrapSPDelegateWallets: process.env.bootstrapSPDelegateWallets ? process.env.bootstrapSPDelegateWallets.split(",") : [],
+    bootstrapSPOwnerWallets: process.env.bootstrapSPOwnerWallets ? process.env.bootstrapSPOwnerWallets.split(",") : [],
+    userReplicaSetBootstrapAddress: null
+  },
   test_local: {
     verifierAddress: null,
     blacklisterAddress: null,

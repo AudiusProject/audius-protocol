@@ -80,7 +80,7 @@ jobs:
 
               # on error, run this function
               exit_ssh() {
-                echo $?
+                exit $?
               }
               trap exit_ssh EXIT
 
@@ -89,7 +89,7 @@ jobs:
               A up;
               A run monitoring up;
               A down;
-              cd "$PROTOCOL_DIR";
+              cd audius-protocol/;
               git checkout -f;
               exit;
             EOF
@@ -394,12 +394,12 @@ jobs:
           POSTGRES_DB: audius_discovery
       - image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
         environment:
-          - network.host=0.0.0.0
-          - discovery.type=single-node
-          - cluster.name=docker-cluster
-          - node.name=cluster1-node1
-          - xpack.security.enabled=false
-          - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+          network.host: '0.0.0.0'
+          discovery.type: 'single-node'
+          cluster.name: 'docker-cluster'
+          node.name: 'cluster1-node1'
+          xpack.security.enabled: 'false'
+          ES_JAVA_OPTS: '-Xms512m -Xmx512m'
       - image: ipfs/go-ipfs:release
         # Bring up ganache
       - image: redis:3.0-alpine
@@ -407,6 +407,7 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8556', '-a', '100', '-l', '8000000']
+    resource_class: medium+
     steps:
       - checkout
       - diff-if-necessary:
@@ -680,7 +681,7 @@ jobs:
         type: string
       logspout-tag:
         type: string
-        default: ""
+        default: ''
     steps:
       - checkout
       - setup_remote_docker:
@@ -811,7 +812,7 @@ workflows:
       - docker-build-and-push:
           name: build-logspout
           repo: logspout
-          logspout-tag: "true"
+          logspout-tag: 'true'
           requires:
             - hold-build-logspout
       - hold-bake-gcp-dev-image:

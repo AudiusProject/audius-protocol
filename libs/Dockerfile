@@ -11,5 +11,7 @@ WORKDIR /usr/src/app
 COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
+RUN npm run build
+
 ARG git_sha
 ENV GIT_SHA=$git_sha
