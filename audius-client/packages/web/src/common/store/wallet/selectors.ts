@@ -19,14 +19,16 @@ export const getAccountBalance = createSelector(
   (balance) => (balance ? stringWeiToBN(balance) : null)
 )
 
-const getAccountTotalBalanceStr = (state: CommonState): Nullable<StringWei> => {
-  return state.wallet.totalBalance ?? null
-}
+const getAccountTotalBalanceStr = (state: CommonState): Nullable<StringWei> =>
+  state.wallet.totalBalance ?? null
+
 export const getAccountTotalBalance = createSelector(
   getAccountTotalBalanceStr,
   (totalBalance) => (totalBalance ? stringWeiToBN(totalBalance) : null)
 )
 
-export const getLocalBalanceDidChange = (state: CommonState): boolean => {
-  return state.wallet.localBalanceDidChange
-}
+export const getLocalBalanceDidChange = (state: CommonState): boolean =>
+  state.wallet.localBalanceDidChange
+
+export const getFreezeUntilTime = (state: CommonState): Nullable<number> =>
+  state.wallet.freezeBalanceUntil
