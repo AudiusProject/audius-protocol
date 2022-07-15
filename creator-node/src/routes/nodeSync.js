@@ -123,7 +123,7 @@ module.exports = function (app) {
               const maxClockRecordId = Math.max(
                 ...clockRecords.map((record) => record.clock)
               )
-              if (cNodeUser.clock !== maxClockRecordId) {
+              if (cnodeUser.clock !== maxClockRecordId) {
                 throw new Error(
                   `Cannot sync - exported data is not consistent. Exported max clock val = ${cNodeUser.clock} and exported max ClockRecord val ${maxClockRecordId}`
                 )
