@@ -4,8 +4,18 @@ import socket
 import http
 import http.server
 
-HOSTNAME = socket.gethostname()
-IP_ADDRESS = socket.gethostbyname(HOSTNAME)
+IP_ADDRESS = socket.gethostbyname(socket.gethostname())
+TLD = socket.getfqdn().split(".")[-1]
+
+PAC_TEMPLATE = """
+function FindProxyForURL(url, host) {{
+    if (isInNet(host, "{ip}", "255.255.0.0") || host.endsWith("{tld}") || !host.includes(".")) {{
+        return "SOCKS5 {proxy_host}:1080"
+    }}
+
+    return "DIRECT";
+}}
+"""
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -14,17 +24,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-type", "application/x-ns-proxy-autoconfig")
         self.end_headers()
 
-        self.wfile.write(
-            f"""
-        function FindProxyForURL(url, host) {{
-            if (isInNet(host, "{IP_ADDRESS}", "255.255.0.0")) {{
-                return "SOCKS5 {self.headers.get("Host").split(":")[0]}:1080"
-            }}
-
-            return "DIRECT";
-        }}
-        """.encode()
+        pac = PAC_TEMPLATE.format(
+            ip=IP_ADDRESS, tld=TLD, proxy_host=self.headers["Host"].split(":")[0]
         )
+
+        self.wfile.write(pac.encode())
 
 
 def main():

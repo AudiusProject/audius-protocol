@@ -357,7 +357,7 @@ services:
 
   socks5-proxy-pac:
     image: python:3.10.5
-    command: python /tmp/dev-tools/startup/socks5-proxy-pac.py
+    command: sh -c "head -n-1 /etc/hosts > /etc/hosts && python /tmp/dev-tools/startup/socks5-proxy-pac.py"
     ports:
       - "8080:80"
     volumes:
