@@ -196,10 +196,7 @@ module.exports = async function (
         clock: fetchedLatestClockVal,
         clockRecords: fetchedClockRecords
       } = fetchedCNodeUser
-      logger.info(
-        logPrefix,
-        `fetchedCNodeUser ${JSON.stringify(fetchedCNodeUser)}`
-      )
+
       const maxClockRecordId = Math.max(
         ...fetchedCNodeUser.clockRecords.map((record) => record.clock)
       )
