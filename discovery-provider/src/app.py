@@ -128,7 +128,7 @@ def init_contracts():
     )
 
     audius_data_address = web3.toChecksumAddress(
-        shared_config["contracts"]["data_address"]
+        shared_config["contracts"]["entity_manager_address"]
     )
     audius_data_inst = web3.eth.contract(
         address=audius_data_address, abi=abi_values["AudiusData"]["abi"]
@@ -201,7 +201,6 @@ def create_celery(test_config=None):
         audius_data,
         contract_addresses,
     ) = init_contracts()
-    logger.info(f"contract_addresses_dict {contract_addresses}")
 
     return create(test_config, mode="celery")
 

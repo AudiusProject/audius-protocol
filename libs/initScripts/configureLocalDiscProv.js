@@ -7,7 +7,7 @@ const solanaConfig = require('../../solana-programs/solana-program-config.json')
 
 const ETH_CONTRACTS_REGISTRY = 'audius_eth_contracts_registry'
 const CONTRACTS_REGISTRY = 'audius_contracts_registry'
-const CONTRACTS_DATA_ADDRESS = 'audius_contracts_data_address'
+const ENTITY_MANAGER_ADDRESS = 'audius_contracts_entity_manager_address'
 const SOLANA_TRACK_LISTEN_COUNT_ADDRESS = 'audius_solana_track_listen_count_address'
 const SOLANA_ENDPOINT = 'audius_solana_endpoint'
 
@@ -27,7 +27,7 @@ const SOLANA_ANCHOR_ADMIN_STORAGE_PUBLIC_KEY = 'audius_solana_anchor_admin_stora
 const configureLocalDiscProv = async () => {
   const ethRegistryAddress = ethContractsMigrationOutput.registryAddress
   const dataRegistryAddress = dataContractsMigrationOutput.registryAddress
-  const dataContractAddress = dataContractsMigrationOutput.audiusDataProxyAddress
+  const entityManagerAddress = dataContractsMigrationOutput.entityManagerProxyAddress
   const solanaTrackListenCountAddress = solanaConfig.trackListenCountAddress
   const signerGroup = solanaConfig.signerGroup
   const solanaEndpoint = solanaConfig.endpoint
@@ -54,7 +54,7 @@ const configureLocalDiscProv = async () => {
     anchorProgramId,
     anchorAdminStoragePublicKey,
     dataRegistryAddress,
-    dataContractAddress
+    entityManagerAddress
   )
 }
 
@@ -73,7 +73,7 @@ const _updateDiscoveryProviderEnvFile = async (
   anchorProgramId,
   anchorAdminStoragePublicKey,
   dataRegistryAddress,
-  dataContractAddress
+  entityManagerAddress
 ) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
@@ -106,7 +106,7 @@ const _updateDiscoveryProviderEnvFile = async (
   const anchorProgramIdLine = `${SOLANA_ANCHOR_PROGRAM_ID}=${anchorProgramId}`
   const anchorAdminStoragePublicKeyLine = `${SOLANA_ANCHOR_ADMIN_STORAGE_PUBLIC_KEY}=${anchorAdminStoragePublicKey}`
   const dataRegistryLine = `${CONTRACTS_REGISTRY}=${dataRegistryAddress}`
-  const dataContractLine = `${CONTRACTS_DATA_ADDRESS}=${dataContractAddress}`
+  const entityManagerContractLine = `${ENTITY_MANAGER_ADDRESS}=${entityManagerAddress}`
 
   for await (const line of rl) {
     if (line.includes(ETH_CONTRACTS_REGISTRY)) {
@@ -142,8 +142,8 @@ const _updateDiscoveryProviderEnvFile = async (
     } else if (line.includes(CONTRACTS_REGISTRY)) {
       output.push(dataRegistryLine)
       dataRegistryLineFound = true
-    } else if (line.includes(CONTRACTS_DATA_ADDRESS)) {
-      output.push(dataContractLine)
+    } else if (line.includes(ENTITY_MANAGER_ADDRESS)) {
+      output.push(entityManagerContractLine)
       dataContractLineFound = true
     } else {
       output.push(line)
@@ -183,7 +183,7 @@ const _updateDiscoveryProviderEnvFile = async (
     output.push(dataRegistryLine)
   }
   if (!dataContractLineFound) {
-    output.push(dataContractLine)
+    output.push(entityManagerContractLine)
   }
   fs.writeFileSync(writePath, output.join('\n'))
   console.log(`Updated DISCOVERY PROVIDER ${writePath} ${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress} ${output}`)

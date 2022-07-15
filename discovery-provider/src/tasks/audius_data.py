@@ -31,8 +31,7 @@ def audius_data_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    ipfs_metadata,  # prefix unused args with underscore to prevent pylint
-    _blacklisted_cids,
+    ipfs_metadata,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     num_total_changes = 0
 
