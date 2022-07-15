@@ -7,6 +7,7 @@ const {
 } = require('../apiHelpers')
 const config = require('../config')
 const retry = require('async-retry')
+const { Transaction } = require('sequelize')
 
 module.exports = function (app) {
   /**
@@ -34,7 +35,7 @@ module.exports = function (app) {
         requestedClockRangeMin + (maxExportClockValueRange - 1)
 
       const transaction = await models.sequelize.transaction({
-        isolationLevel: ISOLATION_LEVELS.REPEATABLE_READ
+        isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
       })
       try {
         await retry(
