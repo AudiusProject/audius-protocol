@@ -76,6 +76,16 @@ export const remoteConfig = <
   let client: Client | undefined
 
   async function init() {
+    // Set sessionId for feature flag bucketing
+    const savedSessionId = await getFeatureFlagSessionId()
+    if (!savedSessionId) {
+      const newSessionId = uuid()
+      setFeatureFlagSessionId(newSessionId)
+      state.sessionId = newSessionId
+    } else {
+      state.sessionId = savedSessionId
+    }
+
     client = await createOptimizelyClient()
 
     client.onReady().then(() => {
@@ -87,16 +97,6 @@ export const remoteConfig = <
 
       // console.timeEnd('remote-config')
     })
-
-    // Set sessionId for feature flag bucketing
-    const savedSessionId = await getFeatureFlagSessionId()
-    if (!savedSessionId) {
-      const newSessionId = uuid()
-      setFeatureFlagSessionId(newSessionId)
-      state.sessionId = newSessionId
-    } else {
-      state.sessionId = savedSessionId
-    }
   }
 
   // API
