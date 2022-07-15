@@ -42,39 +42,34 @@ function bump-libs () {
     # Commit to a new branch
     git checkout -b libs-$version
     git add .
-    git commit -m "Bump libs to $version
-
-## Changelog
-
-${CHANGE_LOG}"
+    git commit -m "Bump libs to $version\n\n## Changelog\n\n${CHANGE_LOG}"
 
     # Push to the remote
     git push -u origin libs-$version
 }
 
-function publish-libs () {
+function merge-bump () {
     version=$(jq -r '"v\(.version)"' package.json)
 
     git checkout master -f
     git pull
-    git merge --no-ff libs-$version -m "Bump libs to $version
-
-## Changelog
-
-${CHANGE_LOG}"
+    git merge --no-ff libs-$version -m "Bump libs to $version\n\n## Changelog\n\n${CHANGE_LOG}"
 
     # git push -u origin master
 
     # clean up release branches
     # git branch -d libs-$version
     # git push origin :libs-$version
+}
 
+function publish-libs () {
     # Publish
-    # npm publish . --access public
+    npm publish . --access public
 }
 
 
 cd $PROTOCOL_DIR/libs
 CHANGE_LOG=$(git-libs-changelog)
 bump-libs
-publish-libs
+merge-bump
+# publish-libs
