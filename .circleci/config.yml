@@ -449,6 +449,7 @@ jobs:
       - run:
           name: discovery provider tests
           command: |
+            sudo apt install default-jre
             cd discovery-provider
             export audius_ipfs_port=5001
             export audius_redis_url=redis://localhost:6379/0
