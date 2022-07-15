@@ -21,7 +21,7 @@ commands:
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
-  run-on-gcp-instance:
+  run-on-gcp:
     parameters:
       command:
         description: The command to run on the gcp instance
@@ -161,7 +161,7 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
     steps:
-      - run-on-gcp-instance:
+      - run-on-gcp:
           command-name: Verify generated sdk types
           command: |
             A up -nc 0
