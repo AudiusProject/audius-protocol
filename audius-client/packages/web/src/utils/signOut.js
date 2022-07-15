@@ -25,12 +25,12 @@ const removeLocalStorageItems = () => {
   items.map((k) => localStorage.removeItem(k))
 }
 
-export const signOut = () => {
+export const signOut = async () => {
   removeLocalStorageItems()
   clearAudiusAccount()
   clearAudiusAccountUser()
   removeHasRequestedBrowserPermission()
-  AudiusBackend.signOut()
+  await AudiusBackend.signOut()
   clearTheme()
 
   if (NATIVE_MOBILE) {
