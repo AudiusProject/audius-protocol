@@ -215,33 +215,24 @@ export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<numb
 }
 
 export const getUsersWithAllFoundationNodeReplicaSetCount = async (run_id: number): Promise<number> => {
+
+    const foundationSpIDs = [1, 2, 3, 4]
+    const foundationSpIDsStr = `{${foundationSpIDs.join(",")}}`
+
     const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
-    FROM (
-        (
-            (
-                (SELECT user_id, primaryspid, secondary1spid, secondary2spid FROM network_monitoring_users WHERE run_id = :run_id) AS nm_users
-                JOIN 
-                (SELECT spid AS primaryspid, endpoint AS primary_endpoint FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS nm_cnodes_prim
-                ON nm_users.primaryspid = nm_cnodes_prim.primaryspid
-            ) AS first_join
-            JOIN
-            (SELECT spid AS secondary1spid, endpoint AS secondary1_endpoint FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS nm_cnodes_sec1
-            ON first_join.secondary1spid = nm_cnodes_sec1.secondary1spid
-        ) AS sec1_join
-        JOIN
-        (SELECT spid AS secondary2spid, endpoint AS secondary2_endpoint FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS nm_cnodes_sec2
-        ON  sec1_join.secondary2spid = nm_cnodes_sec2.secondary2spid
-    ) AS nm_user_cnodes
-    WHERE 
-        nm_user_cnodes.primary_endpoint like '%.audius.co'
+    FROM network_monitoring_users
+    WHERE
+        run_id = :run_id
+    AND 
+        primaryspid = ANY( :foundationSpIDsStr )
     AND
-        nm_user_cnodes.secondary1_endpoint like '%.audius.co'
-    AND
-        nm_user_cnodes.secondary2_endpoint like '%.audius.co';
+        secondary1spid = ANY( :foundationSpIDsStr )
+    AND 
+        secondary2spid = ANY( :foundationSpIDsStr );
     `, {
         type: QueryTypes.SELECT,
-        replacements: { run_id },
+        replacements: { run_id, foundationSpIDsStr },
     })
 
     const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
