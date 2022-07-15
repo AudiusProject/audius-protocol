@@ -27,7 +27,7 @@ const SignOutPage = ({ onClickBack }: { onClickBack: () => void }) => {
     if (NATIVE_MOBILE) {
       await disablePushNotifications()
       record(make(Name.SETTINGS_LOG_OUT, {}))
-      signOut()
+      await signOut()
     } else {
       record(make(Name.SETTINGS_LOG_OUT, { callback: signOut }))
     }
