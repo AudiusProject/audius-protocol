@@ -59,27 +59,6 @@ const initializeApp = (port, serviceRegistry) => {
   app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
   app.use(getRateLimiterMiddleware())
 
-  // Metric tracking middleware
-  app.use(
-    promBundle({
-      // use existing registry for compatibility with custom metrics
-      promRegistry: prometheusRegistry.registry,
-      // override metric name to include namespace prefix
-      httpDurationMetricName: `${prometheusRegistry.namespacePrefix}http_request_duration_seconds`,
-      includeMethod: true,
-      includePath: true,
-      // do not register separate endpoint
-      autoregister: false,
-      normalizePath
-    })
-  )
-
-  // import routes
-  require('./routes')(app)
-  app.use('/', healthCheckRoutes)
-  app.use('/', contentBlacklistRoutes)
-  app.use('/', replicaSetRoutes)
-
   // Get all routes on Content Node
   const routes = app._router.stack.filter(
     (element) =>
@@ -146,20 +125,39 @@ const initializeApp = (port, serviceRegistry) => {
       path: path.replace(/:/g, '#')
     }))
 
-  function normalizePath(req, opts) {
-    const path = promBundle.normalizePath(req, opts)
-    try {
-      for (const { regex, path: replacerPath } of regexes) {
-        const match = path.match(regex)
-        if (match) {
-          return replacerPath
+  // Metric tracking middleware
+  app.use(
+    promBundle({
+      // use existing registry for compatibility with custom metrics
+      promRegistry: prometheusRegistry.registry,
+      // override metric name to include namespace prefix
+      httpDurationMetricName: `${prometheusRegistry.namespacePrefix}http_request_duration_seconds`,
+      includeMethod: true,
+      includePath: true,
+      // do not register separate endpoint
+      autoregister: false,
+      normalizePath: function (req, opts) {
+        const path = promBundle.normalizePath(req, opts)
+        try {
+          for (const { regex, path: replacerPath } of regexes) {
+            const match = path.match(regex)
+            if (match) {
+              return replacerPath
+            }
+          }
+        } catch (e) {
+          req.logger.warn(`Could not match on regex: ${e.message}`)
         }
+        return path
       }
-    } catch (e) {
-      req.logger.warn(`Could not match on regex: ${e.message}`)
-    }
-    return path
-  }
+    })
+  )
+
+  // import routes
+  require('./routes')(app)
+  app.use('/', healthCheckRoutes)
+  app.use('/', contentBlacklistRoutes)
+  app.use('/', replicaSetRoutes)
 
   app.use(errorHandler)
 
