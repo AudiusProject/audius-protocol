@@ -8,7 +8,6 @@ const {
 const config = require('../config')
 const retry = require('async-retry')
 const { Transaction } = require('sequelize')
-const cNodeUser = require('models/cNodeUser')
 
 module.exports = function (app) {
   /**
