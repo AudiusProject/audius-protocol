@@ -33,7 +33,9 @@ module.exports = function (app) {
       const requestedClockRangeMax =
         requestedClockRangeMin + (maxExportClockValueRange - 1)
 
-      const transaction = await models.sequelize.transaction()
+      const transaction = await models.sequelize.transaction({
+        isolationLevel: ISOLATION_LEVELS.REPEATABLE_READ
+      })
       try {
         await retry(
           async () => {

@@ -10,7 +10,7 @@ module.exports = {
       return queryInterface.createTable('users', { id: Sequelize.INTEGER });
     */
     await queryInterface.sequelize.query(`
-      ALTER DATABASE audius_discovery SET DEFAULT_TRANSACTION_ISOLATION TO REPEATABLE READ; 
+      ALTER DATABASE audius_discovery SET DEFAULT_TRANSACTION_ISOLATION TO 'REPEATABLE READ'; 
     `)
   },
 
@@ -23,7 +23,7 @@ module.exports = {
       return queryInterface.dropTable('users');
     */
     await queryInterface.sequelize.query(`
-      ALTER DATABASE audius_discovery SET DEFAULT_TRANSACTION_ISOLATION TO READ COMMITTED; 
+      ALTER DATABASE audius_discovery SET DEFAULT_TRANSACTION_ISOLATION TO 'READ COMMITTED'; 
     `)
   }
 }
