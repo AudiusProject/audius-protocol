@@ -169,11 +169,11 @@ const buildReplicaSetNodesToUserWalletsMap = (nodeUsers) => {
   return replicaSetNodesToUserWalletsMap
 }
 
-const computeUserSecondarySyncSuccessRatesMap = async (nodeUsers) => {
-  // Map each nodeUser to truthy secondaries (ignore empty secondaries that result from incomplete replica sets)
+const computeUserSecondarySyncSuccessRatesMap = async (users = []) => {
+  // Map each user to truthy secondaries (ignore empty secondaries that result from incomplete replica sets)
   const walletsToSecondariesMapping = {}
-  for (const nodeUser of nodeUsers) {
-    const { wallet, secondary1, secondary2 } = nodeUser
+  for (const user of users) {
+    const { wallet, secondary1, secondary2 } = user
     const secondaries = [secondary1, secondary2].filter(Boolean)
     walletsToSecondariesMapping[wallet] = secondaries
   }

@@ -138,33 +138,31 @@ class StateMonitoringManager {
   }) {
     // Add handlers for logging
     monitoringQueue.on('global:waiting', (jobId) => {
-      monitoringQueueLogger.info(`Queue Job Waiting - ID ${jobId}`)
+      const logger = createChildLogger(monitoringQueueLogger, { jobId })
+      logger.info('Job active')
     })
     monitoringQueue.on('global:active', (jobId, jobPromise) => {
-      monitoringQueueLogger.info(`Queue Job Active - ID ${jobId}`)
+      const logger = createChildLogger(monitoringQueueLogger, { jobId })
+      logger.info('Job active')
     })
     monitoringQueue.on('global:lock-extension-failed', (jobId, err) => {
-      monitoringQueueLogger.error(
-        `Queue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
-      )
+      const logger = createChildLogger(monitoringQueueLogger, { jobId })
+      logger.error(`Job lock extension failed. Error: ${err}`)
     })
     monitoringQueue.on('global:stalled', (jobId) => {
-      monitoringQueueLogger.error(`Queue Job Stalled - ID ${jobId}`)
+      const logger = createChildLogger(monitoringQueueLogger, { jobId })
+      logger.error('Job stalled')
     })
     monitoringQueue.on('global:error', (error) => {
       monitoringQueueLogger.error(`Queue Job Error - ${error}`)
     })
 
-    // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
-    monitoringQueue.on('completed', (job, result) => {
-      monitoringQueueLogger.info(
-        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
-      )
-    })
+    // Log when a job fails to complete and re-enqueue another monitoring job
     monitoringQueue.on('failed', (job, err) => {
-      monitoringQueueLogger.error(
-        `Queue Job Failed - ID ${job?.id} - Error ${err}`
-      )
+      const logger = createChildLogger(monitoringQueueLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
       if (job?.name === JOB_NAMES.MONITOR_STATE) {
         monitorStateJobFailureCallback(monitoringQueue, job)
       }
