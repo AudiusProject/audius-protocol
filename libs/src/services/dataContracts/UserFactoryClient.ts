@@ -222,32 +222,6 @@ export class UserFactoryClient extends ContractClient {
     }
   }
 
-  async updateIsCreator(userId: number, isCreator: boolean) {
-    const [nonce, sig] = await this.getUpdateNonceAndSig(
-      signatureSchemas.generators.getUpdateUserCreatorRequestData,
-      userId,
-      isCreator
-    )
-    const method = await this.getMethod(
-      'updateIsCreator',
-      userId,
-      isCreator,
-      nonce,
-      sig
-    )
-    const contractAddress = await this.getAddress()
-
-    const tx = await this.web3Manager.sendTransaction(
-      method,
-      this.contractRegistryKey,
-      contractAddress
-    )
-    return {
-      txReceipt: tx,
-      isCreator: tx.events?.['UpdateIsCreator']?.returnValues._isCreator
-    }
-  }
-
   /**
    * This function is called from the identity service, not from the client. As a result,
    * the return properties are different. The web3 sendTransaction() function isn't called, rather

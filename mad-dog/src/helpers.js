@@ -9,7 +9,6 @@ const ServiceCommands = require('@audius/service-commands')
 const {
   addUser,
   uploadProfileImagesAndAddUser,
-  upgradeToCreator,
   getLibsUserInfo,
   getClockValuesFromReplicaSet,
   RandomUtils
@@ -41,7 +40,6 @@ const addAndUpgradeUsers = async (
   const walletIndexToUserIdMap = {}
 
   await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap })
-  await upgradeUsersToCreators(executeAll, executeOne)
 
   // Map out walletId index => userId
   return walletIndexToUserIdMap
@@ -88,7 +86,7 @@ const addUsersWithoutProfileImageOnSignUp = async (
  * @param {Object} walletIndexToUserIdMap
  * @param {boolean} uploadProfilePic flag to upload profile pic on sign up or not
  */
-async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap, uploadProfilePic = true }) {
+async function _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap, uploadProfilePic = true }) {
   await logOps('Add users', async () => {
     const users = genRandomUsers(userCount)
 
@@ -151,38 +149,6 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         throw e
       }
     })
-  })
-}
-
-/**
- * Helper function to upgrade a user at a wallet index to a creator if not already.
- * @param {*} executeAll
- * @param {*} executeOne
- * @param {int} numCreatorNodes
- */
-async function upgradeUsersToCreators (executeAll, executeOne) {
-  await logOps('Upgrade to creator', async () => {
-    try {
-      await executeAll(async (libs, i) => {
-        // Check if existing users are already creators. If so, don't upgrade
-        const existingUser = await getUser({ executeOne, walletIndex: i })
-        if (!existingUser) throw new Error(`Cannot upgrade nonexistant user with wallet=${libs.walletAddress}`)
-        if (existingUser.tracks > 0) {
-          logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
-          return
-        }
-        // Upgrade to creator with replica set (empty string as users will be assigned an rset on signup)
-        await executeOne(i, l => upgradeToCreator(l, existingUser.creator_node_endpoint))
-        logger.info(`Finished upgrading creator for user=${existingUser.user_id}`)
-
-        // Wait until upgrade txn has been indexed
-        await executeOne(i, libs => libs.waitForLatestBlock())
-      })
-    } catch (e) {
-      logger.error('GOT ERR UPGRADING USER TO CREATOR')
-      console.error(e)
-      throw e
-    }
   })
 }
 
@@ -294,7 +260,7 @@ const makeExecuteAll = (libsArray, batchSize) => async (operation) => {
     let responses = []
     for (let i = 0; i < libsArray.length; i += batchSize) {
       const libsArraySlice = libsArray.slice(i, i + batchSize)
-  
+
       const sliceResps = await Promise.all(libsArraySlice.map(operation))
       responses = responses.concat(sliceResps)
     }
@@ -345,6 +311,5 @@ module.exports = {
   racePromiseWithTimeout,
   ensureReplicaSetSyncIsConsistent,
   makeExecuteAll,
-  makeExecuteOne,
-  upgradeUsersToCreators
+  makeExecuteOne
 }
