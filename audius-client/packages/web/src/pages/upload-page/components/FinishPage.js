@@ -52,8 +52,7 @@ const getShareUploadType = (uploadType, tracks) => {
   }
 }
 
-const getUploadText = ({ loaded, total, status, isCreator }) => {
-  if (!isCreator) return '1%'
+const getUploadText = ({ loaded, total, status }) => {
   if (status === ProgressStatus.COMPLETE) return messages.complete
   if (!loaded || loaded === 0) return '0%'
   if (loaded !== total) return `${Math.round((loaded / total) * 100)} %`
@@ -133,7 +132,6 @@ class FinishPage extends Component {
     }
 
     const erroredTrackSet = new Set(erroredTracks)
-    const isCreator = account.is_creator
 
     let content
     if (
@@ -153,12 +151,8 @@ class FinishPage extends Component {
           </div>
         )
 
-        // If we're waiting around to upgrade to become a creator,
-        // fake out the user by setting everything to 1% so it doesn't
-        // look totally stalled.
-        const uploadPercent = isCreator
-          ? (uploadProgress[i].loaded / uploadProgress[i].total) * 100
-          : 1
+        const uploadPercent =
+          (uploadProgress[i].loaded / uploadProgress[i].total) * 100
 
         const artwork = (
           <TrackArtwork
@@ -175,7 +169,7 @@ class FinishPage extends Component {
             showSkeleton={false}
           />
         )
-        const uploadText = getUploadText({ ...uploadProgress[i], isCreator })
+        const uploadText = getUploadText({ ...uploadProgress[i] })
         const bottomBar = this.renderProgressBar({
           uploadText,
           uploadPercent,
@@ -226,11 +220,9 @@ class FinishPage extends Component {
           ? ProgressStatus.COMPLETE
           : ProgressStatus.UPLOADING
 
-      // Same hack as for multitrack upload
-      // show 1% if upgrading
-      const averagePercent = isCreator ? (loaded / total) * 100 : 1
+      const averagePercent = (loaded / total) * 100
 
-      const uploadText = getUploadText({ loaded, total, status, isCreator })
+      const uploadText = getUploadText({ loaded, total, status })
       const bottomBar = this.renderProgressBar({
         uploadText,
         uploadPercent: averagePercent

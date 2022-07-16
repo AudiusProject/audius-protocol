@@ -76,7 +76,6 @@ export const getUserWithFallback = (user: User | null) => {
       name: '',
       handle: '',
       is_verified: false,
-      is_creator: false,
       is_deactivated: false,
       user_id: -1
     }

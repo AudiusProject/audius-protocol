@@ -147,7 +147,6 @@ const ConnectedPlaylistTile = memo(
     const {
       name,
       handle,
-      is_creator: isCreator,
       is_deactivated: isOwnerDeactivated
     } = getUserWithFallback(user)
     const isOwner = handle === userHandle
@@ -258,7 +257,6 @@ const ConnectedPlaylistTile = memo(
         playlistName: title,
         isPublic: !isPrivate,
         isOwner,
-        isArtist: isCreator,
         includeEmbed: true,
         includeShare: false,
         includeRepost: false,

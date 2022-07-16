@@ -173,7 +173,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       profile.profile &&
       artistTracks.status === Status.SUCCESS
     ) {
-      if (profile.profile.is_creator || profile.profile.track_count > 0) {
+      if (profile.profile.track_count > 0) {
         this.setState({
           activeTab: Tabs.TRACKS
         })
@@ -186,7 +186,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       !activeTab &&
       profile &&
       profile.profile &&
-      !profile.profile.is_creator
+      !(profile.profile.track_count > 0)
     ) {
       this.setState({
         activeTab: Tabs.REPOSTS

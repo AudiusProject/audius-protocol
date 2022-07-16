@@ -236,7 +236,7 @@ function* fetchProfileAsync(action) {
 
     const isMobileClient = isMobile()
     if (!isMobileClient) {
-      if (user.is_creator && user.track_count > 0) {
+      if (user.track_count > 0) {
         yield fork(fetchMostUsedTags, user.user_id, user.track_count)
       }
     }

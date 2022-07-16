@@ -152,7 +152,7 @@ const PasswordPage = ({
           ? CheckState.DEFAULT
           : getMatchRequirement(password, passwordConfirm)
     }))
-  }, [requirements, passwordConfirm, setRequirements])
+  }, [requirements, passwordConfirm, setRequirements, password])
 
   const onPasswordConfirmChange = useCallback(
     (passwordConfirm: string) => {

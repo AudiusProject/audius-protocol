@@ -25,7 +25,6 @@ export const ArtistCard = (props: ArtistCardProps) => {
   const {
     user_id,
     bio,
-    is_creator,
     track_count,
     playlist_count,
     follower_count,
@@ -34,7 +33,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
   } = artist
 
   const dispatch = useDispatch()
-  const isArtist = is_creator || track_count > 0
+  const isArtist = track_count > 0
   const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
 
   const handleClick: MouseEventHandler = useCallback((event) => {

@@ -9,7 +9,7 @@ import {
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontalAlt.svg'
-import { getAccountIsCreator } from 'common/store/account/selectors'
+import { getAccountHasTracks } from 'common/store/account/selectors'
 import { removeNullable } from 'common/utils/typeUtils'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
@@ -24,13 +24,13 @@ const messages = {
   audio: '$AUDIO & Rewards'
 }
 
-const useIsCreator = () => {
-  return useSelector(getAccountIsCreator)
+const useAccountHasTracks = () => {
+  return useSelector(getAccountHasTracks)
 }
 
 const NavPopupMenu = () => {
   const navigate = useNavigateToPage()
-  const isCreator = useIsCreator()
+  const hasTracks = useAccountHasTracks()
 
   const menuItems: PopupMenuItem[] = [
     {
@@ -39,7 +39,7 @@ const NavPopupMenu = () => {
       icon: <IconSettings />,
       iconClassName: styles.menuItemIcon
     },
-    isCreator
+    hasTracks
       ? {
           text: messages.dashboard,
           onClick: () => navigate(DASHBOARD_PAGE),
