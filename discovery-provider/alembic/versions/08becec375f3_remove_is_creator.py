@@ -1,7 +1,7 @@
 """remove is_creator
 
 Revision ID: 08becec375f3
-Revises: 0dbe054f29f8
+Revises: b3f2c32a2796
 Create Date: 2022-07-15 00:23:53.153082
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '08becec375f3'
-down_revision = '0dbe054f29f8'
+down_revision = 'b3f2c32a2796'
 branch_labels = None
 depends_on = None
 
