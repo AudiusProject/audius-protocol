@@ -1,6 +1,6 @@
 {
   "name": "@audius/common",
-  "version": "0.0.0",
+  "version": "1.1.13",
   "description": "Common utilities and store for web and mobile.",
   "private": "true",
   "author": "Audius",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "eslint": "8.19.0",
-    "eslint-config-audius": "0.0.0",
+    "eslint-config-audius": "1.1.13",
     "rollup": "2.76.0",
     "rollup-plugin-typescript2": "0.32.1"
   }
