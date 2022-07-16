@@ -37,7 +37,6 @@ export type APIUser = {
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
   handle_lc: string
-  is_creator: boolean
   updated_at: string
   cover_photo_sizes: Nullable<CID>
   cover_photo_legacy: Nullable<CID>

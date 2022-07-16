@@ -95,7 +95,6 @@ export const newCollectionMetadata = (fields, validate = false) => {
 
 const userMetadataSchema = {
   wallet: '',
-  is_creator: false,
   name: null,
   handle: '',
   profile_picture: null,

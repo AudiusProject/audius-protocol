@@ -131,21 +131,19 @@ function* watchSetSelected() {
       )
 
       yield* call(AudiusBackend.setCreatorNodeEndpoint, primary)
-      if (user.is_creator) {
-        user.creator_node_endpoint = newEndpoint
-        const success = yield* call(
-          AudiusBackend.updateCreator,
-          user,
-          user.user_id
+      user.creator_node_endpoint = newEndpoint
+      const success = yield* call(
+        AudiusBackend.updateCreator,
+        user,
+        user.user_id
+      )
+      if (!success) {
+        yield* put(
+          setSelectedFailed({
+            primary: oldPrimary,
+            secondaries: oldSecondaries
+          })
         )
-        if (!success) {
-          yield* put(
-            setSelectedFailed({
-              primary: oldPrimary,
-              secondaries: oldSecondaries
-            })
-          )
-        }
       }
 
       // Any new secondaries need to check if they are syncing

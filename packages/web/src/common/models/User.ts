@@ -27,7 +27,6 @@ export type UserMetadata = {
   handle: string
   handle_lc: string
   is_deactivated: boolean
-  is_creator: boolean
   is_verified: boolean
   location: Nullable<string>
   name: string
