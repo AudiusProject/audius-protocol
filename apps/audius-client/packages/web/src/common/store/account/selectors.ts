@@ -43,9 +43,9 @@ export const getAccountVerified = createSelector(
   [internalGetAccountUser],
   (user) => (user ? user.is_verified : false)
 )
-export const getAccountIsCreator = createSelector(
+export const getAccountHasTracks = createSelector(
   [internalGetAccountUser],
-  (user) => (user ? user.is_creator : false)
+  (user) => (user ? user.track_count > 0 : false)
 )
 export const getAccountCollectibles = createSelector(
   [internalGetAccountUser],

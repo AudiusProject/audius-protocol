@@ -74,8 +74,7 @@ export function* upgradeToCreator() {
       {
         id: user.user_id,
         metadata: {
-          creator_node_endpoint: newEndpoint,
-          is_creator: true
+          creator_node_endpoint: newEndpoint
         }
       }
     ])

@@ -251,7 +251,8 @@ export class ArtistDashboardPage extends Component<
   }
 
   componentDidUpdate() {
-    if (!this.props.account?.is_creator) {
+    const trackCount = this.props.account?.track_count || 0
+    if (!(trackCount > 0)) {
       this.props.goToRoute(TRENDING_PAGE)
     }
   }
@@ -306,7 +307,8 @@ export class ArtistDashboardPage extends Component<
   renderCreatorContent() {
     const { account, listenData, tracks, unlistedTracks, stats, isMatrix } =
       this.props
-    if (!account || !account.is_creator) return null
+    const trackCount = this.props.account?.track_count || 0
+    if (!account || !(trackCount > 0)) return null
 
     const { selectedTrack } = this.state
 

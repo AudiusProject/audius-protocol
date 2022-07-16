@@ -1730,7 +1730,6 @@ class AudiusBackend {
   }) {
     await waitForLibsInit()
     const metadata = schemas.newUserMetadata()
-    metadata.is_creator = false
     if (formFields.name) {
       metadata.name = formFields.name
     }
