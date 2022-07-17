@@ -567,9 +567,10 @@ def remove_updated_entities_from_cache(redis, changed_entity_type_to_updated_ids
 
 def create_and_raise_indexing_error(err, redis):
     logger.info(
-        f"index.py | Error in the indexing task at"
+        f"index.py | Error in the indexing task {err} at"
         f" block={err.blocknumber} and hash={err.txhash}"
     )
+
     set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
     confirm_indexing_transaction_error(
         redis, err.blocknumber, err.blockhash, err.txhash, err.message

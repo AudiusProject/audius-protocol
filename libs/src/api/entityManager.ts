@@ -64,8 +64,8 @@ export class EntityManager extends Base {
     logger: Console
   }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
     try {
-      console.log(`asdf createPlaylist`)
-
+      
+      console.log(`asdf libs createPlaylist`)
       const ownerId: number = parseInt(this.userStateManager.getCurrentUserId())
       const createAction = Action.CREATE
       const entityType = EntityType.PLAYLIST
