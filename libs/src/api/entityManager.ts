@@ -64,7 +64,7 @@ export class EntityManager extends Base {
     logger: Console
   }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
     try {
-      
+
       console.log(`asdf libs createPlaylist`)
       const ownerId: number = parseInt(this.userStateManager.getCurrentUserId())
       const createAction = Action.CREATE
@@ -114,22 +114,25 @@ export class EntityManager extends Base {
    */
   async deletePlaylist({
     playlistId,
-    userId,
     logger = console
   }: {
     playlistId: number
-    userId: number
     logger: any
   }): Promise<{ blockHash: any; blockNumber: any }> {
+    console.log(`asdf deletePlaylist libs ${playlistId}`)
+    const userId: number = parseInt(this.userStateManager.getCurrentUserId())
+
     try {
+      console.log(`asdf deletePlaylist submitted ${playlistId}`)
+
       const resp = await this.manageEntity({
         userId,
-        entityType: 'Playlist',
+        entityType: EntityType.PLAYLIST,
         entityId: playlistId,
-        action: 'Delete',
+        action: Action.DELETE,
         metadataMultihash: ''
       })
-      logger.info(`DeletePlaylistData - ${JSON.stringify(resp)}`)
+      logger.info(`asdf DeletePlaylistData - ${JSON.stringify(resp)}`)
       const txReceipt = resp.txReceipt
       return {
         blockHash: txReceipt.blockHash,
@@ -163,9 +166,10 @@ export class EntityManager extends Base {
     logger: Console
   }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
     try {
+      console.log(`asdf updatePlaylist libs`)
       const userId: number = parseInt(this.userStateManager.getCurrentUserId())
       const updateAction = Action.UPDATE
-      const entityType = 'Playlist'
+      const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID;
       if (coverArt) {
@@ -175,21 +179,26 @@ export class EntityManager extends Base {
         )
         dirCID = updatedPlaylistImage.dirCID
       }
+      console.log(`asdf getting playlist`)
 
       const playlist = (await this.discoveryProvider.getPlaylists(1, 0, [playlistId]))[0]
+      console.log(`asdf playlist ${JSON.stringify(playlist)} ${typeof playlist}`)
 
       const metadata = {
         action: updateAction, // why include action here?
         entityType,
         playlist_id: playlistId,
-        playlist_contents: trackIds || playlist.playlist_contents,
+        playlist_contents: trackIds || playlist.playlist_contents.trackIds, // TODO fix schema validation from array to object
         playlist_name: playlistName || playlist.playlist_name,
         playlist_image_sizes_multihash: dirCID || playlist.playlist_image_sizes_multihash,
         description: description || playlist.description,
         is_album: isAlbum || playlist.is_album,
         is_private: isPrivate || playlist.is_private
       }
+      console.log(`asdf uploading playlist`)
+
       const { metadataMultihash } = await this.creatorNode.uploadPlaylistMetadata(metadata)
+      console.log(`asdf manageEntity libs`)
 
       const resp = await this.manageEntity({
         userId,
@@ -205,7 +214,7 @@ export class EntityManager extends Base {
         playlistId
       }
     } catch (e) {
-      logger.error(`Data update playlist: err ${e}`)
+      console.log(`asdf Data update playlist: err ${e}`)
       throw e
     }
   }
@@ -226,8 +235,12 @@ export class EntityManager extends Base {
     entityId: number
     action: Action
     metadataMultihash: string
-  }): Promise<{ txReceipt: {blockHash: string, blockNumber: number}; error: any }> {
+  }): Promise<{ txReceipt: { blockHash: string, blockNumber: number }; error: any }> {
     console.log(`asdf manageEntity`)
+    console.log(`asdf userId ${userId}`)
+    console.log(`asdf entityType ${entityType}`)
+    console.log(`asdf entityId ${entityId}`)
+    console.log(`asdf action ${action}`)
 
     let error: string = ''
     let resp: any
@@ -239,6 +252,7 @@ export class EntityManager extends Base {
         action,
         metadataMultihash
       )
+      console.log(`asdf resp ${JSON.stringify(resp)}`)
     } catch (e) {
       error = (e as Error).message
       console.log(error)

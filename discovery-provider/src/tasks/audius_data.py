@@ -137,9 +137,8 @@ def audius_data_state_update(
                     signer = helpers.get_tx_arg(event, "_signer")
 
                     if action == Action.CREATE and entity_type == EntityType.PLAYLIST:
-                        metadata = ipfs_metadata[metadata_cid]
                         logger.info(f"asdf validating {event}")
-
+                        metadata = ipfs_metadata[metadata_cid]
                         # validate
                         if entity_id in existing_playlist_id_to_playlist:
                             # skip if playlist already exists
@@ -182,8 +181,36 @@ def audius_data_state_update(
                         )
 
                         playlists_to_save[entity_id].append(create_playlist_record)
-                        # expunge if existing
-                        # process
+                    elif action == Action.UPDATE and entity_type == EntityType.PLAYLIST:
+                        metadata = ipfs_metadata[metadata_cid]
+                        # check owner
+                        if (
+                            signer.lower()
+                            != existing_user_id_to_user[user_id].wallet.lower()
+                        ):
+                            continue
+                        existing_playlist = existing_playlist_id_to_playlist[entity_id]
+                        existing_playlist.is_current = False  # invalidate
+                        if (
+                            entity_id in playlists_to_save
+                        ):  # override with last updated playlist is in this block
+                            existing_playlist = playlists_to_save[entity_id][-1]
+
+                        logger.info(
+                            f"asdf update existing_playlist {existing_playlist}"
+                        )
+                        updated_playlist = copy_record(
+                            existing_playlist, block_number, event_blockhash, txhash
+                        )
+                        parse_playlist_create_data_event(
+                            updated_playlist,
+                            metadata,
+                            block_integer_time,
+                            block_datetime,
+                        )
+                        logger.info(f"asdf updated_playlist {updated_playlist}")
+                        playlists_to_save[entity_id].append(updated_playlist)
+
                     elif action == Action.DELETE and entity_type == EntityType.PLAYLIST:
                         logger.info("asdf validating")
                         logger.info(f"asdf signer {signer} {type(signer)}")
@@ -296,17 +323,11 @@ def lookup_playlist_data_record(
 
 # Create playlist specific
 def parse_playlist_create_data_event(
-    update_task,
-    entry,
-    playlist_owner_id,
-    playlist_record,
+    playlist_record: Playlist,
     playlist_metadata,
-    block_timestamp,
-    session,
+    block_integer_time,
+    block_datetime,
 ):
-    block_datetime = datetime.utcfromtimestamp(block_timestamp)
-    block_integer_time = int(block_timestamp)
-    playlist_record.playlist_owner_id = playlist_owner_id
     playlist_record.is_album = (
         playlist_metadata["is_album"] if "is_album" in playlist_metadata else False
     )
