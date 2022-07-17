@@ -1,4 +1,5 @@
 import logging
+import traceback
 from collections import defaultdict
 from datetime import datetime
 from email.policy import default
@@ -9,6 +10,7 @@ from xml.dom.minidom import Entity
 from sqlalchemy.orm.session import Session, make_transient
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
+from src.models.users.user import User
 from src.tasks.playlists import invalidate_old_playlist
 from src.utils import helpers
 from src.utils.user_event_constants import audius_data_event_types_arr
@@ -59,6 +61,7 @@ def audius_data_state_update(
         playlist_ids: Set[int] = set()
 
         entities_to_fetch = defaultdict(set)
+        users_to_fetch: Set[int] = set()
 
         # collect events by entity type and action
         for tx_receipt in audius_data_txs:
@@ -75,13 +78,16 @@ def audius_data_state_update(
                     logger.info(f"asdf event {event}")
                     entity_id = helpers.get_tx_arg(event, "_entityId")
                     entity_type = helpers.get_tx_arg(event, "_entityType")
+                    user_id = helpers.get_tx_arg(event, "_userId")
+
                     entities_to_fetch[entity_type].add(entity_id)
+                    users_to_fetch.add(user_id)
 
         # fetch existing entities
-        existing_playlists: Dict[
+        existing_playlist_id_to_playlist: Dict[
             int, Playlist
         ] = {}  # entity type -> entity id -> entity
-        existing_playlists = (
+        existing_playlists_query = (
             session.query(Playlist)
             .filter(
                 Playlist.playlist_id.in_(entities_to_fetch[entity_type]),
@@ -89,13 +95,28 @@ def audius_data_state_update(
             )
             .all()
         )
-        for existing_playlist in existing_playlists:
-            existing_playlists[entity_type][
+        for existing_playlist in existing_playlists_query:
+            existing_playlist_id_to_playlist[
                 existing_playlist.playlist_id
             ] = existing_playlist
 
-        logger.info(f"asdf entity_ownership {existing_playlists}")
-        playlist_to_save: Dict[int, List[Playlist]] = defaultdict(list)
+        # fetch users
+        existing_user_id_to_user: Dict[
+            int, User
+        ] = {}  # entity type -> entity id -> entity
+        existing_users_query = (
+            session.query(User)
+            .filter(
+                User.user_id.in_(users_to_fetch),
+                User.is_current == True,
+            )
+            .all()
+        )
+        for user in existing_users_query:
+            existing_user_id_to_user[user.user_id] = user
+
+        logger.info(f"asdf entity_ownership {existing_playlist_id_to_playlist}")
+        playlists_to_save: Dict[int, List[Playlist]] = defaultdict(list)
         # process in tx order and submit in batch
         for tx_receipt in audius_data_txs:
             logger.info(f"asdf processing {tx_receipt}")
@@ -120,7 +141,7 @@ def audius_data_state_update(
                         logger.info(f"asdf validating {event}")
 
                         # validate
-                        if entity_id in existing_playlists:
+                        if entity_id in existing_playlist_id_to_playlist:
                             # skip if playlist already exists
                             # would also need to check playlist to be added...
                             logger.info("asdf skipping create since playlist exists")
@@ -160,16 +181,45 @@ def audius_data_state_update(
                             f"asdf create_playlist_record {create_playlist_record}"
                         )
 
-                        playlist_to_save[entity_id].append(create_playlist_record)
+                        playlists_to_save[entity_id].append(create_playlist_record)
                         # expunge if existing
                         # process
+                    elif action == Action.DELETE and entity_type == EntityType.PLAYLIST:
+                        logger.info("asdf validating")
+                        logger.info(f"asdf signer {signer} {type(signer)}")
+                        logger.info(
+                            f"asdf existing_user_id_to_user[user_id].wallet {existing_user_id_to_user[user_id].replica_set_update_signer} {type(existing_user_id_to_user[user_id].replica_set_update_signer)}"
+                        )
+
+                        # check owner
+                        if (
+                            signer.lower()
+                            != existing_user_id_to_user[user_id].wallet.lower()
+                        ):
+                            continue
+                        existing_playlist = existing_playlist_id_to_playlist[entity_id]
+                        existing_playlist.is_current = False  # invalidate
+                        if (
+                            entity_id in playlists_to_save
+                        ):  # override with last updated playlist is in this block
+                            existing_playlist = playlists_to_save[entity_id][-1]
+
+                        logger.info(f"asdf existing_playlist {existing_playlist}")
+
+                        deleted_playlist = copy_record(
+                            existing_playlist, block_number, event_blockhash, txhash
+                        )
+                        deleted_playlist.is_delete = True
+                        logger.info(f"asdf deleted_playlist {deleted_playlist}")
+
+                        playlists_to_save[entity_id].append(deleted_playlist)
 
         # process in tx order and submit in batch
         # flip is_current to true for the last tx in each entity
         records_to_save = []
-        logger.info(f"asdf playlist_to_save {playlist_to_save}")
+        logger.info(f"asdf playlist_to_save {playlists_to_save}")
 
-        for entity_id, playlist_records in playlist_to_save.items():
+        for entity_id, playlist_records in playlists_to_save.items():
             playlist_records[-1].is_current = True
             records_to_save.extend(playlist_records)
 
@@ -178,8 +228,30 @@ def audius_data_state_update(
 
         session.bulk_save_objects(records_to_save)
     except Exception as e:
-        logger.info(f"asdf error {e}")
+        logger.error(f"Exception occurred {e}", exc_info=True)
     return num_total_changes, changed_entity_ids
+
+
+def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
+    new_playlist = Playlist(
+        playlist_id=old_playlist.playlist_id,
+        playlist_owner_id=old_playlist.playlist_owner_id,
+        is_album=old_playlist.is_album,
+        description=old_playlist.description,
+        playlist_image_multihash=old_playlist.playlist_image_multihash,
+        playlist_image_sizes_multihash=old_playlist.playlist_image_sizes_multihash,
+        playlist_name=old_playlist.playlist_name,
+        is_private=old_playlist.is_private,
+        playlist_contents=old_playlist.playlist_contents,
+        created_at=old_playlist.created_at,
+        updated_at=old_playlist.updated_at,
+        blocknumber=block_number,
+        blockhash=event_blockhash,
+        txhash=txhash,
+        is_current=False,
+        is_delete=old_playlist.is_delete,
+    )
+    return new_playlist
 
 
 def get_audius_data_events_tx(update_task, event_type, tx_receipt):

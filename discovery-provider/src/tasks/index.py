@@ -337,6 +337,8 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, audius_data_txs)
                     entity_type = event_args._entityType
                     cid = event_args._metadata
                     # TODO - skip if not a multihash
+                    if not cid:
+                        continue
                     logger.info(
                         f"index.py | newcontract {txhash}, {event_args}, {entity_type}, {cid}"
                     )
