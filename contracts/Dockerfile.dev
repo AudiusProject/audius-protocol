@@ -13,9 +13,9 @@ ARG bootstrapSPIds
 ARG bootstrapSPDelegateWallets
 ARG bootstrapSPOwnerWallets
 
-RUN ./scripts/setup-predeployed-ganache.sh /usr/db
+RUN ./scripts/setup-predeployed-ganache.sh /usr/db 12345
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
     CMD node -e "require('http').request('http://localhost:8545').end()" || exit 1
 
-CMD ["npx", "ganache", "--server.host", "0.0.0.0", "--database.dbPath", "/usr/db", "--wallet.deterministic", "--wallet.totalAccounts", "50"]
+CMD ["npx", "ganache", "--server.host", "0.0.0.0", "--database.dbPath", "/usr/db", "--wallet.deterministic", "--wallet.totalAccounts", "50", "--chain.networkId", "12345"]

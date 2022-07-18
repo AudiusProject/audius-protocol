@@ -18,8 +18,10 @@ services:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
         bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
         bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
+    command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
+      - ./dev-tools:/tmp/dev-tools
     ports:
       - "8545:8545"
     logging: *default-logging
