@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const promBundle = require('express-prom-bundle')
+const prometheusMiddleware = require('express-prom-bundle')
 
 const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
@@ -61,7 +61,7 @@ const initializeApp = (port, serviceRegistry) => {
 
   // Metric tracking middleware
   app.use(
-    promBundle({
+    prometheusMiddleware({
       // use existing registry for compatibility with custom metrics
       promRegistry: prometheusRegistry.registry,
       // override metric name to include namespace prefix
@@ -70,7 +70,7 @@ const initializeApp = (port, serviceRegistry) => {
       includePath: true,
       autoregister: false,
       normalizePath: function (req, opts) {
-        const path = promBundle.normalizePath(req, opts)
+        const path = prometheusMiddleware.normalizePath(req, opts)
         try {
           for (const {
             regex,
