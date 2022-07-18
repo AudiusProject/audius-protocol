@@ -13,7 +13,7 @@ const {
  */
 
 // We add a namespace prefix to differentiate internal metrics from those exported by different exporters from the same host
-const NAMESPACE_PREFIX = 'audius_cn_'
+const NAMESPACE_PREFIX = 'audius_cn'
 
 /**
  * @notice Counter and Summary metric types are currently disabled, see README for details.
@@ -50,7 +50,7 @@ for (const jobName of Object.values(STATE_MACHINE_JOB_NAMES)) {
   ] = `state_machine_${_.snakeCase(jobName)}_job_duration_seconds`
 }
 const METRIC_NAMES = Object.freeze(
-  _.mapValues(metricNames, (metricName) => NAMESPACE_PREFIX + metricName)
+  _.mapValues(metricNames, (metricName) => `${NAMESPACE_PREFIX}_${metricName}`)
 )
 
 const METRIC_LABELS = Object.freeze({

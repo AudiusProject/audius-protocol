@@ -82,7 +82,9 @@ const initializeApp = (port, serviceRegistry) => {
             }
           }
         } catch (e) {
-          req.logger.warn(`Could not match on regex: ${e.message}`)
+          req.logger.warn(
+            `DurationTracking || Could not match on regex: ${e.message}`
+          )
         }
         return path
       }
