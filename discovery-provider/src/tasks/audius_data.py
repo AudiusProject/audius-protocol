@@ -1,11 +1,8 @@
 import logging
-import traceback
 from collections import defaultdict
 from datetime import datetime
-from email.policy import default
 from enum import Enum
 from typing import Any, Dict, List, Set, Tuple
-from xml.dom.minidom import Entity
 
 from sqlalchemy.orm.session import Session, make_transient
 from src.database_task import DatabaseTask
@@ -14,6 +11,7 @@ from src.models.users.user import User
 from src.tasks.playlists import invalidate_old_playlist
 from src.utils import helpers
 from src.utils.user_event_constants import audius_data_event_types_arr
+from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -43,220 +41,250 @@ def audius_data_state_update(
     block_timestamp,
     block_hash,
     ipfs_metadata,  # prefix unused args with underscore to prevent pylint
-    _blacklisted_cids,
+    _,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     try:
         num_total_changes = 0
         event_blockhash = update_task.web3.toHex(block_hash)
-        block_datetime = datetime.utcfromtimestamp(block_timestamp)
-        block_integer_time = int(block_timestamp)
 
         changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
 
         if not audius_data_txs:
             return num_total_changes, changed_entity_ids
 
-        playlist_events_lookup: Dict[int, Dict[str, Any]] = {}
-        # This stores the playlist_ids created or updated in the set of transactions
-        playlist_ids: Set[int] = set()
-
-        entities_to_fetch = defaultdict(set)
+        entities_to_fetch: Dict[EntityType, Set[int]] = defaultdict(set)
         users_to_fetch: Set[int] = set()
 
         # collect events by entity type and action
-        for tx_receipt in audius_data_txs:
-            logger.info(f"asdf AudiusData.py | Processing {tx_receipt}")
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            for event_type in audius_data_event_types_arr:
-                logger.info(f"asdf event_type {event_type}")
-
-                audius_data_event_tx = get_audius_data_events_tx(
-                    update_task, event_type, tx_receipt
-                )
-                # TODO: Batch reject operations for mismatched signer/userId
-                for event in audius_data_event_tx:
-                    logger.info(f"asdf event {event}")
-                    entity_id = helpers.get_tx_arg(event, "_entityId")
-                    entity_type = helpers.get_tx_arg(event, "_entityType")
-                    user_id = helpers.get_tx_arg(event, "_userId")
-
-                    entities_to_fetch[entity_type].add(entity_id)
-                    users_to_fetch.add(user_id)
-
-        # fetch existing entities
-        existing_playlist_id_to_playlist: Dict[
-            int, Playlist
-        ] = {}  # entity type -> entity id -> entity
-        existing_playlists_query = (
-            session.query(Playlist)
-            .filter(
-                Playlist.playlist_id.in_(entities_to_fetch[entity_type]),
-                Playlist.is_current == True,
-            )
-            .all()
+        collect_entities_to_fetch(
+            update_task, audius_data_txs, entities_to_fetch, users_to_fetch
         )
-        for existing_playlist in existing_playlists_query:
-            existing_playlist_id_to_playlist[
-                existing_playlist.playlist_id
-            ] = existing_playlist
+
+        # fetch existing playlists
+        existing_playlist_id_to_playlist: Dict[int, Playlist] = fetch_existing_entities(
+            session, entities_to_fetch
+        )
 
         # fetch users
-        existing_user_id_to_user: Dict[
-            int, User
-        ] = {}  # entity type -> entity id -> entity
-        existing_users_query = (
-            session.query(User)
-            .filter(
-                User.user_id.in_(users_to_fetch),
-                User.is_current == True,
-            )
-            .all()
-        )
-        for user in existing_users_query:
-            existing_user_id_to_user[user.user_id] = user
+        existing_user_id_to_user: Dict[int, User] = fetch_users(session, users_to_fetch)
 
-        logger.info(f"asdf entity_ownership {existing_playlist_id_to_playlist}")
         playlists_to_save: Dict[int, List[Playlist]] = defaultdict(list)
-        # process in tx order and submit in batch
+        # process in tx order and populate playlists_to_save
         for tx_receipt in audius_data_txs:
-            logger.info(f"asdf processing {tx_receipt}")
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             for event_type in audius_data_event_types_arr:
                 audius_data_event_tx = get_audius_data_events_tx(
                     update_task, event_type, tx_receipt
                 )
-
-                # TODO: Batch reject operations for mismatched signer/userId
                 for event in audius_data_event_tx:
+                    params = ManagePlaylistParameters(
+                        event,
+                        playlists_to_save,  # actions below populate these records
+                        existing_playlist_id_to_playlist,
+                        existing_user_id_to_user,
+                        ipfs_metadata,
+                        block_timestamp,
+                        block_number,
+                        event_blockhash,
+                        txhash,
+                    )
+                    if (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.PLAYLIST
+                    ):
+                        create_playlist(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.PLAYLIST
+                    ):
+                        update_playlist(params)
 
-                    user_id = helpers.get_tx_arg(event, "_userId")
-                    entity_id = helpers.get_tx_arg(event, "_entityId")
-                    entity_type = helpers.get_tx_arg(event, "_entityType")
-                    action = helpers.get_tx_arg(event, "_action")
-                    metadata_cid = helpers.get_tx_arg(event, "_metadata")
-                    signer = helpers.get_tx_arg(event, "_signer")
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.PLAYLIST
+                    ):
+                        delete_playlist(params)
 
-                    if action == Action.CREATE and entity_type == EntityType.PLAYLIST:
-                        logger.info(f"asdf validating {event}")
-                        metadata = ipfs_metadata[metadata_cid]
-                        # validate
-                        if entity_id in existing_playlist_id_to_playlist:
-                            # skip if playlist already exists
-                            # would also need to check playlist to be added...
-                            logger.info("asdf skipping create since playlist exists")
-
-                            continue
-                        logger.info(f"asdf creating playlist from {event}")
-
-                        track_ids = metadata.get("playlist_contents", [])
-                        playlist_contents = []
-                        for track_id in track_ids:
-                            playlist_contents.append(
-                                {"track": track_id, "time": block_integer_time}
-                            )
-                        create_playlist_record = Playlist(
-                            playlist_id=entity_id,
-                            playlist_owner_id=user_id,
-                            is_album=metadata.get("is_album", False),
-                            description=metadata["description"],
-                            playlist_image_multihash=metadata[
-                                "playlist_image_sizes_multihash"
-                            ],
-                            playlist_image_sizes_multihash=metadata[
-                                "playlist_image_sizes_multihash"
-                            ],
-                            playlist_name=metadata["playlist_name"],
-                            is_private=metadata.get("is_private", False),
-                            playlist_contents={"track_ids": playlist_contents},
-                            created_at=block_datetime,
-                            updated_at=block_datetime,
-                            blocknumber=block_number,
-                            blockhash=event_blockhash,
-                            txhash=txhash,
-                            is_current=False,
-                            is_delete=False,
-                        )
-                        logger.info(
-                            f"asdf create_playlist_record {create_playlist_record}"
-                        )
-
-                        playlists_to_save[entity_id].append(create_playlist_record)
-                    elif action == Action.UPDATE and entity_type == EntityType.PLAYLIST:
-                        metadata = ipfs_metadata[metadata_cid]
-                        # check owner
-                        if (
-                            signer.lower()
-                            != existing_user_id_to_user[user_id].wallet.lower()
-                        ):
-                            continue
-                        existing_playlist = existing_playlist_id_to_playlist[entity_id]
-                        existing_playlist.is_current = False  # invalidate
-                        if (
-                            entity_id in playlists_to_save
-                        ):  # override with last updated playlist is in this block
-                            existing_playlist = playlists_to_save[entity_id][-1]
-
-                        logger.info(
-                            f"asdf update existing_playlist {existing_playlist}"
-                        )
-                        updated_playlist = copy_record(
-                            existing_playlist, block_number, event_blockhash, txhash
-                        )
-                        parse_playlist_create_data_event(
-                            updated_playlist,
-                            metadata,
-                            block_integer_time,
-                            block_datetime,
-                        )
-                        logger.info(f"asdf updated_playlist {updated_playlist}")
-                        playlists_to_save[entity_id].append(updated_playlist)
-
-                    elif action == Action.DELETE and entity_type == EntityType.PLAYLIST:
-                        logger.info("asdf validating")
-                        logger.info(f"asdf signer {signer} {type(signer)}")
-                        logger.info(
-                            f"asdf existing_user_id_to_user[user_id].wallet {existing_user_id_to_user[user_id].replica_set_update_signer} {type(existing_user_id_to_user[user_id].replica_set_update_signer)}"
-                        )
-
-                        # check owner
-                        if (
-                            signer.lower()
-                            != existing_user_id_to_user[user_id].wallet.lower()
-                        ):
-                            continue
-                        existing_playlist = existing_playlist_id_to_playlist[entity_id]
-                        existing_playlist.is_current = False  # invalidate
-                        if (
-                            entity_id in playlists_to_save
-                        ):  # override with last updated playlist is in this block
-                            existing_playlist = playlists_to_save[entity_id][-1]
-
-                        logger.info(f"asdf existing_playlist {existing_playlist}")
-
-                        deleted_playlist = copy_record(
-                            existing_playlist, block_number, event_blockhash, txhash
-                        )
-                        deleted_playlist.is_delete = True
-                        logger.info(f"asdf deleted_playlist {deleted_playlist}")
-
-                        playlists_to_save[entity_id].append(deleted_playlist)
-
-        # process in tx order and submit in batch
-        # flip is_current to true for the last tx in each entity
+        # compile records_to_save
         records_to_save = []
-        logger.info(f"asdf playlist_to_save {playlists_to_save}")
-
-        for entity_id, playlist_records in playlists_to_save.items():
+        for _, playlist_records in playlists_to_save.items():
+            # flip is_current to true for the last tx in each playlist
             playlist_records[-1].is_current = True
             records_to_save.extend(playlist_records)
 
-            # expunge and invalidate existing record
-        logger.info(f"asdf records_to_save {records_to_save}")
-
+        # insert/update all playlist records in this block
         session.bulk_save_objects(records_to_save)
+        num_total_changes += len(records_to_save)
+
     except Exception as e:
         logger.error(f"Exception occurred {e}", exc_info=True)
     return num_total_changes, changed_entity_ids
+
+
+class ManagePlaylistParameters:
+    def __init__(
+        self,
+        event: AttributeDict,
+        playlists_to_save: Dict[int, List[Playlist]],
+        existing_playlist_id_to_playlist: Dict[int, Playlist],
+        existing_user_id_to_user: Dict[int, User],
+        ipfs_metadata: Dict[str, Dict[str, Any]],
+        block_timestamp: int,
+        block_number: int,
+        event_blockhash: str,
+        txhash: str,
+    ):
+        self.user_id = helpers.get_tx_arg(event, "_userId")
+        self.entity_id = helpers.get_tx_arg(event, "_entityId")
+        self.entity_type = helpers.get_tx_arg(event, "_entityType")
+        self.action = helpers.get_tx_arg(event, "_action")
+        self.metadata_cid = helpers.get_tx_arg(event, "_metadata")
+        self.signer = helpers.get_tx_arg(event, "_signer")
+        self.block_datetime = datetime.utcfromtimestamp(block_timestamp)
+        self.block_integer_time = int(block_timestamp)
+
+        self.event = event
+        self.ipfs_metadata = ipfs_metadata
+        self.existing_playlist_id_to_playlist = existing_playlist_id_to_playlist
+        self.block_number = block_number
+        self.event_blockhash = event_blockhash
+        self.txhash = txhash
+        self.existing_user_id_to_user = existing_user_id_to_user
+        self.playlists_to_save = playlists_to_save
+
+
+def create_playlist(params: ManagePlaylistParameters):
+    metadata = params.ipfs_metadata[params.metadata_cid]
+    # check if playlist already exists
+    if params.entity_id in params.existing_playlist_id_to_playlist:
+        return
+
+    track_ids = metadata.get("playlist_contents", [])
+    playlist_contents = []
+    for track_id in track_ids:
+        playlist_contents.append({"track": track_id, "time": params.block_integer_time})
+    create_playlist_record = Playlist(
+        playlist_id=params.entity_id,
+        playlist_owner_id=params.user_id,
+        is_album=metadata.get("is_album", False),
+        description=metadata["description"],
+        playlist_image_multihash=metadata["playlist_image_sizes_multihash"],
+        playlist_image_sizes_multihash=metadata["playlist_image_sizes_multihash"],
+        playlist_name=metadata["playlist_name"],
+        is_private=metadata.get("is_private", False),
+        playlist_contents={"track_ids": playlist_contents},
+        created_at=params.block_datetime,
+        updated_at=params.block_datetime,
+        blocknumber=params.block_number,
+        blockhash=params.event_blockhash,
+        txhash=params.txhash,
+        is_current=False,
+        is_delete=False,
+    )
+
+    params.playlists_to_save[params.entity_id].append(create_playlist_record)
+
+
+def update_playlist(params: ManagePlaylistParameters):
+    metadata = params.ipfs_metadata[params.metadata_cid]
+    # check user owns playlist
+    if (
+        params.signer.lower()
+        != params.existing_user_id_to_user[params.user_id].wallet.lower()
+    ):
+        return
+    existing_playlist = params.existing_playlist_id_to_playlist[params.entity_id]
+    existing_playlist.is_current = False  # invalidate
+    if (
+        params.entity_id in params.playlists_to_save
+    ):  # override with last updated playlist is in this block
+        existing_playlist = params.playlists_to_save[params.entity_id][-1]
+
+    updated_playlist = copy_record(
+        existing_playlist, params.block_number, params.event_blockhash, params.txhash
+    )
+    parse_playlist_create_data_event(
+        updated_playlist,
+        metadata,
+        params.block_integer_time,
+        params.block_datetime,
+    )
+    params.playlists_to_save[params.entity_id].append(updated_playlist)
+
+
+def delete_playlist(params: ManagePlaylistParameters):
+    # check user owns playlist
+    if (
+        params.signer.lower()
+        != params.existing_user_id_to_user[params.user_id].wallet.lower()
+    ):
+        return
+    existing_playlist = params.existing_playlist_id_to_playlist[params.entity_id]
+    existing_playlist.is_current = False  # invalidate old playlist
+    if params.entity_id in params.playlists_to_save:
+        # override with last updated playlist is in this block
+        existing_playlist = params.playlists_to_save[params.entity_id][-1]
+
+    deleted_playlist = copy_record(
+        existing_playlist, params.block_number, params.event_blockhash, params.txhash
+    )
+    deleted_playlist.is_delete = True
+
+    params.playlists_to_save[params.entity_id].append(deleted_playlist)
+
+
+def collect_entities_to_fetch(
+    update_task,
+    audius_data_txs,
+    entities_to_fetch: Dict[EntityType, Set[int]],
+    users_to_fetch: Set[int],
+):
+    for tx_receipt in audius_data_txs:
+        for event_type in audius_data_event_types_arr:
+            audius_data_event_tx = get_audius_data_events_tx(
+                update_task, event_type, tx_receipt
+            )
+            for event in audius_data_event_tx:
+                entity_id = helpers.get_tx_arg(event, "_entityId")
+                entity_type = helpers.get_tx_arg(event, "_entityType")
+                user_id = helpers.get_tx_arg(event, "_userId")
+
+                entities_to_fetch[entity_type].add(entity_id)
+                users_to_fetch.add(user_id)
+
+
+def fetch_existing_entities(
+    session: Session, entities_to_fetch: Dict[EntityType, Set[int]]
+):
+    existing_playlist_id_to_playlist: Dict[int, Playlist] = {}
+    existing_playlists_query = (
+        session.query(Playlist)
+        .filter(
+            Playlist.playlist_id.in_(entities_to_fetch[EntityType.PLAYLIST]),
+            Playlist.is_current == True,
+        )
+        .all()
+    )
+    for existing_playlist in existing_playlists_query:
+        existing_playlist_id_to_playlist[
+            existing_playlist.playlist_id
+        ] = existing_playlist
+    return existing_playlist_id_to_playlist
+
+
+def fetch_users(session: Session, users_to_fetch: Set[int]):
+    existing_user_id_to_user: Dict[int, User] = {}
+    existing_users_query = (
+        session.query(User)
+        .filter(
+            User.user_id.in_(users_to_fetch),
+            User.is_current == True,
+        )
+        .all()
+    )
+    for user in existing_users_query:
+        existing_user_id_to_user[user.user_id] = user
+    return existing_user_id_to_user
 
 
 def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
@@ -285,40 +313,6 @@ def get_audius_data_events_tx(update_task, event_type, tx_receipt):
     return getattr(
         update_task.audius_data_contract.events, event_type
     )().processReceipt(tx_receipt)
-
-
-def lookup_playlist_data_record(
-    update_task, session, playlist_id, block_number, block_hash, txhash
-):
-    event_blockhash = update_task.web3.toHex(block_hash)
-    # Check if playlist record is in the DB
-    playlist_exists = (
-        session.query(Playlist).filter_by(playlist_id=playlist_id).count() > 0
-    )
-
-    playlist_record = None
-    if playlist_exists:
-        playlist_record = (
-            session.query(Playlist)
-            .filter(Playlist.playlist_id == playlist_id, Playlist.is_current == True)
-            .first()
-        )
-
-        # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
-        # https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
-        session.expunge(playlist_record)
-        make_transient(playlist_record)
-    else:
-        playlist_record = Playlist(
-            playlist_id=playlist_id, is_current=True, is_delete=False
-        )
-
-    # update these fields regardless of type
-    playlist_record.blocknumber = block_number
-    playlist_record.blockhash = event_blockhash
-    playlist_record.txhash = txhash
-
-    return playlist_record
 
 
 # Create playlist specific

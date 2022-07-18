@@ -64,8 +64,6 @@ export class EntityManager extends Base {
     logger: Console
   }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
     try {
-
-      console.log(`asdf libs createPlaylist`)
       const ownerId: number = parseInt(this.userStateManager.getCurrentUserId())
       const createAction = Action.CREATE
       const entityType = EntityType.PLAYLIST
@@ -119,11 +117,9 @@ export class EntityManager extends Base {
     playlistId: number
     logger: any
   }): Promise<{ blockHash: any; blockNumber: any }> {
-    console.log(`asdf deletePlaylist libs ${playlistId}`)
     const userId: number = parseInt(this.userStateManager.getCurrentUserId())
 
     try {
-      console.log(`asdf deletePlaylist submitted ${playlistId}`)
 
       const resp = await this.manageEntity({
         userId,
@@ -132,7 +128,6 @@ export class EntityManager extends Base {
         action: Action.DELETE,
         metadataMultihash: ''
       })
-      logger.info(`asdf DeletePlaylistData - ${JSON.stringify(resp)}`)
       const txReceipt = resp.txReceipt
       return {
         blockHash: txReceipt.blockHash,
@@ -166,7 +161,6 @@ export class EntityManager extends Base {
     logger: Console
   }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
     try {
-      console.log(`asdf updatePlaylist libs`)
       const userId: number = parseInt(this.userStateManager.getCurrentUserId())
       const updateAction = Action.UPDATE
       const entityType = EntityType.PLAYLIST
@@ -179,10 +173,8 @@ export class EntityManager extends Base {
         )
         dirCID = updatedPlaylistImage.dirCID
       }
-      console.log(`asdf getting playlist`)
 
       const playlist = (await this.discoveryProvider.getPlaylists(1, 0, [playlistId]))[0]
-      console.log(`asdf playlist ${JSON.stringify(playlist)} ${typeof playlist}`)
 
       const metadata = {
         action: updateAction, // why include action here?
@@ -195,10 +187,7 @@ export class EntityManager extends Base {
         is_album: isAlbum || playlist.is_album,
         is_private: isPrivate || playlist.is_private
       }
-      console.log(`asdf uploading playlist`)
-
       const { metadataMultihash } = await this.creatorNode.uploadPlaylistMetadata(metadata)
-      console.log(`asdf manageEntity libs`)
 
       const resp = await this.manageEntity({
         userId,
@@ -214,7 +203,7 @@ export class EntityManager extends Base {
         playlistId
       }
     } catch (e) {
-      console.log(`asdf Data update playlist: err ${e}`)
+      logger.error(`Data update playlist: err ${e}`)
       throw e
     }
   }
@@ -236,11 +225,6 @@ export class EntityManager extends Base {
     action: Action
     metadataMultihash: string
   }): Promise<{ txReceipt: { blockHash: string, blockNumber: number }; error: any }> {
-    console.log(`asdf manageEntity`)
-    console.log(`asdf userId ${userId}`)
-    console.log(`asdf entityType ${entityType}`)
-    console.log(`asdf entityId ${entityId}`)
-    console.log(`asdf action ${action}`)
 
     let error: string = ''
     let resp: any
@@ -252,7 +236,6 @@ export class EntityManager extends Base {
         action,
         metadataMultihash
       )
-      console.log(`asdf resp ${JSON.stringify(resp)}`)
     } catch (e) {
       error = (e as Error).message
       console.log(error)
