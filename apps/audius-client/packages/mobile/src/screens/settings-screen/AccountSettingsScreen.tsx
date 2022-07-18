@@ -5,11 +5,13 @@ import { resendRecoveryEmail } from 'audius-client/src/common/store/recovery-ema
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { Text, View } from 'react-native'
 
+import Door from 'app/assets/images/emojis/door.png'
 import Key from 'app/assets/images/emojis/key.png'
 import Lock from 'app/assets/images/emojis/lock.png'
 import StopSign from 'app/assets/images/emojis/octagonal-sign.png'
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconMail from 'app/assets/images/iconMail.svg'
+import IconRemove from 'app/assets/images/iconRemove.svg'
 import IconSignOut from 'app/assets/images/iconSignOut.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { ScrollView, Screen } from 'app/components/core'
@@ -38,6 +40,10 @@ const messages = {
   passwordTitle: 'Change Password',
   passwordDescription: 'Change your password',
   passwordButtonTitle: 'Change',
+  deactivateAccountTitle: 'Deactivate Account',
+  deactivateAccountDescription:
+    'Deactivate your account. This cannot be undone',
+  deactivateAccountButtonTitle: 'Deactivate',
   signOutTitle: 'Sign Out',
   signOutDescription:
     'Make sure you have your account recovery email stored somewhere safe before signing out!',
@@ -92,6 +98,12 @@ export const AccountSettingsScreen = () => {
     dispatchWeb(setVisibility({ modal: 'SignOutConfirmation', visible: true }))
   }, [dispatchWeb])
 
+  const openDeactivateAccountDrawer = useCallback(() => {
+    dispatchWeb(
+      setVisibility({ modal: 'DeactivateAccountConfirmation', visible: true })
+    )
+  }, [dispatchWeb])
+
   if (!accountUser) return null
 
   const { name, handle } = accountUser
@@ -127,6 +139,14 @@ export const AccountSettingsScreen = () => {
           buttonTitle={messages.passwordButtonTitle}
           buttonIcon={IconMail}
           onPress={handlePressChangePassword}
+        />
+        <AccountSettingsItem
+          title={messages.deactivateAccountTitle}
+          titleIconSource={Door}
+          description={messages.deactivateAccountDescription}
+          buttonTitle={messages.deactivateAccountButtonTitle}
+          buttonIcon={IconRemove}
+          onPress={openDeactivateAccountDrawer}
         />
         <AccountSettingsItem
           title={messages.signOutTitle}
