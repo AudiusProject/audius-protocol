@@ -170,8 +170,8 @@ jobs:
           command-name: Verify generated sdk types
           instance-name: test-sdk
           command: |
-            apt update
-            apt install -y default-jre
+            sudo apt update
+            sudo apt install -y default-jre
             cd /home/ubuntu/audius-protocol
             git pull
             git checkout $CIRCLE_BRANCH
