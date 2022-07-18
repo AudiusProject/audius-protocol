@@ -21,8 +21,16 @@ const getNewOrExistingSyncReq = ({
   syncMode,
   immediate = false
 }) => {
-  if (!userWallet || !primaryEndpoint || !secondaryEndpoint || !syncType || !syncMode) {
-    throw new Error(`getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`)
+  if (
+    !userWallet ||
+    !primaryEndpoint ||
+    !secondaryEndpoint ||
+    !syncType ||
+    !syncMode
+  ) {
+    throw new Error(
+      `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
+    )
   }
   /**
    * If duplicate sync already exists, do not add and instead return existing sync job info
