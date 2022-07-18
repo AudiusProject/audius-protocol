@@ -87,13 +87,25 @@ const useStyles = makeStyles(
         icon: {
           color: palette.neutral
         }
+      },
+      destructive: {
+        root: {
+          backgroundColor: palette.accentRed
+        },
+        text: {
+          color: palette.staticWhite
+        },
+        icon: {
+          color: palette.staticWhite
+        }
       }
     }
 
     const variantPressingStyles = {
       secondary: variantStyles.primary,
       common: variantStyles.primary,
-      commonAlt: variantStyles.commonAlt
+      commonAlt: variantStyles.commonAlt,
+      destructive: variantStyles.destructive
     }
 
     const sizeStyles = {
@@ -211,7 +223,7 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
       icon: ViewStyle
       text: TextStyle
     }>
-    variant?: 'primary' | 'secondary' | 'common' | 'commonAlt'
+    variant?: 'primary' | 'secondary' | 'common' | 'commonAlt' | 'destructive'
     haptics?: boolean | 'light' | 'medium'
     url?: string
     corners?: 'rounded' | 'pill'
@@ -253,13 +265,15 @@ export const Button = (props: ButtonProps) => {
     handlePressOut: handlePressOutScale
   } = usePressScaleAnimation(0.97, false)
 
-  const { primaryDark1, neutralLight10, neutralLight7 } = useThemeColors()
+  const { primaryDark1, neutralLight10, neutralLight7, accentRedDark1 } =
+    useThemeColors()
 
   const pressColor = {
     primary: primaryDark1,
     secondary: primaryDark1,
     common: primaryDark1,
-    commonAlt: neutralLight10
+    commonAlt: neutralLight10,
+    destructive: accentRedDark1
   }
 
   const {

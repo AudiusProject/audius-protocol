@@ -1,75 +1,77 @@
 import { useCallback } from 'react'
 
 import { deactivateAccount } from 'audius-client/src/pages/deactivate-account-page/store/slice'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
-import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
-import ActionDrawer from '../action-drawer'
+import { Button, Text } from '../core'
+import { AppDrawer, useDrawerState } from '../drawer'
 
 const MODAL_NAME = 'DeactivateAccountConfirmation'
 const messages = {
   confirmTitle: 'Deactivate Account',
-  confirm: 'Are you sure? This cannot be undone.',
-  buttonDeactivate: 'Deactivate',
-  buttonGoBack: 'Go Back'
+  areYouSureText: 'Are you sure you want to deactivate your account?',
+  doubleCheckText:
+    'There is no going back. This will remove all of your tracks, albums, and playlists. You will not be able to re-register with the same email or handle',
+  confirmText: 'Deactivate',
+  cancelText: 'Take me back to safety'
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    customDrawerTitle: {
-      maxHeight: 500,
-      borderBottomColor: themeColors.neutralLight8,
-      borderBottomWidth: 1
-    },
-    customDrawerTitleHeader: {
-      marginTop: 8,
-      marginBottom: 16,
-      textAlign: 'center',
-      fontSize: 18
-    },
-    customDrawerTitleWarning: {
-      paddingBottom: 24,
-      textAlign: 'center',
-      fontSize: 18,
-      color: themeColors.accentRed
-    }
-  })
+const useStyles = makeStyles(({ spacing }) => ({
+  contentContainer: {
+    paddingHorizontal: spacing(6),
+    paddingBottom: spacing(4)
+  },
+  buttonRoot: {
+    marginTop: spacing(4)
+  },
+  text: {
+    textAlign: 'center',
+    marginBottom: spacing(2)
+  }
+}))
 
 export const DeactivateAccountConfirmationDrawer = () => {
   const dispatchWeb = useDispatchWeb()
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
+
+  const { onClose } = useDrawerState(MODAL_NAME)
 
   const handleConfirmation = useCallback(() => {
     dispatchWeb(deactivateAccount)
   }, [dispatchWeb])
 
   return (
-    <ActionDrawer
-      modalName={MODAL_NAME}
-      rows={[
-        {
-          text: messages.buttonDeactivate,
-          isDestructive: true,
-          callback: handleConfirmation
-        },
-        {
-          text: messages.buttonGoBack
-        }
-      ]}
-      renderTitle={() => (
-        <View style={styles.customDrawerTitle}>
-          <Text weight={'bold'} style={styles.customDrawerTitleHeader}>
-            {messages.confirmTitle}
-          </Text>
-          <Text weight={'demiBold'} style={styles.customDrawerTitleWarning}>
-            {messages.confirm}
-          </Text>
-        </View>
-      )}
-    />
+    <AppDrawer modalName={MODAL_NAME} title={messages.confirmTitle}>
+      <View style={styles.contentContainer}>
+        <Text variant='body' style={styles.text}>
+          {messages.areYouSureText}
+        </Text>
+        <Text variant='body' style={styles.text}>
+          {messages.doubleCheckText}
+        </Text>
+        <Button
+          title={messages.cancelText}
+          fullWidth
+          styles={{
+            root: styles.buttonRoot,
+            text: { textTransform: 'uppercase' }
+          }}
+          onPress={onClose}
+        />
+        <Button
+          title={messages.confirmText}
+          fullWidth
+          styles={{
+            root: styles.buttonRoot,
+            text: { textTransform: 'uppercase' }
+          }}
+          variant='destructive'
+          onPress={handleConfirmation}
+        />
+      </View>
+    </AppDrawer>
   )
 }
