@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const promBundle = require('express-prom-bundle')
 
 const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
@@ -18,58 +19,16 @@ const {
   batchCidsExistReqLimiter,
   getRateLimiterMiddleware
 } = require('./reqLimiter')
-const { durationTrackingMiddleware } = require('./middlewares')
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
 const replicaSetRoutes = require('./components/replicaSet/replicaSetController')
-
-const app = express()
-
-// middleware functions will be run in order they are added to the app below
-//  - loggingMiddleware must be first to ensure proper error handling
-app.use(loggingMiddleware)
-app.use(bodyParser.json({ limit: '1mb' }))
-app.use(readOnlyMiddleware)
-app.use(cors())
-
-// Rate limit routes
-app.use('/users/', userReqLimiter)
-app.use('/track*', trackReqLimiter)
-app.use('/audius_user/', audiusUserReqLimiter)
-app.use('/metadata', metadataReqLimiter)
-app.use('/image_upload', imageReqLimiter)
-app.use('/ursm_request_for_signature', URSMRequestForSignatureReqLimiter)
-app.use('/batch_cids_exist', batchCidsExistReqLimiter)
-app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
-app.use(getRateLimiterMiddleware())
-
-// const prometheusRegistry = serviceRegistry.prometheusRegistry
-
-// // Get all routes on Content Node
-// const routes = app._router.stack.filter(
-//   (element) =>
-//     (element.route && element.route.path) ||
-//     (element.handle && element.handle.stack)
-// )
-// const durationTrackingMiddleware =
-//   prometheusRegistry.initDurationTrackingMiddleware(routes)
-
-// Metric tracking middleware
-app.use(durationTrackingMiddleware)
-
-// import routes
-require('./routes')(app)
-app.use('/', healthCheckRoutes)
-app.use('/', contentBlacklistRoutes)
-app.use('/', replicaSetRoutes)
 
 function errorHandler(err, req, res, next) {
   req.logger.error('Internal server error')
   req.logger.error(err.stack)
   sendResponse(req, res, errorResponseServerError('Internal server error'))
 }
-app.use(errorHandler)
 
 /**
  * Configures express app object with required properties and starts express server
@@ -78,6 +37,66 @@ app.use(errorHandler)
  * @param {ServiceRegistry} serviceRegistry object housing all Content Node Services
  */
 const initializeApp = (port, serviceRegistry) => {
+  const app = express()
+
+  // middleware functions will be run in order they are added to the app below
+  //  - loggingMiddleware must be first to ensure proper error handling
+  app.use(loggingMiddleware)
+  app.use(bodyParser.json({ limit: '1mb' }))
+  app.use(readOnlyMiddleware)
+  app.use(cors())
+
+  // Rate limit routes
+  app.use('/users/', userReqLimiter)
+  app.use('/track*', trackReqLimiter)
+  app.use('/audius_user/', audiusUserReqLimiter)
+  app.use('/metadata', metadataReqLimiter)
+  app.use('/image_upload', imageReqLimiter)
+  app.use('/ursm_request_for_signature', URSMRequestForSignatureReqLimiter)
+  app.use('/batch_cids_exist', batchCidsExistReqLimiter)
+  app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
+  app.use(getRateLimiterMiddleware())
+
+  const prometheusRegistry = serviceRegistry.prometheusRegistry
+
+  // Metric tracking middleware
+  app.use(
+    promBundle({
+      // use existing registry for compatibility with custom metrics
+      promRegistry: prometheusRegistry.registry,
+      // override metric name to include namespace prefix
+      httpDurationMetricName: `${prometheusRegistry.namespacePrefix}_http_request_duration_seconds`,
+      includeMethod: true,
+      includePath: true,
+      autoregister: false,
+      normalizePath: function (req, opts) {
+        const path = promBundle.normalizePath(req, opts)
+        try {
+          for (const {
+            regex,
+            path: normalizedPath
+          } of prometheusRegistry.regexes) {
+            const match = path.match(regex)
+            if (match) {
+              return normalizedPath
+            }
+          }
+        } catch (e) {
+          req.logger.warn(`Could not match on regex: ${e.message}`)
+        }
+        return path
+      }
+    })
+  )
+
+  // import routes
+  require('./routes')(app)
+  app.use('/', healthCheckRoutes)
+  app.use('/', contentBlacklistRoutes)
+  app.use('/', replicaSetRoutes)
+
+  app.use(errorHandler)
+
   const storagePath = DiskManager.getConfigStoragePath()
 
   // TODO: Can remove these when all routes consume serviceRegistry

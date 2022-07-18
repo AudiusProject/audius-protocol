@@ -450,7 +450,7 @@ class ServiceRegistry {
         path: path.replace(/:/g, '#')
       }))
 
-    this.prometheusRegistry.initDurationTrackingMiddleware(regexes)
+    this.prometheusRegistry.initRouteParamRegexes(regexes)
   }
 
   /**

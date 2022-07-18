@@ -48,5 +48,9 @@ describe('test Prometheus metrics', async function () {
     assert.ok(
       resp.text.includes(NAMESPACE_PREFIX + '_http_request_duration_seconds')
     )
+
+    assert.ok(resp.text.includes('/ipfs/#CID'))
+
+    assert.ok(!resp.text.includes('/content/#CID'))
   })
 })
