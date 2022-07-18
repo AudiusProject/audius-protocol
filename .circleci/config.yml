@@ -177,6 +177,8 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
     steps:
+      - diff-if-necessary:
+          service: discovery-provider
       - run-on-gcp:
           command-name: Verify generated sdk types
           instance-name: test-sdk
@@ -760,45 +762,45 @@ workflows:
   # test, build and push all commits
   test-build-and-push:
     jobs:
-      # - test-libs:
-      #     name: test-libs
-      # - docker-build-and-push:
-      #     name: build-libs
-      #     repo: libs
+      - test-libs:
+          name: test-libs
+      - docker-build-and-push:
+          name: build-libs
+          repo: libs
 
-      # - test-contracts:
-      #     name: test-contracts
+      - test-contracts:
+          name: test-contracts
 
-      # - test-eth-contracts:
-      #     name: test-eth-contracts
+      - test-eth-contracts:
+          name: test-eth-contracts
 
-      # - test-creator-node:
-      #     name: test-creator-node
-      # - docker-build-and-push:
-      #     name: build-creator-node
-      #     repo: creator-node
+      - test-creator-node:
+          name: test-creator-node
+      - docker-build-and-push:
+          name: build-creator-node
+          repo: creator-node
 
-      # - test-discovery-provider:
-      #     name: test-discovery-provider
-      # - docker-build-and-push-updated:
-      #     name: build-discovery-provider
-      #     repo: discovery-provider
+      - test-discovery-provider:
+          name: test-discovery-provider
+      - docker-build-and-push-updated:
+          name: build-discovery-provider
+          repo: discovery-provider
 
-      # - test-identity-service:
-      #     name: test-identity-service
-      # - docker-build-and-push:
-      #     name: build-identity-service
-      #     repo: identity-service
+      - test-identity-service:
+          name: test-identity-service
+      - docker-build-and-push:
+          name: build-identity-service
+          repo: identity-service
 
-      # - test-solana-programs:
-      #     name: test-solana-programs
-      # - test-solana-programs-anchor:
-      #     name: test-solana-programs-anchor
+      - test-solana-programs:
+          name: test-solana-programs
+      - test-solana-programs-anchor:
+          name: test-solana-programs-anchor
 
-      # - test-mad-dog-e2e:
-      #     context:
-      #       - GCP2
-      #     mad-dog-type: test
+      - test-mad-dog-e2e:
+          context:
+            - GCP2
+          mad-dog-type: test
 
       - test-sdk:
           context:
