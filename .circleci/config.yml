@@ -47,15 +47,15 @@ commands:
           name: << parameters.command-name >>
           # This has to be one large run block because CircleCI doesn't preserve state across run steps
           command: |
-            # # cleanup code setup before starting actual execution
-            # cleanup() {
-            #   # Delete GCP box
-            #   gcloud compute instances delete $GCLOUD_VM_NAME --quiet
+            # cleanup code setup before starting actual execution
+            cleanup() {
+              # Delete GCP box
+              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
-            #   # Delete GCP firewall
-            #   gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
-            # }
-            # trap cleanup EXIT
+              # Delete GCP firewall
+              gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
+            }
+            trap cleanup EXIT
 
             # authenticate into gcloud
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
@@ -193,7 +193,9 @@ jobs:
             cd libs/src/sdk/api/generated
             # Check if there are any changes generated
             if [ -z "$(git status . --porcelain)" ]; then 
-              printf '%s\n' "Found diff between generated types and checked in types, please `npm run gen:dev` in libs" >&2
+              printf '%s\n' "No diff found between generated types and checked in types" >&2
+            else
+              printf '%s\n' "Found diff between generated types and checked in types, please 'npm run gen:dev' in libs" >&2
               exit 1    
             fi
 
