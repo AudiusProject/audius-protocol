@@ -51,7 +51,6 @@ def setup_challenges(session):
         handle="TestHandle",
         handle_lc="testhandle",
         wallet="0x1",
-        is_creator=False,
         is_verified=False,
         name="test_name",
         created_at=datetime.now(),
