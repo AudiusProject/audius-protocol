@@ -146,7 +146,7 @@ describe('test issueSyncRequest job processor param validation', function () {
   })
 })
 
-describe.only('test issueSyncRequest job processor', function () {
+describe('test issueSyncRequest job processor', function () {
   let server,
     sandbox,
     originalContentNodeEndpoint,

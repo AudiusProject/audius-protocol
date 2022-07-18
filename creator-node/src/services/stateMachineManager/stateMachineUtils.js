@@ -203,7 +203,6 @@ const makeMetricToRecord = (
     }
     const labelValues = MetricLabels[metricName][labelName]
     if (!labelValues?.includes(labelValue) && labelValues?.length !== 0) {
-      console.log(`SIDTEST INVALID METRIC: ${labelValues} - ${labelValue}`)
       throw new Error(`Metric label has invalid value: ${labelValue}`)
     }
   }
