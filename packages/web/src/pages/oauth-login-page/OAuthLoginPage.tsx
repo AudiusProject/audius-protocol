@@ -20,7 +20,7 @@ import { User } from 'common/models/User'
 import { getAccountUser } from 'common/store/account/selectors'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { TipProfilePicture } from 'components/tipping/tip-audio/TipProfilePicture'
+import { ProfileInfo } from 'components/profile-info/ProfileInfo'
 import AudiusBackend from 'services/AudiusBackend'
 import { make, useRecord } from 'store/analytics/actions'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
@@ -511,7 +511,7 @@ export const OAuthLoginPage = () => {
               You&apos;re signed in as
             </h3>
             <div className={styles.tile}>
-              <TipProfilePicture
+              <ProfileInfo
                 displayNameClassName={styles.userInfoDisplayName}
                 handleClassName={styles.userInfoDisplayName}
                 centered={false}

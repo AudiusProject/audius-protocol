@@ -11,8 +11,9 @@ import { formatNumberCommas } from 'common/utils/formatUtil'
 import { useRecord, make } from 'store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
 
+import { ProfileInfo } from '../../profile-info/ProfileInfo'
+
 import styles from './TipAudio.module.css'
-import { TipProfilePicture } from './TipProfilePicture'
 
 const messages = {
   sending: 'SENDING',
@@ -70,7 +71,7 @@ export const TipSent = () => {
   return recipient ? (
     <div className={styles.container}>
       {renderSentAudio()}
-      <TipProfilePicture
+      <ProfileInfo
         user={recipient}
         className={styles.confirmReceiver}
         imgClassName={styles.smallDynamicPhoto}

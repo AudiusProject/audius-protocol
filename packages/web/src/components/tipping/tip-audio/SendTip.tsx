@@ -24,8 +24,9 @@ import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useGetFirstOrTopSupporter } from 'hooks/useGetFirstOrTopSupporter'
 import ButtonWithArrow from 'pages/audio-rewards-page/components/ButtonWithArrow'
 
+import { ProfileInfo } from '../../profile-info/ProfileInfo'
+
 import styles from './TipAudio.module.css'
-import { TipProfilePicture } from './TipProfilePicture'
 
 const messages = {
   availableToSend: 'AVAILABLE TO SEND',
@@ -149,7 +150,7 @@ export const SendTip = () => {
 
   return receiver ? (
     <div className={styles.container}>
-      <TipProfilePicture user={receiver} />
+      <ProfileInfo user={receiver} />
       {!hasInsufficientBalance && isFirstSupporter
         ? renderBecomeFirstSupporter()
         : null}
