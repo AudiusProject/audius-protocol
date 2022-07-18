@@ -171,7 +171,7 @@ jobs:
           instance-name: test-sdk
           command: |
             sudo apt update
-            sudo apt install default-jre
+            sudo apt install -y default-jre
             cd /home/ubuntu/audius-protocol
             git pull
             git checkout $CIRCLE_BRANCH
