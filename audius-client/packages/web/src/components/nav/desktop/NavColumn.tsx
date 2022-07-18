@@ -334,6 +334,7 @@ const NavColumn = ({
                   <DynamicImage
                     wrapperClassName={styles.wrapperPhoto}
                     className={styles.dynamicPhoto}
+                    skeletonClassName={styles.wrapperPhotoSkeleton}
                     onClick={goToProfile}
                     image={profileImage}
                   />

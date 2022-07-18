@@ -94,6 +94,10 @@ svg.logo path {
   background-color: var(--default-profile-picture-background);
 }
 
+.navColumn .accountWrapper .wrapperPhotoSkeleton {
+  border-radius: 50%;
+}
+
 .navColumn .accountWrapper .photo {
   position: relative;
   cursor: pointer;
