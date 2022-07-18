@@ -13,29 +13,24 @@
  * Do not edit the class manually.
  */
 
+import {
+    Supporter,
+    SupporterFromJSON,
+    SupporterFromJSONTyped,
+    SupporterToJSON,
+} from './Supporter';
+
 /**
  * 
  * @export
- * @interface ProfilePicture
+ * @interface GetSupporter
  */
-export interface ProfilePicture {
+export interface GetSupporter {
     /**
      * 
-     * @type {string}
-     * @memberof ProfilePicture
+     * @type {Supporter}
+     * @memberof GetSupporter
      */
-    _150x150?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ProfilePicture
-     */
-    _480x480?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ProfilePicture
-     */
-    _1000x1000?: string;
+    data?: Supporter;
 }
 
