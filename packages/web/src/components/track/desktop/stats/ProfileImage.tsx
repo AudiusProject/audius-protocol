@@ -31,6 +31,7 @@ const ProfileImage = memo(({ userId, user }: ProfileImageProps) => {
     <DynamicImage
       wrapperClassName={cn(styles.wrapper)}
       className={styles.image}
+      skeletonClassName={styles.imageSkeleton}
       image={image}
     />
   )

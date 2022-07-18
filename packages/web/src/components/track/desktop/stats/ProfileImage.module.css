@@ -15,6 +15,11 @@
   background-repeat: no-repeat;
   background-color: var(--neutral-light-10);
 }
+
+.imageSkeleton {
+  border-radius: 50%;
+}
+
 .wrapper:not(:first-child) {
   margin-left: calc(-1 * 8px);
 }
