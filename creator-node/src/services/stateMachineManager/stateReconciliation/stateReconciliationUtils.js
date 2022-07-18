@@ -30,7 +30,7 @@ const getNewOrExistingSyncReq = ({
     userWallet,
     secondaryEndpoint
   )
-  if (duplicateSyncJobInfo) {
+  if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
