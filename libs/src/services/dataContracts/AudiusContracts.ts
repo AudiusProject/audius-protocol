@@ -33,7 +33,7 @@ const IPLDBlacklistFactoryABI = Utils.importDataContractABI(
 const UserReplicaSetManagerABI = Utils.importDataContractABI(
   'UserReplicaSetManager.json'
 ).abi
-const AudiusDataABI = Utils.importDataContractABI('AudiusData.json').abi
+const EntityManagerABI = Utils.importDataContractABI('EntityManager.json').abi
 
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
@@ -144,8 +144,8 @@ export class AudiusContracts {
     if (this.entityManagerAddress) {
       this.EntityManagerClient = new EntityManagerClient(
         this.web3Manager,
-        AudiusDataABI,
-        'AudiusData',
+        EntityManagerABI,
+        'EntityManager',
         this.getRegistryAddressForContract,
         this.logger,
         this.entityManagerAddress

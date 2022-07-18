@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
@@ -78,12 +79,20 @@ class ServiceRegistry {
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
 
+    this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
+
+    await this.trustedNotifierManager.init()
+
     this.synchronousServicesInitialized = true
 
     logInfoWithDuration(
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized synchronous services'
     )
+  }
+
+  async initLibs() {
+    this.libs = this.libs || (await this._initAudiusLibs())
   }
 
   /**
@@ -95,14 +104,6 @@ class ServiceRegistry {
     // If error occurs in initializing these services, do not continue with app start up.
     try {
       await this.blacklistManager.init()
-
-      this.trustedNotifierManager = new TrustedNotifierManager(
-        config,
-        this.libs
-      )
-
-      await this.trustedNotifierManager.init()
-
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
     } catch (e) {
@@ -241,6 +242,8 @@ class ServiceRegistry {
                   value.length > 100
                     ? `[Truncated array with ${value.length} elements]`
                     : this._truncateBull(value, newDepth)
+              } else if (_.isEmpty(value)) {
+                json[key] = value
               } else {
                 const length = Object.keys(value).length
                 json[key] =

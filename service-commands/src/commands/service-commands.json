@@ -43,7 +43,7 @@
   },
   "contracts-predeployed": {
     "up": [
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-a25931b955adce92676cec029661533f80013908",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-f06dbfade0172e99d368882ab192e7377d6d6761",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/identity-service/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",
@@ -133,10 +133,12 @@
   "solana-programs": {
     "path": "solana-programs",
     "up": [
-      "cd solana-programs/; docker run --name audius_solana_programs --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop2 > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
-      "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
-      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json",
-      "mkdir -p ./discovery-provider/idl/; cp solana-programs/anchor/audius-data/target/idl/audius_data.json discovery-provider/idl/audius_data.json"
+      "cd solana-programs/; DOCKER_BUILDKIT=1 docker build . -t audius/solana-programs:local",
+      "cd solana-programs/; docker run --name audius_solana_programs --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:local >> $PROTOCOL_DIR/service-commands/output.log 2>&1",
+      "mkdir -p discovery-provider/idl/ ~/.audius",
+      "docker cp audius_solana_programs:/usr/src/app/solana-program-config.json ../identity-service/solana-program-config.json",
+      "docker cp audius_solana_programs:/usr/src/app/solana-program-config.json ~/.audius/solana-program-config.json",
+      "docker cp audius_solana_programs:/usr/src/app/anchor/audius-data/target/idl/audius_data.json discovery-provider/idl/audius_data.json"
     ],
     "add-sender": [
       "cd solana-programs/reward-manager/cli; cargo run create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
@@ -314,7 +316,9 @@
     ]
   },
   "libs": {
-    "up": ["echo 'Process spawned in background using Node.'"],
+    "up": [
+      "echo 'Process spawned in background using Node.'"
+    ],
     "down": [
       "ps x -o '%r %a' | grep '.*/audius-protocol/service-commands/scripts/run-libs.sh$' | awk '{print -$1}' | xargs -r kill -- -9"
     ]

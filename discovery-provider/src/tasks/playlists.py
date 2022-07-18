@@ -7,7 +7,6 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -28,7 +27,6 @@ def playlist_state_update(
     block_timestamp,
     block_hash,
     _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
-    _blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of Playlist model state changes found in transaction and set of processed playlist IDs."""
     blockhash = update_task.web3.toHex(block_hash)
@@ -318,18 +316,6 @@ def parse_playlist_event(
         playlist_record.playlist_image_multihash = helpers.multihash_digest_to_cid(
             event_args._playlistImageMultihashDigest
         )
-
-        # If cid is in blacklist, do not index playlist
-        is_blacklisted = is_blacklisted_ipld(
-            session, playlist_record.playlist_image_multihash
-        )
-        if is_blacklisted:
-            logger.info(
-                "index.py | playlists.py | Encountered blacklisted CID %s in indexing \
-                playlist image multihash",
-                playlist_record.playlist_image_multihash,
-            )
-            return None
 
         # All incoming playlist images are set to ipfs dir in column playlist_image_sizes_multihash
         if playlist_record.playlist_image_multihash:

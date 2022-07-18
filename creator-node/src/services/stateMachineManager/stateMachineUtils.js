@@ -176,7 +176,7 @@ const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
 /**
  * Returns an object that can be returned from any state machine job to record a change in a metric.
  * Validates the params to make sure the metric is valid.
- * @param {string} metricType the type of metric being recorded -- HISTOGRAM or GAUGE_INC
+ * @param {string} metricType the type of metric being recorded -- HISTOGRAM_OBSERVE or GAUGE_INC
  * @param {string} metricName the name of the metric from prometheus.constants
  * @param {number} metricValue the value to observe
  * @param {string} [metricLabels] the optional mapping of metric label name => metric label value

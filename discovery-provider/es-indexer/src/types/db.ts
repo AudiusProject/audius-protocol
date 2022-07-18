@@ -207,19 +207,6 @@ export interface IndexingCheckpointRow {
   'last_checkpoint': number;
   'tablename': string;
 }
-export interface IpldBlacklistBlockRow {
-  'blockhash': string;
-  'is_current'?: boolean | null;
-  'number'?: number | null;
-  'parenthash'?: string | null;
-}
-export interface IpldBlacklistRow {
-  'blockhash': string;
-  'blocknumber': number;
-  'ipld': string;
-  'is_blacklisted': boolean;
-  'is_current': boolean;
-}
 export interface MilestoneRow {
   'blocknumber'?: number | null;
   'id': number;
@@ -600,7 +587,6 @@ export interface UserRow {
   'handle'?: string | null;
   'handle_lc'?: string | null;
   'has_collectibles'?: boolean;
-  'is_creator': boolean;
   'is_current': boolean;
   'is_deactivated'?: boolean;
   'is_verified'?: boolean;

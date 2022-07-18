@@ -19,7 +19,7 @@ loadABI('SocialFeatureFactory.json')
 loadABI('PlaylistFactory.json')
 loadABI('UserLibraryFactory.json')
 loadABI('UserReplicaSetManager.json')
-loadABI('AudiusData.json')
+loadABI('EntityManager.json')
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- should just use esm
 export class AudiusABIDecoder {

@@ -40,6 +40,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ dummy: 'data' })
       .expect(500)
 
@@ -53,6 +54,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send(metadata)
       .expect(400)
 
@@ -65,6 +67,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
@@ -104,6 +107,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
@@ -173,6 +177,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
@@ -217,6 +222,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
@@ -248,6 +254,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata: metadata1 })
       .expect(200)
 
@@ -266,6 +273,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata: metadata2 })
       .expect(200)
 
@@ -297,6 +305,7 @@ describe('Test Playlists', function () {
       .post('/playlists/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 

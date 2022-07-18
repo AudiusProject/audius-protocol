@@ -36,13 +36,14 @@ export type DiscoveryProviderConfig = {
   ethContracts: EthContracts
   web3Manager?: Web3Manager
   reselectTimeout?: number
-  selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
-  monitoringCallbacks?: DiscoveryProviderSelectionConfig['monitoringCallbacks']
   selectionRequestTimeout?: number
   selectionRequestRetries?: number
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
-}
+} & Pick<
+  DiscoveryProviderSelectionConfig,
+  'selectionCallback' | 'monitoringCallbacks' | 'localStorage'
+>
 
 export type UserProfile = {
   userId: string
@@ -105,6 +106,7 @@ export class DiscoveryProvider {
     monitoringCallbacks,
     selectionRequestTimeout = REQUEST_TIMEOUT_MS,
     selectionRequestRetries = MAX_MAKE_REQUEST_RETRY_COUNT,
+    localStorage,
     unhealthySlotDiffPlays,
     unhealthyBlockDiff
   }: DiscoveryProviderConfig) {
@@ -124,6 +126,7 @@ export class DiscoveryProvider {
         monitoringCallbacks,
         requestTimeout: selectionRequestTimeout,
         unhealthySlotDiffPlays: unhealthySlotDiffPlays,
+        localStorage: localStorage,
         unhealthyBlockDiff: this.unhealthyBlockDiff
       },
       this.ethContracts
@@ -151,7 +154,9 @@ export class DiscoveryProvider {
       const userAccount = await this.getUserAccount(
         this.web3Manager.getWalletAddress()
       )
-      if (userAccount) this.userStateManager.setCurrentUser(userAccount)
+      if (userAccount) {
+        await this.userStateManager.setCurrentUser(userAccount)
+      }
     }
   }
 
@@ -177,7 +182,6 @@ export class DiscoveryProvider {
    * @param idsArray
    * @param walletAddress
    * @param handle
-   * @param isCreator null returns all users, true returns creators only, false returns users only
    * @returns {Object} {Array of User metadata Objects}
    * additional metadata fields on user objects:
    *  {Integer} track_count - track count for given user
@@ -199,7 +203,6 @@ export class DiscoveryProvider {
     idsArray?: string[],
     walletAddress?: string,
     handle?: string,
-    isCreator = null,
     minBlockNumber?: number
   ) {
     const req = Requests.getUsers(
@@ -208,7 +211,6 @@ export class DiscoveryProvider {
       idsArray,
       walletAddress,
       handle,
-      isCreator,
       minBlockNumber
     )
     return await this._makeRequest(req)
@@ -394,7 +396,7 @@ export class DiscoveryProvider {
     idsArray = null,
     targetUserId = null,
     withUsers = false
-  ) {
+  ): Promise<unknown> {
     const req = Requests.getPlaylists(
       limit,
       offset,
@@ -1177,7 +1179,7 @@ export class DiscoveryProvider {
    */
   async getHealthyDiscoveryProviderEndpoint(attemptedRetries: number) {
     let endpoint = this.discoveryProviderEndpoint as string
-    if (attemptedRetries > this.selectionRequestRetries) {
+    if (attemptedRetries > this.selectionRequestRetries || !endpoint) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
       console.info(`Attempted max retries with endpoint ${endpoint}`)
       this.serviceSelector.addUnhealthy(endpoint)
