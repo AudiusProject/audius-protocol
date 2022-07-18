@@ -32,18 +32,6 @@
   padding: 0 16px;
 }
 
-.scrollable :global(.simplebar-scrollbar) {
-  width: 6px;
-  right: 0px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-.scrollable :global(.simplebar-scrollbar:before) {
-  width: 6px;
-  margin-bottom: 20px;
-}
-
 .subtitle {
   color: var(--neutral);
   font-size: var(--font-m);
@@ -115,6 +103,7 @@
 .searchBar {
   margin-bottom: 8px;
 }
+
 .searchIcon {
   position: absolute;
 }

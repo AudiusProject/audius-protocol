@@ -11,18 +11,7 @@
   margin: 0px 16px;
 }
 
-.simpleBar {
+.scrollbar {
   flex: 1;
   min-height: 0px;
-}
-
-.simpleBar :global(.simplebar-scrollbar) {
-  width: 6px;
-  right: 4px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-.simpleBar :global(.simplebar-scrollbar:before) {
-  width: 6px;
 }

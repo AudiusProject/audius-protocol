@@ -54,27 +54,6 @@
   background: var(--white);
   border-radius: 0px 0px 8px 8px;
 }
-/*
- * The simplebar doesn't do calculations correctly because it races
- * with the modal opening
- */
-.scrollContent :global(.simplebar-offset) {
-  right: -20px !important;
-}
-
-.scrollContent :global(.simplebar-content-wrapper) {
-  padding-right: 20px !important;
-}
-
-.scrollContent :global(.simplebar-scrollbar) {
-  width: 6px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-.scrollContent :global(.simplebar-scrollbar:before) {
-  width: 6px;
-}
 
 /* Notification Tile */
 .notification {
@@ -199,21 +178,27 @@
 .notification .body h1 {
   font-size: var(--font-2xl);
 }
+
 .notification .body h2 {
   font-size: var(--font-xl);
 }
+
 .notification .body h3 {
   font-size: var(--font-l);
 }
+
 .notification .body h4 {
   font-size: var(--font-m);
 }
+
 .notification .body h5 {
   font-size: var(--font-s);
 }
+
 .notification .body h6 {
   font-size: var(--font-xs);
 }
+
 .notification .body p {
 }
 
@@ -228,11 +213,14 @@
 .notification .body ul {
   margin: 0;
 }
+
 .notification .body ul {
   list-style-type: none;
 }
+
 .notification .body ul > li {
 }
+
 .notification .body ul > li:before {
   content: '-';
   margin-right: 4px;

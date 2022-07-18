@@ -4,16 +4,7 @@
   background-color: var(--white);
   box-shadow: 0 16px 20px -5px var(--search-bar-shadow);
   padding: 0px !important;
-}
-
-.modalContainer :global(.ant-modal-body) {
-  background-color: var(--white);
-  padding: 0px;
-  border-radius: 8px;
-}
-
-.modalContainer :global(.ant-modal-content) {
-  border-radius: 10px;
+  word-break: break-word;
 }
 
 /* Header Styles */
@@ -40,6 +31,7 @@
   top: 20px;
   left: 0px;
 }
+
 .header .iconRemove g path {
   fill: var(--neutral-light-4);
 }
@@ -47,9 +39,11 @@
 .header .iconRemove:hover {
   transform: scale(1.1);
 }
+
 .header .iconRemove:hover g path {
   fill: var(--neutral);
 }
+
 .header .iconRemove:active {
   transform: scale(0.95);
 }
@@ -75,16 +69,6 @@
   max-height: calc(100vh - 333px);
   background: var(--white);
   border-radius: 0px 0px 8px 8px;
-}
-
-.scrollContent :global(.simplebar-scrollbar) {
-  width: 6px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-.scrollContent :global(.simplebar-scrollbar:before) {
-  width: 6px;
 }
 
 .title p {
@@ -128,21 +112,27 @@
 .body h1 {
   font-size: var(--font-3xl);
 }
+
 .body h2 {
   font-size: var(--font-2xl);
 }
+
 .body h3 {
   font-size: var(--font-xl);
 }
+
 .body h4 {
   font-size: var(--font-l);
 }
+
 .body h5 {
   font-size: var(--font-m);
 }
+
 .body h6 {
   font-size: var(--font-s);
 }
+
 .body p {
   font-size: 14px;
   font-weight: 500;
