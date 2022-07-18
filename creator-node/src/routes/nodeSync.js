@@ -120,16 +120,6 @@ module.exports = function (app) {
                 cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
                 const curCnodeUserClockVal = cnodeUser.clock
 
-                // Validate clock values or throw an error
-                const maxClockRecordId = Math.max(
-                  ...clockRecords.map((record) => record.clock)
-                )
-                if (cnodeUser.clock !== maxClockRecordId) {
-                  throw new Error(
-                    `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecordId}`
-                  )
-                }
-
                 // Resets cnodeUser clock value to requestedClockRangeMax to ensure consistency with clockRecords data
                 // Also ensures secondary knows there is more data to sync
                 if (cnodeUser.clock > requestedClockRangeMax) {
@@ -137,6 +127,16 @@ module.exports = function (app) {
                   cnodeUser.clock = requestedClockRangeMax
                   req.logger.info(
                     `nodeSync.js#export - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`
+                  )
+                }
+
+                // Validate clock values or throw an error
+                const maxClockRecordId = Math.max(
+                  ...clockRecords.map((record) => record.clock)
+                )
+                if (cnodeUser.clock !== maxClockRecordId) {
+                  throw new Error(
+                    `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecordId}`
                   )
                 }
 

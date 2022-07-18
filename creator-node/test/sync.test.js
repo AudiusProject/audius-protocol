@@ -469,13 +469,15 @@ describe('test nodesync', async function () {
         ).clock
         assert.ok(cnodeUserClock > maxExportClockValueRange)
 
-        const { body: exportBody } = await request(app).get(
+        const { body: exportBody, statusCode } = await request(app).get(
           `/export?wallet_public_key=${pubKey.toLowerCase()}&clock_range_min=${requestedClockRangeMin}`
         )
 
         /**
          * Verify
          */
+
+        assert.strictEqual(statusCode, 200)
 
         // get cnodeUser
         const cnodeUser = stringifiedDateFields(
@@ -589,13 +591,14 @@ describe('test nodesync', async function () {
           cnodeUserClock < requestedClockRangeMin + maxExportClockValueRange
         )
 
-        const { body: exportBody } = await request(app).get(
+        const { body: exportBody, statusCode } = await request(app).get(
           `/export?wallet_public_key=${pubKey.toLowerCase()}&clock_range_min=${requestedClockRangeMin}`
         )
 
         /**
          * Verify
          */
+        assert.strictEqual(statusCode, 200)
 
         // get cnodeUser
         const cnodeUser = stringifiedDateFields(
