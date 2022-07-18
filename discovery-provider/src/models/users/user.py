@@ -28,7 +28,6 @@ class User(Base, RepresentableMixin):
     is_current = Column(Boolean, primary_key=True, nullable=False)
     handle = Column(String)
     wallet = Column(String, index=True)
-    is_creator = Column(Boolean, nullable=False, server_default=text("false"))
     name = Column(Text)
     profile_picture = Column(String)
     cover_photo = Column(String)

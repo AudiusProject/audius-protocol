@@ -7,7 +7,6 @@ export type CurrentUser = {
   blocknumber: number
   track_blocknumber: number
   creator_node_endpoint: string
-  is_creator: boolean
 }
 
 type UserStateManagerConfig = {

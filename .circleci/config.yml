@@ -107,6 +107,24 @@ jobs:
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
 
+  publish-libs:
+    docker:
+      - image: circleci/node:14.17.5
+    resource_class: xlarge
+    steps:
+      - checkout
+      - diff-if-necessary:
+          service: libs
+      - setup_remote_docker
+      - add_ssh_keys:
+          fingerprints:
+            - "ee:b0:fd:fb:ba:c8:37:7a:f9:67:15:92:9f:02:97:3e"
+      - run:
+          name: Bump and Publish Libs
+          command: |
+            export PROTOCOL_DIR=/home/circleci/project
+            libs/scripts/release.sh
+
   test-mad-dog-e2e:
     parameters:
       mad-dog-type:
@@ -809,6 +827,18 @@ workflows:
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
+          filters:
+            branches:
+              only: /(^master$)/
+      - hold-publish-libs:
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+      - publish-libs:
+          name: publish-libs
+          requires:
+            - hold-publish-libs
           filters:
             branches:
               only: /(^master$)/
