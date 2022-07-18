@@ -146,7 +146,7 @@ describe('test issueSyncRequest job processor param validation', function () {
   })
 })
 
-describe('test issueSyncRequest job processor', function () {
+describe.only('test issueSyncRequest job processor', function () {
   let server,
     sandbox,
     originalContentNodeEndpoint,
@@ -399,7 +399,6 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
-    console.log(`sidtest result: ${JSON.stringify(result)}`)
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
       [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
@@ -610,7 +609,8 @@ describe('test issueSyncRequest job processor', function () {
       })
   
       // Make the axios request succeed
-      nock(secondary).post('/sync', data).reply(200)
+      const syncReqData = { ...data, forceResync: true }
+      nock(secondary).post('/sync', syncReqData).reply(200)
   
       // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
       const result = await issueSyncRequestJobProcessor({
@@ -672,19 +672,14 @@ describe('test issueSyncRequest job processor', function () {
         primarySyncFromSecondaryStub,
       })
   
-      // Make the axios request succeed
-      nock(secondary).post('/sync', data).reply(200)
-  
-      // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
+      // Verify job outputs the correct results: no sync issued
       const result = await issueSyncRequestJobProcessor({
         logger,
         syncType,
         syncMode,
         syncRequestParameters
       })
-      expect(result).to.have.deep.property('error', {
-        message: `primarySyncFromSecondary failed with error: ${primarySyncFromSecondaryError.message}`
-      })
+      expect(result).to.have.deep.property('error', primarySyncFromSecondaryError)
       expect(result).to.have.deep.property('jobsToEnqueue', {})
       expect(result.metricsToRecord).to.have.lengthOf(1)
       expect(result.metricsToRecord[0]).to.have.deep.property(

@@ -193,7 +193,6 @@ async function _handleIssueSyncRequest({
     }
   }
 
-  console.log(`SIDTEST 1`)
   /**
    * Issue sync request to secondary
    * - If SyncMode = MergePrimaryAndSecondary - issue sync request with forceResync = true
@@ -202,10 +201,11 @@ async function _handleIssueSyncRequest({
    */
   try {
     if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-      await axios({
+      const obj = {
         ...syncRequestParameters,
         data: { ...syncRequestParameters.data, forceResync: true }
-      })
+      }
+      await axios(obj)
     } else {
       await axios(syncRequestParameters)
     }
@@ -228,8 +228,6 @@ async function _handleIssueSyncRequest({
     userWallet
   ]
 
-  console.log(`SIDTEST 2`)
-
   // Wait until has sync has completed (within time threshold)
   const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
     userWallet,
@@ -239,8 +237,6 @@ async function _handleIssueSyncRequest({
     syncMode,
     logger
   )
-
-  console.log(`SIDTEST 3`)
 
   return {
     result: outcome,
@@ -383,8 +379,6 @@ const _additionalSyncIsRequired = async (
     await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
   }
 
-  console.log(`SECONDARYCAUGHTUP: ${secondaryCaughtUpToPrimary}`)
-
   const monitoringTimeMs = Date.now() - startTimeMs
 
   /**
@@ -433,7 +427,6 @@ const _additionalSyncIsRequired = async (
 
   const response = { outcome }
   if (additionalSyncIsRequired) {
-    console.log(`SIDTEST WHY`)
     response.syncReqToEnqueue = {
       userWallet,
       secondaryEndpoint: secondaryUrl,
