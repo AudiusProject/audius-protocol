@@ -349,13 +349,15 @@ describe('test nodesync', async function () {
         ).clock
         assert.ok(cnodeUserClock > maxExportClockValueRange)
 
-        const { body: exportBody } = await request(app).get(
+        const { body: exportBody, statusCode } = await request(app).get(
           `/export?wallet_public_key=${pubKey.toLowerCase()}`
         )
 
         /**
          * Verify
          */
+
+        assert.strictEqual(statusCode, 200)
 
         // get cnodeUser
         const cnodeUser = stringifiedDateFields(

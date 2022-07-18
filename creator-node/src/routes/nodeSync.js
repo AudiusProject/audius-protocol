@@ -104,8 +104,6 @@ module.exports = function (app) {
                 })
               ])
 
-            await transaction.commit()
-
             /** Bundle all data into cnodeUser objects to maximize import speed. */
 
             const cnodeUsersDict = {}
@@ -119,7 +117,7 @@ module.exports = function (app) {
               cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
               const curCnodeUserClockVal = cnodeUser.clock
 
-              // Validate clock values or throw and error
+              // Validate clock values or throw an error
               const maxClockRecordId = Math.max(
                 ...clockRecords.map((record) => record.clock)
               )
@@ -170,6 +168,8 @@ module.exports = function (app) {
                 Date.now() - start
               } ms`
             )
+
+            await transaction.commit()
 
             return cnodeUsersDict
           },
