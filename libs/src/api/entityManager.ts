@@ -1,4 +1,5 @@
 import { Base, BaseConstructorArgs, Services } from './base'
+import type { PlaylistMetadata } from '../services/creatorNode'
 import type { Nullable } from '../utils'
 
 export enum Action {
@@ -133,9 +134,7 @@ export class EntityManager extends Base {
         true // square
       )
       const dirCID = updatedPlaylistImage.dirCID
-      const metadata = {
-        createAction,
-        entity_type: entityType,
+      const metadata: PlaylistMetadata = {
         playlist_id: entityId,
         playlist_contents: trackIds,
         playlist_name: playlistName,
@@ -249,9 +248,7 @@ export class EntityManager extends Base {
         await this.discoveryProvider.getPlaylists(1, 0, [playlistId])
       )[0]
 
-      const metadata = {
-        action: updateAction, // why include action here?
-        entityType,
+      const metadata: PlaylistMetadata = {
         playlist_id: playlistId,
         playlist_contents: trackIds || playlist.playlist_contents,
         playlist_name: playlistName || playlist.playlist_name,
