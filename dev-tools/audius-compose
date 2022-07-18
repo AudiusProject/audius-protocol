@@ -203,7 +203,7 @@ def ps(protocol_dir):
         if service["Publishers"]:
             for publisher in service["Publishers"]:
                 if publisher["PublishedPort"]:
-                    ports[publisher["TargetPort"]] = publisher["PublishedPort"]
+                    ports[publisher["PublishedPort"]] = publisher["TargetPort"]
 
         if service["Service"] == "creator-node":
             name = f"{service['Service']}-{replica}"

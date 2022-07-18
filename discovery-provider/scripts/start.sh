@@ -81,10 +81,10 @@ if [ -z "$audius_db_url" ]; then
         sudo -u postgres pg_ctl init -D /db
         echo "host all all 0.0.0.0/0 md5" >>/db/pg_hba.conf
         echo "listen_addresses = '*'" >>/db/postgresql.conf
-        sudo -u postgres pg_ctl start -D /db -o "-c shared_buffers=512MB" -o "-c shared_preload_libraries=pg_stat_statements"
+        sudo -u postgres pg_ctl start -D /db -o "-c shared_preload_libraries=pg_stat_statements"
         sudo -u postgres createdb audius_discovery
     else
-        sudo -u postgres pg_ctl start -D /db -o "-c shared_buffers=512MB" -o "-c shared_preload_libraries=pg_stat_statements"
+        sudo -u postgres pg_ctl start -D /db -o "-c shared_preload_libraries=pg_stat_statements"
     fi
 
     sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${postgres_password:-postgres}';"
@@ -108,6 +108,8 @@ if [ "$audius_db_run_migrations" != false ]; then
     export PYTHONPATH='.'
     alembic upgrade head
     echo "Finished running migrations"
+
+    sleep 60
 fi
 
 # start es-indexer

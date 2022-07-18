@@ -24,7 +24,6 @@ def get_users(args):
 
             can_use_shared_cache = (
                 "id" in args
-                and "is_creator" not in args
                 and "wallet" not in args
                 and "min_block_number" not in args
                 and "handle" not in args
@@ -43,10 +42,6 @@ def get_users(args):
             )
 
             # Process filters
-            if "is_creator" in args:
-                base_query = base_query.filter(
-                    User.is_creator == args.get("is_creator")
-                )
             if "wallet" in args:
                 wallet = args.get("wallet")
                 wallet = wallet.lower()

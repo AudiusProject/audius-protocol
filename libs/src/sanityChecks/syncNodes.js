@@ -19,7 +19,7 @@ const syncNodes = async (libs) => {
   console.debug('Sanity Check - syncNodes')
   const user = libs.userStateManager.getCurrentUser()
 
-  if (!user || !user.is_creator) return
+  if (!user) return
 
   const secondaries = CreatorNode.getSecondaries(user.creator_node_endpoint)
   await Promise.all(secondaries.map(secondary => syncNodeIfBehind(libs, secondary)))
