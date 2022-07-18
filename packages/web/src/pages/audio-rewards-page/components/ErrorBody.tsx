@@ -1,8 +1,7 @@
 import { ReactNode } from 'react'
 
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
-import SimpleBar from 'simplebar-react'
 
 import styles from './ErrorBody.module.css'
 
@@ -19,7 +18,7 @@ type ErrorBodyProps = {
 const ErrorBody = ({ error, className, onClose }: ErrorBodyProps) => {
   return (
     <div className={cn(styles.container, { [className!]: !!className })}>
-      <SimpleBar className={styles.scrollableMessage}>{error}</SimpleBar>
+      <Scrollbar className={styles.scrollableMessage}>{error}</Scrollbar>
       <Button
         className={styles.btn}
         text={messages.okay}

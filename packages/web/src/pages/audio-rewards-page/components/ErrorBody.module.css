@@ -21,12 +21,6 @@
   border-radius: 8px;
 }
 
-.scrollableMessage :global(.simplebar-scrollbar) {
-  width: 6px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
 .btn {
   margin-bottom: 24px;
 }

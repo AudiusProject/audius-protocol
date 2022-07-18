@@ -89,6 +89,7 @@ video {
   font: inherit;
   vertical-align: baseline;
 }
+
 article,
 aside,
 details,
@@ -102,17 +103,21 @@ nav,
 section {
   display: block;
 }
+
 body {
   line-height: 1;
 }
+
 ol,
 ul {
   list-style: none;
 }
+
 blockquote,
 q {
   quotes: none;
 }
+
 blockquote:before,
 blockquote:after,
 q:before,
@@ -120,25 +125,29 @@ q:after {
   content: '';
   content: none;
 }
+
 table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+
 *,
 :after,
 :before {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
+
 *:focus {
   outline: none !important;
 }
+
 a {
   text-decoration: none !important;
 }
+
 /* End Reset.css */
 
-@import '~simplebar/dist/simplebar.min.css';
 @import '~assets/styles/index.css';
 
 body {
