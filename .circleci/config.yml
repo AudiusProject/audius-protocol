@@ -30,18 +30,18 @@ commands:
         description: The name of the gcp instance
         type: string
         default: ci-job
+      command-name:
+        description: The name of the step to display
+        default: Spin up gcp instance and run command
+        type: string
       interactive-command:
-        description: The command to run initially on the gcp instanct that require an interactive terminal
+        description: The command to run initially on the gcp instance that requires an interactive terminal
         type: string
         default: ""
       post-gcp-command:
         description: The command to run after exiting the gcp ssh session
         type: string
         default: ""
-      command-name:
-        description: The name of the step to display
-        default: Spin up gcp instance and run command
-        type: string
     steps:
       - run:
           name: << parameters.command-name >>
@@ -193,7 +193,6 @@ jobs:
             cd libs/src/sdk/api/generated
             # Check if there are any changes generated
             if [ -z "$(git status . --porcelain)" ]; then 
-              # If so, fail the build and ask the dev to generated types locally and check in those changes
               printf '%s\n' "Found diff between generated types and checked in types, please `npm run gen:dev` in libs" >&2
               exit 1    
             fi
