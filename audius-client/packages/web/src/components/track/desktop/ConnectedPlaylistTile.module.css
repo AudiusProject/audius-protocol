@@ -7,25 +7,19 @@
   max-height: 240px;
   background: var(--white);
 }
-.tracksContainer :global(.simplebar-scrollbar) {
-  width: 6px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
 
 .loading .tracksContainer {
   padding-bottom: 24px;
 }
 
-.tracksContainer :global(.simplebar-scrollbar:before) {
-  width: 6px;
-}
 .small .tracksContainer {
   max-height: 100px;
 }
+
 .medium .tracksContainer {
   max-height: 120px;
 }
+
 .tracksContainer::-webkit-scrollbar {
   display: none;
 }
@@ -54,6 +48,7 @@
   font-size: var(--font-m);
   color: var(--neutral);
 }
+
 .userName {
   display: inline-flex;
   align-items: baseline;

@@ -59,17 +59,3 @@
 .tabSlider {
   margin-bottom: 15px;
 }
-
-.tracks :global(.simplebar-scrollbar) {
-  width: 6px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-.tracks :global(.simplebar-scrollbar:before) {
-  width: 6px;
-}
-
-.tracks :global(.simplebar-mask) {
-  border-radius: 0 0 8px 8px;
-}

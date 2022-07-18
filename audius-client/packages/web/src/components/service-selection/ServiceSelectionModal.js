@@ -1,12 +1,11 @@
 import { useState } from 'react'
 
-import { Modal } from '@audius/stems'
+import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { each } from 'lodash'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { connect } from 'react-redux'
-import SimpleBar from 'simplebar-react'
 
 import SearchBar from 'components/search-bar/SearchBar'
 
@@ -198,7 +197,7 @@ const ServiceSelectionModal = ({
       showTitleHeader
       isOpen={show}
       onClose={close}>
-      <SimpleBar className={styles.scrollable}>
+      <Scrollbar className={styles.scrollable}>
         <DragDropContext
           onDragStart={onDragStart}
           onDragUpdate={onDragUpdate}
@@ -333,7 +332,7 @@ const ServiceSelectionModal = ({
             </Droppable>
           </div>
         </DragDropContext>
-      </SimpleBar>
+      </Scrollbar>
     </Modal>
   )
 }

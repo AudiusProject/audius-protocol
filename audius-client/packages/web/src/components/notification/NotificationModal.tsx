@@ -1,6 +1,5 @@
-import AntModal from 'antd/lib/modal'
+import { Modal, Scrollbar } from '@audius/stems'
 import ReactMarkdown from 'react-markdown'
-import SimpleBar from 'simplebar-react'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { Announcement } from 'common/store/notifications/types'
@@ -22,16 +21,11 @@ export const NotificationModal = (props: NotificationModalProps) => {
   if (!notification) return null
 
   return (
-    <AntModal
-      wrapClassName={styles.modalContainerWrapper}
-      className={styles.modalContainer}
-      visible={isOpen}
-      centered
-      width={720}
-      closable={false}
-      onCancel={onClose}
-      footer={null}
-      destroyOnClose>
+    <Modal
+      bodyClassName={styles.modalContainer}
+      isOpen={!!isOpen}
+      showDismissButton
+      onClose={onClose}>
       <div className={styles.panelContainer}>
         <div className={styles.header}>
           <IconRemove className={styles.iconRemove} onClick={onClose} />
@@ -40,15 +34,15 @@ export const NotificationModal = (props: NotificationModalProps) => {
             <ReactMarkdown source={notification.title} escapeHtml={false} />
           </div>
         </div>
-        <SimpleBar className={styles.scrollContent}>
+        <Scrollbar className={styles.scrollContent}>
           <div className={styles.body}>
             <ReactMarkdown
               source={notification.longDescription}
               escapeHtml={false}
             />
           </div>
-        </SimpleBar>
+        </Scrollbar>
       </div>
-    </AntModal>
+    </Modal>
   )
 }
