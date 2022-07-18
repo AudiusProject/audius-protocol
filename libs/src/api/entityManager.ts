@@ -44,9 +44,6 @@ const MAX_PLAYLIST_ID = 2147483647
 export class EntityManager extends Base {
   constructor(...args: BaseConstructorArgs) {
     super(...args)
-    this.getValidPlaylistId = this.getValidPlaylistId.bind(this)
-    this.createPlaylist = this.createPlaylist.bind(this)
-    this.deletePlaylist = this.deletePlaylist.bind(this)
   }
 
   /**
@@ -64,6 +61,7 @@ export class EntityManager extends Base {
    * Minimum value is artificially set to 400000
    */
   async getValidPlaylistId(): Promise<number> {
+    // TODO: Confirm collision of ID with disc prov endpoint to account for hidden / private
     let playlistId: number = this.getRandomInt(MIN_PLAYLIST_ID, MAX_PLAYLIST_ID)
     let validIdFound: boolean = false
     while (!validIdFound) {
@@ -211,23 +209,31 @@ export class EntityManager extends Base {
     logger = console
   }: {
     playlistId: number
-    playlistName: string
-    trackIds: number[]
-    description: string
-    isAlbum: boolean
-    isPrivate: boolean
-    coverArt: string
+    playlistName: Nullable<string>
+    trackIds: Nullable<number[]>
+    description: Nullable<string>
+    isAlbum: Nullable<boolean>
+    isPrivate: Nullable<boolean>
+    coverArt: Nullable<string>
     logger: Console
   }): Promise<PlaylistOperationResponse> {
     let error = null
     try {
       const currentUserId: string | null =
         this.userStateManager.getCurrentUserId()
+      if (!playlistId || playlistId === undefined) {
+        return {
+          blockHash: null,
+          blockNumber: null,
+          playlistId,
+          error: 'Missing current playlistId'
+        }
+      }
       if (!currentUserId) {
         return {
           blockHash: null,
           blockNumber: null,
-          playlistId: null,
+          playlistId,
           error: 'Missing current user ID'
         }
       }
@@ -243,14 +249,20 @@ export class EntityManager extends Base {
         )
         dirCID = updatedPlaylistImage.dirCID
       }
-
       const playlist: any = (
-        await this.discoveryProvider.getPlaylists(1, 0, [playlistId])
+        await this.discoveryProvider.getPlaylists(1, 0, [playlistId], userId)
       )[0]
+
+      let playlistContents = trackIds
+      if (playlist.playlist_contents) {
+        playlistContents = playlist.playlist_contents.track_ids.map(
+          (x: { [x: string]: any }) => x['track']
+        )
+      }
 
       const metadata: PlaylistMetadata = {
         playlist_id: playlistId,
-        playlist_contents: trackIds || playlist.playlist_contents,
+        playlist_contents: playlistContents,
         playlist_name: playlistName || playlist.playlist_name,
         playlist_image_sizes_multihash:
           dirCID || playlist.playlist_image_sizes_multihash,

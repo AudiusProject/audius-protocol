@@ -423,7 +423,13 @@ export class CreatorNode {
    * @param metadata
    */
   async uploadPlaylistMetadata(metadata: PlaylistMetadata) {
-    this.schemas[playlistSchemaType].validate?.(metadata)
+    // Validate object before sending
+    try {
+      this.schemas[playlistSchemaType].validate?.(metadata)
+    } catch (e) {
+      console.error('Error validating playlist metadata', e)
+    }
+
     const { data: body } = await this._makeRequest(
       {
         url: '/playlists/metadata',
