@@ -4,7 +4,8 @@ const config = require('../../config')
 const { exponentialBucketsRange } = require('./prometheusUtils')
 const {
   JOB_NAMES: STATE_MACHINE_JOB_NAMES,
-  SyncType
+  SyncType,
+  SYNC_MODES
 } = require('../stateMachineManager/stateMachineConstants')
 
 /**
@@ -12,7 +13,7 @@ const {
  */
 
 // We add a namespace prefix to differentiate internal metrics from those exported by different exporters from the same host
-const NAMESPACE_PREFIX = 'audius_cn'
+const NAMESPACE_PREFIX = 'audius_cn_'
 
 /**
  * @notice Counter and Summary metric types are currently disabled, see README for details.
@@ -34,6 +35,8 @@ const METRIC_RECORD_TYPE = Object.freeze({
 
 const metricNames = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
+  ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
+    'route_post_tracks_duration_seconds',
   ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_monitoring_duration_seconds',
   FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
@@ -47,7 +50,7 @@ for (const jobName of Object.values(STATE_MACHINE_JOB_NAMES)) {
   ] = `state_machine_${_.snakeCase(jobName)}_job_duration_seconds`
 }
 const METRIC_NAMES = Object.freeze(
-  _.mapValues(metricNames, (metricName) => `${NAMESPACE_PREFIX}_${metricName}`)
+  _.mapValues(metricNames, (metricName) => NAMESPACE_PREFIX + metricName)
 )
 
 const METRIC_LABELS = Object.freeze({
@@ -75,15 +78,16 @@ const METRIC_LABELS = Object.freeze({
     ]
   },
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
     result: [
       'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
       'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
       'no_sync_sp_id_mismatch', // Sync not found because the secondary's spID mismatched what the chain reported
       'no_sync_success_rate_too_low', // Sync not found because the success rate of syncing to this secondary is below the acceptable threshold
+      'no_sync_error_computing_sync_mode', // Sync not found because of failure to compute sync mode
       'no_sync_secondary_data_matches_primary', // Sync not found because the secondary's clock value and filesHash match primary's
       'no_sync_unexpected_error', // Sync not found because some uncaught error was thrown
-      'new_sync_request_enqueued_primary_to_secondary', // Sync was found from primary->secondary because all other conditions were met and primary clock value was greater than secondary
-      'new_sync_request_enqueued_secondary_to_primary', // Sync was found from secondary->primary because all other conditions were met and secondary clock value was greater than primary
+      'new_sync_request_enqueued', // Sync found because all other conditions were met
       'sync_request_already_enqueued', // Sync was found but a duplicate request has already been enqueued so no need to enqueue another
       'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
     ]
@@ -114,7 +118,7 @@ const METRIC_LABELS = Object.freeze({
     ]
   }
 })
-const METRIC_LABEL_NAMES = Object.freeze(
+const MetricLabelNames = Object.freeze(
   Object.fromEntries(
     Object.entries(METRIC_LABELS).map(([metric, metricLabels]) => [
       metric,
@@ -132,13 +136,23 @@ const METRICS = Object.freeze({
       labelNames: ['status']
     }
   },
+  /** @notice This metric will eventually be replaced by an express route metrics middleware */
+  [METRIC_NAMES.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
+    metricConfig: {
+      name: METRIC_NAMES.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM,
+      help: 'Duration for POST /tracks route',
+      labelNames: ['code'],
+      buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10] // 0.1 to 10 seconds
+    }
+  },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
     metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
       name: METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
       help: 'Seconds spent monitoring an outgoing sync request issued by this node to be completed (successfully or not)',
       labelNames:
-        METRIC_LABEL_NAMES[
+        MetricLabelNames[
           METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM
         ],
       // 5 buckets in the range of 1 second to max seconds before timing out a sync request
@@ -164,7 +178,7 @@ const METRICS = Object.freeze({
             // Whether the job completed (including with a caught error) or quit unexpectedly
             'uncaughtError',
             // Label names, if any, that are specific to this job type
-            ...(METRIC_LABEL_NAMES[
+            ...(MetricLabelNames[
               METRIC_NAMES[
                 `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
               ]
@@ -180,8 +194,7 @@ const METRICS = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE,
       help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
-      labelNames:
-        METRIC_LABEL_NAMES[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]
+      labelNames: MetricLabelNames[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]
     }
   },
   [METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
@@ -190,9 +203,7 @@ const METRICS = Object.freeze({
       name: METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM,
       help: 'Seconds spent attempting to replicate data to a secondary node for write quorum',
       labelNames:
-        METRIC_LABEL_NAMES[
-          METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM
-        ],
+        MetricLabelNames[METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM],
       // 5 buckets in the range of 1 second to max seconds before timing out write quorum
       buckets: exponentialBucketsRange(
         1,
