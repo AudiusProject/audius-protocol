@@ -34,12 +34,17 @@ module.exports = function (app) {
       const requestedClockRangeMax =
         requestedClockRangeMin + (maxExportClockValueRange - 1)
 
+      let cnodeUsersDict
+
       try {
-        const cnodeUsersDict = await retry(
+        cnodeUsersDict = await retry(
           async () => {
             const transaction = await models.sequelize.transaction({
               isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
             })
+
+            let cnodeUsersDictInner
+
             try {
               // Fetch cnodeUser for each walletPublicKey.
               const cnodeUsers = await models.CNodeUser.findAll({
@@ -107,7 +112,7 @@ module.exports = function (app) {
 
               /** Bundle all data into cnodeUser objects to maximize import speed. */
 
-              const cnodeUsersDict = {}
+              cnodeUsersDictInner = {}
               cnodeUsers.forEach((cnodeUser) => {
                 // Add cnodeUserUUID data fields
                 cnodeUser.audiusUsers = []
@@ -115,7 +120,7 @@ module.exports = function (app) {
                 cnodeUser.files = []
                 cnodeUser.clockRecords = []
 
-                cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
+                cnodeUsersDictInner[cnodeUser.cnodeUserUUID] = cnodeUser
                 const curCnodeUserClockVal = cnodeUser.clock
 
                 // Validate clock values or throw an error
@@ -146,20 +151,20 @@ module.exports = function (app) {
               })
 
               audiusUsers.forEach((audiusUser) => {
-                cnodeUsersDict[audiusUser.cnodeUserUUID].audiusUsers.push(
+                cnodeUsersDictInner[audiusUser.cnodeUserUUID].audiusUsers.push(
                   audiusUser
                 )
               })
               tracks.forEach((track) => {
-                cnodeUsersDict[track.cnodeUserUUID].tracks.push(track)
+                cnodeUsersDictInner[track.cnodeUserUUID].tracks.push(track)
               })
               files.forEach((file) => {
-                cnodeUsersDict[file.cnodeUserUUID].files.push(file)
+                cnodeUsersDictInner[file.cnodeUserUUID].files.push(file)
               })
               clockRecords.forEach((clockRecord) => {
-                cnodeUsersDict[clockRecord.cnodeUserUUID].clockRecords.push(
-                  clockRecord
-                )
+                cnodeUsersDictInner[
+                  clockRecord.cnodeUserUUID
+                ].clockRecords.push(clockRecord)
               })
 
               req.logger.info(
@@ -183,7 +188,7 @@ module.exports = function (app) {
               await transaction.rollback()
             }
 
-            return cnodeUsersDict
+            return cnodeUsersDictInner
           },
           {
             retries: 3
