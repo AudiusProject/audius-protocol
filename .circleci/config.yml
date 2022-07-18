@@ -30,6 +30,10 @@ commands:
         description: The name of the gcp instance
         type: string
         default: ci-job
+      interactive-command:
+        description: The command to run initially on the gcp instanct that require an interactive terminal
+        type: string
+        default: ""
       post-gcp-command:
         description: The command to run after exiting the gcp ssh session
         type: string
@@ -76,9 +80,16 @@ commands:
             # A setup ... || true is necessary because exit code returns 141 by default
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME --fast --spot-instance || true
 
-            # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+
+            # Run interactive command on remotebox
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -t ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              << parameters.interactive-command >>
+              exit;
+            EOF
+
+            # Run command on remote box
+            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               << parameters.command >>
               exit;
             EOF
@@ -169,9 +180,10 @@ jobs:
       - run-on-gcp:
           command-name: Verify generated sdk types
           instance-name: test-sdk
-          command: |
+          interactive-command: |
             sudo apt update
             sudo apt install -y default-jre
+          command: |
             cd /home/ubuntu/audius-protocol
             git pull
             git checkout $CIRCLE_BRANCH
