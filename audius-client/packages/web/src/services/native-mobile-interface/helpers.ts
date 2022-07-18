@@ -34,7 +34,18 @@ const getResponse = async (id: string): Promise<Message> => {
   return response
 }
 
-const SPAMMY_MESSAGES = new Set([MessageType.GET_POSITION])
+const IGNORE_MESSAGES = new Set<string>([
+  MessageType.GET_POSITION,
+  MessageType.SUBMIT_SIGNIN,
+  MessageType.SUBMIT_SIGNUP,
+  MessageType.SIGN_UP_VALIDATE_AND_CHECK_EMAIL,
+  MessageType.SIGN_UP_VALIDATE_EMAIL_SUCCESS,
+  MessageType.SIGN_UP_VALIDATE_EMAIL_FAILURE,
+  MessageType.SIGN_UP_VALIDATE_HANDLE,
+  MessageType.SIGN_UP_VALIDATE_HANDLE_SUCCESS,
+  MessageType.SIGN_UP_VALIDATE_HANDLE_FAILURE,
+  MessageType.SIGN_UP_SUCCESS
+])
 
 export function* initInterface() {
   const globalWindow = getIsIOS() ? window : document
@@ -60,8 +71,8 @@ export function* initInterface() {
   while (true) {
     const message = yield* take(channel)
 
-    // Log it if it isn't spammy
-    if (!SPAMMY_MESSAGES.has(message.type)) {
+    // Log it if it isn't spammy / meant to be ignored
+    if (!IGNORE_MESSAGES.has(message.type)) {
       console.debug(`Got native mobile message: ${JSON.stringify(message)}`)
     }
 
