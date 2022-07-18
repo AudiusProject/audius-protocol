@@ -167,15 +167,14 @@ export class EntityManager extends Base {
    */
   async deletePlaylist({
     playlistId,
-    userId
+    logger = console
   }: {
     playlistId: number
-    userId: number
     logger: any
-  }): Promise<PlaylistOperationResponse> {
-    const responseValues: PlaylistOperationResponse =
-      this.getDefaultPlaylistReponseValues()
+  }): Promise<{ blockHash: any; blockNumber: any }> {
+    const userId: number = parseInt(this.userStateManager.getCurrentUserId())
     try {
+
       const resp = await this.manageEntity({
         userId,
         entityType: EntityType.PLAYLIST,
