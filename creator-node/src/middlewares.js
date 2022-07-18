@@ -19,15 +19,6 @@ const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
 
-async function durationTrackingMiddleware(req, res, next) {
-  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
-
-  if (prometheusRegistry.initialized) {
-    prometheusRegistry.middleware(req, res, next)
-  }
-
-  next()
-}
 /**
  * Ensure valid cnodeUser and session exist for provided session token
  */
@@ -925,7 +916,6 @@ function _isFQDN(url) {
 }
 
 module.exports = {
-  durationTrackingMiddleware,
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
