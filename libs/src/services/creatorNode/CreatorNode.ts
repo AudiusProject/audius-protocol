@@ -26,7 +26,7 @@ type Metadata = {
   cover_art_sizes: string
 }
 
-type PlaylistMetadata = {
+export type PlaylistMetadata = {
   playlist_contents: unknown
   playlist_id: number
   playlist_name: string
