@@ -2,7 +2,7 @@ const _ = require('lodash')
 const axios = require('axios')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
-const { SyncType, JOB_NAMES, SYNC_MODES } = require('../stateMachineConstants'),
+const { SyncType, JOB_NAMES, SYNC_MODES } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
 /**
