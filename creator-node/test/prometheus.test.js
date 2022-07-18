@@ -3,7 +3,6 @@ const request = require('supertest')
 
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-
 const {
   NAMESPACE_PREFIX
 } = require('../src/services/prometheusMonitoring/prometheus.constants')
@@ -16,6 +15,7 @@ describe('test Prometheus metrics', async function () {
     libsMock = getLibsMock()
 
     const appInfo = await getApp(libsMock)
+
     app = appInfo.app
     server = appInfo.server
   })
@@ -24,7 +24,7 @@ describe('test Prometheus metrics', async function () {
     await server.close()
   })
 
-  it('Checks that GET /prometheus_metrics is healthy and exposes Default metrics', async function () {
+  it('Checks that GET /prometheus_metrics is healthy and exposes default metrics', async function () {
     await request(app).get('/health_check')
 
     const resp = await request(app).get('/prometheus_metrics').expect(200)
@@ -40,6 +40,13 @@ describe('test Prometheus metrics', async function () {
   })
 
   it('Checks the middleware tracks routes with route params', async function () {
+    app.get('serviceRegistry').prometheusRegistry.regexes = [
+      {
+        regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
+        path: '/ipfs/#CID'
+      }
+    ]
+
     await request(app).get('/ipfs/QmVickyWasHere')
     await request(app).get('/content/QmVickyWasHere')
 
