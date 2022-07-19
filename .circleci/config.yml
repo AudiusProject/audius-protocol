@@ -119,8 +119,8 @@ jobs:
           fingerprints:
             - "ee:b0:fd:fb:ba:c8:37:7a:f9:67:15:92:9f:02:97:3e"
       - run:
-        name: npm Auth
-        command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
+          name: npm Auth
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
       - run:
           name: Bump and Publish Libs
           command: |
