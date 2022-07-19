@@ -1,5 +1,11 @@
+import { useEffect } from 'react'
+
+import { useAppState } from '@react-native-community/hooks'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigatorScreenParams } from '@react-navigation/native'
+import { getBalance } from 'audius-client/src/common/store/wallet/slice'
+
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 
 import { AppTabBar } from './AppTabBar'
 import { ExploreTabScreen, ExploreTabScreenParamList } from './ExploreTabScreen'
@@ -25,6 +31,15 @@ export type AppScreenParamList = {
 const Tab = createBottomTabNavigator()
 
 export const AppScreen = () => {
+  const dispatchWeb = useDispatchWeb()
+  const appState = useAppState()
+
+  useEffect(() => {
+    if (appState === 'active') {
+      dispatchWeb(getBalance())
+    }
+  }, [appState, dispatchWeb])
+
   return (
     <Tab.Navigator
       tabBar={(props) => <AppTabBar {...props} />}
