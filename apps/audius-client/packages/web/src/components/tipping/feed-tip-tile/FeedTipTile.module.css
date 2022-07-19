@@ -78,6 +78,7 @@
 
 .tippers {
   display: flex;
+  align-items: center;
   margin-left: 4px;
   color: var(--neutral);
 }
@@ -89,6 +90,9 @@
   display: flex;
   align-items: center;
   font-weight: var(--font-medium);
+}
+.tipperName > span {
+  white-space: nowrap;
 }
 .tipperSeparator {
   margin: 0 4px;
