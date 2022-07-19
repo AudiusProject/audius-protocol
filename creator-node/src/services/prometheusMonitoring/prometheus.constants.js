@@ -35,8 +35,6 @@ const METRIC_RECORD_TYPE = Object.freeze({
 
 const metricNames = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
-  ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
-    'route_post_tracks_duration_seconds',
   ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_monitoring_duration_seconds',
   FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
@@ -134,16 +132,6 @@ const METRICS = Object.freeze({
       name: METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE,
       help: 'Current job counts for SyncQueue by status',
       labelNames: ['status']
-    }
-  },
-  /** @notice This metric will eventually be replaced by an express route metrics middleware */
-  [METRIC_NAMES.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM]: {
-    metricType: METRIC_TYPES.HISTOGRAM,
-    metricConfig: {
-      name: METRIC_NAMES.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM,
-      help: 'Duration for POST /tracks route',
-      labelNames: ['code'],
-      buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10] // 0.1 to 10 seconds
     }
   },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {

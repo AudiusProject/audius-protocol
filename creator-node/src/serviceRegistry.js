@@ -384,19 +384,27 @@ class ServiceRegistry {
     )
   }
 
+  /**
+   * Gets the regexes for routes with route params. Used for mapping paths in metrics to track route durations
+   * @param {Object} app
+   */
   async _setupRouteDurationTracking(app) {
+    // Get all the routes initialized in the app
     const routes = app._router.stack.filter(
       (element) =>
         (element.route && element.route.path) ||
         (element.handle && element.handle.stack)
     )
 
+    // Iterate through the paths and add the regexes if the route
+    // has route params
+
     // Express routing is... unpredictable. Use a set to manage seen paths
     const seenPaths = new Set()
     const parsedRoutes = []
     routes.forEach((element) => {
       if (element.name === 'router') {
-        // For routes initialized with the express router
+        // Iterate through routes initialized with the express router
         element.handle.stack.forEach((e) => {
           const path = e.route.path
           const method = Object.keys(e.route.methods)[0]
@@ -404,7 +412,7 @@ class ServiceRegistry {
           addToParsedRoutes(path, method, regex)
         })
       } else {
-        // For all the other routes
+        // Iterate through all the other routes initalized with the app
         const path = element.route.path
         const method = Object.keys(element.route.methods)[0]
         const regex = element.regexp
@@ -412,6 +420,8 @@ class ServiceRegistry {
       }
     })
 
+    // Only keep track of the routes with route params, e.g. the route with ':'
+    // in the route to indicate a route param
     function addToParsedRoutes(path, method, regex) {
       // Routes may come in the form of an array (e.g. ['/ipfs/:CID', '/content/:CID'])
       if (Array.isArray(path)) {
@@ -441,8 +451,17 @@ class ServiceRegistry {
       }
     }
 
+    // Create an object of the path and regex
+    // - {regex: <some regex>, path: <path that a matched path will route to in the normalize fn in prometheus middleware>}
+
     // Note: routes that map to the same app logic will be under one key
-    // Example: /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
+    // Example:
+    // - /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
+    // {
+    //   regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
+    //   path: '/ipfs/#CID'
+    // }
+
     const regexes = parsedRoutes
       .filter(({ path }) => path.includes(':'))
       .map(({ path, regex }) => ({
