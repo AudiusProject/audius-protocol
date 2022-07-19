@@ -2,7 +2,7 @@ const _ = require('lodash')
 const axios = require('axios')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
-const { SyncType, JOB_NAMES } = require('../stateMachineConstants')
+const { SyncType, JOB_NAMES, SYNC_MODES } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
 /**
@@ -18,15 +18,30 @@ const getNewOrExistingSyncReq = ({
   primaryEndpoint,
   secondaryEndpoint,
   syncType,
+  syncMode,
   immediate = false
 }) => {
-  // If duplicate sync already exists, do not add and instead return existing sync job info
+  if (
+    !userWallet ||
+    !primaryEndpoint ||
+    !secondaryEndpoint ||
+    !syncType ||
+    !syncMode
+  ) {
+    throw new Error(
+      `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
+    )
+  }
+  /**
+   * If duplicate sync already exists, do not add and instead return existing sync job info
+   * Ignore syncMode when checking for duplicates, since it doesn't matter
+   */
   const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
     syncType,
     userWallet,
     secondaryEndpoint
   )
-  if (duplicateSyncJobInfo) {
+  if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
@@ -58,6 +73,7 @@ const getNewOrExistingSyncReq = ({
       : JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST
   const jobData = {
     syncType,
+    syncMode,
     syncRequestParameters
   }
   const syncReqToEnqueue = {
@@ -94,6 +110,7 @@ const issueSyncRequestsUntilSynced = async (
     secondaryEndpoint: secondaryUrl,
     primaryEndpoint: primaryUrl,
     syncType: SyncType.Manual,
+    syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
     immediate: true
   })
   if (!_.isEmpty(duplicateSyncReq)) {
@@ -134,7 +151,8 @@ const issueSyncRequestsUntilSynced = async (
           userWallet: wallet,
           secondaryEndpoint: secondaryUrl,
           primaryEndpoint: primaryUrl,
-          syncType: SyncType.Manual
+          syncType: SyncType.Manual,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
         })
         if (!_.isEmpty(duplicateSyncReq)) {
           // Log duplicate and return

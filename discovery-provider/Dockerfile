@@ -10,17 +10,12 @@ WORKDIR $INSTALL_PATH
 ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
 RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
 
-HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
-    CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
-
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait
 COPY scripts/wait /wait
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' \
-        >> /etc/apk/repositories && \
-    echo 'http://dl-cdn.alpinelinux.org/alpine/v3.14/community' \
-        >> /etc/apk/repositories && \
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
+    echo 'http://dl-cdn.alpinelinux.org/alpine/v3.14/community' >> /etc/apk/repositories && \
     apk update && \
     apk add \
         alpine-sdk=1.0-r1 \
@@ -47,24 +42,20 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' \
         redis=6.2.7-r0 \
         rsyslog \
         sudo=1.9.8_p2-r1 && \
-    apk add \
-        --virtual .build-deps \
-            gcc \
-            musl-dev \
-            postgresql-dev=11.12-r0
+    apk add --virtual .build-deps \
+        gcc \
+        musl-dev \
+        postgresql-dev=11.12-r0
 
-RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' \
-        >> /etc/apk/repositories && \
+RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
     apk add wget && \
     wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
     source /etc/os-release && \
     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
-    echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" \
-        | tee -a /etc/apk/repositories && \
+    echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
     apk update && \
-    apk add openresty=1.19.9.1-r0 \
-        openresty-opm && \
+    apk add openresty=1.19.9.1-r0 openresty-opm && \
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
     mkdir /usr/local/openresty/conf && \
@@ -95,5 +86,10 @@ ENV GIT_SHA=$git_sha
 ENV audius_loggly_disable=$audius_loggly_disable
 ENV audius_loggly_token=$audius_loggly_token
 ENV audius_loggly_tags=$audius_loggly_tags
+
+EXPOSE 5000
+
+HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
+    CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]

@@ -198,15 +198,40 @@ export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => 
 // The number of users whose primary content node clock value is null
 export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
-        SELECT COUNT(*) as user_count
-        FROM network_monitoring_users
-        WHERE 
-            run_id = :run_id
-        AND 
-            primary_clock_value IS NULL;
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE 
+        run_id = :run_id
+    AND 
+        primary_clock_value IS NULL;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id },
+    })
+
+    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+
+    return usersCount
+}
+
+export const getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidSet: number[]): Promise<number> => {
+
+    const spidSetStr = `{${spidSet.join(",")}}`
+
+    const usersResp: unknown[] = await sequelizeConn.query(`
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = :run_id
+    AND 
+        primaryspid = ANY( :spidSetStr )
+    AND
+        secondary1spid = ANY( :spidSetStr )
+    AND 
+        secondary2spid = ANY( :spidSetStr );
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id, spidSetStr },
     })
 
     const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)

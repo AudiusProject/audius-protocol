@@ -147,7 +147,7 @@ const Getters = {
    * @returns {Object} { '0x...': { 'https://secondary1...': { 'successCount' : _, 'failureCount': _, 'successRate': _ }, ... } ... }
    */
   async computeUsersSecondarySyncSuccessRatesForToday(
-    walletsToSecondariesMapping
+    walletsToSecondariesMapping = {}
   ) {
     // Initialize sync success and failure counts for every secondary to 0
     const secondarySyncMetricsMap = {}
@@ -187,12 +187,16 @@ const Getters = {
 
     // For each secondary, compute and store successRate
     for (const wallet of wallets) {
-      Object.keys(secondarySyncMetricsMap[wallet]).forEach((secondary) => {
-        const { successCount, failureCount } =
-          secondarySyncMetricsMap[wallet][secondary]
-        secondarySyncMetricsMap[wallet][secondary].successRate =
-          failureCount === 0 ? 1 : successCount / (successCount + failureCount)
-      })
+      Object.keys(secondarySyncMetricsMap[wallet] || {}).forEach(
+        (secondary) => {
+          const { successCount, failureCount } =
+            secondarySyncMetricsMap[wallet][secondary]
+          secondarySyncMetricsMap[wallet][secondary].successRate =
+            failureCount === 0
+              ? 1
+              : successCount / (successCount + failureCount)
+        }
+      )
     }
 
     return secondarySyncMetricsMap

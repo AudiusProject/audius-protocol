@@ -12,13 +12,19 @@ const getCNodeUser = async (cnodeUserUUID) => {
   return dataValues
 }
 
-const destroyUsers = async () => (
-  CNodeUser.destroy({
-    where: {},
-    truncate: true,
-    cascade: true // cascades delete to all rows with foreign key on cnodeUser
-  })
-)
+const destroyUsers = async () => {
+  try {
+    await CNodeUser.destroy({
+      where: {},
+      truncate: true,
+      cascade: true // cascades delete to all rows with foreign key on cnodeUser
+    })
+  } catch (e) {
+    if (e.message !== 'relation "CNodeUsers" does not exist') {
+      throw e
+    }
+  }
+}
 
 async function createStarterCNodeUser (userId = null, pubKey = testEthereumConstants.pubKey.toLowerCase()) {
   return createStarterCNodeUserWithKey(pubKey, userId)

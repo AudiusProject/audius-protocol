@@ -132,7 +132,6 @@ jobs:
             # commands to prime the VM for the bake
             A run init-repos up;
             A up;
-            A run monitoring up;
             A down;
             cd audius-protocol/;
             git checkout -f;
@@ -149,6 +148,25 @@ jobs:
               --source-disk="$GCLOUD_VM_NAME" \
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
+
+  publish-libs:
+    docker:
+      - image: circleci/node:14.17.5
+    resource_class: xlarge
+    steps:
+      - checkout
+      - setup_remote_docker
+      - add_ssh_keys:
+          fingerprints:
+            - "ee:b0:fd:fb:ba:c8:37:7a:f9:67:15:92:9f:02:97:3e"
+      - run:
+          name: npm Auth
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
+      - run:
+          name: Bump and Publish Libs
+          command: |
+            export PROTOCOL_DIR=/home/circleci/project
+            libs/scripts/release.sh
 
   test-mad-dog-e2e:
     parameters:
@@ -413,12 +431,12 @@ jobs:
           POSTGRES_DB: audius_discovery
       - image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
         environment:
-          - network.host=0.0.0.0
-          - discovery.type=single-node
-          - cluster.name=docker-cluster
-          - node.name=cluster1-node1
-          - xpack.security.enabled=false
-          - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+          network.host: '0.0.0.0'
+          discovery.type: 'single-node'
+          cluster.name: 'docker-cluster'
+          node.name: 'cluster1-node1'
+          xpack.security.enabled: 'false'
+          ES_JAVA_OPTS: '-Xms512m -Xmx512m'
       - image: ipfs/go-ipfs:release
         # Bring up ganache
       - image: redis:3.0-alpine
@@ -426,6 +444,7 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8556', '-a', '100', '-l', '8000000']
+    resource_class: medium+
     steps:
       - checkout
       - diff-if-necessary:
@@ -699,7 +718,7 @@ jobs:
         type: string
       logspout-tag:
         type: string
-        default: ""
+        default: ''
     steps:
       - checkout
       - setup_remote_docker:
@@ -835,7 +854,7 @@ workflows:
       - docker-build-and-push:
           name: build-logspout
           repo: logspout
-          logspout-tag: "true"
+          logspout-tag: 'true'
           requires:
             - hold-build-logspout
       - hold-bake-gcp-dev-image:
@@ -849,6 +868,19 @@ workflows:
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
+          filters:
+            branches:
+              only: /(^master$)/
+      - hold-publish-libs:
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+      - publish-libs:
+          context: Audius Client
+          name: publish-libs
+          requires:
+            - hold-publish-libs
           filters:
             branches:
               only: /(^master$)/
