@@ -19,12 +19,12 @@ declare module '@audius/hedgehog' {
     iv: string
     cipherText: string
     lookupKey: string
-  }) => void | Promise<void>
+  }) => any | Promise<any>
 
   type SetUserFn = (params: {
     walletAddress: string
     username: string
-  }) => void | Promise<void>
+  }) => any | Promise<any>
 
   export class Hedgehog {
     wallet: Wallet
