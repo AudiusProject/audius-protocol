@@ -93,6 +93,7 @@ const CollectionScreenComponent = ({
   const navigation = useNavigation()
   const {
     _cover_art_sizes,
+    _is_publishing,
     description,
     has_current_user_reposted,
     has_current_user_saved,
@@ -225,6 +226,7 @@ const CollectionScreenComponent = ({
           imageUrl={imageUrl}
           isAlbum={is_album}
           isPrivate={is_private}
+          isPublishing={_is_publishing ?? false}
           onPressFavorites={handlePressFavorites}
           onPressOverflow={handlePressOverflow}
           onPressRepost={handlePressRepost}

@@ -49,6 +49,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 type CollectionScreenDetailsTileProps = {
   isAlbum?: boolean
   isPrivate?: boolean
+  isPublishing?: boolean
   extraDetails?: DetailsTileDetail[]
 } & Omit<
   DetailsTileProps,
@@ -72,6 +73,7 @@ export const CollectionScreenDetailsTile = ({
   extraDetails = [],
   isAlbum,
   isPrivate,
+  isPublishing,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -143,6 +145,10 @@ export const CollectionScreenDetailsTile = ({
   )
 
   const headerText = useMemo(() => {
+    if (isPublishing) {
+      return messages.publishing
+    }
+
     if (isAlbum) {
       return messages.album
     }
@@ -152,7 +158,7 @@ export const CollectionScreenDetailsTile = ({
     }
 
     return messages.playlist
-  }, [isAlbum, isPrivate])
+  }, [isAlbum, isPrivate, isPublishing])
 
   const renderTrackList = () => {
     if (tracksLoading)
