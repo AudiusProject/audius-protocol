@@ -87,7 +87,6 @@ jobs:
               # commands to prime the VM for the bake
               A run init-repos up;
               A up;
-              A run monitoring up;
               A down;
               cd audius-protocol/;
               git checkout -f;

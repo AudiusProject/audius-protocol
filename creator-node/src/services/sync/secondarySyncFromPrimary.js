@@ -197,6 +197,10 @@ module.exports = async function (
         clockRecords: fetchedClockRecords
       } = fetchedCNodeUser
 
+      const maxClockRecordId = Math.max(
+        ...fetchedCNodeUser.clockRecords.map((record) => record.clock)
+      )
+
       // Error if returned data is not within requested range
       if (fetchedLatestClockVal < localMaxClockVal) {
         throw new Error(
@@ -216,6 +220,10 @@ module.exports = async function (
       ) {
         throw new Error(
           `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
+        )
+      } else if (maxClockRecordId !== fetchedLatestClockVal) {
+        throw new Error(
+          `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
         )
       }
 

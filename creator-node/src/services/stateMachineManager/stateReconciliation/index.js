@@ -32,8 +32,8 @@ class StateReconciliationManager {
       redisHost: config.get('redisHost'),
       redisPort: config.get('redisPort'),
       name: QUEUE_NAMES.STATE_RECONCILIATION,
-      removeOnComplete: QUEUE_HISTORY.RECONCILIATION_QUEUE_HISTORY,
-      removeOnFail: QUEUE_HISTORY.RECONCILIATION_QUEUE_HISTORY,
+      removeOnComplete: QUEUE_HISTORY.STATE_RECONCILIATION,
+      removeOnFail: QUEUE_HISTORY.STATE_RECONCILIATION,
       lockDuration: STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
     })
 
@@ -112,36 +112,40 @@ class StateReconciliationManager {
   }) {
     // Add handlers for logging
     stateReconciliationQueue.on('global:waiting', (jobId) => {
-      reconciliationLogger.info(`Queue Job Waiting - ID ${jobId}`)
+      const logger = createChildLogger(reconciliationLogger, { jobId })
+      logger.info('Job waiting')
     })
     stateReconciliationQueue.on('global:active', (jobId, jobPromise) => {
-      reconciliationLogger.info(`Queue Job Active - ID ${jobId}`)
+      const logger = createChildLogger(reconciliationLogger, { jobId })
+      logger.info('Job active')
     })
     stateReconciliationQueue.on(
       'global:lock-extension-failed',
       (jobId, err) => {
-        reconciliationLogger.error(
-          `Queue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
-        )
+        const logger = createChildLogger(stateReconciliationQueue, { jobId })
+        logger.error(`Job lock extension failed. Error: ${err}`)
       }
     )
     stateReconciliationQueue.on('global:stalled', (jobId) => {
-      reconciliationLogger.error(`stateMachineQueue Job Stalled - ID ${jobId}`)
+      const logger = createChildLogger(stateReconciliationQueue, { jobId })
+      logger.error('Job stalled')
     })
     stateReconciliationQueue.on('global:error', (error) => {
       reconciliationLogger.error(`Queue Job Error - ${error}`)
     })
 
-    // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
-    stateReconciliationQueue.on('completed', (job, result) => {
-      reconciliationLogger.info(
-        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
-      )
-    })
+    // Log when a job fails to complete
     stateReconciliationQueue.on('failed', (job, err) => {
-      reconciliationLogger.error(
-        `Queue Job Failed - ID ${job?.id} - Error ${err}`
-      )
+      const logger = createChildLogger(reconciliationLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
+    })
+    manualSyncQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(manualSyncLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
     })
 
     // Register the logic that gets executed to process each new job from the queue

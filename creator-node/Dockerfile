@@ -16,7 +16,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         curl \
         docker=20.10.3-r1 \
         libpq=11.12-r0 \
-        nodejs=14.19.0-r0 \
+        nodejs=14.20.0-r0 \
         npm \
         postgresql-client=11.12-r0 \
         postgresql-contrib=11.12-r0 \

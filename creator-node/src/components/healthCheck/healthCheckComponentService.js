@@ -25,7 +25,7 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  *    and used in signature generation
  */
 const healthCheck = async (
-  { libs, snapbackSM } = {},
+  { libs, snapbackSM, trustedNotifierManager } = {},
   logger,
   sequelize,
   getMonitors,
@@ -197,6 +197,10 @@ const healthCheck = async (
       latestFindReplicaSetUpdatesJobSuccess: parseDateOrNull(
         latestFindReplicaSetUpdatesJobSuccess
       )
+    },
+    trustedNotifier: {
+      ...trustedNotifierManager.getTrustedNotifierData(),
+      id: trustedNotifierManager.trustedNotifierID
     }
   }
 
@@ -234,7 +238,7 @@ const parseDateOrNull = (date) => {
 
 // TODO remove verbose health check after fully deprecated
 const healthCheckVerbose = async (
-  { libs, snapbackSM } = {},
+  { libs, snapbackSM, trustedNotifierManager } = {},
   logger,
   sequelize,
   getMonitors,
@@ -244,7 +248,7 @@ const healthCheckVerbose = async (
   getAsyncProcessingQueueJobs
 ) => {
   return healthCheck(
-    { libs, snapbackSM },
+    { libs, snapbackSM, trustedNotifierManager },
     logger,
     sequelize,
     getMonitors,
