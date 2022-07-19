@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { useDispatch } from 'react-redux'
 import { animated, Transition } from 'react-spring/renderprops'
@@ -10,6 +10,7 @@ import { useSelector } from 'common/hooks/useSelector'
 import { getSendStatus } from 'common/store/tipping/selectors'
 import { resetSend } from 'common/store/tipping/slice'
 import { TippingSendStatus } from 'common/store/tipping/types'
+import { getBalance } from 'common/store/wallet/slice'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import { ConfirmSendTip } from './ConfirmSendTip'
@@ -124,6 +125,12 @@ export const TipAudioModal = () => {
   const onClose = useCallback(() => {
     dispatch(resetSend())
   }, [dispatch])
+
+  useEffect(() => {
+    if (sendStatus !== null) {
+      dispatch(getBalance())
+    }
+  }, [dispatch, sendStatus])
 
   const transitions =
     !previousSendStatus ||

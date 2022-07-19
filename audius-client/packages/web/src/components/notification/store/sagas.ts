@@ -337,13 +337,18 @@ export function* parseAndProcessNotifications(
 /**
  * Run side effects for new notifications
  */
+const AUDIO_TRANSFER_NOTIFICATION_TYPES = new Set([
+  NotificationType.ChallengeReward,
+  NotificationType.TipSend,
+  NotificationType.TipReceive
+])
 export function* handleNewNotifications(
   notifications: Notification[]
 ): Generator<any, void, any> {
-  const hasRewardsNotification = notifications.some(
-    (notification) => notification.type === NotificationType.ChallengeReward
+  const hasAudioTransferNotification = notifications.some((notification) =>
+    AUDIO_TRANSFER_NOTIFICATION_TYPES.has(notification.type)
   )
-  if (hasRewardsNotification) {
+  if (hasAudioTransferNotification) {
     yield* put(getBalance)
   }
 }
