@@ -1,8 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { User } from 'audius-client/src/common/models/User'
 import { View } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
@@ -52,6 +52,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     flexGrow: 0,
     flexShrink: 1
   },
+  pressedText: {
+    textDecorationLine: 'underline'
+  },
   andOthers: {
     marginLeft: spacing(1)
   }
@@ -66,6 +69,9 @@ export const SenderDetails = ({ senders, receiver }: SenderDetailsProps) => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
   const navigation = useNavigation()
+  const [pressed, setPressed] = useState(false)
+  const handlePressIn = useCallback(() => setPressed(true), [])
+  const handlePressOut = useCallback(() => setPressed(false), [])
 
   const handlePressTippers = useCallback(() => {
     navigation.push({
@@ -76,32 +82,38 @@ export const SenderDetails = ({ senders, receiver }: SenderDetailsProps) => {
     })
   }, [navigation, receiver])
 
+  const textStyle = [styles.tipperText, pressed && styles.pressedText]
+
   return (
     <View style={styles.wasTippedByContainer}>
       <IconTip fill={neutralLight4} height={16} width={16} />
       <Text style={styles.wasTippedBy}>{messages.wasTippedBy}</Text>
-      <TouchableOpacity style={styles.tippers} onPress={handlePressTippers}>
+      <TouchableWithoutFeedback
+        style={styles.tippers}
+        onPress={handlePressTippers}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}>
         {senders.slice(0, NUM_FEED_TIPPERS_DISPLAYED).map((tipper, index) => (
           <View key={`tipper-${index}`} style={styles.tipper}>
-            <Text style={styles.tipperText} numberOfLines={1}>
+            <Text style={textStyle} numberOfLines={1}>
               {tipper.name}
             </Text>
             <UserBadges user={tipper} badgeSize={12} hideName />
             {index < senders.length - 1 &&
             index < NUM_FEED_TIPPERS_DISPLAYED - 1 ? (
-              <Text style={styles.tipperText}>&nbsp;,&nbsp;</Text>
+              <Text style={textStyle}>&nbsp;,&nbsp;</Text>
             ) : null}
           </View>
         ))}
         {receiver.supporter_count > NUM_FEED_TIPPERS_DISPLAYED ? (
-          <Text style={[styles.tipperText, styles.andOthers]}>
+          <Text style={[...textStyle, styles.andOthers]}>
             {messages.andOthers(
               receiver.supporter_count -
                 Math.min(senders.length, NUM_FEED_TIPPERS_DISPLAYED)
             )}
           </Text>
         ) : null}
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
     </View>
   )
 }
