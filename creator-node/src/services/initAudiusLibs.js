@@ -1,7 +1,7 @@
 const { libs: AudiusLibs } = require('@audius/sdk')
 
 const config = require('../config')
-const { logger: genericLogger } = require('./logging')
+const { logger: genericLogger } = require('../logging')
 
 /**
  * Creates, initializes, and returns an audiusLibs instance
