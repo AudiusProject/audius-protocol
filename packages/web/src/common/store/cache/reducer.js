@@ -70,6 +70,9 @@ export const mergeCustomizer = (objValue, srcValue, key) => {
   if (forceUpdateKeys.has(key)) {
     return srcValue
   }
+  if (key === 'is_verified') {
+    return srcValue || objValue
+  }
 
   // Delete is unidirectional (after marked deleted, future updates are not reflected)
   if (key === 'is_delete' && objValue === true && srcValue === false) {
