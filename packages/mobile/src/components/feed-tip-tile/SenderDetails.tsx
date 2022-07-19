@@ -11,6 +11,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import { PressableText } from './PressableText'
 import { NUM_FEED_TIPPERS_DISPLAYED } from './constants'
 
 const messages = {
@@ -82,38 +83,42 @@ export const SenderDetails = ({ senders, receiver }: SenderDetailsProps) => {
     })
   }, [navigation, receiver])
 
-  const textStyle = [styles.tipperText, pressed && styles.pressedText]
-
   return (
     <View style={styles.wasTippedByContainer}>
       <IconTip fill={neutralLight4} height={16} width={16} />
       <Text style={styles.wasTippedBy}>{messages.wasTippedBy}</Text>
-      <TouchableWithoutFeedback
-        style={styles.tippers}
-        onPress={handlePressTippers}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}>
-        {senders.slice(0, NUM_FEED_TIPPERS_DISPLAYED).map((tipper, index) => (
-          <View key={`tipper-${index}`} style={styles.tipper}>
-            <Text style={textStyle} numberOfLines={1}>
-              {tipper.name}
-            </Text>
-            <UserBadges user={tipper} badgeSize={12} hideName />
-            {index < senders.length - 1 &&
-            index < NUM_FEED_TIPPERS_DISPLAYED - 1 ? (
-              <Text style={textStyle}>&nbsp;,&nbsp;</Text>
-            ) : null}
-          </View>
-        ))}
-        {receiver.supporter_count > NUM_FEED_TIPPERS_DISPLAYED ? (
-          <Text style={[...textStyle, styles.andOthers]}>
-            {messages.andOthers(
-              receiver.supporter_count -
-                Math.min(senders.length, NUM_FEED_TIPPERS_DISPLAYED)
-            )}
-          </Text>
-        ) : null}
-      </TouchableWithoutFeedback>
+      <PressableText style={styles.tippers} onPress={handlePressTippers}>
+        {({ pressed }) => {
+          const textStyle = [styles.tipperText, pressed && styles.pressedText]
+
+          return (
+            <>
+              {senders
+                .slice(0, NUM_FEED_TIPPERS_DISPLAYED)
+                .map((tipper, index) => (
+                  <View key={`tipper-${index}`} style={styles.tipper}>
+                    <Text style={textStyle} numberOfLines={1}>
+                      {tipper.name}
+                    </Text>
+                    <UserBadges user={tipper} badgeSize={12} hideName />
+                    {index < senders.length - 1 &&
+                    index < NUM_FEED_TIPPERS_DISPLAYED - 1 ? (
+                      <Text style={textStyle}>&nbsp;,&nbsp;</Text>
+                    ) : null}
+                  </View>
+                ))}
+              {receiver.supporter_count > NUM_FEED_TIPPERS_DISPLAYED ? (
+                <Text style={[...textStyle, styles.andOthers]}>
+                  {messages.andOthers(
+                    receiver.supporter_count -
+                      Math.min(senders.length, NUM_FEED_TIPPERS_DISPLAYED)
+                  )}
+                </Text>
+              ) : null}
+            </>
+          )
+        }}
+      </PressableText>
     </View>
   )
 }
