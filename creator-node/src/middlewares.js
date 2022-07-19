@@ -526,15 +526,13 @@ async function getOwnEndpoint({ libs }) {
  * @returns {Array} - array of strings of replica set
  */
 async function getCreatorNodeEndpoints({
-  serviceRegistry,
+  libs,
   logger,
   wallet,
   blockNumber,
   ensurePrimary,
   myCnodeEndpoint
 }) {
-  const { libs } = serviceRegistry
-
   logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
   const start = Date.now()
 

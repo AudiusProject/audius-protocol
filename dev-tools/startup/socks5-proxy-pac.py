@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import socket
 import http
 import http.server
+import socket
 
 IP_ADDRESS = socket.gethostbyname(socket.gethostname())
 TLD = socket.getfqdn().split(".")[-1]
