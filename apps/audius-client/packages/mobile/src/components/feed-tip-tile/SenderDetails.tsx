@@ -42,15 +42,15 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     flexWrap: 'wrap'
   },
   tipper: {
-    maxWidth: '92%',
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center'
   },
   tipperText: {
     fontSize: typography.fontSize.small,
     fontFamily: typography.fontByWeight.medium,
-    color: palette.neutral
+    color: palette.neutral,
+    flexGrow: 0,
+    flexShrink: 1
   },
   andOthers: {
     marginLeft: spacing(1)
