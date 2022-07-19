@@ -72,6 +72,15 @@ function merge-bump () {
 
     # clean up release branches
     git push origin :${STUB}-${VERSION}
+
+    # create github release
+    ghr -t ${GHI_TOKEN} \
+        -u ${CIRCLE_PROJECT_USERNAME} \
+        -r ${CIRCLE_PROJECT_REPONAME} \
+        -c "$(git rev-parse HEAD)" \
+        -b "$(commit-message)" \
+        ${VERSION} \
+        ./
 }
 
 # publish to npm
