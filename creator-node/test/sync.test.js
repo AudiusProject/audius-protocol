@@ -1327,7 +1327,8 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     primarySyncFromSecondaryStub = proxyquire(
       '../src/services/sync/primarySyncFromSecondary',
       {
-        '../../serviceRegistry': { serviceRegistry: serviceRegistryMock }
+        '../../serviceRegistry': { serviceRegistry: serviceRegistryMock },
+        '../initAudiusLibs': async () => libsMock
       }
     )
   })

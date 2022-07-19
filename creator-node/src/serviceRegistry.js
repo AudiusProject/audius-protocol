@@ -3,11 +3,10 @@ const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
 
-const { libs: AudiusLibs } = require('@audius/sdk')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
-const config = require('./config')
+const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
   logger: genericLogger,
@@ -15,6 +14,7 @@ const {
   logInfoWithDuration
 } = require('./logging')
 const utils = require('./utils')
+const config = require('./config')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
@@ -74,7 +74,7 @@ class ServiceRegistry {
   async initServices() {
     const start = getStartTime()
 
-    this.libs = await this._initAudiusLibs()
+    this.libs = await initAudiusLibs()
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
@@ -89,10 +89,6 @@ class ServiceRegistry {
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized synchronous services'
     )
-  }
-
-  async initLibs() {
-    this.libs = this.libs || (await this._initAudiusLibs())
   }
 
   /**
@@ -310,11 +306,7 @@ class ServiceRegistry {
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(
-      config,
-      this.libs,
-      this
-    )
+    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(config, this.libs)
     await this.skippedCIDsRetryQueue.init()
 
     try {
@@ -473,63 +465,6 @@ class ServiceRegistry {
     }
 
     this.logInfo(`SnapbackSM Init completed`)
-  }
-
-  /**
-   * Creates, initializes, and returns an audiusLibs instance
-   *
-   * Configures dataWeb3 to be internal to libs, logged in with delegatePrivateKey in order to write chain TX
-   */
-  async _initAudiusLibs() {
-    const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
-      config.get('ethProviderUrl'),
-      config.get('ethNetworkId'),
-      /* requiresAccount */ false
-    )
-    if (!ethWeb3) {
-      throw new Error(
-        'Failed to init audiusLibs due to ethWeb3 configuration error'
-      )
-    }
-
-    const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
-      ? new Set(config.get('discoveryProviderWhitelist').split(','))
-      : null
-    const identityService = config.get('identityService')
-    const discoveryNodeUnhealthyBlockDiff = config.get(
-      'discoveryNodeUnhealthyBlockDiff'
-    )
-
-    const audiusLibs = new AudiusLibs({
-      ethWeb3Config: AudiusLibs.configEthWeb3(
-        config.get('ethTokenAddress'),
-        config.get('ethRegistryAddress'),
-        ethWeb3,
-        config.get('ethOwnerWallet')
-      ),
-      web3Config: AudiusLibs.configInternalWeb3(
-        config.get('dataRegistryAddress'),
-        [config.get('dataProviderUrl')],
-        // TODO - formatting this private key here is not ideal
-        config.get('delegatePrivateKey').replace('0x', '')
-      ),
-      discoveryProviderConfig: {
-        whitelist: discoveryProviderWhitelist,
-        unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
-      },
-      // If an identity service config is present, set up libs with the connection, otherwise do nothing
-      identityServiceConfig: identityService
-        ? AudiusLibs.configIdentityService(identityService)
-        : undefined,
-      isDebug: config.get('creatorNodeIsDebug'),
-      isServer: true,
-      preferHigherPatchForPrimary: true,
-      preferHigherPatchForSecondaries: true,
-      logger: genericLogger
-    })
-
-    await audiusLibs.init()
-    return audiusLibs
   }
 
   logInfo(msg) {
