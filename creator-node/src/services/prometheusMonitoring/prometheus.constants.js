@@ -37,8 +37,8 @@ let MetricNames = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
   ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
     'route_post_tracks_duration_seconds',
-  ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
-    'issue_sync_request_monitoring_duration_seconds',
+  ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM:
+    'issue_sync_request_duration_seconds',
   FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
   WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds'
 }
@@ -54,16 +54,22 @@ MetricNames = Object.freeze(
 )
 
 const MetricLabels = Object.freeze({
-  [MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
-    // The type of sync issued -- manual or recurring
-    syncType: [_.snakeCase(SyncType.Manual), _.snakeCase(SyncType.Recurring)],
-    // The reason another sync is needed
-    reason_for_additional_sync: [
-      'secondary_progressed_too_slow', // The secondary sync went through, but its clock value didn't increase enough
-      'secondary_failed_to_progress', // The secondary's clock value did not increase at all
-      'none' // No additional sync is required -- the first sync was successful
+  [MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
+    sync_type: Object.values(SyncType).map(_.snakeCase),
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    result: [
+      'failure_validate_job_data',
+      'success',
+      'failure_secondary_failure_count_threshold_met',
+      'success_mode_disabled',
+      'failure_primary_sync_from_secondary',
+      'failure_issue_sync_request',
+      'success_secondary_caught_up',
+      'success_secondary_partially_caught_up',
+      'failure_secondary_failed_to_progress'
     ]
   },
+
   [MetricNames[
     `STATE_MACHINE_${STATE_MACHINE_JOB_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
   ]]: {
@@ -77,6 +83,7 @@ const MetricLabels = Object.freeze({
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
     ]
   },
+
   [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
     result: [
@@ -92,6 +99,7 @@ const MetricLabels = Object.freeze({
       'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
     ]
   },
+
   [MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
     // Whether or not write quorum is enabled/enforced
     enforceWriteQuorum: ['false', 'true'],
@@ -118,6 +126,7 @@ const MetricLabels = Object.freeze({
     ]
   }
 })
+
 const MetricLabelNames = Object.freeze(
   Object.fromEntries(
     Object.entries(MetricLabels).map(([metric, metricLabels]) => [
@@ -136,6 +145,7 @@ const Metrics = Object.freeze({
       labelNames: ['status']
     }
   },
+
   /** @notice This metric will eventually be replaced by an express route metrics middleware */
   [MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM]: {
     metricType: MetricTypes.HISTOGRAM,
@@ -146,23 +156,25 @@ const Metrics = Object.freeze({
       buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10] // 0.1 to 10 seconds
     }
   },
-  [MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
+
+  [MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     metricType: MetricTypes.HISTOGRAM,
     metricConfig: {
-      name: MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
-      help: 'Seconds spent monitoring an outgoing sync request issued by this node to be completed (successfully or not)',
+      name: MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM,
+      help: 'Time spent to issue a sync request and wait for completion (seconds)',
       labelNames:
         MetricLabelNames[
-          MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM
+          MetricNames.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
         ],
-      // 5 buckets in the range of 1 second to max seconds before timing out a sync request
+      // 4 buckets in the range of 1 second to max before timing out a sync request
       buckets: exponentialBucketsRange(
         1,
         config.get('maxSyncMonitoringDurationInMs') / 1000,
-        5
+        4
       )
     }
   },
+
   // Add histogram for each job in the state machine queues
   ...Object.fromEntries(
     Object.values(STATE_MACHINE_JOB_NAMES).map((jobName) => [
@@ -189,6 +201,7 @@ const Metrics = Object.freeze({
       }
     ])
   ),
+
   [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     metricType: MetricTypes.GAUGE,
     metricConfig: {
@@ -197,6 +210,7 @@ const Metrics = Object.freeze({
       labelNames: MetricLabelNames[MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]
     }
   },
+
   [MetricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
     metricType: MetricTypes.HISTOGRAM,
     metricConfig: {
