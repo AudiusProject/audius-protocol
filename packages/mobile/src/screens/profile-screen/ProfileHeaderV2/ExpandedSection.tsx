@@ -1,7 +1,9 @@
+import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Divider, Text } from 'app/components/core'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -54,14 +56,17 @@ const SupportingSectionTitle = () => {
 }
 
 export const ExpandedSection = () => {
-  const { supporting_count } = useSelectProfile(['supporting_count'])
+  const { supporting_count, user_id } = useSelectProfile(['supporting_count'])
+  const accountId = useSelectorWeb(getUserId)
+  const isOwner = user_id === accountId
+
   return (
     <View pointerEvents='box-none'>
       <Bio />
       <SocialsAndSites />
       <View style={{ flexDirection: 'row', marginVertical: spacing(2) }}>
         <ProfileTierTile />
-        <ProfileMutualsButton />
+        {isOwner ? null : <ProfileMutualsButton />}
       </View>
       {supporting_count > 0 ? (
         <>
