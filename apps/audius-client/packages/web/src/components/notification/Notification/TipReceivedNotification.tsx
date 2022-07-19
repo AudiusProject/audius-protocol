@@ -121,7 +121,10 @@ export const TipReceivedNotification = (
           {reactionList.map(([reactionType, Reaction]) => (
             <Reaction
               key={reactionType}
-              onClick={() => setReaction(reactionType)}
+              onClick={(e) => {
+                e.stopPropagation()
+                setReaction(reactionType)
+              }}
               isActive={
                 reactionValue // treat 0 and null equivalently here
                   ? reactionType === reactionValue
