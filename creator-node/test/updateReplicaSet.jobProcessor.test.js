@@ -116,7 +116,7 @@ describe('test updateReplicaSet job processor', function () {
     )
   }
 
-  it('reconfigs one secondary when one secondary is unhealthy and reconfigs are enabled', async function () {
+  it.only('reconfigs one secondary when one secondary is unhealthy and reconfigs are enabled', async function () {
     // A sync will be needed to this node, so stub returning a successful new sync and no duplicate sync
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
       return { syncReqToEnqueue: args }
