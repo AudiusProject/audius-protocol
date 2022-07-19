@@ -92,6 +92,7 @@ export const rerankSupportersMapForUser = (
    * and store in new map.
    */
   let rank = 1
+  let tieCount = 1
   let previousAmountBN: Nullable<BNWei> = null
   const map: SupportersMapForUser = {}
   for (let i = 0; i < supportersSortedDesc.length; i++) {
@@ -107,10 +108,12 @@ export const rerankSupportersMapForUser = (
       if ((previousAmountBN as BNWei).gt(currentAmountBN)) {
         // If previous amount is greater than current, then
         // increment the rank for the current value.
+        rank += tieCount
         map[supportersSortedDesc[i].sender_id] = {
           ...supportersSortedDesc[i],
-          rank: ++rank
+          rank
         }
+        tieCount = 1
       } else {
         // Otherwise, the amounts are equal (because we already
         // previously sorted). Thus, keep the same rank.
@@ -118,6 +121,7 @@ export const rerankSupportersMapForUser = (
           ...supportersSortedDesc[i],
           rank
         }
+        tieCount++
       }
       // Update the previous amount.
       previousAmountBN = currentAmountBN
