@@ -27,7 +27,7 @@ module.exports = async function (
   blockNumber = null,
   forceResync = false
 ) {
-  const { nodeConfig, redis } = serviceRegistry
+  const { nodeConfig, redis, libs } = serviceRegistry
 
   const FileSaveMaxConcurrency = nodeConfig.get(
     'nodeSyncFileSaveMaxConcurrency'
@@ -160,7 +160,7 @@ module.exports = async function (
       try {
         const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
         userReplicaSet = await getCreatorNodeEndpoints({
-          serviceRegistry,
+          libs,
           logger: logger,
           wallet: fetchedWalletPublicKey,
           blockNumber,
@@ -353,7 +353,7 @@ module.exports = async function (
           await Promise.all(
             trackFilesSlice.map(async (trackFile) => {
               const success = await saveFileForMultihashToFS(
-                serviceRegistry,
+                libs,
                 logger,
                 trackFile.multihash,
                 trackFile.storagePath,
@@ -399,7 +399,7 @@ module.exports = async function (
                   nonTrackFile.fileName !== null
                 ) {
                   success = await saveFileForMultihashToFS(
-                    serviceRegistry,
+                    libs,
                     logger,
                     multihash,
                     nonTrackFile.storagePath,
@@ -408,7 +408,7 @@ module.exports = async function (
                   )
                 } else {
                   success = await saveFileForMultihashToFS(
-                    serviceRegistry,
+                    libs,
                     logger,
                     multihash,
                     nonTrackFile.storagePath,
