@@ -6,8 +6,8 @@ const axios = require('axios')
 
 const config = require('./config')
 const Utils = require('./utils')
-const { libs } = require('@audius/sdk')
-const LibsUtils = libs.Utils
+const { libs: audiusLibs } = require('@audius/sdk')
+const LibsUtils = audiusLibs.Utils
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
@@ -104,7 +104,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  *    creating directories
  * 2. attempt to fetch the CID from a variety of sources
  * 3. return boolean failure content retrieval or content verification failure
- * @param {Object} serviceRegistry
+ * @param {Object} libs
  * @param {Object} logger
  * @param {String} multihash CID
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
@@ -117,7 +117,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @return {Boolean} true if success, false if error
  */
 async function saveFileForMultihashToFS(
-  serviceRegistry,
+  libs,
   logger,
   multihash,
   expectedStoragePath,
@@ -315,7 +315,6 @@ async function saveFileForMultihashToFS(
     // If file is not found on disk, check nodes on the rest of the network
     if (!fileFound) {
       try {
-        const libs = serviceRegistry.libs
         const found = await findCIDInNetwork(
           expectedStoragePath,
           multihash,
@@ -399,7 +398,7 @@ async function saveFileForMultihashToFS(
       await removeFile(expectedStoragePath)
       if (numRetries > 0) {
         return saveFileForMultihashToFS(
-          serviceRegistry,
+          libs,
           logger,
           multihash,
           expectedStoragePath,
