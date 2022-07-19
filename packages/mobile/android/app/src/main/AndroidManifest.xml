@@ -104,15 +104,15 @@
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="https"/>
+            <data android:scheme="https" android:host="*"/>
         </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="http"/>
+            <data android:scheme="http" android:host="*"/>
         </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="mailto"/>
+            <data android:scheme="mailto" android:host="*"/>
         </intent>
     </queries>
 
