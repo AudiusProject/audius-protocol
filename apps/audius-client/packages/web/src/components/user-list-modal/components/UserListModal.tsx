@@ -180,6 +180,8 @@ const UserListModal = ({
           getScrollParent={() => scrollParentRef.current || null}
           beforeClickArtistName={onClose}
           onNavigateAway={onClose}
+          afterFollow={onClose}
+          afterUnfollow={onClose}
         />
       </Scrollbar>
     </Modal>
