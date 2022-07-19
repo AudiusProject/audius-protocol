@@ -112,8 +112,6 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
-      - diff-if-necessary:
-          service: libs
       - setup_remote_docker
       - add_ssh_keys:
           fingerprints:
