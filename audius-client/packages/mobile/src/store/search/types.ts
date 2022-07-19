@@ -91,6 +91,7 @@ export type SearchTrack = TrackImage & {
 
 export type SearchPlaylist = CollectionImage & {
   _cover_art_sizes: null
+  _is_publishing?: boolean
   description: string | null
   is_album: boolean
   playlist_name: string
