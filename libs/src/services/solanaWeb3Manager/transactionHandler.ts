@@ -1,33 +1,30 @@
-const SolanaUtils = require('./utils')
-const {
+import SolanaUtils from './utils'
+import {
   Transaction,
   PublicKey,
-} = require('@solana/web3.js')
+  Connection,
+  Keypair,
+  TransactionInstruction
+} from '@solana/web3.js'
 
 /**
  * Handles sending Solana transactions, either directly via `sendAndConfirmTransaction`,
  * or via IdentityService's relay.
  */
-class TransactionHandler {
+export class TransactionHandler {
+  private readonly connection: Connection
+  private readonly useRelay: boolean
+  private readonly identityService: any | null
+  private readonly feePayerKeypairs: Keypair[] | null
+  private readonly skipPreflight: boolean
+  private readonly retryTimeoutMs: number
+  private readonly pollingFrequencyMs: number
+  private readonly sendingFrequencyMs: number
+
   /**
    * Creates an instance of TransactionHandler.
-   *
-   * @param {{
-   *  connection: Connection,
-   *  useRelay: boolean,
-   *  identityService: Object,
-   *  feePayerKeypairs: KeyPair[]
-   *  skipPreflight: boolean
-   * }} {
-   *  connection,
-   *  useRelay,
-   *  identityService = null,
-   *  feePayerKeypairs = null,
-   *  skipPreflight = true
-   * }
-   * @memberof TransactionHandler
    */
-  constructor ({
+  constructor({
     connection,
     useRelay,
     identityService = null,
@@ -36,6 +33,15 @@ class TransactionHandler {
     retryTimeoutMs = 60000,
     pollingFrequencyMs = 300,
     sendingFrequencyMs = 300
+  }: {
+    connection: Connection
+    useRelay: boolean
+    identityService?: any | null
+    feePayerKeypairs?: Keypair[] | null
+    skipPreflight?: boolean
+    retryTimeoutMs?: number
+    pollingFrequencyMs?: number
+    sendingFrequencyMs?: number
   }) {
     this.connection = connection
     this.useRelay = useRelay
@@ -49,44 +55,68 @@ class TransactionHandler {
 
   /**
    * Primary method to send a Solana transaction.
-   *
-   * @typedef {Object} HandleTransactionReturn
-   * @property {Object} res the result
-   * @property {string} [error=null] the optional error
-   *  Will be a string if `errorMapping` is passed to the handler.
-   * @property {string|number} [error_code=null] the optional error code.
-   * @property {string} [recentBlockhash=null] optional recent blockhash to prefer over fetching
-   * @property {boolean} [skipPreflight=null] optional per transaction override to skipPreflight
-   * @property {any} [logger=console] optional logger
-   * @property {any} [feePayerOverride=null] optional fee payer override
-   *
-   * @param {Array<TransactionInstruction>} instructions an array of `TransactionInstructions`
-   * @param {*} [errorMapping=null] an optional error mapping. Should expose a `fromErrorCode` method.
-   * @param {Array<{publicKey: string, signature: Buffer}>} [signature=null] optional signatures
-   * @returns {Promise<HandleTransactionReturn>}
-   * @memberof TransactionHandler
    */
-  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null, sendBlockhash = true, signatures = null, retry = true }) {
-    let result = null
+  async handleTransaction({
+    instructions,
+    errorMapping = null,
+    recentBlockhash = null,
+    logger = console,
+    skipPreflight = false,
+    feePayerOverride = null,
+    sendBlockhash = true,
+    signatures = null,
+    retry = true
+  }: {
+    instructions: TransactionInstruction[]
+    errorMapping?: { fromErrorCode: (errorCode: number) => string } | null
+    recentBlockhash?: string | null
+    logger?: any
+    skipPreflight?: boolean
+    feePayerOverride?: string | null
+    sendBlockhash?: boolean
+    signatures?: Array<{ publicKey: string; signature: Buffer }> | null
+    retry?: boolean
+  }) {
+    let result: {
+      res: any
+      errorCode: string | number | null
+      error: string | null
+    } | null = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride, sendBlockhash, signatures, retry)
+      result = await this._relayTransaction(
+        instructions,
+        recentBlockhash,
+        skipPreflight,
+        feePayerOverride,
+        sendBlockhash,
+        signatures,
+        retry
+      )
     } else {
-      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight, feePayerOverride, signatures, retry)
+      result = await this._locallyConfirmTransaction(
+        instructions,
+        recentBlockhash,
+        logger,
+        skipPreflight,
+        feePayerOverride,
+        signatures,
+        retry
+      )
     }
     if (result.error && result.errorCode !== null && errorMapping) {
-      result.errorCode = errorMapping.fromErrorCode(result.errorCode)
+      result.errorCode = errorMapping.fromErrorCode(result.errorCode as number)
     }
     return result
   }
 
-  async _relayTransaction (
-    instructions,
-    recentBlockhash,
-    skipPreflight,
-    feePayerOverride = null,
-    sendBlockhash,
-    signatures,
-    retry
+  async _relayTransaction(
+    instructions: TransactionInstruction[],
+    recentBlockhash: string | null,
+    skipPreflight: boolean,
+    feePayerOverride: string | null = null,
+    sendBlockhash: boolean,
+    signatures: Array<{ publicKey: string; signature: Buffer }> | null,
+    retry: boolean
   ) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
 
@@ -96,25 +126,35 @@ class TransactionHandler {
       skipPreflight:
         skipPreflight === null ? this.skipPreflight : skipPreflight,
       feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null,
-      retry
+      retry,
+      recentBlockhash: undefined as string | undefined
     }
 
     if (sendBlockhash || Array.isArray(signatures)) {
-      transactionData.recentBlockhash = (recentBlockhash || (await this.connection.getLatestBlockhash('confirmed')).blockhash)
+      transactionData.recentBlockhash =
+        recentBlockhash ??
+        (await this.connection.getLatestBlockhash('confirmed')).blockhash
     }
 
     try {
       const response = await this.identityService.solanaRelay(transactionData)
       return { res: response, error: null, errorCode: null }
-    } catch (e) {
-      const error =
-        (e.response && e.response.data && e.response.data.error) || e.message
+    } catch (e: any) {
+      const error = e.response?.data?.error || e.message
       const errorCode = this._parseSolanaErrorCode(error)
       return { res: null, error, errorCode }
     }
   }
 
-  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null, signatures = null, retry = true) {
+  async _locallyConfirmTransaction(
+    instructions: TransactionInstruction[],
+    recentBlockhash: string | null,
+    logger: any,
+    skipPreflight: boolean,
+    feePayerOverride: string | null = null,
+    signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
+    retry = true
+  ) {
     const feePayerKeypairOverride = (() => {
       if (feePayerOverride && this.feePayerKeypairs) {
         const stringFeePayer = feePayerOverride.toString()
@@ -125,9 +165,12 @@ class TransactionHandler {
       return null
     })()
 
-    const feePayerAccount = feePayerKeypairOverride || (this.feePayerKeypairs && this.feePayerKeypairs[0])
+    const feePayerAccount =
+      feePayerKeypairOverride ?? this.feePayerKeypairs?.[0]
     if (!feePayerAccount) {
-      logger.error('transactionHandler: Local feepayer keys missing for direct confirmation!')
+      logger.error(
+        'transactionHandler: Local feepayer keys missing for direct confirmation!'
+      )
       return {
         res: null,
         error: 'Missing keys',
@@ -138,7 +181,7 @@ class TransactionHandler {
     // Get blockhash
 
     recentBlockhash =
-      recentBlockhash ||
+      recentBlockhash ??
       (await this.connection.getLatestBlockhash('confirmed')).blockhash
 
     // Construct the txn
@@ -159,10 +202,9 @@ class TransactionHandler {
     // Send the txn
 
     const sendRawTransaction = async () => {
-      return this.connection.sendRawTransaction(rawTransaction, {
+      return await this.connection.sendRawTransaction(rawTransaction, {
         skipPreflight:
           skipPreflight === null ? this.skipPreflight : skipPreflight,
-        commitment: 'processed',
         preflightCommitment: 'processed',
         maxRetries: retry ? 0 : undefined
       })
@@ -174,7 +216,7 @@ class TransactionHandler {
     } catch (e) {
       // Rarely, this intiial send will fail
       logger.warn(`transactionHandler: Initial send failed: ${e}`)
-      const { message: error } = e
+      const { message: error } = e as any
       const errorCode = this._parseSolanaErrorCode(error)
       return {
         res: null,
@@ -196,7 +238,9 @@ class TransactionHandler {
           try {
             sendRawTransaction()
           } catch (e) {
-            logger.warn(`transactionHandler: error in send loop: ${e} for txId ${txid}`)
+            logger.warn(
+              `transactionHandler: error in send loop: ${e} for txId ${txid}`
+            )
           }
           sendCount++
           await delay(this.sendingFrequencyMs)
@@ -209,16 +253,22 @@ class TransactionHandler {
     try {
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
-      logger.info(`transactionHandler: finished for txid ${txid} with ${sendCount} retries`)
+      logger.info(
+        `transactionHandler: finished for txid ${txid} with ${sendCount} retries`
+      )
       return {
         res: txid,
         error: null,
         errorCode: null
       }
     } catch (e) {
-      logger.warn(`transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(e)}, ${txid}`)
+      logger.warn(
+        `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
+          e
+        )}, ${txid}`
+      )
       done = true
-      const { message: error } = e
+      const { message: error } = e as any
       const errorCode = this._parseSolanaErrorCode(error)
       return {
         res: null,
@@ -228,7 +278,7 @@ class TransactionHandler {
     }
   }
 
-  async _awaitTransactionSignatureConfirmation (txid, logger) {
+  async _awaitTransactionSignatureConfirmation(txid: string, logger: any) {
     let done = false
 
     const result = await new Promise((resolve, reject) => {
@@ -253,7 +303,9 @@ class TransactionHandler {
               done = true
               if (result.err) {
                 const err = JSON.stringify(result.err)
-                logger.warn(`transactionHandler: Error in onSignature ${txid}, ${err}`)
+                logger.warn(
+                  `transactionHandler: Error in onSignature ${txid}, ${err}`
+                )
                 reject(new Error(err))
               } else {
                 resolve(txid)
@@ -291,16 +343,14 @@ class TransactionHandler {
               // Early return if response without confirmation
               if (
                 !(
-                  result.confirmations ||
+                  (result.confirmations !== null &&
+                    result.confirmations !== 0) ||
                   result.confirmationStatus === 'confirmed' ||
                   result.confirmationStatus === 'finalized'
                 )
               ) {
                 return
               }
-
-              // Otherwise, we made it
-              done = true
               resolve(txid)
             } catch (e) {
               if (!done) {
@@ -324,22 +374,21 @@ class TransactionHandler {
    * "... custom program error: 0x1", where the return in this case would be the number 1.
    * Returns null for unparsable strings.
    */
-  _parseSolanaErrorCode (errorMessage) {
+  _parseSolanaErrorCode(errorMessage: string) {
     if (!errorMessage) return null
     // Match on custom solana program errors
     const matcher = /(?:custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
-    if (res && res.length === 2) return parseInt(res[1], 16) || null
+    if (res && res.length === 2) return parseInt(res[1] as string, 16) || null
     // Match on custom anchor errors
     const matcher2 = /(?:"Custom":)(\d+)/
     const res2 = errorMessage.match(matcher2)
-    if (res2 && res2.length === 2) return parseInt(res2[1], 10) || null
+    if (res2 && res2.length === 2)
+      return parseInt(res2[1] as string, 10) || null
     return null
   }
 }
 
-async function delay (ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+async function delay(ms: number) {
+  return await new Promise((resolve) => setTimeout(resolve, ms))
 }
-
-module.exports = { TransactionHandler }
