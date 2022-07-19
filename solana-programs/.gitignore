@@ -1,6 +1,5 @@
 *target
 package-lock.json
-Cargo.lock
 .vscode
 .DS_Store
 .python-version

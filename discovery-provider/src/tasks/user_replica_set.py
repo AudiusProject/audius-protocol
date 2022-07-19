@@ -34,7 +34,6 @@ def user_replica_set_state_update(
     block_timestamp,
     block_hash,
     _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
-    _blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of User model state changes found in transaction and set of user_id values"""
 
