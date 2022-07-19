@@ -112,12 +112,13 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
-      - diff-if-necessary:
-          service: libs
       - setup_remote_docker
       - add_ssh_keys:
           fingerprints:
             - "ee:b0:fd:fb:ba:c8:37:7a:f9:67:15:92:9f:02:97:3e"
+      - run:
+          name: npm Auth
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
       - run:
           name: Bump and Publish Libs
           command: |
@@ -835,6 +836,7 @@ workflows:
             branches:
               only: /(^master$)/
       - publish-libs:
+          context: Audius Client
           name: publish-libs
           requires:
             - hold-publish-libs
