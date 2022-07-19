@@ -50,12 +50,7 @@ describe('test nodesync', async function () {
   userId = 1
 
   const setupDepsAndApp = async function () {
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      userId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     server = appInfo.server
     app = appInfo.app
     mockServiceRegistry = appInfo.mockServiceRegistry
@@ -698,6 +693,38 @@ describe('test nodesync', async function () {
         )
       })
     })
+
+    describe('Confirm export throws ann error with inconsitent data', async function () {
+      beforeEach(setupDepsAndApp)
+
+      beforeEach(createUserAndTrack)
+
+      it.only('Inconsistent clock values', async function () {
+        // confirm maxExportClockValueRange > cnodeUser.clock
+        const cnodeUserClock = (
+          await models.CNodeUser.findOne({
+            where: { cnodeUserUUID },
+            raw: true
+          })
+        ).clock
+        assert.ok(cnodeUserClock <= maxExportClockValueRange)
+
+        const [{ statusCode }, _] = await Promise.all([
+          // GET /export route
+          request(app).get(`/export?wallet_public_key=${pubKey.toLowerCase()}`),
+          // Update cnodeUsers to hold a different clock value for the seed user
+          models.ClockRecord.destroy({
+            where: { cnodeUserUUID },
+            raw: true
+          })
+        ])
+
+        /**
+         * Verify
+         */
+        assert.strictEqual(statusCode, 400)
+      })
+    })
   })
 
   describe('Test secondarySyncFromPrimary function', async function () {
@@ -927,19 +954,11 @@ describe('test nodesync', async function () {
       maxExportClockValueRange = originalMaxExportClockValueRange
       process.env.maxExportClockValueRange = maxExportClockValueRange
 
-      const appInfo = await getApp(
-        libsMock,
-        BlacklistManager,
-        null,
-        userId
-      )
+      const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
       server = appInfo.server
       app = appInfo.app
 
-      serviceRegistryMock = getServiceRegistryMock(
-        libsMock,
-        BlacklistManager
-      )
+      serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
     })
 
     it('Syncs correctly from clean user state with mocked export object', async function () {
@@ -959,7 +978,11 @@ describe('test nodesync', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      await secondarySyncFromPrimary(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+      await secondarySyncFromPrimary(
+        serviceRegistryMock,
+        userWallets,
+        TEST_ENDPOINT
+      )
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser
@@ -1000,7 +1023,11 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      await secondarySyncFromPrimary(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+      await secondarySyncFromPrimary(
+        serviceRegistryMock,
+        userWallets,
+        TEST_ENDPOINT
+      )
 
       await verifyLocalCNodeUserStateForUser(exportedCnodeUser)
 
@@ -1084,8 +1111,15 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   const unpackExportDataFromFile = (exportDataFilePath) => {
     const exportObj = JSON.parse(fs.readFileSync(exportDataFilePath))
     const cnodeUserInfo = Object.values(exportObj.data.cnodeUsers)[0]
-    const cnodeUser = _.omit(cnodeUserInfo, ['audiusUsers', 'tracks', 'files', 'clockRecords', 'clockInfo'])
-    const { audiusUsers, tracks, files, clockRecords, clockInfo } = cnodeUserInfo
+    const cnodeUser = _.omit(cnodeUserInfo, [
+      'audiusUsers',
+      'tracks',
+      'files',
+      'clockRecords',
+      'clockInfo'
+    ])
+    const { audiusUsers, tracks, files, clockRecords, clockInfo } =
+      cnodeUserInfo
 
     return {
       exportObj,
@@ -1119,16 +1153,16 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
    * Sets `/ipfs` route responses for DUMMY_CID from all nodes to DUMMY_CID_DATA
    */
   const setupIPFSRouteMocks = () => {
-    NODES_LIST.forEach(node => {
+    NODES_LIST.forEach((node) => {
       nock(node)
-      .persist()
-      .get((uri) => uri.includes('/ipfs'))
-      .reply(200, (uri, requestbody) => {
-        const CID = uri.split('/ipfs/')[1].slice(0,46)
-        const CIDFilePath = computeFilePathForCID(CID)
-        const fileBuffer = fs.readFileSync(CIDFilePath)
-        return fileBuffer
-      })
+        .persist()
+        .get((uri) => uri.includes('/ipfs'))
+        .reply(200, (uri, requestbody) => {
+          const CID = uri.split('/ipfs/')[1].slice(0, 46)
+          const CIDFilePath = computeFilePathForCID(CID)
+          const fileBuffer = fs.readFileSync(CIDFilePath)
+          return fileBuffer
+        })
     })
   }
 
@@ -1158,28 +1192,36 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
 
     const cnodeUserUUID = cnodeUser.cnodeUserUUID
 
-    const audiusUsers = (await models.AudiusUser.findAll({
-      where: { cnodeUserUUID },
-      raw: true
-    })).map(stringifiedDateFields)
+    const audiusUsers = (
+      await models.AudiusUser.findAll({
+        where: { cnodeUserUUID },
+        raw: true
+      })
+    ).map(stringifiedDateFields)
     response.audiusUsers = audiusUsers
 
-    const tracks = (await models.Track.findAll({
-      where: { cnodeUserUUID },
-      raw: true
-    })).map(stringifiedDateFields)
+    const tracks = (
+      await models.Track.findAll({
+        where: { cnodeUserUUID },
+        raw: true
+      })
+    ).map(stringifiedDateFields)
     response.tracks = tracks
 
-    const files = (await models.File.findAll({
-      where: { cnodeUserUUID },
-      raw: true
-    })).map(stringifiedDateFields)
+    const files = (
+      await models.File.findAll({
+        where: { cnodeUserUUID },
+        raw: true
+      })
+    ).map(stringifiedDateFields)
     response.files = files
 
-    const clockRecords = (await models.ClockRecord.findAll({
-      where: { cnodeUserUUID },
-      raw: true
-    })).map(stringifiedDateFields)
+    const clockRecords = (
+      await models.ClockRecord.findAll({
+        where: { cnodeUserUUID },
+        raw: true
+      })
+    ).map(stringifiedDateFields)
     response.clockRecords = clockRecords
 
     return response
@@ -1190,12 +1232,14 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   const assertTableEquality = (tableA, tableB, comparisonOmittedFields) => {
     assert.deepStrictEqual(
       _.orderBy(
-        tableA.map(entry => _.omit(entry, comparisonOmittedFields)),
-        ['clock'], ['asc']
+        tableA.map((entry) => _.omit(entry, comparisonOmittedFields)),
+        ['clock'],
+        ['asc']
       ),
       _.orderBy(
-        tableB.map(entry => _.omit(entry, comparisonOmittedFields)),
-        ['clock'], ['asc']
+        tableB.map((entry) => _.omit(entry, comparisonOmittedFields)),
+        ['clock'],
+        ['asc']
       )
     )
   }
@@ -1222,13 +1266,21 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       _.omit(exportedCnodeUser, comparisonOmittedFields)
     )
 
-    assertTableEquality(localAudiusUsers, exportedAudiusUsers, comparisonOmittedFields)
+    assertTableEquality(
+      localAudiusUsers,
+      exportedAudiusUsers,
+      comparisonOmittedFields
+    )
 
     assertTableEquality(localTracks, exportedTracks, comparisonOmittedFields)
 
     assertTableEquality(localFiles, exportedFiles, comparisonOmittedFields)
 
-    assertTableEquality(localClockRecords, exportedClockRecords, comparisonOmittedFields)
+    assertTableEquality(
+      localClockRecords,
+      exportedClockRecords,
+      comparisonOmittedFields
+    )
   }
 
   /**
@@ -1308,21 +1360,13 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     await fs.emptyDir(path.resolve(absoluteStoragePath))
 
     // Start server
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      SP_ID_1
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, SP_ID_1)
     server = appInfo.server
     app = appInfo.app
 
     // Define mocks
 
-    serviceRegistryMock = getServiceRegistryMock(
-      libsMock,
-      BlacklistManager
-    )
+    serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
 
     primarySyncFromSecondaryStub = proxyquire(
       '../src/services/sync/primarySyncFromSecondary',
@@ -1351,7 +1395,9 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     setupIPFSRouteMocks()
 
     // Confirm local user state is empty before sync
-    let { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(USER_1_WALLET)
+    let { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
 
     await primarySyncFromSecondaryStub({
@@ -1363,7 +1409,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Verify DB state after sync
      */
-     const exportedUserData = {
+    const exportedUserData = {
       exportedCnodeUser,
       exportedAudiusUsers,
       exportedTracks,
@@ -1387,7 +1433,9 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     setupIPFSRouteMocks()
 
     // Confirm local user state is empty initially
-    let { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(USER_1_WALLET)
+    let { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
 
     // Add some local user state
@@ -1415,27 +1463,22 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       }
     )
 
-    assertTableEquality(
-      localInitialAudiusUsers,
-      exportedAudiusUsers,
-      [...comparisonOmittedFields, 'metadataFileUUID']
-    )
+    assertTableEquality(localInitialAudiusUsers, exportedAudiusUsers, [
+      ...comparisonOmittedFields,
+      'metadataFileUUID'
+    ])
 
-    assertTableEquality(
-      localInitialTracks,
-      [],
-      comparisonOmittedFields
-    )
+    assertTableEquality(localInitialTracks, [], comparisonOmittedFields)
 
     assertTableEquality(
       localInitialFiles,
-      _.orderBy(exportedFiles, ['clock', 'asc']).slice(0,1),
+      _.orderBy(exportedFiles, ['clock', 'asc']).slice(0, 1),
       [...comparisonOmittedFields, 'fileUUID']
     )
 
     assertTableEquality(
       localInitialClockRecords,
-      _.orderBy(exportedClockRecords, ['clock', 'asc']).slice(0,2),
+      _.orderBy(exportedClockRecords, ['clock', 'asc']).slice(0, 2),
       comparisonOmittedFields
     )
 
@@ -1468,25 +1511,39 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
 
     assertTableEquality(
       localFinalAudiusUsers,
-      _.concat(localInitialAudiusUsers, exportedAudiusUsers.map(audiusUser => ({ ...audiusUser, clock: audiusUser.clock + 2 }))),
+      _.concat(
+        localInitialAudiusUsers,
+        exportedAudiusUsers.map((audiusUser) => ({
+          ...audiusUser,
+          clock: audiusUser.clock + 2
+        }))
+      ),
       comparisonOmittedFields
     )
 
-    assertTableEquality(
-      localFinalTracks,
-      exportedTracks,
-      [...comparisonOmittedFields, 'clock']
-    )
+    assertTableEquality(localFinalTracks, exportedTracks, [
+      ...comparisonOmittedFields,
+      'clock'
+    ])
 
     assertTableEquality(
       localFinalFiles,
-      _.concat(localInitialFiles, exportedFiles.map(file => ({ ...file, clock: file.clock + 2 }))),
+      _.concat(
+        localInitialFiles,
+        exportedFiles.map((file) => ({ ...file, clock: file.clock + 2 }))
+      ),
       comparisonOmittedFields
     )
 
     assertTableEquality(
       localFinalClockRecords,
-      _.concat(localInitialClockRecords, exportedClockRecords.map(clockRecord => ({ ...clockRecord, clock: clockRecord.clock + 2 }))),
+      _.concat(
+        localInitialClockRecords,
+        exportedClockRecords.map((clockRecord) => ({
+          ...clockRecord,
+          clock: clockRecord.clock + 2
+        }))
+      ),
       comparisonOmittedFields
     )
   })
@@ -1507,18 +1564,31 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm local user state is empty before sync
      */
-    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(USER_1_WALLET)
+    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
     assert.deepStrictEqual(localCNodeUserInitial, null)
 
     /**
      * Write first few records to local DB before syncing
      */
-    const audiusUsersSubset = _.orderBy(exportedAudiusUsers, ['clock'], ['asc']).slice(0,1)
-    const filesSubset = _.orderBy(exportedFiles, ['clock'], ['asc']).slice(0,1)
-    const clockRecordsSubSet = _.orderBy(exportedClockRecords, ['clock'], ['asc']).slice(0,2)
+    const audiusUsersSubset = _.orderBy(
+      exportedAudiusUsers,
+      ['clock'],
+      ['asc']
+    ).slice(0, 1)
+    const filesSubset = _.orderBy(exportedFiles, ['clock'], ['asc']).slice(0, 1)
+    const clockRecordsSubSet = _.orderBy(
+      exportedClockRecords,
+      ['clock'],
+      ['asc']
+    ).slice(0, 2)
 
     const transaction = await models.sequelize.transaction()
-    await models.CNodeUser.create({ ...exportedCnodeUser, clock: 2 }, { transaction })
+    await models.CNodeUser.create(
+      { ...exportedCnodeUser, clock: 2 },
+      { transaction }
+    )
     await models.ClockRecord.bulkCreate(clockRecordsSubSet, { transaction })
     await models.File.bulkCreate(filesSubset, { transaction })
     await models.AudiusUser.bulkCreate(audiusUsersSubset, { transaction })
@@ -1527,7 +1597,9 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm user state has updated
      */
-    let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(USER_1_WALLET)
+    let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
     assert.deepStrictEqual(localCNodeUserAfterWrite.clock, 2)
 
     /**
@@ -1569,14 +1641,20 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm local user state is empty before sync
      */
-    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(USER_1_WALLET)
+    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
     assert.deepStrictEqual(localCNodeUserInitial, null)
 
     /**
      * Write all secondary state to primary
      */
-    const exportedNonTrackFiles = exportedFiles.filter(file => models.File.NonTrackTypes.includes(file.type))
-    const exportedTrackFiles = exportedFiles.filter(file => models.File.TrackTypes.includes(file.type))
+    const exportedNonTrackFiles = exportedFiles.filter((file) =>
+      models.File.NonTrackTypes.includes(file.type)
+    )
+    const exportedTrackFiles = exportedFiles.filter((file) =>
+      models.File.TrackTypes.includes(file.type)
+    )
     const transaction = await models.sequelize.transaction()
     await models.CNodeUser.create({ ...exportedCnodeUser }, { transaction })
     await models.ClockRecord.bulkCreate(exportedClockRecords, { transaction })
@@ -1589,8 +1667,13 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm user state has updated
      */
-     let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(USER_1_WALLET)
-     assert.deepStrictEqual(localCNodeUserAfterWrite.clock, exportedCnodeUser.clock)
+    let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
+    assert.deepStrictEqual(
+      localCNodeUserAfterWrite.clock,
+      exportedCnodeUser.clock
+    )
 
     /**
      * Sync primary from secondary
@@ -1604,7 +1687,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Verify DB state after sync
      */
-     const exportedUserData = {
+    const exportedUserData = {
       exportedCnodeUser,
       exportedAudiusUsers,
       exportedTracks,
@@ -1630,16 +1713,25 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm local user state is empty initially
      */
-    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(USER_1_WALLET)
+    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
     assert.deepStrictEqual(localCNodeUserInitial, null)
 
     /**
      * Write all secondary state to primary
      */
-    const exportedNonTrackFiles = exportedFiles.filter(file => models.File.NonTrackTypes.includes(file.type))
-    const exportedTrackFiles = exportedFiles.filter(file => models.File.TrackTypes.includes(file.type))
+    const exportedNonTrackFiles = exportedFiles.filter((file) =>
+      models.File.NonTrackTypes.includes(file.type)
+    )
+    const exportedTrackFiles = exportedFiles.filter((file) =>
+      models.File.TrackTypes.includes(file.type)
+    )
     const transaction = await models.sequelize.transaction()
-    const cnodeUser = await models.CNodeUser.create(exportedCnodeUser, { returning: true, transaction })
+    const cnodeUser = await models.CNodeUser.create(exportedCnodeUser, {
+      returning: true,
+      transaction
+    })
     await models.ClockRecord.bulkCreate(exportedClockRecords, { transaction })
     await models.File.bulkCreate(exportedNonTrackFiles, { transaction })
     await models.AudiusUser.bulkCreate(exportedAudiusUsers, { transaction })
@@ -1650,8 +1742,13 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm user state has updated
      */
-     let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(USER_1_WALLET)
-     assert.deepStrictEqual(localCNodeUserAfterWrite.clock, exportedCnodeUser.clock)
+    let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
+    assert.deepStrictEqual(
+      localCNodeUserAfterWrite.clock,
+      exportedCnodeUser.clock
+    )
 
     // Add some more local user state
     await updateUser(USER_1_ID, cnodeUser.cnodeUserUUID)
@@ -1660,8 +1757,12 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm user state has updated
      */
-    let { cnodeUser: localCNodeUserAfterCreateUser } = await fetchDBStateForWallet(USER_1_WALLET)
-    assert.deepStrictEqual(localCNodeUserAfterCreateUser.clock, exportedCnodeUser.clock + additionalClockRecords)
+    let { cnodeUser: localCNodeUserAfterCreateUser } =
+      await fetchDBStateForWallet(USER_1_WALLET)
+    assert.deepStrictEqual(
+      localCNodeUserAfterCreateUser.clock,
+      exportedCnodeUser.clock + additionalClockRecords
+    )
 
     const {
       cnodeUser: localInitialCNodeUser,
@@ -1684,7 +1785,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
      * Verify DB state after sync is identical to DB state before sync !!!
      */
 
-     const {
+    const {
       cnodeUser: localFinalCNodeUser,
       audiusUsers: localFinalAudiusUsers,
       tracks: localFinalTracks,
