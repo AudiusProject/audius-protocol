@@ -18,10 +18,12 @@ import {
     getPartiallySyncedUsersCount,
     getUnsyncedUsersCount,
     getUsersWithNullPrimaryClock,
-    getUsersWithAllFoundationNodeReplicaSetCount,
+    getUsersWithEntireReplicaSetInSpidSetCount,
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
+
+    const { foundationNodes } = getEnv()
 
     console.log(`[${run_id}] generating metrics`)
 
@@ -39,7 +41,7 @@ export const generateMetrics = async (run_id: number) => {
 
     const usersWithNullPrimaryClock = await getUsersWithNullPrimaryClock(run_id)
 
-    const usersWithAllFoundationNodeReplicaSetCount = await getUsersWithAllFoundationNodeReplicaSetCount(run_id)
+    const usersWithAllFoundationNodeReplicaSetCount = await getUsersWithEntireReplicaSetInSpidSetCount(run_id, foundationNodes)
 
     allUserCount.forEach(({ endpoint, count }) => {
         allUserCountGauge.set({ endpoint, run_id }, count)

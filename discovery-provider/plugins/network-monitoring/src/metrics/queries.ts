@@ -214,10 +214,9 @@ export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<numb
     return usersCount
 }
 
-export const getUsersWithAllFoundationNodeReplicaSetCount = async (run_id: number): Promise<number> => {
+export const getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidSet: number[]): Promise<number> => {
 
-    const foundationSpIDs = [1, 2, 3, 4]
-    const foundationSpIDsStr = `{${foundationSpIDs.join(",")}}`
+    const spidSetStr = `{${spidSet.join(",")}}`
 
     const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
@@ -225,14 +224,14 @@ export const getUsersWithAllFoundationNodeReplicaSetCount = async (run_id: numbe
     WHERE
         run_id = :run_id
     AND 
-        primaryspid = ANY( :foundationSpIDsStr )
+        primaryspid = ANY( :spidSetStr )
     AND
-        secondary1spid = ANY( :foundationSpIDsStr )
+        secondary1spid = ANY( :spidSetStr )
     AND 
-        secondary2spid = ANY( :foundationSpIDsStr );
+        secondary2spid = ANY( :spidSetStr );
     `, {
         type: QueryTypes.SELECT,
-        replacements: { run_id, foundationSpIDsStr },
+        replacements: { run_id, spidSetStr },
     })
 
     const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
