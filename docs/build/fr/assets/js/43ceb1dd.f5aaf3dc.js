@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs_audius_org=self.webpackChunkdocs_audius_org||[]).push([[2510],{5492:e=>{e.exports=JSON.parse('{"title":"Protocol","slug":"/category/protocol","permalink":"/fr/category/protocol","navigation":{"previous":{"title":"Bienvenue","permalink":"/fr/welcome"},"next":{"title":"Aper\xe7u","permalink":"/fr/protocol/overview"}}}')}}]);
