@@ -28,7 +28,6 @@ export type OwnProps = {
   includeRepost: boolean
   includeShare: boolean
   includeVisitPage: boolean
-  isArtist: boolean
   isFavorited: boolean
   isOwner: boolean
   isPublic: boolean

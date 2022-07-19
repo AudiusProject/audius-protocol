@@ -1,8 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { User } from 'audius-client/src/common/models/User'
 import { View } from 'react-native'
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
@@ -70,9 +69,6 @@ export const SenderDetails = ({ senders, receiver }: SenderDetailsProps) => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
   const navigation = useNavigation()
-  const [pressed, setPressed] = useState(false)
-  const handlePressIn = useCallback(() => setPressed(true), [])
-  const handlePressOut = useCallback(() => setPressed(false), [])
 
   const handlePressTippers = useCallback(() => {
     navigation.push({

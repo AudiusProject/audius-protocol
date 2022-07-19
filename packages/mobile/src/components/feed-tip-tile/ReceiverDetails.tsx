@@ -1,12 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { User } from 'audius-client/src/common/models/User'
 import { profilePage } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
-import {
-  TouchableOpacity,
-  TouchableWithoutFeedback
-} from 'react-native-gesture-handler'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
