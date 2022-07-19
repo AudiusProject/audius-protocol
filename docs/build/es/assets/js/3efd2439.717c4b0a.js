@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs_audius_org=self.webpackChunkdocs_audius_org||[]).push([[9706],{953:e=>{e.exports=JSON.parse('{"title":"Developers","slug":"/category/developers","permalink":"/es/category/developers","navigation":{"previous":{"title":"Gobernanza","permalink":"/es/token/governance"},"next":{"title":"REST API","permalink":"/es/developers/rest-api"}}}')}}]);

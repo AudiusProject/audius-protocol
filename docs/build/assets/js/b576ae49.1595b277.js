@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs_audius_org=self.webpackChunkdocs_audius_org||[]).push([[860],{1375:e=>{e.exports=JSON.parse('{"title":"Token","slug":"/category/token","permalink":"/category/token","navigation":{"previous":{"title":"Architecture","permalink":"/protocol/content-node/architecture"},"next":{"title":"$AUDIO","permalink":"/token/audio"}}}')}}]);
