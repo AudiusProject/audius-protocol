@@ -193,7 +193,7 @@ export const getEnv = () => {
         password: process.env['FDB_PASSWORD'] || '',
     }
 
-    const foundationNodesEnv = process.env['FOUNDATION_NODES'] || ''
+    const foundationNodesEnv = process.env['FOUNDATION_NODES_SPIDS'] || ''
     const foundationNodes: number[] = foundationNodesEnv.split(',').map(elem => parseInt(elem))
 
     const pushGatewayUrl = process.env['PUSH_GATEWAY_URL'] || 'http://localhost:9091'
