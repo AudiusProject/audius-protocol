@@ -42,6 +42,10 @@ commands:
         description: The command to run after exiting the gcp ssh session
         type: string
         default: ""
+      fast:
+        description: If A setup will be run with the --fast flag
+        type: boolean
+        default: true
     steps:
       - run:
           name: << parameters.command-name >>
@@ -78,7 +82,8 @@ commands:
 
             # run A setup on remote dev box to clone protocol and install the prerequisites for A
             # A setup ... || true is necessary because exit code returns 141 by default
-            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME --fast --spot-instance || true
+            [ <<parameters.fast>> ] && A_SETUP_ARGS="--fast" || A_SETUP_ARGS=""
+            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME $A_SETUP_ARGS --spot-instance || true
 
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
 
@@ -113,6 +118,7 @@ jobs:
     steps:
       - run-on-gcp:
           command-name: Bake GCP Dev Image
+          fast: false
           command: |
             # fail on error
             set -e;
@@ -422,8 +428,8 @@ jobs:
         command: ['--port=8556', '-a', '100', '-l', '8000000']
     steps:
       - checkout
-      # - diff-if-necessary:
-      #     service: discovery-provider
+      - diff-if-necessary:
+          service: discovery-provider
       - restore_cache:
           keys:
             - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
