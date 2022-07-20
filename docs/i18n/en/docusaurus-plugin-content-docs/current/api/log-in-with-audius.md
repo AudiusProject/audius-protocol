@@ -81,7 +81,7 @@ audiusSdk.oauth.init(
     /**
      `res` will contain the following user information:
       {
-        userId: number; // unique Audius user identifier
+        userId: string; // unique Audius user identifier
         email: string;
         name: string; // user's display name
         handle: string;
