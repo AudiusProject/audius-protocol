@@ -35,8 +35,8 @@ const METRIC_RECORD_TYPE = Object.freeze({
 
 const metricNames = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
-  ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
-    'issue_sync_request_monitoring_duration_seconds',
+  ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM:
+    'issue_sync_request_duration_seconds',
   FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
   WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds'
 }
