@@ -77,6 +77,7 @@ const initializeApp = (port, serviceRegistry) => {
       // Disable default gauge counter to indicate if this middleware is running
       includeUp: false,
       // The buckets in seconds to measure requests
+      buckets: [0.2, 0.5, ...exponentialBucketsRange(1, 60, 4)],
       // Do not register the default /metrics route, since we have the /prometheus_metrics
       autoregister: false,
       // Normalizes the path to be tracked in this middleware. For routes with route params,
