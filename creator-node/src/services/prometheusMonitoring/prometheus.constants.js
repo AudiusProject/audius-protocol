@@ -9,7 +9,7 @@ const {
 } = require('../stateMachineManager/stateMachineConstants')
 
 /**
- * For explanation of Metrics, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
+ * For explanation of METRICS, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
  */
 
 // We add a namespace prefix to differentiate internal metrics from those exported by different exporters from the same host
