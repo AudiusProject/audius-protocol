@@ -1,16 +1,10 @@
 import { Client } from '@elastic/elasticsearch'
 import { ApolloServer, gql } from 'apollo-server'
 import bodybuilder, { Bodybuilder } from 'bodybuilder'
+import DataLoader from 'dataloader'
+import Hashids from 'hashids'
+import { UserRow, TrackRow } from './src/types/db'
 import { PlaylistDoc, TrackDoc, UserDoc } from './src/types/docs'
-
-let url = 'http://localhost:9200'
-const esc = new Client({ node: url })
-
-const indexNames = {
-  users: 'users',
-  tracks: 'tracks',
-  playlists: 'playlists',
-}
 
 const typeDefs = gql`
   type Track {
@@ -19,6 +13,7 @@ const typeDefs = gql`
 
     favorite_count: Int!
     repost_count: Int!
+    stream_urls: [String!]!
 
     favorited_by(limit: Int = 3, offset: Int = 0): [User!]!
     reposted_by(limit: Int = 3, offset: Int = 0): [User!]!
@@ -27,6 +22,7 @@ const typeDefs = gql`
   type User {
     id: String!
     handle: String!
+    name: String!
     bio: String
     location: String
 
@@ -54,7 +50,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    users(handle: String): [User]
+    users(handle: String): [User!]!
   }
 `
 
@@ -62,6 +58,49 @@ type PaginationArgs = {
   limit: number
   offset: number
 }
+
+//
+// DataLoaders
+//
+
+let esUrl = 'http://localhost:9200'
+const esc = new Client({ node: esUrl })
+
+const indexNames = {
+  users: 'users',
+  tracks: 'tracks',
+  playlists: 'playlists',
+}
+
+function newMgetLoader(index: string) {
+  return async function (intIDs: readonly any[]) {
+    const ids = intIDs.map((x) => x.toString())
+    if (!ids.length) return []
+    const found = await esc.mget({
+      index,
+      body: { ids },
+    })
+    const byID = keyHitsByID(found.docs)
+    return ids.map((id) => byID[id])
+  }
+}
+
+function keyHitsByID(hits: any[]) {
+  return hits.reduce((memo, hit) => {
+    memo[hit._id] = hit._source
+    return memo
+  }, {})
+}
+const userLoader = new DataLoader<number, UserDoc>(
+  newMgetLoader(indexNames.users)
+)
+const trackLoader = new DataLoader<number, TrackDoc>(
+  newMgetLoader(indexNames.tracks)
+)
+
+//
+// Resolvers
+//
 
 const resolvers = {
   Track: {
@@ -71,6 +110,10 @@ const resolvers = {
     },
     favorited_by: async (parent: TrackDoc, args: PaginationArgs) => {
       return usersLoadMany(parent.saved_by, args)
+    },
+    stream_urls: async (track: TrackDoc) => {
+      const user = await userLoader.load(track.owner_id)
+      return buildStreamUrls(user, track)
     },
   },
   Playlist: {
@@ -128,19 +171,14 @@ async function fetchTracks(
   const ids = parent.tracks
     .map((t) => t.track_id.toString())
     .slice(args.offset, args.offset + args.limit)
-  if (!ids.length) return []
-  const got = await esc.mget({ index: indexNames.tracks, ids })
-  const tracks = got.docs.map((doc: any) => doc._source)
-  return tracks
+  return trackLoader.loadMany(ids)
 }
 
 async function usersLoadMany(idList: any[], args: PaginationArgs) {
   const ids = idList
     .map((x) => x.toString())
     .slice(args.offset, args.offset + args.limit)
-  if (!ids.length) return []
-  const got = await esc.mget({ index: indexNames.users, ids })
-  return got.docs.map((doc: any) => doc._source)
+  return userLoader.loadMany(ids)
 }
 
 async function bbSearch(index: string, bb: Bodybuilder) {
@@ -151,6 +189,50 @@ async function bbSearch(index: string, bb: Bodybuilder) {
     })
     .then((r) => r.hits.hits.map((h) => h._source))
 }
+
+//
+// hashids
+//
+
+// hasher to decode / encode IDs
+const hasher = new Hashids('azowernasdfoia', 5)
+
+export function encodeId(id: number) {
+  return hasher.encode(id)
+}
+
+export function decodeId(id: string) {
+  return parseInt(id) || hasher.decode(id)
+}
+
+// helper functions for content node images
+export function buildImageUrls(user: UserRow, cid: string, size: string) {
+  // when does this happen? what to do about it?
+  if (!user || !user.creator_node_endpoint || !cid) return []
+
+  if (size.charAt(0) == '_') {
+    size = size.substring(1)
+  }
+  const urls = user.creator_node_endpoint
+    .split(',')
+    .map((u) => `${u}/ipfs/${cid}/${size}.jpg`)
+  return urls
+}
+
+// helper functions for content node streams
+export function buildStreamUrls(user: UserRow, track: TrackRow) {
+  // when does this happen?
+  if (!user || !user.creator_node_endpoint) return []
+
+  const hid = encodeId(track.track_id)
+  return user.creator_node_endpoint
+    .split(',')
+    .map((u) => `${u}/tracks/stream/${hid}`)
+}
+
+//
+// server
+//
 
 const server = new ApolloServer({
   typeDefs,
