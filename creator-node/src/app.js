@@ -71,6 +71,8 @@ const initializeApp = (port, serviceRegistry) => {
       includeMethod: true,
       // Include HTTP status code in duration tracking
       includePath: true,
+      // Disable default gauge counter to indicate if this middleware is running
+      includeUp: false,
       normalizePath: function (req, opts) {
         const path = prometheusMiddleware.normalizePath(req, opts)
         try {
