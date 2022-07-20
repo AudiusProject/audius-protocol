@@ -16,26 +16,20 @@
 /**
  * 
  * @export
- * @interface ProfilePicture
+ * @interface VersionMetadata
  */
-export interface ProfilePicture {
+export interface VersionMetadata {
     /**
      * 
      * @type {string}
-     * @memberof ProfilePicture
+     * @memberof VersionMetadata
      */
-    _150x150?: string;
+    service: string;
     /**
      * 
      * @type {string}
-     * @memberof ProfilePicture
+     * @memberof VersionMetadata
      */
-    _480x480?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ProfilePicture
-     */
-    _1000x1000?: string;
+    version: string;
 }
 
