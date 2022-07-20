@@ -7,7 +7,7 @@ import { DescriptionText } from './DescriptionText'
 
 const messages = {
   disclaimer: 'Are you sure? This tip cannot be reversed.',
-  maintenance: 'We’re performing some necessary one-time maintenence.',
+  maintenance: 'We’re performing some necessary one-time maintenance.',
   fewMinutes: 'This may take a few minutes.',
   holdOn: 'Don’t close this screen or restart the app.',
   somethingWrong: 'Something’s gone wrong. Wait a little while and try again.'
