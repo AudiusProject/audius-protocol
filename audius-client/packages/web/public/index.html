@@ -101,20 +101,6 @@
     </script>
     <!-- end Google Analytics -->
 
-    <!-- start reCAPTCHA -->
-    <script>
-      var onRecaptchaLoad = () => {
-        grecaptcha.render('recaptcha-hidden', {
-        'sitekey' : '%REACT_APP_RECAPTCHA_SITE_KEY%',
-        'size': 'invisible',
-        'expired-callback': () => null,
-        'error-callback': () => null
-      })
-    }
-    </script>
-    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=%REACT_APP_RECAPTCHA_SITE_KEY%"></script>
-    <!-- end reCAPTCHA -->
-
     <!-- start Adroll -->
     <script type="text/javascript">
       const adroll_adv_id = '%REACT_APP_ADROLL_AVD_ID%';
