@@ -73,6 +73,8 @@ const initializeApp = (port, serviceRegistry) => {
       includePath: true,
       // Disable default gauge counter to indicate if this middleware is running
       includeUp: false,
+      // Normalizes the path to be tracked in this middleware. For routes with route params,
+      // this fn maps those routes to generic paths. e.g. /ipfs/QmSomeCid -> /ipfs/#CID
       normalizePath: function (req, opts) {
         const path = prometheusMiddleware.normalizePath(req, opts)
         try {
