@@ -4,6 +4,7 @@ const path = require('path')
 const assert = require('assert')
 const _ = require('lodash')
 const nock = require('nock')
+const chai = require('chai')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 
@@ -24,6 +25,10 @@ const sessionManager = require('../src/sessionManager')
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
+
+chai.use(require('sinon-chai'))
+chai.use(require('chai-as-promised'))
+const { expect } = chai
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
@@ -49,7 +54,9 @@ describe('test nodesync', async function () {
 
   userId = 1
 
+  let sandbox
   const setupDepsAndApp = async function () {
+    sandbox = sinon.createSandbox()
     const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     server = appInfo.server
     app = appInfo.app
@@ -70,6 +77,7 @@ describe('test nodesync', async function () {
    * Wipe DB, server, and redis state
    */
   afterEach(async function () {
+    sandbox.restore()
     await sinon.restore()
     await server.close()
   })
@@ -700,29 +708,52 @@ describe('test nodesync', async function () {
       beforeEach(createUserAndTrack)
 
       it.only('Inconsistent clock values', async function () {
-        // confirm maxExportClockValueRange > cnodeUser.clock
-        const cnodeUserClock = (
-          await models.CNodeUser.findOne({
-            where: { cnodeUserUUID },
-            raw: true
-          })
-        ).clock
-        assert.ok(cnodeUserClock <= maxExportClockValueRange)
-
-        const [{ statusCode }, _] = await Promise.all([
-          // GET /export route
-          request(app).get(`/export?wallet_public_key=${pubKey.toLowerCase()}`),
-          // Update cnodeUsers to hold a different clock value for the seed user
-          models.ClockRecord.destroy({
-            where: { cnodeUserUUID },
-            raw: true
-          })
+        // Mock findOne DB function for cnodeUsers and ClockRecords
+        // Have them return inconsistent values
+        const clockRecordsFindAllStub = sandbox.stub().resolves([
+          {
+            clock: 8
+          }
+        ])
+        const cNodeUserFindAll = sandbox.stub().resolves([
+          {
+            // Random UUID
+            cnodeUserUUID: '48523a08-2a11-4200-8aac-ae74b8a39dd0',
+            clock: 7
+          }
         ])
 
+        const modelsMock = {
+          ...require('../src/models'),
+          ClockRecords: {
+            findAll: clockRecordsFindAllStub
+          },
+          CNodeUser: {
+            findAll: cNodeUserFindAll
+          }
+        }
+        const exportComponentServiceMock = proxyquire(
+          '../src/components/replicaSet/exportComponentService.js',
+          {
+            '../../models': modelsMock
+          }
+        )
+
+        await expect(
+          exportComponentServiceMock({
+            walletPublicKeys: pubKey.toLowerCase(),
+            requestedClockRangeMin: 0,
+            requestedClockRangeMax: maxExportClockValueRange,
+            logger: console
+          })
+        ).to.eventually.be.rejectedWith(
+          'Cannot export - exported data is not consistent. Exported max clock val = 7 and exported max ClockRecord val -Infinity'
+        )
+
         /**
+         *
          * Verify
          */
-        assert.strictEqual(statusCode, 400)
       })
     })
   })
@@ -1395,7 +1426,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     setupIPFSRouteMocks()
 
     // Confirm local user state is empty before sync
-    let { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(
+    const { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(
       USER_1_WALLET
     )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
@@ -1433,7 +1464,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     setupIPFSRouteMocks()
 
     // Confirm local user state is empty initially
-    let { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(
+    const { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(
       USER_1_WALLET
     )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
@@ -1564,7 +1595,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm local user state is empty before sync
      */
-    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
+    const { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
       USER_1_WALLET
     )
     assert.deepStrictEqual(localCNodeUserInitial, null)
@@ -1597,7 +1628,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm user state has updated
      */
-    let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
+    const { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
       USER_1_WALLET
     )
     assert.deepStrictEqual(localCNodeUserAfterWrite.clock, 2)
@@ -1641,7 +1672,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm local user state is empty before sync
      */
-    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
+    const { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
       USER_1_WALLET
     )
     assert.deepStrictEqual(localCNodeUserInitial, null)
@@ -1667,7 +1698,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm user state has updated
      */
-    let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
+    const { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
       USER_1_WALLET
     )
     assert.deepStrictEqual(
@@ -1713,7 +1744,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm local user state is empty initially
      */
-    let { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
+    const { cnodeUser: localCNodeUserInitial } = await fetchDBStateForWallet(
       USER_1_WALLET
     )
     assert.deepStrictEqual(localCNodeUserInitial, null)
@@ -1742,7 +1773,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm user state has updated
      */
-    let { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
+    const { cnodeUser: localCNodeUserAfterWrite } = await fetchDBStateForWallet(
       USER_1_WALLET
     )
     assert.deepStrictEqual(
@@ -1757,7 +1788,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Confirm user state has updated
      */
-    let { cnodeUser: localCNodeUserAfterCreateUser } =
+    const { cnodeUser: localCNodeUserAfterCreateUser } =
       await fetchDBStateForWallet(USER_1_WALLET)
     assert.deepStrictEqual(
       localCNodeUserAfterCreateUser.clock,
