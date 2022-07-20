@@ -22,7 +22,7 @@ const messages = {
   confirmAndTryAgain: 'Confirm & Try Again',
   goBack: 'Go Back',
   somethingWrong: 'Something’s gone wrong. Wait a little while and try again.',
-  maintenance: 'We’re performing some necessary one-time maintenence.',
+  maintenance: 'We’re performing some necessary one-time maintenance.',
   fewMinutes: 'This may take a few minutes.',
   holdOn: 'Don’t close this window or refresh the page.'
 }
