@@ -83,6 +83,7 @@ export const defaultTheme = {
   pageHeaderGradientColor2: '#A22FEB',
   actionSheetText: '#7E1BCC',
   skeleton: '#F7F7F9',
+  skeletonHighlight: '#F2F2F4',
   statTileText: '#C675FF'
 }
 
@@ -133,6 +134,7 @@ export const darkTheme = {
   pageHeaderGradientColor2: '#B05CE6',
   actionSheetText: '#9147CC',
   skeleton: '#393A54',
+  skeletonHighlight: '#3F415B',
   statTileText: '#C675FF'
 }
 
@@ -176,6 +178,7 @@ export const matrixTheme = {
   accentRed: '#D0021B',
   accentOrange: '#EFA947',
   skeleton: '#1B3714',
+  skeletonHighlight: '#1C5610',
   statTileText: '#184F17'
 }
 
@@ -226,6 +229,7 @@ export type ThemeColors = {
   pageHeaderGradientColor2: string
   actionSheetText: string
   skeleton: string
+  skeletonHighlight: string
   statTileText: string
 }
 
