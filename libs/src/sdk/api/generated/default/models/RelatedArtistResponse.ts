@@ -13,29 +13,24 @@
  * Do not edit the class manually.
  */
 
+import {
+    User,
+    UserFromJSON,
+    UserFromJSONTyped,
+    UserToJSON,
+} from './User';
+
 /**
  * 
  * @export
- * @interface ProfilePicture
+ * @interface RelatedArtistResponse
  */
-export interface ProfilePicture {
+export interface RelatedArtistResponse {
     /**
      * 
-     * @type {string}
-     * @memberof ProfilePicture
+     * @type {Array<User>}
+     * @memberof RelatedArtistResponse
      */
-    _150x150?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ProfilePicture
-     */
-    _480x480?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ProfilePicture
-     */
-    _1000x1000?: string;
+    data?: Array<User>;
 }
 
