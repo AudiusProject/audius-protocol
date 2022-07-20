@@ -4,7 +4,6 @@ const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
 const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
-const NodeToSpIdManager = require('./CNodeToSpIdMapManager')
 const { RECONFIG_MODES } = require('./stateMachineConstants')
 const QueueInterfacer = require('./QueueInterfacer')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
@@ -29,9 +28,8 @@ class StateMachineManager {
         audiusLibs.discoveryProvider.discoveryProviderEndpoint,
         prometheusRegistry
       )
-    const stateReconciliationQueue = await stateReconciliationManager.init(
-      prometheusRegistry
-    )
+    const { stateReconciliationQueue, manualSyncQueue } =
+      await stateReconciliationManager.init(prometheusRegistry)
 
     // Upon completion, make jobs record metrics and enqueue other jobs as necessary
     stateMonitoringQueue.on(
@@ -60,7 +58,8 @@ class StateMachineManager {
     return {
       stateMonitoringQueue,
       cNodeEndpointToSpIdMapQueue,
-      stateReconciliationQueue
+      stateReconciliationQueue,
+      manualSyncQueue
     }
   }
 

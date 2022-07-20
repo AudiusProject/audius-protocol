@@ -5,6 +5,7 @@
 version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
+
 commands:
   diff-if-necessary:
     parameters:
@@ -20,108 +21,35 @@ commands:
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
-
-# global parameters
-parameters:
-  full_ci:
-    type: boolean
-    default: false
-
-jobs:
-  bake-gcp-dev-image:
-    docker:
-      - image: audius/circleci-gcloud-bake:latest
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASS
-    steps:
-      # This has to be one large run block because CircleCI doesn't preserve state across run steps
-      - run:
-          name: Bake GCP Dev Image
-          command: |
-            # cleanup code setup before starting actual execution
-            cleanup() {
-              # Delete GCP box
-              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
-
-              # Delete GCP firewall
-              gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
-            }
-            trap cleanup EXIT
-
-            # authenticate into gcloud
-            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            GCLOUD_VM_NAME=audius-bake-nightly-$(date +%s)
-            BAKE_IMAGE_NAME=ci-image-bake-latest
-            echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
-
-            export PROTOCOL_DIR=/home/circleci/project
-            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
-            pwd "$PROTOCOL_DIR"
-            ls -la "$PROTOCOL_DIR"
-            cd "$PROTOCOL_DIR/service-commands/"
-            npm install --unsafe-perm
-
-            # add IP to firewall
-            CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
-            gcloud compute firewall-rules create $GCLOUD_VM_NAME --source-ranges "$CIRCLECI_IP" --action allow --rules all
-
-            # run A setup on remote dev box to clone protocol and install the prerequisites for A
-            # A setup ... || true is necessary because exit code returns 141 by default
-            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME || true
-
-            # Run A up on remote box
-            GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-              # fail on error
-              set -e;
-
-              # on error, run this function
-              exit_ssh() {
-                echo $?
-              }
-              trap exit_ssh EXIT
-
-              # commands to prime the VM for the bake
-              A run init-repos up;
-              A up;
-              A run monitoring up;
-              A down;
-              cd "$PROTOCOL_DIR";
-              git checkout -f;
-              exit;
-            EOF
-
-            # Stop GCP box, can't take an image from a running VM
-            gcloud compute instances stop $GCLOUD_VM_NAME
-
-            # Delete image with the same name (if exists)
-            gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
-
-            # Create the new CI bake image
-            gcloud compute images create "$BAKE_IMAGE_NAME" \
-              --project="$GOOGLE_PROJECT_ID" \
-              --source-disk="$GCLOUD_VM_NAME" \
-              --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
-              --storage-location=us
-
-  test-mad-dog-e2e:
+  run-on-gcp:
     parameters:
-      mad-dog-type:
-        description: 'test, test-nightly'
-        default: 'test'
+      command:
+        description: The command to run on the gcp instance
         type: string
-    docker:
-      - image: audius/circleci-gcloud-bake:latest
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASS
+      instance-name: 
+        description: The name of the gcp instance
+        type: string
+        default: ci-job
+      command-name:
+        description: The name of the step to display
+        default: Spin up gcp instance and run command
+        type: string
+      interactive-command:
+        description: The command to run initially on the gcp instance that requires an interactive terminal
+        type: string
+        default: ""
+      post-gcp-command:
+        description: The command to run after exiting the gcp ssh session
+        type: string
+        default: ""
+      fast:
+        description: If A setup will be run with the --fast flag
+        type: boolean
+        default: true
     steps:
-      # This has to be one large run block because CircleCI doesn't preserve state across run steps
       - run:
-          name: Test mad-dog on GCP
+          name: << parameters.command-name >>
+          # This has to be one large run block because CircleCI doesn't preserve state across run steps
           command: |
             # cleanup code setup before starting actual execution
             cleanup() {
@@ -138,7 +66,7 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
 
-            GCLOUD_VM_NAME=mad-dog-test-$(date +%s)
+            GCLOUD_VM_NAME=<< parameters.instance-name >>-$(date +%s)
             echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
@@ -154,22 +82,148 @@ jobs:
 
             # run A setup on remote dev box to clone protocol and install the prerequisites for A
             # A setup ... || true is necessary because exit code returns 141 by default
-            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME --fast --spot-instance || true
+            [ <<parameters.fast>> ] && A_SETUP_ARGS="--fast" || A_SETUP_ARGS=""
+            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME $A_SETUP_ARGS --spot-instance || true
 
-            # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-              cd /home/ubuntu/audius-protocol;
-              git pull;
-              git checkout $CIRCLE_BRANCH;
-              cd ./service-commands;
-              npm i
-              cd ../mad-dog;
-              A run init-repos up;
-              A up;
-              npm run start << parameters.mad-dog-type >> verbose;
+
+            # Run interactive command on remotebox
+            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -t ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              << parameters.interactive-command >>
               exit;
             EOF
+
+            # Run command on remote box
+            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              << parameters.command >>
+              exit;
+            EOF
+
+            << parameters.post-gcp-command >>
+
+
+# global parameters
+parameters:
+  full_ci:
+    type: boolean
+    default: false
+
+jobs:
+  bake-gcp-dev-image:
+    docker:
+      - image: audius/circleci-gcloud-bake:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - run-on-gcp:
+          command-name: Bake GCP Dev Image
+          fast: false
+          command: |
+            # fail on error
+            set -e;
+
+            # on error, run this function
+            exit_ssh() {
+              exit $?
+            }
+            trap exit_ssh EXIT
+
+            # commands to prime the VM for the bake
+            A run init-repos up;
+            A up;
+            A down;
+            cd audius-protocol/;
+            git checkout -f;
+          post-gcp-command: |
+            # Stop GCP box, can't take an image from a running VM
+            gcloud compute instances stop $GCLOUD_VM_NAME
+
+            # Delete image with the same name (if exists)
+            gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
+
+            # Create the new CI bake image
+            gcloud compute images create "$BAKE_IMAGE_NAME" \
+              --project="$GOOGLE_PROJECT_ID" \
+              --source-disk="$GCLOUD_VM_NAME" \
+              --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
+              --storage-location=us
+
+  publish-libs:
+    docker:
+      - image: circleci/node:14.17.5
+    resource_class: xlarge
+    steps:
+      - checkout
+      - setup_remote_docker
+      - add_ssh_keys:
+          fingerprints:
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+      - run:
+          name: npm Auth
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/.npmrc
+      - run:
+          name: Bump and Publish Libs
+          command: |
+            export PROTOCOL_DIR=/home/circleci/project
+            libs/scripts/release.sh
+
+  test-mad-dog-e2e:
+    parameters:
+      mad-dog-type:
+        description: 'test, test-nightly'
+        default: 'test'
+        type: string
+    docker:
+      - image: audius/circleci-gcloud-bake:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - run-on-gcp:
+          command-name: Test mad-dog on GCP
+          instance-name: mad-dog-test
+          command: |
+            cd /home/ubuntu/audius-protocol;
+            git pull;
+            git checkout $CIRCLE_BRANCH;
+            cd ./service-commands;
+            npm i
+            cd ../mad-dog;
+            A run init-repos up;
+            A up;
+            npm run start << parameters.mad-dog-type >> verbose;
+
+  test-sdk:
+    docker:
+      - image: audius/circleci-gcloud-bake:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - diff-if-necessary:
+          service: discovery-provider
+      - run-on-gcp:
+          command-name: Verify generated sdk types
+          instance-name: test-sdk
+          interactive-command: |
+            sudo apt update
+            sudo apt install -y default-jre
+          command: |
+            cd /home/ubuntu/audius-protocol
+            git pull
+            git checkout $CIRCLE_BRANCH
+            A up -nc 0
+            cd libs
+            npm run gen:dev
+            cd libs/src/sdk/api/generated
+            # Check if there are any changes generated
+            if [ -z "$(git status . --porcelain)" ]; then 
+              printf '%s\n' "No diff found between generated types and checked in types" >&2
+            else
+              printf '%s\n' "Found diff between generated types and checked in types, please 'npm run gen:dev' in libs" >&2
+              exit 1    
+            fi
 
   test-libs:
     docker:
@@ -363,7 +417,7 @@ jobs:
             export redisPort=6379
             export spOwnerWallet='yes'
             export isCIBuild=true
-            npm run test:coverage:ci
+            npm run test:ci
       # - coveralls/upload:
       #     path_to_lcov: ./creator-node/coverage/lcov.info
 
@@ -377,12 +431,12 @@ jobs:
           POSTGRES_DB: audius_discovery
       - image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
         environment:
-          - network.host=0.0.0.0
-          - discovery.type=single-node
-          - cluster.name=docker-cluster
-          - node.name=cluster1-node1
-          - xpack.security.enabled=false
-          - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+          network.host: '0.0.0.0'
+          discovery.type: 'single-node'
+          cluster.name: 'docker-cluster'
+          node.name: 'cluster1-node1'
+          xpack.security.enabled: 'false'
+          ES_JAVA_OPTS: '-Xms512m -Xmx512m'
       - image: ipfs/go-ipfs:release
         # Bring up ganache
       - image: redis:3.0-alpine
@@ -390,6 +444,7 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8556', '-a', '100', '-l', '8000000']
+    resource_class: medium+
     steps:
       - checkout
       - diff-if-necessary:
@@ -663,7 +718,7 @@ jobs:
         type: string
       logspout-tag:
         type: string
-        default: ""
+        default: ''
     steps:
       - checkout
       - setup_remote_docker:
@@ -772,6 +827,11 @@ workflows:
             - GCP2
           mad-dog-type: test
 
+      - test-sdk:
+          context:
+            - GCP2
+
+
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
   # 2. go to your branch of choice
@@ -794,7 +854,7 @@ workflows:
       - docker-build-and-push:
           name: build-logspout
           repo: logspout
-          logspout-tag: "true"
+          logspout-tag: 'true'
           requires:
             - hold-build-logspout
       - hold-bake-gcp-dev-image:
@@ -808,6 +868,19 @@ workflows:
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
+          filters:
+            branches:
+              only: /(^master$)/
+      - hold-publish-libs:
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+      - publish-libs:
+          context: Audius Client
+          name: publish-libs
+          requires:
+            - hold-publish-libs
           filters:
             branches:
               only: /(^master$)/

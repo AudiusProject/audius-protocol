@@ -2,9 +2,6 @@ module.exports = {
   // Max number of completed/failed jobs to keep in redis for the state monitoring queue
   MONITORING_QUEUE_HISTORY: 20,
 
-  // Max number of completed/failed jobs to keep in redis for the state monitoring queue
-  RECONCILIATION_QUEUE_HISTORY: 300,
-
   // Max millis to run a fetch cNodeEndpoint->spId mapping job for before marking it as stalled (1 minute)
   C_NODE_ENDPOINT_TO_SP_ID_MAP_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60,
 
@@ -16,6 +13,9 @@ module.exports = {
 
   // Max millis to run a StateReconciliationQueue job for before marking it as stalled (1 hour)
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
+
+  // Max millis to run a manual sync job for before marking it as stalled (60 seconds)
+  MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60,
 
   // Millis to timeout request for getting users who have a node as their primary/secondary (60 seconds)
   GET_NODE_USERS_TIMEOUT_MS: 1000 * 60,
@@ -53,7 +53,9 @@ module.exports = {
     // Max number of completed/failed jobs to keep in redis for the cNodeEndpoint->spId map queue
     C_NODE_ENDPOINT_TO_SP_ID_MAP: 100,
     // Max number of completed/failed jobs to keep in redis for the state monitoring queue
-    STATE_RECONCILIATION: 300
+    STATE_RECONCILIATION: 300,
+    // Max number of completed/failed jobs to keep in redis for the manual sync queue
+    MANUAL_SYNC: 300
   }),
 
   QUEUE_NAMES: Object.freeze({
@@ -62,7 +64,9 @@ module.exports = {
     // Name of queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
     C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-to-endpoint-sp-id-map-queue',
     // Name of StateReconciliationQueue
-    STATE_RECONCILIATION: 'state-reconciliation-queue'
+    STATE_RECONCILIATION: 'state-reconciliation-queue',
+    // Name of ManualSyncQueue
+    MANUAL_SYNC: 'manual-sync-queue'
   }),
 
   JOB_NAMES: Object.freeze({

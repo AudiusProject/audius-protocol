@@ -1,16 +1,21 @@
-from sqlalchemy import Column, Date, DateTime, Integer, func
+from sqlalchemy import Column, Date, DateTime, Integer, text
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
-class AggregateMonthlyUniqueUsersMetrics(Base, RepresentableMixin):
+class AggregateMonthlyUniqueUsersMetric(Base, RepresentableMixin):
     __tablename__ = "aggregate_monthly_unique_users_metrics"
 
-    id = Column(Integer, primary_key=True)
-    count = Column(Integer, nullable=False)
-    summed_count = Column(Integer, nullable=True)
-    timestamp = Column(Date, nullable=False)  # first day of month
-    created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    id = Column(
+        Integer,
+        primary_key=True,
     )
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False)
+    created_at = Column(
+        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
+    )
+    updated_at = Column(
+        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
+    )
+    summed_count = Column(Integer)

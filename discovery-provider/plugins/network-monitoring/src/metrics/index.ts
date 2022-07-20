@@ -8,6 +8,7 @@ import {
     partiallySyncedUsersCountGauge,
     primaryUserCountGauge,
     unsyncedUsersCountGauge,
+    usersWithAllFoundationNodeReplicaSetGauge,
 } from "../prometheus"
 import { getEnv } from "../utils"
 import {
@@ -16,34 +17,17 @@ import {
     getFullySyncedUsersCount,
     getPartiallySyncedUsersCount,
     getUnsyncedUsersCount,
-    getUsersWithNullPrimaryClock
+    getUsersWithNullPrimaryClock,
+    getUsersWithEntireReplicaSetInSpidSetCount,
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
 
+    const { foundationNodes } = getEnv()
+
     console.log(`[${run_id}] generating metrics`)
 
     const endTimer = generatingMetricsDurationGauge.startTimer()
-
-    /* 
-    - he number of CID on each CN that have been replicated at least once
-    - The number of CID on each CN that have ***NOT*** been replicated at least once
-    - [ex 1] **The number of users with a specific CN as their primary**
-    - The number of users with a specific CN in their replica set
-    - CID replication across the CNs
-    - CID replication factor
-    - The number of users with their data syncs across 0, 1, 2, or 3 CNs
-    */
-
-    /*
-        - All user count
-        - Primary user count
-        - # of users by replica set length
-        - Replication factor for users
-        - Fully synced nodes frequency
-        - Avg CIDs per user
-        - Histogram of cids per user
-    */
 
     const allUserCount = await getAllUserCount(run_id)
 
@@ -57,6 +41,8 @@ export const generateMetrics = async (run_id: number) => {
 
     const usersWithNullPrimaryClock = await getUsersWithNullPrimaryClock(run_id)
 
+    const usersWithAllFoundationNodeReplicaSetCount = await getUsersWithEntireReplicaSetInSpidSetCount(run_id, foundationNodes)
+
     allUserCount.forEach(({ endpoint, count }) => {
         allUserCountGauge.set({ endpoint, run_id }, count)
     })
@@ -68,6 +54,7 @@ export const generateMetrics = async (run_id: number) => {
     partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount)
     unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount)
     nullPrimaryUsersCountGauge.set({ run_id }, usersWithNullPrimaryClock)
+    usersWithAllFoundationNodeReplicaSetGauge.set({ run_id }, usersWithAllFoundationNodeReplicaSetCount)
 
     // Record duration for generating metrics and export to prometheus
     endTimer({ run_id: run_id })

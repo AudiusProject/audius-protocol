@@ -122,7 +122,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p50",
             "range": true,
@@ -133,7 +133,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p90",
             "range": true,
@@ -144,7 +144,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p95",
             "range": true,
@@ -155,7 +155,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p99",
             "range": true,
@@ -166,7 +166,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p999",
             "range": true,
@@ -189,7 +189,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+          "definition": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
           "description": "",
           "hide": 0,
           "includeAll": true,
@@ -198,7 +198,7 @@
           "name": "env",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+            "query": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
@@ -213,16 +213,16 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
           "description": "",
           "hide": 0,
           "includeAll": true,
           "label": "Host",
-          "multi": false,
+          "multi": true,
           "name": "host",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
@@ -237,16 +237,16 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_celery_task_completed_duration_seconds_bucket, func_name)",
+          "definition": "label_values(audius_dn_celery_task_duration_seconds_bucket, func_name)",
           "description": "",
           "hide": 0,
           "includeAll": true,
-          "label": "Host",
+          "label": "Task Name",
           "multi": false,
           "name": "task_name",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_celery_task_completed_duration_seconds_bucket, func_name)",
+            "query": "label_values(audius_dn_celery_task_duration_seconds_bucket, func_name)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,

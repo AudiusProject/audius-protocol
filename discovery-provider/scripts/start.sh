@@ -81,10 +81,10 @@ if [ -z "$audius_db_url" ]; then
         sudo -u postgres pg_ctl init -D /db
         echo "host all all 0.0.0.0/0 md5" >>/db/pg_hba.conf
         echo "listen_addresses = '*'" >>/db/postgresql.conf
-        sudo -u postgres pg_ctl start -D /db
+        sudo -u postgres pg_ctl start -D /db -o "-c shared_preload_libraries=pg_stat_statements"
         sudo -u postgres createdb audius_discovery
     else
-        sudo -u postgres pg_ctl start -D /db
+        sudo -u postgres pg_ctl start -D /db -o "-c shared_preload_libraries=pg_stat_statements"
     fi
 
     sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${postgres_password:-postgres}';"
@@ -110,7 +110,6 @@ if [ "$audius_db_run_migrations" != false ]; then
     echo "Finished running migrations"
 fi
 
-
 # start es-indexer
 if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
     # npm run catchup creates triggers + populate indexes - this blocks server / celery start
@@ -124,8 +123,8 @@ fi
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     audius_service=server ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
+        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
         audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
-        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 else
     audius_service=server ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &

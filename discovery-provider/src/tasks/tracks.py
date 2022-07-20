@@ -14,11 +14,10 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers, multihash
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.track_event_constants import (
     track_event_types_arr,
     track_event_types_lookup,
@@ -36,15 +35,10 @@ def track_state_update(
     block_timestamp,
     block_hash,
     ipfs_metadata,
-    blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     begin_track_state_update = datetime.now()
-    metric = PrometheusMetric(
-        "track_state_update_duration_seconds",
-        "Runtimes for src.task.tracks:track_state_update()",
-        ("scope",),
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS)
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -97,9 +91,6 @@ def track_state_update(
                             bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                         )
                         cid = multihash.to_b58_string(buf)
-                        # do not process entry if cid is blacklisted
-                        if cid in blacklisted_cids:
-                            continue
                         track_metadata = ipfs_metadata[cid]
 
                     parsed_track = parse_track_event(
@@ -115,7 +106,6 @@ def track_state_update(
                         pending_track_routes,
                     )
 
-                    # If track record object is None, it has a blacklisted metadata CID
                     if parsed_track is not None:
                         if track_id not in track_events:
                             track_events[track_id] = {
@@ -226,6 +216,18 @@ def update_stems_table(session, track_record, track_metadata):
     parent_track_id = track_metadata["stem_of"].get("parent_track_id")
     if not isinstance(parent_track_id, int):
         return
+
+    # Avoid re-adding stem if it already exists
+    existing_stem = (
+        session.query(Stem)
+        .filter_by(
+            parent_track_id=parent_track_id, child_track_id=track_record.track_id
+        )
+        .first()
+    )
+    if existing_stem:
+        return
+
     stem = Stem(parent_track_id=parent_track_id, child_track_id=track_record.track_id)
     session.add(stem)
 
@@ -468,15 +470,7 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
-            # If CID is in IPLD blacklist table, do not continue with indexing
-            if is_blacklisted_ipld(session, track_record.cover_art):
-                logger.info(
-                    f"index.py | tracks.py | Encountered blacklisted cover art CID:"
-                    f"{track_record.cover_art} in indexing new track"
-                )
-                return None
-
-            logger.warning(
+            logger.info(
                 f"index.py | tracks.py | Processing track cover art {track_record.cover_art}"
             )
             track_record.cover_art_sizes = track_record.cover_art
@@ -524,14 +518,6 @@ def parse_track_event(
         # All incoming cover art is intended to be a directory
         # Any write to cover_art field is replaced by cover_art_sizes
         if track_record.cover_art:
-            # If CID is in IPLD blacklist table, do not continue with indexing
-            if is_blacklisted_ipld(session, track_record.cover_art):
-                logger.info(
-                    f"index.py | tracks.py | Encountered blacklisted cover art CID:"
-                    f"{track_record.cover_art} in indexing update track"
-                )
-                return None
-
             logger.info(
                 f"index.py | tracks.py | Processing track cover art {track_record.cover_art}"
             )

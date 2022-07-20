@@ -684,6 +684,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
         .post('/audius_users/metadata')
         .set('X-Session-ID', session.sessionToken)
         .set('User-Id', session.userId)
+        .set('Enforce-Write-Quorum', false)
         .send({ metadata: audiusUserMetadata })
         .expect(200)
       await request(app)
@@ -756,6 +757,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
         .post('/tracks/metadata')
         .set('X-Session-ID', session.sessionToken)
         .set('User-Id', session.userId)
+        .set('Enforce-Write-Quorum', false)
         .send({ metadata: trackMetadata, sourceFile })
         .expect(200)
       assert.deepStrictEqual(

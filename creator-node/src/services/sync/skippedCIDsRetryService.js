@@ -11,11 +11,9 @@ const LogPrefix = '[SkippedCIDsRetryQueue]'
  * TODO - consider moving queue/jobs off main process. Will require re-factoring of job processing / dependencies
  */
 class SkippedCIDsRetryQueue {
-  constructor(nodeConfig, libs, serviceRegistry) {
-    if (!nodeConfig || !libs || !serviceRegistry) {
-      throw new Error(
-        `${LogPrefix} Cannot start without nodeConfig, libs, and serviceRegistry`
-      )
+  constructor(nodeConfig, libs) {
+    if (!nodeConfig || !libs) {
+      throw new Error(`${LogPrefix} Cannot start without nodeConfig, libs`)
     }
 
     this.queue = new Bull('skipped-cids-retry-queue', {
@@ -41,7 +39,7 @@ class SkippedCIDsRetryQueue {
 
     this.queue.process(async (job, done) => {
       try {
-        await this.process(CIDMaxAgeMs, libs, serviceRegistry)
+        await this.process(CIDMaxAgeMs, libs)
       } catch (e) {
         this.logError(`Failed to process job || Error: ${e.message}`)
       }
@@ -76,7 +74,7 @@ class SkippedCIDsRetryQueue {
    * Attempt to re-fetch all previously skipped files
    * Only process files with age <= maxAge
    */
-  async process(CIDMaxAgeMs, libs, serviceRegistry) {
+  async process(CIDMaxAgeMs, libs) {
     const startTimestampMs = Date.now()
     const oldestFileCreatedAtDate = new Date(startTimestampMs - CIDMaxAgeMs)
 
@@ -99,7 +97,7 @@ class SkippedCIDsRetryQueue {
     for await (const file of skippedFiles) {
       // Returns boolean success indicator
       const success = await saveFileForMultihashToFS(
-        serviceRegistry,
+        libs,
         logger,
         file.multihash,
         file.storagePath,
