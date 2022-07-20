@@ -150,11 +150,11 @@
     "dist:linux": "node ./scripts/dist.js --linux",
     "dist-publish": "node ./scripts/dist.js --mac --win --linux --publish always",
     "dist-publish-production": "node ./scripts/dist.js --mac --win --linux --publish always --env production",
-    "dist:mac-publish": "node ./scripts/dist.js --mac --publish always",
+    "dist:mac-publish": "npm run install-dmg-license && node ./scripts/dist.js --mac --publish always",
     "dist:win-publish": "node ./scripts/dist.js --win --publish always",
     "dist:linux-publish": "node ./scripts/dist.js --linux --publish always",
     "dist:win:linux-publish": "node ./scripts/dist.js --win --linux --publish always",
-    "dist:mac-publish-production": "node ./scripts/dist.js --mac --publish always --env production",
+    "dist:mac-publish-production": "npm run install-dmg-license && node ./scripts/dist.js --mac --publish always --env production",
     "dist:win-publish-production": "node ./scripts/dist.js --win --publish always --env production",
     "dist:linux-publish-production": "node ./scripts/dist.js --linux --publish always --env production",
     "dist:win:linux-publish-production": "node ./scripts/dist.js --win --linux --publish always --env production",
@@ -165,7 +165,9 @@
     "typecheck:watch": "tsc --watch",
     "update-ipfs-build:dev": "node ./scripts/updateIpfsBuild.js dev",
     "update-ipfs-build:stage": "node ./scripts/updateIpfsBuild.js stage",
-    "update-ipfs-build:prod": "node ./scripts/updateIpfsBuild.js prod"
+    "update-ipfs-build:prod": "node ./scripts/updateIpfsBuild.js prod",
+    "install-dmg-license": "npx lerna add dmg-license --scope=audius-client --no-bootstrap && npx lerna bootstrap --no-ci"
+
   },
   "standard": {
     "parser": "babel-eslint",
