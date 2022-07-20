@@ -20,6 +20,9 @@ const {
   getRateLimiterMiddleware
 } = require('./reqLimiter')
 const config = require('./config')
+const {
+  exponentialBucketsRange
+} = require('./services/prometheusMonitoring/prometheusUtils')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
 const replicaSetRoutes = require('./components/replicaSet/replicaSetController')
@@ -73,6 +76,8 @@ const initializeApp = (port, serviceRegistry) => {
       includePath: true,
       // Disable default gauge counter to indicate if this middleware is running
       includeUp: false,
+      // The buckets in seconds to measure requests
+      buckets: [0.2, 0.5, ...exponentialBucketsRange(1, 60, 8)],
       // Normalizes the path to be tracked in this middleware. For routes with route params,
       // this fn maps those routes to generic paths. e.g. /ipfs/QmSomeCid -> /ipfs/#CID
       normalizePath: function (req, opts) {
