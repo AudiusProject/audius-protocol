@@ -1,6 +1,5 @@
 import { StyleSheet, View } from 'react-native'
 
-import { ImageSkeleton } from 'app/components/image-skeleton'
 import Skeleton from 'app/components/skeleton'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 
@@ -29,7 +28,7 @@ export const LineupTileSkeleton = () => {
     <LineupTileRoot>
       <View style={styles.metadata}>
         <View style={[trackTileStyles.imageContainer, trackTileStyles.image]}>
-          <ImageSkeleton styles={{ root: trackTileStyles.image }} />
+          <Skeleton style={trackTileStyles.image} />
         </View>
 
         <View style={[trackTileStyles.titles]}>

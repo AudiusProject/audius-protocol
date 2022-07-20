@@ -21,7 +21,7 @@ import {
   ViewStyle
 } from 'react-native'
 
-import { ImageSkeleton } from 'app/components/image-skeleton'
+import Skeleton from 'app/components/skeleton'
 import { StylesProp } from 'app/styles'
 
 export type DynamicImageProps = Omit<ImageProps, 'source'> & {
@@ -73,7 +73,7 @@ const ImageWithPlaceholder = ({
     return <Image source={{ uri }} style={style} {...other} />
   }
 
-  return <ImageSkeleton styles={{ root: style as ViewStyle }} />
+  return <Skeleton style={style} />
 }
 
 const interpolateImageScale = (animatedValue: Animated.Value) =>
