@@ -317,6 +317,14 @@ class ServiceRegistry {
       )
     }
 
+    try {
+      await this._setupRouteDurationTracking(app)
+    } catch (e) {
+      this.logError(
+        `DurationTracking || Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
+      )
+    }
+
     this.servicesThatRequireServerInitialized = true
 
     logInfoWithDuration(
@@ -366,6 +374,95 @@ class ServiceRegistry {
         'spID'
       )}`
     )
+  }
+
+  /**
+   * Gets the regexes for routes with route params. Used for mapping paths in metrics to track route durations
+   *
+   * Structure:
+   *  {regex: <some regex>, path: <path that a matched path will route to in the normalize fn in prometheus middleware>}
+   *
+   * Example of the regex added to PrometheusRegistry:
+   *
+   *  /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
+   *
+   * {
+   *    regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
+   *    path: '/ipfs/#CID'
+   * }
+   * @param {Object} app
+   */
+  async _setupRouteDurationTracking(app) {
+    // Get all the routes initialized in the app
+    const routes = app._router.stack.filter(
+      (element) =>
+        (element.route && element.route.path) ||
+        (element.handle && element.handle.stack)
+    )
+
+    // Iterate through the paths and add the regexes if the route
+    // has route params
+
+    // Express routing is... unpredictable. Use a set to manage seen paths
+    const seenPaths = new Set()
+    const parsedRoutes = []
+    routes.forEach((element) => {
+      if (element.name === 'router') {
+        // Iterate through routes initialized with the express router
+        element.handle.stack.forEach((e) => {
+          const path = e.route.path
+          const method = Object.keys(e.route.methods)[0]
+          const regex = e.regexp
+          addToParsedRoutes(path, method, regex)
+        })
+      } else {
+        // Iterate through all the other routes initalized with the app
+        const path = element.route.path
+        const method = Object.keys(element.route.methods)[0]
+        const regex = element.regexp
+        addToParsedRoutes(path, method, regex)
+      }
+    })
+
+    // Only keep track of the routes with route params, e.g. the route with ':'
+    // in the route to indicate a route param
+    function addToParsedRoutes(path, method, regex) {
+      // Routes may come in the form of an array (e.g. ['/ipfs/:CID', '/content/:CID'])
+      if (Array.isArray(path)) {
+        path.forEach((p) => {
+          if (!seenPaths.has(p + method)) {
+            if (p.includes(':')) {
+              seenPaths.add(p + method)
+              parsedRoutes.push({
+                path: p,
+                method,
+                regex
+              })
+            }
+          }
+        })
+      } else {
+        if (!seenPaths.has(path + method)) {
+          if (path.includes(':')) {
+            seenPaths.add(path + method)
+            parsedRoutes.push({
+              path,
+              method,
+              regex
+            })
+          }
+        }
+      }
+    }
+
+    const regexes = parsedRoutes
+      .filter(({ path }) => path.includes(':'))
+      .map(({ path, regex }) => ({
+        regex,
+        path: path.replace(/:/g, '#')
+      }))
+
+    this.prometheusRegistry.initRouteParamRegexes(regexes)
   }
 
   /**
@@ -476,11 +573,7 @@ class ServiceRegistry {
   }
 }
 
-/*
- * Export a singleton instance of the ServiceRegistry
- */
-const serviceRegistry = new ServiceRegistry()
-
+//  Export a singleton instance of the ServiceRegistry
 module.exports = {
-  serviceRegistry
+  serviceRegistry: new ServiceRegistry()
 }
