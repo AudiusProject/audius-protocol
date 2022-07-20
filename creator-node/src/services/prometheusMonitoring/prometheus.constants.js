@@ -52,16 +52,22 @@ const METRIC_NAMES = Object.freeze(
 )
 
 const METRIC_LABELS = Object.freeze({
-  [METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
-    // The type of sync issued -- manual or recurring
-    syncType: [_.snakeCase(SyncType.Manual), _.snakeCase(SyncType.Recurring)],
-    // The reason another sync is needed
-    reason_for_additional_sync: [
-      'secondary_progressed_too_slow', // The secondary sync went through, but its clock value didn't increase enough
-      'secondary_failed_to_progress', // The secondary's clock value did not increase at all
-      'none' // No additional sync is required -- the first sync was successful
+  [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
+    sync_type: Object.values(SyncType).map(_.snakeCase),
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    result: [
+      'failure_validate_job_data',
+      'success',
+      'failure_secondary_failure_count_threshold_met',
+      'success_mode_disabled',
+      'failure_primary_sync_from_secondary',
+      'failure_issue_sync_request',
+      'success_secondary_caught_up',
+      'success_secondary_partially_caught_up',
+      'failure_secondary_failed_to_progress'
     ]
   },
+
   [METRIC_NAMES[
     `STATE_MACHINE_${STATE_MACHINE_JOB_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
   ]]: {
@@ -75,6 +81,7 @@ const METRIC_LABELS = Object.freeze({
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
     ]
   },
+
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
     result: [
@@ -90,6 +97,7 @@ const METRIC_LABELS = Object.freeze({
       'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
     ]
   },
+
   [METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
     // Whether or not write quorum is enabled/enforced
     enforceWriteQuorum: ['false', 'true'],
@@ -116,6 +124,7 @@ const METRIC_LABELS = Object.freeze({
     ]
   }
 })
+
 const MetricLabelNames = Object.freeze(
   Object.fromEntries(
     Object.entries(METRIC_LABELS).map(([metric, metricLabels]) => [
@@ -134,23 +143,25 @@ const METRICS = Object.freeze({
       labelNames: ['status']
     }
   },
-  [METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
+
+  [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
-      help: 'Seconds spent monitoring an outgoing sync request issued by this node to be completed (successfully or not)',
+      name: METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM,
+      help: 'Time spent to issue a sync request and wait for completion (seconds)',
       labelNames:
         MetricLabelNames[
-          METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM
+          METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
         ],
-      // 5 buckets in the range of 1 second to max seconds before timing out a sync request
+      // 4 buckets in the range of 1 second to max before timing out a sync request
       buckets: exponentialBucketsRange(
         1,
         config.get('maxSyncMonitoringDurationInMs') / 1000,
-        5
+        4
       )
     }
   },
+
   // Add histogram for each job in the state machine queues
   ...Object.fromEntries(
     Object.values(STATE_MACHINE_JOB_NAMES).map((jobName) => [

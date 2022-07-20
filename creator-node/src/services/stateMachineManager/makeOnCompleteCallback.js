@@ -62,9 +62,10 @@ module.exports = function (
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult = {}
     try {
+      logger.info(`Job successfully completed. Parsing result: ${resultString}`)
       jobResult = JSON.parse(resultString) || {}
     } catch (e) {
-      logger.warn(`Failed to parse job result string: ${resultString}`)
+      logger.warn(`Failed to parse job result string`)
       return
     }
 
@@ -85,9 +86,7 @@ module.exports = function (
         logger
       )
     } else {
-      logger.info(
-        `No jobs to enqueue after successful completion. Result: ${resultString}`
-      )
+      logger.info('No jobs to enqueue after successful completion.')
     }
 
     recordMetrics(prometheusRegistry, logger, metricsToRecord)

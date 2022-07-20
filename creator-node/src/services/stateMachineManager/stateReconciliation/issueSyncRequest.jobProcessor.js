@@ -20,6 +20,9 @@ const {
   SYNC_MODES
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
+const {
+  computeSyncModeForUserAndReplica
+} = require('../stateMonitoring/stateMonitoringUtils')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
@@ -43,54 +46,102 @@ const mergePrimaryAndSecondaryEnabled = config.get(
  * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
  */
 module.exports = async function ({
-  logger,
   syncType,
   syncMode,
-  syncRequestParameters
+  syncRequestParameters,
+  logger
 }) {
-  _validateJobData(logger, syncType, syncMode, syncRequestParameters)
+  let jobsToEnqueue = {}
+  let metricsToRecord = []
+  let error = {}
 
-  const isValidSyncJobData =
-    'baseURL' in syncRequestParameters &&
-    'url' in syncRequestParameters &&
-    'method' in syncRequestParameters &&
-    'data' in syncRequestParameters
-  if (!isValidSyncJobData) {
-    const errorMsg = `Invalid sync data found: ${JSON.stringify(
-      syncRequestParameters
-    )}`
-    logger.error(errorMsg)
-    return {
-      error: {
-        message: errorMsg
-      },
-      jobsToEnqueue: {}
+  const startTimeMs = Date.now()
+
+  const {
+    syncReqToEnqueue: syncReqToEnqueueResp,
+    result,
+    error: errorResp
+  } = await _handleIssueSyncRequest({
+    syncType,
+    syncMode,
+    syncRequestParameters,
+    logger
+  })
+  if (errorResp) {
+    error = errorResp
+    logger.error(error.message)
+  }
+
+  // Determine if new sync request needs to be enqueued
+  let getNewOrExistingSyncReqError
+  if (syncReqToEnqueueResp) {
+    const {
+      userWallet,
+      secondaryEndpoint,
+      syncMode: syncModeResp
+    } = syncReqToEnqueueResp
+    const { syncReqToEnqueue, duplicateSyncReq } = getNewOrExistingSyncReq({
+      userWallet,
+      secondaryEndpoint,
+      primaryEndpoint: thisContentNodeEndpoint,
+      syncType,
+      syncMode: syncModeResp
+    })
+    if (!_.isEmpty(duplicateSyncReq)) {
+      getNewOrExistingSyncReqError = {
+        message:
+          'Additional sync request was required but not able to be enqueued due to a duplicate',
+        duplicateSyncReq
+      }
+    } else if (!_.isEmpty(syncReqToEnqueue)) {
+      jobsToEnqueue = { [QUEUE_NAMES.STATE_RECONCILIATION]: [syncReqToEnqueue] }
     }
   }
-  if (
-    !(syncRequestParameters.data.wallet instanceof Array) ||
-    !syncRequestParameters.data.wallet?.length
-  ) {
-    const errorMsg = `Invalid sync data wallets (expected non-empty array): ${syncRequestParameters.data.wallet}`
-    logger.error(errorMsg)
-    return {
-      error: {
-        message: errorMsg
-      },
-      jobsToEnqueue: {}
-    }
+  if (getNewOrExistingSyncReqError) {
+    error = getNewOrExistingSyncReqError
+    logger.error(error.message)
   }
+
+  // Make metrics to record
+  metricsToRecord = [
+    makeHistogramToRecord(
+      METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM,
+      (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+      {
+        sync_type: _.snakeCase(syncType),
+        sync_mode: _.snakeCase(syncMode),
+        result: _.snakeCase(result)
+      }
+    )
+  ]
+
+  return {
+    jobsToEnqueue,
+    metricsToRecord,
+    error
+  }
+}
+
+async function _handleIssueSyncRequest({
+  syncType,
+  syncMode,
+  syncRequestParameters,
+  logger
+}) {
+  try {
+    _validateJobData(syncType, syncMode, syncRequestParameters, logger)
+  } catch (error) {
+    return { result: 'failure_validate_job_data', error }
+  }
+
   if (syncMode === SYNC_MODES.None) {
-    return {
-      error: {},
-      jobsToEnqueue: {}
-    }
+    return { result: 'success' }
   }
 
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryEndpoint = syncRequestParameters.baseURL
 
-  const logMsgString = `(${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
+  const logMsgString = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
 
   /**
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
@@ -111,34 +162,24 @@ module.exports = async function ({
     secondaryUserSyncFailureCountForToday >
     secondaryUserSyncDailyFailureCountThreshold
   ) {
-    const errorMsg = `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
-    logger.error(errorMsg)
     return {
+      result: 'failure_secondary_failure_count_threshold_met',
       error: {
-        message: errorMsg
-      },
-      jobsToEnqueue: {}
+        message: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
+      }
     }
   }
 
+  /**
+   * For now, if primarySyncFromSecondary fails, we just log & error without any retries
+   * Eventually should make this more robust, but proceeding with caution
+   */
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
     // Short-circuit if this syncMode is disabled
     if (!mergePrimaryAndSecondaryEnabled) {
-      logger.info(
-        `${logMsgString} || Sync mode is disabled - Will not issue sync request`
-      )
-      return {
-        error: {},
-        jobsToEnqueue: {}
-      }
+      return { result: 'success_mode_disabled' }
     }
 
-    /**
-     * For now, if primarySyncFromSecondary fails, we just log & error without any retries
-     * Eventually should make this more robust, but proceeding with caution
-     */
-
-    // Sync primary content from secondary and set secondary sync flag to forceResync before proceeding
     const error = await primarySyncFromSecondary({
       wallet: userWallet,
       secondary: secondaryEndpoint
@@ -146,23 +187,11 @@ module.exports = async function ({
 
     if (error) {
       return {
-        error: {
-          message: `primarySyncFromSecondary failed with error: ${error.message}`
-        },
-        jobsToEnqueue: {}
+        result: 'failure_primary_sync_from_secondary',
+        error
       }
-    } else {
     }
   }
-
-  // primaryClockValue is used in additionalSyncIsRequired() call below
-  const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
-    userWallet
-  ]
-
-  logger.info(
-    `------------------Process SYNC | ${logMsgString} | Primary clock value ${primaryClockValue}------------------`
-  )
 
   /**
    * Issue sync request to secondary
@@ -172,106 +201,91 @@ module.exports = async function ({
    */
   try {
     if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-      const syncRequestParametersForceResync = {
+      const obj = {
         ...syncRequestParameters,
         data: { ...syncRequestParameters.data, forceResync: true }
       }
-      await axios(syncRequestParametersForceResync)
+      await axios(obj)
     } else {
       await axios(syncRequestParameters)
     }
   } catch (e) {
-    // Axios request will throw on non-200 response -> swallow error to ensure below logic is executed
-    logger.error(`${logMsgString} || Error issuing sync request: ${e.message}`)
-  }
-
-  // Wait until has sync has completed (within time threshold)
-  const startWaitingForCompletion = Date.now()
-  const { additionalSyncIsRequired, reasonForAdditionalSync } =
-    await _additionalSyncIsRequired(
-      userWallet,
-      primaryClockValue,
-      secondaryEndpoint,
-      syncType,
-      syncMode,
-      logger
-    )
-
-  const metricsToRecord = [
-    makeHistogramToRecord(
-      METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
-      (Date.now() - startWaitingForCompletion) / 1000, // Metric is in seconds
-      {
-        syncType: _.snakeCase(syncType),
-        reason_for_additional_sync: reasonForAdditionalSync
+    return {
+      result: 'failure_issue_sync_request',
+      error: {
+        message: `${logMsgString} || Error issuing sync request: ${e.message}`
+      },
+      syncReqToEnqueue: {
+        userWallet,
+        secondaryEndpoint,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
       }
-    )
-  ]
-
-  // Re-enqueue sync if required
-  let error = {}
-  let additionalSyncReq = {}
-  if (additionalSyncIsRequired) {
-    const { syncReqToEnqueue, duplicateSyncReq } = getNewOrExistingSyncReq({
-      userWallet,
-      secondaryEndpoint,
-      primaryEndpoint: thisContentNodeEndpoint,
-      syncType,
-      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
-    })
-    if (duplicateSyncReq && !_.isEmpty(duplicateSyncReq)) {
-      error = {
-        message:
-          'Additional sync request was required but not able to be enqueued due to a duplicate',
-        duplicateSyncReq
-      }
-    } else if (syncReqToEnqueue) {
-      additionalSyncReq = syncReqToEnqueue
     }
   }
 
-  logger.info(
-    `------------------END Process SYNC | ${logMsgString}------------------`
+  // primaryClockValue is used in additionalSyncIsRequired() call below
+  const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
+    userWallet
+  ]
+
+  // Wait until has sync has completed (within time threshold)
+  const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
+    userWallet,
+    primaryClockValue,
+    secondaryEndpoint,
+    syncType,
+    syncMode,
+    logger
   )
 
   return {
-    error,
-    jobsToEnqueue: _.isEmpty(additionalSyncReq)
-      ? {}
-      : {
-          [QUEUE_NAMES.STATE_RECONCILIATION]: [additionalSyncReq]
-        },
-    metricsToRecord
+    result: outcome,
+    syncReqToEnqueue
   }
 }
 
-const _validateJobData = (
-  logger,
-  syncType,
-  syncMode,
-  syncRequestParameters
-) => {
-  if (typeof logger !== 'object') {
-    throw new Error(
-      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
-    )
-  }
+/**
+ * Throw error on failure, else return nothing
+ */
+const _validateJobData = (syncType, syncMode, syncRequestParameters) => {
   if (typeof syncType !== 'string') {
     throw new Error(
       `Invalid type ("${typeof syncType}") or value ("${syncType}") of syncType param`
     )
   }
+
   if (typeof syncMode !== 'string') {
     throw new Error(
       `Invalid type ("${typeof syncMode}") or value ("${syncMode}") of syncMode param`
     )
   }
+
   if (
     typeof syncRequestParameters !== 'object' ||
     syncRequestParameters instanceof Array
   ) {
     throw new Error(
       `Invalid type ("${typeof syncRequestParameters}") or value ("${syncRequestParameters}") of syncRequestParameters`
+    )
+  }
+
+  const isValidSyncJobData =
+    'baseURL' in syncRequestParameters &&
+    'url' in syncRequestParameters &&
+    'method' in syncRequestParameters &&
+    'data' in syncRequestParameters
+  if (!isValidSyncJobData) {
+    throw new Error(
+      `Invalid sync data found: ${JSON.stringify(syncRequestParameters)}`
+    )
+  }
+
+  if (
+    !(syncRequestParameters.data.wallet instanceof Array) ||
+    !syncRequestParameters.data.wallet?.length
+  ) {
+    throw new Error(
+      `Invalid sync data wallets (expected non-empty array): ${syncRequestParameters.data.wallet}`
     )
   }
 }
@@ -358,7 +372,7 @@ const _additionalSyncIsRequired = async (
         break
       }
     } catch (e) {
-      logger.error(`${logMsgString} || Error: ${e.message}`)
+      logger.warn(`${logMsgString} || Error: ${e.message}`)
     }
 
     // Delay between retries
@@ -372,13 +386,14 @@ const _additionalSyncIsRequired = async (
    * Also check whether additional sync is required
    */
   let additionalSyncIsRequired
-  let reasonForAdditionalSync = 'none'
+  let outcome
   if (secondaryCaughtUpToPrimary) {
     await SecondarySyncHealthTracker.recordSuccess(
       secondaryUrl,
       userWallet,
       syncType
     )
+    outcome = 'success_secondary_caught_up'
     additionalSyncIsRequired = false
     logger.info(`${logMsgString} || Sync completed in ${monitoringTimeMs}ms`)
 
@@ -391,7 +406,7 @@ const _additionalSyncIsRequired = async (
       syncType
     )
     additionalSyncIsRequired = true
-    reasonForAdditionalSync = 'secondary_progressed_too_slow'
+    outcome = 'success_secondary_partially_caught_up'
     logger.info(
       `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest.`
     )
@@ -404,11 +419,20 @@ const _additionalSyncIsRequired = async (
       syncType
     )
     additionalSyncIsRequired = true
-    reasonForAdditionalSync = 'secondary_failed_to_progress'
+    outcome = 'failure_secondary_failed_to_progress'
     logger.error(
       `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`
     )
   }
 
-  return { additionalSyncIsRequired, reasonForAdditionalSync }
+  const response = { outcome }
+  if (additionalSyncIsRequired) {
+    response.syncReqToEnqueue = {
+      userWallet,
+      secondaryEndpoint: secondaryUrl,
+      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+    }
+  }
+
+  return response
 }

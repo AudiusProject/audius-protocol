@@ -2,7 +2,7 @@ const _ = require('lodash')
 const axios = require('axios')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
-const { SyncType, JOB_NAMES } = require('../stateMachineConstants')
+const { SyncType, JOB_NAMES, SYNC_MODES } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
 /**
@@ -21,6 +21,17 @@ const getNewOrExistingSyncReq = ({
   syncMode,
   immediate = false
 }) => {
+  if (
+    !userWallet ||
+    !primaryEndpoint ||
+    !secondaryEndpoint ||
+    !syncType ||
+    !syncMode
+  ) {
+    throw new Error(
+      `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
+    )
+  }
   /**
    * If duplicate sync already exists, do not add and instead return existing sync job info
    * Ignore syncMode when checking for duplicates, since it doesn't matter
@@ -30,7 +41,7 @@ const getNewOrExistingSyncReq = ({
     userWallet,
     secondaryEndpoint
   )
-  if (duplicateSyncJobInfo) {
+  if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
@@ -99,6 +110,7 @@ const issueSyncRequestsUntilSynced = async (
     secondaryEndpoint: secondaryUrl,
     primaryEndpoint: primaryUrl,
     syncType: SyncType.Manual,
+    syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
     immediate: true
   })
   if (!_.isEmpty(duplicateSyncReq)) {
@@ -139,7 +151,8 @@ const issueSyncRequestsUntilSynced = async (
           userWallet: wallet,
           secondaryEndpoint: secondaryUrl,
           primaryEndpoint: primaryUrl,
-          syncType: SyncType.Manual
+          syncType: SyncType.Manual,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
         })
         if (!_.isEmpty(duplicateSyncReq)) {
           // Log duplicate and return
