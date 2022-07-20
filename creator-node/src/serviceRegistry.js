@@ -378,6 +378,18 @@ class ServiceRegistry {
 
   /**
    * Gets the regexes for routes with route params. Used for mapping paths in metrics to track route durations
+   *
+   * Structure:
+   *  {regex: <some regex>, path: <path that a matched path will route to in the normalize fn in prometheus middleware>}
+   *
+   * Example of the regex added to PrometheusRegistry:
+   *
+   *  /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
+   *
+   * {
+   *    regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
+   *    path: '/ipfs/#CID'
+   * }
    * @param {Object} app
    */
   async _setupRouteDurationTracking(app) {
@@ -442,17 +454,6 @@ class ServiceRegistry {
         }
       }
     }
-
-    // Create an object of the path and regex
-    // - {regex: <some regex>, path: <path that a matched path will route to in the normalize fn in prometheus middleware>}
-
-    // Note: routes that map to the same app logic will be under one key
-    // Example:
-    // - /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
-    // {
-    //   regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
-    //   path: '/ipfs/#CID'
-    // }
 
     const regexes = parsedRoutes
       .filter(({ path }) => path.includes(':'))
