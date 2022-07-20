@@ -702,7 +702,7 @@ describe('test nodesync', async function () {
       })
     })
 
-    describe('Confirm export throws ann error with inconsitent data', async function () {
+    describe('Confirm export throws an error with inconsitent data', async function () {
       beforeEach(setupDepsAndApp)
 
       beforeEach(createUserAndTrack)
