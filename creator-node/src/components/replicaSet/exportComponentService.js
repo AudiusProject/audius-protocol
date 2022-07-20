@@ -1,6 +1,13 @@
 const models = require('../../models')
 const { Transaction } = require('sequelize')
 
+/**
+ * Exports all db data (not files) associated with walletPublicKey[] as JSON.
+ *
+ * @return {
+ *  cnodeUsersDict - Map Object containing all db data keyed on cnodeUserUUID
+ * }
+ */
 const exportComponentService = async ({
   walletPublicKeys,
   requestedClockRangeMin,
