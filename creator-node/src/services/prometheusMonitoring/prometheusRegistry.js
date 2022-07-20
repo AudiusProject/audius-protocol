@@ -1,5 +1,4 @@
 const PrometheusClient = require('prom-client')
-const prometheusMiddleware = require('express-prom-bundle')
 
 const {
   NAMESPACE_PREFIX,

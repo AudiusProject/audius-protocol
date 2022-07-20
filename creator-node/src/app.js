@@ -62,13 +62,15 @@ const initializeApp = (port, serviceRegistry) => {
   // Metric tracking middleware
   app.use(
     prometheusMiddleware({
-      // use existing registry for compatibility with custom metrics
+      // Use existing registry for compatibility with custom metrics. Can see
+      // the metrics on /prometheus_metrics
       promRegistry: prometheusRegistry.registry,
-      // override metric name to include namespace prefix
+      // Override metric name to include namespace prefix
       httpDurationMetricName: `${prometheusRegistry.namespacePrefix}_http_request_duration_seconds`,
+      // Include HTTP method in duration tracking
       includeMethod: true,
+      // Include HTTP status code in duration tracking
       includePath: true,
-      autoregister: false,
       normalizePath: function (req, opts) {
         const path = prometheusMiddleware.normalizePath(req, opts)
         try {
