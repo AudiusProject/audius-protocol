@@ -8,7 +8,7 @@ import styles from './MigrationModalBody.module.css'
 
 const messages = {
   description:
-    'Please wait a moment. We’re performing some necessary one-time maintenence.',
+    'Please wait a moment. We’re performing some necessary one-time maintenance.',
   warning: 'Don’t close this window or refresh the page.'
 }
 
