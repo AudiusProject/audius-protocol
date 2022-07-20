@@ -1,5 +1,3 @@
-const BullQueue = require('bull')
-
 const config = require('../../../config')
 const {
   QUEUE_HISTORY,
@@ -8,6 +6,7 @@ const {
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
   MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS
 } = require('../stateMachineConstants')
+const { makeQueue, registerQueueEvents } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
@@ -28,7 +27,7 @@ const manualSyncLogger = createChildLogger(baseLogger, {
  */
 class StateReconciliationManager {
   async init(prometheusRegistry) {
-    const stateReconciliationQueue = this.makeQueue({
+    const stateReconciliationQueue = makeQueue({
       redisHost: config.get('redisHost'),
       redisPort: config.get('redisPort'),
       name: QUEUE_NAMES.STATE_RECONCILIATION,
@@ -37,7 +36,7 @@ class StateReconciliationManager {
       lockDuration: STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
     })
 
-    const manualSyncQueue = this.makeQueue({
+    const manualSyncQueue = makeQueue({
       redisHost: config.get('redisHost'),
       redisPort: config.get('redisPort'),
       name: QUEUE_NAMES.MANUAL_SYNC,
@@ -67,38 +66,11 @@ class StateReconciliationManager {
     }
   }
 
-  makeQueue({
-    redisHost,
-    redisPort,
-    name,
-    removeOnComplete,
-    removeOnFail,
-    lockDuration
-  }) {
-    // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(name, {
-      redis: {
-        host: redisHost,
-        port: redisPort
-      },
-      defaultJobOptions: {
-        removeOnComplete: removeOnComplete,
-        removeOnFail: removeOnFail
-      },
-      settings: {
-        // Should be sufficiently larger than expected job runtime
-        lockDuration: lockDuration,
-        // We never want to re-process stalled jobs
-        maxStalledCount: 0
-      }
-    })
-  }
-
   /**
    * Registers event handlers for logging and job success/failure.
    * @param {Object} params.queue the queue to register events for
-   * @param {Function<queue, successfulJob, jobResult>} params.jobSuccessCallback the function to call when a job succeeds
-   * @param {Function<queue, failedJob>} params.jobFailureCallback the function to call when a job fails
+   * @param {Object} params.stateReconciliationQueue the state reconciliation queue
+   * @param {Object} params.manualSyncQueue the manual sync queue
    * @param {Function<job>} params.processManualSync the function to call when processing a manual sync job from the queue
    * @param {Function<job>} params.processRecurringSync the function to call when processing a recurring sync job from the queue
    * @param {Function<job>} params.processUpdateReplicaSet the function to call when processing an update-replica-set job from the queue
@@ -111,28 +83,8 @@ class StateReconciliationManager {
     processUpdateReplicaSet
   }) {
     // Add handlers for logging
-    stateReconciliationQueue.on('global:waiting', (jobId) => {
-      const logger = createChildLogger(reconciliationLogger, { jobId })
-      logger.info('Job waiting')
-    })
-    stateReconciliationQueue.on('global:active', (jobId, jobPromise) => {
-      const logger = createChildLogger(reconciliationLogger, { jobId })
-      logger.info('Job active')
-    })
-    stateReconciliationQueue.on(
-      'global:lock-extension-failed',
-      (jobId, err) => {
-        const logger = createChildLogger(stateReconciliationQueue, { jobId })
-        logger.error(`Job lock extension failed. Error: ${err}`)
-      }
-    )
-    stateReconciliationQueue.on('global:stalled', (jobId) => {
-      const logger = createChildLogger(stateReconciliationQueue, { jobId })
-      logger.error('Job stalled')
-    })
-    stateReconciliationQueue.on('global:error', (error) => {
-      reconciliationLogger.error(`Queue Job Error - ${error}`)
-    })
+    registerQueueEvents(stateReconciliationQueue, reconciliationLogger)
+    registerQueueEvents(manualSyncQueue, manualSyncLogger)
 
     // Log when a job fails to complete
     stateReconciliationQueue.on('failed', (job, err) => {

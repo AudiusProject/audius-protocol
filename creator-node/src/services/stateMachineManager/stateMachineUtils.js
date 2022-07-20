@@ -1,3 +1,5 @@
+const BullQueue = require('bull')
+
 const { libs } = require('@audius/sdk')
 const CreatorNode = libs.CreatorNode
 const axios = require('axios')
@@ -9,7 +11,7 @@ const {
   MetricLabels
 } = require('../../services/prometheusMonitoring/prometheus.constants')
 const config = require('../../config')
-const { logger } = require('../../logging')
+const { logger, createChildLogger } = require('../../logging')
 const { generateTimestampAndSignature } = require('../../apiSigning')
 const {
   BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
@@ -216,9 +218,62 @@ const makeMetricToRecord = (
   return metric
 }
 
+const makeQueue = ({
+  redisHost,
+  redisPort,
+  name,
+  removeOnComplete,
+  removeOnFail,
+  lockDuration,
+  limiter = null
+}) => {
+  // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
+  return new BullQueue(name, {
+    redis: {
+      host: redisHost,
+      port: redisPort
+    },
+    defaultJobOptions: {
+      removeOnComplete,
+      removeOnFail
+    },
+    settings: {
+      // Should be sufficiently larger than expected job runtime
+      lockDuration,
+      // We never want to re-process stalled jobs
+      maxStalledCount: 0
+    },
+    limiter
+  })
+}
+
+const registerQueueEvents = (queue, queueLogger) => {
+  queue.on('global:waiting', (jobId) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.info('Job waiting')
+  })
+  queue.on('global:active', (jobId, jobPromise) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.info('Job active')
+  })
+  queue.on('global:lock-extension-failed', (jobId, err) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.error(`Job lock extension failed. Error: ${err}`)
+  })
+  queue.on('global:stalled', (jobId) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.error('Job stalled')
+  })
+  queue.on('global:error', (error) => {
+    queueLogger.error(`Queue Job Error - ${error}`)
+  })
+}
+
 module.exports = {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord,
   makeGaugeIncToRecord,
-  retrieveUserInfoFromReplicaSet
+  retrieveUserInfoFromReplicaSet,
+  makeQueue,
+  registerQueueEvents
 }
