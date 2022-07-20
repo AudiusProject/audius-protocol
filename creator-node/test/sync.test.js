@@ -707,7 +707,7 @@ describe('test nodesync', async function () {
 
       beforeEach(createUserAndTrack)
 
-      it.only('Inconsistent clock values', async function () {
+      it('Inconsistent clock values', async function () {
         // Mock findOne DB function for cnodeUsers and ClockRecords
         // Have them return inconsistent values
         const clockRecordsFindAllStub = sandbox.stub().resolves([
