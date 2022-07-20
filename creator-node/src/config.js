@@ -628,7 +628,7 @@ const config = convict({
     doc: 'Flag to enable or disable the nginx cache layer that caches content',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
-    default: false
+    default: true
   },
   reconfigNodeWhitelist: {
     doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',

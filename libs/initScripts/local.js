@@ -69,7 +69,21 @@ if (args.length < 3) {
   throwArgError()
 }
 
-const getEnvConfigPathsForService = async ({ workspace, serviceCount }) => {
+const getEnvConfigPathsForContentNode = async ({ workspace, serviceCount }) => {
+  const { envPath, writePath, templatePath } = getEnvConfigPathsForService({ workspace, serviceCount })
+  fs.writeFileSync(writePath, '')
+
+  return { envPath, templatePath, writePath }
+}
+
+const getEnvConfigPathsForDiscoveryNode = async ({ workspace, serviceCount }) => {
+  const { envPath, writePath, templatePath } = getEnvConfigPathsForService({ workspace, serviceCount })
+  fs.copyFileSync(envPath, writePath)
+
+  return { templatePath, writePath }
+}
+
+const getEnvConfigPathsForService = ({ workspace, serviceCount }) => {
   const tmpDir = `${workspace}/tmp`
   const writePath = `${tmpDir}/shellEnv${serviceCount}.sh`
   const dirExists = fs.existsSync(tmpDir)
@@ -83,8 +97,7 @@ const getEnvConfigPathsForService = async ({ workspace, serviceCount }) => {
   }
   const templatePath = `${workspace}/commonEnv.sh`
   const envPath = `${workspace}/shellEnv${serviceCount}.sh`
-  fs.copyFileSync(envPath, writePath)
-  return { templatePath, writePath }
+  return { envPath, writePath, templatePath }
 }
 
 const run = async () => {
@@ -123,7 +136,7 @@ const run = async () => {
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('configure-discprov-wallet requires a service # as the second arg')
         const workspace = '../discovery-provider/compose/env'
-        const { templatePath, writePath } = await getEnvConfigPathsForService({ workspace, serviceCount })
+        const { templatePath, writePath } = await getEnvConfigPathsForDiscoveryNode({ workspace, serviceCount })
         await _configureDiscProv(ethAccounts, parseInt(serviceCount), templatePath, writePath)
         break
       }
@@ -177,13 +190,13 @@ const run = async () => {
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('update-delegate-wallet requires a service # as the second arg')
         const workspace = '../creator-node/compose/env'
-        const { templatePath, writePath } = await getEnvConfigPathsForService({ workspace, serviceCount })
+        const { envPath, templatePath, writePath } = await getEnvConfigPathsForContentNode({ workspace, serviceCount })
         // Local dev, delegate and owner wallet are equal
         const ownerWallet = ethAccounts[parseInt(serviceCount)]
         const delegateWallet = ownerWallet
         const endpoint = makeCreatorNodeEndpoint(serviceCount)
 
-        await _updateCreatorNodeConfig(ownerWallet, templatePath, writePath, endpoint, /* isShell */ true, delegateWallet)
+        await _updateCreatorNodeConfig({ ownerWallet, templatePath, writePath, endpoint, isShell: true, delegateWallet, envPath })
         break
       }
 
@@ -495,7 +508,7 @@ const _updateCNodeDelegateOwnerWallet = async (ethAccounts, serviceNumber) => {
   await updateServiceDelegateOwnerWallet(audiusLibs, contentNodeType, endpoint, ethAccounts[serviceNumber + 10])
 }
 
-const _updateCreatorNodeConfig = async (ownerWallet, templatePath, writePath, endpoint = null, isShell = false, delegateWallet) => {
+const _updateCreatorNodeConfig = async ({ ownerWallet, templatePath, writePath, endpoint = null, isShell = false, delegateWallet, envPath = null }) => {
   delegateWallet = (delegateWallet || ownerWallet).toLowerCase()
   ownerWallet = ownerWallet.toLowerCase()
 
@@ -505,7 +518,7 @@ const _updateCreatorNodeConfig = async (ownerWallet, templatePath, writePath, en
   const ownerWalletPrivKey = ganacheEthAccounts.private_keys[`${ownerWallet}`]
   const delegateWalletPrivKey = ganacheEthAccounts.private_keys[`${delegateWallet}`]
 
-  await _updateCreatorNodeConfigFile(templatePath, writePath, ownerWallet, ownerWalletPrivKey, delegateWallet, delegateWalletPrivKey, endpoint, isShell)
+  await _updateCreatorNodeConfigFile({ templatePath, writePath, ownerWallet, ownerWalletPrivKey, delegateWallet, delegateWalletPrivKey, endpoint, isShell, envPath })
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
@@ -539,7 +552,7 @@ const _initEthContractTypes = async (libs) => {
   await addServiceType(libs, discoveryNodeType, discoveryNodeTypeMin, discoveryNodeTypeMax)
 }
 
-const writeEnvConfigFromTemplate = async ({ templatePath, writePath, replaceMap }) => {
+const writeEnvConfigFromTemplate = async ({ templatePath, writePath, replaceMap, envPath }) => {
   let template = fs.readFileSync(templatePath, 'utf8')
   const progressReport = []
   Object.entries(replaceMap).forEach(([toReplace, replacement]) => {
@@ -547,6 +560,9 @@ const writeEnvConfigFromTemplate = async ({ templatePath, writePath, replaceMap 
     progressReport.push(`${toReplace}: ${replacement}`)
   })
   fs.appendFileSync(writePath, template)
+  if (envPath) {
+    fs.appendFileSync(writePath, fs.readFileSync(envPath, 'utf8'))
+  }
   console.log(`Updated ${writePath}:\n${progressReport.join('\n')}`)
 }
 
@@ -562,14 +578,14 @@ const _configureDiscProv = async (ethAccounts, serviceNumber, templatePath, writ
 }
 
 // Write an update to shell env file for creator nodes or docker env file
-const _updateCreatorNodeConfigFile = async (templatePath, writePath, ownerWallet, ownerWalletPkey, delegateWallet, delegateWalletPrivKey, endpoint, isShell) => {
+const _updateCreatorNodeConfigFile = async ({ templatePath, writePath, ownerWallet, ownerWalletPkey, delegateWallet, delegateWalletPrivKey, endpoint, isShell, envPath }) => {
   const replaceMap = {
     DELEGATE_OWNER_WALLET: delegateWallet,
     DELEGATE_PRIVATE_KEY: delegateWalletPrivKey,
     CREATOR_NODE_ENDPOINT: endpoint,
     SP_OWNER_WALLET: ownerWallet
   }
-  writeEnvConfigFromTemplate({ templatePath, writePath, replaceMap })
+  writeEnvConfigFromTemplate({ templatePath, writePath, replaceMap, envPath })
 }
 
 const _updateUserReplicaSetManagerBootstrapConfig = async (ethAccounts) => {
