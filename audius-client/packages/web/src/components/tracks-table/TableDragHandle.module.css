@@ -13,8 +13,6 @@
   margin-left: 16px;
 }
 
-.iconDrag {
-  /* position: absolute; */
-  /* margin-left: 16px; */
-  /* left: 16px; */
+.iconDrag path {
+  fill: currentColor;
 }
