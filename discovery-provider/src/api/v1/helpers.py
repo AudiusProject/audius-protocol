@@ -19,13 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 def make_image(endpoint, cid, width="", height=""):
-    return f"{endpoint}/ipfs/{cid}/{width}x{height}.jpg"
+    return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
 def get_primary_endpoint(user):
     raw_endpoint = user["creator_node_endpoint"]
-    if not raw_endpoint:
-        return shared_config["discprov"]["user_metadata_service_url"]
     return raw_endpoint.split(",")[0]
 
 
