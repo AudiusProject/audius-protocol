@@ -30,7 +30,7 @@ export const generateMetrics = async (run_id: number) => {
 
   const endTimer = generatingMetricsDurationGauge.startTimer();
 
-  const userCount = await getUserCount();
+  const userCount = await getUserCount(run_id);
 
   const allUserCount = await getAllUserCount(run_id);
 

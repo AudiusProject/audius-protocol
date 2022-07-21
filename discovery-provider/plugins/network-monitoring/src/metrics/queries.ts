@@ -10,14 +10,15 @@ import { sequelizeConn } from "../db"
  */ 
 
 // Get the current user count from discovery nodes
-export const getUserCount = async (): Promise<number> => {
+export const getUserCount = async (run_id: number): Promise<number> => {
 
     const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
-    FROM users
-    WHERE is_current = TRUE
+    FROM network_monitoring_users
+    WHERE run_id = :run_id
     `, {
         type: QueryTypes.SELECT,
+        replacements: { run_id },
     })
 
     const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
