@@ -43,7 +43,7 @@ function errorHandler(err, req, res, next) {
  * Example:
  * {
  *    regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
- *    path: '/ipfs/#CID'
+ *    path: '/ipfs/:CID'
  * }
  * @param {Object} app
  */
