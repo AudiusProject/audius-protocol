@@ -20,9 +20,6 @@ const {
   SYNC_MODES
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
-const {
-  computeSyncModeForUserAndReplica
-} = require('../stateMonitoring/stateMonitoringUtils')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
