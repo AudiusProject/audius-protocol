@@ -35,15 +35,12 @@ function errorHandler(err, req, res, next) {
 }
 
 /**
- * Gets the regexes for routes with route params. Used for mapping paths in metrics to track route durations
+ * Get the path, method, and regex used to match to routes. Used to track route durations
  *
  * Structure:
  *  {regex: <some regex>, path: <path that a matched path will route to in the normalize fn in prometheus middleware>}
  *
- * Example of the regex added to PrometheusRegistry:
- *
- *  /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
- *
+ * Example:
  * {
  *    regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
  *    path: '/ipfs/#CID'
@@ -54,8 +51,8 @@ function _setupRouteDurationTracking(routers) {
   let layers = routers.map((route) => route.stack)
   layers = _.flatten(layers)
 
-  const routesWithoutRouteParams = []
-  const routesWithRouteParams = []
+  const routesWithoutParams = []
+  const routesWithParams = []
   for (const layer of layers) {
     const path = layer.route.path
     const method = Object.keys(layer.route.methods)[0]
@@ -64,13 +61,13 @@ function _setupRouteDurationTracking(routers) {
     if (Array.isArray(path)) {
       path.forEach((p) => {
         if (p.includes(':')) {
-          routesWithRouteParams.push({
+          routesWithParams.push({
             path: p,
             method,
             regex
           })
         } else {
-          routesWithoutRouteParams.push({
+          routesWithoutParams.push({
             path: p,
             method,
             regex
@@ -79,13 +76,13 @@ function _setupRouteDurationTracking(routers) {
       })
     } else {
       if (path.includes(':')) {
-        routesWithRouteParams.push({
+        routesWithParams.push({
           path,
           method,
           regex
         })
       } else {
-        routesWithoutRouteParams.push({
+        routesWithoutParams.push({
           path,
           method,
           regex
@@ -95,9 +92,9 @@ function _setupRouteDurationTracking(routers) {
   }
 
   return {
-    routesWithoutRouteParams,
-    routesWithRouteParams,
-    routes: [...routesWithRouteParams, ...routesWithoutRouteParams]
+    routesWithoutParams,
+    routesWithParams,
+    routes: [...routesWithParams, ...routesWithoutParams]
   }
 }
 
@@ -137,7 +134,7 @@ const initializeApp = (port, serviceRegistry) => {
     replicaSetRoutes
   ]
 
-  const { routesWithRouteParams, routes } = _setupRouteDurationTracking(routers)
+  const { routesWithParams, routes } = _setupRouteDurationTracking(routers)
 
   const prometheusRegistry = serviceRegistry.prometheusRegistry
 
@@ -165,7 +162,7 @@ const initializeApp = (port, serviceRegistry) => {
       normalizePath: function (req, opts) {
         const path = prometheusMiddleware.normalizePath(req, opts)
         try {
-          for (const { regex, path: normalizedPath } of routesWithRouteParams) {
+          for (const { regex, path: normalizedPath } of routesWithParams) {
             const match = path.match(regex)
             if (match) {
               return normalizedPath
