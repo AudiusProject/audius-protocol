@@ -169,6 +169,8 @@ export class EntityManager extends Base {
     logger: any
   }): Promise<{ blockHash: any; blockNumber: any }> {
     const userId: number = parseInt(this.userStateManager.getCurrentUserId())
+    const responseValues: PlaylistOperationResponse =
+      this.getDefaultPlaylistReponseValues()
     try {
       const resp = await this.manageEntity({
         userId,
