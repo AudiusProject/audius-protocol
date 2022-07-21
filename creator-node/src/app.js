@@ -45,7 +45,7 @@ function errorHandler(err, req, res, next) {
  *    regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
  *    path: '/ipfs/:CID'
  * }
- * @param {Object} app
+ * @param {Object[]} routers Array of Express routers
  */
 function _setupRouteDurationTracking(routers) {
   let layers = routers.map((route) => route.stack)
