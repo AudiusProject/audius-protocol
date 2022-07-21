@@ -7,6 +7,7 @@
   "private": true,
   "dependencies": {
     "@audius/common": "1.1.13",
+    "@coinbase/cbpay-js": "1.0.2",
     "@audius/sdk": "0.0.17",
     "@audius/stems": "1.1.13",
     "@craco/craco": "7.0.0-alpha.3",
@@ -215,6 +216,7 @@
     "@types/resize-observer-browser": "0.1.7",
     "@types/webpack": "5.28.0",
     "@types/webpack-bundle-analyzer": "4.4.1",
+    "@types/webpack-env": "1.17.0",
     "abort-controller": "3.0.0",
     "assert": "^2.0.0",
     "babel-plugin-lodash": "3.3.4",
