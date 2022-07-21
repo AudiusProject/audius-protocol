@@ -8,6 +8,7 @@ import {
     partiallySyncedUsersCountGauge,
     primaryUserCountGauge,
     unsyncedUsersCountGauge,
+    userCountGauge,
     usersWithAllFoundationNodeReplicaSetGauge,
 } from "../prometheus"
 import { getEnv } from "../utils"
@@ -19,6 +20,7 @@ import {
     getUnsyncedUsersCount,
     getUsersWithNullPrimaryClock,
     getUsersWithEntireReplicaSetInSpidSetCount,
+    getUserCount,
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
@@ -28,6 +30,8 @@ export const generateMetrics = async (run_id: number) => {
     console.log(`[${run_id}] generating metrics`)
 
     const endTimer = generatingMetricsDurationGauge.startTimer()
+
+    const userCount = await getUserCount()
 
     const allUserCount = await getAllUserCount(run_id)
 
@@ -50,6 +54,7 @@ export const generateMetrics = async (run_id: number) => {
         primaryUserCountGauge.set({ endpoint, run_id }, count)
     })
 
+    userCountGauge.set({ run_id }, userCount)
     fullySyncedUsersCountGauge.set({ run_id }, fullySyncedUsersCount)
     partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount)
     unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount)
@@ -63,7 +68,8 @@ export const generateMetrics = async (run_id: number) => {
         fullySyncedUsersCount: fullySyncedUsersCount,
         partiallySyncedUsersCount: partiallySyncedUserCount,
         unsyncedUsersCount: unsyncedUsersCount,
-        usersWithNullPrimaryClock: usersWithNullPrimaryClock
+        usersWithNullPrimaryClock: usersWithNullPrimaryClock,
+        usersWithAllFoundationNodeReplicaSetCount: usersWithAllFoundationNodeReplicaSetCount,
     })
 
     try {
