@@ -629,7 +629,7 @@ def test_track_indexing_skip_tx(app, mocker):
         autospec=True,
     )
 
-    test_ietadata = {}
+    test_metadata = {}
 
     with db.scoped_session() as session, challenge_event_bus.use_scoped_dispatch_queue():
         try:
