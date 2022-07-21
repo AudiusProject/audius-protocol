@@ -3,11 +3,10 @@ const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
 
-const { libs: AudiusLibs } = require('@audius/sdk')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
-const config = require('./config')
+const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
   logger: genericLogger,
@@ -15,6 +14,7 @@ const {
   logInfoWithDuration
 } = require('./logging')
 const utils = require('./utils')
+const config = require('./config')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
@@ -74,7 +74,7 @@ class ServiceRegistry {
   async initServices() {
     const start = getStartTime()
 
-    this.libs = await this._initAudiusLibs()
+    this.libs = await initAudiusLibs()
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
@@ -89,10 +89,6 @@ class ServiceRegistry {
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized synchronous services'
     )
-  }
-
-  async initLibs() {
-    this.libs = this.libs || (await this._initAudiusLibs())
   }
 
   /**
@@ -310,11 +306,7 @@ class ServiceRegistry {
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(
-      config,
-      this.libs,
-      this
-    )
+    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(config, this.libs)
     await this.skippedCIDsRetryQueue.init()
 
     try {
@@ -322,6 +314,14 @@ class ServiceRegistry {
     } catch (e) {
       this.logError(
         `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
+      )
+    }
+
+    try {
+      await this._setupRouteDurationTracking(app)
+    } catch (e) {
+      this.logError(
+        `DurationTracking || Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
       )
     }
 
@@ -374,6 +374,95 @@ class ServiceRegistry {
         'spID'
       )}`
     )
+  }
+
+  /**
+   * Gets the regexes for routes with route params. Used for mapping paths in metrics to track route durations
+   *
+   * Structure:
+   *  {regex: <some regex>, path: <path that a matched path will route to in the normalize fn in prometheus middleware>}
+   *
+   * Example of the regex added to PrometheusRegistry:
+   *
+   *  /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
+   *
+   * {
+   *    regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
+   *    path: '/ipfs/#CID'
+   * }
+   * @param {Object} app
+   */
+  async _setupRouteDurationTracking(app) {
+    // Get all the routes initialized in the app
+    const routes = app._router.stack.filter(
+      (element) =>
+        (element.route && element.route.path) ||
+        (element.handle && element.handle.stack)
+    )
+
+    // Iterate through the paths and add the regexes if the route
+    // has route params
+
+    // Express routing is... unpredictable. Use a set to manage seen paths
+    const seenPaths = new Set()
+    const parsedRoutes = []
+    routes.forEach((element) => {
+      if (element.name === 'router') {
+        // Iterate through routes initialized with the express router
+        element.handle.stack.forEach((e) => {
+          const path = e.route.path
+          const method = Object.keys(e.route.methods)[0]
+          const regex = e.regexp
+          addToParsedRoutes(path, method, regex)
+        })
+      } else {
+        // Iterate through all the other routes initalized with the app
+        const path = element.route.path
+        const method = Object.keys(element.route.methods)[0]
+        const regex = element.regexp
+        addToParsedRoutes(path, method, regex)
+      }
+    })
+
+    // Only keep track of the routes with route params, e.g. the route with ':'
+    // in the route to indicate a route param
+    function addToParsedRoutes(path, method, regex) {
+      // Routes may come in the form of an array (e.g. ['/ipfs/:CID', '/content/:CID'])
+      if (Array.isArray(path)) {
+        path.forEach((p) => {
+          if (!seenPaths.has(p + method)) {
+            if (p.includes(':')) {
+              seenPaths.add(p + method)
+              parsedRoutes.push({
+                path: p,
+                method,
+                regex
+              })
+            }
+          }
+        })
+      } else {
+        if (!seenPaths.has(path + method)) {
+          if (path.includes(':')) {
+            seenPaths.add(path + method)
+            parsedRoutes.push({
+              path,
+              method,
+              regex
+            })
+          }
+        }
+      }
+    }
+
+    const regexes = parsedRoutes
+      .filter(({ path }) => path.includes(':'))
+      .map(({ path, regex }) => ({
+        regex,
+        path: path.replace(/:/g, '#')
+      }))
+
+    this.prometheusRegistry.initRouteParamRegexes(regexes)
   }
 
   /**
@@ -475,63 +564,6 @@ class ServiceRegistry {
     this.logInfo(`SnapbackSM Init completed`)
   }
 
-  /**
-   * Creates, initializes, and returns an audiusLibs instance
-   *
-   * Configures dataWeb3 to be internal to libs, logged in with delegatePrivateKey in order to write chain TX
-   */
-  async _initAudiusLibs() {
-    const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
-      config.get('ethProviderUrl'),
-      config.get('ethNetworkId'),
-      /* requiresAccount */ false
-    )
-    if (!ethWeb3) {
-      throw new Error(
-        'Failed to init audiusLibs due to ethWeb3 configuration error'
-      )
-    }
-
-    const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
-      ? new Set(config.get('discoveryProviderWhitelist').split(','))
-      : null
-    const identityService = config.get('identityService')
-    const discoveryNodeUnhealthyBlockDiff = config.get(
-      'discoveryNodeUnhealthyBlockDiff'
-    )
-
-    const audiusLibs = new AudiusLibs({
-      ethWeb3Config: AudiusLibs.configEthWeb3(
-        config.get('ethTokenAddress'),
-        config.get('ethRegistryAddress'),
-        ethWeb3,
-        config.get('ethOwnerWallet')
-      ),
-      web3Config: AudiusLibs.configInternalWeb3(
-        config.get('dataRegistryAddress'),
-        [config.get('dataProviderUrl')],
-        // TODO - formatting this private key here is not ideal
-        config.get('delegatePrivateKey').replace('0x', '')
-      ),
-      discoveryProviderConfig: {
-        whitelist: discoveryProviderWhitelist,
-        unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
-      },
-      // If an identity service config is present, set up libs with the connection, otherwise do nothing
-      identityServiceConfig: identityService
-        ? AudiusLibs.configIdentityService(identityService)
-        : undefined,
-      isDebug: config.get('creatorNodeIsDebug'),
-      isServer: true,
-      preferHigherPatchForPrimary: true,
-      preferHigherPatchForSecondaries: true,
-      logger: genericLogger
-    })
-
-    await audiusLibs.init()
-    return audiusLibs
-  }
-
   logInfo(msg) {
     genericLogger.info(`ServiceRegistry || ${msg}`)
   }
@@ -541,11 +573,7 @@ class ServiceRegistry {
   }
 }
 
-/*
- * Export a singleton instance of the ServiceRegistry
- */
-const serviceRegistry = new ServiceRegistry()
-
+//  Export a singleton instance of the ServiceRegistry
 module.exports = {
-  serviceRegistry
+  serviceRegistry: new ServiceRegistry()
 }

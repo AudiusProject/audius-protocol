@@ -494,7 +494,7 @@ const config = convict({
     doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
     format: 'nat',
     env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
-    default: 5000 // 5000ms = 5s (prod default)
+    default: 60000 // 60000ms = 1m (prod default)
   },
   enforceWriteQuorum: {
     doc: 'Boolean flag indicating whether or not primary should reject write until 2/3 replication across replica set',
@@ -628,7 +628,7 @@ const config = convict({
     doc: 'Flag to enable or disable the nginx cache layer that caches content',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
-    default: false
+    default: true
   },
   reconfigNodeWhitelist: {
     doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',

@@ -422,6 +422,10 @@ git pull
 # deploy the manual changes seen, as well as the new intended changes
 ./grafana/bin/upload-dashboards.sh
 
+# deploy library panel updates
+# ONLY WHEN CHANGED to avoid version bumps
+./grafana/bin/upload-library-panels.sh
+
 # "manual mode" supports uploading one file at a time
 # ./grafana/bin/upload-dashboards.sh filename.json
 

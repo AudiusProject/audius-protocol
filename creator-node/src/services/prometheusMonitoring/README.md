@@ -97,11 +97,11 @@ Given the above, some important conclusions:
 
 ### Create metric in `./prometheus.constants.js`
 
-Add row to `MetricNames`
+Add row to `METRIC_NAMES`
 - Key should include a suffix for metric type (either _GAUGE or _HISTOGRAM)
 
-Add new object to `Metrics`
-- Key should be reference to MetricNames entry
+Add new object to `METRICS`
+- Key should be reference to METRIC_NAMES entry
 - Value should be an object containing the metricType and metricConfig
 - for metricConfig, specify required config for metricType.
 
@@ -127,18 +127,18 @@ See below API to record new sample for metric.
 
 Definition inside `prometheus.constants.js`
 ```
-let MetricNames = {
+let METRIC_NAMES = {
   ...
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
   ...
 }
 
-const Metrics = Object.freeze({
+const METRICS = Object.freeze({
   ...
-  [MetricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
-    metricType: MetricTypes.GAUGE,
+  [METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
-      name: MetricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE,
+      name: METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE,
       help: 'Current job counts for SyncQueue by status',
       labelNames: ['status']
     }

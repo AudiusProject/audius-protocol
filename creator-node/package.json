@@ -47,6 +47,7 @@
     "ethers": "5.4.7",
     "exif-parser": "^0.1.12",
     "express": "^4.16.3",
+    "express-prom-bundle": "^6.5.0",
     "express-rate-limit": "5.3.0",
     "ffmpeg-static": "^2.7.0",
     "ffprobe-static": "^3.0.0",

@@ -1,15 +1,17 @@
+const BullQueue = require('bull')
+
 const { libs } = require('@audius/sdk')
 const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
 
 const {
-  MetricRecordType,
-  MetricNames,
-  MetricLabels
+  METRIC_RECORD_TYPE,
+  METRIC_NAMES,
+  METRIC_LABELS
 } = require('../../services/prometheusMonitoring/prometheus.constants')
 const config = require('../../config')
-const { logger } = require('../../logging')
+const { logger, createChildLogger } = require('../../logging')
 const { generateTimestampAndSignature } = require('../../apiSigning')
 const {
   BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
@@ -149,7 +151,7 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
  */
 const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
   return makeMetricToRecord(
-    MetricRecordType.HISTOGRAM_OBSERVE,
+    METRIC_RECORD_TYPE.HISTOGRAM_OBSERVE,
     metricName,
     metricValue,
     metricLabels
@@ -166,7 +168,7 @@ const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
  */
 const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
   return makeMetricToRecord(
-    MetricRecordType.GAUGE_INC,
+    METRIC_RECORD_TYPE.GAUGE_INC,
     metricName,
     incBy,
     metricLabels
@@ -176,7 +178,7 @@ const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
 /**
  * Returns an object that can be returned from any state machine job to record a change in a metric.
  * Validates the params to make sure the metric is valid.
- * @param {string} metricType the type of metric being recorded -- HISTOGRAM_OBSERVE or GAUGE_INC
+ * @param {string} metricType the type of metric being recorded -- HISTOGRAM or GAUGE_INC
  * @param {string} metricName the name of the metric from prometheus.constants
  * @param {number} metricValue the value to observe
  * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
@@ -187,21 +189,21 @@ const makeMetricToRecord = (
   metricValue,
   metricLabels = {}
 ) => {
-  if (!Object.values(MetricRecordType).includes(metricType)) {
+  if (!Object.values(METRIC_RECORD_TYPE).includes(metricType)) {
     throw new Error(`Invalid metricType: ${metricType}`)
   }
-  if (!Object.values(MetricNames).includes(metricName)) {
+  if (!Object.values(METRIC_NAMES).includes(metricName)) {
     throw new Error(`Invalid metricName: ${metricName}`)
   }
   if (typeof metricValue !== 'number') {
     throw new Error(`Invalid non-numerical metricValue: ${metricValue}`)
   }
-  const labelNames = Object.keys(MetricLabels[metricName])
+  const labelNames = Object.keys(METRIC_LABELS[metricName])
   for (const [labelName, labelValue] of Object.entries(metricLabels)) {
     if (!labelNames?.includes(labelName)) {
       throw new Error(`Metric label has invalid name: ${labelName}`)
     }
-    const labelValues = MetricLabels[metricName][labelName]
+    const labelValues = METRIC_LABELS[metricName][labelName]
     if (!labelValues?.includes(labelValue) && labelValues?.length !== 0) {
       throw new Error(`Metric label has invalid value: ${labelValue}`)
     }
@@ -216,9 +218,62 @@ const makeMetricToRecord = (
   return metric
 }
 
+const makeQueue = ({
+  redisHost,
+  redisPort,
+  name,
+  removeOnComplete,
+  removeOnFail,
+  lockDuration,
+  limiter = null
+}) => {
+  // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
+  return new BullQueue(name, {
+    redis: {
+      host: redisHost,
+      port: redisPort
+    },
+    defaultJobOptions: {
+      removeOnComplete,
+      removeOnFail
+    },
+    settings: {
+      // Should be sufficiently larger than expected job runtime
+      lockDuration,
+      // We never want to re-process stalled jobs
+      maxStalledCount: 0
+    },
+    limiter
+  })
+}
+
+const registerQueueEvents = (queue, queueLogger) => {
+  queue.on('global:waiting', (jobId) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.info('Job waiting')
+  })
+  queue.on('global:active', (jobId, jobPromise) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.info('Job active')
+  })
+  queue.on('global:lock-extension-failed', (jobId, err) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.error(`Job lock extension failed. Error: ${err}`)
+  })
+  queue.on('global:stalled', (jobId) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.error('Job stalled')
+  })
+  queue.on('global:error', (error) => {
+    queueLogger.error(`Queue Job Error - ${error}`)
+  })
+}
+
 module.exports = {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord,
   makeGaugeIncToRecord,
-  retrieveUserInfoFromReplicaSet
+  retrieveUserInfoFromReplicaSet,
+  makeQueue,
+  registerQueueEvents
 }

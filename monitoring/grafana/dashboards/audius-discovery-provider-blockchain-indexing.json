@@ -43,173 +43,35 @@
         "type": "row"
       },
       {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
+        "libraryPanel": {
+          "description": "",
+          "meta": {
+            "connectedDashboards": 2,
+            "createdBy": {
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
-            "custom": {
-              "axisLabel": "Blocks",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "short"
-          },
-          "overrides": [
-            {
-              "__systemRef": "hideSeriesFrom",
-              "matcher": {
-                "id": "byNames",
-                "options": {
-                  "mode": "exclude",
-                  "names": [
-                    "discoveryprovider4.audius.co",
-                    "audius-disco.ams-x01.nl.supercache.org",
-                    "audius-disco.dfw-x02.us.supercache.org",
-                    "audius-discovery-1.altego.net",
-                    "audius-discovery-1.cultur3stake.com",
-                    "audius-discovery-10.cultur3stake.com",
-                    "audius-discovery-11.cultur3stake.com",
-                    "audius-discovery-12.cultur3stake.com",
-                    "audius-discovery-13.cultur3stake.com",
-                    "audius-discovery-14.cultur3stake.com",
-                    "audius-discovery-15.cultur3stake.com",
-                    "audius-discovery-16.cultur3stake.com",
-                    "audius-discovery-17.cultur3stake.com",
-                    "audius-discovery-18.cultur3stake.com",
-                    "audius-discovery-2.altego.net",
-                    "audius-discovery-2.cultur3stake.com",
-                    "audius-discovery-3.altego.net",
-                    "audius-discovery-3.cultur3stake.com",
-                    "audius-discovery-4.cultur3stake.com",
-                    "audius-discovery-5.cultur3stake.com",
-                    "audius-discovery-6.cultur3stake.com",
-                    "audius-discovery-7.cultur3stake.com",
-                    "audius-discovery-8.cultur3stake.com",
-                    "audius-discovery-9.cultur3stake.com",
-                    "audius-dp.amsterdam.creatorseed.com",
-                    "audius-dp.singapore.creatorseed.com",
-                    "audius-metadata-1.figment.io",
-                    "audius-metadata-2.figment.io",
-                    "audius-metadata-3.figment.io",
-                    "audius-metadata-4.figment.io",
-                    "audius-metadata-5.figment.io",
-                    "blockchange-audius-discovery-01.bdnodes.net",
-                    "blockdaemon-audius-discovery-07.bdnodes.net",
-                    "disc-lon01.audius.hashbeam.com",
-                    "discovery-au-02.audius.openplayer.org",
-                    "discovery.grassfed.network",
-                    "discoveryprovider.audius.co",
-                    "discoveryprovider.audius.prod-us-west-2.staked.cloud",
-                    "discoveryprovider.audius1.prod-us-west-2.staked.cloud",
-                    "discoveryprovider.audius2.prod-us-west-2.staked.cloud",
-                    "discoveryprovider.audius3.prod-us-west-2.staked.cloud",
-                    "discoveryprovider.audius4.prod-us-west-2.staked.cloud",
-                    "discoveryprovider.audius5.prod-us-west-2.staked.cloud",
-                    "discoveryprovider.audius6.prod-us-west-2.staked.cloud",
-                    "discoveryprovider.audius7.prod-us-west-2.staked.cloud",
-                    "discoveryprovider2.audius.co",
-                    "discoveryprovider3.audius.co",
-                    "dn-jpn.audius.metadata.fyi",
-                    "dn1.matterlightblooming.xyz",
-                    "dn1.monophonic.digital",
-                    "dn1.nodeoperator.io",
-                    "dn2.monophonic.digital",
-                    "discoveryprovider.staging.audius.co",
-                    "discoveryprovider2.staging.audius.co",
-                    "discoveryprovider3.staging.audius.co",
-                    "discoveryprovider5.staging.audius.co"
-                  ],
-                  "prefix": "All except:",
-                  "readOnly": true
-                }
-              },
-              "properties": [
-                {
-                  "id": "custom.hideFrom",
-                  "value": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": true
-                  }
-                }
-              ]
+            "folderName": "General",
+            "folderUid": "",
+            "updatedBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
             }
-          ]
+          },
+          "name": "Blockdiff",
+          "type": "timeseries",
+          "uid": "hhRZ9K67k",
+          "version": 3
         },
+        "id": 19,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 0,
           "y": 1
-        },
-        "id": 9,
-        "options": {
-          "legend": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "sortBy": "Last *",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "single",
-            "sort": "none"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "audius_dn_health_check_block_difference_latest{environment=~\"$env\", host=~\"$host\"}",
-            "legendFormat": "{{host}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Blockdiff",
-        "type": "timeseries"
+        }
       },
       {
         "fieldConfig": {
@@ -256,7 +118,7 @@
           },
           "textMode": "auto"
         },
-        "pluginVersion": "9.0.2",
+        "pluginVersion": "9.0.1",
         "targets": [
           {
             "datasource": {
@@ -308,70 +170,10 @@
         "type": "row"
       },
       {
-        "description": "",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisLabel": "Task Duration",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 8,
-          "x": 0,
-          "y": 10
-        },
-        "id": 13,
         "libraryPanel": {
           "description": "",
           "meta": {
             "connectedDashboards": 2,
-            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -379,7 +181,6 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -389,144 +190,21 @@
           "name": "POA Indexing",
           "type": "timeseries",
           "uid": "erW7rK6nk",
-          "version": 1
+          "version": 2
         },
-        "options": {
-          "legend": {
-            "calcs": [],
-            "displayMode": "list",
-            "placement": "bottom"
-          },
-          "tooltip": {
-            "mode": "single",
-            "sort": "none"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p50",
-            "range": true,
-            "refId": "B"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p90",
-            "range": true,
-            "refId": "C"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p95",
-            "range": true,
-            "refId": "D"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p99",
-            "range": true,
-            "refId": "A"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p999",
-            "range": true,
-            "refId": "E"
-          }
-        ],
-        "title": "POA Indexing",
-        "type": "timeseries"
-      },
-      {
-        "description": "",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisLabel": "Task Duration",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
+        "id": 1,
         "gridPos": {
           "h": 8,
           "w": 8,
-          "x": 8,
+          "x": 0,
           "y": 10
-        },
-        "id": 14,
+        }
+      },
+      {
         "libraryPanel": {
           "description": "",
           "meta": {
             "connectedDashboards": 2,
-            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -534,7 +212,6 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -544,78 +221,15 @@
           "name": "Solana Plays Indexing",
           "type": "timeseries",
           "uid": "0aIn9F6nk",
-          "version": 1
+          "version": 2
         },
-        "options": {
-          "legend": {
-            "calcs": [],
-            "displayMode": "list",
-            "placement": "bottom"
-          },
-          "tooltip": {
-            "mode": "single",
-            "sort": "none"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p50",
-            "range": true,
-            "refId": "B"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p90",
-            "range": true,
-            "refId": "C"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p95",
-            "range": true,
-            "refId": "D"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p99",
-            "range": true,
-            "refId": "A"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p999",
-            "range": true,
-            "refId": "E"
-          }
-        ],
-        "title": "Solana Plays Indexing",
-        "type": "timeseries"
+        "id": 3,
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 8,
+          "y": 10
+        }
       },
       {
         "fieldConfig": {
@@ -760,7 +374,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
+          "definition": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
           "description": "",
           "hide": 0,
           "includeAll": true,
@@ -769,7 +383,7 @@
           "name": "env",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
+            "query": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
@@ -789,7 +403,7 @@
           "hide": 0,
           "includeAll": true,
           "label": "Host",
-          "multi": false,
+          "multi": true,
           "name": "host",
           "options": [],
           "query": {

@@ -10,6 +10,7 @@ const {
   C_NODE_ENDPOINT_TO_SP_ID_MAP_QUEUE_MAX_JOB_RUNTIME_MS,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
 } = require('../stateMachineConstants')
+const { makeQueue, registerQueueEvents } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
@@ -34,22 +35,40 @@ const cNodeEndpointToSpIdMapQueueLogger = createChildLogger(baseLogger, {
 class StateMonitoringManager {
   async init(discoveryNodeEndpoint, prometheusRegistry) {
     // Create and start queue to fetch cNodeEndpoint->spId mapping
-    const cNodeEndpointToSpIdMapQueue = this.makeCNodeToEndpointSpIdMapQueue(
-      config.get('redisHost'),
-      config.get('redisPort')
-    )
+    const cNodeEndpointToSpIdMapQueue = makeQueue({
+      redisHost: config.get('redisHost'),
+      redisPort: config.get('redisPort'),
+      name: QUEUE_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP,
+      removeOnComplete: QUEUE_HISTORY.C_NODE_ENDPOINT_TO_SP_ID_MAP,
+      removeOnFail: QUEUE_HISTORY.C_NODE_ENDPOINT_TO_SP_ID_MAP,
+      lockDuration: C_NODE_ENDPOINT_TO_SP_ID_MAP_QUEUE_MAX_JOB_RUNTIME_MS,
+      limiter: {
+        max: 1,
+        duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
+      }
+    })
     await this.startEndpointToSpIdMapQueue(
       cNodeEndpointToSpIdMapQueue,
       prometheusRegistry
     )
 
     // Create and start queue to monitor state for syncs and reconfigs
-    const stateMonitoringQueue = this.makeMonitoringQueue(
-      config.get('redisHost'),
-      config.get('redisPort')
-    )
+    const stateMonitoringQueue = makeQueue({
+      redisHost: config.get('redisHost'),
+      redisPort: config.get('redisPort'),
+      name: QUEUE_NAMES.STATE_MONITORING,
+      removeOnComplete: QUEUE_HISTORY.STATE_MONITORING,
+      removeOnFail: QUEUE_HISTORY.STATE_MONITORING,
+      lockDuration: STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
+      limiter: {
+        // Bull doesn't allow either of these to be set to 0
+        max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
+        duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
+      }
+    })
     this.registerMonitoringQueueEventHandlersAndJobProcessors({
       monitoringQueue: stateMonitoringQueue,
+      cNodeEndpointToSpIdMapQueue,
       monitorStateJobFailureCallback: this.enqueueMonitorStateJobAfterFailure,
       processMonitorStateJob:
         this.makeProcessMonitorStateJob(prometheusRegistry).bind(this),
@@ -66,64 +85,11 @@ class StateMonitoringManager {
     }
   }
 
-  makeMonitoringQueue(redisHost, redisPort) {
-    // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(QUEUE_NAMES.STATE_MONITORING, {
-      redis: {
-        host: redisHost,
-        port: redisPort
-      },
-      defaultJobOptions: {
-        removeOnComplete: QUEUE_HISTORY.STATE_MONITORING,
-        removeOnFail: QUEUE_HISTORY.STATE_MONITORING
-      },
-      settings: {
-        // Should be sufficiently larger than expected job runtime
-        lockDuration: STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
-        // We never want to re-process stalled jobs
-        maxStalledCount: 0
-      },
-      limiter: {
-        // Bull doesn't allow either of these to be set to 0
-        max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
-        duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
-      }
-    })
-  }
-
-  makeCNodeToEndpointSpIdMapQueue(redisHost, redisPort) {
-    cNodeEndpointToSpIdMapQueueLogger.info(
-      `Initting queue to update cNodeEndpointToSpIdMap every ${
-        config.get('fetchCNodeEndpointToSpIdMapIntervalMs') / 1000
-      } seconds`
-    )
-    // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(QUEUE_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP, {
-      redis: {
-        host: redisHost,
-        port: redisPort
-      },
-      defaultJobOptions: {
-        removeOnComplete: QUEUE_HISTORY.C_NODE_ENDPOINT_TO_SP_ID_MAP,
-        removeOnFail: QUEUE_HISTORY.C_NODE_ENDPOINT_TO_SP_ID_MAP
-      },
-      settings: {
-        // Should be sufficiently larger than expected job runtime
-        lockDuration: C_NODE_ENDPOINT_TO_SP_ID_MAP_QUEUE_MAX_JOB_RUNTIME_MS,
-        // We never want to re-process stalled jobs
-        maxStalledCount: 0
-      },
-      limiter: {
-        max: 1,
-        duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
-      }
-    })
-  }
-
   /**
    * Registers event handlers for logging and job success/failure.
    * @param {Object} params
    * @param {Object} params.monitoringQueue the monitoring queue to register events for
+   * @param {Object} params.cNodeEndpointToSpIdMapQueue the queue that fetches the cNodeEndpoint->spId map
    * @param {Function<failedJob>} params.monitorStateJobFailureCallback the function to call when a monitorState job fails
    * @param {Function<job>} params.processMonitorStateJob the function to call when processing a job from the queue to monitor state
    * @param {Function<job>} params.processFindSyncRequestsJob the function to call when processing a job from the queue to find sync requests that potentially need to be issued
@@ -131,40 +97,25 @@ class StateMonitoringManager {
    */
   registerMonitoringQueueEventHandlersAndJobProcessors({
     monitoringQueue,
+    cNodeEndpointToSpIdMapQueue,
     monitorStateJobFailureCallback,
     processMonitorStateJob,
     processFindSyncRequestsJob,
     processFindReplicaSetUpdatesJob
   }) {
     // Add handlers for logging
-    monitoringQueue.on('global:waiting', (jobId) => {
-      monitoringQueueLogger.info(`Queue Job Waiting - ID ${jobId}`)
-    })
-    monitoringQueue.on('global:active', (jobId, jobPromise) => {
-      monitoringQueueLogger.info(`Queue Job Active - ID ${jobId}`)
-    })
-    monitoringQueue.on('global:lock-extension-failed', (jobId, err) => {
-      monitoringQueueLogger.error(
-        `Queue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
-      )
-    })
-    monitoringQueue.on('global:stalled', (jobId) => {
-      monitoringQueueLogger.error(`Queue Job Stalled - ID ${jobId}`)
-    })
-    monitoringQueue.on('global:error', (error) => {
-      monitoringQueueLogger.error(`Queue Job Error - ${error}`)
-    })
+    registerQueueEvents(monitoringQueue, monitoringQueueLogger)
+    registerQueueEvents(
+      cNodeEndpointToSpIdMapQueue,
+      cNodeEndpointToSpIdMapQueueLogger
+    )
 
-    // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
-    monitoringQueue.on('completed', (job, result) => {
-      monitoringQueueLogger.info(
-        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
-      )
-    })
+    // Log when a job fails to complete and re-enqueue another monitoring job
     monitoringQueue.on('failed', (job, err) => {
-      monitoringQueueLogger.error(
-        `Queue Job Failed - ID ${job?.id} - Error ${err}`
-      )
+      const logger = createChildLogger(monitoringQueueLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
       if (job?.name === JOB_NAMES.MONITOR_STATE) {
         monitorStateJobFailureCallback(monitoringQueue, job)
       }
