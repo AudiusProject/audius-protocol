@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import type { ID } from '@audius/common'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
@@ -60,6 +60,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     height: '100%'
   },
   trackTitle: {
+    flexDirection: 'row'
+  },
+  trackTitleText: {
     ...font('demiBold'),
     color: palette.neutral
   },
@@ -137,6 +140,12 @@ export const TrackListItem = ({
   const dispatchWeb = useDispatchWeb()
   const themeColors = useThemeColors()
   const currentUserId = useSelectorWeb(getUserId)
+  const [titleWidth, setTitleWidth] = useState(0)
+
+  const deletedTextWidth = useMemo(
+    () => (messages.deleted.length ? 124 : 0),
+    [messages]
+  )
 
   const onPressTrack = () => {
     if (uid && !isDeleted && togglePlay) {
@@ -228,10 +237,25 @@ export const TrackListItem = ({
         ) : null}
         {isReorderable && <IconDrag style={styles.dragIcon} />}
         <View style={styles.nameArtistContainer}>
-          <Text numberOfLines={1} style={styles.trackTitle}>
-            {title}
-            {messages.deleted}
-          </Text>
+          <View
+            style={styles.trackTitle}
+            onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.trackTitleText,
+                {
+                  maxWidth: titleWidth ? titleWidth - deletedTextWidth : '100%'
+                }
+              ]}>
+              {title}
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={[styles.trackTitleText, { flexBasis: deletedTextWidth }]}>
+              {messages.deleted}
+            </Text>
+          </View>
           <Text numberOfLines={1} style={styles.artistName}>
             {name}
             <UserBadges user={track.user} badgeSize={12} hideName />
