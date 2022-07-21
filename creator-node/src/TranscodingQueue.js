@@ -21,6 +21,8 @@ const PROCESS_NAMES = Object.freeze({
   transcode320: 'transcode_320'
 })
 
+const TRANSCODING_QUEUE_HISTORY = 500
+
 class TranscodingQueue {
   constructor() {
     this.queue = new Bull('transcoding-queue', {
@@ -29,8 +31,8 @@ class TranscodingQueue {
         host: config.get('redisHost')
       },
       defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: true
+        removeOnComplete: TRANSCODING_QUEUE_HISTORY,
+        removeOnFail: TRANSCODING_QUEUE_HISTORY
       }
     })
     this.logStatus('Initialized TranscodingQueue')
