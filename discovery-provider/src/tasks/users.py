@@ -361,10 +361,7 @@ def parse_user_event(
             ):
                 user_record.profile_picture = metadata["profile_picture_sizes"]
 
-            if (
-                "cover_photo_sizes" in metadata
-                and metadata["cover_photo_sizes"]
-            ):
+            if "cover_photo_sizes" in metadata and metadata["cover_photo_sizes"]:
                 user_record.cover_photo = metadata["cover_photo_sizes"]
 
             if (
@@ -395,10 +392,7 @@ def parse_user_event(
                     "sol",
                 )
 
-            if (
-                "playlist_library" in metadata
-                and metadata["playlist_library"]
-            ):
+            if "playlist_library" in metadata and metadata["playlist_library"]:
                 user_record.playlist_library = metadata["playlist_library"]
 
             if "is_deactivated" in metadata:

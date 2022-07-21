@@ -44,9 +44,7 @@ def index_block_stats():
                 redis, TEN_MINUTES_IN_SECONDS
             ),
             "hour": get_fetch_metadata_ms_stats_since(redis, HOUR_IN_SECONDS),
-            "six_hour": get_fetch_metadata_ms_stats_since(
-                redis, SIX_HOURS_IN_SECONDS
-            ),
+            "six_hour": get_fetch_metadata_ms_stats_since(redis, SIX_HOURS_IN_SECONDS),
             "twelve_hour": get_fetch_metadata_ms_stats_since(
                 redis, TWELVE_HOURS_IN_SECONDS
             ),
