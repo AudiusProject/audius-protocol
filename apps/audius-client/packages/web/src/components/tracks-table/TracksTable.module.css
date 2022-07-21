@@ -2,6 +2,10 @@
   width: 100%;
 }
 
+.tracksTableContainer :global(.ant-table) {
+  background-color: unset;
+}
+
 .tracksTableContainer :global(.ant-table .ant-table-container:before),
 .tracksTableContainer :global(.ant-table .ant-table-container:after) {
   display: none;
@@ -111,6 +115,11 @@
   user-select: none;
   transition: all 0.05s ease-in-out;
   position: relative;
+}
+
+:global(.ant-table-tbody > tr > td.ant-table-cell-row-hover) {
+  background-color: var(--white);
+  color: var(--neutral);
 }
 
 :global(.ant-table-tbody > tr > td) .textContainer {
