@@ -166,6 +166,15 @@ function formatReaction (notification, metadata) {
     amount: formatWei(new BN(notification.metadata.reacted_to_entity.amount))
   }
 }
+function formatReactionEmail (notification, extras) {
+  const { userId, metadata: { reactedToEntity: { amount } } } = notification
+  console.log(`CONSOLE LOG formatReactionEmail userId ${userId} user ${JSON.stringify(extras.users[userId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
+  return {
+    type: NotificationType.Reaction,
+    reactingUser: extras.users[userId],
+    amount: formatWei(new BN(amount))
+  }
+}
 
 function formatTipReceive (notification, metadata) {
   const userId = notification.metadata.entity_id
@@ -175,6 +184,15 @@ function formatTipReceive (notification, metadata) {
     type: NotificationType.TipReceive,
     sendingUser: user,
     amount: formatWei(new BN(notification.metadata.amount))
+  }
+}
+function formatTipReceiveEmail (notification, extras) {
+  const { userId, metadata: { amount } } = notification
+  console.log(`CONSOLE LOG formatTipReceiveEmail userId ${userId} user ${JSON.stringify(extras.users[userId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
+  return {
+    type: NotificationType.TipReceive,
+    sendingUser: extras.users[userId],
+    amount: formatWei(new BN(amount))
   }
 }
 
@@ -189,6 +207,16 @@ function formatSupporterRankUp (notification, metadata) {
     sendingUser: user
   }
 }
+function formatSupporterRankUpEmail (notification, extras) {
+  // Sending user
+  const { entityId: rank, metadata: { supportingUserId } } = notification
+  console.log(`CONSOLE LOG formatSupporterRankUpEmail userId ${supportingUserId} user ${JSON.stringify(extras.users[supportingUserId], null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(extras, null, 2)}`)
+  return {
+    type: NotificationType.SupporterRankUp,
+    rank,
+    sendingUser: extras.users[supportingUserId]
+  }
+}
 
 function formatSupportingRankUp (notification, metadata) {
   // Receiving user
@@ -199,6 +227,16 @@ function formatSupportingRankUp (notification, metadata) {
     type: NotificationType.SupportingRankUp,
     rank: notification.metadata.rank,
     receivingUser: user
+  }
+}
+function formatSupportingRankUpEmail (notification, extras) {
+  // Receiving user
+  const { entityId: rank, metadata: { supportedUserId } } = notification
+  console.log(`CONSOLE LOG formatSupportingRankUpEmail userId ${userId} user ${JSON.stringify(extras.users[supportedUserId], null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(extras, null, 2)}`)
+  return {
+    type: NotificationType.SupportingRankUp,
+    rank,
+    receivingUser: extras.users[supportedUserId]
   }
 }
 
@@ -272,7 +310,14 @@ const notificationResponseMap = {
   [NotificationType.AddTrackToPlaylist]: (notification, metadata) => {
     return formatAddTrackToPlaylist(notification, metadata)
   }
+}
 
+const emailNotificationResponseMap = {
+  ...notificationResponseMap,
+  [NotificationType.Reaction]: formatReactionEmail,
+  [NotificationType.TipReceive]: formatTipReceiveEmail,
+  [NotificationType.SupporterRankUp]: formatSupporterRankUpEmail,
+  [NotificationType.SupportingRankUp]: formatSupportingRankUpEmail
 }
 
 const NewFavoriteTitle = 'New Favorite'
@@ -350,12 +395,12 @@ const notificationResponseTitleMap = {
 
 }
 
-function formatNotificationProps (notifications, metadata) {
+function formatEmailNotificationProps (notifications, extras) {
   console.log(`CONSOLE LOG WORKS`)
   const emailNotificationProps = notifications.map(notification => {
-    const mapNotification = notificationResponseMap[notification.type]
+    const mapNotification = emailNotificationResponseMap[notification.type]
     console.log(`CONSOLE LOG mapNotification ${mapNotification} notification.type ${notification.type}`)
-    return mapNotification(notification, metadata)
+    return mapNotification(notification, extras)
   })
   return emailNotificationProps
 }
@@ -430,7 +475,7 @@ const pushNotificationMessagesMap = {
 module.exports = {
   challengeInfoMap,
   getRankSuffix,
-  formatNotificationProps,
+  formatEmailNotificationProps,
   notificationResponseMap,
   notificationResponseTitleMap,
   pushNotificationMessagesMap

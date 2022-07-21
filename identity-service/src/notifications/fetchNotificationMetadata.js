@@ -4,7 +4,7 @@ const models = require('../models')
 const { notificationTypes: NotificationType } = require('../notifications/constants')
 const Entity = require('../routes/notifications').Entity
 const mergeAudiusAnnoucements = require('../routes/notifications').mergeAudiusAnnoucements
-const { formatNotificationProps } = require('./formatNotificationMetadata')
+const { formatEmailNotificationProps } = require('./formatNotificationMetadata')
 
 const config = require('../config.js')
 const { logger } = require('../logging')
@@ -27,6 +27,8 @@ const USER_FETCH_LIMIT = 10
  *
  * @return {Promise<Object>}
  */
+
+const EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES = [NotificationType.TipSend]
 
 const getLastWeek = () => moment().subtract(7, 'days')
 async function getEmailNotifications (audius, userId, announcements = [], fromTime = getLastWeek(), limit = 5) {
@@ -67,6 +69,9 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
         isHidden: false,
         createdAt: {
           [models.Sequelize.Op.gt]: fromTime.toDate()
+        },
+        type: {
+          [models.Sequelize.Op.notIn]: EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES
         }
       },
       order: [
@@ -105,6 +110,9 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
         isHidden: false,
         createdAt: {
           [models.Sequelize.Op.gt]: fromTime.toDate()
+        },
+        type: {
+          [models.Sequelize.Op.notIn]: EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES
         }
       },
       include: [{ model: models.SolanaNotificationAction, as: 'actions', attributes: [] }],
@@ -155,7 +163,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     const fetchDataDuration = (Date.now() - fethNotificationsTime) / 1000
     logger.info({ job: 'fetchNotificationMetdata', duration: fetchDataDuration }, `fetchNotificationMetdata | get metadata ${fetchDataDuration} sec`)
     logger.info(`SALIOU finalUserNotifications ${JSON.stringify(finalUserNotifications)} metadata ${JSON.stringify(metadata)}`)
-    const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
+    const notificationsEmailProps = formatEmailNotificationProps(finalUserNotifications, metadata)
     if (solanaNotifCountQuery.length > 0) {
       logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | notificationsEmailProps: ${JSON.stringify(notificationsEmailProps, null, 2)}, totalLength: ${notificationCount + unreadAnnouncementCount}`)
     }
