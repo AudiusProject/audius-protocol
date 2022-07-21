@@ -1,4 +1,4 @@
-import { Base, BaseConstructorArgs, Services } from './base'
+import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
 import type { Nullable } from '../utils'
 
@@ -42,10 +42,6 @@ const MAX_PLAYLIST_ID = 2147483647
   Handles metadata + file upload etc. for entities such as Playlist/Track/User
 */
 export class EntityManager extends Base {
-  constructor(...args: BaseConstructorArgs) {
-    super(...args)
-  }
-
   /**
    * Generate random integer between two known values
    */
@@ -174,7 +170,6 @@ export class EntityManager extends Base {
   }): Promise<{ blockHash: any; blockNumber: any }> {
     const userId: number = parseInt(this.userStateManager.getCurrentUserId())
     try {
-
       const resp = await this.manageEntity({
         userId,
         entityType: EntityType.PLAYLIST,
@@ -242,6 +237,7 @@ export class EntityManager extends Base {
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
       if (coverArt) {
+        // @ts-expect-error
         const updatedPlaylistImage = await this.creatorNode.uploadImage(
           coverArt,
           true // square
@@ -254,6 +250,7 @@ export class EntityManager extends Base {
 
       let playlistContents = trackIds
       if (playlist.playlist_contents) {
+        // CONVERT TO FOREACH
         playlistContents = playlist.playlist_contents.track_ids.map(
           (x: { [x: string]: any }) => x['track']
         )
@@ -262,12 +259,12 @@ export class EntityManager extends Base {
       const metadata: PlaylistMetadata = {
         playlist_id: playlistId,
         playlist_contents: playlistContents,
-        playlist_name: playlistName || playlist.playlist_name,
+        playlist_name: playlistName ?? playlist.playlist_name,
         playlist_image_sizes_multihash:
           dirCID || playlist.playlist_image_sizes_multihash,
-        description: description || playlist.description,
-        is_album: isAlbum || playlist.is_album,
-        is_private: isPrivate || playlist.is_private
+        description: description ?? playlist.description,
+        is_album: isAlbum ?? playlist.is_album,
+        is_private: isPrivate ?? playlist.is_private
       }
       const { metadataMultihash } =
         await this.creatorNode.uploadPlaylistMetadata(metadata)
