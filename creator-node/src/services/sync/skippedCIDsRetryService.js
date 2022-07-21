@@ -26,7 +26,7 @@ class SkippedCIDsRetryQueue {
       defaultJobOptions: {
         // these required since completed/failed jobs data set can grow infinitely until memory exhaustion
         removeOnComplete: RETRY_QUEUE_HISTORY,
-        removeOnFail: true
+        removeOnFail: RETRY_QUEUE_HISTORY
       }
     })
 

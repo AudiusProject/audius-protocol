@@ -45,7 +45,7 @@ class AsyncProcessingQueue {
       },
       defaultJobOptions: {
         removeOnComplete: ASYNC_PROCESSING_QUEUE_HISTORY,
-        removeOnFail: true
+        removeOnFail: ASYNC_PROCESSING_QUEUE_HISTORY
       }
     })
 

@@ -29,7 +29,7 @@ class ImageProcessingQueue {
       },
       defaultJobOptions: {
         removeOnComplete: IMAGE_PROCESSING_QUEUE_HISTORY,
-        removeOnFail: true
+        removeOnFail: IMAGE_PROCESSING_QUEUE_HISTORY
       }
     })
 

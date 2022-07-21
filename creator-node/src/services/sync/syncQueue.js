@@ -27,7 +27,7 @@ class SyncQueue {
       },
       defaultJobOptions: {
         removeOnComplete: SYNC_QUEUE_HISTORY,
-        removeOnFail: true
+        removeOnFail: SYNC_QUEUE_HISTORY
       }
     })
 

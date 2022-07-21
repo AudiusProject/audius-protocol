@@ -32,7 +32,7 @@ class TranscodingQueue {
       },
       defaultJobOptions: {
         removeOnComplete: TRANSCODING_QUEUE_HISTORY,
-        removeOnFail: true
+        removeOnFail: TRANSCODING_QUEUE_HISTORY
       }
     })
     this.logStatus('Initialized TranscodingQueue')

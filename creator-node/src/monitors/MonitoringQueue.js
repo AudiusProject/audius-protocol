@@ -30,7 +30,7 @@ class MonitoringQueue {
       },
       defaultJobOptions: {
         removeOnComplete: MONITORING_QUEUE_HISTORY,
-        removeOnFail: true
+        removeOnFail: MONITORING_QUEUE_HISTORY
       }
     })
 
