@@ -57,35 +57,38 @@ function _setupRouteDurationTracking(routers) {
   const routesWithoutRouteParams = []
   const routesWithRouteParams = []
   for (const layer of layers) {
-    const route = layer.route
-    if (Array.isArray(route.path)) {
-      route.path.forEach((p) => {
+    const path = layer.route.path
+    const method = Object.keys(layer.route.methods)[0]
+    const regex = layer.regexp
+
+    if (Array.isArray(path)) {
+      path.forEach((p) => {
         if (p.includes(':')) {
           routesWithRouteParams.push({
             path: p,
-            method: Object.keys(layer.route.methods)[0],
-            regex: layer.regexp
+            method,
+            regex
           })
         } else {
           routesWithoutRouteParams.push({
             path: p,
-            method: Object.keys(layer.route.methods)[0],
-            regex: layer.regexp
+            method,
+            regex
           })
         }
       })
     } else {
-      if (route.path.includes(':')) {
+      if (path.includes(':')) {
         routesWithRouteParams.push({
-          path: layer.route.path,
-          method: Object.keys(layer.route.methods)[0],
-          regex: layer.regexp
+          path,
+          method,
+          regex
         })
       } else {
         routesWithoutRouteParams.push({
-          path: layer.route.path,
-          method: Object.keys(layer.route.methods)[0],
-          regex: layer.regexp
+          path,
+          method,
+          regex
         })
       }
     }
