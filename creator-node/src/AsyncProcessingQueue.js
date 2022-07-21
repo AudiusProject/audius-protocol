@@ -27,6 +27,8 @@ const PROCESS_STATES = Object.freeze({
   FAILED: 'FAILED'
 })
 
+const ASYNC_PROCESSING_QUEUE_HISTORY = 500
+
 /**
  * This queue accepts jobs (any function) that needs to be processed asynchonously.
  * Once the job is complete, the response is added to redis. The response can be
@@ -42,7 +44,7 @@ class AsyncProcessingQueue {
         port: config.get('redisPort')
       },
       defaultJobOptions: {
-        removeOnComplete: true,
+        removeOnComplete: ASYNC_PROCESSING_QUEUE_HISTORY,
         removeOnFail: true
       }
     })

@@ -10,6 +10,8 @@ const PROCESS_NAMES = Object.freeze({
   monitor: 'monitor'
 })
 
+const MONITORING_QUEUE_HISTORY = 500
+
 /**
  * A persistent cron-style queue that periodically monitors various
  * health metrics and caches values in redis.
@@ -27,7 +29,7 @@ class MonitoringQueue {
         host: config.get('redisHost')
       },
       defaultJobOptions: {
-        removeOnComplete: true,
+        removeOnComplete: MONITORING_QUEUE_HISTORY,
         removeOnFail: true
       }
     })

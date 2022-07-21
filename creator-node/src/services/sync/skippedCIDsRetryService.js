@@ -7,6 +7,8 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
 
+const RETRY_QUEUE_HISTORY = 500
+
 /**
  * TODO - consider moving queue/jobs off main process. Will require re-factoring of job processing / dependencies
  */
@@ -23,7 +25,7 @@ class SkippedCIDsRetryQueue {
       },
       defaultJobOptions: {
         // these required since completed/failed jobs data set can grow infinitely until memory exhaustion
-        removeOnComplete: true,
+        removeOnComplete: RETRY_QUEUE_HISTORY,
         removeOnFail: true
       }
     })
