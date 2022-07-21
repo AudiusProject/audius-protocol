@@ -29,8 +29,6 @@ class PrometheusRegistry {
     this.metricNames = { ...METRIC_NAMES }
 
     this.namespacePrefix = NAMESPACE_PREFIX
-
-    this.regexes = []
   }
 
   /**
@@ -44,14 +42,6 @@ class PrometheusRegistry {
       const metric = new MetricType(metricConfig)
       registry.registerMetric(metric)
     }
-  }
-
-  /**
-   * Initializes the regexes to match on routes with route params
-   * @param {RegExp[]} regexes the regexes used to match on routes with route params
-   */
-  initRouteParamRegexes(regexes) {
-    this.regexes = regexes
   }
 
   /** Getters */

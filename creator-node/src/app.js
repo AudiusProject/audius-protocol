@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const prometheusMiddleware = require('express-prom-bundle')
+const _ = require('lodash')
 
 const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
@@ -34,6 +35,70 @@ function errorHandler(err, req, res, next) {
 }
 
 /**
+ * Gets the regexes for routes with route params. Used for mapping paths in metrics to track route durations
+ *
+ * Structure:
+ *  {regex: <some regex>, path: <path that a matched path will route to in the normalize fn in prometheus middleware>}
+ *
+ * Example of the regex added to PrometheusRegistry:
+ *
+ *  /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
+ *
+ * {
+ *    regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
+ *    path: '/ipfs/#CID'
+ * }
+ * @param {Object} app
+ */
+function _setupRouteDurationTracking(routers) {
+  let layers = routers.map((route) => route.stack)
+  layers = _.flatten(layers)
+
+  const routesWithoutRouteParams = []
+  const routesWithRouteParams = []
+  for (const layer of layers) {
+    const route = layer.route
+    if (Array.isArray(route.path)) {
+      route.path.forEach((p) => {
+        if (p.includes(':')) {
+          routesWithRouteParams.push({
+            path: p,
+            method: Object.keys(layer.route.methods)[0],
+            regex: layer.regexp
+          })
+        } else {
+          routesWithoutRouteParams.push({
+            path: p,
+            method: Object.keys(layer.route.methods)[0],
+            regex: layer.regexp
+          })
+        }
+      })
+    } else {
+      if (route.path.includes(':')) {
+        routesWithRouteParams.push({
+          path: layer.route.path,
+          method: Object.keys(layer.route.methods)[0],
+          regex: layer.regexp
+        })
+      } else {
+        routesWithoutRouteParams.push({
+          path: layer.route.path,
+          method: Object.keys(layer.route.methods)[0],
+          regex: layer.regexp
+        })
+      }
+    }
+  }
+
+  return {
+    routesWithoutRouteParams,
+    routesWithRouteParams,
+    routes: [...routesWithRouteParams, ...routesWithoutRouteParams]
+  }
+}
+
+/**
  * Configures express app object with required properties and starts express server
  *
  * @param {number} port port number on which to expose server
@@ -60,10 +125,22 @@ const initializeApp = (port, serviceRegistry) => {
   app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
   app.use(getRateLimiterMiddleware())
 
+  // import routes
+  let routers = require('./routes')()
+  routers = [
+    ...routers,
+    healthCheckRoutes,
+    contentBlacklistRoutes,
+    replicaSetRoutes
+  ]
+
+  const { routesWithRouteParams, routes } = _setupRouteDurationTracking(routers)
+
   const prometheusRegistry = serviceRegistry.prometheusRegistry
 
   // Metric tracking middleware
   app.use(
+    routes.map((route) => route.path),
     prometheusMiddleware({
       // Use existing registry for compatibility with custom metrics. Can see
       // the metrics on /prometheus_metrics
@@ -85,10 +162,7 @@ const initializeApp = (port, serviceRegistry) => {
       normalizePath: function (req, opts) {
         const path = prometheusMiddleware.normalizePath(req, opts)
         try {
-          for (const {
-            regex,
-            path: normalizedPath
-          } of prometheusRegistry.regexes) {
+          for (const { regex, path: normalizedPath } of routesWithRouteParams) {
             const match = path.match(regex)
             if (match) {
               return normalizedPath
@@ -104,11 +178,9 @@ const initializeApp = (port, serviceRegistry) => {
     })
   )
 
-  // import routes
-  require('./routes')(app)
-  app.use('/', healthCheckRoutes)
-  app.use('/', contentBlacklistRoutes)
-  app.use('/', replicaSetRoutes)
+  for (const router of routers) {
+    app.use('/', router)
+  }
 
   app.use(errorHandler)
 
