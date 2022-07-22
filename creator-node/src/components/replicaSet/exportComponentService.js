@@ -14,7 +14,7 @@ const exportComponentService = async ({
   walletPublicKeys,
   requestedClockRangeMin,
   requestedClockRangeMax,
-  forceExport,
+  forceExport = false,
   logger
 }) => {
   const transaction = await models.sequelize.transaction({
