@@ -322,7 +322,9 @@ function* signUp() {
           })
 
         if (error) {
-          const rateLimited = errorStatus === 429
+          // We are including 0 status code here to indicate rate limit,
+          // which appears to be happening for some devices.
+          const rateLimited = errorStatus === 429 || errorStatus === 0
           const params = {
             error,
             phase,
