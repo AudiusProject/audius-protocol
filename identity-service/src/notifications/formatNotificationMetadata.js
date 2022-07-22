@@ -167,11 +167,11 @@ function formatReaction (notification, metadata) {
   }
 }
 function formatReactionEmail (notification, extras) {
-  const { userId, metadata: { reactedToEntity: { amount } } } = notification
-  console.log(`CONSOLE LOG formatReactionEmail userId ${userId} user ${JSON.stringify(extras.users[userId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
+  const { entityId, metadata: { reactedToEntity: { amount } } } = notification
+  console.log(`CONSOLE LOG formatReactionEmail userId ${entityId} user ${JSON.stringify(extras.users[entityId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
   return {
     type: NotificationType.Reaction,
-    reactingUser: extras.users[userId],
+    reactingUser: extras.users[entityId],
     amount: formatWei(new BN(amount))
   }
 }
@@ -187,11 +187,11 @@ function formatTipReceive (notification, metadata) {
   }
 }
 function formatTipReceiveEmail (notification, extras) {
-  const { userId, metadata: { amount } } = notification
-  console.log(`CONSOLE LOG formatTipReceiveEmail userId ${userId} user ${JSON.stringify(extras.users[userId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
+  const { entityId, metadata: { amount } } = notification
+  console.log(`CONSOLE LOG formatTipReceiveEmail userId ${entityId} user ${JSON.stringify(extras.users[entityId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
   return {
     type: NotificationType.TipReceive,
-    sendingUser: extras.users[userId],
+    sendingUser: extras.users[entityId],
     amount: formatWei(new BN(amount))
   }
 }
