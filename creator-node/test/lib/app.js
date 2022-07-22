@@ -58,7 +58,8 @@ function getServiceRegistryMock(libsClient, blacklistManager) {
     monitoringQueue: new MonitoringQueueMock(),
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     nodeConfig,
-    initLibs: async function () {}
+    initLibs: async function () {},
+    prometheusRegistry: new PrometheusRegistry()
   }
 }
 

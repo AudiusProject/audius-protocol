@@ -38,7 +38,9 @@ const metricNames = {
   ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_duration_seconds',
   FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
-  WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds'
+  WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds',
+  SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM:
+    'secondary_sync_from_primary_duration_seconds'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -52,6 +54,24 @@ const METRIC_NAMES = Object.freeze(
 )
 
 const METRIC_LABELS = Object.freeze({
+  [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
+    sync_type: Object.values(SyncType).map(_.snakeCase),
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    result: [
+      'success',
+      'failure_sync_secondary_from_primary',
+      'failure_malformed_export',
+      'failure_db_transaction',
+      'failure_sync_in_progress',
+      'failure_export_wallet',
+      'failure_skip_threshold_not_reached',
+      'failure_import_not_consistent',
+      'failure_import_not_contiguous',
+      'failure_inconsistent_clock'
+    ],
+    // 5 buckets in the range of 1 second to max seconds before timing out write quorum
+    buckets: exponentialBucketsRange(0.1, 60, 10)
+  },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     sync_type: Object.values(SyncType).map(_.snakeCase),
     sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
@@ -125,7 +145,7 @@ const METRIC_LABELS = Object.freeze({
   }
 })
 
-const MetricLabelNames = Object.freeze(
+const METRIC_LABEL_NAMES = Object.freeze(
   Object.fromEntries(
     Object.entries(METRIC_LABELS).map(([metric, metricLabels]) => [
       metric,
@@ -135,6 +155,17 @@ const MetricLabelNames = Object.freeze(
 )
 
 const METRICS = Object.freeze({
+  [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
+    metricConfig: {
+      name: METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM,
+      help: 'Time spent to sync a secondary from a primary (seconds)',
+      labelNames:
+        MetricLabelNames[
+          METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM
+        ]
+    }
+  },
   [METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
@@ -150,7 +181,7 @@ const METRICS = Object.freeze({
       name: METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM,
       help: 'Time spent to issue a sync request and wait for completion (seconds)',
       labelNames:
-        MetricLabelNames[
+        METRIC_LABEL_NAMES[
           METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
         ],
       // 4 buckets in the range of 1 second to max before timing out a sync request
@@ -177,7 +208,7 @@ const METRICS = Object.freeze({
             // Whether the job completed (including with a caught error) or quit unexpectedly
             'uncaughtError',
             // Label names, if any, that are specific to this job type
-            ...(MetricLabelNames[
+            ...(METRIC_LABEL_NAMES[
               METRIC_NAMES[
                 `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
               ]
@@ -193,7 +224,8 @@ const METRICS = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE,
       help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
-      labelNames: MetricLabelNames[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]
+      labelNames:
+        METRIC_LABEL_NAMES[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]
     }
   },
   [METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
@@ -202,7 +234,9 @@ const METRICS = Object.freeze({
       name: METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM,
       help: 'Seconds spent attempting to replicate data to a secondary node for write quorum',
       labelNames:
-        MetricLabelNames[METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM],
+        METRIC_LABEL_NAMES[
+          METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM
+        ],
       // 5 buckets in the range of 1 second to max seconds before timing out write quorum
       buckets: exponentialBucketsRange(
         1,
