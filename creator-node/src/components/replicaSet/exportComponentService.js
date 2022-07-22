@@ -112,11 +112,7 @@ const exportComponentService = async ({
       )
       if (!_.isEmpty(clockRecords) && cnodeUser.clock !== maxClockRecord) {
         const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}`
-        if (forceExport) {
-          logger.error(errorMsg)
-        } else {
-          throw new Error(errorMsg)
-        }
+        throw new Error(errorMsg)
       }
 
       cnodeUser.clockInfo = {
