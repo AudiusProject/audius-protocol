@@ -111,12 +111,8 @@ export class EntityManager extends Base {
       const currentUserId: string | null =
         this.userStateManager.getCurrentUserId()
       if (!currentUserId) {
-        return {
-          blockHash: null,
-          blockNumber: null,
-          playlistId: null,
-          error: 'Missing current user ID'
-        }
+        responseValues.error = 'Missing current user ID'
+        return responseValues
       }
       const userId: number = parseInt(currentUserId)
       const createAction = Action.CREATE
@@ -168,9 +164,15 @@ export class EntityManager extends Base {
     playlistId: number
     logger: any
   }): Promise<{ blockHash: any; blockNumber: any }> {
-    const userId: number = parseInt(this.userStateManager.getCurrentUserId())
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
+    const currentUserId: string | null =
+      this.userStateManager.getCurrentUserId()
+    if (!currentUserId) {
+      responseValues.error = 'Missing current user ID'
+      return responseValues
+    }
+    const userId: number = parseInt(currentUserId)
     try {
       const resp = await this.manageEntity({
         userId,
@@ -213,25 +215,18 @@ export class EntityManager extends Base {
     coverArt: Nullable<string>
     logger: Console
   }): Promise<PlaylistOperationResponse> {
-    let error = null
+    const responseValues: PlaylistOperationResponse =
+      this.getDefaultPlaylistReponseValues()
     try {
       const currentUserId: string | null =
         this.userStateManager.getCurrentUserId()
       if (!playlistId || playlistId === undefined) {
-        return {
-          blockHash: null,
-          blockNumber: null,
-          playlistId,
-          error: 'Missing current playlistId'
-        }
+        responseValues.error = 'Missing current playlistId'
+        return responseValues
       }
       if (!currentUserId) {
-        return {
-          blockHash: null,
-          blockNumber: null,
-          playlistId,
-          error: 'Missing current user ID'
-        }
+        responseValues.error = 'Missing current user ID'
+        return responseValues
       }
       const userId: number = parseInt(currentUserId)
       const updateAction = Action.UPDATE
@@ -250,17 +245,9 @@ export class EntityManager extends Base {
         await this.discoveryProvider.getPlaylists(1, 0, [playlistId], userId)
       )[0]
 
-      let playlistContents = trackIds
-      if (playlist.playlist_contents) {
-        // CONVERT TO FOREACH
-        playlistContents = playlist.playlist_contents.track_ids.map(
-          (x: { [x: string]: any }) => x['track']
-        )
-      }
-
       const metadata: PlaylistMetadata = {
         playlist_id: playlistId,
-        playlist_contents: playlistContents,
+        playlist_contents: trackIds,
         playlist_name: playlistName ?? playlist.playlist_name,
         playlist_image_sizes_multihash:
           dirCID || playlist.playlist_image_sizes_multihash,
@@ -279,20 +266,14 @@ export class EntityManager extends Base {
         metadataMultihash
       })
       const txReceipt = resp.txReceipt
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber,
-        playlistId,
-        error
-      }
+      responseValues.blockHash = txReceipt.blockHash
+      responseValues.blockNumber = txReceipt.blockNumber
+      responseValues.playlistId = playlistId
+      return responseValues
     } catch (e) {
-      error = (e as Error).message
-      return {
-        blockHash: null,
-        blockNumber: null,
-        playlistId: null,
-        error
-      }
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
     }
   }
 

@@ -8,6 +8,7 @@ import {
   playlistSchemaType,
   Schemas
 } from '../schemaValidator/SchemaValidator'
+import type { Nullable } from '../../utils'
 import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 
@@ -27,7 +28,7 @@ type Metadata = {
 }
 
 export type PlaylistMetadata = {
-  playlist_contents: unknown
+  playlist_contents: Nullable<number[]>
   playlist_id: number
   playlist_name: string
   playlist_image_sizes_multihash: string
