@@ -131,7 +131,7 @@ module.exports = async function ({
     duplicateSyncReqs,
     errors,
     jobsToEnqueue: syncReqsToEnqueue?.length
-      ? { [QUEUE_NAMES.STATE_RECONCILIATION]: syncReqsToEnqueue }
+      ? { [QUEUE_NAMES.RECURRING_SYNC]: syncReqsToEnqueue }
       : {},
     metricsToRecord
   }

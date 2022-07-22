@@ -115,7 +115,7 @@ module.exports = async function ({
     healthyNodes,
     jobsToEnqueue: syncJobsToEnqueue?.length
       ? {
-          [QUEUE_NAMES.STATE_RECONCILIATION]: syncJobsToEnqueue
+          [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
         }
       : {}
   }

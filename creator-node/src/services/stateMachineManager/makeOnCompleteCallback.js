@@ -1,5 +1,5 @@
 const { logger: baseLogger, createChildLogger } = require('../../logging')
-const { QUEUE_NAMES, JOB_NAMES } = require('./stateMachineConstants')
+const { QUEUE_NAMES } = require('./stateMachineConstants')
 const {
   METRIC_RECORD_TYPE
 } = require('../prometheusMonitoring/prometheus.constants')
@@ -13,17 +13,11 @@ const {
  * {
  *   jobsToEnqueue: {
  *     [QUEUE_NAMES.STATE_MONITORING]: [
- *       {
- *         jobName: <any job name from JOB_NAMES constant>,
- *         jobData: <object containing data that this job type expects>
- *       },
+ *       { <object containing data that this job type expects> },
  *       ...
  *     ],
  *     [QUEUE_NAMES.STATE_RECONCILIATION]: [
- *       {
- *         jobName: <any job name from JOB_NAMES constant>,
- *         jobData: <object containing data that this job type expects>
- *       },
+ *       { <object containing data that this job type expects> },
  *       ...
  *     ]
  *   }
@@ -31,20 +25,16 @@ const {
  * @dev MUST be bound to a class containing an `enabledReconfigModes` property.
  *      See usage in index.js (in same directory) for example of how it's bound to StateMachineManager.
  *
- * @param {BullQueue} monitoringQueue the queue that handles state monitoring jobs
- * @param {BullQueue} reconciliationQueue the queue that handles state reconciliation jobs
+ * @param {Object} queueNameToQueueMap mapping of queue name (string) to queue object (BullQueue)
  * @param {Object} prometheusRegistry the registry of prometheus metrics
  * @returns a function that:
  * - takes a jobId (string) and result (string) of a job that successfully completed
  * - parses the result (string) into JSON
  * - bulk-enqueues all jobs under result[QUEUE_NAMES.STATE_MONITORING] into the state monitoring queue
  * - bulk-enqueues all jobs under result[QUEUE_NAMES.STATE_RECONCILIATION] into the state reconciliation queue
+ * - records metrics from result.metricsToRecord
  */
-module.exports = function (
-  monitoringQueue,
-  reconciliationQueue,
-  prometheusRegistry
-) {
+module.exports = function (queueNameToQueueMap, prometheusRegistry) {
   return async function (jobId, resultString) {
     // Create a logger so that we can filter logs by the tag `jobId` = <id of the job that successfully completed>
     const logger = createChildLogger(baseLogger, { jobId })
@@ -71,100 +61,67 @@ module.exports = function (
 
     const { jobsToEnqueue, metricsToRecord } = jobResult
 
-    if (jobsToEnqueue) {
-      // Enqueue monitoring jobs
-      const monitoringJobs = jobsToEnqueue[QUEUE_NAMES.STATE_MONITORING] || []
-      await enqueueMonitoringJobs(monitoringJobs, monitoringQueue, logger)
+    // Enqueue jobs into each queue
+    for (const [queueName, queueJobs] of Object.entries(jobsToEnqueue || {})) {
+      // Make sure we're working with a valid queue
+      const queue = queueNameToQueueMap[queueName]
+      if (!queue) {
+        logger.error(
+          `Job returned data trying to enqueue jobs to a queue whose name isn't recognized: ${queueName}`
+        )
+        continue
+      }
 
-      // Enqueue reconciliation jobs
-      const reconciliationJobs =
-        jobsToEnqueue[QUEUE_NAMES.STATE_RECONCILIATION] || []
-      await enqueueReconciliationJobs(
-        reconciliationJobs,
-        reconciliationQueue,
-        enabledReconfigModes,
-        logger
-      )
-    } else {
-      logger.info('No jobs to enqueue after successful completion.')
+      // Sanitize job data and inject fields into jobs if the queue requires extra data
+      let decoratedJobs = queueJobs
+      if (queueName === QUEUE_NAMES.UPDATE_REPLICA_SET) {
+        decoratedJobs = injectEnabledReconfigModes(
+          queueJobs,
+          enabledReconfigModes
+        )
+      }
+
+      await enqueueJobs(decoratedJobs, queue, queueName, jobId, logger)
     }
 
     recordMetrics(prometheusRegistry, logger, metricsToRecord)
   }
 }
 
-const enqueueMonitoringJobs = async (jobs, monitoringQueue, logger) => {
-  logger.info(`Attempting to enqueue ${jobs?.length} monitoring jobs in bulk`)
-
-  // Sanitize and transform output into the job format that Bull expects
-  try {
-    const bulkAddResult = await monitoringQueue.addBulk(
-      sanitizeAndTransformMonitoringJobs(jobs)
-    )
-    logger.info(
-      `Enqueued ${bulkAddResult.length} monitoring jobs in bulk after successful completion`
-    )
-  } catch (e) {
-    logger.error(
-      `Failed to bulk-enqueue monitoring jobs after successful completion: ${e}`
-    )
-  }
-}
-
-// Rename properties from job output to properties that Bull expects (jobName+jobData => name+data)
-const sanitizeAndTransformMonitoringJobs = (jobs, logger) => {
-  return jobs.map((job) => {
-    if (!job?.jobName || !job?.jobData) {
-      logger.error(`Job ${JSON.stringify(job)} is missing name or data!`)
-    }
-    return { name: job.jobName, data: job.jobData }
-  })
-}
-
-const enqueueReconciliationJobs = async (
+const enqueueJobs = async (
   jobs,
-  reconciliationQueue,
-  enabledReconfigModes,
+  queue,
+  queueName,
+  triggeredByJobId,
   logger
 ) => {
   logger.info(
-    `Attempting to enqueue ${jobs?.length} reconciliation jobs in bulk`
+    `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueName}`
   )
 
-  // Sanitize and transform output into the job format that Bull expects. Also inject extra job data
+  // Transform output into the job format that Bull expects for bulkAdd and add 'enqueuedBy' field for tracking
   try {
-    const bulkAddResult = await reconciliationQueue.addBulk(
-      sanitizeAndTransformReconciliationJobs(jobs, enabledReconfigModes, logger)
+    const bulkAddResult = await queue.addBulk(
+      jobs.map((job) => {
+        return {
+          data: { enqueuedBy: `${queueName}#${triggeredByJobId}`, ...job }
+        }
+      })
     )
     logger.info(
-      `Enqueued ${bulkAddResult.length} reconciliation jobs in bulk after successful completion`
+      `Added ${bulkAddResult.length} jobs to ${queueName} in bulk after successful completion`
     )
   } catch (e) {
     logger.error(
-      `Failed to bulk-enqueue reconciliation jobs after successful completion: ${e}`
+      `Failed to bulk-add jobs to ${queueName} after successful completion: ${e}`
     )
   }
 }
 
-// Rename properties from job output to properties that Bull expects (jobName+jobData => name+data)
-// Also inject enabledReconfigModes into update-replica-set jobs
-const sanitizeAndTransformReconciliationJobs = (
-  jobs,
-  enabledReconfigModes,
-  logger
-) => {
+// Injects enabledReconfigModes into update-replica-set jobs
+const injectEnabledReconfigModes = (jobs, enabledReconfigModes) => {
   return jobs.map((job) => {
-    if (!job?.jobName || !job?.jobData) {
-      logger.error(`Job ${JSON.stringify(job)} is missing name or data!`)
-    }
-    // Inject enabledReconfigModesSet into update-replica-set jobs
-    if (job.jobName === JOB_NAMES.UPDATE_REPLICA_SET) {
-      job.jobData = {
-        ...job.jobData,
-        enabledReconfigModes
-      }
-    }
-    return { name: job.jobName, data: job.jobData }
+    return { ...job, enabledReconfigModes }
   })
 }
 
