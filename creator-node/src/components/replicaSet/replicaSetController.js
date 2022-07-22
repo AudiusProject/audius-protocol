@@ -90,15 +90,16 @@ const syncRouteController = async (req, res) => {
    * Else, debounce + add sync to queue
    */
   if (immediate) {
-    const errorObj = await secondarySyncFromPrimary(
-      serviceRegistry,
-      walletPublicKeys,
-      creatorNodeEndpoint,
-      blockNumber,
-      forceResync
-    )
-    if (errorObj) {
-      return errorResponseServerError(errorObj)
+    try {
+      await secondarySyncFromPrimary(
+        serviceRegistry,
+        walletPublicKeys,
+        creatorNodeEndpoint,
+        blockNumber,
+        forceResync
+      )
+    } catch (e) {
+      return errorResponseServerError(e)
     }
   } else {
     const debounceTime = nodeConfig.get('debounceTime')

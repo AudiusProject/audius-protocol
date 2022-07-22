@@ -38,7 +38,9 @@ const metricNames = {
   ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_duration_seconds',
   FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
-  WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds'
+  WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds',
+  SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM:
+    'secondary_sync_from_primary_duration_seconds'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -52,6 +54,18 @@ const METRIC_NAMES = Object.freeze(
 )
 
 const METRIC_LABELS = Object.freeze({
+  [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
+    sync_type: Object.values(SyncType).map(_.snakeCase),
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    result: [
+      'success',
+      'failure_sync_secondary_from_primary',
+      'failure_db_transaction',
+      'failure_sync_in_progress',
+      'failure_failed_export',
+      'failure_threshold_not_reached'
+    ]
+  },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     sync_type: Object.values(SyncType).map(_.snakeCase),
     sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
