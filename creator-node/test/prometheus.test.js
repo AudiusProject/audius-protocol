@@ -39,25 +39,71 @@ describe('test Prometheus metrics', async function () {
     )
   })
 
-  it('Checks the middleware tracks routes with route params', async function () {
-    app.get('serviceRegistry').prometheusRegistry.regexes = [
-      {
-        regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
-        path: '/ipfs/#CID'
-      }
-    ]
+  it('Checks that hitting unregistered routes does not track prometheus metrics', async function () {
+    await request(app).get('/blahblahblah')
+    const resp = await request(app).get('/prometheus_metrics').expect(200)
 
+    assert.ok(!resp.text.includes('blahblahblah'))
+  })
+
+  it('Checks the middleware tracks routes with route params', async function () {
     await request(app).get('/ipfs/QmVickyWasHere')
     await request(app).get('/content/QmVickyWasHere')
 
     const resp = await request(app).get('/prometheus_metrics').expect(200)
 
     assert.ok(
-      resp.text.includes(NAMESPACE_PREFIX + '_http_request_duration_seconds')
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_bucket{le="0.2",status_code="400",method="GET",path="/ipfs/:CID"} 2`
+      )
     )
 
-    assert.ok(resp.text.includes('/ipfs/#CID'))
+    assert.ok(
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_bucket{le="0.5",status_code="400",method="GET",path="/ipfs/:CID"} 2`
+      )
+    )
 
-    assert.ok(!resp.text.includes('/content/#CID'))
+    assert.ok(
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_bucket{le="1",status_code="400",method="GET",path="/ipfs/:CID"} 2`
+      )
+    )
+
+    assert.ok(
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_bucket{le="4",status_code="400",method="GET",path="/ipfs/:CID"} 2`
+      )
+    )
+
+    assert.ok(
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_bucket{le="15",status_code="400",method="GET",path="/ipfs/:CID"} 2`
+      )
+    )
+    assert.ok(
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_bucket{le="60",status_code="400",method="GET",path="/ipfs/:CID"} 2`
+      )
+    )
+    assert.ok(
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_bucket{le="+Inf",status_code="400",method="GET",path="/ipfs/:CID"} 2`
+      )
+    )
+
+    assert.ok(
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_sum{status_code="400",method="GET",path="/ipfs/:CID"}`
+      )
+    )
+
+    assert.ok(
+      resp.text.includes(
+        `audius_cn_http_request_duration_seconds_count{status_code="400",method="GET",path="/ipfs/:CID"} 2`
+      )
+    )
+
+    assert.ok(!resp.text.includes('/content/:CID'))
   })
 })
