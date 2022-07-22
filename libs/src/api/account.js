@@ -122,7 +122,7 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    handleUserBankOutcomes = () => { },
+    handleUserBankOutcomes = () => {},
     userBankOutcomes = {},
     feePayerOverride = null,
     generateRecoveryLink = true
@@ -167,14 +167,14 @@ class Account extends Base {
         phase = phases.SOLANA_USER_BANK_CREATION
         // Fire and forget createUserBank. In the case of failure, we will
         // retry to create user banks in a later session before usage
-        ; (async () => {
+        ;(async () => {
           try {
             handleUserBankOutcomes(userBankOutcomes.Request)
             const { error, errorCode } =
-                await this.solanaWeb3Manager.createUserBank(feePayerOverride)
+              await this.solanaWeb3Manager.createUserBank(feePayerOverride)
             if (error || errorCode) {
               console.error(
-                  `Failed to create userbank, with err: ${error}, ${errorCode}`
+                `Failed to create userbank, with err: ${error}, ${errorCode}`
               )
               handleUserBankOutcomes(userBankOutcomes.Failure, {
                 error,
@@ -329,9 +329,12 @@ class Account extends Base {
     this.REQUIRES(Services.CREATOR_NODE)
 
     const user = this.userStateManager.getCurrentUser()
-    await this.creatorNode.setEndpoint(url)
-    user.creator_node_endpoint = url
-    await this.User.updateCreator(user.user_id, user)
+    if (user.is_creator) {
+      await this.creatorNode.setEndpoint(url)
+      // Only a creator will have a creator node endpoint
+      user.creator_node_endpoint = url
+      await this.User.updateCreator(user.user_id, user)
+    }
   }
 
   /**

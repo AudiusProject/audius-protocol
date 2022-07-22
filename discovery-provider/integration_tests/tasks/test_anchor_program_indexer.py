@@ -377,6 +377,7 @@ mock_tx_info = {
 mock_cid = "QmyEHHWXbES1nOUBIM89eYfsmM25r3Cw7iBpFZyZ9lbfRS"
 mock_cid_metadata = {
     mock_cid: {
+        "is_creator": False,
         "is_verified": False,
         "is_deactivated": False,
         "name": "test user name",

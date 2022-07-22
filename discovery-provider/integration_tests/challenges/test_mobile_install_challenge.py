@@ -31,6 +31,7 @@ def test_mobile_install_challenge(app):
         handle="Referrer",
         handle_lc="referrer",
         wallet="0x1",
+        is_creator=False,
         is_verified=False,
         name="referrer_name",
         created_at=datetime.now(),

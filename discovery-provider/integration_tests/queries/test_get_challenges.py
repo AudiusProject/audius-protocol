@@ -62,6 +62,7 @@ def setup_db(session):
             blocknumber=1,
             user_id=1,
             is_current=True,
+            is_creator=True,
             wallet="0x38C68fF3926bf4E68289672F75ee1543117dD9B3",
             created_at=datetime.now(),
             updated_at=datetime.now(),

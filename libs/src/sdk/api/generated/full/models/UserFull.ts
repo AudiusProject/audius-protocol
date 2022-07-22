@@ -232,6 +232,12 @@ export interface UserFull {
     handle_lc: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    is_creator: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof UserFull
      */

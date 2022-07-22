@@ -6,7 +6,6 @@
 #   Before running this test locally, bring up ipfs pod with libs/scripts/ipfs.sh
 
 source ./scripts/utilities.sh
-source .test.env
 
 if [ ! -f .gitignore ]; then
   echo "Run test script from audius discovery provider root"
@@ -74,13 +73,14 @@ docker-compose \
   --env-file compose/.test.env \
   up -d
 
-# Create prometheus data test dir which is defined
-# for tests in the pytest.ini file
-mkdir -p $PROMETHEUS_MULTIPROC_DIR
+sleep 5
 
 if [ -z ${SKIP_TESTS+x} ]; then
   # Unit tests
   pytest src
+
+  export PROMETHEUS_MULTIPROC_DIR=./prometheus_data
+  mkdir -p $PROMETHEUS_MULTIPROC_DIR
 
   # Integration tests
   pytest integration_tests

@@ -181,6 +181,7 @@ class FakeGenerator:
             "is_current": True,
             "handle": f"fake_user_{user_id}",
             "wallet": f"fake-user-wallet-{user_id}",
+            "is_creator": True,
             "is_verified": random.randrange(0, 5) == 1,
             "name": f"Fake User {user_id}",
             "updated_at": datetime.now(),

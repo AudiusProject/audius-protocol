@@ -587,6 +587,7 @@ export interface UserRow {
   'handle'?: string | null;
   'handle_lc'?: string | null;
   'has_collectibles'?: boolean;
+  'is_creator': boolean;
   'is_current': boolean;
   'is_deactivated'?: boolean;
   'is_verified'?: boolean;

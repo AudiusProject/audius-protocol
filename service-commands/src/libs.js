@@ -76,15 +76,15 @@ function LibsWrapper(walletIndex = 0) {
       USER_NODE,
       IDENTITY_SERVICE
     ] = [
-        config.get('registry_address'),
-        config.get('web3_provider_urls'),
-        config.get('eth_token_address'),
-        config.get('eth_registry_address'),
-        config.get('eth_provider_url'),
-        config.get('eth_owner_wallet'),
-        config.get('user_node'),
-        config.get('identity_service')
-      ]
+      config.get('registry_address'),
+      config.get('web3_provider_urls'),
+      config.get('eth_token_address'),
+      config.get('eth_registry_address'),
+      config.get('eth_provider_url'),
+      config.get('eth_owner_wallet'),
+      config.get('user_node'),
+      config.get('identity_service')
+    ]
 
     const dataWeb3 = new Web3(
       new Web3.providers.HttpProvider(WEB3_PROVIDER_URLS)
@@ -166,6 +166,25 @@ function LibsWrapper(walletIndex = 0) {
   }
 
   /**
+   * Upgrades the current user for this LibsWrapper to a creator.
+   *
+   * @param {string} userNode current userNode endpoint
+   *
+   * @note userNode is the user metadata node. New users created in
+   * the mad-dog test suite will not need to pass `userNode` as they will
+   * be assigned a replica set on signup. This field is more so for
+   * existing users prior to deprecate UM task that still use the UM node.
+   *
+   * The current mad-dog suite passes in a value for `userNode`, and an empty
+   * string for `endpoint`. The protocol will not try to sync data from
+   * `userNode` if an empty string is passed into `userNode`.
+   */
+  this.upgradeToCreator = async ({ endpoint, userNode }) => {
+    assertLibsDidInit()
+    return this.libsInstance.User.upgradeToCreator(userNode, endpoint)
+  }
+
+  /**
    * Selects a primary and set of secondaries from set of valid nodes on chain.
    *
    * @param {*} args number of nodes to include in replica set, whitelist of nodes to select from, blacklist of nodes to exclude
@@ -218,7 +237,7 @@ function LibsWrapper(walletIndex = 0) {
       trackFile,
       null /* image */,
       trackMetadata,
-      () => { } /* on progress */
+      () => {} /* on progress */
     )
     if (error) throw error
     return trackId
