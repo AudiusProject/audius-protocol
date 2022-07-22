@@ -76,6 +76,7 @@ module.exports = async function ({
     !_.isEmpty(syncReqToEnqueue) &&
     attemptNumber < MAX_ISSUE_SYNC_JOB_ATTEMPTS
   ) {
+    logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
     const queueName =
       syncReqToEnqueue?.syncType === SyncType.Manual
         ? QUEUE_NAMES.MANUAL_SYNC
@@ -83,6 +84,10 @@ module.exports = async function ({
     jobsToEnqueue = {
       [queueName]: [{ attemptNumber: attemptNumber + 1, ...syncReqToEnqueue }]
     }
+  } else {
+    logger.info(
+      `Gave up retrying issue-sync-request after ${attemptNumber} failed attempts`
+    )
   }
 
   // Make metrics to record
