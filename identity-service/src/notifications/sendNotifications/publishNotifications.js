@@ -181,8 +181,8 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
       continue
     }
     if (isInitiatorAbusive) {
-      logger.info(`isInitiatorAbusive true would skip notif`)
-      // continue // skip notif from abusive initiator
+      logger.info(`publishNotifications | notification initiator with user id ${initiatorUserId} is abusive, skipping...`)
+      continue
     }
 
     const shouldFilter = shouldFilterOutNotification(notification.type, optimizelyClient)
