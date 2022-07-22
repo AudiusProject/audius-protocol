@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const axios = require('axios')
 
 const { logger } = require('../../logging')
@@ -230,7 +231,10 @@ const handleSyncFromPrimary = async (
           ),
           result: 'failure_import_not_contiguous'
         }
-      } else if (maxClockRecordId !== fetchedLatestClockVal) {
+      } else if (
+        !_.isEmpty(fetchedCNodeUser.clockRecords) &&
+        maxClockRecordId !== fetchedLatestClockVal
+      ) {
         return {
           error: new Error(
             `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
