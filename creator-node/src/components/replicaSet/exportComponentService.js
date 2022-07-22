@@ -1,3 +1,5 @@
+const _ = require('lodash')
+
 const models = require('../../models')
 const { Transaction } = require('sequelize')
 
@@ -106,11 +108,11 @@ const exportComponentService = async ({
       }
 
       // Validate clock values or throw an error
-      const maxClockRecordId = Math.max(
+      const maxClockRecord = Math.max(
         ...clockRecords.map((record) => record.clock)
       )
-      if (cnodeUser.clock !== maxClockRecordId) {
-        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecordId}`
+      if (!_.isEmpty(clockRecords) && cnodeUser.clock !== maxClockRecord) {
+        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}`
         if (forceExport) {
           logger.error(errorMsg)
         } else {
