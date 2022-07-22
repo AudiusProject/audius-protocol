@@ -6,6 +6,12 @@ const { pushGatewayUrl } = getEnv()
 
 export const gateway = new client.Pushgateway(pushGatewayUrl)
 
+export const userCountGauge = new client.Gauge({
+    name: 'audius_nm_user_count',
+    help: 'the number of users on audius',
+    labelNames: ['run_id'],
+})
+
 export const allUserCountGauge = new client.Gauge({
     name: 'audius_nm_all_user_count',
     help: 'the count of users with this content node in their replica set',

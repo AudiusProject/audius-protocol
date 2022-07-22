@@ -2,6 +2,34 @@
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
 
+/*
+ * Metrics from the discovery DB
+ *
+ * These metrics are primarily used to make prometheus
+ * and grafana more readable/understandable
+ */ 
+
+// Get the current user count from discovery nodes
+export const getUserCount = async (run_id: number): Promise<number> => {
+
+    const usersResp: unknown[] = await sequelizeConn.query(`
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE run_id = :run_id
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id },
+    })
+
+    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+
+    return usersCount
+}
+
+/* 
+ * Core metrics
+ */
+
 export const getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_node_spid: string, cid_count: number }[]> => {
 
     const cidsListResp = await sequelizeConn.query(`
@@ -59,6 +87,8 @@ export const getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: s
     return primaryCount
 }
 
+// Count of users who have a specific content node in their replica set 
+// This is different from `getUserCount()` which literally just gets the number of users on Audius
 export const getAllUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
     console.log(`[${run_id}] metric: all user count`);
     const userListResp: unknown[] = await sequelizeConn.query(`
