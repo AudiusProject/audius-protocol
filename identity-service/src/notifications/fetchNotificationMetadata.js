@@ -100,7 +100,6 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
       group: ['Notification.id']
     })
-    logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | length of notifCountQuery is ${notifCountQuery.length}`)
 
     const solanaNotifCountQuery = await models.SolanaNotification.findAll({
       where: {
@@ -119,10 +118,6 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
       group: ['SolanaNotification.id']
     })
-    logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | length of solanaNotifCountQuery is ${solanaNotifCountQuery.length}`)
-    if (solanaNotifCountQuery.length > 0) {
-      logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | solanaNotifications: ${JSON.stringify(solanaNotifications, null, 2)}, length: ${solanaNotifCountQuery.length}`)
-    }
 
     const notificationCount = notifCountQuery.length + solanaNotifCountQuery.length
     const announcementIds = new Set(announcements.map(({ entityId }) => entityId))
@@ -157,16 +152,9 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
 
     const fethNotificationsTime = Date.now()
     const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true, true)
-    if (solanaNotifCountQuery.length > 0) {
-      logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | metadata: ${JSON.stringify(metadata, null, 2)}`)
-    }
     const fetchDataDuration = (Date.now() - fethNotificationsTime) / 1000
-    logger.info({ job: 'fetchNotificationMetdata', duration: fetchDataDuration }, `fetchNotificationMetdata | get metadata ${fetchDataDuration} sec`)
-    logger.info(`SALIOU finalUserNotifications ${JSON.stringify(finalUserNotifications)} metadata ${JSON.stringify(metadata)}`)
+    logger.info({ job: 'fetchNotificationMetadata', duration: fetchDataDuration }, `fetchNotificationMetadata | get metadata ${fetchDataDuration} sec`)
     const notificationsEmailProps = formatEmailNotificationProps(finalUserNotifications, metadata)
-    if (solanaNotifCountQuery.length > 0) {
-      logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | notificationsEmailProps: ${JSON.stringify(notificationsEmailProps, null, 2)}, totalLength: ${notificationCount + unreadAnnouncementCount}`)
-    }
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
     logger.error(err)
@@ -261,7 +249,6 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
       }
       case NotificationType.Reaction: {
         userIdsToFetch.push(notification.initiator)
-        console.log(`CONSOLE LOG NotificationType.Reaction ${JSON.stringify(notification)}`)
         if (isEmailNotif) {
           userIdsToFetch.push(notification.userId)
           userIdsToFetch.push(notification.entityId)
@@ -272,7 +259,6 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         // Tip sender needed for SupporterRankUp
         userIdsToFetch.push(notification.metadata.entity_id)
         const x = notification.metadata.supportingUserId
-        console.log(`CONSOLE LOG NotificationType.SupporterRankUp ${JSON.stringify(notification.metadata.supportingUserId)} ${JSON.stringify(notification)}`)
         if (isEmailNotif) {
           userIdsToFetch.push(notification.userId)
           userIdsToFetch.push(x)
@@ -283,7 +269,6 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         // Tip recipient needed for SupportingRankUp
         userIdsToFetch.push(notification.initiator)
         const x = notification.metadata.supportedUserId
-        console.log(`CONSOLE LOG NotificationType.SupportingRankUp ${JSON.stringify(notification.metadata.supportedUserId)} ${JSON.stringify(notification)}`)
         if (isEmailNotif) {
           userIdsToFetch.push(notification.userId)
           userIdsToFetch.push(x)
@@ -293,7 +278,6 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
       case NotificationType.TipReceive: {
         // Fetch the sender of the tip
         userIdsToFetch.push(notification.metadata.entity_id)
-        console.log(`CONSOLE LOG NotificationType.TipReceive ${JSON.stringify(notification)}`)
         if (isEmailNotif) {
           userIdsToFetch.push(notification.userId)
           userIdsToFetch.push(notification.entityId)

@@ -245,9 +245,6 @@ const notificationMap = {
     )
   },
   [NotificationType.Reaction] (notification) {
-    console.log(`Reaction | ${notification.amount}`)
-    console.log(`Reaction | ${notification.reactingUser}`)
-    console.log(`Reaction | ${notification.reactingUser.name}`)
     return (
       <span className={'notificationText'}>
         <HighlightText text={capitalize(notification.reactingUser.name)} />
@@ -258,9 +255,6 @@ const notificationMap = {
     )
   },
   [NotificationType.SupporterRankUp] (notification) {
-    console.log(`SupporterRankUp | ${notification.rank}`)
-    console.log(`SupporterRankUp | ${notification.sendingUser}`)
-    console.log(`SupporterRankUp | ${notification.sendingUser.name}`)
     return (
       <span className={'notificationText'}>
         <HighlightText text={capitalize(notification.sendingUser.name)} />
@@ -271,9 +265,6 @@ const notificationMap = {
     )
   },
   [NotificationType.SupportingRankUp] (notification) {
-    console.log(`SupportingRankUp | ${notification.rank}`)
-    console.log(`SupportingRankUp | ${notification.receivingUser}`)
-    console.log(`SupportingRankUp | ${notification.receivingUser.name}`)
     return (
       <span className={'notificationText'}>
         <BodyText text={`You're now `} />
@@ -285,9 +276,6 @@ const notificationMap = {
     )
   },
   [NotificationType.TipReceive] (notification) {
-    console.log(`TipReceive | ${notification.amount}`)
-    console.log(`TipReceive | ${notification.sendingUser}`)
-    console.log(`TipReceive | ${notification.sendingUser.name}`)
     return (
       <span className={'notificationText'}>
         <HighlightText text={capitalize(notification.sendingUser.name)} />
@@ -300,7 +288,6 @@ const notificationMap = {
 }
 
 const getMessage = (notification) => {
-  console.log(`getMessage | ${notification.type}`)
   const getNotificationMessage = notificationMap[notification.type]
   if (!getNotificationMessage) return null
   return getNotificationMessage(notification)

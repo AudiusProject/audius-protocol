@@ -159,7 +159,6 @@ function formatAddTrackToPlaylist (notification, metadata) {
 function formatReaction (notification, metadata) {
   const userId = notification.initiator
   const user = metadata.users[userId]
-  console.log(`CONSOLE LOG formatReaction userId ${userId} user ${JSON.stringify(user, null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(metadata, null, 2)}`)
   return {
     type: NotificationType.Reaction,
     reactingUser: user,
@@ -168,7 +167,6 @@ function formatReaction (notification, metadata) {
 }
 function formatReactionEmail (notification, extras) {
   const { entityId, metadata: { reactedToEntity: { amount } } } = notification
-  console.log(`CONSOLE LOG formatReactionEmail userId ${entityId} user ${JSON.stringify(extras.users[entityId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
   return {
     type: NotificationType.Reaction,
     reactingUser: extras.users[entityId],
@@ -179,7 +177,6 @@ function formatReactionEmail (notification, extras) {
 function formatTipReceive (notification, metadata) {
   const userId = notification.metadata.entity_id
   const user = metadata.users[userId]
-  console.log(`CONSOLE LOG formatTipReceive userId ${userId} user ${JSON.stringify(user, null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(metadata, null, 2)}`)
   return {
     type: NotificationType.TipReceive,
     sendingUser: user,
@@ -188,7 +185,6 @@ function formatTipReceive (notification, metadata) {
 }
 function formatTipReceiveEmail (notification, extras) {
   const { entityId, metadata: { amount } } = notification
-  console.log(`CONSOLE LOG formatTipReceiveEmail userId ${entityId} user ${JSON.stringify(extras.users[entityId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
   return {
     type: NotificationType.TipReceive,
     sendingUser: extras.users[entityId],
@@ -200,7 +196,6 @@ function formatSupporterRankUp (notification, metadata) {
   // Sending user
   const userId = notification.metadata.entity_id
   const user = metadata.users[userId]
-  console.log(`CONSOLE LOG formatSupporterRankUp userId ${userId} user ${JSON.stringify(user, null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(metadata, null, 2)}`)
   return {
     type: NotificationType.SupporterRankUp,
     rank: notification.metadata.rank,
@@ -210,7 +205,6 @@ function formatSupporterRankUp (notification, metadata) {
 function formatSupporterRankUpEmail (notification, extras) {
   // Sending user
   const { entityId: rank, metadata: { supportingUserId } } = notification
-  console.log(`CONSOLE LOG formatSupporterRankUpEmail userId ${supportingUserId} user ${JSON.stringify(extras.users[supportingUserId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
   return {
     type: NotificationType.SupporterRankUp,
     rank,
@@ -222,7 +216,6 @@ function formatSupportingRankUp (notification, metadata) {
   // Receiving user
   const userId = notification.initiator
   const user = metadata.users[userId]
-  console.log(`CONSOLE LOG formatSupportingRankUp userId ${userId} user ${JSON.stringify(user, null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(metadata, null, 2)}`)
   return {
     type: NotificationType.SupportingRankUp,
     rank: notification.metadata.rank,
@@ -232,7 +225,6 @@ function formatSupportingRankUp (notification, metadata) {
 function formatSupportingRankUpEmail (notification, extras) {
   // Receiving user
   const { entityId: rank, metadata: { supportedUserId } } = notification
-  console.log(`CONSOLE LOG formatSupportingRankUpEmail userId ${supportedUserId} user ${JSON.stringify(extras.users[supportedUserId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
   return {
     type: NotificationType.SupportingRankUp,
     rank,

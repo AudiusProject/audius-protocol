@@ -180,7 +180,7 @@ class NotificationProcessor {
     this.solanaNotifQueue.process(async (job, done) => {
       let error = null
       const MIN_SOLANA_SLOT = config.get('minSolanaNotificationSlot')
-      let minSlot = Math.max(203000, MIN_SOLANA_SLOT, job.data.minSlot)
+      let minSlot = Math.max(MIN_SOLANA_SLOT, job.data.minSlot)
 
       try {
         if (!minSlot && minSlot !== 0) throw new Error('no min slot')
@@ -233,12 +233,10 @@ class NotificationProcessor {
       logger.info('processEmailNotifications')
       let error = null
       try {
-        logger.info('SALIOU')
         await processEmailNotifications(expressApp, audiusLibs)
         await this.redis.set(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
         error = e
-        logger.info('SALIOU catch email queue error')
         logger.error(`processEmailNotifications - Problem with processing emails: ${e}`)
         this.errorHandler(e)
       }
@@ -405,7 +403,6 @@ class NotificationProcessor {
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     const { info: metadata, notifications } = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
     logger.info(`${logLabel} - query solana notifications from discovery node complete in ${Date.now() - time}ms`)
-    logger.info(`SOLANA NOTIFS FROM DN COUNT IS ${notifications.length} ${JSON.stringify(notifications, null, 2)}`)
     time = Date.now()
 
     // Use a single transaction

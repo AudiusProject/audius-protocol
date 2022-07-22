@@ -297,9 +297,6 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
     text: notification.playlist.playlist_name
   }));
 }), _defineProperty(_notificationMap, _constants.notificationTypes.Reaction, function (notification) {
-  console.log("Reaction | ".concat(notification.amount));
-  console.log("Reaction | ".concat(notification.reactingUser));
-  console.log("Reaction | ".concat(notification.reactingUser.name));
   return /*#__PURE__*/_react["default"].createElement("span", {
     className: 'notificationText'
   }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
@@ -312,9 +309,6 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
     text: " $AUDIO"
   }));
 }), _defineProperty(_notificationMap, _constants.notificationTypes.SupporterRankUp, function (notification) {
-  console.log("SupporterRankUp | ".concat(notification.rank));
-  console.log("SupporterRankUp | ".concat(notification.sendingUser));
-  console.log("SupporterRankUp | ".concat(notification.sendingUser.name));
   return /*#__PURE__*/_react["default"].createElement("span", {
     className: 'notificationText'
   }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
@@ -327,9 +321,6 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
     text: " Top Supporter!"
   }));
 }), _defineProperty(_notificationMap, _constants.notificationTypes.SupportingRankUp, function (notification) {
-  console.log("SupportingRankUp | ".concat(notification.rank));
-  console.log("SupportingRankUp | ".concat(notification.receivingUser));
-  console.log("SupportingRankUp | ".concat(notification.receivingUser.name));
   return /*#__PURE__*/_react["default"].createElement("span", {
     className: 'notificationText'
   }, /*#__PURE__*/_react["default"].createElement(BodyText, {
@@ -344,9 +335,6 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
     text: " Top Supporter!"
   }));
 }), _defineProperty(_notificationMap, _constants.notificationTypes.TipReceive, function (notification) {
-  console.log("TipReceive | ".concat(notification.amount));
-  console.log("TipReceive | ".concat(notification.sendingUser));
-  console.log("TipReceive | ".concat(notification.sendingUser.name));
   return /*#__PURE__*/_react["default"].createElement("span", {
     className: 'notificationText'
   }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
@@ -361,7 +349,6 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
 }), _notificationMap);
 
 var getMessage = function getMessage(notification) {
-  console.log("getMessage | ".concat(notification.type));
   var getNotificationMessage = notificationMap[notification.type];
   if (!getNotificationMessage) return null;
   return getNotificationMessage(notification);

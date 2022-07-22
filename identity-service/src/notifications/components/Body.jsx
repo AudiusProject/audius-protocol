@@ -134,7 +134,6 @@ const mapNotification = (notification) => {
 const SNIPPET_ELLIPSIS_LENGTH = 90
 const getSnippet = (notifications) => {
   const snippet = notifications.slice(0, 3).map(notification => {
-    console.log(`CONSOLE LOG notification ${notification} snippetMap[notification.type] ${snippetMap[notification.type]}`)
     return snippetMap[notification.type](notification)
   }).join(', ')
   if (snippet.length <= SNIPPET_ELLIPSIS_LENGTH) return snippet
