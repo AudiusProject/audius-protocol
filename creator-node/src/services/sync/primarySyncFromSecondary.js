@@ -30,7 +30,7 @@ module.exports = async function primarySyncFromSecondary({
 }) {
   const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
   const logger = genericLogger.child(logContext)
-  logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
+  logger.info(`${logPrefix} Beginning...`)
   const start = Date.now()
 
   // This is used only for logging record endpoint of requesting node
