@@ -29,6 +29,7 @@ router.get(
 
     const walletPublicKeys = req.query.wallet_public_key // array
     const sourceEndpoint = req.query.source_endpoint // string
+    const forceExport = !!req.query.force_export // boolean
 
     const maxExportClockValueRange = config.get('maxExportClockValueRange')
 
@@ -44,6 +45,7 @@ router.get(
             walletPublicKeys,
             requestedClockRangeMin,
             requestedClockRangeMax,
+            forceExport,
             logger: req.logger
           })
         },

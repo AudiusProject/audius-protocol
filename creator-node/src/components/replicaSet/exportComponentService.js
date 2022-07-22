@@ -12,6 +12,7 @@ const exportComponentService = async ({
   walletPublicKeys,
   requestedClockRangeMin,
   requestedClockRangeMax,
+  forceExport,
   logger
 }) => {
   const transaction = await models.sequelize.transaction({
@@ -109,9 +110,11 @@ const exportComponentService = async ({
         ...clockRecords.map((record) => record.clock)
       )
       if (cnodeUser.clock !== maxClockRecordId) {
-        throw new Error(
-          `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecordId}`
-        )
+        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecordId}`
+        logger.error(errorMsg)
+        if (!forceExport) {
+          throw new Error(errorMsg)
+        }
       }
 
       cnodeUser.clockInfo = {
