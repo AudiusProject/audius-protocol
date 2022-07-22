@@ -1010,11 +1010,15 @@ describe('test nodesync', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      await secondarySyncFromPrimary(
+      const result = await secondarySyncFromPrimary(
         serviceRegistryMock,
         userWallets,
         TEST_ENDPOINT
       )
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser
@@ -1055,11 +1059,15 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      await secondarySyncFromPrimary(
+      const result = await secondarySyncFromPrimary(
         serviceRegistryMock,
         userWallets,
         TEST_ENDPOINT
       )
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       await verifyLocalCNodeUserStateForUser(exportedCnodeUser)
 
@@ -1098,13 +1106,17 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary with `forceResync` = true
-      await secondarySyncFromPrimary(
+      const result = await secondarySyncFromPrimary(
         serviceRegistryMock,
         userWallets,
         TEST_ENDPOINT,
         /* blockNumber */ null,
         /* forceResync */ true
       )
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser

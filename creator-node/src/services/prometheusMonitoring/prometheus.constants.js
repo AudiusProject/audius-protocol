@@ -38,7 +38,9 @@ const metricNames = {
   ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_duration_seconds',
   FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
-  WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds'
+  WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds',
+  SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM:
+    'secondary_sync_from_primary_duration_seconds'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -52,6 +54,24 @@ const METRIC_NAMES = Object.freeze(
 )
 
 const METRIC_LABELS = Object.freeze({
+  [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
+    sync_type: Object.values(SyncType).map(_.snakeCase),
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    result: [
+      'success',
+      'failure_sync_secondary_from_primary',
+      'failure_malformed_export',
+      'failure_db_transaction',
+      'failure_sync_in_progress',
+      'failure_export_wallet',
+      'failure_skip_threshold_not_reached',
+      'failure_import_not_consistent',
+      'failure_import_not_contiguous',
+      'failure_inconsistent_clock'
+    ],
+    // 5 buckets in the range of 1 second to max seconds before timing out write quorum
+    buckets: exponentialBucketsRange(0.1, 60, 10)
+  },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     sync_type: Object.values(SyncType).map(_.snakeCase),
     sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
@@ -135,6 +155,17 @@ const METRIC_LABEL_NAMES = Object.freeze(
 )
 
 const METRICS = Object.freeze({
+  [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
+    metricConfig: {
+      name: METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM,
+      help: 'Time spent to sync a secondary from a primary (seconds)',
+      labelNames:
+        MetricLabelNames[
+          METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM
+        ]
+    }
+  },
   [METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
