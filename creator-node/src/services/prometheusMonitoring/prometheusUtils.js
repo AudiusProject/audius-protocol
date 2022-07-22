@@ -32,14 +32,14 @@ const exponentialBucketsRange = (min, max, count, precision = 0) => {
   const growthFactor = (max / min) ** (1 / (count - 1))
 
   // Now that we know growthFactor, solve for each bucket
-  const buckets = []
+  const buckets = new Set()
   for (let i = 1; i <= count; i++) {
     const bucket = min * growthFactor ** (i - 1)
-    buckets.push(_.round(bucket, precision))
+    buckets.add(_.round(bucket, precision))
   }
 
   // Remove duplicate buckets
-  return [...new Set(buckets)]
+  return [...buckets]
 }
 
 module.exports = {}
