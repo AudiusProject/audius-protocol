@@ -114,7 +114,7 @@ const handleSyncFromPrimary = async (
       } else {
         return {
           error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
-          result: 'failure_export_wallet'
+          result: 'failure_malformed_export'
         }
       }
     }
@@ -123,7 +123,7 @@ const handleSyncFromPrimary = async (
     if (!body.data.hasOwnProperty('cnodeUsers')) {
       return {
         error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
-        result: 'failure_export_wallet'
+        result: 'failure_malformed_export'
       }
     }
 
@@ -146,7 +146,7 @@ const handleSyncFromPrimary = async (
           error: new Error(
             `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
           ),
-          result: 'failure_export_wallet'
+          result: 'failure_malformed_export'
         }
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
@@ -185,7 +185,7 @@ const handleSyncFromPrimary = async (
           error: new Error(
             `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
           ),
-          result: 'failure_export_wallet'
+          result: 'failure_malformed_export'
         }
       }
 
@@ -210,7 +210,7 @@ const handleSyncFromPrimary = async (
           error: new Error(
             `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
           ),
-          result: 'failure_sync_secondary_from_primary'
+          result: 'failure_inconsistent_clock'
         }
       } else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
@@ -458,7 +458,7 @@ const handleSyncFromPrimary = async (
             logger.error(logPrefix, errorMsg)
             return {
               error: new Error(errorMsg),
-              result: 'failure_threshold_not_reached'
+              result: 'failure_skip_threshold_not_reached'
             }
 
             // If max failure threshold reached, continue with sync and reset failure count
