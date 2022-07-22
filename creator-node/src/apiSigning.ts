@@ -11,10 +11,8 @@ const MAX_SIGNATURE_AGE_MS = 300000
 
 /**
  * Generate the timestamp and signature for api signing
- * @param {object} data
- * @param {string} privateKey
  */
-const generateTimestampAndSignature = (data, privateKey) => {
+const generateTimestampAndSignature = (data: Object, privateKey: string) => {
   const timestamp = new Date().toISOString()
   const toSignObj = { ...data, timestamp }
   // JSON stringify automatically removes white space given 1 param
@@ -27,15 +25,16 @@ const generateTimestampAndSignature = (data, privateKey) => {
 
 // Keeps track of a cached listen signature
 // Two field object: { timestamp, signature }
-let cachedListenSignature = null
+let cachedListenSignature: { timestamp: string; signature: string } | null =
+  null
 
 /**
  * Generates a signature for `data` if only the previous signature
  * generated is invalid (expired). Otherwise returns an existing signature.
- * @param {string} privateKey
- * @returns {object} {signature, timestamp} signature data
  */
-const generateListenTimestampAndSignature = (privateKey) => {
+const generateListenTimestampAndSignature = (
+  privateKey: string
+): { timestamp: string; signature: string } => {
   if (cachedListenSignature) {
     const signatureTimestamp = cachedListenSignature.timestamp
     if (signatureHasExpired(signatureTimestamp)) {
@@ -57,11 +56,12 @@ const generateListenTimestampAndSignature = (privateKey) => {
 
 /**
  * Recover the public wallet address
- * @param {*} data obj with structure {...data, timestamp}
- * @param {*} signature signature generated with signed data
  */
 // eslint-disable-next-line no-unused-vars
-const recoverWallet = (data, signature) => {
+const recoverWallet = (
+  data: { timestamp: string; [key: string]: any },
+  signature: string
+): string => {
   const structuredData = JSON.stringify(sortKeys(data))
   const hashedData = web3.utils.keccak256(structuredData)
   const recoveredWallet = web3.eth.accounts.recover(hashedData, signature)
@@ -73,9 +73,9 @@ const recoverWallet = (data, signature) => {
  * Returns boolean indicating if provided timestamp is older than MAX_SIGNATURE_AGE
  * @param {string} signatureTimestamp unix timestamp string when signature was generated
  */
-const signatureHasExpired = (signatureTimestamp) => {
-  const signatureTimestampDate = new Date(signatureTimestamp)
-  const currentTimestampDate = new Date()
+const signatureHasExpired = (signatureTimestamp: string): boolean => {
+  const signatureTimestampDate = new Date(signatureTimestamp).getTime()
+  const currentTimestampDate = new Date().getTime()
   const signatureAge = currentTimestampDate - signatureTimestampDate
 
   return signatureAge >= MAX_SIGNATURE_AGE_MS
@@ -84,7 +84,7 @@ const signatureHasExpired = (signatureTimestamp) => {
 /**
  * Recursively sorts keys of object or object array
  */
-const sortKeys = (x) => {
+const sortKeys: any = (x: any) => {
   if (typeof x !== 'object' || !x) {
     return x
   }
@@ -96,24 +96,27 @@ const sortKeys = (x) => {
     .reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
 
-const generateTimestampAndSignatureForSPVerification = (spID, privateKey) => {
+const generateTimestampAndSignatureForSPVerification = (
+  spID: string | number,
+  privateKey: string
+) => {
   return generateTimestampAndSignature({ spID }, privateKey)
 }
 
 /**
  * Wrapper fn to perform basic validation that the requester is a valid SP and that the request came
  * from the SP node itself. Uses the {spID, timestamp} as the input data to recover.
- * @param {Object} data
- * @param {Object} data.audiusLibs
- * @param {number} data.spID the spID of the node to verify
- * @param {string} data.reqTimestamp the timestamp from the request body
- * @param {string} data.reqSignature the signature from the request body
  */
 const verifyRequesterIsValidSP = async ({
   audiusLibs,
-  spID,
-  reqTimestamp,
-  reqSignature
+  spID, // the spID of the node to verify
+  reqTimestamp, // the timestamp from the request body
+  reqSignature // the signature from the request body
+}: {
+  audiusLibs: any
+  spID: string
+  reqTimestamp: string
+  reqSignature: string
 }) => {
   if (!reqTimestamp || !reqSignature) {
     throw new Error(
@@ -121,12 +124,12 @@ const verifyRequesterIsValidSP = async ({
     )
   }
 
-  spID = validateSPId(spID)
+  const spIDNumber = validateSPId(spID)
 
   const spRecordFromSPFactory =
     await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
       'content-node',
-      spID
+      spIDNumber
     )
 
   let {
@@ -152,14 +155,17 @@ const verifyRequesterIsValidSP = async ({
     !nodeEndpointFromSPFactory
   ) {
     throw new Error(
-      `SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory or missing field endpoint=${nodeEndpointFromSPFactory}`
+      `SpID ${spIDNumber} is not registered as valid SP on L1 ServiceProviderFactory or missing field endpoint=${nodeEndpointFromSPFactory}`
     )
   }
 
   /**
    * Confirm request was signed by delegate owner wallet registered on L1 for spID, given request signature artifacts
    */
-  const requesterWalletRecoveryObj = { spID, timestamp: reqTimestamp }
+  const requesterWalletRecoveryObj = {
+    spID: spIDNumber,
+    timestamp: reqTimestamp
+  }
   const recoveredDelegateOwnerWallet = recoverWallet(
     requesterWalletRecoveryObj,
     reqSignature
@@ -174,7 +180,7 @@ const verifyRequesterIsValidSP = async ({
     ownerWalletFromSPFactory,
     delegateOwnerWalletFromSPFactory,
     nodeEndpointFromSPFactory,
-    spID
+    spID: spIDNumber
   }
 }
 
@@ -183,18 +189,18 @@ const verifyRequesterIsValidSP = async ({
  * @param {string} spID
  * @returns a parsed spID
  */
-function validateSPId(spID) {
+function validateSPId(spID: string): number {
   if (!spID) {
     throw new Error('Must provide all required query parameters: spID')
   }
 
-  spID = parseInt(spID)
+  const spIDNumber = parseInt(spID)
 
-  if (isNaN(spID) || spID < 0) {
-    throw new Error(`Provided spID is not a valid id. spID=${spID}`)
+  if (isNaN(spIDNumber) || spIDNumber < 0) {
+    throw new Error(`Provided spID is not a valid id. spID=${spIDNumber}`)
   }
 
-  return spID
+  return spIDNumber
 }
 
 module.exports = {
