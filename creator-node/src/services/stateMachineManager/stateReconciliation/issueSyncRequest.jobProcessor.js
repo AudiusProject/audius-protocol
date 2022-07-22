@@ -48,6 +48,12 @@ module.exports = async function ({
   syncRequestParameters,
   logger
 }) {
+  logger.info(
+    `SIDTEST issuesyncrequest: ${syncType} ${syncMode} ${JSON.stringify(
+      syncRequestParameters
+    )}`
+  )
+
   let jobsToEnqueue = {}
   let metricsToRecord = []
   let error = {}
@@ -172,8 +178,10 @@ async function _handleIssueSyncRequest({
    * Eventually should make this more robust, but proceeding with caution
    */
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+    const sidtest = syncRequestParameters.data.sidtest
+
     // Short-circuit if this syncMode is disabled
-    if (!mergePrimaryAndSecondaryEnabled) {
+    if (!mergePrimaryAndSecondaryEnabled && !sidtest) {
       return { result: 'success_mode_disabled' }
     }
 

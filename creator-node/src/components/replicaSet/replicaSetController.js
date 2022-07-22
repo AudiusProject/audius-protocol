@@ -13,6 +13,11 @@ const {
 const { ensureStorageMiddleware } = require('../../middlewares')
 const { enqueueSync } = require('./syncQueueComponentService')
 const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
+const {
+  JOB_NAMES,
+  SyncType,
+  SYNC_MODES
+} = require('../../services/stateMachineManager/stateMachineConstants')
 
 const router = express.Router()
 
@@ -129,6 +134,40 @@ const syncRouteController = async (req, res) => {
   return successResponse()
 }
 
+const mergePrimaryAndSecondaryController = async (req, res) => {
+  const serviceRegistry = req.app.get('serviceRegistry')
+  const manualSyncQueue = serviceRegistry.manualSyncQueue
+  const config = serviceRegistry.nodeConfig
+
+  const selfEndpoint = config.get('creatorNodeEndpoint')
+
+  const wallet = req.query.wallet
+  const endpoint = req.query.endpoint
+
+  const syncType = SyncType.Manual
+
+  const syncRequestParameters = {
+    baseURL: endpoint,
+    url: '/sync',
+    method: 'post',
+    data: {
+      wallet: [wallet],
+      creator_node_endpoint: selfEndpoint,
+      sync_type: syncType,
+      immediate: true,
+      sidtest: true
+    }
+  }
+
+  await manualSyncQueue.add(JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST, {
+    syncType: SyncType.Manual,
+    syncMode: SYNC_MODES.MergePrimaryAndSecondary,
+    syncRequestParameters
+  })
+
+  return successResponse()
+}
+
 // Routes
 
 router.get(
@@ -139,6 +178,11 @@ router.post(
   '/sync',
   ensureStorageMiddleware,
   handleResponse(syncRouteController)
+)
+
+router.post(
+  '/mergePrimaryAndSecondary',
+  handleResponse(mergePrimaryAndSecondaryController)
 )
 
 module.exports = router
