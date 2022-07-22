@@ -631,7 +631,7 @@ module.exports = async function (
   )
   const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
 
-  const { error, ...labels } = handleSyncFromPrimary(
+  const { error, ...labels } = await handleSyncFromPrimary(
     serviceRegistry,
     walletPublicKeys,
     creatorNodeEndpoint,
