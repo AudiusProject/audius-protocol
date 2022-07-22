@@ -3,13 +3,13 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.1.13",
+  "version": "1.2.0",
   "private": true,
   "dependencies": {
     "@audius/common": "1.1.13",
-    "@coinbase/cbpay-js": "1.0.2",
-    "@audius/sdk": "0.0.17",
+    "@audius/sdk": "0.0.20",
     "@audius/stems": "1.1.13",
+    "@coinbase/cbpay-js": "1.0.2",
     "@craco/craco": "7.0.0-alpha.3",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@hcaptcha/react-hcaptcha": "0.3.6",
@@ -168,7 +168,6 @@
     "update-ipfs-build:stage": "node ./scripts/updateIpfsBuild.js stage",
     "update-ipfs-build:prod": "node ./scripts/updateIpfsBuild.js prod",
     "install-dmg-license": "npx lerna add dmg-license --scope=audius-client --no-bootstrap && npx lerna bootstrap --no-ci"
-
   },
   "standard": {
     "parser": "babel-eslint",
