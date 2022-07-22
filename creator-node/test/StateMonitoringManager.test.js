@@ -12,8 +12,7 @@ const { getLibsMock } = require('./lib/libsMock')
 const config = require('../src/config')
 const StateMonitoringManager = require('../src/services/stateMachineManager/stateMonitoring')
 const {
-  QUEUE_NAMES,
-  JOB_NAMES
+  QUEUE_NAMES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 
 chai.use(require('sinon-chai'))
@@ -82,13 +81,21 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
       stateMonitoringManager,
       'registerMonitoringQueueEventHandlersAndJobProcessors'
     )
-    const { stateMonitoringQueue } = await stateMonitoringManager.init(
+    const {
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
+      cNodeEndpointToSpIdMapQueue
+    } = await stateMonitoringManager.init(
       discoveryNodeEndpoint,
       getPrometheusRegistry()
     )
 
     // Verify that the queue was successfully initialized and that its event listeners were registered
-    expect(stateMonitoringQueue).to.exist.and.to.be.instanceOf(BullQueue)
+    expect(monitorStateQueue).to.exist.and.to.be.instanceOf(BullQueue)
+    expect(findSyncRequestsQueue).to.exist.and.to.be.instanceOf(BullQueue)
+    expect(findReplicaSetUpdatesQueue).to.exist.and.to.be.instanceOf(BullQueue)
+    expect(cNodeEndpointToSpIdMapQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(
       stateMonitoringManager.registerMonitoringQueueEventHandlersAndJobProcessors
     ).to.have.been.calledOnce
@@ -97,8 +104,32 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
         0
       ).args[0]
     )
-      .to.have.property('monitoringQueue')
-      .that.has.deep.property('name', QUEUE_NAMES.STATE_MONITORING)
+      .to.have.property('monitorStateQueue')
+      .that.has.deep.property('name', QUEUE_NAMES.MONITOR_STATE)
+    expect(
+      stateMonitoringManager.registerMonitoringQueueEventHandlersAndJobProcessors.getCall(
+        0
+      ).args[0]
+    )
+      .to.have.property('findSyncRequestsQueue')
+      .that.has.deep.property('name', QUEUE_NAMES.FIND_SYNC_REQUESTS)
+    expect(
+      stateMonitoringManager.registerMonitoringQueueEventHandlersAndJobProcessors.getCall(
+        0
+      ).args[0]
+    )
+      .to.have.property('findReplicaSetUpdatesQueue')
+      .that.has.deep.property('name', QUEUE_NAMES.FIND_REPLICA_SET_UPDATES)
+    expect(
+      stateMonitoringManager.registerMonitoringQueueEventHandlersAndJobProcessors.getCall(
+        0
+      ).args[0]
+    )
+      .to.have.property('cNodeEndpointToSpIdMapQueue')
+      .that.has.deep.property(
+        'name',
+        QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
+      )
   })
 
   it('kicks off an initial job when initting', async function () {
@@ -117,13 +148,13 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
 
     // Initialize StateMonitoringManager
     const stateMonitoringManager = new MockStateMonitoringManager()
-    const { stateMonitoringQueue } = await stateMonitoringManager.init(
+    const { monitorStateQueue } = await stateMonitoringManager.init(
       discoveryNodeEndpoint,
       getPrometheusRegistry()
     )
 
     // Verify that the queue has the correct initial job in it
-    return expect(stateMonitoringQueue.getJobs('delayed'))
+    return expect(monitorStateQueue.getJobs('delayed'))
       .to.eventually.be.fulfilled.and.have.nested.property('[0]')
       .and.nested.include({
         id: '1',
@@ -147,15 +178,15 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
 
     // Initialize StateMonitoringManager
     const stateMonitoringManager = new MockStateMonitoringManager()
-    const { stateMonitoringQueue } = await stateMonitoringManager.init(
+    const { monitorStateQueue } = await stateMonitoringManager.init(
       'discoveryNodeEndpoint',
       getPrometheusRegistry()
     )
 
     // Verify that the queue won't process or queue jobs because it's paused
-    const isQueuePaused = await stateMonitoringQueue.isPaused()
+    const isQueuePaused = await monitorStateQueue.isPaused()
     expect(isQueuePaused).to.be.true
-    return expect(stateMonitoringQueue.getJobs('delayed')).to.eventually.be
+    return expect(monitorStateQueue.getJobs('delayed')).to.eventually.be
       .fulfilled.and.be.empty
   })
 
@@ -301,12 +332,9 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     )
 
     // Verify that the queue has the correct initial job in it
-    expect(queueAdd).to.have.been.calledOnceWithExactly(
-      JOB_NAMES.MONITOR_STATE,
-      {
-        lastProcessedUserId: prevJobProcessedUserId,
-        discoveryNodeEndpoint: discoveryNodeEndpoint
-      }
-    )
+    expect(queueAdd).to.have.been.calledOnceWithExactly({
+      lastProcessedUserId: prevJobProcessedUserId,
+      discoveryNodeEndpoint: discoveryNodeEndpoint
+    })
   })
 })

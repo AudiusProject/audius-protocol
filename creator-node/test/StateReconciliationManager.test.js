@@ -70,19 +70,20 @@ describe('test StateReconciliationManager initialization, events, and job proces
     return { processJobMock, loggerStub }
   }
 
-  it('creates the stateReconciliationQueue and registers its event handlers', async function () {
+  it('creates the queues and registers their event handlers', async function () {
     // Initialize StateReconciliationManager and spy on its registerQueueEventHandlersAndJobProcessors function
     const stateReconciliationManager = new StateReconciliationManager()
     sandbox.spy(
       stateReconciliationManager,
       'registerQueueEventHandlersAndJobProcessors'
     )
-    const { stateReconciliationQueue } = await stateReconciliationManager.init(
-      getPrometheusRegistry()
-    )
+    const { manualSyncQueue, recurringSyncQueue, updateReplicaSetQueue } =
+      await stateReconciliationManager.init(getPrometheusRegistry())
 
-    // Verify that the stateReconciliationQueue was successfully initialized and that its event listeners were registered
-    expect(stateReconciliationQueue).to.exist.and.to.be.instanceOf(BullQueue)
+    // Verify that the queues were successfully initialized and that their event listeners were registered
+    expect(manualSyncQueue).to.exist.and.to.be.instanceOf(BullQueue)
+    expect(recurringSyncQueue).to.exist.and.to.be.instanceOf(BullQueue)
+    expect(updateReplicaSetQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(
       stateReconciliationManager.registerQueueEventHandlersAndJobProcessors
     ).to.have.been.calledOnce
@@ -91,8 +92,22 @@ describe('test StateReconciliationManager initialization, events, and job proces
         0
       ).args[0]
     )
-      .to.have.property('stateReconciliationQueue')
-      .that.has.deep.property('name', QUEUE_NAMES.STATE_RECONCILIATION)
+      .to.have.property('manualSyncQueue')
+      .that.has.deep.property('name', QUEUE_NAMES.MANUAL_SYNC)
+    expect(
+      stateReconciliationManager.registerQueueEventHandlersAndJobProcessors.getCall(
+        0
+      ).args[0]
+    )
+      .to.have.property('recurringSyncQueue')
+      .that.has.deep.property('name', QUEUE_NAMES.RECURRING_SYNC)
+    expect(
+      stateReconciliationManager.registerQueueEventHandlersAndJobProcessors.getCall(
+        0
+      ).args[0]
+    )
+      .to.have.property('updateReplicaSetQueue')
+      .that.has.deep.property('name', QUEUE_NAMES.UPDATE_REPLICA_SET)
   })
 
   it('processes manual sync jobs with expected data and returns the expected results', async function () {
