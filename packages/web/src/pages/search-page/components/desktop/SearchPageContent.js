@@ -472,8 +472,7 @@ class SearchPageContent extends Component {
         description={`Search results for ${searchText}`}
         canonicalUrl={fullSearchResultsPage(searchText)}
         contentClassName={styles.searchResults}
-        header={header}
-        scrollableSearch>
+        header={header}>
         {status === Status.ERROR ? (
           <p>Oh no! Something went wrong!</p>
         ) : status === Status.LOADING ? (
