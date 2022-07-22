@@ -643,4 +643,6 @@ module.exports = async function (
   if (error) {
     throw new Error(error)
   }
+
+  return labels
 }
