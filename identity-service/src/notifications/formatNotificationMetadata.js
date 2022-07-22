@@ -165,6 +165,9 @@ function formatReaction (notification, metadata) {
     amount: formatWei(new BN(notification.metadata.reacted_to_entity.amount))
   }
 }
+// This is different from the above corresponding function
+// because it operates on data coming from the database
+// as opposed to that coming from the DN.
 function formatReactionEmail (notification, extras) {
   const { entityId, metadata: { reactedToEntity: { amount } } } = notification
   return {
@@ -183,6 +186,9 @@ function formatTipReceive (notification, metadata) {
     amount: formatWei(new BN(notification.metadata.amount))
   }
 }
+// This is different from the above corresponding function
+// because it operates on data coming from the database
+// as opposed to that coming from the DN.
 function formatTipReceiveEmail (notification, extras) {
   const { entityId, metadata: { amount } } = notification
   return {
@@ -202,8 +208,10 @@ function formatSupporterRankUp (notification, metadata) {
     sendingUser: user
   }
 }
+// This is different from the above corresponding function
+// because it operates on data coming from the database
+// as opposed to that coming from the DN.
 function formatSupporterRankUpEmail (notification, extras) {
-  // Sending user
   const { entityId: rank, metadata: { supportingUserId } } = notification
   return {
     type: NotificationType.SupporterRankUp,
@@ -222,8 +230,10 @@ function formatSupportingRankUp (notification, metadata) {
     receivingUser: user
   }
 }
+// This is different from the above corresponding function
+// because it operates on data coming from the database
+// as opposed to that coming from the DN.
 function formatSupportingRankUpEmail (notification, extras) {
-  // Receiving user
   const { entityId: rank, metadata: { supportedUserId } } = notification
   return {
     type: NotificationType.SupportingRankUp,

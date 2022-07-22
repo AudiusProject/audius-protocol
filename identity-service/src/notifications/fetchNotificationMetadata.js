@@ -161,7 +161,15 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
   }
 }
 
-async function fetchNotificationMetadata (audius, userIds = [], notifications, fetchThumbnails = false, isEmailNotif = false) {
+async function fetchNotificationMetadata (
+  audius,
+  userIds = [],
+  notifications,
+  fetchThumbnails = false,
+  // the structure of the notification data from the database will be different
+  // in the email flow compared to that which is fetched from the discovery node
+  isEmailNotif = false
+) {
   let userIdsToFetch = [...userIds]
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
