@@ -128,7 +128,8 @@ async function fetchExportFromSecondary({
   const exportQueryParams = {
     wallet_public_key: [wallet], // export requires a wallet array
     clock_range_min: clockRangeMin,
-    source_endpoint: selfEndpoint
+    source_endpoint: selfEndpoint,
+    force_export: true
   }
 
   try {

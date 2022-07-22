@@ -26,6 +26,7 @@ module.exports = function (app) {
 
       const walletPublicKeys = req.query.wallet_public_key // array
       const sourceEndpoint = req.query.source_endpoint // string
+      const forceExport = !!req.query.force_export // boolean
 
       const maxExportClockValueRange = config.get('maxExportClockValueRange')
 
@@ -41,6 +42,7 @@ module.exports = function (app) {
               walletPublicKeys,
               requestedClockRangeMin,
               requestedClockRangeMax,
+              forceExport,
               logger: req.logger
             })
           },
