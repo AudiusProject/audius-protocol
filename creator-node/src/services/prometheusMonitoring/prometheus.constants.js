@@ -161,7 +161,7 @@ const METRICS = Object.freeze({
       name: METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM,
       help: 'Time spent to sync a secondary from a primary (seconds)',
       labelNames:
-        MetricLabelNames[
+        METRIC_LABELS[
           METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM
         ]
     }
