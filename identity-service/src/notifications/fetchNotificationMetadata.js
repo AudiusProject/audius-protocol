@@ -156,7 +156,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     const finalUserNotifications = userNotifications.slice(0, limit)
 
     const fethNotificationsTime = Date.now()
-    const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
+    const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true, true)
     if (solanaNotifCountQuery.length > 0) {
       logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | metadata: ${JSON.stringify(metadata, null, 2)}`)
     }
@@ -173,7 +173,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
   }
 }
 
-async function fetchNotificationMetadata (audius, userIds = [], notifications, fetchThumbnails = false) {
+async function fetchNotificationMetadata (audius, userIds = [], notifications, fetchThumbnails = false, isEmailNotif = false) {
   let userIdsToFetch = [...userIds]
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
@@ -261,21 +261,43 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
       }
       case NotificationType.Reaction: {
         userIdsToFetch.push(notification.initiator)
+        console.log(`CONSOLE LOG NotificationType.Reaction ${JSON.stringify(notification)}`)
+        if (isEmailNotif) {
+          userIdsToFetch.push(notification.userId)
+          userIdsToFetch.push(notification.entityId)
+        }
         break
       }
       case NotificationType.SupporterRankUp: {
         // Tip sender needed for SupporterRankUp
         userIdsToFetch.push(notification.metadata.entity_id)
+        const x = notification.metadata.supportingUserId
+        console.log(`CONSOLE LOG NotificationType.SupporterRankUp ${JSON.stringify(notification.metadata.supportingUserId)} ${JSON.stringify(notification)}`)
+        if (isEmailNotif) {
+          userIdsToFetch.push(notification.userId)
+          userIdsToFetch.push(x)
+        }
         break
       }
       case NotificationType.SupportingRankUp: {
         // Tip recipient needed for SupportingRankUp
         userIdsToFetch.push(notification.initiator)
+        const x = notification.metadata.supportedUserId
+        console.log(`CONSOLE LOG NotificationType.SupportingRankUp ${JSON.stringify(notification.metadata.supportedUserId)} ${JSON.stringify(notification)}`)
+        if (isEmailNotif) {
+          userIdsToFetch.push(notification.userId)
+          userIdsToFetch.push(x)
+        }
         break
       }
       case NotificationType.TipReceive: {
         // Fetch the sender of the tip
         userIdsToFetch.push(notification.metadata.entity_id)
+        console.log(`CONSOLE LOG NotificationType.TipReceive ${JSON.stringify(notification)}`)
+        if (isEmailNotif) {
+          userIdsToFetch.push(notification.userId)
+          userIdsToFetch.push(notification.entityId)
+        }
         break
       }
     }

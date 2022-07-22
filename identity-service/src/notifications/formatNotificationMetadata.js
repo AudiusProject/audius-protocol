@@ -210,7 +210,7 @@ function formatSupporterRankUp (notification, metadata) {
 function formatSupporterRankUpEmail (notification, extras) {
   // Sending user
   const { entityId: rank, metadata: { supportingUserId } } = notification
-  console.log(`CONSOLE LOG formatSupporterRankUpEmail userId ${supportingUserId} user ${JSON.stringify(extras.users[supportingUserId], null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(extras, null, 2)}`)
+  console.log(`CONSOLE LOG formatSupporterRankUpEmail userId ${supportingUserId} user ${JSON.stringify(extras.users[supportingUserId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
   return {
     type: NotificationType.SupporterRankUp,
     rank,
@@ -232,7 +232,7 @@ function formatSupportingRankUp (notification, metadata) {
 function formatSupportingRankUpEmail (notification, extras) {
   // Receiving user
   const { entityId: rank, metadata: { supportedUserId } } = notification
-  console.log(`CONSOLE LOG formatSupportingRankUpEmail userId ${userId} user ${JSON.stringify(extras.users[supportedUserId], null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(extras, null, 2)}`)
+  console.log(`CONSOLE LOG formatSupportingRankUpEmail userId ${supportedUserId} user ${JSON.stringify(extras.users[supportedUserId], null, 2)} notification ${JSON.stringify(notification, null, 2)} extras ${JSON.stringify(extras, null, 2)}`)
   return {
     type: NotificationType.SupportingRankUp,
     rank,
@@ -396,10 +396,8 @@ const notificationResponseTitleMap = {
 }
 
 function formatEmailNotificationProps (notifications, extras) {
-  console.log(`CONSOLE LOG WORKS`)
   const emailNotificationProps = notifications.map(notification => {
     const mapNotification = emailNotificationResponseMap[notification.type]
-    console.log(`CONSOLE LOG mapNotification ${mapNotification} notification.type ${notification.type}`)
     return mapNotification(notification, extras)
   })
   return emailNotificationProps

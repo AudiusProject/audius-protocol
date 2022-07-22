@@ -180,7 +180,7 @@ class NotificationProcessor {
     this.solanaNotifQueue.process(async (job, done) => {
       let error = null
       const MIN_SOLANA_SLOT = config.get('minSolanaNotificationSlot')
-      let minSlot = Math.max(MIN_SOLANA_SLOT, job.data.minSlot)
+      let minSlot = Math.max(203000, MIN_SOLANA_SLOT, job.data.minSlot)
 
       try {
         if (!minSlot && minSlot !== 0) throw new Error('no min slot')
@@ -405,6 +405,7 @@ class NotificationProcessor {
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     const { info: metadata, notifications } = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
     logger.info(`${logLabel} - query solana notifications from discovery node complete in ${Date.now() - time}ms`)
+    logger.info(`SOLANA NOTIFS FROM DN COUNT IS ${notifications.length} ${JSON.stringify(notifications, null, 2)}`)
     time = Date.now()
 
     // Use a single transaction

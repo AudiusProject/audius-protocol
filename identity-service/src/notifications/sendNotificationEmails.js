@@ -256,7 +256,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           })
           let lastSentTimestamp
           if (latestUserEmail) {
-            lastSentTimestamp = moment(latestUserEmail.timestamp)
+            lastSentTimestamp = moment(latestUserEmail.timestamp).subtract(1, 'seconds')
           } else {
             lastSentTimestamp = moment(0) // EPOCH
           }
