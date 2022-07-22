@@ -103,7 +103,7 @@ const handleSyncFromPrimary = async (
       )
       return {
         error: new Error(resp.data.error),
-        result: 'failure_failed_export'
+        result: 'failure_export_wallet'
       }
     }
 
@@ -114,7 +114,7 @@ const handleSyncFromPrimary = async (
       } else {
         return {
           error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
-          result: 'failure_failed_export'
+          result: 'failure_export_wallet'
         }
       }
     }
@@ -123,7 +123,7 @@ const handleSyncFromPrimary = async (
     if (!body.data.hasOwnProperty('cnodeUsers')) {
       return {
         error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
-        result: 'failure_failed_export'
+        result: 'failure_export_wallet'
       }
     }
 
@@ -146,7 +146,7 @@ const handleSyncFromPrimary = async (
           error: new Error(
             `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
           ),
-          result: 'failure_failed_export'
+          result: 'failure_export_wallet'
         }
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
@@ -185,7 +185,7 @@ const handleSyncFromPrimary = async (
           error: new Error(
             `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
           ),
-          result: 'failure_failed_export'
+          result: 'failure_export_wallet'
         }
       }
 
@@ -228,14 +228,14 @@ const handleSyncFromPrimary = async (
           error: new Error(
             `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
           ),
-          result: 'failure_sync_secondary_from_primary'
+          result: 'failure_import_not_contiguous'
         }
       } else if (maxClockRecordId !== fetchedLatestClockVal) {
         return {
           error: new Error(
             `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
           ),
-          result: 'failure_sync_secondary_from_primary'
+          result: 'failure_import_not_consistent'
         }
       }
 

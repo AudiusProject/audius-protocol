@@ -62,8 +62,10 @@ const METRIC_LABELS = Object.freeze({
       'failure_sync_secondary_from_primary',
       'failure_db_transaction',
       'failure_sync_in_progress',
-      'failure_failed_export',
-      'failure_threshold_not_reached'
+      'failure_export_wallet',
+      'failure_threshold_not_reached',
+      'failure_import_not_consistent',
+      'failure_import_not_contiguous'
     ]
   },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
