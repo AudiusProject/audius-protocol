@@ -26,6 +26,7 @@ def setup_trending(db):
                     "user_id": i + 1,
                     "handle": str(i + 1),
                     "wallet": str(i + 1),
+                    "is_creator": True,
                     # Legacy users have profile_picture and cover_photo (versus _sizes)
                     "profile_picture": "Qm0123456789abcdef0123456789abcdef0123456789ab",
                     "cover_photo": "Qm0123456789abcdef0123456789abcdef0123456789ab",

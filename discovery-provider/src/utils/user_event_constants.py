@@ -9,6 +9,7 @@ user_event_types_lookup = {
     "update_bio": "UpdateBio",
     "update_profile_photo": "UpdateProfilePhoto",
     "update_cover_photo": "UpdateCoverPhoto",
+    "update_is_creator": "UpdateIsCreator",
     "update_is_verified": "UpdateIsVerified",
     "update_creator_node_endpoint": "UpdateCreatorNodeEndpoint",
 }
@@ -22,6 +23,7 @@ user_event_types_arr = [
     user_event_types_lookup["update_bio"],
     user_event_types_lookup["update_profile_photo"],
     user_event_types_lookup["update_cover_photo"],
+    user_event_types_lookup["update_is_creator"],
     user_event_types_lookup["update_is_verified"],
     user_event_types_lookup["update_creator_node_endpoint"],
 ]

@@ -196,6 +196,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 txhash=user_meta.get("txhash", str(i + block_offset)),
                 user_id=user_meta.get("user_id", i),
                 is_current=user_meta.get("is_current", True),
+                is_creator=user_meta.get("is_creator", True),
                 handle=user_meta.get("handle", str(i)),
                 handle_lc=user_meta.get("handle", str(i)).lower(),
                 wallet=user_meta.get("wallet", str(i)),

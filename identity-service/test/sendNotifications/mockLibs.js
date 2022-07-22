@@ -95,6 +95,7 @@ const userTemplate = (id) => ({
   'follower_count': 655,
   'handle': 'rayjacobson',
   'handle_lc': 'rayjacobson',
+  'is_creator': true,
   'is_current': true,
   'is_verified': false,
   'location': 'chik fil yay!',
