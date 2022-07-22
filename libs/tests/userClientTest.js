@@ -22,7 +22,6 @@ it('should verify handle is valid', async function () {
 it('should call addUser and verify new creator', async function () {
   let metadata = {
     'wallet': helpers.constants.wallet,
-    'is_creator': true,
     'name': 'Creator Name' + Math.floor(Math.random() * 1000000),
     'handle': handle,
     'profile_picture': helpers.constants.trackMetadataCID,
@@ -94,15 +93,6 @@ it('should call addUser and verify new creator', async function () {
     updateCoverPhotoResp.coverPhotoMultihashDigest,
     coverPhotoMultihashDecoded.digest,
     `Transaction failed - ${coverPhotoMultihashDecoded.digest}`
-  )
-
-  const updateIsCreatorResp = await audiusInstance.contracts.UserFactoryClient.updateIsCreator(
-    userId, metadata.is_creator
-  )
-  assert.deepStrictEqual(
-    updateIsCreatorResp.isCreator,
-    metadata.is_creator,
-    `Transaction failed - ${metadata.is_creator}`
   )
 
   const updateCreatorNodeEndpointResp = await audiusInstance.contracts.UserFactoryClient.updateCreatorNodeEndpoint(

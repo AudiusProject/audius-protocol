@@ -6,7 +6,7 @@ const sanitizeNodes = async (libs, secondaries) => {
   console.debug('Sanity Check - sanitizeNodes')
   const user = libs.userStateManager.getCurrentUser()
 
-  if (!user || !user.is_creator) return
+  if (!user) return
 
   const sanitizedEndpoint = user.creator_node_endpoint
     .split(',')
