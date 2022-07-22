@@ -258,20 +258,18 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
       case NotificationType.SupporterRankUp: {
         // Tip sender needed for SupporterRankUp
         userIdsToFetch.push(notification.metadata.entity_id)
-        const x = notification.metadata.supportingUserId
         if (isEmailNotif) {
           userIdsToFetch.push(notification.userId)
-          userIdsToFetch.push(x)
+          userIdsToFetch.push(notification.metadata.supportingUserId)
         }
         break
       }
       case NotificationType.SupportingRankUp: {
         // Tip recipient needed for SupportingRankUp
         userIdsToFetch.push(notification.initiator)
-        const x = notification.metadata.supportedUserId
         if (isEmailNotif) {
           userIdsToFetch.push(notification.userId)
-          userIdsToFetch.push(x)
+          userIdsToFetch.push(notification.metadata.supportedUserId)
         }
         break
       }
