@@ -7,6 +7,7 @@ import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
 import type { TransactionReceipt } from 'web3-core'
 import type Wallet from 'ethereumjs-wallet'
+import type { TransactionInstruction } from '@solana/web3.js'
 
 type Data = Record<string, unknown>
 
@@ -24,23 +25,13 @@ export type RelayTransaction = {
   }
 }
 
-type TransactionData = {
-  recentBlockhash: string
-  secpInstruction?: {
-    publicKey: string
-    message: string
-    signature: any
-    recoveryId: number
-  }
-  instruction: {
-    keys: Array<{
-      pubkey: string
-      isSigner?: boolean
-      isWritable?: boolean
-    }>
-    programId: string
-    data: Record<string, unknown>
-  }
+export type RelayTransactionData = {
+  instructions: TransactionInstruction[]
+  skipPreflight: boolean
+  feePayerOverride: string | null
+  signatures?: Array<{ publicKey: string; signature: Buffer }> | null
+  retry?: boolean
+  recentBlockhash?: string
 }
 
 type AttestationResult = {
@@ -456,10 +447,10 @@ export class IdentityService {
   }
 
   // Relays tx data through the solana relay endpoint
-  async solanaRelay(transactionData: TransactionData) {
+  async solanaRelay(transactionData: RelayTransactionData) {
     const headers = await this._signData()
 
-    return await this._makeRequest({
+    return await this._makeRequest<{ transactionSignature: string }>({
       url: '/solana/relay',
       method: 'post',
       data: transactionData,
@@ -467,8 +458,8 @@ export class IdentityService {
     })
   }
 
-  async solanaRelayRaw(transactionData: TransactionData) {
-    return await this._makeRequest({
+  async solanaRelayRaw(transactionData: RelayTransactionData) {
+    return await this._makeRequest<{ transactionSignature: string }>({
       url: '/solana/relay/raw',
       method: 'post',
       data: transactionData
