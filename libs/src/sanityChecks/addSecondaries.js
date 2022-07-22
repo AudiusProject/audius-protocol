@@ -8,7 +8,7 @@ const addSecondaries = async (libs) => {
   console.debug('Sanity Check - addSecondaries')
   const user = libs.userStateManager.getCurrentUser()
 
-  if (!user || !user.is_creator) return
+  if (!user) return
 
   const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
   const secondaries = CreatorNode.getSecondaries(user.creator_node_endpoint)
