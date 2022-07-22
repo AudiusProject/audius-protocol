@@ -68,7 +68,9 @@ const METRIC_LABELS = Object.freeze({
       'failure_import_not_consistent',
       'failure_import_not_contiguous',
       'failure_inconsistent_clock'
-    ]
+    ],
+    // 5 buckets in the range of 1 second to max seconds before timing out write quorum
+    buckets: exponentialBucketsRange(0.1, 60, 10)
   },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     sync_type: Object.values(SyncType).map(_.snakeCase),
