@@ -81,7 +81,7 @@ export class TransactionHandler {
     retry?: boolean
   }) {
     let result: {
-      res: string | { transactionSignature: string } | null
+      res: string | null
       errorCode: string | number | null
       error: string | null
     } | null = null
@@ -141,7 +141,7 @@ export class TransactionHandler {
     try {
       const response = await this.identityService?.solanaRelay(transactionData)
       return {
-        res: response ?? null,
+        res: response?.transactionSignature ?? null,
         error: null,
         errorCode: null
       }
