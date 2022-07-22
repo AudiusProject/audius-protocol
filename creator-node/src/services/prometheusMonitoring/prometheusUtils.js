@@ -38,7 +38,6 @@ const exponentialBucketsRange = (min, max, count, precision = 0) => {
     buckets.add(_.round(bucket, precision))
   }
 
-  // Remove duplicate buckets
   return [...buckets]
 }
 
