@@ -2,12 +2,11 @@ const _ = require('lodash')
 
 const { createChildLogger } = require('../../logging')
 const redis = require('../../redis')
-const { JOB_NAMES } = require('./stateMachineConstants')
+const { QUEUE_NAMES } = require('./stateMachineConstants')
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
  *
- * @param {string} jobName used to filter by `jobName` tag in the logger
  * @param {Object{id, data}} job `job.id` is used to filter by `jobId` tag in the logger
  * @param {Function<logger, args>} jobProcessor the processor function that takes a logger and then the contents `job.data` as its args
  * @param {Object} parentLogger the base logger so that queries can filter by its properties as well
@@ -15,31 +14,40 @@ const { JOB_NAMES } = require('./stateMachineConstants')
  * @returns the result of the completed job, or an object with an error property if the job throws
  */
 module.exports = async function (
-  jobName,
   job,
   jobProcessor,
   parentLogger,
   prometheusRegistry
 ) {
+  // Make sure logger has `queue` property
+  const queueName = parentLogger?.fields?.queue
+  if (!queueName) {
+    parentLogger?.error(
+      `Missing required queue property on logger for job ${job}`
+    )
+    throw new Error('Missing required queue property on logger!')
+  }
+
   const { id: jobId, data: jobData } = job
 
-  const jobLogger = createChildLogger(parentLogger, { jobName, jobId })
+  const jobLogger = createChildLogger(parentLogger, { jobId })
   jobLogger.info(`New job: ${JSON.stringify(job)}`)
 
   let result
   const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames[
-      `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
+      `STATE_MACHINE_${queueName}_JOB_DURATION_SECONDS_HISTOGRAM`
     ]
   )
   const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
   try {
-    await redis.set(`latestJobStart_${jobName}`, Date.now())
+    await redis.set(`latestJobStart_${queueName}`, Date.now())
     result = await jobProcessor({ logger: jobLogger, ...jobData })
-    metricEndTimerFn({ uncaughtError: false, ...getLabels(jobName, result) })
-    await redis.set(`latestJobSuccess_${jobName}`, Date.now())
+    metricEndTimerFn({ uncaughtError: false, ...getLabels(queueName, result) })
+    await redis.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error) {
     jobLogger.error(`Error processing job: ${error}`)
+    jobLogger.error(error.stack)
     result = { error: error.message || `${error}` }
     metricEndTimerFn({ uncaughtError: true })
   }
@@ -53,7 +61,7 @@ module.exports = async function (
  * @param {Object} jobResult the result of the job to generate metrics for
  */
 const getLabels = (jobName, jobResult) => {
-  if (jobName === JOB_NAMES.UPDATE_REPLICA_SET) {
+  if (jobName === QUEUE_NAMES.UPDATE_REPLICA_SET) {
     const { issuedReconfig, newReplicaSet } = jobResult
     return {
       issuedReconfig: issuedReconfig || 'false',

@@ -3,7 +3,7 @@ const _ = require('lodash')
 const config = require('../../config')
 const { exponentialBucketsRange } = require('./prometheusUtils')
 const {
-  JOB_NAMES: STATE_MACHINE_JOB_NAMES,
+  QUEUE_NAMES: STATE_MACHINE_JOB_NAMES,
   SyncType,
   SYNC_MODES
 } = require('../stateMachineManager/stateMachineConstants')
@@ -76,14 +76,14 @@ const METRIC_LABELS = Object.freeze({
     sync_type: Object.values(SyncType).map(_.snakeCase),
     sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
     result: [
-      'failure_validate_job_data',
       'success',
-      'failure_secondary_failure_count_threshold_met',
       'success_mode_disabled',
-      'failure_primary_sync_from_secondary',
-      'failure_issue_sync_request',
       'success_secondary_caught_up',
       'success_secondary_partially_caught_up',
+      'failure_validate_job_data',
+      'failure_secondary_failure_count_threshold_met',
+      'failure_primary_sync_from_secondary',
+      'failure_issue_sync_request',
       'failure_secondary_failed_to_progress'
     ]
   },

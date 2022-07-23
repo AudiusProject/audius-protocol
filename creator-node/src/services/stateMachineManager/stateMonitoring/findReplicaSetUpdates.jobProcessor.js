@@ -2,8 +2,7 @@ const _ = require('lodash')
 
 const {
   FIND_REPLICA_SET_UPDATES_BATCH_SIZE,
-  QUEUE_NAMES,
-  JOB_NAMES
+  QUEUE_NAMES
 } = require('../stateMachineConstants')
 const CNodeHealthManager = require('../CNodeHealthManager')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
@@ -98,19 +97,16 @@ module.exports = async function ({
       const { wallet } = updateReplicaSetOp
 
       updateReplicaSetJobs.push({
-        jobName: JOB_NAMES.UPDATE_REPLICA_SET,
-        jobData: {
-          wallet,
-          userId: updateReplicaSetOp.user_id,
-          primary: updateReplicaSetOp.primary,
-          secondary1: updateReplicaSetOp.secondary1,
-          secondary2: updateReplicaSetOp.secondary2,
-          unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
-          replicaToUserInfoMap: _transformAndFilterReplicaToUserInfoMap(
-            replicaToUserInfoMap,
-            wallet
-          )
-        }
+        wallet,
+        userId: updateReplicaSetOp.user_id,
+        primary: updateReplicaSetOp.primary,
+        secondary1: updateReplicaSetOp.secondary1,
+        secondary2: updateReplicaSetOp.secondary2,
+        unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
+        replicaToUserInfoMap: _transformAndFilterReplicaToUserInfoMap(
+          replicaToUserInfoMap,
+          wallet
+        )
       })
     }
   }
@@ -119,7 +115,7 @@ module.exports = async function ({
     cNodeEndpointToSpIdMap: CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap(),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
-          [QUEUE_NAMES.STATE_RECONCILIATION]: updateReplicaSetJobs
+          [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs
         }
       : {}
   }

@@ -223,7 +223,7 @@ describe('test findSyncRequests job processor', function () {
       duplicateSyncReqs: [],
       errors: [],
       jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
+        [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
       },
       metricsToRecord: [
         {
@@ -1003,7 +1003,7 @@ describe('test findSyncRequests job processor', function () {
       duplicateSyncReqs: [expectedDuplicateSyncReq],
       errors: [],
       jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
+        [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
       },
       metricsToRecord: [
         {
@@ -1221,7 +1221,7 @@ describe('test findSyncRequests job processor', function () {
       duplicateSyncReqs: [],
       errors: [],
       jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [
+        [QUEUE_NAMES.RECURRING_SYNC]: [
           expectedSyncReqToEnqueueWallet1, expectedSyncReqToEnqueueWallet2
         ]
       },

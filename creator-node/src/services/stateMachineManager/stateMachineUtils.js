@@ -190,22 +190,42 @@ const makeMetricToRecord = (
   metricLabels = {}
 ) => {
   if (!Object.values(METRIC_RECORD_TYPE).includes(metricType)) {
-    throw new Error(`Invalid metricType: ${metricType}`)
+    throw new Error(
+      `Invalid metricType. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
+        metricLabels
+      )}`
+    )
   }
   if (!Object.values(METRIC_NAMES).includes(metricName)) {
-    throw new Error(`Invalid metricName: ${metricName}`)
+    throw new Error(
+      `Invalid metricName. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
+        metricLabels
+      )}`
+    )
   }
   if (typeof metricValue !== 'number') {
-    throw new Error(`Invalid non-numerical metricValue: ${metricValue}`)
+    throw new Error(
+      `Invalid non-numerical metricValue. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
+        metricLabels
+      )}`
+    )
   }
   const labelNames = Object.keys(METRIC_LABELS[metricName])
   for (const [labelName, labelValue] of Object.entries(metricLabels)) {
     if (!labelNames?.includes(labelName)) {
-      throw new Error(`Metric label has invalid name: ${labelName}`)
+      throw new Error(
+        `Metric label has invalid name: '${labelName}'. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
+          metricLabels
+        )}`
+      )
     }
     const labelValues = METRIC_LABELS[metricName][labelName]
     if (!labelValues?.includes(labelValue) && labelValues?.length !== 0) {
-      throw new Error(`Metric label has invalid value: ${labelValue}`)
+      throw new Error(
+        `Metric label has invalid value: '${labelValue}'. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
+          metricLabels
+        )}`
+      )
     }
   }
 
@@ -219,8 +239,6 @@ const makeMetricToRecord = (
 }
 
 const makeQueue = ({
-  redisHost,
-  redisPort,
   name,
   removeOnComplete,
   removeOnFail,
@@ -230,8 +248,8 @@ const makeQueue = ({
   // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
   return new BullQueue(name, {
     redis: {
-      host: redisHost,
-      port: redisPort
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
     },
     defaultJobOptions: {
       removeOnComplete,

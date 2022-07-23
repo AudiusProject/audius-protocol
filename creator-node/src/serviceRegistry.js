@@ -55,12 +55,14 @@ class ServiceRegistry {
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
-    this.stateMonitoringQueue = null // Handles jobs for finding replica set updates and syncs for one slice of users at a time
+    this.monitorStateQueue = null // Handles jobs for slicing batches of users and gathering data about them
+    this.findSyncRequestsQueue = null // Handles jobs for finding sync requests
+    this.findReplicaSetUpdatesQueue = null // Handles jobs for finding replica set updates
     this.cNodeEndpointToSpIdMapQueue = null // Handles jobs for updating CNodeEndpointToSpIdMap
-    this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
+    this.manualSyncQueue = null // Handles jobs for issuing a manual sync request
+    this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
+    this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
     this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
-    this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
-    this.recurringSyncQueue = null // DEPRECATED -- Handles syncs that occur on a cadence, e.g. every hour
 
     // Flags that indicate whether categories of services have been initialized
     this.synchronousServicesInitialized = false
@@ -138,27 +140,37 @@ class ServiceRegistry {
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
 
-    // Make state machine queues truncate long data (they have jobs with large inputs and outputs)
-    const stateMonitoringAdapter = new BullAdapter(this.stateMonitoringQueue, {
-      readOnlyMode: true
-    })
-    const stateReconciliationAdapter = new BullAdapter(
-      this.stateReconciliationQueue,
-      { readOnlyMode: true }
-    )
-
     // These queues have very large inputs and outputs, so we truncate job
     // data and results that are nested >=5 levels or contain strings >=10,000 characters
-    stateMonitoringAdapter.setFormatter('data', this._truncateBull.bind(this))
-    stateMonitoringAdapter.setFormatter(
+    const monitorStateAdapter = new BullAdapter(this.monitorStateQueue, {
+      readOnlyMode: true
+    })
+    const findSyncRequestsAdapter = new BullAdapter(
+      this.findSyncRequestsQueue,
+      {
+        readOnlyMode: true
+      }
+    )
+    const findReplicaSetUpdatesAdapter = new BullAdapter(
+      this.findReplicaSetUpdatesQueue,
+      {
+        readOnlyMode: true
+      }
+    )
+    monitorStateAdapter.setFormatter(
       'returnValue',
       this._truncateBull.bind(this)
     )
-    stateReconciliationAdapter.setFormatter(
+    findSyncRequestsAdapter.setFormatter('data', this._truncateBull.bind(this))
+    findSyncRequestsAdapter.setFormatter(
+      'returnValue',
+      this._truncateBull.bind(this)
+    )
+    findReplicaSetUpdatesAdapter.setFormatter(
       'data',
       this._truncateBull.bind(this)
     )
-    stateReconciliationAdapter.setFormatter(
+    findReplicaSetUpdatesAdapter.setFormatter(
       'returnValue',
       this._truncateBull.bind(this)
     )
@@ -167,14 +179,16 @@ class ServiceRegistry {
     const serverAdapter = new ExpressAdapter()
     createBullBoard({
       queues: [
-        stateMonitoringAdapter,
-        stateReconciliationAdapter,
-        new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
+        monitorStateAdapter,
+        findSyncRequestsAdapter,
+        findReplicaSetUpdatesAdapter,
         new BullAdapter(this.cNodeEndpointToSpIdMapQueue, {
           readOnlyMode: true
         }),
-        new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
+        new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
+        new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
+        new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
@@ -286,19 +300,25 @@ class ServiceRegistry {
     // Init StateMachineManager
     this.stateMachineManager = new StateMachineManager()
     const {
-      stateMonitoringQueue,
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
       cNodeEndpointToSpIdMapQueue,
-      stateReconciliationQueue,
-      manualSyncQueue
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
-    this.stateMonitoringQueue = stateMonitoringQueue
+    this.monitorStateQueue = monitorStateQueue
+    this.findSyncRequestsQueue = findSyncRequestsQueue
+    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
     this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
-    this.stateReconciliationQueue = stateReconciliationQueue
+    this.manualSyncQueue = manualSyncQueue
+    this.recurringSyncQueue = recurringSyncQueue
+    this.updateReplicaSetQueue = updateReplicaSetQueue
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.syncQueue = new SyncQueue(config, this.redis, this)
-    this.manualSyncQueue = manualSyncQueue
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
@@ -438,9 +458,8 @@ class ServiceRegistry {
    */
   async _initSnapbackSM() {
     this.snapbackSM = new SnapbackSM(config, this.libs)
-    const { stateMachineQueue, recurringSyncQueue } = this.snapbackSM
+    const { stateMachineQueue } = this.snapbackSM
     this.stateMachineQueue = stateMachineQueue
-    this.recurringSyncQueue = recurringSyncQueue
 
     let isInitialized = false
     const retryTimeoutMs = 10000 // ms

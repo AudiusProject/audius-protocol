@@ -42,6 +42,5 @@
   "disableSnapback": true,
   "mergePrimaryAndSecondaryEnabled": false,
   "stateMonitoringQueueRateLimitInterval": 60000,
-  "stateMonitoringQueueRateLimitJobsPerInterval": 3,
-  "issueAndWaitForSecondarySyncRequestsPollingDurationMs": 5000
+  "stateMonitoringQueueRateLimitJobsPerInterval": 3
 }
