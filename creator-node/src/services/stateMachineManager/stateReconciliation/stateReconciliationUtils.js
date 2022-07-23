@@ -2,7 +2,7 @@ const _ = require('lodash')
 const axios = require('axios')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
-const { SyncType, JOB_NAMES, SYNC_MODES } = require('../stateMachineConstants')
+const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
 /**
@@ -67,18 +67,10 @@ const getNewOrExistingSyncReq = ({
   }
 
   // Add job to issue manual or recurring sync request based on `syncType` param
-  const jobName =
-    syncType === SyncType.Manual
-      ? JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST
-      : JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST
-  const jobData = {
+  const syncReqToEnqueue = {
     syncType,
     syncMode,
     syncRequestParameters
-  }
-  const syncReqToEnqueue = {
-    jobName,
-    jobData
   }
 
   // Record sync in syncDeDuplicator
@@ -86,7 +78,7 @@ const getNewOrExistingSyncReq = ({
     syncType,
     userWallet,
     secondaryEndpoint,
-    jobData
+    syncReqToEnqueue
   )
 
   return { syncReqToEnqueue }
@@ -118,8 +110,10 @@ const issueSyncRequestsUntilSynced = async (
     logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
-    const { jobName, jobData } = syncReqToEnqueue
-    await queue.add(jobName, jobData)
+    await queue.add({
+      enqueuedBy: 'issueSyncRequestsUntilSynced',
+      ...syncReqToEnqueue
+    })
   } else {
     // Log error that the sync request couldn't be created and return
     logger.error(`Failed to create manual sync request`)
@@ -159,8 +153,10 @@ const issueSyncRequestsUntilSynced = async (
           logger.warn(`Duplicate sync request: ${duplicateSyncReq}`)
           return
         } else if (!_.isEmpty(syncReqToEnqueue)) {
-          const { jobName, jobData } = syncReqToEnqueue
-          await queue.add(jobName, jobData)
+          await queue.add({
+            enqueuedBy: 'issueSyncRequestsUntilSynced retry',
+            ...syncReqToEnqueue
+          })
         } else {
           // Log error that the sync request couldn't be created and return
           logger.error(

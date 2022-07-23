@@ -170,7 +170,7 @@ describe('test updateReplicaSet job processor', function () {
       },
       healthyNodes: [primary, secondary2, fourthHealthyNode],
       jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [
+        [QUEUE_NAMES.RECURRING_SYNC]: [
           {
             primaryEndpoint: primary,
             secondaryEndpoint: secondary2,

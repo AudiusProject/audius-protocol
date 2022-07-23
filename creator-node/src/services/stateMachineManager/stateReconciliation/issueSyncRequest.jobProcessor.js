@@ -11,17 +11,17 @@ const {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord
 } = require('../stateMachineUtils')
-const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
 const {
   SYNC_MONITORING_RETRY_DELAY_MS,
   QUEUE_NAMES,
-  SYNC_MODES
+  SYNC_MODES,
+  SyncType,
+  MAX_ISSUE_SYNC_JOB_ATTEMPTS
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 
-const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
 )
@@ -39,14 +39,16 @@ const mergePrimaryAndSecondaryEnabled = config.get(
  * @param {Object} param job data
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  * @param {string} param.syncType the type of sync (manual or recurring)
- * * @param {string} param.syncMode from SYNC_MODES object
+ * @param {string} param.syncMode from SYNC_MODES object
  * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
+ * @param {number} [param.attemptNumber] optional number of times this job has been run. It will be a no-op if it exceeds MAX_ISSUE_SYNC_JOB_ATTEMPTS
  */
 module.exports = async function ({
   syncType,
   syncMode,
   syncRequestParameters,
-  logger
+  logger,
+  attemptNumber = 1
 }) {
   let jobsToEnqueue = {}
   let metricsToRecord = []
@@ -55,7 +57,7 @@ module.exports = async function ({
   const startTimeMs = Date.now()
 
   const {
-    syncReqToEnqueue: syncReqToEnqueueResp,
+    syncReqToEnqueue,
     result,
     error: errorResp
   } = await _handleIssueSyncRequest({
@@ -69,34 +71,23 @@ module.exports = async function ({
     logger.error(error.message)
   }
 
-  // Determine if new sync request needs to be enqueued
-  let getNewOrExistingSyncReqError
-  if (syncReqToEnqueueResp) {
-    const {
-      userWallet,
-      secondaryEndpoint,
-      syncMode: syncModeResp
-    } = syncReqToEnqueueResp
-    const { syncReqToEnqueue, duplicateSyncReq } = getNewOrExistingSyncReq({
-      userWallet,
-      secondaryEndpoint,
-      primaryEndpoint: thisContentNodeEndpoint,
-      syncType,
-      syncMode: syncModeResp
-    })
-    if (!_.isEmpty(duplicateSyncReq)) {
-      getNewOrExistingSyncReqError = {
-        message:
-          'Additional sync request was required but not able to be enqueued due to a duplicate',
-        duplicateSyncReq
-      }
-    } else if (!_.isEmpty(syncReqToEnqueue)) {
-      jobsToEnqueue = { [QUEUE_NAMES.STATE_RECONCILIATION]: [syncReqToEnqueue] }
+  // Enqueue a new sync request if one needs to be enqueued and we haven't retried too many times yet
+  if (
+    !_.isEmpty(syncReqToEnqueue) &&
+    attemptNumber < MAX_ISSUE_SYNC_JOB_ATTEMPTS
+  ) {
+    logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
+    const queueName =
+      syncReqToEnqueue?.syncType === SyncType.Manual
+        ? QUEUE_NAMES.MANUAL_SYNC
+        : QUEUE_NAMES.RECURRING_SYNC
+    jobsToEnqueue = {
+      [queueName]: [{ attemptNumber: attemptNumber + 1, ...syncReqToEnqueue }]
     }
-  }
-  if (getNewOrExistingSyncReqError) {
-    error = getNewOrExistingSyncReqError
-    logger.error(error.message)
+  } else {
+    logger.info(
+      `Gave up retrying issue-sync-request after ${attemptNumber} failed attempts`
+    )
   }
 
   // Make metrics to record
@@ -198,11 +189,11 @@ async function _handleIssueSyncRequest({
    */
   try {
     if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-      const obj = {
+      const syncRequestParametersForceResync = {
         ...syncRequestParameters,
         data: { ...syncRequestParameters.data, forceResync: true }
       }
-      await axios(obj)
+      await axios(syncRequestParametersForceResync)
     } else {
       await axios(syncRequestParameters)
     }
@@ -213,9 +204,9 @@ async function _handleIssueSyncRequest({
         message: `${logMsgString} || Error issuing sync request: ${e.message}`
       },
       syncReqToEnqueue: {
-        userWallet,
-        secondaryEndpoint,
-        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+        syncType,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+        syncRequestParameters
       }
     }
   }

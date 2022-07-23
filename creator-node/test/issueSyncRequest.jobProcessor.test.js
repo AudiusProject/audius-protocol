@@ -352,26 +352,12 @@ describe('test issueSyncRequest job processor', function () {
 
     config.set('maxSyncMonitoringDurationInMs', 100)
 
-    const expectedSyncReqToEnqueue = 'expectedSyncReqToEnqueue'
-    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
-      const {
-        userWallet,
-        secondaryEndpoint,
-        syncType: syncTypeArg,
-        syncMode: syncModeArg
-      } = args
-      if (
-        userWallet === wallet &&
-        secondaryEndpoint === secondary &&
-        syncTypeArg === syncType &&
-        syncModeArg === syncMode
-      ) {
-        return { syncReqToEnqueue: expectedSyncReqToEnqueue }
-      }
-      throw new Error(
-        'getNewOrExistingSyncReq was not expected to be called with the given args'
-      )
-    })
+    const expectedSyncReqToEnqueue = {
+      attemptNumber: 2,
+      secondaryEndpoint: secondary,
+      syncMode,
+      userWallet: wallet
+    }
 
     const getSecondaryUserSyncFailureCountForTodayStub = sandbox
       .stub()
@@ -385,7 +371,6 @@ describe('test issueSyncRequest job processor', function () {
       .resolves(initialSecondaryClockValue)
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getNewOrExistingSyncReqStub,
       getSecondaryUserSyncFailureCountForTodayStub,
       retrieveClockValueForUserFromReplicaStub
     })
@@ -406,7 +391,7 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
+      [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
     })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
@@ -423,13 +408,6 @@ describe('test issueSyncRequest job processor', function () {
       'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
-      userWallet: wallet,
-      secondaryEndpoint: secondary,
-      primaryEndpoint: primary,
-      syncType,
-      syncMode
-    })
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
@@ -447,26 +425,12 @@ describe('test issueSyncRequest job processor', function () {
 
     config.set('maxSyncMonitoringDurationInMs', 100)
 
-    const expectedSyncReqToEnqueue = 'expectedSyncReqToEnqueue'
-    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
-      const {
-        userWallet,
-        secondaryEndpoint,
-        syncType: syncTypeArg,
-        syncMode: syncModeArg
-      } = args
-      if (
-        userWallet === wallet &&
-        secondaryEndpoint === secondary &&
-        syncTypeArg === syncType &&
-        syncModeArg === syncMode
-      ) {
-        return { syncReqToEnqueue: expectedSyncReqToEnqueue }
-      }
-      throw new Error(
-        'getNewOrExistingSyncReq was not expected to be called with the given args'
-      )
-    })
+    const expectedSyncReqToEnqueue = {
+      attemptNumber: 2,
+      secondaryEndpoint: secondary,
+      syncMode,
+      userWallet: wallet
+    }
 
     const getSecondaryUserSyncFailureCountForTodayStub = sandbox
       .stub()
@@ -477,7 +441,6 @@ describe('test issueSyncRequest job processor', function () {
       .resolves(finalSecondaryClockValue)
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getNewOrExistingSyncReqStub,
       getSecondaryUserSyncFailureCountForTodayStub,
       retrieveClockValueForUserFromReplicaStub
     })
@@ -498,7 +461,7 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
+      [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
     })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
@@ -515,13 +478,6 @@ describe('test issueSyncRequest job processor', function () {
       'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
-      userWallet: wallet,
-      secondaryEndpoint: secondary,
-      primaryEndpoint: primary,
-      syncType,
-      syncMode
-    })
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
