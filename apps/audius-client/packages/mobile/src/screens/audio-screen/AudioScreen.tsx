@@ -361,7 +361,7 @@ export const AudioScreen = () => {
           colors={['rgb(236, 173, 11)', 'rgb(236, 173, 11)']}
           minAmount={10000}
           image={<Image source={Gold} />}
-          isCurrentTier={tierNumber === 2}
+          isCurrentTier={tierNumber === 3}
         />
         <Tier
           tierNumber={4}
@@ -369,7 +369,7 @@ export const AudioScreen = () => {
           colors={['rgb(179, 236, 249)', 'rgb(87, 194, 215)']}
           minAmount={100000}
           image={<Image source={Platinum} />}
-          isCurrentTier={tierNumber === 3}
+          isCurrentTier={tierNumber === 4}
         />
         <Button
           title={messages.learnMore}
