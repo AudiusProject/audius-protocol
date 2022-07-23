@@ -54,9 +54,11 @@
 
 /* Don't highlight column even if sorting by values */
 :global(.ant-table-thead > tr > th.ant-table-column-sort),
-:global(.ant-table-tbody > tr > td.ant-table-column-sort),
 :global(.ant-table-thead > tr > th .ant-table-column-sorters:before) {
-  background: inherit;
+  background: var(--neutral-light-10);
+}
+:global(.ant-table-tbody > tr > td.ant-table-column-sort) {
+  background: var(--white);
 }
 :global(.ant-table-thead > tr > th .ant-table-column-sorters:hover:before) {
   background: none !important;
