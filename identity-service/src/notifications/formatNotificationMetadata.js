@@ -464,7 +464,7 @@ const pushNotificationMessagesMap = {
     return `${capitalize(notification.sendingUser.name)} became your #${notification.rank} Top Supporter!`
   },
   [notificationTypes.SupportingRankUp] (notification) {
-    return `You're now ${capitalize(notification.receivingUser.name)}'s #${notification.rank} Top Supporter!`
+    return `You're now ${notification.receivingUser.name}'s #${notification.rank} Top Supporter!`
   },
   [notificationTypes.TipReceive] (notification) {
     return `${capitalize(notification.sendingUser.name)} sent you a tip of ${notification.amount} $AUDIO`
