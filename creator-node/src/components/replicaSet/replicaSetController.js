@@ -15,7 +15,6 @@ const { ensureStorageMiddleware } = require('../../middlewares')
 const { enqueueSync } = require('./syncQueueComponentService')
 const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
 const {
-  JOB_NAMES,
   SyncType,
   SYNC_MODES
 } = require('../../services/stateMachineManager/stateMachineConstants')
@@ -172,7 +171,7 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
     }
   }
 
-  await manualSyncQueue.add(JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST, {
+  await manualSyncQueue.add({
     syncType: SyncType.Manual,
     syncMode: SYNC_MODES.MergePrimaryAndSecondary,
     syncRequestParameters
