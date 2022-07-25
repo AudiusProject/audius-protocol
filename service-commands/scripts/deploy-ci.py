@@ -211,14 +211,12 @@ def cli(environment, service, hosts, git_tag):
     for host in affected_hosts:
         try:
             ssh(host, "hostname", exit_on_error=False)
-            if git_tag:
-                ssh(host, "yes | audius-cli pull", exit_on_error=False)
-                ssh(host, f"yes | audius-cli set-tag {git_tag}", exit_on_error=False)
-                ssh(
-                    host, f"yes | audius-cli launch {service}", exit_on_error=False
-                )
-            else:
-                ssh(host, "yes | audius-cli upgrade", exit_on_error=False)
+            # if git_tag:
+            #     ssh(host, "yes | audius-cli pull", exit_on_error=False)
+            #     ssh(host, f"yes | audius-cli set-tag {git_tag}", exit_on_error=False)
+            #     ssh(host, f"yes | audius-cli launch {service}", exit_on_error=False)
+            # else:
+            #     ssh(host, "yes | audius-cli upgrade", exit_on_error=False)
         except:
             failed_hosts.append(host)
 
