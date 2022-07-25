@@ -1,5 +1,4 @@
 import { Entity, EntityType } from 'common/store/notifications/types'
-import { formatCount } from 'common/utils/formatUtil'
 import AudiusBackend from 'services/AudiusBackend'
 import { UserListEntityType } from 'store/application/ui/userListModal/types'
 import {

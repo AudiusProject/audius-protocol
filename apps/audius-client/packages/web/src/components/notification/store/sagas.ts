@@ -342,14 +342,12 @@ const AUDIO_TRANSFER_NOTIFICATION_TYPES = new Set([
   NotificationType.TipSend,
   NotificationType.TipReceive
 ])
-export function* handleNewNotifications(
-  notifications: Notification[]
-): Generator<any, void, any> {
+export function* handleNewNotifications(notifications: Notification[]) {
   const hasAudioTransferNotification = notifications.some((notification) =>
     AUDIO_TRANSFER_NOTIFICATION_TYPES.has(notification.type)
   )
   if (hasAudioTransferNotification) {
-    yield* put(getBalance)
+    yield* put(getBalance())
   }
 }
 
