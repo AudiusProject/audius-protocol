@@ -36,6 +36,7 @@ const UserCard = ({
       <div className={styles.tileCoverArtContainer}>
         <DynamicImage
           wrapperClassName={styles.coverArtWrapper}
+          skeletonClassName={styles.coverArtSkeleton}
           className={styles.coverArt}
           image={profileImage}
         />

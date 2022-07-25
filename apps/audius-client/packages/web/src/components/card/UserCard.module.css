@@ -51,6 +51,12 @@
   margin-top: 10px;
 }
 
+.coverArtSkeleton {
+  height: 124px;
+  width: 124px;
+  border-radius: 50%;
+}
+
 .coverArt {
   height: 100%;
   width: 100%;
