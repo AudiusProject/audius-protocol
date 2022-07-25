@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import logging
-from os import system
 from pprint import pprint
 from subprocess import PIPE, Popen
 
@@ -216,7 +215,7 @@ def cli(environment, service, hosts, git_tag):
                 ssh(host, "yes | audius-cli pull", exit_on_error=False)
                 ssh(host, f"yes | audius-cli set-tag {git_tag}", exit_on_error=False)
                 ssh(
-                    host, f"yes | audius-cli launch {service_type}", exit_on_error=False
+                    host, f"yes | audius-cli launch {service}", exit_on_error=False
                 )
             else:
                 ssh(host, "yes | audius-cli upgrade", exit_on_error=False)
