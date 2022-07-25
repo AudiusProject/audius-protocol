@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 
-from src.models.tracks.tag_track_user_matview import TagTrackUserMatview
+from src.models.tracks.tag_track_user_matview import t_tag_track_user
 from src.models.tracks.track import Track
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_track_play_counts, populate_track_metadata
@@ -26,8 +26,8 @@ def search_track_tags(session, args):
     """
 
     track_ids = (
-        session.query(TagTrackUserMatview.track_id)
-        .filter(TagTrackUserMatview.tag == args["search_str"].lower())
+        session.query(t_tag_track_user.c.track_id)
+        .filter(t_tag_track_user.c.tag == args["search_str"].lower())
         .all()
     )
 

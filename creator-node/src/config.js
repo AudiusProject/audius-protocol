@@ -494,16 +494,16 @@ const config = convict({
     doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
     format: 'nat',
     env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
-    default: 5000 // 5000ms = 5s (prod default)
+    default: 60000 // 60000ms = 1m (prod default)
   },
   enforceWriteQuorum: {
-    doc: 'Boolean flag indicating whether or not primary should reject write on 2/3 replication across replica set',
+    doc: 'Boolean flag indicating whether or not primary should reject write until 2/3 replication across replica set',
     format: Boolean,
     env: 'enforceWriteQuorum',
     default: false
   },
   manualSyncsDisabled: {
-    doc: 'Disables issuing of manual syncs in order to test SnapbackSM Recurring Sync logic.',
+    doc: 'Disables issuing of manual syncs in order to test state machine Recurring Sync logic.',
     format: 'BooleanCustom',
     env: 'manualSyncsDisabled',
     default: false
@@ -628,7 +628,7 @@ const config = convict({
     doc: 'Flag to enable or disable the nginx cache layer that caches content',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
-    default: false
+    default: true
   },
   reconfigNodeWhitelist: {
     doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',
@@ -700,6 +700,12 @@ const config = convict({
     doc: 'Flag that if set to true, then a termination signal was sent to shut down the Content Node application and the Content Node should not accept uploads.',
     format: 'BooleanCustom',
     env: 'terminateApp',
+    default: false
+  },
+  mergePrimaryAndSecondaryEnabled: {
+    doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',
+    format: Boolean,
+    env: 'mergePrimaryAndSecondaryEnabled',
     default: false
   }
   /**

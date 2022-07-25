@@ -1,19 +1,23 @@
-const BullQueue = require('bull')
-
 const config = require('../../../config')
 const {
   QUEUE_HISTORY,
   QUEUE_NAMES,
-  JOB_NAMES,
-  STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
+  MAX_QUEUE_RUNTIMES
 } = require('../stateMachineConstants')
+const { makeQueue, registerQueueEvents } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
 
-const logger = createChildLogger(baseLogger, {
-  queue: QUEUE_NAMES.STATE_RECONCILIATION
+const recurringSyncLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.RECURRING_SYNC
+})
+const manualSyncLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.MANUAL_SYNC
+})
+const updateReplicaSetLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.UPDATE_REPLICA_SET
 })
 
 /**
@@ -23,12 +27,36 @@ const logger = createChildLogger(baseLogger, {
  */
 class StateReconciliationManager {
   async init(prometheusRegistry) {
-    const queue = this.makeQueue(
-      config.get('redisHost'),
-      config.get('redisPort')
-    )
+    const manualSyncQueue = makeQueue({
+      name: QUEUE_NAMES.MANUAL_SYNC,
+      removeOnComplete: QUEUE_HISTORY.MANUAL_SYNC,
+      removeOnFail: QUEUE_HISTORY.MANUAL_SYNC,
+      lockDuration: MAX_QUEUE_RUNTIMES.MANUAL_SYNC
+    })
+
+    const recurringSyncQueue = makeQueue({
+      name: QUEUE_NAMES.RECURRING_SYNC,
+      removeOnComplete: QUEUE_HISTORY.RECURRING_SYNC,
+      removeOnFail: QUEUE_HISTORY.RECURRING_SYNC,
+      lockDuration: MAX_QUEUE_RUNTIMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
+    })
+
+    const updateReplicaSetQueue = makeQueue({
+      name: QUEUE_NAMES.UPDATE_REPLICA_SET,
+      removeOnComplete: QUEUE_HISTORY.UPDATE_REPLICA_SET,
+      removeOnFail: QUEUE_HISTORY.UPDATE_REPLICA_SET,
+      lockDuration: MAX_QUEUE_RUNTIMES.UPDATE_REPLICA_SET
+    })
+
+    // Clear any old state if redis was running but the rest of the server restarted
+    await manualSyncQueue.clean({ force: true })
+    await recurringSyncQueue.clean({ force: true })
+    await updateReplicaSetQueue.clean({ force: true })
+
     this.registerQueueEventHandlersAndJobProcessors({
-      queue,
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
       processManualSync:
         this.makeProcessManualSyncJob(prometheusRegistry).bind(this),
       processRecurringSync:
@@ -37,92 +65,67 @@ class StateReconciliationManager {
         this.makeProcessUpdateReplicaSetJob(prometheusRegistry).bind(this)
     })
 
-    // Clear any old state if redis was running but the rest of the server restarted
-    await queue.obliterate({ force: true })
-
-    return queue
-  }
-
-  makeQueue(redisHost, redisPort) {
-    // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(QUEUE_NAMES.STATE_RECONCILIATION, {
-      redis: {
-        host: redisHost,
-        port: redisPort
-      },
-      defaultJobOptions: {
-        removeOnComplete: QUEUE_HISTORY.RECONCILIATION_QUEUE_HISTORY,
-        removeOnFail: QUEUE_HISTORY.RECONCILIATION_QUEUE_HISTORY
-      },
-      settings: {
-        // Should be sufficiently larger than expected job runtime
-        lockDuration: STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
-        // We never want to re-process stalled jobs
-        maxStalledCount: 0
-      }
-    })
+    return {
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue
+    }
   }
 
   /**
    * Registers event handlers for logging and job success/failure.
    * @param {Object} params.queue the queue to register events for
-   * @param {Function<queue, successfulJob, jobResult>} params.jobSuccessCallback the function to call when a job succeeds
-   * @param {Function<queue, failedJob>} params.jobFailureCallback the function to call when a job fails
+   * @param {Object} params.manualSyncQueue the manual sync queue
+   * @param {Object} params.recurringSyncQueue the recurring sync queue
+   * @param {Object} params.updateReplicaSetQueue the updateReplicaSetQueue queue
    * @param {Function<job>} params.processManualSync the function to call when processing a manual sync job from the queue
    * @param {Function<job>} params.processRecurringSync the function to call when processing a recurring sync job from the queue
    * @param {Function<job>} params.processUpdateReplicaSet the function to call when processing an update-replica-set job from the queue
    */
   registerQueueEventHandlersAndJobProcessors({
-    queue,
+    manualSyncQueue,
+    recurringSyncQueue,
+    updateReplicaSetQueue,
     processManualSync,
     processRecurringSync,
     processUpdateReplicaSet
   }) {
     // Add handlers for logging
-    queue.on('global:waiting', (jobId) => {
-      logger.info(`Queue Job Waiting - ID ${jobId}`)
-    })
-    queue.on('global:active', (jobId, jobPromise) => {
-      logger.info(`Queue Job Active - ID ${jobId}`)
-    })
-    queue.on('global:lock-extension-failed', (jobId, err) => {
-      logger.error(
-        `Queue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
-      )
-    })
-    queue.on('global:stalled', (jobId) => {
-      logger.error(`stateMachineQueue Job Stalled - ID ${jobId}`)
-    })
-    queue.on('global:error', (error) => {
-      logger.error(`Queue Job Error - ${error}`)
-    })
+    registerQueueEvents(manualSyncQueue, manualSyncLogger)
+    registerQueueEvents(recurringSyncQueue, recurringSyncLogger)
+    registerQueueEvents(updateReplicaSetQueue, updateReplicaSetLogger)
 
-    // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
-    queue.on('completed', (job, result) => {
-      logger.info(
-        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
-      )
+    // Log when a job fails to complete
+    manualSyncQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(manualSyncLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
     })
-    queue.on('failed', (job, err) => {
-      logger.error(`Queue Job Failed - ID ${job?.id} - Error ${err}`)
+    recurringSyncQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(recurringSyncLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
+    })
+    updateReplicaSetQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(updateReplicaSetLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
     })
 
     // Register the logic that gets executed to process each new job from the queue
-    queue.process(
-      JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
-      config.get('maxManualRequestSyncJobConcurrency'),
+    manualSyncQueue.process(
+      1, // config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
-    queue.process(
-      JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
+
+    recurringSyncQueue.process(
       config.get('maxRecurringRequestSyncJobConcurrency'),
       processRecurringSync
     )
-    queue.process(
-      JOB_NAMES.UPDATE_REPLICA_SET,
-      1 /** concurrency */,
-      processUpdateReplicaSet
-    )
+    updateReplicaSetQueue.process(1 /** concurrency */, processUpdateReplicaSet)
   }
 
   /*
@@ -132,10 +135,9 @@ class StateReconciliationManager {
   makeProcessManualSyncJob(prometheusRegistry) {
     return async (job) =>
       processJob(
-        JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
         job,
         handleSyncRequestJobProcessor,
-        logger,
+        manualSyncLogger,
         prometheusRegistry
       )
   }
@@ -143,10 +145,9 @@ class StateReconciliationManager {
   makeProcessRecurringSyncJob(prometheusRegistry) {
     return async (job) =>
       processJob(
-        JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
         job,
         handleSyncRequestJobProcessor,
-        logger,
+        recurringSyncLogger,
         prometheusRegistry
       )
   }
@@ -154,10 +155,9 @@ class StateReconciliationManager {
   makeProcessUpdateReplicaSetJob(prometheusRegistry) {
     return async (job) =>
       processJob(
-        JOB_NAMES.UPDATE_REPLICA_SET,
         job,
         updateReplicaSetJobProcessor,
-        logger,
+        updateReplicaSetLogger,
         prometheusRegistry
       )
   }

@@ -4,6 +4,7 @@ const _ = require('lodash')
 const retry = require('async-retry')
 
 const Utils = require('../utils')
+const asyncRetry = require('../utils/asyncRetry')
 const models = require('../models')
 const { logger } = require('../logging')
 const redis = require('../redis.js')
@@ -149,7 +150,7 @@ class SnapbackSM {
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
     this.stateMachineQueue = this.createBullQueue(
-      'state-machine',
+      'DEPRECATED-state-machine',
       {
         // Should be sufficiently larger than expected job runtime
         lockDuration: MAX_SNAPBACK_JOB_RUNTIME_MS,
@@ -166,8 +167,10 @@ class SnapbackSM {
     )
 
     // Sync queues handle issuing sync request from primary -> secondary
-    this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
-    this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
+    this.manualSyncQueue = this.createBullQueue('DEPRECATED-manual-sync-queue')
+    this.recurringSyncQueue = this.createBullQueue(
+      'DEPRECATED-recurring-sync-queue'
+    )
 
     // Add event handlers for state machine queue
     this.stateMachineQueue.on('global:waiting', (jobId) => {
@@ -416,62 +419,63 @@ class SnapbackSM {
     syncType,
     immediate = false
   }) {
-    const queue =
-      syncType === SyncType.Manual
-        ? this.manualSyncQueue
-        : this.recurringSyncQueue
+    throw new Error('DEPRECATED ROUTE')
+    // const queue =
+    //   syncType === SyncType.Manual
+    //     ? this.manualSyncQueue
+    //     : this.recurringSyncQueue
 
-    // If duplicate sync already exists, do not add and instead return existing sync job info
-    const duplicateSyncJobInfo = this.syncDeDuplicator.getDuplicateSyncJobInfo(
-      syncType,
-      userWallet,
-      secondaryEndpoint
-    )
-    if (duplicateSyncJobInfo) {
-      this.log(
-        `enqueueSync Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
-      )
+    // // If duplicate sync already exists, do not add and instead return existing sync job info
+    // const duplicateSyncJobInfo = this.syncDeDuplicator.getDuplicateSyncJobInfo(
+    //   syncType,
+    //   userWallet,
+    //   secondaryEndpoint
+    // )
+    // if (duplicateSyncJobInfo) {
+    //   this.log(
+    //     `enqueueSync Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
+    //   )
 
-      return duplicateSyncJobInfo
-    }
+    //   return duplicateSyncJobInfo
+    // }
 
-    // Define axios params for sync request to secondary
-    const syncRequestParameters = {
-      baseURL: secondaryEndpoint,
-      url: '/sync',
-      method: 'post',
-      data: {
-        wallet: [userWallet],
-        creator_node_endpoint: primaryEndpoint,
-        // Note - `sync_type` param is only used for logging by nodeSync.js
-        sync_type: syncType,
-        // immediate = true will ensure secondary skips debounce and evaluates sync immediately
-        immediate
-      }
-    }
+    // // Define axios params for sync request to secondary
+    // const syncRequestParameters = {
+    //   baseURL: secondaryEndpoint,
+    //   url: '/sync',
+    //   method: 'post',
+    //   data: {
+    //     wallet: [userWallet],
+    //     creator_node_endpoint: primaryEndpoint,
+    //     // Note - `sync_type` param is only used for logging by nodeSync.js
+    //     sync_type: syncType,
+    //     // immediate = true will ensure secondary skips debounce and evaluates sync immediately
+    //     immediate
+    //   }
+    // }
 
-    // Add job to manualSyncQueue or recurringSyncQueue based on `syncType` param
-    const jobProps = {
-      syncRequestParameters,
-      startTime: Date.now()
-    }
+    // // Add job to manualSyncQueue or recurringSyncQueue based on `syncType` param
+    // const jobProps = {
+    //   syncRequestParameters,
+    //   startTime: Date.now()
+    // }
 
-    const startTimeMs = Date.now()
-    const jobInfo = await queue.add(jobProps)
-    const timeElapsedMs = Date.now() - startTimeMs
-    this.log(
-      `enqueueSync waited ${timeElapsedMs}ms for sync type ${syncType} Bull job to be added to queue for user wallet ${userWallet}`
-    )
+    // const startTimeMs = Date.now()
+    // const jobInfo = await queue.add(jobProps)
+    // const timeElapsedMs = Date.now() - startTimeMs
+    // this.log(
+    //   `enqueueSync waited ${timeElapsedMs}ms for sync type ${syncType} Bull job to be added to queue for user wallet ${userWallet}`
+    // )
 
-    // Record sync in syncDeDuplicator
-    this.syncDeDuplicator.recordSync(
-      syncType,
-      userWallet,
-      secondaryEndpoint,
-      jobInfo
-    )
+    // // Record sync in syncDeDuplicator
+    // this.syncDeDuplicator.recordSync(
+    //   syncType,
+    //   userWallet,
+    //   secondaryEndpoint,
+    //   jobInfo
+    // )
 
-    return jobInfo
+    // return jobInfo
   }
 
   /**
@@ -1884,56 +1888,57 @@ class SnapbackSM {
     primaryClockVal,
     timeoutMs
   ) {
+    throw new Error('DEPRECATED FUNCTION')
     // Issue syncRequest before polling secondary for replication
-    await this.enqueueSync({
-      userWallet: wallet,
-      secondaryEndpoint: secondaryUrl,
-      primaryEndpoint: this.endpoint,
-      syncType: SyncType.Manual,
-      immediate: true
-    })
+    // await this.enqueueSync({
+    //   userWallet: wallet,
+    //   secondaryEndpoint: secondaryUrl,
+    //   primaryEndpoint: this.endpoint,
+    //   syncType: SyncType.Manual,
+    //   immediate: true
+    // })
 
-    // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
-    const start = Date.now()
-    while (Date.now() - start < timeoutMs) {
-      try {
-        // Retrieve secondary clock status for user
-        const secondaryClockStatusResp = await axios({
-          method: 'get',
-          baseURL: secondaryUrl,
-          url: `/users/clock_status/${wallet}`,
-          responseType: 'json',
-          timeout: 1000 // 1000ms = 1s
-        })
-        const { clockValue: secondaryClockVal, syncInProgress } =
-          secondaryClockStatusResp.data.data
+    // // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
+    // const start = Date.now()
+    // while (Date.now() - start < timeoutMs) {
+    //   try {
+    //     // Retrieve secondary clock status for user
+    //     const secondaryClockStatusResp = await axios({
+    //       method: 'get',
+    //       baseURL: secondaryUrl,
+    //       url: `/users/clock_status/${wallet}`,
+    //       responseType: 'json',
+    //       timeout: 1000 // 1000ms = 1s
+    //     })
+    //     const { clockValue: secondaryClockVal, syncInProgress } =
+    //       secondaryClockStatusResp.data.data
 
-        // If secondary is synced, return successfully
-        if (secondaryClockVal >= primaryClockVal) {
-          return
+    //     // If secondary is synced, return successfully
+    //     if (secondaryClockVal >= primaryClockVal) {
+    //       return
 
-          // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
-        } else if (!syncInProgress) {
-          await this.enqueueSync({
-            userWallet: wallet,
-            secondaryEndpoint: secondaryUrl,
-            primaryEndpoint: this.endpoint,
-            syncType: SyncType.Manual
-          })
-        }
+    //       // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
+    //     } else if (!syncInProgress) {
+    //       await this.enqueueSync({
+    //         userWallet: wallet,
+    //         secondaryEndpoint: secondaryUrl,
+    //         primaryEndpoint: this.endpoint,
+    //         syncType: SyncType.Manual
+    //       })
+    //     }
 
-        // Give secondary some time to process ongoing or newly enqueued sync
-        // NOTE - we might want to make this timeout longer
-        await Utils.timeout(500)
-      } catch (e) {
-        // do nothing and let while loop continue
-      }
-    }
+    //     // Give secondary some time to process ongoing or newly enqueued sync
+    //     // NOTE - we might want to make this timeout longer
+    //     await Utils.timeout(500)
+    //   } catch (e) {
+    //     // do nothing and let while loop continue
+    //   }
+    // }
 
-    // This condition will only be hit if the secondary has failed to sync within timeoutMs
-    throw new Error(
-      `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
-    )
+    // // This condition will only be hit if the secondary has failed to sync within timeoutMs
+    // throw new Error(
+    //   `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
+    // )
   }
 
   /**
@@ -1998,7 +2003,7 @@ class SnapbackSM {
     let latestUserId = 0
     try {
       // Request all users that have this node as a replica (either primary or secondary)
-      const resp = await Utils.asyncRetry({
+      const resp = await asyncRetry({
         logLabel: 'fetch all users with this node in replica',
         asyncFn: async () => {
           return axios({

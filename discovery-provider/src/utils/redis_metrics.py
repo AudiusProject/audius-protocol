@@ -7,7 +7,7 @@ import redis
 from flask import Response as fResponse
 from flask.globals import request
 from src.models.metrics.aggregate_daily_app_name_metrics import (
-    AggregateDailyAppNameMetrics,
+    AggregateDailyAppNameMetric,
 )
 from src.models.metrics.aggregate_daily_total_users_metrics import (
     AggregateDailyTotalUsersMetrics,
@@ -16,17 +16,17 @@ from src.models.metrics.aggregate_daily_unique_users_metrics import (
     AggregateDailyUniqueUsersMetrics,
 )
 from src.models.metrics.aggregate_monthly_app_name_metrics import (
-    AggregateMonthlyAppNameMetrics,
+    AggregateMonthlyAppNameMetric,
 )
 from src.models.metrics.aggregate_monthly_total_users_metrics import (
-    AggregateMonthlyTotalUsersMetrics,
+    AggregateMonthlyTotalUsersMetric,
 )
 from src.models.metrics.aggregate_monthly_unique_users_metrics import (
-    AggregateMonthlyUniqueUsersMetrics,
+    AggregateMonthlyUniqueUsersMetric,
 )
 from src.utils.config import shared_config
 from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.query_params import app_name_param, stringify_query_params
 from werkzeug.wrappers.response import Response as wResponse
 
@@ -134,8 +134,8 @@ def persist_summed_unique_counts(
             session.add(day_unique_record)
 
         month_unique_record = (
-            session.query(AggregateMonthlyUniqueUsersMetrics)
-            .filter(AggregateMonthlyUniqueUsersMetrics.timestamp == month)
+            session.query(AggregateMonthlyUniqueUsersMetric)
+            .filter(AggregateMonthlyUniqueUsersMetric.timestamp == month)
             .first()
         )
         if month_unique_record:
@@ -206,8 +206,8 @@ def persist_route_metrics(
         session.add(day_total_record)
 
         month_unique_record = (
-            session.query(AggregateMonthlyUniqueUsersMetrics)
-            .filter(AggregateMonthlyUniqueUsersMetrics.timestamp == month)
+            session.query(AggregateMonthlyUniqueUsersMetric)
+            .filter(AggregateMonthlyUniqueUsersMetric.timestamp == month)
             .first()
         )
         if month_unique_record:
@@ -221,7 +221,7 @@ def persist_route_metrics(
                 {unique_monthly_count}: {month_unique_record.count}"
             )
         else:
-            month_unique_record = AggregateMonthlyUniqueUsersMetrics(
+            month_unique_record = AggregateMonthlyUniqueUsersMetric(
                 timestamp=month, count=unique_monthly_count
             )
             logger.info(
@@ -231,8 +231,8 @@ def persist_route_metrics(
         session.add(month_unique_record)
 
         month_total_record = (
-            session.query(AggregateMonthlyTotalUsersMetrics)
-            .filter(AggregateMonthlyTotalUsersMetrics.timestamp == month)
+            session.query(AggregateMonthlyTotalUsersMetric)
+            .filter(AggregateMonthlyTotalUsersMetric.timestamp == month)
             .first()
         )
         if month_total_record:
@@ -246,7 +246,7 @@ def persist_route_metrics(
                 {count}: {month_total_record.count}"
             )
         else:
-            month_total_record = AggregateMonthlyTotalUsersMetrics(
+            month_total_record = AggregateMonthlyTotalUsersMetric(
                 timestamp=month, count=count
             )
             logger.info(
@@ -259,10 +259,10 @@ def persist_app_metrics(db, day, month, app_count):
     with db.scoped_session() as session:
         for application_name, count in app_count.items():
             day_record = (
-                session.query(AggregateDailyAppNameMetrics)
-                .filter(AggregateDailyAppNameMetrics.timestamp == day)
+                session.query(AggregateDailyAppNameMetric)
+                .filter(AggregateDailyAppNameMetric.timestamp == day)
                 .filter(
-                    AggregateDailyAppNameMetrics.application_name == application_name
+                    AggregateDailyAppNameMetric.application_name == application_name
                 )
                 .first()
             )
@@ -277,7 +277,7 @@ def persist_app_metrics(db, day, month, app_count):
                     after adding new count {count}: {day_record.count}"
                 )
             else:
-                day_record = AggregateDailyAppNameMetrics(
+                day_record = AggregateDailyAppNameMetric(
                     timestamp=day, application_name=application_name, count=count
                 )
                 logger.info(
@@ -287,10 +287,10 @@ def persist_app_metrics(db, day, month, app_count):
             session.add(day_record)
 
             month_record = (
-                session.query(AggregateMonthlyAppNameMetrics)
-                .filter(AggregateMonthlyAppNameMetrics.timestamp == month)
+                session.query(AggregateMonthlyAppNameMetric)
+                .filter(AggregateMonthlyAppNameMetric.timestamp == month)
                 .filter(
-                    AggregateMonthlyAppNameMetrics.application_name == application_name
+                    AggregateMonthlyAppNameMetric.application_name == application_name
                 )
                 .first()
             )
@@ -305,7 +305,7 @@ def persist_app_metrics(db, day, month, app_count):
                     after adding new count {count}: {month_record.count}"
                 )
             else:
-                month_record = AggregateMonthlyAppNameMetrics(
+                month_record = AggregateMonthlyAppNameMetric(
                     timestamp=month, application_name=application_name, count=count
                 )
                 logger.info(
@@ -652,14 +652,7 @@ def record_metrics(func):
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
 
-        metric = PrometheusMetric(
-            "flask_route_latency_seconds",
-            "Runtimes for flask routes",
-            (
-                "route",
-                "code",
-            ),
-        )
+        metric = PrometheusMetric(PrometheusMetricNames.FLASK_ROUTE_DURATION_SECONDS)
 
         result = func(*args, **kwargs)
 

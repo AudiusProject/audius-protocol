@@ -1,32 +1,47 @@
 const PrometheusClient = require('prom-client')
 
 const {
-  NamespacePrefix,
-  Metrics,
-  MetricNames
+  NAMESPACE_PREFIX,
+  METRICS,
+  METRIC_NAMES
 } = require('./prometheus.constants')
 
 /**
  * See `prometheusMonitoring/README.md` for usage details
  */
 
-module.exports = class PrometheusRegistry {
+class PrometheusRegistry {
   constructor() {
     // Use default global registry to register metrics
     this.registry = PrometheusClient.register
-
-    // Expose metric names from class for access throughout application
-    this.metricNames = MetricNames
 
     // Ensure clean state for registry
     this.registry.clear()
 
     // Enable collection of default metrics (e.g. heap, cpu, event loop)
     PrometheusClient.collectDefaultMetrics({
-      prefix: NamespacePrefix + 'default_'
+      prefix: NAMESPACE_PREFIX + '_default_'
     })
 
-    createAllCustomMetrics(this.registry)
+    this.initStaticMetrics(this.registry)
+
+    // Expose metric names from class for access throughout application
+    this.metricNames = { ...METRIC_NAMES }
+
+    this.namespacePrefix = NAMESPACE_PREFIX
+  }
+
+  /**
+   * Creates and registers every static metric defined in prometheus.constants.js
+   */
+  initStaticMetrics(registry) {
+    for (const { metricType: MetricType, metricConfig } of Object.values(
+      METRICS
+    )) {
+      // Create and register instance of MetricType, with provided metricConfig
+      const metric = new MetricType(metricConfig)
+      registry.registerMetric(metric)
+    }
   }
 
   /** Getters */
@@ -42,15 +57,4 @@ module.exports = class PrometheusRegistry {
   }
 }
 
-/**
- * Creates and registers every custom metric, for use throughout application
- */
-const createAllCustomMetrics = function (registry) {
-  for (const { metricType: MetricType, metricConfig } of Object.values(
-    Metrics
-  )) {
-    // Create and register instance of MetricType, with provided metricConfig
-    const metric = new MetricType(metricConfig)
-    registry.registerMetric(metric)
-  }
-}
+module.exports = PrometheusRegistry

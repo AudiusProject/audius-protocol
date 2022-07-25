@@ -8,7 +8,7 @@ from src.challenges.challenge import (
     FullEventMetadata,
 )
 from src.challenges.challenge_event import ChallengeEvent
-from src.models.rewards.profile_completion_challenge import ProfileCompletionChallenge
+from src.models.rewards.profile_completion_challenge import ChallengeProfileCompletion
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
@@ -72,7 +72,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
 
     def on_after_challenge_creation(self, session, metadatas: List[FullEventMetadata]):
         profile_completion_challenges = [
-            ProfileCompletionChallenge(
+            ChallengeProfileCompletion(
                 user_id=metadata["user_id"],
                 profile_description=False,
                 profile_name=False,
@@ -169,8 +169,8 @@ profile_challenge_manager = ChallengeManager(
 # Accessors
 def get_profile_completion_challenges(session, user_ids):
     return (
-        session.query(ProfileCompletionChallenge)
-        .filter(ProfileCompletionChallenge.user_id.in_(user_ids))
+        session.query(ChallengeProfileCompletion)
+        .filter(ChallengeProfileCompletion.user_id.in_(user_ids))
         .all()
     )
 

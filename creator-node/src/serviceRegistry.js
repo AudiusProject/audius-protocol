@@ -1,12 +1,12 @@
+const _ = require('lodash')
 const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
 
-const { libs: AudiusLibs } = require('@audius/sdk')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
-const config = require('./config')
+const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
   logger: genericLogger,
@@ -14,6 +14,7 @@ const {
   logInfoWithDuration
 } = require('./logging')
 const utils = require('./utils')
+const config = require('./config')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
@@ -54,12 +55,14 @@ class ServiceRegistry {
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
-    this.stateMonitoringQueue = null // Handles jobs for finding replica set updates and syncs for one slice of users at a time
+    this.monitorStateQueue = null // Handles jobs for slicing batches of users and gathering data about them
+    this.findSyncRequestsQueue = null // Handles jobs for finding sync requests
+    this.findReplicaSetUpdatesQueue = null // Handles jobs for finding replica set updates
     this.cNodeEndpointToSpIdMapQueue = null // Handles jobs for updating CNodeEndpointToSpIdMap
-    this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
+    this.manualSyncQueue = null // Handles jobs for issuing a manual sync request
+    this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
+    this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
     this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
-    this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
-    this.recurringSyncQueue = null // DEPRECATED -- Handles syncs that occur on a cadence, e.g. every hour
 
     this.wrapUpQueueJobsMaxTime = 60000 /* Max time to wait for jobs to complete. 1 min in ms */
 
@@ -75,10 +78,14 @@ class ServiceRegistry {
   async initServices() {
     const start = getStartTime()
 
-    this.libs = await this._initAudiusLibs()
+    this.libs = await initAudiusLibs()
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
+
+    this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
+
+    await this.trustedNotifierManager.init()
 
     this.synchronousServicesInitialized = true
 
@@ -97,14 +104,6 @@ class ServiceRegistry {
     // If error occurs in initializing these services, do not continue with app start up.
     try {
       await this.blacklistManager.init()
-
-      this.trustedNotifierManager = new TrustedNotifierManager(
-        config,
-        this.libs
-      )
-
-      await this.trustedNotifierManager.init()
-
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
     } catch (e) {
@@ -143,27 +142,37 @@ class ServiceRegistry {
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
 
-    // Make state machine queues truncate long data (they have jobs with large inputs and outputs)
-    const stateMonitoringAdapter = new BullAdapter(this.stateMonitoringQueue, {
-      readOnlyMode: true
-    })
-    const stateReconciliationAdapter = new BullAdapter(
-      this.stateReconciliationQueue,
-      { readOnlyMode: true }
-    )
-
     // These queues have very large inputs and outputs, so we truncate job
     // data and results that are nested >=5 levels or contain strings >=10,000 characters
-    stateMonitoringAdapter.setFormatter('data', this._truncateBull.bind(this))
-    stateMonitoringAdapter.setFormatter(
+    const monitorStateAdapter = new BullAdapter(this.monitorStateQueue, {
+      readOnlyMode: true
+    })
+    const findSyncRequestsAdapter = new BullAdapter(
+      this.findSyncRequestsQueue,
+      {
+        readOnlyMode: true
+      }
+    )
+    const findReplicaSetUpdatesAdapter = new BullAdapter(
+      this.findReplicaSetUpdatesQueue,
+      {
+        readOnlyMode: true
+      }
+    )
+    monitorStateAdapter.setFormatter(
       'returnValue',
       this._truncateBull.bind(this)
     )
-    stateReconciliationAdapter.setFormatter(
+    findSyncRequestsAdapter.setFormatter('data', this._truncateBull.bind(this))
+    findSyncRequestsAdapter.setFormatter(
+      'returnValue',
+      this._truncateBull.bind(this)
+    )
+    findReplicaSetUpdatesAdapter.setFormatter(
       'data',
       this._truncateBull.bind(this)
     )
-    stateReconciliationAdapter.setFormatter(
+    findReplicaSetUpdatesAdapter.setFormatter(
       'returnValue',
       this._truncateBull.bind(this)
     )
@@ -172,14 +181,16 @@ class ServiceRegistry {
     const serverAdapter = new ExpressAdapter()
     createBullBoard({
       queues: [
-        stateMonitoringAdapter,
-        stateReconciliationAdapter,
+        monitorStateAdapter,
+        findSyncRequestsAdapter,
+        findReplicaSetUpdatesAdapter,
         new BullAdapter(this.cNodeEndpointToSpIdMapQueue, {
           readOnlyMode: true
         }),
-        new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
+        new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
+        new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
@@ -309,6 +320,8 @@ class ServiceRegistry {
                   value.length > 100
                     ? `[Truncated array with ${value.length} elements]`
                     : this._truncateBull(value, newDepth)
+              } else if (_.isEmpty(value)) {
+                json[key] = value
               } else {
                 const length = Object.keys(value).length
                 json[key] =
@@ -355,13 +368,21 @@ class ServiceRegistry {
     // Init StateMachineManager
     this.stateMachineManager = new StateMachineManager()
     const {
-      stateMonitoringQueue,
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
       cNodeEndpointToSpIdMapQueue,
-      stateReconciliationQueue
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
-    this.stateMonitoringQueue = stateMonitoringQueue
+    this.monitorStateQueue = monitorStateQueue
+    this.findSyncRequestsQueue = findSyncRequestsQueue
+    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
     this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
-    this.stateReconciliationQueue = stateReconciliationQueue
+    this.manualSyncQueue = manualSyncQueue
+    this.recurringSyncQueue = recurringSyncQueue
+    this.updateReplicaSetQueue = updateReplicaSetQueue
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
@@ -373,11 +394,7 @@ class ServiceRegistry {
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(
-      config,
-      this.libs,
-      this
-    )
+    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(config, this.libs)
     await this.skippedCIDsRetryQueue.init()
 
     try {
@@ -509,11 +526,8 @@ class ServiceRegistry {
    */
   async _initSnapbackSM() {
     this.snapbackSM = new SnapbackSM(config, this.libs)
-    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
-      this.snapbackSM
+    const { stateMachineQueue } = this.snapbackSM
     this.stateMachineQueue = stateMachineQueue
-    this.manualSyncQueue = manualSyncQueue
-    this.recurringSyncQueue = recurringSyncQueue
 
     let isInitialized = false
     const retryTimeoutMs = 10000 // ms
@@ -540,63 +554,6 @@ class ServiceRegistry {
     this.logInfo(`SnapbackSM Init completed`)
   }
 
-  /**
-   * Creates, initializes, and returns an audiusLibs instance
-   *
-   * Configures dataWeb3 to be internal to libs, logged in with delegatePrivateKey in order to write chain TX
-   */
-  async _initAudiusLibs() {
-    const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
-      config.get('ethProviderUrl'),
-      config.get('ethNetworkId'),
-      /* requiresAccount */ false
-    )
-    if (!ethWeb3) {
-      throw new Error(
-        'Failed to init audiusLibs due to ethWeb3 configuration error'
-      )
-    }
-
-    const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
-      ? new Set(config.get('discoveryProviderWhitelist').split(','))
-      : null
-    const identityService = config.get('identityService')
-    const discoveryNodeUnhealthyBlockDiff = config.get(
-      'discoveryNodeUnhealthyBlockDiff'
-    )
-
-    const audiusLibs = new AudiusLibs({
-      ethWeb3Config: AudiusLibs.configEthWeb3(
-        config.get('ethTokenAddress'),
-        config.get('ethRegistryAddress'),
-        ethWeb3,
-        config.get('ethOwnerWallet')
-      ),
-      web3Config: AudiusLibs.configInternalWeb3(
-        config.get('dataRegistryAddress'),
-        [config.get('dataProviderUrl')],
-        // TODO - formatting this private key here is not ideal
-        config.get('delegatePrivateKey').replace('0x', '')
-      ),
-      discoveryProviderConfig: {
-        whitelist: discoveryProviderWhitelist,
-        unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
-      },
-      // If an identity service config is present, set up libs with the connection, otherwise do nothing
-      identityServiceConfig: identityService
-        ? AudiusLibs.configIdentityService(identityService)
-        : undefined,
-      isDebug: config.get('creatorNodeIsDebug'),
-      isServer: true,
-      preferHigherPatchForPrimary: true,
-      preferHigherPatchForSecondaries: true,
-      logger: genericLogger
-    })
-
-    await audiusLibs.init()
-    return audiusLibs
-  }
-
   logInfo(msg) {
     genericLogger.info(`ServiceRegistry || ${msg}`)
   }
@@ -606,11 +563,7 @@ class ServiceRegistry {
   }
 }
 
-/*
- * Export a singleton instance of the ServiceRegistry
- */
-const serviceRegistry = new ServiceRegistry()
-
+//  Export a singleton instance of the ServiceRegistry
 module.exports = {
-  serviceRegistry
+  serviceRegistry: new ServiceRegistry()
 }

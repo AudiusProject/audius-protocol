@@ -18,6 +18,8 @@ const MAX_CONCURRENCY =
     ? imageProcessingMaxConcurrency
     : os.cpus().length
 
+const IMAGE_PROCESSING_QUEUE_HISTORY = 500
+
 class ImageProcessingQueue {
   constructor() {
     this.queue = new Bull('image-processing-queue', {
@@ -26,8 +28,8 @@ class ImageProcessingQueue {
         host: config.get('redisHost')
       },
       defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: true
+        removeOnComplete: IMAGE_PROCESSING_QUEUE_HISTORY,
+        removeOnFail: IMAGE_PROCESSING_QUEUE_HISTORY
       }
     })
 

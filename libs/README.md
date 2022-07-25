@@ -35,7 +35,7 @@ const audiusSdk = sdk({ appName: 'Name of your app goes here' })
 #### 3. Make your first API call using the SDK!
 
 ```js
-const track = await audiusSdk.track.getTrack({ trackId: 'D7KyD' })
+const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
 console.log(track, 'Track fetched!')
 ```
 
@@ -50,9 +50,11 @@ window.Web3 = Web3
 
 const audiusSdk = sdk({ appName: 'My Example App' })
 
-const track = await audiusSdk.track.getTrack({ trackId: 'D7KyD' })
+const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
 console.log(track, 'Track fetched!')
 ```
+
+> If your bundler doesn't automatically polyfill node libraries (like when using create-react-app v5) you will need to use the `web3` script tag instead of the `web3` npm package
 
 ### HTML + JS
 
@@ -74,7 +76,7 @@ const audiusSdk = window.audiusSdk({ appName: 'Name of your app goes here' })
 #### 3. Make your first API call using the SDK!
 
 ```js
-const track = await audiusSdk.track.getTrack({ trackId: 'D7KyD' })
+const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
 ```
 
 #### Full example

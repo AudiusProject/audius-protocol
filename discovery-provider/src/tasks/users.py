@@ -14,14 +14,13 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
-from src.models.users.user_events import UserEvents
+from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 
 logger = logging.getLogger(__name__)
@@ -36,15 +35,10 @@ def user_state_update(
     block_timestamp,
     block_hash,
     ipfs_metadata,
-    blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
     begin_user_state_update = datetime.now()
-    metric = PrometheusMetric(
-        "user_state_update_duration_seconds",
-        "Runtimes for src.task.users:user_state_update()",
-        ("scope",),
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS)
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -98,7 +92,6 @@ def user_state_update(
                     session,
                     user_events_lookup,
                     update_task,
-                    blacklisted_cids,
                     block_number,
                     block_timestamp,
                     blockhash,
@@ -141,7 +134,6 @@ def process_user_txs_serial(
     session,
     user_events_lookup,
     update_task,
-    blacklisted_cids,
     block_number,
     block_timestamp,
     blockhash,
@@ -149,11 +141,7 @@ def process_user_txs_serial(
     user_ids,
     skipped_tx_count,
 ):
-    metric = PrometheusMetric(
-        "user_state_update_duration_seconds",
-        "Runtimes for src.task.users:user_state_update()",
-        ("scope",),
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS)
     processed_entries = 0
     for user_tx in user_txs:
         try:
@@ -181,21 +169,17 @@ def process_user_txs_serial(
                 metadata_multihash = helpers.multihash_digest_to_cid(
                     helpers.get_tx_arg(entry, "_multihashDigest")
                 )
-                user_record = (
-                    parse_user_event(
-                        self,
-                        update_task,
-                        session,
-                        tx_receipt,
-                        block_number,
-                        entry,
-                        event_type,
-                        existing_user_record,
-                        ipfs_metadata[metadata_multihash],
-                        block_timestamp,
-                    )
-                    if metadata_multihash not in blacklisted_cids
-                    else None
+                user_record = parse_user_event(
+                    self,
+                    update_task,
+                    session,
+                    tx_receipt,
+                    block_number,
+                    entry,
+                    event_type,
+                    existing_user_record,
+                    ipfs_metadata[metadata_multihash],
+                    block_timestamp,
                 )
             else:
                 user_record = parse_user_event(
@@ -319,28 +303,12 @@ def parse_user_event(
         profile_photo_multihash = helpers.multihash_digest_to_cid(
             helpers.get_tx_arg(entry, "_profilePhotoDigest")
         )
-        is_blacklisted = is_blacklisted_ipld(session, profile_photo_multihash)
-        if is_blacklisted:
-            logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
-                f"{profile_photo_multihash} in indexing update user profile photo"
-            )
-            return None
         user_record.profile_picture = profile_photo_multihash
     elif event_type == user_event_types_lookup["update_cover_photo"]:
         cover_photo_multihash = helpers.multihash_digest_to_cid(
             helpers.get_tx_arg(entry, "_coverPhotoDigest")
         )
-        is_blacklisted = is_blacklisted_ipld(session, cover_photo_multihash)
-        if is_blacklisted:
-            logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
-                f"{cover_photo_multihash} in indexing update user cover photo"
-            )
-            return None
         user_record.cover_photo = cover_photo_multihash
-    elif event_type == user_event_types_lookup["update_is_creator"]:
-        user_record.is_creator = helpers.get_tx_arg(entry, "_isCreator")
     elif event_type == user_event_types_lookup["update_is_verified"]:
         user_record.is_verified = helpers.get_tx_arg(entry, "_isVerified")
         if user_record.is_verified:
@@ -589,7 +557,7 @@ def validate_signature(
     return False
 
 
-class UserEventsMetadata(TypedDict, total=False):
+class UserEventMetadata(TypedDict, total=False):
     referrer: int
     is_mobile_user: bool
 
@@ -597,7 +565,7 @@ class UserEventsMetadata(TypedDict, total=False):
 def update_user_events(
     session: Session,
     user_record: User,
-    events: UserEventsMetadata,
+    events: UserEventMetadata,
     bus: ChallengeEventBus,
 ) -> None:
     """Updates the user events table"""
@@ -606,9 +574,9 @@ def update_user_events(
             # There is something wrong with events, don't process it
             return
 
-        # Get existing UserEvents entry
+        # Get existing UserEvent entry
         existing_user_events = (
-            session.query(UserEvents)
+            session.query(UserEvent)
             .filter_by(user_id=user_record.user_id, is_current=True)
             .one_or_none()
         )
@@ -618,7 +586,7 @@ def update_user_events(
         existing_mobile_user = (
             existing_user_events.is_mobile_user if existing_user_events else False
         )
-        user_events = UserEvents(
+        user_events = UserEvent(
             user_id=user_record.user_id,
             is_current=True,
             blocknumber=user_record.blocknumber,
@@ -663,8 +631,8 @@ def update_user_events(
             or user_events.is_mobile_user != existing_mobile_user
             or user_events.referrer != existing_referrer
         ):
-            # Mark existing UserEvents entries as not current
-            session.query(UserEvents).filter_by(
+            # Mark existing UserEvent entries as not current
+            session.query(UserEvent).filter_by(
                 user_id=user_record.user_id, is_current=True
             ).update({"is_current": False})
             session.add(user_events)

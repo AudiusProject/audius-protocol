@@ -86,6 +86,32 @@ export class UserFactoryClient extends ContractClient {
     }
   }
 
+  async updateIsCreator(userId: number, isCreator: boolean) {
+    const [nonce, sig] = await this.getUpdateNonceAndSig(
+      signatureSchemas.generators.getUpdateUserCreatorRequestData,
+      userId,
+      isCreator
+    )
+    const method = await this.getMethod(
+      'updateIsCreator',
+      userId,
+      isCreator,
+      nonce,
+      sig
+    )
+    const contractAddress = await this.getAddress()
+
+    const tx = await this.web3Manager.sendTransaction(
+      method,
+      this.contractRegistryKey,
+      contractAddress
+    )
+    return {
+      txReceipt: tx,
+      isCreator: tx.events?.['UpdateIsCreator']?.returnValues._isCreator
+    }
+  }
+
   async updateName(userId: number, name: string) {
     Utils.checkStrLen(name, 32)
 
@@ -219,32 +245,6 @@ export class UserFactoryClient extends ContractClient {
       txReceipt: tx,
       coverPhotoMultihashDigest:
         tx.events?.['UpdateCoverPhoto']?.returnValues._coverPhotoDigest
-    }
-  }
-
-  async updateIsCreator(userId: number, isCreator: boolean) {
-    const [nonce, sig] = await this.getUpdateNonceAndSig(
-      signatureSchemas.generators.getUpdateUserCreatorRequestData,
-      userId,
-      isCreator
-    )
-    const method = await this.getMethod(
-      'updateIsCreator',
-      userId,
-      isCreator,
-      nonce,
-      sig
-    )
-    const contractAddress = await this.getAddress()
-
-    const tx = await this.web3Manager.sendTransaction(
-      method,
-      this.contractRegistryKey,
-      contractAddress
-    )
-    return {
-      txReceipt: tx,
-      isCreator: tx.events?.['UpdateIsCreator']?.returnValues._isCreator
     }
   }
 

@@ -6,7 +6,7 @@ const {
   computeUserSecondarySyncSuccessRatesMap
 } = require('./stateMonitoringUtils')
 const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
-const { QUEUE_NAMES, JOB_NAMES } = require('../stateMachineConstants')
+const { QUEUE_NAMES } = require('../stateMachineConstants')
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -63,6 +63,7 @@ module.exports = async function ({
       // Make the next job try again instead of looping back to userId 0
       users = [{ user_id: lastProcessedUserId }]
 
+      logger.error(e.stack)
       _addToDecisionTree(decisionTree, 'getNodeUsers Error', logger, {
         error: e.message
       })
@@ -78,6 +79,7 @@ module.exports = async function ({
         unhealthyPeers: Array.from(unhealthyPeers)
       })
     } catch (e) {
+      logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
         'monitor-state job processor getUnhealthyPeers Error',
@@ -120,6 +122,7 @@ module.exports = async function ({
         logger
       )
     } catch (e) {
+      logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
         'retrieveUserInfoFromReplicaSet Error',
@@ -146,6 +149,7 @@ module.exports = async function ({
         }
       )
     } catch (e) {
+      logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
         'computeUserSecondarySyncSuccessRatesMap Error',
@@ -171,34 +175,29 @@ module.exports = async function ({
   }
   return {
     jobsToEnqueue: {
-      [QUEUE_NAMES.STATE_MONITORING]: [
-        // Enqueue findFindSyncRequests and findReplicaSetUpdates jobs to find which state anomalies
-        // need to be reconciled for the slice of users we just monitored
+      // Enqueue a job to find sync requests that need to be issued for the slice of users we just monitored
+      [QUEUE_NAMES.FIND_SYNC_REQUESTS]: [
         {
-          jobName: JOB_NAMES.FIND_SYNC_REQUESTS,
-          jobData: {
-            users,
-            unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
-            replicaToUserInfoMap,
-            userSecondarySyncMetricsMap
-          }
-        },
+          users,
+          unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
+          replicaToUserInfoMap,
+          userSecondarySyncMetricsMap
+        }
+      ],
+      // Enqueue a job to find sync replica sets that need to be updated for the slice of users we just monitored
+      [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: [
         {
-          jobName: JOB_NAMES.FIND_REPLICA_SET_UPDATES,
-          jobData: {
-            users,
-            unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
-            replicaToUserInfoMap,
-            userSecondarySyncMetricsMap
-          }
-        },
-        // Enqueue another monitorState job to monitor the next slice of users
+          users,
+          unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
+          replicaToUserInfoMap,
+          userSecondarySyncMetricsMap
+        }
+      ],
+      // Enqueue another monitor-state job to monitor the next slice of users
+      [QUEUE_NAMES.MONITOR_STATE]: [
         {
-          jobName: JOB_NAMES.MONITOR_STATE,
-          jobData: {
-            lastProcessedUserId: lastProcessedUser?.user_id || 0,
-            discoveryNodeEndpoint
-          }
+          lastProcessedUserId: lastProcessedUser?.user_id || 0,
+          discoveryNodeEndpoint
         }
       ]
     }

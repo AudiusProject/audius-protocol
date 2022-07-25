@@ -8,6 +8,7 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "9090:9090"
+    restart: always
     volumes:
       - ./data/prometheus:/prometheus
 
@@ -27,3 +28,83 @@ services:
     restart: always
     volumes:
       - ./data/grafana:/var/lib/grafana
+
+  # Exporters
+
+  ## Elasticsearch Exporter
+
+  exporter_elasticsearch_dn1:
+    image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.3.0
+    ports:
+      - "9114:9114"
+    command:
+      - '--es.uri=http://dn1_elasticsearch_1:9200'
+    restart: always
+    networks:
+      - audius_dev
+
+  ## Postgres Exporters
+
+  exporter_postgres_dn1:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "5010:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@dn1_discovery-provider-db_1:5432/postgres?sslmode=disable
+    restart: always
+    networks:
+      - audius_dev
+
+  exporter_postgres_cn1:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "4010:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@cn1_creator-node-db_1:5432/postgres?sslmode=disable
+    restart: always
+    networks:
+      - audius_dev
+
+  exporter_postgres_cn2:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "4011:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@cn2_creator-node-db_1:5432/postgres?sslmode=disable
+    restart: always
+    networks:
+      - audius_dev
+
+  exporter_postgres_cn3:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "4012:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@cn3_creator-node-db_1:5432/postgres?sslmode=disable
+    restart: always
+    networks:
+      - audius_dev
+
+  exporter_postgres_cn4:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "4013:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@cn4_creator-node-db_1:5432/postgres?sslmode=disable
+    restart: always
+    networks:
+      - audius_dev
+
+  exporter_postgres_is:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "7010:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@audius-identity-service_identity-db_1:5432/postgres?sslmode=disable
+    restart: always
+    networks:
+      - audius_dev
+
+networks:
+  audius_dev:
+    external: true

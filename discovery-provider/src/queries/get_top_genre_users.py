@@ -41,7 +41,6 @@ def get_top_genre_users(args):
             .join(Track, Track.owner_id == User.user_id)
             .filter(
                 User.is_current == True,
-                User.is_creator == True,
                 Track.is_unlisted == False,
                 Track.stem_of == None,
                 Track.is_current == True,

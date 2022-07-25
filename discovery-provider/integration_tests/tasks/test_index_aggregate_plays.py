@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models.social.aggregate_plays import AggregatePlays
+from src.models.social.aggregate_plays import AggregatePlay
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -50,8 +50,8 @@ def test_index_aggregate_plays_populate(app):
 
     with db.scoped_session() as session:
 
-        results: List[AggregatePlays] = (
-            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
+        results: List[AggregatePlay] = (
+            session.query(AggregatePlay).order_by(AggregatePlay.play_item_id).all()
         )
 
         assert len(results) == 5
@@ -108,8 +108,8 @@ def test_index_aggregate_plays_update(app):
 
     with db.scoped_session() as session:
 
-        results: List[AggregatePlays] = (
-            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
+        results: List[AggregatePlay] = (
+            session.query(AggregatePlay).order_by(AggregatePlay.play_item_id).all()
         )
 
         assert len(results) == 4

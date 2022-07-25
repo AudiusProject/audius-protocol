@@ -49,7 +49,8 @@ const browserInternal = [
   'graceful-fs',
   'node-localstorage',
   'abi-decoder',
-  'web3'
+  'web3',
+  'xmlhttprequest'
 ]
 
 const browserConfig = {

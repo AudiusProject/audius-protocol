@@ -1,0 +1,16 @@
+data-contracts/config.json
+eth-contracts/config.json
+node_modules/
+*.swp
+*.swo
+*.swn
+.DS_Store*
+test.js
+tests/assets/random.txt
+*.code-workspace
+local-storage/
+initScripts/*-config.json
+.npmrc
+.nyc_output/*
+coverage/
+dist

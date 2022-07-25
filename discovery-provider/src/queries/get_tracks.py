@@ -3,7 +3,7 @@ from typing import List, Optional, TypedDict
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.sql.functions import coalesce
-from src.models.social.aggregate_plays import AggregatePlays
+from src.models.social.aggregate_plays import AggregatePlay
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -111,8 +111,8 @@ def _get_tracks(session, args):
             )
         elif args["sort"] == "plays":
             base_query = base_query.join(
-                AggregatePlays, AggregatePlays.play_item_id == Track.track_id
-            ).order_by(AggregatePlays.count.desc())
+                AggregatePlay, AggregatePlay.play_item_id == Track.track_id
+            ).order_by(AggregatePlay.count.desc())
         else:
             whitelist_params = [
                 "created_at",

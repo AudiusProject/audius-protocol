@@ -53,7 +53,8 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     serviceType: string,
     endpoint: string,
     amount: number | string | BN,
-    delegateOwnerWallet: string
+    delegateOwnerWallet: string,
+    performHealthCheck: boolean = true
   ) {
     const sanitizedEndpoint = endpoint.replace(/\/$/, '')
 
@@ -68,19 +69,21 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
       throw new Error('Invalid amount')
     }
 
-    const requestUrl = urlJoin(sanitizedEndpoint, 'health_check')
-    const axiosRequestObj: AxiosRequestConfig = {
-      url: requestUrl,
-      method: 'get',
-      timeout: 1000
-    }
-    const resp = await axios(axiosRequestObj)
-    const endpointServiceType = resp.data.data.service
+    if (performHealthCheck) {
+      const requestUrl = urlJoin(sanitizedEndpoint, 'health_check')
+      const axiosRequestObj: AxiosRequestConfig = {
+        url: requestUrl,
+        method: 'get',
+        timeout: 1000
+      }
+      const resp = await axios(axiosRequestObj)
+      const endpointServiceType = resp.data.data.service
 
-    if (serviceType !== endpointServiceType) {
-      throw new Error(
-        'Attempting to register endpoint with mismatched service type'
-      )
+      if (serviceType !== endpointServiceType) {
+        throw new Error(
+          'Attempting to register endpoint with mismatched service type'
+        )
+      }
     }
 
     // Approve token transfer operation
@@ -111,12 +114,18 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     }
   }
 
-  async register(serviceType: string, endpoint: string, amount: BN) {
+  async register(
+    serviceType: string,
+    endpoint: string,
+    amount: BN,
+    performHealthCheck: boolean = true
+  ) {
     return await this.registerWithDelegate(
       serviceType,
       endpoint,
       amount,
-      this.web3Manager.getWalletAddress()
+      this.web3Manager.getWalletAddress(),
+      performHealthCheck
     )
   }
 

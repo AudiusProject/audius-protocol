@@ -1,4 +1,4 @@
-const isCreator = require('./isCreator')
+const setIsCreatorToTrue = require('./setIsCreatorToTrue')
 const sanitizeNodes = require('./sanitizeNodes')
 const addSecondaries = require('./addSecondaries')
 const syncNodes = require('./syncNodes')
@@ -18,7 +18,7 @@ class SanityChecks {
    * @param {Set<string>} creatorNodeWhitelist
    */
   async run (creatorNodeWhitelist = null) {
-    await isCreator(this.libs)
+    await setIsCreatorToTrue(this.libs)
     await sanitizeNodes(this.libs)
     await addSecondaries(this.libs)
     await assignReplicaSetIfNecessary(this.libs)

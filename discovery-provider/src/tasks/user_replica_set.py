@@ -5,7 +5,7 @@ from typing import Set, Tuple
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_eth_abi_values
 from src.database_task import DatabaseTask
-from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.users.user import User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.users import invalidate_old_user, lookup_user_record
@@ -34,7 +34,6 @@ def user_replica_set_state_update(
     block_timestamp,
     block_hash,
     _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
-    _blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of User model state changes found in transaction and set of user_id values"""
 
@@ -331,7 +330,7 @@ def parse_ursm_cnode_record(update_task, entry, cnode_record):
     cnode_sp_id = helpers.get_tx_arg(entry, "_cnodeSpId")
     cnode_record.endpoint = get_ursm_cnode_endpoint(update_task, cnode_sp_id)
 
-    if not all_required_fields_present(URSMContentNode, cnode_record):
+    if not all_required_fields_present(UrsmContentNode, cnode_record):
         raise EntityMissingRequiredFieldError(
             "content_node",
             cnode_record,
@@ -378,15 +377,15 @@ def lookup_ursm_cnode(
     cnode_sp_id = event_args._cnodeSpId
 
     cnode_record_exists = (
-        session.query(URSMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
+        session.query(UrsmContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
     )
     cnode_record = None
     if cnode_record_exists:
         cnode_record = (
-            session.query(URSMContentNode)
+            session.query(UrsmContentNode)
             .filter(
-                URSMContentNode.cnode_sp_id == cnode_sp_id,
-                URSMContentNode.is_current == True,
+                UrsmContentNode.cnode_sp_id == cnode_sp_id,
+                UrsmContentNode.is_current == True,
             )
             .first()
         )
@@ -395,7 +394,7 @@ def lookup_ursm_cnode(
         session.expunge(cnode_record)
         make_transient(cnode_record)
     else:
-        cnode_record = URSMContentNode(
+        cnode_record = UrsmContentNode(
             is_current=True,
             cnode_sp_id=cnode_sp_id,
             created_at=datetime.utcfromtimestamp(block_timestamp),
@@ -409,14 +408,14 @@ def lookup_ursm_cnode(
 
 def invalidate_old_cnode_record(session, cnode_sp_id):
     cnode_record_exists = (
-        session.query(URSMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
+        session.query(UrsmContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
     )
     if cnode_record_exists:
         num_invalidated_records = (
-            session.query(URSMContentNode)
+            session.query(UrsmContentNode)
             .filter(
-                URSMContentNode.cnode_sp_id == cnode_sp_id,
-                URSMContentNode.is_current == True,
+                UrsmContentNode.cnode_sp_id == cnode_sp_id,
+                UrsmContentNode.is_current == True,
             )
             .update({"is_current": False})
         )

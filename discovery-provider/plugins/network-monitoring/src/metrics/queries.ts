@@ -2,16 +2,33 @@
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
 
-/* 
-- he number of CID on each CN that have been replicated at least once
-- The number of CID on each CN that have ***NOT*** been replicated at least once
-- [ex 1] **The number of users with a specific CN as their primary**
-- The number of users with a specific CN in their replica set
-- CID replication across the CNs
-- CID replication factor
-- The number of users with their data syncs across 0, 1, 2, or 3 CNs
-*/
+/*
+ * Metrics from the discovery DB
+ *
+ * These metrics are primarily used to make prometheus
+ * and grafana more readable/understandable
+ */ 
 
+// Get the current user count from discovery nodes
+export const getUserCount = async (run_id: number): Promise<number> => {
+
+    const usersResp: unknown[] = await sequelizeConn.query(`
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE run_id = :run_id
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id },
+    })
+
+    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+
+    return usersCount
+}
+
+/* 
+ * Core metrics
+ */
 
 export const getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_node_spid: string, cid_count: number }[]> => {
 
@@ -70,6 +87,8 @@ export const getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: s
     return primaryCount
 }
 
+// Count of users who have a specific content node in their replica set 
+// This is different from `getUserCount()` which literally just gets the number of users on Audius
 export const getAllUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
     console.log(`[${run_id}] metric: all user count`);
     const userListResp: unknown[] = await sequelizeConn.query(`
@@ -209,15 +228,40 @@ export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => 
 // The number of users whose primary content node clock value is null
 export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
-        SELECT COUNT(*) as user_count
-        FROM network_monitoring_users
-        WHERE 
-            run_id = :run_id
-        AND 
-            primary_clock_value IS NULL;
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE 
+        run_id = :run_id
+    AND 
+        primary_clock_value IS NULL;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id },
+    })
+
+    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+
+    return usersCount
+}
+
+export const getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidSet: number[]): Promise<number> => {
+
+    const spidSetStr = `{${spidSet.join(",")}}`
+
+    const usersResp: unknown[] = await sequelizeConn.query(`
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = :run_id
+    AND 
+        primaryspid = ANY( :spidSetStr )
+    AND
+        secondary1spid = ANY( :spidSetStr )
+    AND 
+        secondary2spid = ANY( :spidSetStr );
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id, spidSetStr },
     })
 
     const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)

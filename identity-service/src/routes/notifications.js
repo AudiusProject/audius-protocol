@@ -479,7 +479,7 @@ module.exports = function (app) {
           isHidden: false,
           ...queryFilter
         },
-        include: [{ model: models.SolanaNotificationAction, as: 'actions', required: true, attributes: [] }],
+        include: [{ model: models.SolanaNotificationAction, as: 'actions', required: false, attributes: [] }],
         attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
         group: ['SolanaNotification.id']
       })

@@ -1,5 +1,5 @@
 [package]
-name = "audius-cli"
+name = "audius-reward-manager-cli"
 version = "0.1.0"
 edition = "2018"
 
@@ -26,7 +26,3 @@ libsecp256k1 = "0.5.0"
 audius-reward-manager = { path="../program", features = [ "no-entrypoint" ] }
 spl-token = { version = "=3.2.0", features = ["no-entrypoint"] }
 claimable-tokens = { path = "../../claimable-tokens/program", features = [ "no-entrypoint" ] }
-
-[[bin]]
-name = "audius-cli"
-path = "src/main.rs"

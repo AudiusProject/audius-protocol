@@ -1,0 +1,9 @@
+name = "audius-docs"
+type = "webpack"
+account_id = "3811365464a8e56b2b27a5590e328e49"
+zone_id = '5a3ccccef96ba8b3380b78451ec164e6'
+workers_dev = true
+
+[site]
+bucket = "./build"
+entry-point = "workers-site"
