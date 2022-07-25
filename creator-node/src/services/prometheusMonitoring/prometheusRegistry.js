@@ -1,4 +1,5 @@
 const PrometheusClient = require('prom-client')
+const bullProm = require('bull-prom')
 
 const {
   NAMESPACE_PREFIX,
@@ -29,6 +30,12 @@ class PrometheusRegistry {
     this.metricNames = { ...METRIC_NAMES }
 
     this.namespacePrefix = NAMESPACE_PREFIX
+
+    this.bullMetrics = bullProm.init({
+      PrometheusClient,
+      interval: 1000,
+      useGlobal: false
+    })
   }
 
   /**

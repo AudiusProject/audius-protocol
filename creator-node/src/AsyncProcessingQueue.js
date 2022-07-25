@@ -37,7 +37,7 @@ const ASYNC_PROCESSING_QUEUE_HISTORY = 500
  */
 
 class AsyncProcessingQueue {
-  constructor(libs) {
+  constructor(libs, prometheusRegistry) {
     this.queue = new Bull('asyncProcessing', {
       redis: {
         host: config.get('redisHost'),
@@ -48,6 +48,8 @@ class AsyncProcessingQueue {
         removeOnFail: ASYNC_PROCESSING_QUEUE_HISTORY
       }
     })
+
+    prometheusRegistry.bullMetric.start(this.queue)
 
     this.libs = libs
 
