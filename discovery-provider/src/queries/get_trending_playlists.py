@@ -14,8 +14,8 @@ from src.api.v1.helpers import (
     format_offset,
     to_dict,
 )
-from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
 from src.models.social.repost import RepostType
 from src.models.social.save import Save, SaveType
 from src.models.users.aggregate_user import AggregateUser
@@ -26,6 +26,7 @@ from src.queries.query_helpers import (
     add_users_to_tracks,
     get_karma,
     get_repost_counts,
+    get_save_counts,
     get_users_by_id,
     get_users_ids,
     populate_playlist_metadata,
@@ -145,10 +146,8 @@ def get_scorable_playlist_data(session, time_range, strategy):
             playlist_owner_id_map[owner_id].append(playlist_id)
 
     # Add repost counts
-    repost_counts = (
-        session.query(AggregatePlaylist.playlist_id, AggregatePlaylist.repost_count)
-        .filter(AggregatePlaylist.playlist_id.in_(playlist_ids))
-        .all()
+    repost_counts = get_repost_counts(
+        session, False, False, playlist_ids, [RepostType.playlist]
     )
     for (playlist_id, repost_count) in repost_counts:
         playlist_map[playlist_id][response_name_constants.repost_count] = repost_count
@@ -163,23 +162,23 @@ def get_scorable_playlist_data(session, time_range, strategy):
         ] = repost_count
 
     # Add save counts
-    save_counts = (
-        session.query(AggregatePlaylist.playlist_id, AggregatePlaylist.save_count)
-        .filter(AggregatePlaylist.playlist_id.in_(playlist_ids))
-        .all()
+    save_counts = get_save_counts(
+        session, False, False, playlist_ids, [SaveType.playlist]
     )
     for (playlist_id, save_count) in save_counts:
         playlist_map[playlist_id][response_name_constants.save_count] = save_count
 
     # Add follower counts
     follower_counts = (
-        session.query(AggregateUser.user_id, AggregateUser.follower_count)
+        session.query(Follow.followee_user_id, func.count(Follow.followee_user_id))
         .filter(
-            AggregateUser.user_id.in_(list(playlist_owner_id_map.keys())),
+            Follow.is_current == True,
+            Follow.is_delete == False,
+            Follow.followee_user_id.in_(list(playlist_owner_id_map.keys())),
         )
+        .group_by(Follow.followee_user_id)
         .all()
     )
-
     for (followee_user_id, follower_count) in follower_counts:
         if follower_count >= pt:
             owned_playlist_ids = playlist_owner_id_map[followee_user_id]

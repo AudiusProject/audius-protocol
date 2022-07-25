@@ -11,8 +11,7 @@ const config = require('../src/config')
 const {
   SyncType,
   RECONFIG_MODES,
-  QUEUE_NAMES,
-  SYNC_MODES
+  QUEUE_NAMES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 
 chai.use(require('sinon-chai'))
@@ -175,14 +174,12 @@ describe('test updateReplicaSet job processor', function () {
             primaryEndpoint: primary,
             secondaryEndpoint: secondary2,
             syncType: SyncType.Recurring,
-            syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
             userWallet: wallet
           },
           {
             primaryEndpoint: primary,
             secondaryEndpoint: fourthHealthyNode,
             syncType: SyncType.Recurring,
-            syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
             userWallet: wallet
           }
         ]

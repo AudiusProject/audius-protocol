@@ -4,9 +4,9 @@ const axios = require('axios')
 const retry = require('async-retry')
 
 const {
-  METRIC_RECORD_TYPE,
-  METRIC_NAMES,
-  METRIC_LABELS
+  MetricRecordType,
+  MetricNames,
+  MetricLabels
 } = require('../../services/prometheusMonitoring/prometheus.constants')
 const config = require('../../config')
 const { logger } = require('../../logging')
@@ -149,7 +149,7 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
  */
 const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
   return makeMetricToRecord(
-    METRIC_RECORD_TYPE.HISTOGRAM_OBSERVE,
+    MetricRecordType.HISTOGRAM_OBSERVE,
     metricName,
     metricValue,
     metricLabels
@@ -166,7 +166,7 @@ const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
  */
 const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
   return makeMetricToRecord(
-    METRIC_RECORD_TYPE.GAUGE_INC,
+    MetricRecordType.GAUGE_INC,
     metricName,
     incBy,
     metricLabels
@@ -187,21 +187,21 @@ const makeMetricToRecord = (
   metricValue,
   metricLabels = {}
 ) => {
-  if (!Object.values(METRIC_RECORD_TYPE).includes(metricType)) {
+  if (!Object.values(MetricRecordType).includes(metricType)) {
     throw new Error(`Invalid metricType: ${metricType}`)
   }
-  if (!Object.values(METRIC_NAMES).includes(metricName)) {
+  if (!Object.values(MetricNames).includes(metricName)) {
     throw new Error(`Invalid metricName: ${metricName}`)
   }
   if (typeof metricValue !== 'number') {
     throw new Error(`Invalid non-numerical metricValue: ${metricValue}`)
   }
-  const labelNames = Object.keys(METRIC_LABELS[metricName])
+  const labelNames = Object.keys(MetricLabels[metricName])
   for (const [labelName, labelValue] of Object.entries(metricLabels)) {
     if (!labelNames?.includes(labelName)) {
       throw new Error(`Metric label has invalid name: ${labelName}`)
     }
-    const labelValues = METRIC_LABELS[metricName][labelName]
+    const labelValues = MetricLabels[metricName][labelName]
     if (!labelValues?.includes(labelValue) && labelValues?.length !== 0) {
       throw new Error(`Metric label has invalid value: ${labelValue}`)
     }

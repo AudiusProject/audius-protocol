@@ -40,7 +40,6 @@
   "nodeSyncFileSaveMaxConcurrency": 10,
   "syncQueueMaxConcurrency": 50,
   "disableSnapback": true,
-  "mergePrimaryAndSecondaryEnabled": false,
   "stateMonitoringQueueRateLimitInterval": 60000,
   "stateMonitoringQueueRateLimitJobsPerInterval": 3
 }

@@ -1,10 +1,10 @@
 from datetime import date, timedelta
 
 from src.models.metrics.aggregate_daily_app_name_metrics import (
-    AggregateDailyAppNameMetric,
+    AggregateDailyAppNameMetrics,
 )
 from src.models.metrics.aggregate_monthly_app_name_metrics import (
-    AggregateMonthlyAppNameMetric,
+    AggregateMonthlyAppNameMetrics,
 )
 from src.queries.get_app_name_metrics import _get_aggregate_app_metrics
 from src.utils.db_session import get_db
@@ -21,28 +21,28 @@ def test_get_aggregate_app_metrics_week(app):
     with db_mock.scoped_session() as session:
         session.bulk_save_objects(
             [
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="will-not-return-because-too-old",
                     count=3,
                     timestamp=today - timedelta(days=8),
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="top-app",
                     count=4,
                     timestamp=yesterday - timedelta(days=1),
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="will-not-return-because-outside-limit",
                     count=1,
                     timestamp=yesterday,
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="best-app", count=5, timestamp=yesterday
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="top-app", count=3, timestamp=yesterday
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="will-not-return-because-too-recent",
                     count=3,
                     timestamp=today,
@@ -66,33 +66,33 @@ def test_get_aggregate_app_metrics_month(app):
     with db_mock.scoped_session() as session:
         session.bulk_save_objects(
             [
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="will-not-return-because-too-old",
                     count=20,
                     timestamp=today - timedelta(days=31),
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="best-app",
                     count=20,
                     timestamp=today - timedelta(days=31),
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="will-not-return-because-outside-limit",
                     count=1,
                     timestamp=yesterday,
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="top-app",
                     count=5,
                     timestamp=yesterday - timedelta(days=8),
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="best-app", count=5, timestamp=yesterday
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="top-app", count=7, timestamp=yesterday
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="will-not-return-because-too-recent",
                     count=20,
                     timestamp=today,
@@ -116,26 +116,26 @@ def test_get_aggregate_app_metrics_all_time(app):
     with db_mock.scoped_session() as session:
         session.bulk_save_objects(
             [
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="awesome-app",
                     count=6,
                     timestamp=today - timedelta(days=367),
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="will-not-return-because-outside-limit",
                     count=1,
                     timestamp=yesterday,
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="best-app", count=5, timestamp=yesterday
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="top-app", count=15, timestamp=yesterday
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="awesome-app", count=7, timestamp=yesterday
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="will-not-return-because-too-recent",
                     count=20,
                     timestamp=today,

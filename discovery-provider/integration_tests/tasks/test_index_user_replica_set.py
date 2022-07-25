@@ -11,7 +11,7 @@ from src.models.indexing.skipped_transaction import (
     SkippedTransaction,
     SkippedTransactionLevel,
 )
-from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.indexing.ursm_content_node import URSMContentNode
 from src.models.users.user import User
 from src.tasks.user_replica_set import user_replica_set_state_update
 from src.utils.db_session import get_db
@@ -77,6 +77,7 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
         txhash=blessed_user_tx_hash,
         user_id=1,
         name="tobey maguire",
+        is_creator=False,
         is_current=True,
         updated_at=test_timestamp,
         created_at=test_timestamp,
@@ -88,10 +89,11 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
         user_id=2,
         name="birb",
         is_current=None,
+        is_creator=None,
         updated_at=test_timestamp,
         created_at=None,
     )
-    blessed_content_node_record = UrsmContentNode(
+    blessed_content_node_record = URSMContentNode(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=blessed_cnode_tx_hash,
@@ -101,7 +103,7 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
         owner_wallet=test_wallet,
         created_at=test_timestamp,
     )
-    cursed_content_node_record = UrsmContentNode(
+    cursed_content_node_record = URSMContentNode(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=cursed_cnode_tx_hash,
@@ -199,6 +201,7 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
     )
 
     test_ipfs_metadata = {}
+    test_blacklisted_cids = {}
 
     with db.scoped_session() as session:
         try:
@@ -218,6 +221,7 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
                 test_block_timestamp,
                 block_hash,
                 test_ipfs_metadata,
+                test_blacklisted_cids,
             )
             assert len(updated_user_ids_set) == 1
             assert list(updated_user_ids_set)[0] == blessed_user_record.user_id
@@ -249,17 +253,17 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
                 .first()
             ) == None
             assert (
-                session.query(UrsmContentNode)
+                session.query(URSMContentNode)
                 .filter(
-                    UrsmContentNode.cnode_sp_id
+                    URSMContentNode.cnode_sp_id
                     == blessed_content_node_record.cnode_sp_id
                 )
                 .first()
             )
             assert (
-                session.query(UrsmContentNode)
+                session.query(URSMContentNode)
                 .filter(
-                    UrsmContentNode.cnode_sp_id
+                    URSMContentNode.cnode_sp_id
                     == cursed_content_node_record.cnode_sp_id
                 )
                 .first()

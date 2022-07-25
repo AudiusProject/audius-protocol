@@ -13,7 +13,7 @@ from src.models.indexing.block import Block
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
-from src.models.users.user_events import UserEvent
+from src.models.users.user_events import UserEvents
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
@@ -31,6 +31,7 @@ def create_user(offset: int) -> User:
         handle=f"TestHandle-{offset}",
         handle_lc=f"testhandle-{offset}",
         wallet="0x1",
+        is_creator=False,
         is_verified=False,
         name=f"test_name_{offset}",
         created_at=datetime.now(),
@@ -38,14 +39,13 @@ def create_user(offset: int) -> User:
     )
 
 
-def create_user_referral(referrer: int, referred_user_id: int) -> UserEvent:
-    return UserEvent(
+def create_user_referral(referrer: int, referred_user_id: int) -> UserEvents:
+    return UserEvents(
         user_id=referred_user_id,
         is_current=True,
         blocknumber=BLOCK_NUMBER,
         blockhash="0x1",
         referrer=referrer,
-        is_mobile_user=False,
     )
 
 
@@ -80,6 +80,7 @@ def test_referral_challenge(app):
         handle="Referrer",
         handle_lc="referrer",
         wallet="0x1",
+        is_creator=False,
         is_verified=False,
         name="referrer_name",
         created_at=datetime.now(),
@@ -196,6 +197,7 @@ def test_referral_challenge(app):
             handle="VerifiedReferrer",
             handle_lc="verifiedreferrer",
             wallet="0x1",
+            is_creator=False,
             is_verified=True,
             name="referrer_name",
             created_at=datetime.now(),

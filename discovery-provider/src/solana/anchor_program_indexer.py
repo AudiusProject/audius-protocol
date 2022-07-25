@@ -9,13 +9,14 @@ from solana.transaction import Transaction
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.indexing.audius_data_tx import AudiusDataTx
-from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.indexing.ursm_content_node import URSMContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.solana.anchor_parser import AnchorParser
 from src.solana.audius_data_transaction_handlers import ParsedTx, transaction_handlers
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_program_indexer import SolanaProgramIndexer
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.helpers import split_list
 from src.utils.session_manager import SessionManager
@@ -310,17 +311,18 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # TODO existing user records will be passed in
     async def fetch_cid_metadata(
         self, parsed_transactions: List[ParsedTx]
-    ) -> Dict[str, Dict]:
+    ) -> Tuple[Dict[str, Dict], Set[str]]:
         cid_to_user_id: Dict[str, int] = {}
         cids_txhash_set: Set[Tuple[str, str]] = set()
         cid_to_entity_type: Dict[str, str] = {}  # cid -> entity type track / user
+        blacklisted_cids: Set[str] = set()
         user_replica_set: Dict[int, str] = {}
 
         with self.db.scoped_session() as session:
             cnode_endpoint_dict = dict(
-                session.query(UrsmContentNode.cnode_sp_id, UrsmContentNode.endpoint)
+                session.query(URSMContentNode.cnode_sp_id, URSMContentNode.endpoint)
                 .filter(
-                    UrsmContentNode.is_current == True,
+                    URSMContentNode.is_current == True,
                 )
                 .all()
             )
@@ -335,24 +337,29 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     and "metadata" in instruction["data"]
                 ):
                     cid = instruction["data"]["metadata"]
-                    cids_txhash_set.add((cid, transaction["tx_sig"]))
-                    if "user" in instruction["instruction_name"]:
-                        cid_to_entity_type[cid] = "user"
-                        # TODO add logic to use existing user records: account -> endpoint
-                        user_id = instruction["data"]["user_id"]
-                        cid_to_user_id[cid] = user_id
-                        # new user case
-                        if "replica_set" in instruction["data"]:
-                            endpoints = []
-                            for sp_id in instruction["data"]["replica_set"]:
-                                endpoints.append(cnode_endpoint_dict[sp_id])
-                            user_replica_set[user_id] = ",".join(endpoints)
-                    elif instruction["instruction_name"] == "manage_entity":
-                        entity_type = instruction["data"]["entity_type"]
-                        if entity_type.Track == type(entity_type):
-                            cid_to_entity_type[cid] = "track"
-                            user_id = instruction["data"]["user_id_seed_bump"].user_id
+                    if is_blacklisted_ipld(session, cid):
+                        blacklisted_cids.add(cid)
+                    else:
+                        cids_txhash_set.add((cid, transaction["tx_sig"]))
+                        if "user" in instruction["instruction_name"]:
+                            cid_to_entity_type[cid] = "user"
+                            # TODO add logic to use existing user records: account -> endpoint
+                            user_id = instruction["data"]["user_id"]
                             cid_to_user_id[cid] = user_id
+                            # new user case
+                            if "replica_set" in instruction["data"]:
+                                endpoints = []
+                                for sp_id in instruction["data"]["replica_set"]:
+                                    endpoints.append(cnode_endpoint_dict[sp_id])
+                                user_replica_set[user_id] = ",".join(endpoints)
+                        elif instruction["instruction_name"] == "manage_entity":
+                            entity_type = instruction["data"]["entity_type"]
+                            if entity_type.Track == type(entity_type):
+                                cid_to_entity_type[cid] = "track"
+                                user_id = instruction["data"][
+                                    "user_id_seed_bump"
+                                ].user_id
+                                cid_to_user_id[cid] = user_id
 
             # TODO use existing user records instead of querying here
             user_replica_set.update(
@@ -382,4 +389,4 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
 
         # TODO maybe add some more validation
         # check if track metadata's owner and instruction's user ID matches up?
-        return metadata_dict
+        return metadata_dict, blacklisted_cids

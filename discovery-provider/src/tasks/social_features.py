@@ -9,6 +9,7 @@ from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
+from src.tasks.index_related_artists import queue_related_artist_calculation
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ def social_feature_state_update(
     block_timestamp,
     block_hash,
     _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _blacklisted_cids,
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of social feature related state changes in this transaction and empty Set (to align with other _state_update function signatures)"""
     empty_set: Set[int] = set()
@@ -142,6 +144,7 @@ def social_feature_state_update(
             follow = followee_user_ids[followee_user_id]
             session.add(follow)
             dispatch_challenge_follow(challenge_bus, follow, block_number)
+            queue_related_artist_calculation(update_task.redis, followee_user_id)
         num_total_changes += len(followee_user_ids)
     return num_total_changes, empty_set
 

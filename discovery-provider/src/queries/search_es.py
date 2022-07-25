@@ -365,11 +365,16 @@ def personalize_dsl(dsl, current_user_id, must_saved):
 def default_function_score(dsl, ranking_field):
     return {
         "query": {
-            "script_score": {
+            "function_score": {
                 "query": {"bool": dsl},
-                "script": {
-                    "source": f" Math.log(Math.max(doc['{ranking_field}'].value, 0) + 2)"
-                },
+                "functions": [
+                    {
+                        "field_value_factor": {
+                            "field": ranking_field,
+                            "modifier": "ln2p",
+                        }
+                    },
+                ],
             }
         },
     }

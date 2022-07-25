@@ -22,39 +22,18 @@ import {
     FavoritesResponse,
     FavoritesResponseFromJSON,
     FavoritesResponseToJSON,
-    FollowersResponse,
-    FollowersResponseFromJSON,
-    FollowersResponseToJSON,
-    FollowingResponse,
-    FollowingResponseFromJSON,
-    FollowingResponseToJSON,
-    GetSupporter,
-    GetSupporterFromJSON,
-    GetSupporterToJSON,
     GetSupporters,
     GetSupportersFromJSON,
     GetSupportersToJSON,
     GetSupporting,
     GetSupportingFromJSON,
     GetSupportingToJSON,
-    HistoryResponse,
-    HistoryResponseFromJSON,
-    HistoryResponseToJSON,
-    RelatedArtistResponse,
-    RelatedArtistResponseFromJSON,
-    RelatedArtistResponseToJSON,
     Reposts,
     RepostsFromJSON,
     RepostsToJSON,
     TagsResponse,
     TagsResponseFromJSON,
     TagsResponseToJSON,
-    TopGenreUsersResponse,
-    TopGenreUsersResponseFromJSON,
-    TopGenreUsersResponseToJSON,
-    TopUsersResponse,
-    TopUsersResponseFromJSON,
-    TopUsersResponseToJSON,
     TracksResponse,
     TracksResponseFromJSON,
     TracksResponseToJSON,
@@ -86,59 +65,6 @@ export interface GetFavoritesRequest {
     id: string;
 }
 
-export interface GetFollowersRequest {
-    /**
-     * A User ID
-     */
-    id: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
-export interface GetFollowingsRequest {
-    /**
-     * A User ID
-     */
-    id: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
-export interface GetRelatedUsersRequest {
-    /**
-     * A User ID
-     */
-    id: string;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
 export interface GetRepostsRequest {
     /**
      * A User ID
@@ -158,40 +84,6 @@ export interface GetRepostsRequest {
     userId?: string;
 }
 
-export interface GetRepostsByHandleRequest {
-    /**
-     * A User handle
-     */
-    handle: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
-export interface GetSupporterRequest {
-    /**
-     * A User ID
-     */
-    id: string;
-    /**
-     * A User ID of a supporter
-     */
-    supporterUserId: string;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
 export interface GetSupportersRequest {
     /**
      * A User ID
@@ -205,21 +97,6 @@ export interface GetSupportersRequest {
      * The number of items to fetch
      */
     limit?: number;
-}
-
-export interface GetSupportingRequest {
-    /**
-     * A User ID
-     */
-    id: string;
-    /**
-     * A User ID of a supported user
-     */
-    supportedUserId: string;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
 }
 
 export interface GetSupportingsRequest {
@@ -252,36 +129,6 @@ export interface GetTopTrackTagsRequest {
     userId?: string;
 }
 
-export interface GetTopUsersRequest {
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
-export interface GetTopUsersInGenreRequest {
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * List of Genres
-     */
-    genre?: Array<string>;
-}
-
 export interface GetTracksByUserRequest {
     /**
      * A User ID
@@ -305,29 +152,6 @@ export interface GetTracksByUserRequest {
     sort?: GetTracksByUserSortEnum;
 }
 
-export interface GetTracksByUserHandleRequest {
-    /**
-     * A User handle
-     */
-    handle: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-    /**
-     * Field to sort by
-     */
-    sort?: GetTracksByUserHandleSortEnum;
-}
-
 export interface GetUserRequest {
     /**
      * A User ID
@@ -335,41 +159,11 @@ export interface GetUserRequest {
     id: string;
 }
 
-export interface GetUserByHandleRequest {
-    /**
-     * A User handle
-     */
-    handle: string;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
 export interface GetUserIDFromWalletRequest {
     /**
      * Wallet address
      */
     associatedWallet: string;
-}
-
-export interface GetUsersTrackHistoryRequest {
-    /**
-     * A User ID
-     */
-    id: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
 }
 
 export interface SearchUsersRequest {
@@ -432,98 +226,6 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * All users that follow the provided user
-     */
-    async getFollowers(requestParameters: GetFollowersRequest): Promise<NonNullable<FollowersResponse["data"]>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowers.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/{id}/followers`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FollowersResponse["data"]>>;
-    }
-
-    /**
-     * All users that the provided user follows
-     */
-    async getFollowings(requestParameters: GetFollowingsRequest): Promise<NonNullable<FollowingResponse["data"]>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowings.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/{id}/following`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FollowingResponse["data"]>>;
-    }
-
-    /**
-     * Gets a list of users that might be of interest to followers of this user.
-     */
-    async getRelatedUsers(requestParameters: GetRelatedUsersRequest): Promise<NonNullable<RelatedArtistResponse["data"]>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getRelatedUsers.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/{id}/related`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<RelatedArtistResponse["data"]>>;
-    }
-
-    /**
      * Gets the given user\'s reposts
      */
     async getReposts(requestParameters: GetRepostsRequest): Promise<NonNullable<Reposts["data"]>> {
@@ -556,66 +258,6 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the user\'s reposts by the user handle
-     */
-    async getRepostsByHandle(requestParameters: GetRepostsByHandleRequest): Promise<NonNullable<Reposts["data"]>> {
-        if (requestParameters.handle === null || requestParameters.handle === undefined) {
-            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getRepostsByHandle.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/handle/{handle}/reposts`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<Reposts["data"]>>;
-    }
-
-    /**
-     * Gets the specified supporter of the given user
-     */
-    async getSupporter(requestParameters: GetSupporterRequest): Promise<NonNullable<GetSupporter["data"]>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporter.');
-        }
-
-        if (requestParameters.supporterUserId === null || requestParameters.supporterUserId === undefined) {
-            throw new runtime.RequiredError('supporterUserId','Required parameter requestParameters.supporterUserId was null or undefined when calling getSupporter.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/{id}/supporters/{supporter_user_id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))).replace(`{${"supporter_user_id"}}`, encodeURIComponent(String(requestParameters.supporterUserId))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<GetSupporter["data"]>>;
-    }
-
-    /**
      * Gets the supporters of the given user
      */
     async getSupporters(requestParameters: GetSupportersRequest): Promise<NonNullable<GetSupporters["data"]>> {
@@ -641,34 +283,6 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<GetSupporters["data"]>>;
-    }
-
-    /**
-     * Gets the support from the given user to the supported user
-     */
-    async getSupporting(requestParameters: GetSupportingRequest): Promise<NonNullable<GetSupporting["data"]>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporting.');
-        }
-
-        if (requestParameters.supportedUserId === null || requestParameters.supportedUserId === undefined) {
-            throw new runtime.RequiredError('supportedUserId','Required parameter requestParameters.supportedUserId was null or undefined when calling getSupporting.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/{id}/supporting/{supported_user_id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))).replace(`{${"supported_user_id"}}`, encodeURIComponent(String(requestParameters.supportedUserId))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<GetSupporting["data"]>>;
     }
 
     /**
@@ -729,62 +343,6 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get the Top Users having at least one track by follower count
-     */
-    async getTopUsers(requestParameters: GetTopUsersRequest = {}): Promise<NonNullable<TopUsersResponse["data"]>> {
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/top`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<TopUsersResponse["data"]>>;
-    }
-
-    /**
-     * Get the Top Users for a Given Genre
-     */
-    async getTopUsersInGenre(requestParameters: GetTopUsersInGenreRequest = {}): Promise<NonNullable<TopGenreUsersResponse["data"]>> {
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.genre) {
-            queryParameters['genre'] = requestParameters.genre;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/genre/top`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<TopGenreUsersResponse["data"]>>;
-    }
-
-    /**
      * Gets the tracks created by a user using their user ID
      */
     async getTracksByUser(requestParameters: GetTracksByUserRequest): Promise<NonNullable<TracksResponse["data"]>> {
@@ -821,42 +379,6 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the tracks created by a user using the user\'s handle
-     */
-    async getTracksByUserHandle(requestParameters: GetTracksByUserHandleRequest): Promise<NonNullable<TracksResponse["data"]>> {
-        if (requestParameters.handle === null || requestParameters.handle === undefined) {
-            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getTracksByUserHandle.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        if (requestParameters.sort !== undefined) {
-            queryParameters['sort'] = requestParameters.sort;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/handle/{handle}/tracks`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<TracksResponse["data"]>>;
-    }
-
-    /**
      * Gets a single user by their user ID
      */
     async getUser(requestParameters: GetUserRequest): Promise<NonNullable<UserResponse["data"]>> {
@@ -870,30 +392,6 @@ export class UsersApi extends runtime.BaseAPI {
 
         return this.request({
             path: `/users/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<UserResponse["data"]>>;
-    }
-
-    /**
-     * Gets a single user by their handle
-     */
-    async getUserByHandle(requestParameters: GetUserByHandleRequest): Promise<NonNullable<UserResponse["data"]>> {
-        if (requestParameters.handle === null || requestParameters.handle === undefined) {
-            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getUserByHandle.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/handle/{handle}`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -922,38 +420,6 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<UserAssociatedWalletResponse["data"]>>;
-    }
-
-    /**
-     * Get the tracks the user recently listened to.
-     */
-    async getUsersTrackHistory(requestParameters: GetUsersTrackHistoryRequest): Promise<NonNullable<HistoryResponse["data"]>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUsersTrackHistory.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/{id}/history/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<HistoryResponse["data"]>>;
     }
 
     /**
@@ -1011,14 +477,6 @@ export class UsersApi extends runtime.BaseAPI {
     * @enum {string}
     */
 export enum GetTracksByUserSortEnum {
-    Date = 'date',
-    Plays = 'plays'
-}
-/**
-    * @export
-    * @enum {string}
-    */
-export enum GetTracksByUserHandleSortEnum {
     Date = 'date',
     Plays = 'plays'
 }

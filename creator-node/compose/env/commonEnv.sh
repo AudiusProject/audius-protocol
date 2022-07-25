@@ -6,4 +6,3 @@ export creatorNodeEndpoint=CREATOR_NODE_ENDPOINT
 export spOwnerWallet=SP_OWNER_WALLET
 export COMPOSE_HTTP_TIMEOUT=200
 export printSequelizeLogs=true
-export contentCacheLayerEnabled=false

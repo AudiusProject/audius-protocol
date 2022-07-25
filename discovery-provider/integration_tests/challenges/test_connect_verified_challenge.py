@@ -31,6 +31,7 @@ def test_connect_verified_challenge(app):
         handle="TestHandle",
         handle_lc="testhandle",
         wallet="0x1",
+        is_creator=False,
         is_verified=False,
         name="test_name",
         created_at=datetime.now(),

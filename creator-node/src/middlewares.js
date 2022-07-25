@@ -16,9 +16,6 @@ const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
 const BlacklistManager = require('./blacklistManager')
-const {
-  issueSyncRequestsUntilSynced
-} = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -87,6 +84,27 @@ async function authMiddleware(req, res, next) {
     cnodeUserUUID: cnodeUserUUID,
     userId
   }
+  next()
+}
+
+/** Ensure resource write access */
+async function syncLockMiddleware(req, res, next) {
+  if (req.session && req.session.wallet) {
+    const redisClient = req.app.get('redisClient')
+    const redisKey = redisClient.getNodeSyncRedisKey(req.session.wallet)
+    const lockHeld = await redisClient.lock.getLock(redisKey)
+    if (lockHeld) {
+      return sendResponse(
+        req,
+        res,
+        errorResponse(
+          423,
+          `Cannot change state of wallet ${req.session.wallet}. Node sync currently in progress.`
+        )
+      )
+    }
+  }
+  req.logger.info(`syncLockMiddleware succeeded`)
   next()
 }
 
@@ -247,84 +265,33 @@ async function ensureStorageMiddleware(req, res, next) {
 }
 
 /**
- * Issue sync requests to both secondaries, and wait for at least one to sync before returning.
- * If write quorum is enforced (determined by header + env var + ignoreWriteQuorum param) and no secondary
- * completes a sync in time, then the function throws an error.
- *
- * Order of precedence for determining if write quorum is enforced:
- * - If ignoreWriteQuorum param is passed, don't enforce write quorum regardless of header or env var
- * - If client passes Enforce-Write-Quorum header as false, don't enforce write quorum regardless of the enforceWriteQuorum env var
- * - If client passes Enforce-Write-Quorum header as true, enforce write quorum regardless of the enforceWriteQuorum env var
- * - If client doesn't pass Enforce-Write-Quorum header, enforce write quorum if enforceWriteQuorum env var is true
- *
- * @dev TODO - move out of middlewares layer because it's not used as middleware -- just as a function some routes call
- * @param ignoreWriteQuorum true if write quorum should not be enforced (don't fail the request if write quorum fails)
+ * Issue SyncRequests to both secondaries, and wait for at least one to sync before returning
+ * @dev TODO - move out of middlewares layer
  */
-async function issueAndWaitForSecondarySyncRequests(
-  req,
-  ignoreWriteQuorum = false
-) {
-  const route = req.url.split('?')[0]
+async function issueAndWaitForSecondarySyncRequests(req) {
   const serviceRegistry = req.app.get('serviceRegistry')
-  const { manualSyncQueue, prometheusRegistry } = serviceRegistry
-
-  const histogram = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM
-  )
-  const endHistogramTimer = histogram.startTimer()
+  const { snapbackSM } = serviceRegistry
 
   // Parse request headers
   const pollingDurationMs =
     req.header('Polling-Duration-ms') ||
     config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
-  const enforceWriteQuorumHeader = req.header('Enforce-Write-Quorum')
-  const writeQuorumHeaderTrue =
-    enforceWriteQuorumHeader === true || enforceWriteQuorumHeader === 'true'
-  const writeQuorumHeaderFalse =
-    enforceWriteQuorumHeader === false || enforceWriteQuorumHeader === 'false'
-  const writeQuorumHeaderEmpty =
-    !writeQuorumHeaderFalse || enforceWriteQuorumHeader === 'null'
-  let enforceWriteQuorum = false
+  const enforceWriteQuorum =
+    req.header('Enforce-Write-Quorum') || config.get('enforceWriteQuorum')
 
-  if (!ignoreWriteQuorum) {
-    if (writeQuorumHeaderTrue) enforceWriteQuorum = true
-    // writeQuorumHeaderEmpty is for undefined/null/empty values where it's not explicitly false
-    else if (writeQuorumHeaderEmpty && config.get('enforceWriteQuorum')) {
-      enforceWriteQuorum = true
-    }
-  }
-
-  // This sync request uses the manual sync queue, so we can't proceed if manual syncs are disabled
   if (config.get('manualSyncsDisabled')) {
-    endHistogramTimer({
-      enforceWriteQuorum: String(enforceWriteQuorum),
-      ignoreWriteQuorum: String(ignoreWriteQuorum),
-      route,
-      result: 'failed_short_circuit'
-    })
-    const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Cannot proceed due to manualSyncsDisabled ${config.get(
-      'manualSyncsDisabled'
-    )})`
-    req.logger.error(errorMsg)
-    if (enforceWriteQuorum) {
-      throw new Error(errorMsg)
-    }
+    req.logger.info(
+      `issueAndWaitForSecondarySyncRequests - Cannot proceed due to manualSyncsDisabled ${config.get(
+        'manualSyncsDisabled'
+      )})`
+    )
     return
   }
 
-  // Wallet is required and should've been set in auth middleware
   if (!req.session || !req.session.wallet) {
-    endHistogramTimer({
-      enforceWriteQuorum: String(enforceWriteQuorum),
-      ignoreWriteQuorum: String(ignoreWriteQuorum),
-      route,
-      result: 'failed_short_circuit'
-    })
-    const errorMsg = `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
-    req.logger.error(errorMsg)
-    if (enforceWriteQuorum) {
-      throw new Error(errorMsg)
-    }
+    req.logger.error(
+      `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
+    )
     return
   }
   const wallet = req.session.wallet
@@ -335,18 +302,9 @@ async function issueAndWaitForSecondarySyncRequests(
       !req.session.creatorNodeEndpoints ||
       !Array.isArray(req.session.creatorNodeEndpoints)
     ) {
-      endHistogramTimer({
-        enforceWriteQuorum: String(enforceWriteQuorum),
-        ignoreWriteQuorum: String(ignoreWriteQuorum),
-        route,
-        result: 'failed_short_circuit'
-      })
-      const errorMsg =
-        'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
-      req.logger.error(errorMsg)
-      if (enforceWriteQuorum) {
-        throw new Error(errorMsg)
-      }
+      req.logger.info(
+        'issueAndWaitForSecondarySyncRequests - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints.'
+      )
       return
     }
 
@@ -356,12 +314,6 @@ async function issueAndWaitForSecondarySyncRequests(
     )
 
     if (primary !== config.get('creatorNodeEndpoint')) {
-      endHistogramTimer({
-        enforceWriteQuorum: String(enforceWriteQuorum),
-        ignoreWriteQuorum: String(ignoreWriteQuorum),
-        route,
-        result: 'failed_short_circuit'
-      })
       throw new Error(
         `issueAndWaitForSecondarySyncRequests Error - Cannot process sync op since this node is not the primary for user ${wallet}. Instead found ${primary}.`
       )
@@ -372,12 +324,6 @@ async function issueAndWaitForSecondarySyncRequests(
       where: { walletPublicKey: wallet }
     })
     if (!cnodeUser || !cnodeUser.clock) {
-      endHistogramTimer({
-        enforceWriteQuorum: String(enforceWriteQuorum),
-        ignoreWriteQuorum: String(ignoreWriteQuorum),
-        route,
-        result: 'failed_short_circuit'
-      })
       throw new Error(
         `issueAndWaitForSecondarySyncRequests Error - Failed to retrieve current clock value for user ${wallet} on current node.`
       )
@@ -387,13 +333,11 @@ async function issueAndWaitForSecondarySyncRequests(
     const replicationStart = Date.now()
     try {
       const secondaryPromises = secondaries.map((secondary) => {
-        return issueSyncRequestsUntilSynced(
-          primary,
+        return snapbackSM.issueSyncRequestsUntilSynced(
           secondary,
           wallet,
           primaryClockVal,
-          pollingDurationMs,
-          manualSyncQueue
+          pollingDurationMs
         )
       })
 
@@ -405,19 +349,7 @@ async function issueAndWaitForSecondarySyncRequests(
           Date.now() - replicationStart
         }ms`
       )
-      endHistogramTimer({
-        enforceWriteQuorum: String(enforceWriteQuorum),
-        ignoreWriteQuorum: String(ignoreWriteQuorum),
-        route,
-        result: 'succeeded'
-      })
     } catch (e) {
-      endHistogramTimer({
-        enforceWriteQuorum: String(enforceWriteQuorum),
-        ignoreWriteQuorum: String(ignoreWriteQuorum),
-        route,
-        result: 'failed_sync'
-      })
       const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
         Date.now() - replicationStart
       }ms`
@@ -432,12 +364,6 @@ async function issueAndWaitForSecondarySyncRequests(
 
     // If any error during replication, error if quorum is enforced
   } catch (e) {
-    endHistogramTimer({
-      enforceWriteQuorum: String(enforceWriteQuorum),
-      ignoreWriteQuorum: String(ignoreWriteQuorum),
-      route,
-      result: 'failed_uncaught_error'
-    })
     req.logger.error(
       `issueAndWaitForSecondarySyncRequests Error - wallet ${wallet} ||`,
       e.message
@@ -527,13 +453,15 @@ async function getOwnEndpoint({ libs }) {
  * @returns {Array} - array of strings of replica set
  */
 async function getCreatorNodeEndpoints({
-  libs,
+  serviceRegistry,
   logger,
   wallet,
   blockNumber,
   ensurePrimary,
   myCnodeEndpoint
 }) {
+  const { libs } = serviceRegistry
+
   logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
   const start = Date.now()
 
@@ -942,6 +870,7 @@ module.exports = {
   ensureValidSPMiddleware,
   ensureAppIsOnline,
   issueAndWaitForSecondarySyncRequests,
+  syncLockMiddleware,
   getOwnEndpoint,
   getCreatorNodeEndpoints
 }

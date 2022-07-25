@@ -8,7 +8,11 @@ const _ = require('lodash')
 const config = require('../config')
 const models = require('../models')
 const sequelize = models.sequelize
-const { authMiddleware, ensureStorageMiddleware } = require('../middlewares')
+const {
+  authMiddleware,
+  syncLockMiddleware,
+  ensureStorageMiddleware
+} = require('../middlewares')
 const {
   handleResponse,
   successResponse,
@@ -148,6 +152,7 @@ module.exports = function (app) {
   app.post(
     '/users/logout',
     authMiddleware,
+    syncLockMiddleware,
     handleResponse(async (req, res, next) => {
       await sessionManager.deleteSession(
         req.get(sessionManager.sessionTokenHeader)
@@ -216,13 +221,15 @@ module.exports = function (app) {
       async function isSyncInProgress() {
         let syncInProgress = false
         try {
-          syncInProgress = await redisClient.WalletWriteLock.syncIsInProgress(
-            walletPublicKey
+          const lockHeld = await redisClient.lock.getLock(
+            redisClient.getNodeSyncRedisKey(walletPublicKey)
           )
+          if (lockHeld) {
+            syncInProgress = true
+          }
         } catch (e) {
           // Swallow error, leave syncInProgress unset
         }
-
         response.syncInProgress = syncInProgress
       }
 

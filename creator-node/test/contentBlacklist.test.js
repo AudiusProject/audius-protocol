@@ -1046,7 +1046,6 @@ describe('test ContentBlacklist', function () {
       .post('/audius_users/metadata')
       .set('X-Session-ID', sessionToken)
       .set('User-Id', inputUserId)
-      .set('Enforce-Write-Quorum', false)
       .send(metadata)
 
     const associateRequest = {
@@ -1089,7 +1088,6 @@ describe('test ContentBlacklist', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', sessionToken)
       .set('User-Id', inputUserId)
-      .set('Enforce-Write-Quorum', false)
       .send({ metadata: trackMetadata, source_file: sourceFile })
     // associate track metadata with track
     await request(app)

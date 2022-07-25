@@ -46,6 +46,12 @@ describe('Users tests', () => {
                 blockNumber: 4,
                 blockHash: '0x4'
               }
+            }),
+            updateIsCreator: async () => ({
+              txReceipt: {
+                blockNumber: 2,
+                blockHash: '0x2'
+              }
             })
           }
         },
@@ -65,7 +71,8 @@ describe('Users tests', () => {
       [Users.USER_PROP_NAME_CONSTANTS.LOCATION]: 'Winterfell',
       [Users.USER_PROP_NAME_CONSTANTS.BIO]: 'King in the North',
       [Users.USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo',
-      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo'
+      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo',
+      [Users.USER_PROP_NAME_CONSTANTS.IS_CREATOR]: true
     }
     const {
       latestBlockNumber,
@@ -118,6 +125,12 @@ describe('Users tests', () => {
                 blockNumber: 4,
                 blockHash: '0x4'
               }
+            }),
+            updateIsCreator: async () => ({
+              txReceipt: {
+                blockNumber: 2,
+                blockHash: '0x2'
+              }
             })
           }
         },
@@ -137,7 +150,8 @@ describe('Users tests', () => {
       [Users.USER_PROP_NAME_CONSTANTS.LOCATION]: 'Winterfell',
       [Users.USER_PROP_NAME_CONSTANTS.BIO]: 'King in the North',
       [Users.USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo',
-      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo'
+      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo',
+      [Users.USER_PROP_NAME_CONSTANTS.IS_CREATOR]: true
     }
     const newMetadata = {
       [Users.USER_PROP_NAME_CONSTANTS.NAME]: 'Jon Snow',
@@ -145,7 +159,8 @@ describe('Users tests', () => {
       // Does not change
       [Users.USER_PROP_NAME_CONSTANTS.BIO]: 'King in the North',
       [Users.USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWf',
-      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWf'
+      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWf',
+      [Users.USER_PROP_NAME_CONSTANTS.IS_CREATOR]: true
     }
     const {
       latestBlockNumber,

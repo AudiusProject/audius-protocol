@@ -14,6 +14,7 @@ const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const validateMetadata = require('../utils/validateAudiusUserMetadata')
 const {
   authMiddleware,
+  syncLockMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   issueAndWaitForSecondarySyncRequests
@@ -31,6 +32,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
+    syncLockMiddleware,
     handleResponse(async (req, res) => {
       const metadataJSON = req.body.metadata
       const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -75,8 +77,8 @@ module.exports = function (app) {
         return errorResponseServerError(`Could not save to db: ${e}`)
       }
 
-      // Await 2/3 write quorum (replicating data to at least 1 secondary)
-      await issueAndWaitForSecondarySyncRequests(req)
+      // This call is not await-ed to avoid delaying or erroring
+      issueAndWaitForSecondarySyncRequests(req)
 
       return successResponse({
         metadataMultihash: multihash,
@@ -94,6 +96,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
+    syncLockMiddleware,
     handleResponse(async (req, res) => {
       const { blockchainUserId, blockNumber, metadataFileUUID } = req.body
 
@@ -173,8 +176,7 @@ module.exports = function (app) {
 
         await transaction.commit()
 
-        // Discovery only indexes metadata and not files, so we eagerly replicate data but don't await it
-        issueAndWaitForSecondarySyncRequests(req, true)
+        await issueAndWaitForSecondarySyncRequests(req)
 
         return successResponse()
       } catch (e) {

@@ -5,8 +5,7 @@ const {
   SyncType,
   RECONFIG_MODES,
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
-  QUEUE_NAMES,
-  SYNC_MODES
+  QUEUE_NAMES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
@@ -537,8 +536,7 @@ const _issueUpdateReplicaSetOp = async (
         userWallet: wallet,
         primaryEndpoint: newPrimary,
         secondaryEndpoint: newSecondary1,
-        syncType: SyncType.Recurring,
-        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+        syncType: SyncType.Recurring
       })
     if (!_.isEmpty(duplicateSyncReq)) {
       logger.warn(
@@ -556,8 +554,7 @@ const _issueUpdateReplicaSetOp = async (
       userWallet: wallet,
       primaryEndpoint: newPrimary,
       secondaryEndpoint: newSecondary2,
-      syncType: SyncType.Recurring,
-      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+      syncType: SyncType.Recurring
     })
     if (!_.isEmpty(duplicateSyncReq2)) {
       logger.warn(

@@ -12,10 +12,10 @@ from src.models.indexing.skipped_transaction import (
 )
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
-from src.models.users.user_events import UserEvent
+from src.models.users.user_events import UserEvents
 from src.tasks.metadata import user_metadata_format
 from src.tasks.users import (
-    UserEventMetadata,
+    UserEventsMetadata,
     lookup_user_record,
     parse_user_event,
     update_user_events,
@@ -115,6 +115,14 @@ def get_update_name_event():
     return event_type, AttrDict({"blockHash": block_hash, "args": update_name_event})
 
 
+def get_update_is_creator_event():
+    event_type = user_event_types_lookup["update_is_creator"]
+    update_is_creator_event = AttrDict({"_userId": 1, "_isCreator": True})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": update_is_creator_event}
+    )
+
+
 def get_update_creator_node_endpoint_event():
     event_type = user_event_types_lookup["update_creator_node_endpoint"]
     update_creator_node_endpoint_event = AttrDict(
@@ -138,6 +146,7 @@ multihash = helpers.multihash_digest_to_cid(
 cid_metadata_client = CIDMetadataClient(
     {
         multihash: {
+            "is_creator": True,
             "is_verified": False,
             "name": "raymont",
             "handle": "rayjacobson",
@@ -299,6 +308,28 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         # add_user should be updated fields: handle, handle_lc, wallet
         assert user_record.location == helpers.bytes32_to_str(entry.args._location)
+
+        # ================== Test Update User is Creator Event ==================
+        event_type, entry = get_update_is_creator_event()
+
+        # `is_creator` field is none by default
+        assert user_record.is_creator == None
+
+        parse_user_event(
+            None,  # self - not used
+            update_task,  # only need the ipfs client for get_metadata
+            session,
+            None,  # tx_receipt - not used
+            block_number,  # not used
+            entry,  # Contains the event args used for updating
+            event_type,  # String that should one of user_event_types_lookup
+            user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
+            block_timestamp,  # Used to update the user.updated_at field
+        )
+
+        # add_user should be updated fields: handle, handle_lc, wallet
+        assert user_record.is_creator == entry.args._isCreator
 
         # ================== Test Update User Name Event ==================
         event_type, entry = get_update_name_event()
@@ -496,7 +527,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
         assert len(associated_sol_wallets) == len(ipfs_associated_sol_wallets)
 
         user_events = (
-            session.query(UserEvent)
+            session.query(UserEvents)
             .filter_by(user_id=user_record.user_id, is_current=True)
             .first()
         )
@@ -521,7 +552,7 @@ def test_self_referrals(bus_mock: mock.MagicMock, app):
         bus_mock(redis)
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
-        events: UserEventMetadata = {"referrer": 1}
+        events: UserEventsMetadata = {"referrer": 1}
         update_user_events(session, user, events, bus_mock)
         mock_call = mock.call.dispatch(
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
@@ -571,6 +602,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         txhash=blessed_tx_hash,
         user_id=91232,
         name="tobey maguire",
+        is_creator=False,
         is_current=True,
         updated_at=test_timestamp,
         created_at=test_timestamp,
@@ -583,6 +615,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         name="birbs",
         # Bad fields
         is_current=None,  # type: ignore
+        is_creator=None,  # type: ignore
         updated_at=None,  # type: ignore
         created_at=None,  # type: ignore
     )
@@ -613,6 +646,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
             [],
             [],
             [],
+            [],
             [],  # second tx receipt
             [],
             [
@@ -631,10 +665,12 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
             [],
             [],
             [],
+            [],
         ],
         autospec=True,
     )
     test_ipfs_metadata: Dict[str, Any] = {}
+    test_blacklisted_cids: Dict[str, Any] = {}
 
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         try:
@@ -654,6 +690,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                 test_block_timestamp,
                 block_hash,
                 test_ipfs_metadata,
+                test_blacklisted_cids,
             )
             assert len(updated_user_ids_set) == 1
             assert list(updated_user_ids_set)[0] == blessed_user_record.user_id

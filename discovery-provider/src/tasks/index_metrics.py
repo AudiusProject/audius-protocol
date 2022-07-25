@@ -4,8 +4,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
-from src.models.metrics.app_name_metrics import AppNameMetric
-from src.models.metrics.route_metrics import RouteMetric
+from src.models.metrics.app_name_metrics import AppNameMetrics
+from src.models.metrics.route_metrics import RouteMetrics
 from src.queries.update_historical_metrics import (
     update_historical_daily_app_metrics,
     update_historical_daily_route_metrics,
@@ -15,11 +15,7 @@ from src.queries.update_historical_metrics import (
 from src.tasks.celery_app import celery
 from src.utils.get_all_other_nodes import get_all_other_nodes
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.utils.prometheus_metric import (
-    PrometheusMetric,
-    PrometheusMetricNames,
-    save_duration_metric,
-)
+from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
 from src.utils.redis_metrics import (
     METRICS_INTERVAL,
     datetime_format_secondary,
@@ -72,7 +68,7 @@ def process_route_keys(session, redis, key, ip, date):
                 path = route_query[0]
                 query_string = route_query[1]
             route_metrics.append(
-                RouteMetric(
+                RouteMetrics(
                     version=version,
                     route_path=path,
                     query_string=query_string,
@@ -102,7 +98,7 @@ def process_app_name_keys(session, redis, key, ip, date):
             val = int(app_names[key_bstr].decode("utf-8"))
 
             app_name_metrics.append(
-                AppNameMetric(
+                AppNameMetrics(
                     application_name=app_name, count=val, ip=ip, timestamp=date
                 )
             )
@@ -418,7 +414,9 @@ def update_metrics(self):
                 f"index_metrics.py | update_metrics | {self.request.id} | Acquired update_metrics_lock"
             )
             metric = PrometheusMetric(
-                PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
+                "index_metrics_duration_seconds",
+                "Runtimes for src.task.index_metrics:celery.task()",
+                ("task_name",),
             )
             sweep_metrics(db, redis)
             refresh_metrics_matviews(db)
@@ -460,7 +458,9 @@ def aggregate_metrics(self):
                 f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock"
             )
             metric = PrometheusMetric(
-                PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
+                "index_metrics_duration_seconds",
+                "Runtimes for src.task.index_metrics:celery.task()",
+                ("task_name",),
             )
             consolidate_metrics_from_other_nodes(self, db, redis)
             metric.save_time({"task_name": "aggregate_metrics"})
@@ -503,7 +503,9 @@ def synchronize_metrics(self):
                 f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock"
             )
             metric = PrometheusMetric(
-                PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
+                "index_metrics_duration_seconds",
+                "Runtimes for src.task.index_metrics:celery.task()",
+                ("task_name",),
             )
             synchronize_all_node_metrics(self, db)
             metric.save_time({"task_name": "synchronize_metrics"})

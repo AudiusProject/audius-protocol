@@ -19,12 +19,12 @@ import {
     FavoritesResponseFull,
     FavoritesResponseFullFromJSON,
     FavoritesResponseFullToJSON,
-    FollowingResponseFull,
-    FollowingResponseFullFromJSON,
-    FollowingResponseFullToJSON,
-    FullFollowersResponse,
-    FullFollowersResponseFromJSON,
-    FullFollowersResponseToJSON,
+    FollowersResponse,
+    FollowersResponseFromJSON,
+    FollowersResponseToJSON,
+    FollowingResponse,
+    FollowingResponseFromJSON,
+    FollowingResponseToJSON,
     FullGetSupporter,
     FullGetSupporterFromJSON,
     FullGetSupporterToJSON,
@@ -46,15 +46,15 @@ import {
     HistoryResponseFull,
     HistoryResponseFullFromJSON,
     HistoryResponseFullToJSON,
-    RelatedArtistResponseFull,
-    RelatedArtistResponseFullFromJSON,
-    RelatedArtistResponseFullToJSON,
-    TopGenreUsersResponseFull,
-    TopGenreUsersResponseFullFromJSON,
-    TopGenreUsersResponseFullToJSON,
-    TopUsersResponseFull,
-    TopUsersResponseFullFromJSON,
-    TopUsersResponseFullToJSON,
+    RelatedArtistResponse,
+    RelatedArtistResponseFromJSON,
+    RelatedArtistResponseToJSON,
+    TopGenreUsersResponse,
+    TopGenreUsersResponseFromJSON,
+    TopGenreUsersResponseToJSON,
+    TopUsersResponse,
+    TopUsersResponseFromJSON,
+    TopUsersResponseToJSON,
 } from '../models';
 
 export interface GetFavoritesRequest {
@@ -359,6 +359,7 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets a user\'s favorite tracks
+     * Fetch favorited tracks for a user
      */
     async getFavorites(requestParameters: GetFavoritesRequest): Promise<NonNullable<FavoritesResponseFull["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -392,7 +393,7 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that follow the provided user
      */
-    async getFollowers(requestParameters: GetFollowersRequest): Promise<NonNullable<FullFollowersResponse["data"]>> {
+    async getFollowers(requestParameters: GetFollowersRequest): Promise<NonNullable<FollowersResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowers.');
         }
@@ -418,13 +419,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullFollowersResponse["data"]>>;
+        }) as Promise<NonNullable<FollowersResponse["data"]>>;
     }
 
     /**
      * All users that the provided user follows
      */
-    async getFollowings(requestParameters: GetFollowingsRequest): Promise<NonNullable<FollowingResponseFull["data"]>> {
+    async getFollowings(requestParameters: GetFollowingsRequest): Promise<NonNullable<FollowingResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowings.');
         }
@@ -450,13 +451,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FollowingResponseFull["data"]>>;
+        }) as Promise<NonNullable<FollowingResponse["data"]>>;
     }
 
     /**
      * Gets a list of users that might be of interest to followers of this user.
      */
-    async getRelatedUsers(requestParameters: GetRelatedUsersRequest): Promise<NonNullable<RelatedArtistResponseFull["data"]>> {
+    async getRelatedUsers(requestParameters: GetRelatedUsersRequest): Promise<NonNullable<RelatedArtistResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getRelatedUsers.');
         }
@@ -478,7 +479,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<RelatedArtistResponseFull["data"]>>;
+        }) as Promise<NonNullable<RelatedArtistResponse["data"]>>;
     }
 
     /**
@@ -668,7 +669,7 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get the Top Users having at least one track by follower count
      */
-    async getTopUsers(requestParameters: GetTopUsersRequest = {}): Promise<NonNullable<TopUsersResponseFull["data"]>> {
+    async getTopUsers(requestParameters: GetTopUsersRequest = {}): Promise<NonNullable<TopUsersResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -690,13 +691,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TopUsersResponseFull["data"]>>;
+        }) as Promise<NonNullable<TopUsersResponse["data"]>>;
     }
 
     /**
      * Get the Top Users for a Given Genre
      */
-    async getTopUsersInGenre(requestParameters: GetTopUsersInGenreRequest = {}): Promise<NonNullable<TopGenreUsersResponseFull["data"]>> {
+    async getTopUsersInGenre(requestParameters: GetTopUsersInGenreRequest = {}): Promise<NonNullable<TopGenreUsersResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -718,7 +719,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TopGenreUsersResponseFull["data"]>>;
+        }) as Promise<NonNullable<TopGenreUsersResponse["data"]>>;
     }
 
     /**

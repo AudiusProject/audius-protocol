@@ -1,5 +1,5 @@
 [package]
-name = "audius-eth-registry-cli"
+name = "audius-cli"
 version = "0.1.0"
 authors = [""]
 edition = "2018"
@@ -21,3 +21,7 @@ libsecp256k1 = "0.5.0"
 sha3 = "0.9.1"
 borsh = "0.9.0"
 audius_eth_registry = { path="../audius_eth_registry", features = [ "no-entrypoint" ] }
+
+[[bin]]
+name = "audius"
+path = "src/main.rs"

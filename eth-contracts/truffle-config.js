@@ -9,7 +9,7 @@ require('babel-register')({
   ]
 })
 require('babel-polyfill')
-const HDWalletProvider = require('@truffle/hdwallet-provider')
+const HDWalletProvider = require('truffle-hdwallet-provider')
 const web3 = require('web3')
 
 const getEnv = env => {
@@ -34,8 +34,8 @@ const solc = {
   version: '0.5.17',
   parser: 'solcjs', // Leverages solc-js purely for speedy parsing
   settings: {
-    evmVersion: 'istanbul', // istanbul is latest stable, and default setting
-  },
+    evmVersion: 'istanbul' // istanbul is latest stable, and default setting
+  }
 }
 
 if (ENABLE_OPTIMIZER) {
@@ -47,8 +47,8 @@ if (ENABLE_OPTIMIZER) {
       deduplicate: true,
       cse: true,
       constantOptimizer: true,
-      yul: false, // disabled as Yul optimizer is still experimental in 0.5.x
-    },
+      yul: false // disabled as Yul optimizer is still experimental in 0.5.x
+    }
   }
 }
 module.exports = {
@@ -58,41 +58,36 @@ module.exports = {
     production: {
       provider: () => new HDWalletProvider(privateKey, liveNetwork),
       network_id: liveNetworkId,
-      gasPrice: web3.utils.toWei('10', 'gwei'),
+      gasPrice: web3.utils.toWei('10', 'gwei')
     },
     staging: {
       provider: () => new HDWalletProvider(privateKey, liveNetwork),
       network_id: liveNetworkId,
-      gasPrice: web3.utils.toWei('20', 'gwei'),
+      gasPrice: web3.utils.toWei('20', 'gwei')
     },
     development: {
-      host: '127.0.0.1', // Localhost (default: none)
-      port: 8546, // Standard Ethereum port (default: none)
-      network_id: '*', // Any network (default: none)
-      gas: 8000000, // 8,000,000 is a proxy for block gas limit even though it is now much higher
+      host: '127.0.0.1' // Localhost (default: none)
+      ,port: 8546 // Standard Ethereum port (default: none)
+      ,network_id: '*' // Any network (default: none)
+      ,gas: 8000000 // 8,000,000 is a proxy for block gas limit even though it is now much higher
       // recommended as a ganache performance improvement https://github.com/trufflesuite/truffle/issues/3522
-      disableConfirmationListener: true,
-    },
-    predeploy: {
-      host: 'localhost',
-      port: 8545,
-      network_id: '*',
+      ,disableConfirmationListener: true
     },
     test_local: {
-      host: '127.0.0.1',
-      port: 8556,
-      network_id: '*',
-      gas: 8000000, // 8,000,000 is a proxy for block gas limit even though it is now much higher
+      host: '127.0.0.1'
+      ,port: 8556
+      ,network_id: '*'
+      ,gas: 8000000 // 8,000,000 is a proxy for block gas limit even though it is now much higher
       // recommended as a ganache performance improvement https://github.com/trufflesuite/truffle/issues/3522
-      disableConfirmationListener: true,
+      ,disableConfirmationListener: true
     }
   },
   // https://solidity.readthedocs.io/en/develop/using-the-compiler.html#input-description
   compilers: {
-    solc: solc,
+    solc: solc
   },
   mocha: {
-    enableTimeouts: false,
+    enableTimeouts: false
   },
-  plugins: ['solidity-coverage', 'truffle-plugin-verify'],
+  plugins: ['solidity-coverage']
 }

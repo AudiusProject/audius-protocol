@@ -545,7 +545,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
       .send({ metadata, sourceFile })
       .expect(200)
 
@@ -584,7 +583,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
       .send({ metadata, sourceFile })
       .expect(400)
   })
@@ -678,7 +676,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
       .send({ metadata, sourceFile })
       .expect(200)
 
@@ -737,7 +734,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(400)
   })
@@ -779,7 +775,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
       .send({ metadata, sourceFile })
       .expect(200)
 
@@ -930,7 +925,6 @@ describe('test Polling Tracks with real files', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
       .send({})
       .expect(400)
 
@@ -957,7 +951,6 @@ describe('test Polling Tracks with real files', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
   })
@@ -978,7 +971,6 @@ describe('test Polling Tracks with real files', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
@@ -1029,7 +1021,6 @@ describe('test Polling Tracks with real files', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
-      .set('Enforce-Write-Quorum', false)
       .send(trackMetadata)
       .expect(200)
     const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
@@ -1083,7 +1074,6 @@ describe('test Polling Tracks with real files', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
-      .set('Enforce-Write-Quorum', false)
       .send(trackMetadata)
       .expect(200)
     const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
@@ -1100,7 +1090,6 @@ describe('test Polling Tracks with real files', function () {
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
-      .set('Enforce-Write-Quorum', false)
       .send(track2Metadata)
       .expect(200)
     const track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID

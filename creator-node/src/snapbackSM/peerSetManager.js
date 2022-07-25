@@ -2,7 +2,7 @@ const axios = require('axios')
 const { CancelToken } = axios
 
 const config = require('../config')
-const asyncRetry = require('../utils/asyncRetry')
+const Utils = require('../utils')
 const { logger } = require('../logging')
 const {
   GET_NODE_USERS_TIMEOUT_MS,
@@ -145,7 +145,7 @@ class PeerSetManager {
       )
 
       // Request all users that have this node as a replica (either primary or secondary)
-      const resp = await asyncRetry({
+      const resp = await Utils.asyncRetry({
         logLabel: 'fetch all users with this node in replica',
         asyncFn: async () => {
           return axios({

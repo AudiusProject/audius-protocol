@@ -71,11 +71,13 @@ def parse_id_array_param(list):
 # ####### ROUTES ####### #
 
 # Returns all users (paginated) with each user's follow count
-# Optionally filters by wallet or user ids
+# Optionally filters by is_creator, wallet, or user ids
 @bp.route("/users", methods=("GET",))
 @record_metrics
 def get_users_route():
     args = to_dict(request.args)
+    if "is_creator" in request.args:
+        args["is_creator"] = parse_bool_param(request.args.get("is_creator"))
     if "id" in request.args:
         args["id"] = parse_id_array_param(request.args.getlist("id"))
     if "min_block_number" in request.args:

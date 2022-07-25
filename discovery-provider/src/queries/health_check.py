@@ -6,7 +6,11 @@ from src.api_helpers import success_response
 from src.queries.get_alembic_version import get_alembic_version
 from src.queries.get_celery_tasks import convert_epoch_to_datetime, get_celery_tasks
 from src.queries.get_db_seed_restore_status import get_db_seed_restore_status
-from src.queries.get_health import get_health, get_location
+from src.queries.get_health import (
+    get_health,
+    get_latest_ipld_indexed_block,
+    get_location,
+)
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.queries.queries import parse_bool_param
@@ -118,6 +122,24 @@ def sol_play_check():
     return success_response(response, 500 if error else 200, sign_response=False)
 
 
+@bp.route("/ipld_block_check", methods=["GET"])
+def ipld_block_check():
+    use_redis_cache = parse_bool_param(request.args.get("use_cache"))
+    (
+        latest_ipld_indexed_block,
+        latest_indexed_ipld_block_hash,
+    ) = get_latest_ipld_indexed_block(use_redis_cache)
+
+    return success_response(
+        {
+            "db": {
+                "number": latest_ipld_indexed_block,
+                "blockhash": latest_indexed_ipld_block_hash,
+            }
+        }
+    )
+
+
 @bp.route("/ip_check", methods=["GET"])
 def ip_check():
     ip = helpers.get_ip(request)
@@ -133,9 +155,8 @@ def es_health():
 @bp.route("/celery_tasks_check", methods=["GET"])
 def celery_tasks_check():
     tasks = get_celery_tasks()
-    all_tasks = tasks.get("celery_tasks", [])
 
-    for task in all_tasks.get("active_tasks", []):
+    for task in tasks.get("celery_tasks", []):
         task["started_at_est_timestamp"] = convert_epoch_to_datetime(
             task.get("started_at")
         )

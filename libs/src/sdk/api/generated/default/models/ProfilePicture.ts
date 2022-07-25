@@ -37,5 +37,11 @@ export interface ProfilePicture {
      * @memberof ProfilePicture
      */
     _1000x1000?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ProfilePicture
+     */
+    misc?: string;
 }
 

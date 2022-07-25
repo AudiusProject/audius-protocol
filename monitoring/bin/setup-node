@@ -71,7 +71,6 @@ function start_grafana() {
         sleep 10
         ./grafana/bin/create-data-sources.sh
         ./grafana/bin/upload-dashboards.sh
-        ./grafana/bin/upload-library-panels.sh
     )
 }
 

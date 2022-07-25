@@ -23,8 +23,7 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
     }
     // Get all users who have not signed in mobile and not been sent native mobile email within 2 days
     let now = moment()
-    let twoDaysAgo = now.clone().subtract(2, 'days').format()
-    let fiveDaysAgo = now.clone().subtract(5, 'days').format()
+    let twoDayAgo = now.clone().subtract(2, 'days').format()
 
     let emailUsersWalletAddress = await models.UserEvents.findAll({
       attributes: ['walletAddress'],
@@ -32,8 +31,7 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
         hasSignedInNativeMobile: false,
         hasSentDownloadAppEmail: false,
         createdAt: {
-          [models.Sequelize.Op.lte]: twoDaysAgo,
-          [models.Sequelize.Op.gt]: fiveDaysAgo
+          [models.Sequelize.Op.lte]: twoDayAgo
         }
       }
     }).map(x => x.walletAddress)

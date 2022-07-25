@@ -26,6 +26,7 @@ const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
+  syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
@@ -637,6 +638,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
+    syncLockMiddleware,
     uploadTempDiskStorage.single('file'),
     handleResponseWithHeartbeat(async (req, res) => {
       if (
@@ -739,8 +741,8 @@ module.exports = function (app) {
         return errorResponseServerError(e)
       }
 
-      // Discovery only indexes metadata and not files, so we eagerly replicate data but don't await it
-      issueAndWaitForSecondarySyncRequests(req, true)
+      // Must be awaitted and cannot be try-catched, ensuring that error from inside this rejects request
+      await issueAndWaitForSecondarySyncRequests(req)
 
       return successResponse({ dirCID })
     })

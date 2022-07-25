@@ -1,11 +1,9 @@
 import { Hedgehog as HedgehogBase, WalletManager } from '@audius/hedgehog'
 import type { IdentityService } from '../identity'
-import type { LocalStorage } from '../../utils/localStorage'
 
 export type HedgehogConfig = {
   identityService: IdentityService
   useLocalStorage?: boolean
-  localStorage?: LocalStorage
 }
 export class Hedgehog {
   identityService: IdentityService
@@ -22,11 +20,7 @@ export class Hedgehog {
   // Therefore, we need to define this.audiusServiceEndpoint, to satisfy all the deps of the
   // requestToAudiusService and make it execute correctly
 
-  constructor({
-    identityService,
-    useLocalStorage = true,
-    localStorage
-  }: HedgehogConfig) {
+  constructor({ identityService, useLocalStorage = true }: HedgehogConfig) {
     this.identityService = identityService
 
     this.getFn = async (obj) => {
@@ -45,8 +39,7 @@ export class Hedgehog {
       this.getFn,
       this.setAuthFn,
       this.setUserFn,
-      useLocalStorage,
-      localStorage
+      useLocalStorage
     )
 
     // we override the login function here because getFn needs both lookupKey and email
@@ -69,10 +62,7 @@ export class Hedgehog {
         hedgehog.wallet = walletObj
 
         // set entropy in localStorage
-        await WalletManager.setEntropyInLocalStorage(
-          entropy,
-          hedgehog.localStorage
-        )
+        WalletManager.setEntropyInLocalStorage(entropy)
         return walletObj
       } else {
         throw new Error('No account record for user')
@@ -81,11 +71,10 @@ export class Hedgehog {
 
     /**
      * Generate secure credentials to allow login
+     * @param username username
      */
     hedgehog.generateRecoveryInfo = async () => {
-      const entropy = await WalletManager.getEntropyFromLocalStorage(
-        hedgehog.localStorage
-      )
+      const entropy = await WalletManager.getEntropyFromLocalStorage()
       if (entropy === null) {
         throw new Error('generateRecoveryLink - missing entropy')
       }

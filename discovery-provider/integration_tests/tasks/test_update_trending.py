@@ -2,9 +2,9 @@ import logging
 from datetime import datetime, timedelta
 
 from integration_tests.utils import populate_mock_db
-from src.models.social.aggregate_interval_plays import t_aggregate_interval_plays
+from src.models.social.aggregate_interval_play import AggregateIntervalPlay
 from src.models.tracks.track_trending_score import TrackTrendingScore
-from src.models.tracks.trending_param import t_trending_params
+from src.models.tracks.trending_param import TrendingParam
 from src.trending_strategies.EJ57D_trending_tracks_strategy import (
     TrendingTracksStrategyEJ57D,
 )
@@ -275,7 +275,7 @@ def test_update_interval_plays(app):
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
-        aggregate_interval_plays = session.query(t_aggregate_interval_plays).all()
+        aggregate_interval_plays = session.query(AggregateIntervalPlay).all()
 
         def get_track_plays(track_id):
             for param in aggregate_interval_plays:
@@ -301,7 +301,7 @@ def test_update_trending_params(app):
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
-        trending_params = session.query(t_trending_params).all()
+        trending_params = session.query(TrendingParam).all()
 
         # Test that trending_params are not generated for hidden/deleted tracks
         # There should be 7 valid tracks with trending params

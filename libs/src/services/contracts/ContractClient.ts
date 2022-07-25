@@ -150,7 +150,7 @@ export class ContractClient {
       this.providerSelector?.getUnhealthySize() ===
       this.providerSelector?.getServicesSize()
     ) {
-      this.logger.warn(
+      this.logger.log(
         'No healthy providers available - resetting ProviderSelection and selecting.'
       )
       this.providerSelector?.clearUnhealthy()
@@ -202,7 +202,7 @@ export class ContractClient {
           onRetry: (err) => {
             if (err) {
               // eslint-disable-next-line @typescript-eslint/no-base-to-string
-              this.logger.warn(`Retry error for ${methodName} : ${err}`)
+              this.logger.log(`Retry error for ${methodName} : ${err}`)
             }
           }
         }

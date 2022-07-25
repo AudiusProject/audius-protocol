@@ -63,7 +63,6 @@ module.exports = async function ({
       // Make the next job try again instead of looping back to userId 0
       users = [{ user_id: lastProcessedUserId }]
 
-      logger.error(e.stack)
       _addToDecisionTree(decisionTree, 'getNodeUsers Error', logger, {
         error: e.message
       })
@@ -79,7 +78,6 @@ module.exports = async function ({
         unhealthyPeers: Array.from(unhealthyPeers)
       })
     } catch (e) {
-      logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
         'monitor-state job processor getUnhealthyPeers Error',
@@ -122,7 +120,6 @@ module.exports = async function ({
         logger
       )
     } catch (e) {
-      logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
         'retrieveUserInfoFromReplicaSet Error',
@@ -149,7 +146,6 @@ module.exports = async function ({
         }
       )
     } catch (e) {
-      logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
         'computeUserSecondarySyncSuccessRatesMap Error',

@@ -12,9 +12,8 @@ models/DownloadMetadata.ts
 models/Favorite.ts
 models/FavoritesResponseFull.ts
 models/FieldVisibility.ts
+models/FollowersResponse.ts
 models/FollowingResponse.ts
-models/FollowingResponseFull.ts
-models/FullFollowersResponse.ts
 models/FullGetSupporter.ts
 models/FullGetSupporters.ts
 models/FullGetSupporting.ts
@@ -37,7 +36,7 @@ models/PlaylistArtwork.ts
 models/PlaylistFull.ts
 models/PlaylistLibrary.ts
 models/ProfilePicture.ts
-models/RelatedArtistResponseFull.ts
+models/RelatedArtistResponse.ts
 models/RemixesResponse.ts
 models/RemixesResponseFull.ts
 models/RemixingResponse.ts
@@ -49,8 +48,8 @@ models/StemFull.ts
 models/StemParent.ts
 models/StemsResponse.ts
 models/SupporterReference.ts
-models/TopGenreUsersResponseFull.ts
-models/TopUsersResponseFull.ts
+models/TopGenreUsersResponse.ts
+models/TopUsersResponse.ts
 models/TrackArtwork.ts
 models/TrackFavoritesResponseFull.ts
 models/TrackFull.ts

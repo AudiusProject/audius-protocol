@@ -5,13 +5,13 @@ import logging
 import time
 from datetime import datetime
 from operator import itemgetter, or_
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Set, Tuple
 
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
-from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.indexing.ursm_content_node import URSMContentNode
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
@@ -20,7 +20,7 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
-from src.models.users.user_events import UserEvent
+from src.models.users.user_events import UserEvents
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
 )
@@ -31,6 +31,7 @@ from src.queries.get_skipped_transactions import (
 )
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.sort_block_transactions import sort_block_transactions
@@ -49,11 +50,7 @@ from src.utils.index_blocks_performance import (
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
-from src.utils.prometheus_metric import (
-    PrometheusMetric,
-    PrometheusMetricNames,
-    save_duration_metric,
-)
+from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -271,6 +268,7 @@ def fetch_cid_metadata(
     user_contract = update_task.user_contract
     track_contract = update_task.track_contract
 
+    blacklisted_cids: Set[str] = set()
     cids_txhash_set: Tuple[str, Any] = set()
     cid_type: Dict[str, str] = {}  # cid -> entity type track / user
 
@@ -288,8 +286,11 @@ def fetch_cid_metadata(
             for entry in user_events_tx:
                 event_args = entry["args"]
                 cid = helpers.multihash_digest_to_cid(event_args._multihashDigest)
-                cids_txhash_set.add((cid, txhash))
-                cid_type[cid] = "user"
+                if not is_blacklisted_ipld(session, cid):
+                    cids_txhash_set.add((cid, txhash))
+                    cid_type[cid] = "user"
+                else:
+                    blacklisted_cids.add(cid)
                 user_id = event_args._userId
                 cid_to_user_id[cid] = user_id
 
@@ -311,8 +312,11 @@ def fetch_cid_metadata(
                         bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                     )
                     cid = multihash.to_b58_string(buf)
-                    cids_txhash_set.add((cid, txhash))
-                    cid_type[cid] = "track"
+                    if not is_blacklisted_ipld(session, cid):
+                        cids_txhash_set.add((cid, txhash))
+                        cid_type[cid] = "track"
+                    else:
+                        blacklisted_cids.add(cid)
                     cid_to_user_id[cid] = track_owner_id
 
         # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
@@ -362,7 +366,7 @@ def fetch_cid_metadata(
     logger.info(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
-    return cid_metadata
+    return cid_metadata, blacklisted_cids
 
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
@@ -469,6 +473,7 @@ def process_state_changes(
     main_indexing_task,
     session,
     cid_metadata,
+    blacklisted_cids,
     tx_type_to_grouped_lists_map,
     block,
 ):
@@ -495,6 +500,7 @@ def process_state_changes(
             block_timestamp,
             block_hash,
             cid_metadata,
+            blacklisted_cids,
         ]
 
         (
@@ -555,7 +561,11 @@ def index_blocks(self, db, blocks_list):
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
     changed_entity_ids_map = {}
-    metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
+    metric = PrometheusMetric(
+        "index_blocks_duration_seconds",
+        "Runtimes for src.task.index:index_blocks()",
+        ("scope",),
+    )
     for i in block_order_range:
         start_time = time.time()
         metric.reset_timer()
@@ -648,7 +658,7 @@ def index_blocks(self, db, blocks_list):
                     fetch_ipfs_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    cid_metadata = fetch_cid_metadata(
+                    cid_metadata, blacklisted_cids = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
@@ -698,6 +708,7 @@ def index_blocks(self, db, blocks_list):
                         self,
                         session,
                         cid_metadata,
+                        blacklisted_cids,
                         txs_grouped_by_type,
                         block,
                     )
@@ -846,8 +857,8 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.query(User).filter(User.blockhash == revert_hash).all()
             )
             revert_ursm_content_node_entries = (
-                session.query(UrsmContentNode)
-                .filter(UrsmContentNode.blockhash == revert_hash)
+                session.query(URSMContentNode)
+                .filter(URSMContentNode.blockhash == revert_hash)
                 .all()
             )
             revert_associated_wallets = (
@@ -856,8 +867,8 @@ def revert_blocks(self, db, revert_blocks_list):
                 .all()
             )
             revert_user_events_entries = (
-                session.query(UserEvent)
-                .filter(UserEvent.blockhash == revert_hash)
+                session.query(UserEvents)
+                .filter(UserEvents.blockhash == revert_hash)
                 .all()
             )
             revert_track_routes = (
@@ -955,10 +966,10 @@ def revert_blocks(self, db, revert_blocks_list):
             for ursm_content_node_to_revert in revert_ursm_content_node_entries:
                 cnode_sp_id = ursm_content_node_to_revert.cnode_sp_id
                 previous_ursm_content_node_entry = (
-                    session.query(UrsmContentNode)
-                    .filter(UrsmContentNode.cnode_sp_id == cnode_sp_id)
-                    .filter(UrsmContentNode.blocknumber < revert_block_number)
-                    .order_by(UrsmContentNode.blocknumber.desc())
+                    session.query(URSMContentNode)
+                    .filter(URSMContentNode.cnode_sp_id == cnode_sp_id)
+                    .filter(URSMContentNode.blocknumber < revert_block_number)
+                    .order_by(URSMContentNode.blocknumber.desc())
                     .first()
                 )
                 if previous_ursm_content_node_entry:
@@ -1046,15 +1057,15 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
     for user_events_to_revert in revert_user_events_entries:
         user_id = user_events_to_revert.user_id
         previous_user_events_entry = (
-            session.query(UserEvent)
-            .filter(UserEvent.user_id == user_id)
-            .filter(UserEvent.blocknumber < revert_block_number)
-            .order_by(UserEvent.blocknumber.desc())
+            session.query(UserEvents)
+            .filter(UserEvents.user_id == user_id)
+            .filter(UserEvents.blocknumber < revert_block_number)
+            .order_by(UserEvents.blocknumber.desc())
             .first()
         )
         if previous_user_events_entry:
-            session.query(UserEvent).filter(UserEvent.user_id == user_id).filter(
-                UserEvent.blocknumber == previous_user_events_entry.blocknumber
+            session.query(UserEvents).filter(UserEvents.user_id == user_id).filter(
+                UserEvents.blocknumber == previous_user_events_entry.blocknumber
             ).update({"is_current": True})
         logger.info(f"Reverting user events: {user_events_to_revert}")
         session.delete(user_events_to_revert)

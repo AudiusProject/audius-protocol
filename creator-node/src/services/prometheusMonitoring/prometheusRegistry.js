@@ -1,57 +1,32 @@
 const PrometheusClient = require('prom-client')
 
 const {
-  NAMESPACE_PREFIX,
-  METRICS,
-  METRIC_NAMES
+  NamespacePrefix,
+  Metrics,
+  MetricNames
 } = require('./prometheus.constants')
 
 /**
  * See `prometheusMonitoring/README.md` for usage details
  */
 
-class PrometheusRegistry {
+module.exports = class PrometheusRegistry {
   constructor() {
     // Use default global registry to register metrics
     this.registry = PrometheusClient.register
+
+    // Expose metric names from class for access throughout application
+    this.metricNames = MetricNames
 
     // Ensure clean state for registry
     this.registry.clear()
 
     // Enable collection of default metrics (e.g. heap, cpu, event loop)
     PrometheusClient.collectDefaultMetrics({
-      prefix: NAMESPACE_PREFIX + '_default_'
+      prefix: NamespacePrefix + 'default_'
     })
 
-    this.initStaticMetrics(this.registry)
-
-    // Expose metric names from class for access throughout application
-    this.metricNames = { ...METRIC_NAMES }
-
-    this.namespacePrefix = NAMESPACE_PREFIX
-
-    this.regexes = []
-  }
-
-  /**
-   * Creates and registers every static metric defined in prometheus.constants.js
-   */
-  initStaticMetrics(registry) {
-    for (const { metricType: MetricType, metricConfig } of Object.values(
-      METRICS
-    )) {
-      // Create and register instance of MetricType, with provided metricConfig
-      const metric = new MetricType(metricConfig)
-      registry.registerMetric(metric)
-    }
-  }
-
-  /**
-   * Initializes the regexes to match on routes with route params
-   * @param {RegExp[]} regexes the regexes used to match on routes with route params
-   */
-  initRouteParamRegexes(regexes) {
-    this.regexes = regexes
+    createAllCustomMetrics(this.registry)
   }
 
   /** Getters */
@@ -67,4 +42,15 @@ class PrometheusRegistry {
   }
 }
 
-module.exports = PrometheusRegistry
+/**
+ * Creates and registers every custom metric, for use throughout application
+ */
+const createAllCustomMetrics = function (registry) {
+  for (const { metricType: MetricType, metricConfig } of Object.values(
+    Metrics
+  )) {
+    // Create and register instance of MetricType, with provided metricConfig
+    const metric = new MetricType(metricConfig)
+    registry.registerMetric(metric)
+  }
+}

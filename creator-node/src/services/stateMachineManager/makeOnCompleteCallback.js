@@ -1,7 +1,7 @@
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES, JOB_NAMES } = require('./stateMachineConstants')
 const {
-  METRIC_RECORD_TYPE
+  MetricRecordType
 } = require('../prometheusMonitoring/prometheus.constants')
 
 /**
@@ -62,10 +62,9 @@ module.exports = function (
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult = {}
     try {
-      logger.info(`Job successfully completed. Parsing result: ${resultString}`)
       jobResult = JSON.parse(resultString) || {}
     } catch (e) {
-      logger.error(`Failed to parse job result string`)
+      logger.warn(`Failed to parse job result string: ${resultString}`)
       return
     }
 
@@ -86,7 +85,9 @@ module.exports = function (
         logger
       )
     } else {
-      logger.info('No jobs to enqueue after successful completion.')
+      logger.info(
+        `No jobs to enqueue after successful completion. Result: ${resultString}`
+      )
     }
 
     recordMetrics(prometheusRegistry, logger, metricsToRecord)
@@ -173,9 +174,9 @@ const recordMetrics = (prometheusRegistry, logger, metricsToRecord = []) => {
     try {
       const { metricName, metricType, metricValue, metricLabels } = metricInfo
       const metric = prometheusRegistry.getMetric(metricName)
-      if (metricType === METRIC_RECORD_TYPE.HISTOGRAM_OBSERVE) {
+      if (metricType === MetricRecordType.HISTOGRAM_OBSERVE) {
         metric.observe(metricLabels, metricValue)
-      } else if (metricType === METRIC_RECORD_TYPE.GAUGE_INC) {
+      } else if (metricType === MetricRecordType.GAUGE_INC) {
         metric.inc(metricLabels, metricValue)
       } else {
         logger.error(`Unexpected metric type: ${metricType}`)

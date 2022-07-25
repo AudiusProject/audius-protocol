@@ -24,19 +24,14 @@ async function processReactionNotifications (notifications, tx) {
     })
 
     // In the case that the notification already exists, avoid returning it to prevent
-    // sending it a second time. Just update or delete the original reaction value.
+    // sending it a second time. Just update the original reaction value.
     if (existingNotification) {
-      if (parseInt(reactionValue) === 0) {
-        // Destroy reaction if undoing reaction value
-        await existingNotification.destroy({ transaction: tx })
-      } else {
-        // Have to recreate the metadata object for save to work properly
-        existingNotification.metadata = {
-          ...existingNotification.metadata,
-          reactionValue
-        }
-        await existingNotification.save({ transaction: tx })
+      // Have to recreate the metadata object for save to work properly
+      existingNotification.metadata = {
+        ...existingNotification.metadata,
+        reactionValue
       }
+      await existingNotification.save({ transaction: tx })
     } else {
       notifsToReturn.push(notification)
       await models.SolanaNotification.create({

@@ -35,17 +35,6 @@ const libsMock = {
   }
 }
 
-const trustedNotifierManagerMock = {
-  getTrustedNotifierData: () => {
-    return {
-      email: 'trusted@notifier.com',
-      wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-      endpoint: 'default.trustednotifier'
-    }
-  },
-  trustedNotifierID: 12
-}
-
 const sequelizeMock = {
   query: async () => Promise.resolve()
 }
@@ -161,8 +150,7 @@ describe('Test Health Check', function () {
       {
         libs: libsMock,
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       sequelizeMock,
@@ -249,12 +237,6 @@ describe('Test Health Check', function () {
         latestFindSyncRequestsJobSuccess: null,
         latestFindReplicaSetUpdatesJobStart: null,
         latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
       }
     })
   })
@@ -274,8 +256,7 @@ describe('Test Health Check', function () {
     const res = await healthCheck(
       {
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       sequelizeMock,
@@ -362,12 +343,6 @@ describe('Test Health Check', function () {
         latestFindSyncRequestsJobSuccess: null,
         latestFindReplicaSetUpdatesJobStart: null,
         latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
       }
     })
   })
@@ -376,8 +351,7 @@ describe('Test Health Check', function () {
     const res = await healthCheck(
       {
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       sequelizeMock,
@@ -464,12 +438,6 @@ describe('Test Health Check', function () {
         latestFindSyncRequestsJobSuccess: null,
         latestFindReplicaSetUpdatesJobStart: null,
         latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
       }
     })
 
@@ -519,8 +487,7 @@ describe('Test Health Check Verbose', function () {
     const res = await healthCheckVerbose(
       {
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       sequelizeMock,
@@ -607,12 +574,6 @@ describe('Test Health Check Verbose', function () {
         latestFindSyncRequestsJobSuccess: null,
         latestFindReplicaSetUpdatesJobStart: null,
         latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
       }
     })
   })
@@ -632,8 +593,7 @@ describe('Test Health Check Verbose', function () {
       {
         libs: libsMock,
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       sequelizeMock,
@@ -647,8 +607,7 @@ describe('Test Health Check Verbose', function () {
       {
         libs: libsMock,
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       sequelizeMock,

@@ -32,7 +32,7 @@ const rolloverNodes = async (libs, creatorNodeWhitelist) => {
   console.debug('Sanity Check - rolloverNodes')
   const user = libs.userStateManager.getCurrentUser()
 
-  if (!user) return
+  if (!user || !user.is_creator) return
 
   const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
   const healthy = await checkPrimaryHealthy(libs, primary, MAX_TRIES)

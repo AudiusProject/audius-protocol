@@ -45,11 +45,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false
     },
-    isEmailDeliverable: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true
-    },
     // this is the last time we have an activity for this user
     // could be updated whenever we relay a tx on behalf of them
     lastSeenDate: {

@@ -515,6 +515,7 @@ def update_track_model_metadata(
     track_record.cover_art_sizes = track_metadata["cover_art_sizes"]
     if track_metadata["cover_art"]:
         track_record.cover_art_sizes = track_record.cover_art
+        # TODO check if blacklisted?
 
     track_record.tags = track_metadata["tags"]
     track_record.genre = track_metadata["genre"]

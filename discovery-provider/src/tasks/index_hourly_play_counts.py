@@ -3,7 +3,7 @@ import time
 from typing import List
 
 from sqlalchemy import desc, func
-from src.models.social.hourly_play_counts import HourlyPlayCount
+from src.models.social.hourly_play_counts import HourlyPlayCounts
 from src.models.social.play import Play
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric
@@ -39,7 +39,7 @@ def _index_hourly_play_counts(session):
         return
 
     # get play counts in hourly buckets
-    hourly_play_counts: List[HourlyPlayCount] = (
+    hourly_play_counts: List[HourlyPlayCounts] = (
         session.query(
             func.date_trunc("hour", Play.created_at).label("hourly_timestamp"),
             func.count(Play.id).label("play_count"),

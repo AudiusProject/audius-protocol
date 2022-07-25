@@ -19,7 +19,7 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     let registry
     let registryAddress
-    if (network === 'test_local' || network === 'development' || network === 'predeploy') {
+    if (network === 'test_local' || network === 'development') {
       registryAddress = process.env.dataContractsRegistryAddress
       registry = await Registry.at(registryAddress)
     } else {
@@ -43,7 +43,7 @@ module.exports = (deployer, network, accounts) => {
     const bootstrapSPOwnerWallets = config.bootstrapSPOwnerWallets
     const invalidBootstrapConfiguration = (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length === 0 || bootstrapSPOwnerWallets.length === 0)
     if (
-        (network !== 'test_local' && network !== 'development' && network !== 'predeploy') &&
+        (network !== 'test_local' && network !== 'development') &&
         (invalidBootstrapConfiguration)
       ) {
       throw new Error(

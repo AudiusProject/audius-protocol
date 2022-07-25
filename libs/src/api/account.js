@@ -2,7 +2,9 @@ const { Base, Services } = require('./base')
 const { CreatorNode } = require('../services/creatorNode')
 const { Utils } = require('../utils')
 const { AuthHeaders } = require('../constants')
-const { getPermitDigest, sign } = require('../utils/signatures')
+const {
+  getPermitDigest, sign
+} = require('../utils/signatures')
 const { PublicKey } = require('@solana/web3.js')
 const { BN } = require('@project-serum/anchor')
 
@@ -69,16 +71,12 @@ class Account extends Base {
     }
 
     phase = phases.FIND_USER
-    const userAccount = await this.discoveryProvider.getUserAccount(
-      this.web3Manager.getWalletAddress()
-    )
+    const userAccount = await this.discoveryProvider.getUserAccount(this.web3Manager.getWalletAddress())
     if (userAccount) {
       this.userStateManager.setCurrentUser(userAccount)
       const creatorNodeEndpoint = userAccount.creator_node_endpoint
       if (creatorNodeEndpoint) {
-        this.creatorNode.setEndpoint(
-          CreatorNode.getPrimary(creatorNodeEndpoint)
-        )
+        this.creatorNode.setEndpoint(CreatorNode.getPrimary(creatorNodeEndpoint))
       }
       return { user: userAccount, error: false, phase }
     }
@@ -91,10 +89,10 @@ class Account extends Base {
    * clients may wish to call window.location.reload()
    * to show the user as logged out
    */
-  async logout () {
+  logout () {
     if (!this.web3Manager.web3IsExternal()) {
       this.REQUIRES(Services.HEDGEHOG)
-      await this.hedgehog.logout()
+      this.hedgehog.logout()
       this.userStateManager.clearUser()
     }
   }
@@ -113,7 +111,7 @@ class Account extends Base {
    * @param {?Object} [userBankOutcomes] an optional object with request, succes, and failure keys to record user bank outcomes
    * @param {?string} [feePayerOverride] an optional string in case the client wants to switch between fee payers
    * @param {?boolean} [generateRecoveryLink] an optional flag to skip generating recovery link for testing purposes
-   */
+  */
   async signUp (
     email,
     password,
@@ -122,7 +120,7 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    handleUserBankOutcomes = () => { },
+    handleUserBankOutcomes = () => {},
     userBankOutcomes = {},
     feePayerOverride = null,
     generateRecoveryLink = true
@@ -143,10 +141,7 @@ class Account extends Base {
 
       if (this.web3Manager.web3IsExternal()) {
         phase = phases.CREATE_USER_RECORD
-        await this.identityService.createUserRecord(
-          email,
-          this.web3Manager.getWalletAddress()
-        )
+        await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
       } else {
         this.REQUIRES(Services.HEDGEHOG)
         // If an owner wallet already exists, don't try to recreate it
@@ -164,31 +159,25 @@ class Account extends Base {
       // If userbank creation fails, we still proceed
       // through signup
       if (this.solanaWeb3Manager) {
-        phase = phases.SOLANA_USER_BANK_CREATION
+        phase = phases.SOLANA_USER_BANK_CREATION;
         // Fire and forget createUserBank. In the case of failure, we will
         // retry to create user banks in a later session before usage
-        ; (async () => {
+        (async () => {
           try {
             handleUserBankOutcomes(userBankOutcomes.Request)
-            const { error, errorCode } =
-                await this.solanaWeb3Manager.createUserBank(feePayerOverride)
+            const { error, errorCode } = await this.solanaWeb3Manager.createUserBank(feePayerOverride)
             if (error || errorCode) {
               console.error(
-                  `Failed to create userbank, with err: ${error}, ${errorCode}`
+                `Failed to create userbank, with err: ${error}, ${errorCode}`
               )
-              handleUserBankOutcomes(userBankOutcomes.Failure, {
-                error,
-                errorCode
-              })
+              handleUserBankOutcomes(userBankOutcomes.Failure, { error, errorCode })
             } else {
               console.log('Successfully created userbank!')
               handleUserBankOutcomes('Create User Bank: Success')
             }
           } catch (err) {
             console.error(`Got error creating userbank: ${err}, continuing...`)
-            handleUserBankOutcomes(userBankOutcomes.Failure, {
-              error: err.toString()
-            })
+            handleUserBankOutcomes(userBankOutcomes.Failure, { error: err.toString() })
           }
         })()
       }
@@ -206,17 +195,9 @@ class Account extends Base {
 
       // Upload profile pic and cover photo to primary Content Node and sync across secondaries
       phase = phases.UPLOAD_PROFILE_IMAGES
-      await this.User.uploadProfileImages(
-        profilePictureFile,
-        coverPhotoFile,
-        metadata
-      )
+      await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
     } catch (e) {
-      return {
-        error: e.message,
-        phase,
-        errorStatus: e.response ? e.response.status : null
-      }
+      return { error: e.message, phase, errorStatus: e.response ? e.response.status : null }
     }
     return { blockHash, blockNumber, userId }
   }
@@ -232,7 +213,7 @@ class Account extends Base {
       const recoveryInfo = await this.hedgehog.generateRecoveryInfo()
       handle = handle || this.userStateManager.getCurrentUser().handle
 
-      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+      const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
       const data = `Click sign to authenticate with identity service: ${unixTs}`
       const signature = await this.web3Manager.sign(data)
 
@@ -329,9 +310,12 @@ class Account extends Base {
     this.REQUIRES(Services.CREATOR_NODE)
 
     const user = this.userStateManager.getCurrentUser()
-    await this.creatorNode.setEndpoint(url)
-    user.creator_node_endpoint = url
-    await this.User.updateCreator(user.user_id, user)
+    if (user.is_creator) {
+      await this.creatorNode.setEndpoint(url)
+      // Only a creator will have a creator node endpoint
+      user.creator_node_endpoint = url
+      await this.User.updateCreator(user.user_id, user)
+    }
   }
 
   /**
@@ -373,13 +357,7 @@ class Account extends Base {
    */
   async searchTags (text, user_tag_count = 2, kind, limit = 100, offset = 0) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.searchTags(
-      text,
-      user_tag_count,
-      kind,
-      limit,
-      offset
-    )
+    return this.discoveryProvider.searchTags(text, user_tag_count, kind, limit, offset)
   }
 
   /**
@@ -445,16 +423,9 @@ class Account extends Base {
   async permitAndSendTokens (recipientAddress, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
-    const { selectedEthWallet } = await this.identityService.getEthRelayer(
-      myWalletAddress
-    )
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
     await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
-    await this.sendTokens(
-      myWalletAddress,
-      recipientAddress,
-      selectedEthWallet,
-      amount
-    )
+    await this.sendTokens(myWalletAddress, recipientAddress, selectedEthWallet, amount)
   }
 
   /**
@@ -471,39 +442,26 @@ class Account extends Base {
       ATTEST_AND_COMPLETE_TRANSFER: 'ATTEST_AND_COMPLETE_TRANSFER'
     }
     let phase = phases.PERMIT_PROXY_SEND
-    const logs = [
-      `Send tokens from eth to sol to ${solanaAccount} for ${amount.toString()}`
-    ]
+    const logs = [`Send tokens from eth to sol to ${solanaAccount} for ${amount.toString()}`]
     try {
       const myWalletAddress = this.web3Manager.getWalletAddress()
       const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
-      const { selectedEthWallet } = await this.identityService.getEthRelayer(
-        myWalletAddress
-      )
+      const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
       await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
 
       logs.push('Completed permit proxy send tokens')
       phase = phases.TRANSFER_TOKENS
-      const transferTokensTx =
-        await this.wormholeClient.transferTokensToEthWormhole(
-          myWalletAddress,
-          amount,
-          solanaAccount,
-          selectedEthWallet
-        )
+      const transferTokensTx = await this.wormholeClient.transferTokensToEthWormhole(
+        myWalletAddress, amount, solanaAccount, selectedEthWallet
+      )
 
       const transferTransactionHash = transferTokensTx.txHash
       logs.push(`Completed transfer tokens with tx ${transferTransactionHash}`)
       phase = phases.ATTEST_AND_COMPLETE_TRANSFER
 
-      const response =
-        await this.wormholeClient.attestAndCompleteTransferEthToSol(
-          transferTransactionHash
-        )
+      const response = await this.wormholeClient.attestAndCompleteTransferEthToSol(transferTransactionHash)
       if (response.transactionSignature) {
-        logs.push(
-          `Receive sol wrapped tokens in tx ${response.transactionSignature}`
-        )
+        logs.push(`Receive sol wrapped tokens in tx ${response.transactionSignature}`)
       }
       return {
         txSignature: response.transactionSignature,
@@ -528,31 +486,14 @@ class Account extends Base {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
     const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
-    const { selectedEthWallet } = await this.identityService.getEthRelayer(
-      myWalletAddress
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    const permitMethod = await this.getPermitProxySendTokensMethod(myWalletAddress, wormholeAddress, amount)
+    const permit = await this.ethWeb3Manager.getRelayMethodParams(this.ethContracts.AudiusTokenClient.contractAddress, permitMethod, selectedEthWallet)
+    const transferTokensMethod = await this.wormholeClient.getTransferTokensToEthWormholeMethod(
+
+      myWalletAddress, amount, solanaAccount, selectedEthWallet
     )
-    const permitMethod = await this.getPermitProxySendTokensMethod(
-      myWalletAddress,
-      wormholeAddress,
-      amount
-    )
-    const permit = await this.ethWeb3Manager.getRelayMethodParams(
-      this.ethContracts.AudiusTokenClient.contractAddress,
-      permitMethod,
-      selectedEthWallet
-    )
-    const transferTokensMethod =
-      await this.wormholeClient.getTransferTokensToEthWormholeMethod(
-        myWalletAddress,
-        amount,
-        solanaAccount,
-        selectedEthWallet
-      )
-    const transferTokens = await this.ethWeb3Manager.getRelayMethodParams(
-      this.ethContracts.WormholeClient.contractAddress,
-      transferTokensMethod,
-      selectedEthWallet
-    )
+    const transferTokens = await this.ethWeb3Manager.getRelayMethodParams(this.ethContracts.WormholeClient.contractAddress, transferTokensMethod, selectedEthWallet)
     return this.identityService.wormholeRelay({
       senderAddress: myWalletAddress,
       permit,
@@ -569,20 +510,14 @@ class Account extends Base {
    * 5.) Gathers attestations from wormhole oracles and realizes the tokens on eth
    */
   async sendTokensFromSolToEth (amount, ethAccount) {
-    const { error, logs, phase } =
-      await this.wormholeClient.sendTokensFromSolToEthViaWormhole(
-        amount,
-        ethAccount
-      )
+    const { error, logs, phase } = await this.wormholeClient.sendTokensFromSolToEthViaWormhole(amount, ethAccount)
     return { error, logs, phase }
   }
 
   async _getPermitProxySendTokensParams (owner, relayerAddress, amount) {
     const web3 = this.ethWeb3Manager.getWeb3()
     const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
-    const chainId = await new Promise((resolve) =>
-      web3.eth.getChainId((_, chainId) => resolve(chainId))
-    )
+    const chainId = await new Promise(resolve => web3.eth.getChainId((_, chainId) => resolve(chainId)))
     const name = await this.ethContracts.AudiusTokenClient.name()
     const tokenAddress = this.ethContracts.AudiusTokenClient.contractAddress
 
@@ -591,7 +526,7 @@ class Account extends Base {
     const currentBlockNumber = await web3.eth.getBlockNumber()
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
     // 1 hour, sufficiently far in future
-    const deadline = currentBlock.timestamp + 60 * 60 * 1
+    const deadline = currentBlock.timestamp + (60 * 60 * 1)
 
     const digest = getPermitDigest(
       web3,
@@ -613,11 +548,10 @@ class Account extends Base {
    * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
    */
   async permitProxySendTokens (owner, relayerAddress, amount) {
-    const { result, deadline } = await this._getPermitProxySendTokensParams(
-      owner,
-      relayerAddress,
-      amount
-    )
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
     const tx = await this.ethContracts.AudiusTokenClient.permit(
       owner,
       relayerAddress,
@@ -634,21 +568,19 @@ class Account extends Base {
    * Gets the permit method to proxy send tokens `relayerAddress` to send `amount` on behalf of the current user, `owner`
    */
   async getPermitProxySendTokensMethod (owner, relayerAddress, amount) {
-    const { result, deadline } = await this._getPermitProxySendTokensParams(
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
+    const contractMethod = this.ethContracts.AudiusTokenClient.AudiusTokenContract.methods.permit(
       owner,
       relayerAddress,
-      amount
+      amount,
+      deadline,
+      result.v,
+      result.r,
+      result.s
     )
-    const contractMethod =
-      this.ethContracts.AudiusTokenClient.AudiusTokenContract.methods.permit(
-        owner,
-        relayerAddress,
-        amount,
-        deadline,
-        result.v,
-        result.r,
-        result.s
-      )
     return contractMethod
   }
 
@@ -657,12 +589,7 @@ class Account extends Base {
    */
   async sendTokens (owner, address, relayer, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    return this.ethContracts.AudiusTokenClient.transferFrom(
-      owner,
-      address,
-      relayer,
-      amount
-    )
+    return this.ethContracts.AudiusTokenClient.transferFrom(owner, address, relayer, amount)
   }
 
   /**
@@ -728,9 +655,7 @@ class Account extends Base {
     }
   ) {
     if (!account && !wallet && !userId) {
-      throw new Error(
-        'Must supply EITHER an `account` OR `wallet` and `userId` to look up whether userHasClaimedSolAccount'
-      )
+      throw new Error('Must supply EITHER an `account` OR `wallet` and `userId` to look up whether userHasClaimedSolAccount')
     }
     if (!account && wallet && userId) {
       account = await this.getUserAccountOnSolana({ wallet, userId })

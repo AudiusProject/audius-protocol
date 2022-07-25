@@ -1,6 +1,6 @@
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
-from src.models.tracks.tag_track_user_matview import t_tag_track_user
+from src.models.tracks.tag_track_user_matview import TagTrackUserMatview
 from src.utils.db_session import get_db
 
 
@@ -25,20 +25,20 @@ def test_track_tag_mat_view(app):
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW tag_track_user")
         user_1_tags = (
-            session.query(t_tag_track_user)
-            .filter(t_tag_track_user.c.owner_id == 1)
-            .order_by(asc(t_tag_track_user.c.tag), asc(t_tag_track_user.c.track_id))
+            session.query(TagTrackUserMatview)
+            .filter(TagTrackUserMatview.owner_id == 1)
+            .order_by(asc(TagTrackUserMatview.tag), asc(TagTrackUserMatview.track_id))
             .all()
         )
         user_2_tags = (
-            session.query(t_tag_track_user)
-            .filter(t_tag_track_user.c.owner_id == 2)
-            .order_by(asc(t_tag_track_user.c.tag), asc(t_tag_track_user.c.track_id))
+            session.query(TagTrackUserMatview)
+            .filter(TagTrackUserMatview.owner_id == 2)
+            .order_by(asc(TagTrackUserMatview.tag), asc(TagTrackUserMatview.track_id))
             .all()
         )
         user_4_tags = (
-            session.query(t_tag_track_user)
-            .filter(t_tag_track_user.c.owner_id == 4)
+            session.query(TagTrackUserMatview)
+            .filter(TagTrackUserMatview.owner_id == 4)
             .all()
         )
 

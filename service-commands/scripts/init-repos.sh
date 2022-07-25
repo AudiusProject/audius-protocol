@@ -38,7 +38,7 @@ npm install
 
 cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
 npm run install-dev
-# npm run build
+npm run build
 
 cd $PROTOCOL_DIR/libs
 npm install
@@ -47,11 +47,11 @@ npm run build
 cd $PROTOCOL_DIR/identity-service
 npm install
 
-# cd $PROTOCOL_DIR/..
-# if [ -d "audius-client" ]; then
-#     cd audius-client
-#     npm run init
-# fi
+cd $PROTOCOL_DIR/..
+if [ -d "audius-client" ]; then
+    cd audius-client
+    npm run init
+fi
 
 ####################################
 ######## LINK DEPENDENCIES #########

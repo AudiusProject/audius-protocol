@@ -34,7 +34,6 @@ const {
   RewardsAttester
 } = require('./services/solanaWeb3Manager/rewardsAttester')
 const { Reactions } = require('./api/reactions')
-const { getPlatformLocalStorage } = require('./utils/localStorage')
 
 class AudiusLibs {
   /**
@@ -64,23 +63,20 @@ class AudiusLibs {
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
    * @param {function} monitoringCallbacks.request
    * @param {function} monitoringCallbacks.healthCheck
-   * @param {boolean} writeQuorumEnabled whether or not to enforce waiting for replication to 2/3 nodes when writing data
    */
   static configCreatorNode (
     fallbackUrl,
     lazyConnect = false,
     passList = null,
     blockList = null,
-    monitoringCallbacks = {},
-    writeQuorumEnabled = false
+    monitoringCallbacks = {}
   ) {
     return {
       fallbackUrl,
       lazyConnect,
       passList,
       blockList,
-      monitoringCallbacks,
-      writeQuorumEnabled
+      monitoringCallbacks
     }
   }
 
@@ -319,8 +315,7 @@ class AudiusLibs {
     logger = console,
     isDebug = false,
     preferHigherPatchForPrimary = true,
-    preferHigherPatchForSecondaries = true,
-    localStorage = getPlatformLocalStorage()
+    preferHigherPatchForSecondaries = true
   }) {
     // set version
 
@@ -367,7 +362,6 @@ class AudiusLibs {
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
-    this.localStorage = localStorage
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -377,9 +371,7 @@ class AudiusLibs {
 
   /** Init services based on presence of a relevant config. */
   async init () {
-    this.userStateManager = new UserStateManager({
-      localStorage: this.localStorage
-    })
+    this.userStateManager = new UserStateManager()
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
@@ -396,11 +388,9 @@ class AudiusLibs {
       })
       const hedgehogService = new Hedgehog({
         identityService: this.identityService,
-        useLocalStorage: this.identityServiceConfig.useHedgehogLocalStorage,
-        localStorage: this.localStorage
+        useLocalStorage: this.identityServiceConfig.useHedgehogLocalStorage
       })
       this.hedgehog = hedgehogService.instance
-      await this.hedgehog.waitUntilReady()
     } else if (this.web3Config && !this.web3Config.useExternalWeb3) {
       throw new Error('Identity Service required for internal Web3')
     }
@@ -503,7 +493,6 @@ class AudiusLibs {
         userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
         web3Manager: this.web3Manager,
-        localStorage: this.localStorage,
         ...this.discoveryProviderConfig
       })
       await this.discoveryProvider.init()
@@ -526,8 +515,7 @@ class AudiusLibs {
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
-        this.creatorNodeConfig.monitoringCallbacks,
-        this.creatorNodeConfig.writeQuorumEnabled
+        this.creatorNodeConfig.monitoringCallbacks
       )
       await this.creatorNode.init()
     }

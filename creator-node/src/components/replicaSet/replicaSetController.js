@@ -12,7 +12,7 @@ const {
 } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
 const { enqueueSync } = require('./syncQueueComponentService')
-const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
+const processSync = require('../../services/sync/processSync')
 
 const router = express.Router()
 
@@ -90,7 +90,7 @@ const syncRouteController = async (req, res) => {
    * Else, debounce + add sync to queue
    */
   if (immediate) {
-    const errorObj = await secondarySyncFromPrimary(
+    const errorObj = await processSync(
       serviceRegistry,
       walletPublicKeys,
       creatorNodeEndpoint,

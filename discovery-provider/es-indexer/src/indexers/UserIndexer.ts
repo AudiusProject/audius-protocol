@@ -45,6 +45,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
             searchable: standardText,
           },
         },
+        is_creator: { type: 'boolean' },
         is_verified: { type: 'boolean' },
         is_deactivated: { type: 'boolean' },
         location: { type: 'keyword' },

@@ -15,9 +15,17 @@ import semver from 'semver'
 import type { EthContracts } from '../ethContracts'
 import type { AxiosResponse } from 'axios'
 import type { Maybe, Nullable } from '../../utils'
-import type { LocalStorage } from '../../utils/localStorage'
 
 const PREVIOUS_VERSIONS_TO_CHECK = 5
+
+let localStorage: Storage
+if (typeof window === 'undefined' || window === null) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const LocalStorage = require('node-localstorage').LocalStorage
+  localStorage = new LocalStorage('./local-storage')
+} else {
+  localStorage = window.localStorage
+}
 
 export type DiscoveryProviderSelectionConfig = Omit<
   ServiceSelectionConfig,
@@ -31,7 +39,6 @@ export type DiscoveryProviderSelectionConfig = Omit<
   }
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
-  localStorage?: LocalStorage
 }
 
 export class DiscoveryProviderSelection extends ServiceSelection {
@@ -50,7 +57,6 @@ export class DiscoveryProviderSelection extends ServiceSelection {
   unhealthyBlockDiff: number
   _regressedMode: boolean
   validVersions: Nullable<string[]>
-  localStorage?: LocalStorage
 
   constructor(
     config: DiscoveryProviderSelectionConfig,
@@ -80,7 +86,6 @@ export class DiscoveryProviderSelection extends ServiceSelection {
     this.unhealthySlotDiffPlays = config.unhealthySlotDiffPlays ?? null
     this.unhealthyBlockDiff =
       config.unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
-    this.localStorage = config.localStorage
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
@@ -92,10 +97,10 @@ export class DiscoveryProviderSelection extends ServiceSelection {
   }
 
   /** Retrieves a cached discovery provider from localstorage */
-  async getCached() {
-    if (this.localStorage) {
+  getCached() {
+    if (localStorage) {
       try {
-        const discProvTimestamp = await this.localStorage.getItem(
+        const discProvTimestamp = localStorage.getItem(
           DISCOVERY_PROVIDER_TIMESTAMP
         )
         if (discProvTimestamp) {
@@ -126,25 +131,23 @@ export class DiscoveryProviderSelection extends ServiceSelection {
   }
 
   /** Clears any cached discovery provider from localstorage */
-  async clearCached() {
-    if (this.localStorage) {
-      await this.localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
+  clearCached() {
+    if (localStorage) {
+      localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
     }
   }
 
   /** Sets a cached discovery provider in localstorage */
-  async setCached(endpoint: string) {
-    if (this.localStorage) {
-      await this.localStorage.setItem(
-        DISCOVERY_PROVIDER_TIMESTAMP,
-        JSON.stringify({ endpoint, timestamp: Date.now() })
-      )
-    }
+  setCached(endpoint: string) {
+    localStorage.setItem(
+      DISCOVERY_PROVIDER_TIMESTAMP,
+      JSON.stringify({ endpoint, timestamp: Date.now() })
+    )
   }
 
   /** Allows the selection take a shortcut if there's a cached provider */
-  override async shortcircuit() {
-    return await this.getCached()
+  override shortcircuit() {
+    return this.getCached()
   }
 
   override async select() {

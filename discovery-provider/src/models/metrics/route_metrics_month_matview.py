@@ -1,11 +1,11 @@
-from sqlalchemy import BigInteger, Column, DateTime, Table
+from sqlalchemy import Column, DateTime, Integer
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
-# Materialized view
-t_route_metrics_month_bucket = Table(
-    "route_metrics_month_bucket",
-    Base.metadata,
-    Column("unique_count", BigInteger),
-    Column("count", BigInteger),
-    Column("time", DateTime),
-)
+
+class RouteMetricsMonthMatview(Base, RepresentableMixin):
+    __tablename__ = "route_metrics_month_bucket"
+
+    time = Column(DateTime, nullable=False, primary_key=True)
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)

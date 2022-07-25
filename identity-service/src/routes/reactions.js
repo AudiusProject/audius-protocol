@@ -44,7 +44,7 @@ module.exports = function (app) {
     if (!senderWallet || !reactedTo || reactionValue === undefined) return errorResponseBadRequest(`Missing argument: ${JSON.stringify({ senderWallet, reactedTo, reactionValue })}`)
 
     const parsedReaction = parseInt(reactionValue)
-    if (isNaN(parsedReaction)) return errorResponseBadRequest('Invalid reaction type')
+    if (!parsedReaction) return errorResponseBadRequest('Invalid reaction type')
 
     const libs = req.app.get('audiusLibs')
 

@@ -227,9 +227,6 @@ class Wormhole {
     let phase = phases.GENERATE_SOL_ROOT_ACCT
     const logs = [`Transferring ${amount} WAUDIO to ${ethTargetAddress}`]
     try {
-      if (typeof window === 'undefined' || window == null || window.ethereum == null) {
-        throw new Error('Expected a browser/client context with Metamask')
-      }
       const wAudioAmount = wAudioFromWeiAudio(amount)
       // Generate a solana keypair derived from the hedgehog private key
       // NOTE: The into to fromSeed is a 32 bytes Uint8Array

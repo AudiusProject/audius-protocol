@@ -6,11 +6,13 @@ export const getUsers = (
   idsArray?: string[],
   walletAddress?: string,
   handle?: string,
+  isCreator: boolean | null = null,
   minBlockNumber?: number
 ) => {
   type QueryParams = {
     limit: number
     offset: number
+    is_creator?: boolean
     handle?: string
     wallet?: string
     min_block_number?: number
@@ -18,6 +20,9 @@ export const getUsers = (
   }
 
   const queryParams: QueryParams = { limit: limit, offset: offset }
+  if (isCreator !== null) {
+    queryParams.is_creator = isCreator
+  }
   if (handle) {
     queryParams.handle = handle
   }

@@ -1,5 +1,7 @@
 import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from './constants'
-import type { LocalStorage } from './utils/localStorage'
+
+const supportsLocalStorage = () =>
+  typeof window !== 'undefined' && window && window.localStorage
 
 export type CurrentUser = {
   user_id: string
@@ -7,10 +9,7 @@ export type CurrentUser = {
   blocknumber: number
   track_blocknumber: number
   creator_node_endpoint: string
-}
-
-type UserStateManagerConfig = {
-  localStorage?: LocalStorage
+  is_creator: boolean
 }
 
 /**
@@ -20,25 +19,20 @@ type UserStateManagerConfig = {
  */
 export class UserStateManager {
   currentUser: CurrentUser | null
-  localStorage?: LocalStorage
 
-  constructor({ localStorage }: UserStateManagerConfig) {
+  constructor() {
     // Should reflect the same fields as discovery node's /users?handle=<handle>
     this.currentUser = null
-    this.localStorage = localStorage
   }
 
   /**
    * Sets this.currentUser with currentUser
    * @param {Object} currentUser fields to override this.currentUser with
    */
-  async setCurrentUser(currentUser: CurrentUser) {
+  setCurrentUser(currentUser: CurrentUser) {
     this.currentUser = currentUser
-    if (this.localStorage) {
-      await this.localStorage.setItem(
-        CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY,
-        'true'
-      )
+    if (supportsLocalStorage()) {
+      window.localStorage.setItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY, 'true')
     }
   }
 
@@ -50,10 +44,10 @@ export class UserStateManager {
     return this.currentUser ? this.currentUser.user_id : null
   }
 
-  async clearUser() {
+  clearUser() {
     this.currentUser = null
-    if (this.localStorage) {
-      await this.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
+    if (supportsLocalStorage()) {
+      window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
   }
 }

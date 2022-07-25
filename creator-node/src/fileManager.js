@@ -6,8 +6,8 @@ const axios = require('axios')
 
 const config = require('./config')
 const Utils = require('./utils')
-const { libs: audiusLibs } = require('@audius/sdk')
-const LibsUtils = audiusLibs.Utils
+const { libs } = require('@audius/sdk')
+const LibsUtils = libs.Utils
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
@@ -24,7 +24,7 @@ const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deter
 /**
  * Saves file to disk under /multihash name
  */
-async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
+async function saveFileFromBufferToDisk(req, buffer) {
   // Make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
@@ -38,35 +38,6 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
   // Write file to disk by cid for future retrieval
   const dstPath = DiskManager.computeFilePath(cid)
   await fs.writeFile(dstPath, buffer)
-
-  // verify that the contents of the file match the file's cid
-  try {
-    const fileSize = (await fs.stat(dstPath)).size
-    const fileIsEmpty = fileSize === 0
-    // there is one case where an empty file could be valid, check for that CID explicitly
-    if (fileIsEmpty && cid !== EMPTY_FILE_CID) {
-      throw new Error(`File has no content, content length is 0: ${cid}`)
-    }
-
-    const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
-      dstPath,
-      genericLogger.child(req.logContext)
-    )
-    if (cid !== expectedCID) {
-      // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
-      throw new Error(
-        `File contents don't match their expected CID. CID: ${cid} expected CID: ${expectedCID}`
-      )
-    }
-  } catch (e) {
-    await removeFile(dstPath)
-    if (numRetries > 0) {
-      return saveFileFromBufferToDisk(req, buffer, numRetries - 1)
-    }
-    throw new Error(
-      `saveFileFromBufferToDisk - Error during content verification for multihash ${cid} ${e.message}`
-    )
-  }
 
   return { cid, dstPath }
 }
@@ -104,7 +75,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  *    creating directories
  * 2. attempt to fetch the CID from a variety of sources
  * 3. return boolean failure content retrieval or content verification failure
- * @param {Object} libs
+ * @param {Object} serviceRegistry
  * @param {Object} logger
  * @param {String} multihash CID
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
@@ -117,7 +88,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @return {Boolean} true if success, false if error
  */
 async function saveFileForMultihashToFS(
-  libs,
+  serviceRegistry,
   logger,
   multihash,
   expectedStoragePath,
@@ -315,6 +286,7 @@ async function saveFileForMultihashToFS(
     // If file is not found on disk, check nodes on the rest of the network
     if (!fileFound) {
       try {
+        const libs = serviceRegistry.libs
         const found = await findCIDInNetwork(
           expectedStoragePath,
           multihash,
@@ -386,7 +358,7 @@ async function saveFileForMultihashToFS(
         })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
         throw new Error(
-          `File contents don't match their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
+          `File contents don't their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
         )
       }
       decisionTree.push({
@@ -398,7 +370,7 @@ async function saveFileForMultihashToFS(
       await removeFile(expectedStoragePath)
       if (numRetries > 0) {
         return saveFileForMultihashToFS(
-          libs,
+          serviceRegistry,
           logger,
           multihash,
           expectedStoragePath,

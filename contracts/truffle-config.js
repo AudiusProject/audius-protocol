@@ -16,7 +16,7 @@ require('babel-register')({
 })
 
 require('babel-polyfill')
-const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require('truffle-hdwallet-provider');
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
@@ -26,16 +26,6 @@ module.exports = {
       host: '127.0.0.1',
       port: 8545,
       network_id: '*' // Match any network id
-    },
-    predeploy: {
-      host: '127.0.0.1',
-      port: 8545,
-      network_id: '*', // Match any network id
-      verify: {
-        apiUrl: 'http://poa-blockscout:4000/api',
-        apiKey: 'NONE',
-        explorerUrl: 'http://poa-blockscout:4000/address',
-      },
     },
     test_local: {
       host: '127.0.0.1',
@@ -75,6 +65,5 @@ module.exports = {
   },
   mocha: {
     enableTimeouts: false
-  },
-  plugins: ['truffle-plugin-verify']
+  }
 }

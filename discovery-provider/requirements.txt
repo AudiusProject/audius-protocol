@@ -40,8 +40,6 @@ psutil==5.8.0
 pytz==2021.1
 prometheus-client==0.13.1
 click==8.0.4
-numpy==1.21.4
-datasketch==1.5.7
 
 # Solana support
 base58==2.1.0
