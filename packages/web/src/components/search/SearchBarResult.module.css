@@ -8,9 +8,10 @@
 .imageContainer {
   margin-right: 8px;
   width: 33px;
-  height: 48px;
+  height: 33px;
   display: flex;
   align-items: center;
+  align-self: center;
 }
 
 .image {
