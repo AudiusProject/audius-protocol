@@ -16,13 +16,13 @@ import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
+import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconRepost } from './components/icons'
-import { entityToUserListEntity, formatOthersCount } from './utils'
+import { entityToUserListEntity } from './utils'
 
 const messages = {
-  others: formatOthersCount,
   reposted: 'reposted your'
 }
 
@@ -76,8 +76,10 @@ export const RepostNotification = (props: RepostNotificationProps) => {
         />
       </NotificationHeader>
       <NotificationBody>
-        <UserNameLink user={firstUser} notification={notification} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}{' '}
+        <UserNameLink user={firstUser} notification={notification} />{' '}
+        {otherUsersCount > 0 ? (
+          <OthersLink othersCount={otherUsersCount} onClick={handleClick} />
+        ) : null}{' '}
         {messages.reposted} {entityType.toLowerCase()}{' '}
         <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>

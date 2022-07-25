@@ -16,14 +16,14 @@ import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
+import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFavorite } from './components/icons'
-import { entityToUserListEntity, formatOthersCount } from './utils'
+import { entityToUserListEntity } from './utils'
 
 const messages = {
-  others: formatOthersCount,
-  reposted: ' reposted your '
+  favorited: ' favorited your '
 }
 
 type FavoriteNotificationProps = {
@@ -72,9 +72,11 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
         />
       </NotificationHeader>
       <NotificationBody>
-        <UserNameLink user={firstUser} notification={notification} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
-        {messages.reposted}
+        <UserNameLink user={firstUser} notification={notification} />{' '}
+        {otherUsersCount > 0 ? (
+          <OthersLink othersCount={otherUsersCount} onClick={handleClick} />
+        ) : null}
+        {messages.favorited}
         {entityType.toLowerCase()}{' '}
         <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>

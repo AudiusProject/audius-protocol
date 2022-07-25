@@ -4,7 +4,6 @@ import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { Follow } from 'common/store/notifications/types'
-import { formatCount } from 'common/utils/formatUtil'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -20,13 +19,13 @@ import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
+import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFollow } from './components/icons'
 
 const messages = {
-  others: (userCount: number) =>
-    ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
+  and: 'and',
   followed: ' followed you'
 }
 
@@ -71,8 +70,10 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         />
       </NotificationHeader>
       <NotificationBody>
-        <UserNameLink user={firstUser} notification={notification} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
+        <UserNameLink user={firstUser} notification={notification} />{' '}
+        {otherUsersCount > 0 ? (
+          <OthersLink othersCount={otherUsersCount} onClick={handleClick} />
+        ) : null}
         {messages.followed}
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
