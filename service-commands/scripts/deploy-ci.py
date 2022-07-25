@@ -13,9 +13,9 @@ logging.basicConfig(
 logger = logging.getLogger("cli")
 
 
-environments = ["staging"]
-services = ["all", "discovery", "content"]
-content_nodes = [
+environments = ("staging",)
+services = ("all", "discovery", "content", "identity")
+content_nodes = (
     "stage-creator-4",  # canary
     "stage-creator-5",
     "stage-creator-6",
@@ -25,14 +25,14 @@ content_nodes = [
     "stage-creator-10",
     "stage-creator-11",
     "stage-user-metadata",
-]
-discovery_nodes = [
+)
+discovery_nodes = (
     "stage-discovery-1",
     "stage-discovery-2",
     "stage-discovery-3",
     "stage-discovery-4",  # canary
     "stage-discovery-5",
-]
+)
 all_nodes = content_nodes + discovery_nodes
 
 FORCE_INSTRUCTIONS = "INSTRUCTIONS GO HERE."
@@ -74,7 +74,7 @@ def run_cmd(cmd, exit_on_error=True, msg=None):
 
 def standardize_branch(branches):
     for branch in branches:
-        if "remotes/origin/master" in branch:
+        if "remotes/origin/master" in branch or "remotes/origin/HEAD" in branch:
             return "master"
         if "tags/@audius" in branch:
             return "release"
@@ -211,6 +211,9 @@ def cli(environment, service, hosts, git_tag):
     for host in affected_hosts:
         try:
             ssh(host, "hostname", exit_on_error=False)
+            if service == "identity" and not git_tag:
+                logger.error("A --git-tag is required when deploying identity")
+                raise
             # if git_tag:
             #     ssh(host, "yes | audius-cli pull", exit_on_error=False)
             #     ssh(host, f"yes | audius-cli set-tag {git_tag}", exit_on_error=False)
