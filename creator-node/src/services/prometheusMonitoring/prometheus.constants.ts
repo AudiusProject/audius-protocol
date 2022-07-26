@@ -1,5 +1,7 @@
-const promClient = require('prom-client')
-const _ = require('lodash')
+import type { LoDashStatic } from 'lodash'
+import { Gauge, Histogram, Summary } from 'prom-client'
+
+const _: LoDashStatic = require('lodash')
 const config = require('../../config')
 const { exponentialBucketsRange } = require('./prometheusUtils')
 const {
@@ -13,50 +15,68 @@ const {
  */
 
 // We add a namespace prefix to differentiate internal metrics from those exported by different exporters from the same host
-const NAMESPACE_PREFIX = 'audius_cn'
+export const NAMESPACE_PREFIX = 'audius_cn'
+
+// The interval at which to poll the bull queue
+export const QUEUE_INTERVAL = 1_000
 
 /**
  * @notice Counter and Summary metric types are currently disabled, see README for details.
  */
-const METRIC_TYPES = Object.freeze({
-  GAUGE: promClient.Gauge,
-  HISTOGRAM: promClient.Histogram
-  // COUNTER: promClient.Counter,
-  // SUMMARY: promClient.Summary
+export const METRIC_TYPES = Object.freeze({
+  GAUGE: Gauge,
+  HISTOGRAM: Histogram,
+  // COUNTER: Counter,
+  SUMMARY: Summary
 })
 
 /**
  * Types for recording a metric value.
  */
-const METRIC_RECORD_TYPE = Object.freeze({
+export const METRIC_RECORD_TYPE = Object.freeze({
   GAUGE_INC: 'GAUGE_INC',
   HISTOGRAM_OBSERVE: 'HISTOGRAM_OBSERVE'
 })
 
-const metricNames = {
+const metricNames: Record<string, string> = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
   ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_duration_seconds',
   FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts',
   WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds',
   SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM:
-    'secondary_sync_from_primary_duration_seconds'
+    'secondary_sync_from_primary_duration_seconds',
+  JOBS_ACTIVE_TOTAL_GAUGE: 'jobs_active_total',
+  JOBS_WAITING_TOTAL_GAUGE: 'jobs_waiting_total',
+  JOBS_COMPLETED_TOTAL_GAUGE: 'jobs_completed_total',
+  JOBS_FAILED_TOTAL_GAUGE: 'jobs_failed_total',
+  JOBS_DELAYED_TOTAL_GAUGE: 'jobs_delayed_total',
+  JOBS_DURATION_MILLISECONDS_SUMMARY: 'jobs_duration_milliseconds',
+  JOBS_WAITING_DURATION_MILLISECONDS_SUMMARY:
+    'jobs_waiting_duration_milliseconds',
+  JOBS_ATTEMPTS_SUMMARY: 'jobs_attempts'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
-for (const jobName of Object.values(STATE_MACHINE_JOB_NAMES)) {
+for (const jobName of Object.values(
+  STATE_MACHINE_JOB_NAMES as Record<string, string>
+)) {
   metricNames[
     `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
   ] = `state_machine_${_.snakeCase(jobName)}_job_duration_seconds`
 }
-const METRIC_NAMES = Object.freeze(
+export const METRIC_NAMES = Object.freeze(
   _.mapValues(metricNames, (metricName) => `${NAMESPACE_PREFIX}_${metricName}`)
 )
 
-const METRIC_LABELS = Object.freeze({
+export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
-    sync_type: Object.values(SyncType).map(_.snakeCase),
-    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    sync_type: Object.values(SyncType as Record<string, string>).map(
+      _.snakeCase
+    ),
+    sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
+      _.snakeCase
+    ),
     result: [
       'success',
       'failure_sync_secondary_from_primary',
@@ -73,8 +93,12 @@ const METRIC_LABELS = Object.freeze({
     buckets: exponentialBucketsRange(0.1, 60, 10)
   },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
-    sync_type: Object.values(SyncType).map(_.snakeCase),
-    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    sync_type: Object.values(SyncType as Record<string, string>).map(
+      _.snakeCase
+    ),
+    sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
+      _.snakeCase
+    ),
     result: [
       'success',
       'success_mode_disabled',
@@ -103,7 +127,9 @@ const METRIC_LABELS = Object.freeze({
   },
 
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
-    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
+      _.snakeCase
+    ),
     result: [
       'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
       'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
@@ -154,7 +180,86 @@ const METRIC_LABEL_NAMES = Object.freeze(
   )
 )
 
-const METRICS = Object.freeze({
+type Metric = {
+  metricType: any
+  metricConfig: {
+    name: string
+    help: string
+    labelNames: string[]
+  }
+}
+
+export const METRICS: Record<string, Metric> = Object.freeze({
+  [METRIC_NAMES.JOBS_COMPLETED_TOTAL_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.JOBS_COMPLETED_TOTAL_GAUGE,
+      help: 'Number of completed jobs',
+      labelNames: ['queue_name', 'queue_prefix']
+    }
+  },
+  [METRIC_NAMES.JOBS_FAILED_TOTAL_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.JOBS_FAILED_TOTAL_GAUGE,
+      help: 'Number of failed jobs',
+      labelNames: ['queue_name', 'queue_prefix']
+    }
+  },
+  [METRIC_NAMES.JOBS_DELAYED_TOTAL_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.JOBS_DELAYED_TOTAL_GAUGE,
+      help: 'Number of delayed jobs',
+      labelNames: ['queue_name', 'queue_prefix']
+    }
+  },
+  [METRIC_NAMES.JOBS_ACTIVE_TOTAL_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.JOBS_ACTIVE_TOTAL_GAUGE,
+      help: 'Number of active jobs',
+      labelNames: ['queue_name', 'queue_prefix']
+    }
+  },
+  [METRIC_NAMES.JOBS_WAITING_TOTAL_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.JOBS_WAITING_TOTAL_GAUGE,
+      help: 'Number of waiting jobs',
+      labelNames: ['queue_name', 'queue_prefix']
+    }
+  },
+  [METRIC_NAMES.JOBS_DURATION_MILLISECONDS_SUMMARY]: {
+    metricType: METRIC_TYPES.SUMMARY,
+    metricConfig: {
+      name: METRIC_NAMES.JOBS_DURATION_MILLISECONDS_SUMMARY,
+      help: 'Time to complete jobs',
+      labelNames: ['queue_name', 'queue_prefix', 'status'],
+      maxAgeSeconds: 300,
+      ageBuckets: 13
+    }
+  },
+  [METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_SUMMARY]: {
+    metricType: METRIC_TYPES.SUMMARY,
+    metricConfig: {
+      name: METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_SUMMARY,
+      help: 'Time spent waiting for jobs to run',
+      labelNames: ['queue_name', 'queue_prefix', 'status'],
+      maxAgeSeconds: 300,
+      ageBuckets: 13
+    }
+  },
+  [METRIC_NAMES.JOBS_ATTEMPTS_SUMMARY]: {
+    metricType: METRIC_TYPES.SUMMARY,
+    metricConfig: {
+      name: METRIC_NAMES.JOBS_ATTEMPTS_SUMMARY,
+      help: 'Job attempts made',
+      labelNames: ['queue_name', 'queue_prefix', 'status'],
+      maxAgeSeconds: 300,
+      ageBuckets: 13
+    }
+  },
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
     metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
@@ -254,5 +359,6 @@ module.exports = {
   METRIC_NAMES,
   METRIC_LABELS,
   METRIC_RECORD_TYPE,
-  METRICS
+  METRICS,
+  QUEUE_INTERVAL
 }

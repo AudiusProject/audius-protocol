@@ -79,7 +79,10 @@ class ServiceRegistry {
     this.libs = await initAudiusLibs()
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
-    this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs, this.prometheusRegistry)
+    this.asyncProcessingQueue = new AsyncProcessingQueue(
+      this.libs,
+      this.prometheusRegistry
+    )
 
     this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
 

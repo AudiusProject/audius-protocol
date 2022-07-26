@@ -15,10 +15,15 @@ const _ = require('lodash')
  * @param {number} min the lowest value for a bucket
  * @param {number} max the highest value for a bucket
  * @param {number} count the number of buckets to generate for values between min and max
- * @param {number} [precision] the number of decimal points to round each bucket to
+ * @param {number} [precisi: Job: Jobon] the number of decimal points to round each bucket to
  * @returns 'count' buckets (number[] of length 'count') for values between 'min' and 'max'
  */
-const exponentialBucketsRange = (min, max, count, precision = 0) => {
+export const exponentialBucketsRange = (
+  min: number,
+  max: number,
+  count: number,
+  precision = 0
+) => {
   if (count < 1) {
     throw new Error('exponentialBucketsRange count needs a positive count')
   }
