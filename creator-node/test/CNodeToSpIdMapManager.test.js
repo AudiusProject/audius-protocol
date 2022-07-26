@@ -108,7 +108,7 @@ describe('test CNodeToSpIdMapManager', function () {
       CNodeToSpIdMapManager.updateCnodeEndpointToSpIdMap(ethContracts)
     )
       .to.eventually.be.rejectedWith(
-        'updateCnodeEndpointToSpIdMap() Unable to initialize cNodeEndpointToSpIdMap'
+        'CNodeToSpIdMapManager - Unable to initialize cNodeEndpointToSpIdMap'
       )
       .and.be.an.instanceOf(Error)
   })
