@@ -11,7 +11,7 @@ const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
 module.exports = async function ({ logger }) {
   let errorMsg = ''
   try {
-    NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
+    await NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
       QueueInterfacer.getAudiusLibs().ethContracts
     )
   } catch (e) {
