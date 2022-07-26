@@ -1,9 +1,8 @@
-import type { LoDashStatic } from 'lodash'
 import { Gauge, Histogram, Summary } from 'prom-client'
+import { snakeCase, mapValues } from 'lodash'
+import { exponentialBucketsRange } from './prometheusUtils'
 
-const _: LoDashStatic = require('lodash')
 const config = require('../../config')
-const { exponentialBucketsRange } = require('./prometheusUtils')
 const {
   QUEUE_NAMES: STATE_MACHINE_JOB_NAMES,
   SyncType,
@@ -63,19 +62,17 @@ for (const jobName of Object.values(
 )) {
   metricNames[
     `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
-  ] = `state_machine_${_.snakeCase(jobName)}_job_duration_seconds`
+  ] = `state_machine_${snakeCase(jobName)}_job_duration_seconds`
 }
 export const METRIC_NAMES = Object.freeze(
-  _.mapValues(metricNames, (metricName) => `${NAMESPACE_PREFIX}_${metricName}`)
+  mapValues(metricNames, (metricName) => `${NAMESPACE_PREFIX}_${metricName}`)
 )
 
 export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
-    sync_type: Object.values(SyncType as Record<string, string>).map(
-      _.snakeCase
-    ),
+    sync_type: Object.values(SyncType as Record<string, string>).map(snakeCase),
     sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
-      _.snakeCase
+      snakeCase
     ),
     result: [
       'success',
@@ -93,11 +90,9 @@ export const METRIC_LABELS = Object.freeze({
     buckets: exponentialBucketsRange(0.1, 60, 10)
   },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
-    sync_type: Object.values(SyncType as Record<string, string>).map(
-      _.snakeCase
-    ),
+    sync_type: Object.values(SyncType as Record<string, string>).map(snakeCase),
     sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
-      _.snakeCase
+      snakeCase
     ),
     result: [
       'success',
@@ -128,7 +123,7 @@ export const METRIC_LABELS = Object.freeze({
 
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
-      _.snakeCase
+      snakeCase
     ),
     result: [
       'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary

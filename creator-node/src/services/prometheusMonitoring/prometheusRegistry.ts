@@ -1,5 +1,4 @@
 import type { Job, Queue } from 'bull'
-import { MetricType } from 'prom-client'
 
 import {
   NAMESPACE_PREFIX,
@@ -155,23 +154,8 @@ export class PrometheusRegistry {
         })
     }, QUEUE_INTERVAL)
 
-    const removeMetrics = () => {
-      this.getMetric(
-        this.metricNames.JOBS_DURATION_MILLISECONDS_SUMMARY
-      ).remove(labels)
-      this.getMetric(
-        this.metricNames.JOBS_WAITING_DURATION_MILLISECONDS_SUMMARY
-      ).remove(labels)
-      this.getMetric(this.metricNames.JOBS_ATTEMPTS_SUMMARY).remove(labels)
-      this.getMetric(this.metricNames.JOBS_COMPLETED_TOTAL_GAUGE).remove(labels)
-      this.getMetric(this.metricNames.JOBS_FAILED_TOTAL_GAUGE).remove(labels)
-      this.getMetric(this.metricNames.JOBS_DELAYED_TOTAL_GAUGE).remove(labels)
-      this.getMetric(this.metricNames.JOBS_ACTIVE_TOTAL_GAUGE).remove(labels)
-      this.getMetric(this.metricNames.JOBS_WAITING_TOTAL_GAUGE).remove(labels)
-    }
     return {
-      stop: () => clearInterval(metricInterval),
-      remove: removeMetrics
+      stop: () => clearInterval(metricInterval)
     }
   }
 }
