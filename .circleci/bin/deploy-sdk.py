@@ -22,7 +22,12 @@ def cli(git_tag, circle_api_key):
         data=json.dumps(data),
         allow_redirects=True,
     )
-    pprint(r.json())
+    response = r.json()
+    pprint(response)
+
+    pipeline_id = response["id"]
+    url = f"https://app.circleci.com/pipelines/github/AudiusProject/audius-protocol/{pipeline_id}"
+    print(f"\n{url}")
 
 
 if __name__ == "__main__":
