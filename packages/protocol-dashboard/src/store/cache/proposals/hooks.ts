@@ -113,7 +113,7 @@ export function fetchAllProposals(): ThunkAction<
       })
     )
 
-    const proposals = (allProposals.filter(Boolean) as Proposal[])
+    const proposals = allProposals.filter(Boolean) as Proposal[]
 
     dispatch(setAllProposals({ proposals }))
   }
