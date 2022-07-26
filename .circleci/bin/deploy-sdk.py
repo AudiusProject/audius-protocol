@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
 import json
-from os import getenv
 from pprint import pprint
 
 import click
@@ -9,16 +8,17 @@ import requests
 
 
 @click.command()
-@click.option("-t", "--git-tag")
-def cli(git_tag):
+@click.option("-t", "--git-tag", required=True)
+@click.option("-k", "--circle-api-key", envvar='CIRCLE_API_KEY', required=True)
+def cli(git_tag, circle_api_key):
     org = "AudiusProject"
-    repo = "audius-project"
+    project = "audius-protocol"
     branch = "master"
     data = {"branch": branch, "parameters": {"sdk_release_tag": git_tag}}
     r = requests.post(
-        f"https://circleci.com/api/v2/project/github/{org}/{repo}/pipeline",
+        f"https://circleci.com/api/v2/project/github/{org}/{project}/pipeline",
         headers={"Content-Type": "application/json"},
-        auth=(getenv("CIRCLE_API_KEY"),),
+        auth=(circle_api_key,""),
         data=json.dumps(data),
         allow_redirects=True,
     )
