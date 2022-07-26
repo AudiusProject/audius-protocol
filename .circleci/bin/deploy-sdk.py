@@ -2,6 +2,7 @@
 
 import json
 from os import getenv
+from pprint import pprint
 
 import click
 import requests
@@ -21,6 +22,7 @@ def cli(git_tag):
         data=json.dumps(data),
         allow_redirects=True,
     )
+    pprint(r.json())
 
 
 if __name__ == "__main__":
