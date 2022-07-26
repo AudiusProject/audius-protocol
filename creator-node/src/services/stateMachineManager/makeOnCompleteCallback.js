@@ -55,7 +55,7 @@ module.exports = function (queueNameToQueueMap, prometheusRegistry) {
       logger.info(`Job successfully completed. Parsing result: ${resultString}`)
       jobResult = JSON.parse(resultString) || {}
     } catch (e) {
-      logger.error(`Failed to parse job result string`)
+      logger.error(`Failed to parse job result string: ${e.message}`)
       return
     }
 
