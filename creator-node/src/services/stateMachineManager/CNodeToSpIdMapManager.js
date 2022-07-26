@@ -10,10 +10,15 @@ class CNodeToSpIdMapManager {
     this.cNodeEndpointToSpIdMap = {}
   }
 
-  printMapping() {
+  printMapping(msg) {
     genericLogger.info(
-      `vicky was here || ${JSON.stringify(this.cNodeEndpointToSpIdMap)}`
+      `vicky was here || ${JSON.stringify(this.cNodeEndpointToSpIdMap)} || ${
+        Object.keys(this.cNodeEndpointToSpIdMap).length
+      } || ${Object.keys(this.cNodeEndpointToSpIdMap)} || ${Object.values(
+        this.cNodeEndpointToSpIdMap
+      )} || ${msg}`
     )
+    genericLogger.info(this.cNodeEndpointToSpIdMap)
   }
 
   getCNodeEndpointToSpIdMap() {

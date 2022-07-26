@@ -218,8 +218,6 @@ const _findReplicaSetUpdatesForUser = async (
       const { successRate, successCount, failureCount } =
         userSecondarySyncMetrics[secondary]
 
-      CNodeToSpIdMapManager.printMapping()
-
       // Error case 1 - mismatched spID
       if (
         CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
@@ -232,7 +230,9 @@ const _findReplicaSetUpdatesForUser = async (
             CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary]
           }. Marking replica as unhealthy.`
         )
+
         unhealthyReplicas.add(secondary)
+        CNodeToSpIdMapManager.printMapping('mismatch spID')
 
         // Error case 2 - already marked unhealthy
       } else if (unhealthyPeersSet.has(secondary)) {
@@ -240,6 +240,8 @@ const _findReplicaSetUpdatesForUser = async (
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
         )
         unhealthyReplicas.add(secondary)
+
+        CNodeToSpIdMapManager.printMapping('secondary in unhealthy set')
 
         // Error case 3 - low user sync success rate
       } else if (
@@ -249,6 +251,8 @@ const _findReplicaSetUpdatesForUser = async (
         logger.error(
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${minSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
         )
+        CNodeToSpIdMapManager.printMapping('success rate sucks')
+
         unhealthyReplicas.add(secondary)
       }
     }
