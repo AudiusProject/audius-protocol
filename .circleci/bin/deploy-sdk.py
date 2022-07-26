@@ -48,7 +48,7 @@ def standardize_branch(branches):
     return branch
 
 
-def check_tag(tag):
+def ensure_tag_on_master(tag):
     try:
         branches = run_cmd(
             f"git name-rev --name-only {tag}", exit_on_error=False
@@ -67,7 +67,7 @@ def check_tag(tag):
 @click.option("-t", "--git-tag", required=True)
 @click.option("-k", "--circle-api-key", envvar="CIRCLE_API_KEY", required=True)
 def cli(git_tag, circle_api_key):
-    check_tag(git_tag)
+    ensure_tag_on_master(git_tag)
     org = "AudiusProject"
     project = "audius-protocol"
     branch = "master"
