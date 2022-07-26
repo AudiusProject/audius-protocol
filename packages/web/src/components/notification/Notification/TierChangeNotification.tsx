@@ -1,6 +1,8 @@
+import { getNotificationUser } from 'common/store/notifications/selectors'
 import { TierChange } from 'common/store/notifications/types'
 import { BadgeTierInfo, badgeTiers } from 'common/store/wallet/utils'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { useSelector } from 'utils/reducer'
 import { fullProfilePage } from 'utils/route'
 
 import styles from './TierChangeNotification.module.css'
@@ -39,7 +41,8 @@ type TierChangeNotificationProps = {
 export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
 
-  const { tier, timeLabel, isViewed, user } = notification
+  const { tier, timeLabel, isViewed } = notification
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
   const tierInfo = badgeTiers.find(
     (info) => info.tier === tier
@@ -49,6 +52,8 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
 
   const { label, icon } = tierInfoMap[tier]
   const shareText = messages.twitterShareText(label, icon)
+
+  if (!user) return null
 
   return (
     <NotificationTile notification={notification}>

@@ -4,12 +4,15 @@ import {
   getNotificationEntities,
   getNotificationUser
 } from 'audius-client/src/common/store/notifications/selectors'
-import { RemixCosign } from 'audius-client/src/common/store/notifications/types'
-import { isEqual } from 'lodash'
+import {
+  RemixCosign,
+  TrackEntity
+} from 'audius-client/src/common/store/notifications/types'
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { View } from 'react-native'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { EventNames } from 'app/types/analytics'
 import { make } from 'app/utils/analytics'
 import { getTrackRoute } from 'app/utils/routes'
@@ -46,13 +49,15 @@ export const RemixCosignNotification = (
   const user = useSelectorWeb((state) =>
     getNotificationUser(state, notification)
   )
+  // TODO: casting from EntityType to TrackEntity here, but
+  // getNotificationEntities should be smart enough based on notif type
   const tracks = useSelectorWeb(
     (state) => getNotificationEntities(state, notification),
     isEqual
-  )
+  ) as Nullable<TrackEntity[]>
 
-  const childTrack = tracks.find(({ track_id }) => track_id === childTrackId)
-  const parentTrack = tracks.find(
+  const childTrack = tracks?.find(({ track_id }) => track_id === childTrackId)
+  const parentTrack = tracks?.find(
     ({ owner_id }) => owner_id === parentTrackUserId
   )
   const parentTrackTitle = parentTrack?.title

@@ -4,8 +4,14 @@ import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { Name } from 'common/models/Analytics'
+import {
+  getNotificationEntities,
+  getNotificationUser
+} from 'common/store/notifications/selectors'
 import { RemixCosign, TrackEntity } from 'common/store/notifications/types'
+import { Nullable } from 'common/utils/typeUtils'
 import { make } from 'store/analytics/actions'
+import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -22,8 +28,8 @@ import { getEntityLink } from './utils'
 const messages = {
   title: 'Remix Co-sign',
   cosign: 'Co-signed your Remix of',
-  shareTwitterText: (track: TrackEntity, handle: string) =>
-    `My remix of ${track.title} was Co-Signed by ${handle} on @AudiusProject #Audius`
+  shareTwitterText: (trackTitle: string, handle: string) =>
+    `My remix of ${trackTitle} was Co-Signed by ${handle} on @AudiusProject #Audius`
 }
 
 type RemixCosignNotificationProps = {
@@ -34,32 +40,35 @@ export const RemixCosignNotification = (
   props: RemixCosignNotificationProps
 ) => {
   const { notification } = props
-  const {
-    user,
-    entities,
-    entityType,
-    timeLabel,
-    isViewed,
-    childTrackId,
-    parentTrackUserId
-  } = notification
+  const { entityType, timeLabel, isViewed, childTrackId, parentTrackUserId } =
+    notification
+
+  const user = useSelector((state) => getNotificationUser(state, notification))
+
+  // TODO: casting from EntityType to TrackEntity here, but
+  // getNotificationEntities should be smart enough based on notif type
+  const tracks = useSelector((state) =>
+    getNotificationEntities(state, notification)
+  ) as Nullable<TrackEntity[]>
+
   const dispatch = useDispatch()
 
-  const childTrack = entities.find(
-    (track) => track.track_id === childTrackId
-  ) as TrackEntity
+  const childTrack = tracks?.find((track) => track.track_id === childTrackId)
 
-  const parentTrack = entities.find(
+  const parentTrack = tracks?.find(
     (track) => track.owner_id === parentTrackUserId
-  ) as TrackEntity
+  )
+  const parentTrackTitle = parentTrack?.title
 
   const handleClick = useCallback(() => {
+    if (!childTrack) return
     dispatch(push(getEntityLink(childTrack)))
   }, [childTrack, dispatch])
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
-      const shareText = messages.shareTwitterText(parentTrack, handle)
+      if (!parentTrackTitle) return null
+      const shareText = messages.shareTwitterText(parentTrackTitle, handle)
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE,
         {
@@ -68,8 +77,10 @@ export const RemixCosignNotification = (
       )
       return { shareText, analytics }
     },
-    [parentTrack]
+    [parentTrackTitle]
   )
+
+  if (!user || !parentTrack || !childTrack) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

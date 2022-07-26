@@ -4,10 +4,9 @@ import {
 } from 'audius-client/src/common/store/notifications/selectors'
 import { Repost } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
-import { isEqual } from 'lodash'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import {
   NotificationHeader,
@@ -38,7 +37,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
     (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
     isEqual
   )
-  const [firstUser] = users
+  const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
   const entity = useSelectorWeb(
@@ -47,6 +46,8 @@ export const RepostNotification = (props: RepostNotificationProps) => {
   )
 
   const handlePress = useSocialActionHandler(notification, users)
+
+  if (!users || !firstUser || !entity) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>

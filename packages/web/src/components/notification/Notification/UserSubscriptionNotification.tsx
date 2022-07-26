@@ -4,8 +4,13 @@ import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { Name } from 'common/models/Analytics'
+import {
+  getNotificationEntities,
+  getNotificationUser
+} from 'common/store/notifications/selectors'
 import { Entity, UserSubscription } from 'common/store/notifications/types'
 import { make, useRecord } from 'store/analytics/actions'
+import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 
 import styles from './UserSubscriptionNotification.module.css'
@@ -34,8 +39,12 @@ export const UserSubscriptionNotification = (
   props: UserSubscriptionNotificationProps
 ) => {
   const { notification } = props
-  const { user, entities, entityType, timeLabel, isViewed, type } = notification
-  const uploadCount = entities.length
+  const { entityType, entityIds, timeLabel, isViewed, type } = notification
+  const user = useSelector((state) => getNotificationUser(state, notification))
+  const entities = useSelector((state) =>
+    getNotificationEntities(state, notification)
+  )
+  const uploadCount = entityIds.length
   const isSingleUpload = uploadCount === 1
 
   const dispatch = useDispatch()
@@ -43,15 +52,24 @@ export const UserSubscriptionNotification = (
 
   const handleClick = useCallback(() => {
     if (entityType === Entity.Track && !isSingleUpload) {
-      dispatch(push(profilePage(user.handle)))
+      if (user) {
+        dispatch(push(profilePage(user.handle)))
+      }
     } else {
-      const entityLink = getEntityLink(entities[0])
-      dispatch(push(entityLink))
-      record(
-        make(Name.NOTIFICATIONS_CLICK_TILE, { kind: type, link_to: entityLink })
-      )
+      if (entities) {
+        const entityLink = getEntityLink(entities[0])
+        dispatch(push(entityLink))
+        record(
+          make(Name.NOTIFICATIONS_CLICK_TILE, {
+            kind: type,
+            link_to: entityLink
+          })
+        )
+      }
     }
   }, [entityType, isSingleUpload, user, entities, dispatch, record, type])
+
+  if (!user || !entities) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
