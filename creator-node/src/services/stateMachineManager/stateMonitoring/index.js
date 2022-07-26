@@ -15,6 +15,7 @@ const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
 const monitorStateJobProcessor = require('./monitorState.jobProcessor')
 const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
 const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
+const findInconsistentClockJobProcessor = require('./findInconsistentClock.jobProcessor')
 const fetchCNodeEndpointToSpIdMapJobProcessor = require('./fetchCNodeEndpointToSpIdMap.jobProcessor')
 
 const monitorStateLogger = createChildLogger(baseLogger, {
@@ -25,6 +26,9 @@ const findSyncRequestsLogger = createChildLogger(baseLogger, {
 })
 const findReplicaSetUpdatesLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.FIND_REPLICA_SET_UPDATES
+})
+const findInconsistentClockLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.FIND_INCONSISTENT_CLOCK
 })
 const cNodeEndpointToSpIdMapQueueLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
@@ -83,10 +87,18 @@ class StateMonitoringManager {
       lockDuration: MAX_QUEUE_RUNTIMES.FIND_REPLICA_SET_UPDATES
     })
 
+    const findInconsistentClockQueue = makeQueue({
+      name: QUEUE_NAMES.FIND_INCONSISTENT_CLOCK,
+      removeOnComplete: QUEUE_HISTORY.FIND_INCONSISTENT_CLOCK,
+      remoevOnFail: QUEUE_HISTORY.FIND_INCONSISTENT_CLOCK,
+      lockDuration: MAX_QUEUE_RUNTIMES.FIND_INCONSISTENT_CLOCK
+    })
+
     this.registerMonitoringQueueEventHandlersAndJobProcessors({
       monitorStateQueue,
       findSyncRequestsQueue,
       findReplicaSetUpdatesQueue,
+      findInconsistentClockQueue,
       cNodeEndpointToSpIdMapQueue,
       monitorStateJobFailureCallback: this.enqueueMonitorStateJobAfterFailure,
       processMonitorStateJob:
@@ -94,13 +106,17 @@ class StateMonitoringManager {
       processFindSyncRequestsJob:
         this.makeProcessFindSyncRequestsJob(prometheusRegistry).bind(this),
       processFindReplicaSetUpdatesJob:
-        this.makeProcessFindReplicaSetUpdatesJob(prometheusRegistry).bind(this)
+        this.makeProcessFindReplicaSetUpdatesJob(prometheusRegistry).bind(this),
+      processFindInconsistentClockJob:
+        this.makeProcessFindInconsistentClockJob(prometheusRegistry).bind(this)
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
     await monitorStateQueue.obliterate({ force: true })
     await findSyncRequestsQueue.obliterate({ force: true })
     await findReplicaSetUpdatesQueue.obliterate({ force: true })
+    await findInconsistentClockQueue.obliterate({ force: true })
+    // Clear the state
 
     // Enqueue first monitor-state job
     await this.startMonitorStateQueue(monitorStateQueue, discoveryNodeEndpoint)
@@ -109,6 +125,7 @@ class StateMonitoringManager {
       monitorStateQueue,
       findSyncRequestsQueue,
       findReplicaSetUpdatesQueue,
+      findInconsistentClockQueue,
       cNodeEndpointToSpIdMapQueue
     }
   }
@@ -119,6 +136,7 @@ class StateMonitoringManager {
    * @param {Object} params.monitoringStateQueue the monitor-state queue to register events for
    * @param {Object} params.findSyncRequestsQueue the find-sync-requests queue to register events for
    * @param {Object} params.findReplicaSetUpdatesQueue the find-replica-set-updates queue to register events for
+   * @param {Object} params.findInconsistentClockQueue the find-inconsistent-clock queue to register events for
    * @param {Object} params.cNodeEndpointToSpIdMapQueue the queue that fetches the cNodeEndpoint->spId map
    * @param {Function<failedJob>} params.monitorStateJobFailureCallback the function to call when a monitorState job fails
    * @param {Function<job>} params.processMonitorStateJob the function to call when processing a job from the queue to monitor state
@@ -129,16 +147,19 @@ class StateMonitoringManager {
     monitorStateQueue,
     findSyncRequestsQueue,
     findReplicaSetUpdatesQueue,
+    findInconsistentClockQueue,
     cNodeEndpointToSpIdMapQueue,
     monitorStateJobFailureCallback,
     processMonitorStateJob,
     processFindSyncRequestsJob,
-    processFindReplicaSetUpdatesJob
+    processFindReplicaSetUpdatesJob,
+    processFindInconsistentClockJob
   }) {
     // Add handlers for logging
     registerQueueEvents(monitorStateQueue, monitorStateLogger)
     registerQueueEvents(findSyncRequestsQueue, findSyncRequestsLogger)
     registerQueueEvents(findReplicaSetUpdatesQueue, findReplicaSetUpdatesLogger)
+    registerQueueEvents(findInconsistentClockQueue, findInconsistentClockLogger)
     registerQueueEvents(
       cNodeEndpointToSpIdMapQueue,
       cNodeEndpointToSpIdMapQueueLogger
@@ -164,6 +185,12 @@ class StateMonitoringManager {
       })
       logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
     })
+    findInconsistentClockQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(findInconsistentClockLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
+    })
     cNodeEndpointToSpIdMapQueue.on('failed', (job, err) => {
       const logger = createChildLogger(cNodeEndpointToSpIdMapQueueLogger, {
         jobId: job?.id || 'unknown'
@@ -180,6 +207,10 @@ class StateMonitoringManager {
     findReplicaSetUpdatesQueue.process(
       1 /** concurrency */,
       processFindReplicaSetUpdatesJob
+    )
+    findInconsistentClockQueue.process(
+      1 /** concurrency */,
+      processFindInconsistentClockJob
     )
   }
 
@@ -310,6 +341,16 @@ class StateMonitoringManager {
         job,
         findReplicaSetUpdatesJobProcessor,
         findReplicaSetUpdatesLogger,
+        prometheusRegistry
+      )
+  }
+
+  makeProcessFindInconsistentClockJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        job,
+        findInconsistentClockJobProcessor,
+        findInconsistentClockLogger,
         prometheusRegistry
       )
   }

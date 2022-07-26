@@ -48,6 +48,8 @@ class StateReconciliationManager {
       lockDuration: MAX_QUEUE_RUNTIMES.UPDATE_REPLICA_SET
     })
 
+    // TODO: make queue for fixing inconsistent clock values
+
     // Clear any old state if redis was running but the rest of the server restarted
     await manualSyncQueue.clean({ force: true })
     await recurringSyncQueue.clean({ force: true })

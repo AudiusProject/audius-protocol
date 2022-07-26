@@ -45,6 +45,8 @@ module.exports = {
     FIND_SYNC_REQUESTS: 20,
     // Max number of completed/failed jobs to keep in redis for the find-replica-set-updates queue
     FIND_REPLICA_SET_UPDATES: 20,
+    // Max number of completed/failed jobs to keep in redis for the find-inconsistent-clock queue
+    FIND_INCONSISTENT_CLOCK: 20,
     // Max number of completed/failed jobs to keep in redis for the cNodeEndpoint->spId map queue
     FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 100,
     // Max number of completed/failed jobs to keep in redis for the manual sync queue
@@ -62,6 +64,8 @@ module.exports = {
     FIND_SYNC_REQUESTS: 'find-sync-requests-queue',
     // Name of the queue that only processes jobs to find replica set updates
     FIND_REPLICA_SET_UPDATES: 'find-replica-set-updates-queue',
+    // Name of the queue that only processes jobs to find inconsistent clock values
+    FIND_INCONSISTENT_CLOCK: 'find-inconsistent-clock',
     // Name of queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
     FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-to-endpoint-sp-id-map-queue',
     // Name of queue that only processes jobs to issue a manual sync
@@ -79,6 +83,8 @@ module.exports = {
     FIND_SYNC_REQUESTS: 1000 * 60 * 60,
     // Max millis to run a find-replica-set-updates job for before marking it as stalled (1 hour)
     FIND_REPLICA_SET_UPDATES: 1000 * 60 * 60,
+    // Max millis to run a find-inconsistent-clock job for before marking it as stalled (1 hour)
+    FIND_INCONSISTENT_CLOCK: 1000 * 60 * 60,
     // Max millis to run a fetch cNodeEndpoint->spId mapping job for before marking it as stalled (1 minute)
     FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 1000 * 60,
     // Max millis to run a manual sync job for before marking it as stalled (60 seconds)
