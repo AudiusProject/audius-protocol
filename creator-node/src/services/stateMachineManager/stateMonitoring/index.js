@@ -43,11 +43,11 @@ class StateMonitoringManager {
       name: QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
       removeOnComplete: QUEUE_HISTORY.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
       removeOnFail: QUEUE_HISTORY.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
-      lockDuration: MAX_QUEUE_RUNTIMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
-      limiter: {
-        max: 1,
-        duration: 10000 // 10s config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
-      }
+      lockDuration: MAX_QUEUE_RUNTIMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
+      // limiter: {
+      //   max: 1,
+      //   duration: 10000 // 10s config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
+      // }
     })
     await this.startEndpointToSpIdMapQueue(
       cNodeEndpointToSpIdMapQueue,
