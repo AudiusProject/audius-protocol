@@ -65,7 +65,7 @@ function bump-npm () {
     git checkout -b ${STUB}-${VERSION}
     git add .
     git commit -m "$(commit-message)"
-    git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
+    # git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
 
     # Push branch and tags to remote
     git push -u origin ${STUB}-${VERSION}
