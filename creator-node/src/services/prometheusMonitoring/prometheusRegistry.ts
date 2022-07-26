@@ -20,12 +20,12 @@ enum JobStatus {
   FAILED = 'failed'
 }
 
-class PrometheusRegistry {
+export class PrometheusRegistry {
   registry: any
   metricNames: Record<string, string>
   namespacePrefix: string
 
-  constructor() {
+  public constructor() {
     // Use default global registry to register metrics
     this.registry = PrometheusClient.register
 
@@ -48,7 +48,7 @@ class PrometheusRegistry {
   /**
    * Creates and registers every static metric defined in prometheus.constants.js
    */
-  initStaticMetrics(registry: any) {
+  public initStaticMetrics(registry: any) {
     for (const { metricType, metricConfig } of Object.values(METRICS)) {
       // Create and register instance of MetricType, with provided metricConfig
 
@@ -61,16 +61,16 @@ class PrometheusRegistry {
   /** Getters */
 
   /** Returns current data for all metrics */
-  async getAllMetricData() {
+  public async getAllMetricData() {
     return this.registry.metrics()
   }
 
   /** Returns single metric instance by name */
-  getMetric(name: string) {
+  public getMetric(name: string) {
     return this.registry.getSingleMetric(name)
   }
 
-  recordJobMetrics(
+  public recordJobMetrics(
     labels: { [key: string]: string },
     status: JobStatus,
     job: Job
@@ -101,7 +101,7 @@ class PrometheusRegistry {
     )
   }
 
-  startQueueMetrics(queue: Queue, useGlobal: boolean) {
+  public startQueueMetrics(queue: Queue, useGlobal: boolean) {
     // @ts-ignore
     const keyPrefix = queue.keyPrefix.replace(/.*\{|\}/gi, '')
 
