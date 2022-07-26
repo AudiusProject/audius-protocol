@@ -210,7 +210,7 @@ const _findReplicaSetUpdatesForUser = async (
     )
 
     /**
-     * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
+     * For each secondary, add to `unhealthyReplicas` if unhealthy
      */
     for (const secondaryInfo of secondariesInfo) {
       const secondary = secondaryInfo.endpoint

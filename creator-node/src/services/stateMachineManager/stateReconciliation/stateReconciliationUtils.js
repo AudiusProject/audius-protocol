@@ -73,13 +73,15 @@ const getNewOrExistingSyncReq = ({
     syncRequestParameters
   }
 
-  // Record sync in syncDeDuplicator
-  SyncRequestDeDuplicator.recordSync(
-    syncType,
-    userWallet,
-    secondaryEndpoint,
-    syncReqToEnqueue
-  )
+  // Record sync in syncDeDuplicator for recurring syncs only
+  if (syncType === SyncType.Recurring) {
+    SyncRequestDeDuplicator.recordSync(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      syncReqToEnqueue
+    )
+  }
 
   return { syncReqToEnqueue }
 }
