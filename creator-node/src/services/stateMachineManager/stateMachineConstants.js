@@ -39,7 +39,7 @@ module.exports = {
   MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS: 2,
 
   // Max number of attempts to run a job that attempts to issue a recurring sync
-  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS: 1,
+  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS: 2,
 
   QUEUE_HISTORY: Object.freeze({
     // Max number of completed/failed jobs to keep in redis for the monitor-state queue
