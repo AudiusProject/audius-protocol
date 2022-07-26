@@ -839,7 +839,7 @@ workflows:
   # 2. go to your branch of choice
   # 3. click "Trigger Pipeline"
   # 4. Add string paramter "sdk_release_tag" and set to a valid git tag/commit
-  hold-workflows:
+  sdk-release:
     when: << pipeline.parameters.sdk_release_tag >>
     jobs:
       - publish-libs:
