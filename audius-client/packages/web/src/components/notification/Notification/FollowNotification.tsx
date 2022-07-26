@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { getNotificationUsers } from 'common/store/notifications/selectors'
 import { Follow } from 'common/store/notifications/types'
 import {
   setUsers as setUserListUsers,
@@ -13,6 +14,7 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 import { isMobile } from 'utils/clientUtil'
+import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
@@ -23,6 +25,7 @@ import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFollow } from './components/icons'
+import { USER_LENGTH_LIMIT } from './utils'
 
 const messages = {
   and: 'and',
@@ -35,8 +38,11 @@ type FollowNotificationProps = {
 
 export const FollowNotification = (props: FollowNotificationProps) => {
   const { notification } = props
-  const { id, users, userIds, timeLabel, isViewed } = notification
-  const [firstUser] = users
+  const { id, userIds, timeLabel, isViewed } = notification
+  const users = useSelector((state) =>
+    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  )
+  const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
   const dispatch = useDispatch()
@@ -56,9 +62,13 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         dispatch(openUserListModal(true))
       }
     } else {
-      dispatch(push(profilePage(firstUser.handle)))
+      if (firstUser) {
+        dispatch(push(profilePage(firstUser.handle)))
+      }
     }
-  }, [isMultiUser, dispatch, id, firstUser.handle])
+  }, [isMultiUser, dispatch, id, firstUser])
+
+  if (!users || !firstUser) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

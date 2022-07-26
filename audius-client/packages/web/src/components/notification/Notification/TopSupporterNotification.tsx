@@ -2,8 +2,10 @@ import { useCallback } from 'react'
 
 import { ReactComponent as IconTrending } from 'assets/img/iconTrending.svg'
 import { Name } from 'common/models/Analytics'
+import { getNotificationUser } from 'common/store/notifications/selectors'
 import { SupporterRankUp } from 'common/store/notifications/types'
 import { make } from 'store/analytics/actions'
+import { useSelector } from 'utils/reducer'
 
 import styles from './TopSupporterNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -33,7 +35,9 @@ export const TopSupporterNotification = (
   props: TopSupporterNotificationProps
 ) => {
   const { notification } = props
-  const { user, rank, timeLabel, isViewed } = notification
+  const { rank, timeLabel, isViewed } = notification
+
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
   const handleClick = useGoToProfile(user)
 
@@ -50,6 +54,8 @@ export const TopSupporterNotification = (
     },
     [rank]
   )
+
+  if (!user) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

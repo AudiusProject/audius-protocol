@@ -1,10 +1,9 @@
 import { getNotificationUsers } from 'audius-client/src/common/store/notifications/selectors'
 import { Follow } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
-import { isEqual } from 'lodash'
 
 import IconUser from 'app/assets/images/iconUser.svg'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import {
   NotificationHeader,
@@ -34,10 +33,12 @@ export const FollowNotification = (props: FollowNotificationProps) => {
     (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
     isEqual
   )
-  const [firstUser] = users
+  const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
   const handlePress = useSocialActionHandler(notification, users)
+
+  if (!users || !firstUser) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>

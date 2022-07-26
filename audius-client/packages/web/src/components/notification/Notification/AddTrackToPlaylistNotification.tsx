@@ -1,16 +1,18 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { Name } from 'common/models/Analytics'
+import { Track } from 'common/models/Track'
+import { getNotificationEntities } from 'common/store/notifications/selectors'
 import {
   AddTrackToPlaylist,
   CollectionEntity,
-  Entity,
-  TrackEntity
+  Entity
 } from 'common/store/notifications/types'
 import { make } from 'store/analytics/actions'
+import { useSelector } from 'utils/reducer'
 
 import styles from './TipSentNotification.module.css'
 import { EntityLink } from './components/EntityLink'
@@ -29,7 +31,7 @@ const messages = {
   title: 'Track Added to Playlist',
   shareTwitterText: (
     handle: string,
-    track: TrackEntity,
+    track: Track,
     playlist: CollectionEntity
   ) =>
     `My track ${track.title} was added to the playlist ${playlist.playlist_name} by ${handle} on @audiusproject! #Audius`
@@ -43,8 +45,10 @@ export const AddTrackToPlaylistNotification = (
   props: AddTrackToPlaylistNotificationProps
 ) => {
   const { notification } = props
-  const { entities, timeLabel, isViewed } = notification
-  const { track, playlist } = entities
+  const { timeLabel, isViewed } = notification
+  const { track, playlist } = useSelector((state) =>
+    getNotificationEntities(state, notification)
+  )
   const playlistOwner = playlist.user
 
   const dispatch = useDispatch()
@@ -72,7 +76,7 @@ export const AddTrackToPlaylistNotification = (
     dispatch(push(getEntityLink(playlist)))
   }, [playlist, dispatch])
 
-  if (!playlistOwner) return null
+  if (!playlistOwner || !track) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

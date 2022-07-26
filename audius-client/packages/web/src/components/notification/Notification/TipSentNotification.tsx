@@ -2,8 +2,10 @@ import { useCallback } from 'react'
 
 import { useUIAudio } from 'common/hooks/useUIAudio'
 import { Name } from 'common/models/Analytics'
+import { getNotificationUser } from 'common/store/notifications/selectors'
 import { TipSend } from 'common/store/notifications/types'
 import { make } from 'store/analytics/actions'
+import { useSelector } from 'utils/reducer'
 
 import styles from './TipSentNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -32,9 +34,10 @@ type TipSentNotificationProps = {
 
 export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { notification } = props
-  const { user, amount, timeLabel, isViewed } = notification
+  const { amount, timeLabel, isViewed } = notification
   const uiAmount = useUIAudio(amount)
 
+  const user = useSelector((state) => getNotificationUser(state, notification))
   const handleClick = useGoToProfile(user)
 
   const handleShare = useCallback(
@@ -49,6 +52,8 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
     },
     [uiAmount]
   )
+
+  if (!user) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

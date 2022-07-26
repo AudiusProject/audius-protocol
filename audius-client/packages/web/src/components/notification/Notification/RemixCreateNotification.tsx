@@ -4,8 +4,14 @@ import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { Name } from 'common/models/Analytics'
+import {
+  getNotificationEntities,
+  getNotificationUser
+} from 'common/store/notifications/selectors'
 import { RemixCreate, TrackEntity } from 'common/store/notifications/types'
+import { Nullable } from 'common/utils/typeUtils'
 import { make } from 'store/analytics/actions'
+import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -33,31 +39,30 @@ export const RemixCreateNotification = (
   props: RemixCreateNotificationProps
 ) => {
   const { notification } = props
-  const {
-    user,
-    entities,
-    entityType,
-    timeLabel,
-    isViewed,
-    childTrackId,
-    parentTrackId
-  } = notification
+  const { entityType, timeLabel, isViewed, childTrackId, parentTrackId } =
+    notification
   const dispatch = useDispatch()
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const childTrack = entities.find(
-    (track) => track.track_id === childTrackId
-  ) as TrackEntity
+  // TODO: casting from EntityType to TrackEntity here, but
+  // getNotificationEntities should be smart enough based on notif type
+  const tracks = useSelector((state) =>
+    getNotificationEntities(state, notification)
+  ) as Nullable<TrackEntity[]>
 
-  const parentTrack = entities.find(
-    (track) => track.track_id === parentTrackId
-  ) as TrackEntity
+  const childTrack = tracks?.find((track) => track.track_id === childTrackId)
+
+  const parentTrack = tracks?.find((track) => track.track_id === parentTrackId)
 
   const handleClick = useCallback(() => {
-    dispatch(push(getEntityLink(childTrack)))
+    if (childTrack) {
+      dispatch(push(getEntityLink(childTrack)))
+    }
   }, [childTrack, dispatch])
 
   const handleShare = useCallback(
     (twitterHandle: string) => {
+      if (!parentTrack) return null
       const shareText = messages.shareTwitterText(parentTrack, twitterHandle)
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_REMIX_CREATE_TWITTER_SHARE,
@@ -67,6 +72,8 @@ export const RemixCreateNotification = (
     },
     [parentTrack]
   )
+
+  if (!user || !parentTrack || !childTrack) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

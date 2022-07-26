@@ -1,11 +1,14 @@
 import { useCallback } from 'react'
 
 import { getNotificationEntity } from 'audius-client/src/common/store/notifications/selectors'
-import { TrendingTrack } from 'audius-client/src/common/store/notifications/types'
-import { isEqual } from 'lodash'
+import {
+  TrackEntity,
+  TrendingTrack
+} from 'audius-client/src/common/store/notifications/types'
+import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { getTrackRoute } from 'app/utils/routes'
 
 import {
@@ -44,15 +47,19 @@ export const TrendingTrackNotification = (
   const track = useSelectorWeb(
     (state) => getNotificationEntity(state, notification),
     isEqual
-  )
+  ) as Nullable<TrackEntity>
   const navigation = useDrawerNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.navigate({
-      native: { screen: 'Track', params: { id: track.track_id } },
-      web: { route: getTrackRoute(track) }
-    })
+    if (track) {
+      navigation.navigate({
+        native: { screen: 'Track', params: { id: track.track_id } },
+        web: { route: getTrackRoute(track) }
+      })
+    }
   }, [navigation, track])
+
+  if (!track) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>

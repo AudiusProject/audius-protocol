@@ -132,7 +132,6 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const renderBody = () => {
     const { achievement, value } = notification
     if (achievement === Achievement.Followers) {
-      const { value } = notification
       return `${messages.follows} ${formatCount(value)} ${achievement}`
     } else if (entity) {
       const { entityType } = notification
