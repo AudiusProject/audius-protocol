@@ -36,15 +36,22 @@ class CNodeToSpIdMapManager {
       const contentNodes = await ethContracts.getServiceProviderList(
         'content-node'
       )
+      this.printMapping(`vickyy iter ${contentNodes.toString()}`)
+
       contentNodes.forEach((cn) => {
         cNodeEndpointToSpIdMap[cn.endpoint] = cn.spID
       })
+      this.printMapping(
+        `vickyy the map ${JSON.stringify(cNodeEndpointToSpIdMap)}`
+      )
     } catch (e) {
       genericLogger.error(`updateCnodeEndpointToSpIdMap Error: ${e.message}`)
     }
 
     if (Object.keys(cNodeEndpointToSpIdMap).length > 0) {
+      this.printMapping('vickyy before setting')
       this.cNodeEndpointToSpIdMap = cNodeEndpointToSpIdMap
+      this.printMapping('vickyy after setting')
     }
 
     const mapLength = Object.keys(this.cNodeEndpointToSpIdMap).length
@@ -56,6 +63,7 @@ class CNodeToSpIdMapManager {
     }
 
     genericLogger.info(`updateEndpointToSpIdMap Success. Size: ${mapLength}`)
+    this.printMapping('vickyy done')
   }
 }
 
