@@ -25,8 +25,8 @@ def cli(git_tag, circle_api_key):
     response = r.json()
     pprint(response)
 
-    pipeline_id = response["id"]
-    url = f"https://app.circleci.com/pipelines/github/AudiusProject/audius-protocol/{pipeline_id}"
+    pipeline_number = response["number"]
+    url = f"https://app.circleci.com/pipelines/github/AudiusProject/audius-protocol/{pipeline_number}"
     print(f"\n{url}")
 
 
