@@ -39,8 +39,9 @@ function bump-npm () {
     git pull
 
     # only allow tags/commits found on master to be deployed
-    git name-rev --name-only ${GIT_TAG}
-    if git name-rev --name-only ${GIT_TAG} | grep -Fxq 'remotes/origin/HEAD'; then
+    found_on_master=$(git name-rev --name-only ${GIT_TAG} | grep -Fxq 'remotes/origin/HEAD')
+    found_on_master=$?
+    if [[ $found_on_master -ne 0 ]]; then
         echo "tag not found on master, only tags on master can be deployed"
         exit 1
     fi
