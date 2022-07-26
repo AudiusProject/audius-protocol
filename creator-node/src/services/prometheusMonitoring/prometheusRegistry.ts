@@ -7,8 +7,7 @@ import {
   QUEUE_INTERVAL
   // eslint-disable-next-line import/no-unresolved
 } from './prometheus.constants'
-
-const PrometheusClient = require('prom-client')
+import * as PrometheusClient from 'prom-client'
 
 /**
  * See `prometheusMonitoring/README.md` for usage details

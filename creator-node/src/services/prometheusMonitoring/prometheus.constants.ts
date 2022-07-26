@@ -1,13 +1,12 @@
 import { Gauge, Histogram, Summary } from 'prom-client'
 import { snakeCase, mapValues } from 'lodash'
 import { exponentialBucketsRange } from './prometheusUtils'
-
-const config = require('../../config')
-const {
-  QUEUE_NAMES: STATE_MACHINE_JOB_NAMES,
+import {
+  QUEUE_NAMES as STATE_MACHINE_JOB_NAMES,
   SyncType,
   SYNC_MODES
-} = require('../stateMachineManager/stateMachineConstants')
+} from '../stateMachineManager/stateMachineConstants'
+import * as config from '../../config'
 
 /**
  * For explanation of METRICS, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
@@ -24,9 +23,9 @@ export const QUEUE_INTERVAL = 1_000
  */
 export const METRIC_TYPES = Object.freeze({
   GAUGE: Gauge,
-  HISTOGRAM: Histogram,
+  HISTOGRAM: Histogram
   // COUNTER: Counter,
-  SUMMARY: Summary
+  // SUMMARY: Summary
 })
 
 /**
@@ -50,10 +49,10 @@ const metricNames: Record<string, string> = {
   JOBS_COMPLETED_TOTAL_GAUGE: 'jobs_completed_total',
   JOBS_FAILED_TOTAL_GAUGE: 'jobs_failed_total',
   JOBS_DELAYED_TOTAL_GAUGE: 'jobs_delayed_total',
-  JOBS_DURATION_MILLISECONDS_SUMMARY: 'jobs_duration_milliseconds',
-  JOBS_WAITING_DURATION_MILLISECONDS_SUMMARY:
+  JOBS_DURATION_MILLISECONDS_HISTOGRAM: 'jobs_duration_milliseconds',
+  JOBS_WAITING_DURATION_MILLISECONDS_HISTOGRAM:
     'jobs_waiting_duration_milliseconds',
-  JOBS_ATTEMPTS_SUMMARY: 'jobs_attempts'
+  JOBS_ATTEMPTS_HISTOGRAM: 'jobs_attempts'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -225,34 +224,34 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       labelNames: ['queue_name', 'queue_prefix']
     }
   },
-  [METRIC_NAMES.JOBS_DURATION_MILLISECONDS_SUMMARY]: {
-    metricType: METRIC_TYPES.SUMMARY,
+  [METRIC_NAMES.JOBS_DURATION_MILLISECONDS_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: METRIC_NAMES.JOBS_DURATION_MILLISECONDS_SUMMARY,
+      name: METRIC_NAMES.JOBS_DURATION_MILLISECONDS_HISTOGRAM,
       help: 'Time to complete jobs',
       labelNames: ['queue_name', 'queue_prefix', 'status'],
-      maxAgeSeconds: 300,
-      ageBuckets: 13
+      // 10 buckets in the range of 1 milliseconds to max to 10 seconds
+      buckets: exponentialBucketsRange(1, 10_000, 10)
     }
   },
-  [METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_SUMMARY]: {
-    metricType: METRIC_TYPES.SUMMARY,
+  [METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_HISTROGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_SUMMARY,
+      name: METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_HISTOGRAM,
       help: 'Time spent waiting for jobs to run',
       labelNames: ['queue_name', 'queue_prefix', 'status'],
-      maxAgeSeconds: 300,
-      ageBuckets: 13
+      // 10 buckets in the range of 1 milliseconds to max to 10 seconds
+      buckets: exponentialBucketsRange(1, 10_000, 10)
     }
   },
-  [METRIC_NAMES.JOBS_ATTEMPTS_SUMMARY]: {
-    metricType: METRIC_TYPES.SUMMARY,
+  [METRIC_NAMES.JOBS_ATTEMPTS_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: METRIC_NAMES.JOBS_ATTEMPTS_SUMMARY,
+      name: METRIC_NAMES.JOBS_ATTEMPTS_HISTOGRAM,
       help: 'Job attempts made',
       labelNames: ['queue_name', 'queue_prefix', 'status'],
-      maxAgeSeconds: 300,
-      ageBuckets: 13
+      // 10 buckets in the range of 1 milliseconds to max to 10 seconds
+      buckets: exponentialBucketsRange(1, 10_000, 10)
     }
   },
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
