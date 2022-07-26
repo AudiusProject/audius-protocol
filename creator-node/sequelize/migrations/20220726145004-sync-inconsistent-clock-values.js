@@ -2,7 +2,7 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    queryInterface.query(`
+    queryInterface.sequelize.query(`
         UPDATE CNodeUsers
         SET clock = subquery.max_clock
         FROM (
