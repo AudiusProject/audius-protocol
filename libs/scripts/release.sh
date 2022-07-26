@@ -5,6 +5,8 @@
 
 set -ex
 
+GIT_TAG=${1}
+
 # Finds the lastest commit that looks like a version commit,
 # and gets the list of commits after that
 function git-changelog () {
@@ -37,7 +39,7 @@ function bump-npm () {
     git pull
 
     # Ensure working directory clean
-    git reset --hard origin/master
+    git reset --hard ${GIT_TAG}
 
     # grab change log early, before the version bump
     CHANGE_LOG=$(git-changelog)

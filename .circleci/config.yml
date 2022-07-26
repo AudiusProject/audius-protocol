@@ -104,6 +104,9 @@ commands:
 
 # global parameters
 parameters:
+  sdk_release_tag:
+    type: string
+    default: ""
   full_ci:
     type: boolean
     default: false
@@ -153,6 +156,11 @@ jobs:
     docker:
       - image: circleci/node:14.17.5
     resource_class: xlarge
+    parameters:
+      sdk_release_tag:
+        description: The git tag/commit to build and release
+        type: string
+        default: ""
     steps:
       - checkout
       - setup_remote_docker
@@ -166,7 +174,7 @@ jobs:
           name: Bump and Publish Libs
           command: |
             export PROTOCOL_DIR=/home/circleci/project
-            libs/scripts/release.sh
+            libs/scripts/release.sh << pipeline.parameters.sdk_release_tag >>
 
   test-mad-dog-e2e:
     parameters:
@@ -830,6 +838,22 @@ workflows:
   # 1. go to the CircleCI dashboard
   # 2. go to your branch of choice
   # 3. click "Trigger Pipeline"
+  # 4. Add string paramter "sdk_release_tag" and set to a valid git tag/commit
+  hold-workflows:
+    when: << pipeline.parameters.sdk_release_tag >>
+    jobs:
+      - publish-libs:
+          context: Audius Client
+          name: publish-libs (<< pipeline.parameters.sdk_release_tag >>)
+          sdk_release_tag: << pipeline.parameters.sdk_release_tag >>
+          filters:
+            branches:
+              only: /(^master$)/
+
+  # in order to run a job in hold-workflows
+  # 1. go to the CircleCI dashboard
+  # 2. go to your branch of choice
+  # 3. click "Trigger Pipeline"
   # 4. Add boolean paramter "full_ci" and set to true
   hold-workflows:
     when: << pipeline.parameters.full_ci >>
@@ -862,19 +886,6 @@ workflows:
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
-          filters:
-            branches:
-              only: /(^master$)/
-      - hold-publish-libs:
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-      - publish-libs:
-          context: Audius Client
-          name: publish-libs
-          requires:
-            - hold-publish-libs
           filters:
             branches:
               only: /(^master$)/
