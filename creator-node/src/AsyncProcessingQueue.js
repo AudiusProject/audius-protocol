@@ -49,7 +49,7 @@ class AsyncProcessingQueue {
       }
     })
 
-    prometheusRegistry.bullMetric.start(this.queue)
+    prometheusRegistry.startQueueMetrics(this.queue)
 
     this.libs = libs
 
