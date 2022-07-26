@@ -12,7 +12,7 @@ class CNodeToSpIdMapManager {
 
   printMapping(msg) {
     genericLogger.info(
-      `vicky was here || ${JSON.stringify(this.cNodeEndpointToSpIdMap)} || ${
+      `vicki was here || ${JSON.stringify(this.cNodeEndpointToSpIdMap)} || ${
         Object.keys(this.cNodeEndpointToSpIdMap).length
       } || ${Object.keys(this.cNodeEndpointToSpIdMap)} || ${Object.values(
         this.cNodeEndpointToSpIdMap
