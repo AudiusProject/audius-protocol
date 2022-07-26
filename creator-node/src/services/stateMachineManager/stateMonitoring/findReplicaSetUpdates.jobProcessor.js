@@ -218,6 +218,8 @@ const _findReplicaSetUpdatesForUser = async (
       const { successRate, successCount, failureCount } =
         userSecondarySyncMetrics[secondary]
 
+      CNodeToSpIdMapManager.printMapping()
+
       // Error case 1 - mismatched spID
       if (
         CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
