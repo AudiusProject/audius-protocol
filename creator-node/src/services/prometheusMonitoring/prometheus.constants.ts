@@ -1,5 +1,6 @@
 import { Gauge, Histogram, Summary } from 'prom-client'
 import { snakeCase, mapValues } from 'lodash'
+// eslint-disable-next-line import/no-unresolved
 import { exponentialBucketsRange } from './prometheusUtils'
 import {
   QUEUE_NAMES as STATE_MACHINE_JOB_NAMES,
