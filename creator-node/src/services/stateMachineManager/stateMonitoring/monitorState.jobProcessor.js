@@ -194,13 +194,22 @@ module.exports = async function ({
         }
       ],
       // Enqueue another monitor-state job to monitor the next slice of users
+      [QUEUE_NAMES.FIND_INCONSISTENT_CLOCK]: [
+        {
+          logger,
+          users,
+          unhealthyPeers,
+          replicaToUserInfoMap,
+          userSecondarySyncMetricsMap
+        }
+      ],
+      // Enqueue another monitor-state job to monitor the next slice of users
       [QUEUE_NAMES.MONITOR_STATE]: [
         {
           lastProcessedUserId: lastProcessedUser?.user_id || 0,
           discoveryNodeEndpoint
         }
       ]
-      // TODO: Add job type for find inconsistent clock values
     }
   }
 }
