@@ -532,6 +532,12 @@ const config = convict({
     env: 'maxRecurringRequestSyncJobConcurrency',
     default: 5
   },
+  maxUpdateReplicaSetJobConcurrency: {
+    doc: 'Max bull queue concurrency for update replica set jobs',
+    format: 'nat',
+    env: 'maxUpdateReplicaSetJobConcurrency',
+    default: 15
+  },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
     format: 'nat',

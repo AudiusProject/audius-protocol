@@ -1,4 +1,4 @@
-const QueueInterfacer = require('../QueueInterfacer')
+const initAudiusLibs = require('../../initAudiusLibs')
 const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
 
 /**
@@ -11,8 +11,9 @@ const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
 module.exports = async function ({ logger }) {
   let errorMsg = ''
   try {
+    const audiusLibs = await initAudiusLibs()
     await NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
-      QueueInterfacer.getAudiusLibs().ethContracts
+      audiusLibs.ethContracts
     )
   } catch (e) {
     errorMsg = e.message || e.toString()

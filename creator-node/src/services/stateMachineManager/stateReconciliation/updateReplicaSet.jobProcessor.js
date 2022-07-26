@@ -10,8 +10,8 @@ const {
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
-const QueueInterfacer = require('../QueueInterfacer')
 const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
+const initAudiusLibs = require('../../initAudiusLibs')
 
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
@@ -48,14 +48,13 @@ module.exports = async function ({
    * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
    * There will be an explicit clock value check on the newly selected replica set nodes instead.
    */
+  const audiusLibs = await initAudiusLibs()
   const { services: healthyServicesMap } =
-    await QueueInterfacer.getAudiusLibs().ServiceProvider.autoSelectCreatorNodes(
-      {
-        performSyncCheck: false,
-        whitelist: reconfigNodeWhitelist,
-        log: true
-      }
-    )
+    await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+      performSyncCheck: false,
+      whitelist: reconfigNodeWhitelist,
+      log: true
+    })
 
   const healthyNodes = Object.keys(healthyServicesMap || {})
   if (healthyNodes.length === 0)
@@ -99,6 +98,7 @@ module.exports = async function ({
         secondary1,
         secondary2,
         newReplicaSet,
+        audiusLibs,
         logger
       ))
   } catch (e) {
@@ -461,6 +461,7 @@ const _issueUpdateReplicaSetOp = async (
   secondary1,
   secondary2,
   newReplicaSet,
+  audiusLibs,
   logger
 ) => {
   const response = {
@@ -513,7 +514,7 @@ const _issueUpdateReplicaSetOp = async (
     // Submit chain tx to update replica set
     const startTimeMs = Date.now()
     try {
-      await QueueInterfacer.getAudiusLibs().contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
         newReplicaSetSPIds[0], // primary
         newReplicaSetSPIds.slice(1) // [secondary1, secondary2]
