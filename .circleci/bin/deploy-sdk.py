@@ -9,7 +9,7 @@ import requests
 
 @click.command()
 @click.option("-t", "--git-tag", required=True)
-@click.option("-k", "--circle-api-key", envvar='CIRCLE_API_KEY', required=True)
+@click.option("-k", "--circle-api-key", envvar="CIRCLE_API_KEY", required=True)
 def cli(git_tag, circle_api_key):
     org = "AudiusProject"
     project = "audius-protocol"
@@ -18,7 +18,7 @@ def cli(git_tag, circle_api_key):
     r = requests.post(
         f"https://circleci.com/api/v2/project/github/{org}/{project}/pipeline",
         headers={"Content-Type": "application/json"},
-        auth=(circle_api_key,""),
+        auth=(circle_api_key, ""),
         data=json.dumps(data),
         allow_redirects=True,
     )
