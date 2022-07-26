@@ -70,15 +70,15 @@ function merge-bump () {
     git checkout master -f
     git merge ${STUB}-${VERSION} -m "$(commit-message)"
 
-    git push -u origin master
+    # git push -u origin master
 
     # clean up release branches
-    git push origin :${STUB}-${VERSION}
+    # git push origin :${STUB}-${VERSION}
 }
 
 # publish to npm
 function publish () {
-    npm publish . --access public
+    # npm publish . --access public
 }
 
 # configuration

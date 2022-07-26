@@ -846,9 +846,9 @@ workflows:
           context: Audius Client
           name: publish-libs (<< pipeline.parameters.sdk_release_tag >>)
           sdk_release_tag: << pipeline.parameters.sdk_release_tag >>
-          filters:
-            branches:
-              only: /(^master$)/
+          # filters:
+          #   branches:
+          #     only: /(^master$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
