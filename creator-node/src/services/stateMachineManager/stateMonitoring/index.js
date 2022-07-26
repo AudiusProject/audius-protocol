@@ -46,7 +46,7 @@ class StateMonitoringManager {
       lockDuration: MAX_QUEUE_RUNTIMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
       limiter: {
         max: 1,
-        duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
+        duration: 10000 // 10s config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
       }
     })
     await this.startEndpointToSpIdMapQueue(
