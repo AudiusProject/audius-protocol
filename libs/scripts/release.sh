@@ -39,6 +39,7 @@ function bump-npm () {
     git pull
 
     # only allow tags/commits found on master to be deployed
+    git name-rev --name-only ${GIT_TAG}
     git name-rev --name-only ${GIT_TAG} \
         | grep -Fxq 'remotes/origin/HEAD' \
         || (
