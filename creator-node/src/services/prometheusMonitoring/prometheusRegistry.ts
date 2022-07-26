@@ -83,17 +83,16 @@ export class PrometheusRegistry {
     }
 
     const jobDuration = job.finishedOn - job.processedOn!
-    this.getMetric(this.metricNames.JOBS_DURATION_MILLISECONDS_SUMMARY).observe(
-      jobLabels,
-      jobDuration
-    )
+    this.getMetric(
+      this.metricNames.JOBS_DURATION_MILLISECONDS_HISTOGRAM
+    ).observe(jobLabels, jobDuration)
 
     const waitingDuration = job.processedOn! - job.timestamp
     this.getMetric(
-      this.metricNames.JOBS_WAITING_DURATION_MILLISECONDS_SUMMARY
+      this.metricNames.JOBS_WAITING_DURATION_MILLISECONDS_HISTOGRAM
     ).observe(jobLabels, waitingDuration)
 
-    this.getMetric(this.metricNames.JOBS_ATTEMPTS_SUMMARY).observe(
+    this.getMetric(this.metricNames.JOBS_ATTEMPTS_HISTOGRAM).observe(
       jobLabels,
       job.attemptsMade
     )
@@ -111,18 +110,26 @@ export class PrometheusRegistry {
     if (useGlobal) {
       queue.on('global:completed', async (jobId: number) => {
         const job = await queue.getJob(jobId)
-        this.recordJobMetrics(labels, JobStatus.COMPLETED, job!)
+        const job_name = job?.name || ''
+        this.recordJobMetrics(
+          { job_name, ...labels },
+          JobStatus.COMPLETED,
+          job!
+        )
       })
       queue.on('global:failed', async (jobId: number) => {
         const job = await queue.getJob(jobId)
-        this.recordJobMetrics(labels, JobStatus.FAILED, job!)
+        const job_name = job?.name || ''
+        this.recordJobMetrics({ job_name, ...labels }, JobStatus.FAILED, job!)
       })
     } else {
       queue.on('completed', (job: Job) => {
-        this.recordJobMetrics(labels, JobStatus.COMPLETED, job)
+        const job_name = job.name
+        this.recordJobMetrics({ job_name, ...labels }, JobStatus.COMPLETED, job)
       })
       queue.on('failed', (job: Job) => {
-        this.recordJobMetrics(labels, JobStatus.FAILED, job)
+        const job_name = job.name
+        this.recordJobMetrics({ job_name, ...labels }, JobStatus.FAILED, job)
       })
     }
 
