@@ -788,6 +788,10 @@ jobs:
 workflows:
   # test, build and push all commits
   test-build-and-push:
+    when:
+      and:
+         - not: << pipeline.parameters.full_ci >>
+         - not: << pipeline.parameters.sdk_release_tag >>
     jobs:
       - test-libs:
           name: test-libs
