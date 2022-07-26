@@ -117,7 +117,7 @@ class StateReconciliationManager {
 
     // Register the logic that gets executed to process each new job from the queue
     manualSyncQueue.process(
-      1, // config.get('maxManualRequestSyncJobConcurrency'),
+      config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
 

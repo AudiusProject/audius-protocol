@@ -11,14 +11,14 @@ const {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord
 } = require('../stateMachineUtils')
-const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
 const {
   SYNC_MONITORING_RETRY_DELAY_MS,
   QUEUE_NAMES,
   SYNC_MODES,
   SyncType,
-  MAX_ISSUE_SYNC_JOB_ATTEMPTS
+  MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
+  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 
@@ -72,10 +72,11 @@ module.exports = async function ({
   }
 
   // Enqueue a new sync request if one needs to be enqueued and we haven't retried too many times yet
-  if (
-    !_.isEmpty(syncReqToEnqueue) &&
-    attemptNumber < MAX_ISSUE_SYNC_JOB_ATTEMPTS
-  ) {
+  const maxRetries =
+    syncReqToEnqueue?.syncType === SyncType.Manual
+      ? MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS
+      : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
+  if (!_.isEmpty(syncReqToEnqueue) && attemptNumber < maxRetries) {
     logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
     const queueName =
       syncReqToEnqueue?.syncType === SyncType.Manual
@@ -86,7 +87,7 @@ module.exports = async function ({
     }
   } else {
     logger.info(
-      `Gave up retrying issue-sync-request after ${attemptNumber} failed attempts`
+      `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
     )
   }
 
@@ -133,9 +134,13 @@ async function _handleIssueSyncRequest({
 
   /**
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
-   * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting
+   * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
+   * We don't dedupe manual syncs.
    */
-  SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
+  if (syncType === SyncType.Recurring) {
+    const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+    SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
+  }
 
   /**
    * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
