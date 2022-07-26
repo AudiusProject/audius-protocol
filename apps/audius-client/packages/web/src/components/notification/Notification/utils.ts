@@ -10,6 +10,7 @@ import {
 } from 'utils/route'
 
 export const getEntityLink = (entity: EntityType, fullRoute = false) => {
+  if (!entity.user) return ''
   if ('track_id' in entity) {
     return fullRoute ? fullTrackPage(entity.permalink) : entity.permalink
   } else if (entity.user && entity.playlist_id && entity.is_album) {

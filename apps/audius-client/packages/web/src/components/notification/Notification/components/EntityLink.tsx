@@ -22,12 +22,16 @@ type EntityLinkProps = {
   entityType: Entity
 }
 
-export const useGoToEntity = (entity: EntityType, entityType: Entity) => {
+export const useGoToEntity = (
+  entity: Nullable<EntityType>,
+  entityType: Entity
+) => {
   const dispatch = useDispatch()
   const record = useRecord()
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
+      if (!entity) return
       event.stopPropagation()
       event.preventDefault()
       const link = getEntityLink(entity)
