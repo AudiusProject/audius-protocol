@@ -39,6 +39,7 @@ const Image = memo((props) => {
   }, [defaultImage, imageMultihash, props.creatorNodeEndpoint, size])
   return (
     <DynamicImage
+      skeletonClassName={cn({ [styles.userImageContainerSkeleton]: isUser })}
       wrapperClassName={cn(styles.imageContainer)}
       className={cn({
         [styles.image]: image,
