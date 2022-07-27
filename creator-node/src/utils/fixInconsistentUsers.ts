@@ -3,7 +3,7 @@ import * as models from '../models'
 export const fixInconsistentUser = async (userId: string) => {
   models.sequelize.query(
     `
-    UPDATE "CNodeUsers"
+    UPDATE "CNodeUsers" as cnodeusers
     SET clock = subquery.max_clock
     FROM (
         SELECT "cnodeUserUUID", MAX(clock) AS max_clock
@@ -11,7 +11,7 @@ export const fixInconsistentUser = async (userId: string) => {
         WHERE "cnodeUserUUID" = :userId
         GROUP BY "cnodeUserUUID"
     ) AS subquery
-    WHERE "cnodeUserUUID" = subquery."cnodeUserUUID"
+    WHERE cnodeusers."cnodeUserUUID" = subquery."cnodeUserUUID"
     `,
     {
       replacements: { userId }
