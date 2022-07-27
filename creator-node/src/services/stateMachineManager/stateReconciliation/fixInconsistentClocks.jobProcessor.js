@@ -12,7 +12,7 @@ module.exports = async function ({ logger, userId }) {
   _fixInconsistentClock({ logger, userId })
 }
 
-const _validateJobData = ({ logger, userId, newClockValue }) => {
+const _validateJobData = ({ logger, userId }) => {
   if (typeof logger !== 'object') {
     throw new Error(
       `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
