@@ -19,3 +19,7 @@ export const fixInconsistentUser = async (wallet: string) => {
     }
   )
 }
+
+module.exports = {
+  fixInconsistentUser
+}
