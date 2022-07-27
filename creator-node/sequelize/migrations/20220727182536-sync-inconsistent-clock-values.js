@@ -1,8 +1,8 @@
 'use strict'
 
 module.exports = {
-  up: (queryInterface, Sequelize) => {
-    queryInterface.sequelize.query(`
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.sequelize.query(`
         UPDATE CNodeUsers
         SET clock = subquery.max_clock
         FROM (
@@ -15,7 +15,7 @@ module.exports = {
       `)
   },
 
-  down: (queryInterface, Sequelize) => {
+  down: async (queryInterface, Sequelize) => {
     /*
       Add reverting commands here.
       Return a promise to correctly handle asynchronicity.
