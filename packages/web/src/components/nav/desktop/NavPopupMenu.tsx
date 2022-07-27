@@ -1,3 +1,4 @@
+import { removeNullable } from '@audius/common'
 import {
   IconCrown,
   IconDashboard,
@@ -10,7 +11,6 @@ import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontalAlt.svg'
 import { getAccountHasTracks } from 'common/store/account/selectors'
-import { removeNullable } from 'common/utils/typeUtils'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
 import { AUDIO_PAGE, DASHBOARD_PAGE, SETTINGS_PAGE } from 'utils/route'

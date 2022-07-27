@@ -1,5 +1,13 @@
 import { MouseEvent, useCallback, useRef, useState } from 'react'
 
+import {
+  CreatePlaylistSource,
+  FavoriteSource,
+  Name,
+  SquareSizes,
+  PlaylistLibrary as PlaylistLibraryType,
+  Status
+} from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
@@ -15,14 +23,6 @@ import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
 import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
-import {
-  CreatePlaylistSource,
-  FavoriteSource,
-  Name
-} from 'common/models/Analytics'
-import { SquareSizes } from 'common/models/ImageSizes'
-import { PlaylistLibrary as PlaylistLibraryType } from 'common/models/PlaylistLibrary'
-import Status from 'common/models/Status'
 import { FeatureFlags } from 'common/services/remote-config'
 import {
   getAccountStatus,

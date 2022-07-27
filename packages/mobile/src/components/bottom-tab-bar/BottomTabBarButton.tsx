@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { NavigationRoute } from '@sentry/react-native/dist/js/tracing/reactnavigation'
+import type { NavigationRoute } from '@sentry/react-native/dist/js/tracing/reactnavigation'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconExploreLight from 'app/assets/animations/iconExploreLight.json'
@@ -10,7 +10,7 @@ import IconProfileLight from 'app/assets/animations/iconProfileLight.json'
 import IconTrendingLight from 'app/assets/animations/iconTrendingLight.json'
 import { AnimatedButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
-import { GestureResponderHandler } from 'app/types/gesture'
+import type { GestureResponderHandler } from 'app/types/gesture'
 import { colorize } from 'app/utils/colorizeLottie'
 import { useThemeColors } from 'app/utils/theme'
 

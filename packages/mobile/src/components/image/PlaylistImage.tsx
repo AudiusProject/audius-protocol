@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { CollectionImage } from 'app/models/Collection'
-import { UserMultihash } from 'app/models/User'
+import type { CollectionImage } from 'app/models/Collection'
+import type { UserMultihash } from 'app/models/User'
 
 import ImageLoader from './ImageLoader'
 import { gateways, publicGateways } from './utils'

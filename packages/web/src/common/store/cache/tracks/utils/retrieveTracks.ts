@@ -1,9 +1,13 @@
-import { ID } from '@audius/common'
-import { spawn, call, select, put } from 'typed-redux-saga/macro'
+import {
+  ID,
+  Kind,
+  Status,
+  Track,
+  TrackMetadata,
+  UserTrackMetadata
+} from '@audius/common'
+import { call, put, select, spawn } from 'typed-redux-saga/macro'
 
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
-import { Track, TrackMetadata, UserTrackMetadata } from 'common/models/Track'
 import { CommonState } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
 import { retrieve } from 'common/store/cache/sagas'

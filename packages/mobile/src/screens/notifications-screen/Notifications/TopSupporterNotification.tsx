@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
-import { SupporterRankUp } from 'common/store/notifications/types'
+import type { SupporterRankUp } from 'common/store/notifications/types'
 
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { EventNames } from 'app/types/analytics'

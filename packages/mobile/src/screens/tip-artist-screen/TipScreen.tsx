@@ -1,4 +1,5 @@
-import { Screen, ScreenProps } from 'app/components/core'
+import type { ScreenProps } from 'app/components/core'
+import { Screen } from 'app/components/core'
 
 type TipScreenProps = ScreenProps
 

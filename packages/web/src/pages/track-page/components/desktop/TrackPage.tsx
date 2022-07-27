@@ -1,9 +1,6 @@
-import { ID, CID } from '@audius/common'
+import { ID, CID, LineupState, Track, User } from '@audius/common'
 import cn from 'classnames'
 
-import { LineupState } from 'common/models/Lineup'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
 import { tracksActions } from 'common/store/pages/track/lineup/actions'
 import { QueueItem } from 'common/store/queue/types'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'

@@ -1,4 +1,4 @@
-import TimeRange from 'audius-client/src/common/models/TimeRange'
+import { TimeRange } from '@audius/common'
 import { getTrendingGenre } from 'audius-client/src/common/store/pages/trending/selectors'
 
 import IconAllTime from 'app/assets/images/iconAllTime.svg'

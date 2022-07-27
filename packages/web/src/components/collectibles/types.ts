@@ -1,4 +1,4 @@
-import { Collectible } from 'common/models/Collectible'
+import { Collectible } from '@audius/common'
 
 export type CollectibleState = {
   [wallet: string]: Collectible[]

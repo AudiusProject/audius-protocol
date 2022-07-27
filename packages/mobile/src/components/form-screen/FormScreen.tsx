@@ -3,7 +3,8 @@ import { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { isEmpty } from 'lodash'
 
-import { Screen, ScreenProps } from '../core/Screen'
+import type { ScreenProps } from '../core/Screen'
+import { Screen } from '../core/Screen'
 import { TextButton } from '../core/TextButton'
 
 const messages = {

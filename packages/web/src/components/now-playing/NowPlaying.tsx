@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  FavoriteSource,
+  RepostSource,
+  PlaybackSource,
+  Name,
+  ShareSource,
+  SquareSizes
+} from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
-import {
-  FavoriteSource,
-  RepostSource,
-  PlaybackSource,
-  Name,
-  ShareSource
-} from 'common/models/Analytics'
-import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import { getIsCasting, getMethod } from 'common/store/cast/selectors'

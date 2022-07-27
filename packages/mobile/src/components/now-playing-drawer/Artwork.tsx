@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
-import { Track } from 'audius-client/src/common/models/Track'
+import type { Track } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 import { getDominantColorsByTrack } from 'audius-client/src/common/store/average-color/slice'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
@@ -10,7 +10,7 @@ import { DynamicImage } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
-import { ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
 
 const dimensions = Dimensions.get('window')
 const spacing = 24

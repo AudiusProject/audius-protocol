@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash'
 
-import { AppState } from 'app/store'
+import type { AppState } from 'app/store'
 
 const getBaseState = (state: AppState) => state.lifecycle
 

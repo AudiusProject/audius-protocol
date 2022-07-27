@@ -1,4 +1,4 @@
-import { WidthSizes } from 'audius-client/src/common/models/ImageSizes'
+import type { WidthSizes } from '@audius/common'
 import { fetchCoverPhoto } from 'audius-client/src/common/store/cache/users/actions'
 
 import imageCoverPhotoBlank from 'app/assets/images/imageCoverPhotoBlank.jpg'

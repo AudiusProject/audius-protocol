@@ -1,10 +1,10 @@
-import { Genre } from 'audius-client/src/common/utils/genres'
+import type { Genre } from 'audius-client/src/common/utils/genres'
 
 import { EventNames, PlaybackSource } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
 
+import type { AudioActions } from './actions'
 import {
-  AudioActions,
   PLAY,
   PAUSE,
   NEXT,

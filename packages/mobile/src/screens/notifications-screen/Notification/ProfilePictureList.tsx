@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 import { formatCount } from 'audius-client/src/common/utils/formatUtil'
-import { StyleProp, View, ViewStyle, Text } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { View, Text } from 'react-native'
 
 import { makeStyles } from 'app/styles'
 

@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common'
+
 import { ReactComponent as IconTrending } from 'assets/img/iconTrending.svg'
-import { Name } from 'common/models/Analytics'
 import { getNotificationUser } from 'common/store/notifications/selectors'
 import { SupporterRankUp } from 'common/store/notifications/types'
 import { make } from 'store/analytics/actions'

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
-import { ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({

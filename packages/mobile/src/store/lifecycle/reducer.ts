@@ -1,7 +1,7 @@
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 
+import type { LifecycleActions } from './actions'
 import {
-  LifecycleActions,
   BACKEND_LOADED,
   BACKEND_TEAR_DOWN,
   ON_FIRST_PAGE,

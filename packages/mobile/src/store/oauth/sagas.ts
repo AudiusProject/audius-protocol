@@ -1,11 +1,13 @@
 import { put, takeLatest } from 'redux-saga/effects'
 
+import type {
+  SetCredentialsAction,
+  RequestNativeOpenPopupAction
+} from './actions'
 import {
   REQUEST_NATIVE_OPEN_POPUP,
   nativeOpenPopup,
-  SET_CREDENTIALS,
-  SetCredentialsAction,
-  RequestNativeOpenPopupAction
+  SET_CREDENTIALS
 } from './actions'
 
 function* watchRequestNativeOpenPopup() {

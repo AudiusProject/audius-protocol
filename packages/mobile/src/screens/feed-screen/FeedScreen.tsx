@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from 'audius-client/src/common/models/Analytics'
+import { Name } from '@audius/common'
 import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
 import { feedActions } from 'audius-client/src/common/store/pages/feed/lineup/actions'
 import {

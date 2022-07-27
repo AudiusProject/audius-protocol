@@ -4,7 +4,7 @@ import {
   getNotificationEntities,
   getNotificationUser
 } from 'audius-client/src/common/store/notifications/selectors'
-import {
+import type {
   EntityType,
   RemixCreate,
   TrackEntity

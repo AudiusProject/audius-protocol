@@ -1,10 +1,12 @@
 import { useContext, useEffect, useMemo, useRef } from 'react'
 
 import { isEqual } from 'lodash'
-import { StyleSheet, TextStyle, ViewStyle, ImageStyle } from 'react-native'
+import type { TextStyle, ViewStyle, ImageStyle } from 'react-native'
+import { StyleSheet } from 'react-native'
 
 import { ThemeContext } from '../components/theme/ThemeContext'
-import { Theme as ThemeType, ThemeColors, useThemeColors } from '../utils/theme'
+import type { ThemeColors } from '../utils/theme'
+import { Theme as ThemeType, useThemeColors } from '../utils/theme'
 
 import { spacing } from './spacing'
 import { typography } from './typography'

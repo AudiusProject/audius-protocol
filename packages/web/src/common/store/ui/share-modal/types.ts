@@ -1,11 +1,12 @@
-import { ID } from '@audius/common'
+import {
+  ID,
+  ShareSource,
+  Collection,
+  Track,
+  User,
+  Nullable
+} from '@audius/common'
 import { PayloadAction } from '@reduxjs/toolkit'
-
-import { ShareSource } from 'common/models/Analytics'
-import { Collection } from 'common/models/Collection'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
-import { Nullable } from 'common/utils/typeUtils'
 
 export type ShareType =
   | 'track'

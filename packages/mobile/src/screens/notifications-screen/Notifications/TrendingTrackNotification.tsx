@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
+import type { Nullable } from '@audius/common'
 import { getNotificationEntity } from 'audius-client/src/common/store/notifications/selectors'
-import {
+import type {
   TrackEntity,
   TrendingTrack
 } from 'audius-client/src/common/store/notifications/types'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'

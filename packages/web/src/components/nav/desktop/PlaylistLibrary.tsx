@@ -1,17 +1,18 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  FavoriteSource,
+  Name,
+  PlaylistLibrary as PlaylistLibraryType,
+  PlaylistLibraryFolder,
+  SmartCollectionVariant
+} from '@audius/common'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { FavoriteSource, Name } from 'common/models/Analytics'
-import {
-  PlaylistLibrary as PlaylistLibraryType,
-  PlaylistLibraryFolder
-} from 'common/models/PlaylistLibrary'
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { FeatureFlags } from 'common/services/remote-config'
 import {
   getAccountCollectibles,

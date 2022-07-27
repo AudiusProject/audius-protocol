@@ -4,7 +4,8 @@ import {
 } from 'app/theme'
 import { handleThemeChange } from 'app/utils/theme'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 let sentInitialTheme = false
 

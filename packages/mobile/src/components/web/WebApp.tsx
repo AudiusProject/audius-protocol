@@ -1,44 +1,34 @@
-import {
-  useRef,
-  useState,
-  useEffect,
-  RefObject,
-  useCallback,
-  useContext
-} from 'react'
+import type { RefObject } from 'react'
+import { useRef, useState, useEffect, useCallback, useContext } from 'react'
 
+import type { Theme } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import Theme from 'audius-client/src/common/models/Theme'
-import {
-  Platform,
-  NativeSyntheticEvent,
-  Linking,
-  StatusBar,
-  StyleSheet
-} from 'react-native'
+import type { NativeSyntheticEvent } from 'react-native'
+import { Platform, Linking, StatusBar, StyleSheet } from 'react-native'
 import Config from 'react-native-config'
 import RNFS from 'react-native-fs'
 import StaticServer from 'react-native-static-server'
 import VersionNumber from 'react-native-version-number'
 import { WebView } from 'react-native-webview'
-import {
+import type {
   WebViewMessage,
   WebViewNavigation
 } from 'react-native-webview/lib/WebViewTypes'
 import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import type { Dispatch } from 'redux'
 
 import useAppState from 'app/hooks/useAppState'
 import useKeyboardListeners from 'app/hooks/useKeyboardListeners'
-import { Message, MessageType, handleMessage } from 'app/message'
-import { AppState } from 'app/store'
+import type { Message } from 'app/message'
+import { MessageType, handleMessage } from 'app/message'
+import type { AppState } from 'app/store'
 import { getTrack, getIndex } from 'app/store/audio/selectors'
 import {
   getDappLoaded,
   getIsOnFirstPage,
   getIsSignedIn
 } from 'app/store/lifecycle/selectors'
-import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
+import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import {
   postMessage,
   postMessage as postMessageUtil

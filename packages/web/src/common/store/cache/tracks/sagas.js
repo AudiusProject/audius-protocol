@@ -1,3 +1,4 @@
+import { Name, DefaultSizes, SquareSizes, Kind, Status } from '@audius/common'
 import {
   all,
   call,
@@ -8,10 +9,6 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
-import { DefaultSizes, SquareSizes } from 'common/models/ImageSizes'
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
 import {
   getAccountUser,
   getUserId,

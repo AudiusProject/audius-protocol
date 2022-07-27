@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 
+import { SquareSizes } from '@audius/common'
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { mapValues } from 'lodash'
 import PropTypes from 'prop-types'
 
-import { SquareSizes } from 'common/models/ImageSizes'
 import FormTile from 'components/data-entry/FormTile'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import * as schemas from 'schemas'

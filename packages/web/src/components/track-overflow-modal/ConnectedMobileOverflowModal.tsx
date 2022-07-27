@@ -1,14 +1,14 @@
-import { ID } from '@audius/common'
+import {
+  FavoriteSource,
+  FollowSource,
+  ID,
+  RepostSource,
+  ShareSource
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import {
-  FollowSource,
-  ShareSource,
-  RepostSource,
-  FavoriteSource
-} from 'common/models/Analytics'
 import { publishPlaylist } from 'common/store/cache/collections/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
@@ -22,21 +22,21 @@ import {
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import {
   repostCollection,
-  undoRepostCollection,
   saveCollection,
-  unsaveCollection,
-  shareCollection
+  shareCollection,
+  undoRepostCollection,
+  unsaveCollection
 } from 'common/store/social/collections/actions'
 import {
   repostTrack,
-  undoRepostTrack,
   saveTrack,
+  undoRepostTrack,
   unsaveTrack
 } from 'common/store/social/tracks/actions'
 import {
   followUser,
-  unfollowUser,
-  shareUser
+  shareUser,
+  unfollowUser
 } from 'common/store/social/users/actions'
 import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
 import { open as openEditPlaylist } from 'common/store/ui/createPlaylistModal/actions'
@@ -46,10 +46,10 @@ import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
 import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
 import { AppState } from 'store/types'
 import {
-  profilePage,
-  playlistPage,
   albumPage,
-  collectibleDetailsPage
+  collectibleDetailsPage,
+  playlistPage,
+  profilePage
 } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'

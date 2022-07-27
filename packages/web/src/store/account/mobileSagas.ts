@@ -1,7 +1,7 @@
+import { User } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { takeEvery, put, call } from 'redux-saga/effects'
 
-import { User } from 'common/models/User'
 import * as accountActions from 'common/store/account/reducer'
 import { setNeedsAccountRecovery } from 'common/store/account/reducer'
 import { updateProfileAsync } from 'pages/profile-page/sagas'

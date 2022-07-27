@@ -4,7 +4,8 @@ import * as oauthActions from 'app/store/oauth/actions'
 import * as signonActions from 'app/store/signon/actions'
 import { checkConnectivity, Connectivity } from 'app/utils/connectivity'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.BACKEND_SETUP]: ({ dispatch }) => {

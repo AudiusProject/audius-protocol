@@ -1,10 +1,8 @@
-import { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
-import {
-  createMaterialTopTabNavigator,
-  MaterialTopTabNavigationOptions
-} from '@react-navigation/material-top-tabs'
-import { SvgProps } from 'react-native-svg'
+import type { MaterialTopTabNavigationOptions } from '@react-navigation/material-top-tabs'
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
+import type { SvgProps } from 'react-native-svg'
 
 import { TopTabBar } from 'app/components/top-tab-bar'
 

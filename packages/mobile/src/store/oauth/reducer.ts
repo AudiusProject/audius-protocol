@@ -1,7 +1,7 @@
-import { MessageType } from 'app/message'
+import type { MessageType } from 'app/message'
 
+import type { OAuthActions } from './actions'
 import {
-  OAuthActions,
   OPEN_POPUP,
   NATIVE_OPEN_POPUP,
   CLOSE_POPUP,

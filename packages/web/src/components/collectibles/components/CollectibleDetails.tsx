@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Chain, Collectible, CollectibleMediaType } from '@audius/common'
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 import { useModalState } from 'common/hooks/useModalState'
-import { Chain } from 'common/models/Chain'
-import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
 import { getProfileUserHandle } from 'common/store/pages/profile/selectors'
 import { setCollectible } from 'common/store/ui/collectible-details/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

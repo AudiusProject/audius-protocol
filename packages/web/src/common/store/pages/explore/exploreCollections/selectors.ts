@@ -1,5 +1,5 @@
-import { Collection } from 'common/models/Collection'
-import Status from 'common/models/Status'
+import { Collection, Status } from '@audius/common'
+
 import { CommonState } from 'common/store'
 import { getCollections as getCachedCollections } from 'common/store/cache/collections/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'

@@ -1,6 +1,6 @@
+import { Name } from '@audius/common'
 import { takeLatest, put } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
 import AudiusBackend from 'services/AudiusBackend'
 import { make } from 'store/analytics/actions'
 

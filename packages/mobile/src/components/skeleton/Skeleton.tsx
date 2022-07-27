@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react'
 
-import {
-  Animated,
-  Easing,
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewStyle
-} from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { Animated, Easing, StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors, useThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 const ANIMATION_DURATION_MS = 1500
 

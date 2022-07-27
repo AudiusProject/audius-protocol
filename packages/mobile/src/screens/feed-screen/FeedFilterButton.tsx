@@ -1,4 +1,4 @@
-import FeedFilter from 'audius-client/src/common/models/FeedFilter'
+import { FeedFilter } from '@audius/common'
 
 import { messages } from 'app/components/feed-filter-drawer'
 import { HeaderButton } from 'app/components/header'

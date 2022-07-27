@@ -2,11 +2,8 @@ import { useMemo } from 'react'
 
 import IconShuffleOffLight from 'app/assets/animations/iconShuffleOffLight.json'
 import IconShuffleOnLight from 'app/assets/animations/iconShuffleOnLight.json'
-import {
-  AnimatedButton,
-  AnimatedButtonProps,
-  Haptics
-} from 'app/components/core'
+import type { AnimatedButtonProps, Haptics } from 'app/components/core'
+import { AnimatedButton } from 'app/components/core'
 import { colorize } from 'app/utils/colorizeLottie'
 import { useThemeColors } from 'app/utils/theme'
 

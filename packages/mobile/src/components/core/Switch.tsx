@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { Switch as RNSwitch, SwitchProps as RNSwitchProps } from 'react-native'
+import type { SwitchProps as RNSwitchProps } from 'react-native'
+import { Switch as RNSwitch } from 'react-native'
 import { useToggle } from 'react-use'
 
 import { light } from 'app/haptics'

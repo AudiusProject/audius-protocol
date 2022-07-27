@@ -7,6 +7,13 @@ import {
   useCallback
 } from 'react'
 
+import {
+  UserCollection,
+  SmartCollection,
+  Variant as CollectionVariant,
+  Status,
+  User
+} from '@audius/common'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -14,13 +21,6 @@ import { ReactComponent as IconForYou } from 'assets/img/iconExploreMobileForYou
 import { ReactComponent as IconMoods } from 'assets/img/iconExploreMobileMoods.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
-import {
-  UserCollection,
-  SmartCollection,
-  Variant as CollectionVariant
-} from 'common/models/Collection'
-import Status from 'common/models/Status'
-import { User } from 'common/models/User'
 import { getTab } from 'common/store/pages/explore/selectors'
 import { setTab } from 'common/store/pages/explore/slice'
 import {

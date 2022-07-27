@@ -1,15 +1,15 @@
+import {
+  ChallengeRewardID,
+  FailureReason,
+  UserChallenge,
+  StringAudio
+} from '@audius/common'
 import delayP from '@redux-saga/delay-p'
 import { expectSaga } from 'redux-saga-test-plan'
 import { call, select } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { all, fork } from 'redux-saga/effects'
 
-import {
-  ChallengeRewardID,
-  FailureReason,
-  UserChallenge
-} from 'common/models/AudioRewards'
-import { StringAudio } from 'common/models/Wallet'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import {
   getAccountUser,

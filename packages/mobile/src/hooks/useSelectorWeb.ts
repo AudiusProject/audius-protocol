@@ -1,6 +1,7 @@
-import { CommonState } from 'audius-client/src/common/store'
+import type { CommonState } from 'audius-client/src/common/store'
 import { isEqual as lodashIsEqual } from 'lodash'
-import { Selector, useSelector } from 'react-redux'
+import type { Selector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 export const isEqual: <T>(left: T, right: T) => boolean = lodashIsEqual
 

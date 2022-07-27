@@ -1,6 +1,6 @@
+import { Kind } from '@audius/common'
 import { call, put, takeLatest, takeEvery } from 'redux-saga/effects'
 
-import Kind from 'common/models/Kind'
 import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import * as collectionActions from 'common/store/pages/collection/actions'

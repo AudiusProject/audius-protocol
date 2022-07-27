@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native'
 
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { font } from 'app/styles'
-import { ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
 
 type TabInfoProps = {
   header: string

@@ -1,6 +1,6 @@
+import { Name } from '@audius/common'
 import { call, put, takeEvery } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
 import {
   confirmCredentials,
   confirmCredentialsSucceeded,

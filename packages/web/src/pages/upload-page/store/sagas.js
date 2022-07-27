@@ -1,3 +1,4 @@
+import { Kind, Name, Status } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
 import { channel, buffers } from 'redux-saga'
@@ -13,9 +14,6 @@ import {
   race
 } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
 import * as accountActions from 'common/store/account/reducer'
 import {
   getAccountUser,

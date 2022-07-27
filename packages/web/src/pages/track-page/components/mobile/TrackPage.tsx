@@ -1,10 +1,7 @@
 import { useEffect, useContext } from 'react'
 
-import { CID, ID } from '@audius/common'
+import { CID, ID, LineupState, Track, User } from '@audius/common'
 
-import { LineupState } from 'common/models/Lineup'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
 import { tracksActions } from 'common/store/pages/track/lineup/actions'
 import { QueueItem } from 'common/store/queue/types'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'

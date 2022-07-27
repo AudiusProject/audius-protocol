@@ -1,12 +1,11 @@
 import { useCallback, useContext } from 'react'
 
+import { Name, Status } from '@audius/common'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { Name } from 'common/models/Analytics'
-import Status from 'common/models/Status'
 import {
   getAccountUser,
   getAccountStatus

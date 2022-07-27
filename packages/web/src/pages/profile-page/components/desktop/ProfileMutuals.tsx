@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { removeNullable } from '@audius/common'
 import { IconFollowing } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
@@ -11,7 +12,6 @@ import {
   getProfileUser,
   getProfileUserId
 } from 'common/store/pages/profile/selectors'
-import { removeNullable } from 'common/utils/typeUtils'
 import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from 'components/profile-picture-list-tile/ProfilePictureListTile'
 import {

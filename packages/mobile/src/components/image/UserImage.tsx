@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { UserImage as UserImageType, UserMultihash } from 'app/models/User'
+import type { UserImage as UserImageType, UserMultihash } from 'app/models/User'
 
 import ImageLoader from './ImageLoader'
 import { gateways, publicGateways } from './utils'

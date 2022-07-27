@@ -1,7 +1,7 @@
 import { Status } from 'app/types/status'
 
+import type { SearchActions } from './actions'
 import {
-  SearchActions,
   OPEN,
   CLOSE,
   UPDATE_QUERY,
@@ -11,7 +11,7 @@ import {
   SET_HISTORY,
   FETCH_SEARCH_FAILED
 } from './actions'
-import { SearchResults } from './types'
+import type { SearchResults } from './types'
 
 export type SearchState = {
   isOpen: boolean

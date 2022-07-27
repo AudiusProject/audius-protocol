@@ -1,4 +1,4 @@
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'

@@ -1,6 +1,8 @@
-import { ReactElement, useRef } from 'react'
+import type { ReactElement } from 'react'
+import { useRef } from 'react'
 
-import { FlatList, FlatListProps } from 'react-native'
+import type { FlatListProps } from 'react-native'
+import { FlatList } from 'react-native'
 
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 

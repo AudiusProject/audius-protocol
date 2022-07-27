@@ -1,6 +1,6 @@
+import { Kind } from '@audius/common'
 import { all, fork, call, put, select, takeEvery } from 'typed-redux-saga/macro'
 
-import Kind from 'common/models/Kind'
 import { getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import AudiusBackend from 'services/AudiusBackend'

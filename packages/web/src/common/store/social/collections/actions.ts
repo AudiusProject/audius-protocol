@@ -1,11 +1,5 @@
-import { ID } from '@audius/common'
+import { ID, RepostSource, FavoriteSource, ShareSource } from '@audius/common'
 import { createCustomAction } from 'typesafe-actions'
-
-import {
-  RepostSource,
-  FavoriteSource,
-  ShareSource
-} from 'common/models/Analytics'
 
 export const REPOST_COLLECTION = 'SOCIAL/REPOST_COLLECTION'
 export const UNDO_REPOST_COLLECTION = 'SOCIAL/UNDO_REPOST_COLLECTION'

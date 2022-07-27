@@ -3,6 +3,7 @@ const path = require('path')
 const { getDefaultConfig } = require('metro-config')
 
 const clientPath = path.resolve(__dirname, '../web')
+const commonPath = path.resolve(__dirname, '../common')
 
 module.exports = (async () => {
   const {
@@ -18,15 +19,14 @@ module.exports = (async () => {
       }),
       babelTransformerPath: require.resolve('react-native-svg-transformer')
     },
-    watchFolders: [clientPath],
+    watchFolders: [clientPath, commonPath],
     resolver: {
-      assetExts: assetExts.filter(ext => ext !== 'svg'),
+      assetExts: assetExts.filter((ext) => ext !== 'svg'),
       sourceExts: [...sourceExts, 'svg', 'cjs'],
       nodeModulesPaths: [path.resolve(clientPath, 'node_modules')],
       extraNodeModules: {
         // Alias for 'src' to allow for absolute paths
         app: path.resolve(__dirname, 'src'),
-
         // This is used to resolve the absolute paths found in audius-client.
         // Eventually all shared state logic will live in @audius/client-common
         // and this can be removed

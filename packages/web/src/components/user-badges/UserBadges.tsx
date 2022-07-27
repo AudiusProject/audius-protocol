@@ -1,6 +1,6 @@
 import { cloneElement, ReactElement } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, BadgeTier, Nullable } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconBronzeBadgeSVG } from 'assets/img/IconBronzeBadge.svg'
@@ -13,8 +13,6 @@ import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum40@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver40@2x.png'
 import { useSelectTierInfo } from 'common/hooks/wallet'
-import { BadgeTier } from 'common/models/BadgeTier'
-import { Nullable } from 'common/utils/typeUtils'
 
 import styles from './UserBadges.module.css'
 

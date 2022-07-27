@@ -1,7 +1,8 @@
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.REQUEST_TWITTER_AUTH]: ({ message, dispatch }) => {

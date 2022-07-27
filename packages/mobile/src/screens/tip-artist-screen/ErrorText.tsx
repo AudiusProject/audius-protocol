@@ -1,4 +1,5 @@
-import { Text, TextProps } from 'app/components/core'
+import type { TextProps } from 'app/components/core'
+import { Text } from 'app/components/core'
 
 type ErrorTextProps = TextProps
 

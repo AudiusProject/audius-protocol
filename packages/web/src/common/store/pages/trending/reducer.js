@@ -1,4 +1,5 @@
-import TimeRange from 'common/models/TimeRange'
+import { TimeRange } from '@audius/common'
+
 import { asLineup } from 'common/store/lineup/reducer'
 import {
   SET_TRENDING_GENRE,

@@ -1,11 +1,8 @@
-import { ID } from '@audius/common'
+import { Kind, ID, Chain, BNWei, WalletAddress, Nullable } from '@audius/common'
 import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
 import { WalletLinkProvider } from 'walletlink'
 
-import { Chain } from 'common/models/Chain'
-import Kind from 'common/models/Kind'
-import { BNWei, WalletAddress } from 'common/models/Wallet'
 import { BooleanKeys } from 'common/services/remote-config'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
@@ -43,7 +40,6 @@ import {
   getBalance,
   sendFailed
 } from 'common/store/wallet/slice'
-import { Nullable } from 'common/utils/typeUtils'
 import { weiToString } from 'common/utils/wallet'
 import { CollectibleState } from 'components/collectibles/types'
 import { fetchServices } from 'components/service-selection/store/slice'

@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 
-import { StyleSheet } from 'react-native'
+import type { StyleSheet } from 'react-native'
 
-import { ThemeColors as _ThemeColors, useThemeColors } from '../utils/theme'
+import type { ThemeColors as _ThemeColors } from '../utils/theme'
+import { useThemeColors } from '../utils/theme'
 
 export type ThemeColors = _ThemeColors
 

@@ -1,6 +1,7 @@
-import { Maybe } from 'audius-client/src/common/utils/typeUtils'
+import type { Maybe } from '@audius/common'
 
-import { MessageType, Message } from '../message'
+import type { Message } from '../message'
+import { MessageType } from '../message'
 
 export type MessageSender = {
   postMessage: (message: string) => void

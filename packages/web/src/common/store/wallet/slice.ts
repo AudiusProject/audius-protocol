@@ -1,10 +1,6 @@
+import { Chain, Nullable, StringWei } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
-
-import { Chain } from 'common/models/Chain'
-import { Nullable } from 'common/utils/typeUtils'
-
-import { StringWei } from '../../models/Wallet'
 
 type WalletState = {
   balance: Nullable<StringWei>

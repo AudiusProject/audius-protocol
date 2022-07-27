@@ -1,13 +1,12 @@
 import { useEffect, useCallback } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, User } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { animated } from 'react-spring'
 import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 
-import { User } from 'common/models/User'
 import {
   AccountImage,
   InstagramProfile,

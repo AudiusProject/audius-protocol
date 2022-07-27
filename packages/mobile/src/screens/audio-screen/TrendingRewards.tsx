@@ -1,13 +1,9 @@
-import { TrendingRewardID } from 'audius-client/src/common/models/AudioRewards'
+import type { TrendingRewardID } from '@audius/common'
 import { StringKeys } from 'audius-client/src/common/services/remote-config'
-import {
-  setTrendingRewardsModalType,
-  TrendingRewardsModalType
-} from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import {
-  Modals,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
+import type { TrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
+import { setTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
+import type { Modals } from 'audius-client/src/common/store/ui/modals/slice'
+import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { View } from 'react-native'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'

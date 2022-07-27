@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
+import { Name } from '@audius/common'
 import { Modal } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Name } from 'common/models/Analytics'
 import { getCurrentPage } from 'common/store/change-password/selectors'
 import { changePage, Page } from 'common/store/change-password/slice'
 import { make, TrackEvent } from 'store/analytics/actions'

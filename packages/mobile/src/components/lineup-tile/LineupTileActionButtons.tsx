@@ -6,7 +6,7 @@ import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import { GestureResponderHandler } from 'app/types/gesture'
+import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 
 type Props = {

@@ -1,12 +1,12 @@
 import { Component } from 'react'
 
+import { DefaultSizes } from '@audius/common'
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import { DefaultSizes } from 'common/models/ImageSizes'
 import Toast from 'components/toast/Toast'
 import {
   TrackArtwork,

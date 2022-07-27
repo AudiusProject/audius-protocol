@@ -1,6 +1,13 @@
 import { memo, useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { UID } from '@audius/common'
+import {
+  UID,
+  Name,
+  UserCollection,
+  LineupState,
+  Status,
+  User
+} from '@audius/common'
 import cn from 'classnames'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
@@ -10,11 +17,6 @@ import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
-import { Name } from 'common/models/Analytics'
-import { UserCollection } from 'common/models/Collection'
-import { LineupState } from 'common/models/Lineup'
-import Status from 'common/models/Status'
-import { User } from 'common/models/User'
 import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'

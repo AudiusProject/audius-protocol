@@ -1,4 +1,4 @@
-import { ID, UID } from '@audius/common'
+import { ID, UID, removeNullable } from '@audius/common'
 import { all, put, select, takeEvery, call } from 'typed-redux-saga/macro'
 
 import { getUserId } from 'common/store/account/selectors'
@@ -20,7 +20,6 @@ import {
   shuffle,
   updateIndex
 } from 'common/store/queue/slice'
-import { removeNullable } from 'common/utils/typeUtils'
 import {
   PersistQueueMessage,
   RepeatModeMessage,

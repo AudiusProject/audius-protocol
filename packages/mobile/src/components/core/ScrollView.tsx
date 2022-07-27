@@ -1,9 +1,7 @@
 import { forwardRef } from 'react'
 
-import {
-  ScrollView as RNScrollView,
-  ScrollViewProps as RNScrollViewProps
-} from 'react-native'
+import type { ScrollViewProps as RNScrollViewProps } from 'react-native'
+import { ScrollView as RNScrollView } from 'react-native'
 
 import { PlayBarChin } from './PlayBarChin'
 

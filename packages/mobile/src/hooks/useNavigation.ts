@@ -1,14 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
 // eslint-disable-next-line import/no-unresolved
-import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
-import {
-  ParamListBase,
-  useNavigation as useNavigationNative
-} from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
+import type { ParamListBase } from '@react-navigation/native'
+import { useNavigation as useNavigationNative } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
-import { AppTabScreenParamList } from 'app/screens/app-screen/AppTabScreen'
+import type { AppTabScreenParamList } from 'app/screens/app-screen/AppTabScreen'
 
 import { usePushRouteWeb } from './usePushRouteWeb'
 

@@ -1,6 +1,14 @@
 import { ComponentType, createRef, PureComponent } from 'react'
 
-import { ID, UID } from '@audius/common'
+import {
+  Kind,
+  ID,
+  UID,
+  Name,
+  PlaybackSource,
+  Lineup,
+  Status
+} from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'
@@ -8,10 +16,6 @@ import { connect } from 'react-redux'
 import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 
-import { Name, PlaybackSource } from 'common/models/Analytics'
-import Kind from 'common/models/Kind'
-import { Lineup } from 'common/models/Lineup'
-import Status from 'common/models/Status'
 import { LineupActions } from 'common/store/lineup/actions'
 import { getShowTip } from 'common/store/tipping/selectors'
 import { FeedTipTile } from 'components/tipping/feed-tip-tile/FeedTipTile'

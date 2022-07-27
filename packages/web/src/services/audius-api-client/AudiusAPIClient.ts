@@ -1,10 +1,13 @@
-import { ID } from '@audius/common'
+import {
+  ID,
+  TimeRange,
+  StemTrackMetadata,
+  Nullable,
+  removeNullable
+} from '@audius/common'
 
-import TimeRange from 'common/models/TimeRange'
-import { StemTrackMetadata } from 'common/models/Track'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { SearchKind } from 'common/store/pages/search-results/types'
-import { Nullable, removeNullable } from 'common/utils/typeUtils'
 import AudiusBackend, { AuthHeaders } from 'services/AudiusBackend'
 import { SupporterResponse } from 'services/audius-backend/Tipping'
 import {

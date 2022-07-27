@@ -1,6 +1,7 @@
 import { View } from 'react-native'
 
-import { Text, TextProps, Hyperlink } from 'app/components/core'
+import type { TextProps } from 'app/components/core'
+import { Text, Hyperlink } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'

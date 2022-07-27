@@ -1,7 +1,7 @@
-import Theme from 'audius-client/src/common/models/Theme'
-import { Dispatch } from 'redux'
+import type { Theme } from '@audius/common'
+import type { Dispatch } from 'redux'
 
-import { AnalyticsMessage } from '../types/analytics'
+import type { AnalyticsMessage } from '../types/analytics'
 
 export enum MessageType {
   LOADED = 'loaded',

@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react'
 
-import { Collection, CollectionMetadata } from 'common/models/Collection'
-import { SquareSizes } from 'common/models/ImageSizes'
-import { DeepNullable, Nullable } from 'common/utils/typeUtils'
+import {
+  Collection,
+  CollectionMetadata,
+  SquareSizes,
+  DeepNullable,
+  Nullable
+} from '@audius/common'
+
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import UploadArtwork from 'components/upload/UploadArtwork'

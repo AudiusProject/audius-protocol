@@ -1,8 +1,6 @@
-import { ID } from '@audius/common'
+import { ID, UserCollectionMetadata, Kind } from '@audius/common'
 import { put, call } from 'redux-saga/effects'
 
-import { UserCollectionMetadata } from 'common/models/Collection'
-import Kind from 'common/models/Kind'
 import * as cacheActions from 'common/store/cache/actions'
 import { makeUid } from 'common/utils/uid'
 

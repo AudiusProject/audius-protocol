@@ -1,13 +1,13 @@
-import {
+import type {
   AccountImage,
   InstagramProfile,
   TwitterProfile
 } from 'audius-client/src/common/store/account/reducer'
 
-import { Message } from 'app/message'
+import type { Message } from 'app/message'
 
-import { Provider } from './reducer'
-import { Credentials } from './types'
+import type { Provider } from './reducer'
+import type { Credentials } from './types'
 
 export const OPEN_POPUP = 'OAUTH/OPEN_POPUP'
 export const REQUEST_NATIVE_OPEN_POPUP = 'OAUTH/REQUEST_NATIVE_OPEN_POPUP'

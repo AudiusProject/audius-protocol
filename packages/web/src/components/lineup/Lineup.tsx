@@ -1,6 +1,6 @@
+import { Status } from '@audius/common'
 import { connect } from 'react-redux'
 
-import Status from 'common/models/Status'
 import DesktopPlaylistTile from 'components/track/desktop/ConnectedPlaylistTile'
 import DesktopTrackTile from 'components/track/desktop/ConnectedTrackTile'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'

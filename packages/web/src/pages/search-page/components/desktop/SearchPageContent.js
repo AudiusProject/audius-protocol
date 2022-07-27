@@ -1,9 +1,9 @@
 import { Component } from 'react'
 
+import { Status } from '@audius/common'
 import { Redirect } from 'react-router'
 
 import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
-import Status from 'common/models/Status'
 import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import { formatCount } from 'common/utils/formatUtil'
 import Card from 'components/card/desktop/Card'

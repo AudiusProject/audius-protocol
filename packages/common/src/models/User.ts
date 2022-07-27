@@ -1,17 +1,12 @@
-import { CID, ID } from '@audius/common'
+import { Collectible, CollectiblesMetadata } from 'models/Collectible'
+import { Color } from 'models/Color'
+import { CID, ID } from 'models/Identifiers'
+import { CoverPhotoSizes, ProfilePictureSizes } from 'models/ImageSizes'
+import { PlaylistLibrary } from 'models/PlaylistLibrary'
+import { SolanaWalletAddress, StringWei, WalletAddress } from 'models/Wallet'
+import { Nullable } from 'utils/typeUtils'
 
-import { Collectible, CollectiblesMetadata } from 'common/models/Collectible'
-import Color from 'common/models/Color'
-import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
-import { PlaylistLibrary } from 'common/models/PlaylistLibrary'
-import {
-  SolanaWalletAddress,
-  StringWei,
-  WalletAddress
-} from 'common/models/Wallet'
-import { Nullable } from 'common/utils/typeUtils'
-
-import Timestamped from './Timestamped'
+import { Timestamped } from './Timestamped'
 
 export type UserMetadata = {
   album_count: number

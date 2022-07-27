@@ -1,5 +1,6 @@
 import { AUDIUS_API_LINK } from 'audius-client/src/utils/route'
-import { Image, ImageStyle, View } from 'react-native'
+import type { ImageStyle } from 'react-native'
+import { Image, View } from 'react-native'
 
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'

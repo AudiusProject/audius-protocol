@@ -1,8 +1,6 @@
 import { getProfileUserId } from 'audius-client/src/common/store/pages/profile/selectors'
-import {
-  BadgeTierInfo,
-  badgeTiers
-} from 'audius-client/src/common/store/wallet/utils'
+import type { BadgeTierInfo } from 'audius-client/src/common/store/wallet/utils'
+import { badgeTiers } from 'audius-client/src/common/store/wallet/utils'
 import { Text, View } from 'react-native'
 
 import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'

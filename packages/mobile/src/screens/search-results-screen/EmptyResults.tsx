@@ -1,4 +1,5 @@
-import { Text, TextStyle, View } from 'react-native'
+import type { TextStyle } from 'react-native'
+import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconSearch from 'app/assets/images/iconSearch.svg'

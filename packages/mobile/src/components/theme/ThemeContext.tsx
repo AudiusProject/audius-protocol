@@ -1,6 +1,7 @@
-import { createContext, ReactNode, useCallback } from 'react'
+import type { ReactNode } from 'react'
+import { createContext, useCallback } from 'react'
 
-import { Name } from 'audius-client/src/common/models/Analytics'
+import { Name } from '@audius/common'
 import { setTheme } from 'audius-client/src/common/store/ui/theme/actions'
 import { getTheme } from 'audius-client/src/common/store/ui/theme/selectors'
 import { useDarkMode } from 'react-native-dark-mode'

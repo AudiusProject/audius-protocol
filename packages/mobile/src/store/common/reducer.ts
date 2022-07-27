@@ -1,6 +1,7 @@
-import { CommonState } from 'audius-client/src/common/store'
+import type { CommonState } from 'audius-client/src/common/store'
 
-import { CommonActions, RECEIVE } from './actions'
+import type { CommonActions } from './actions'
+import { RECEIVE } from './actions'
 
 // Not using reduxjs/toolkit here because immer performance was less than optimal
 // for this reducer that gets hit very often

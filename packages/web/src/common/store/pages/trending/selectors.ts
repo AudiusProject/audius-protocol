@@ -1,4 +1,5 @@
-import TimeRange from 'common/models/TimeRange'
+import { TimeRange } from '@audius/common'
+
 import { CommonState } from 'common/store'
 
 export const getDiscoverTrendingWeekLineup = (state: CommonState) =>

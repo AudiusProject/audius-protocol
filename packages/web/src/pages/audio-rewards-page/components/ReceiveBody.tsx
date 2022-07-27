@@ -1,7 +1,7 @@
+import { SolanaWalletAddress, WalletAddress } from '@audius/common'
 import { Button, ButtonType, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 
-import { SolanaWalletAddress, WalletAddress } from 'common/models/Wallet'
 import { FeatureFlags } from 'common/services/remote-config'
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'

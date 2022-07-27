@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/react-native'
 import { Platform } from 'react-native'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import WebView from 'react-native-webview'
+import type WebView from 'react-native-webview'
 import { Provider } from 'react-redux'
 
 import Audio from 'app/components/audio/Audio'

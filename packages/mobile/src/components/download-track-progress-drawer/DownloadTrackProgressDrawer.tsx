@@ -12,7 +12,8 @@ import {
   getFileName,
   getFetchCancel
 } from 'app/store/download/selectors'
-import { useColor, ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { useColor } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({

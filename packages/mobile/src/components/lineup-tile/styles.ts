@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native'
 
 import { flexRowCentered, font } from 'app/styles'
-import { ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
 
 export const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({

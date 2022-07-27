@@ -1,15 +1,16 @@
-import { ReactNode, useContext } from 'react'
+import type { ReactNode } from 'react'
+import { useContext } from 'react'
 
+import type { LinkingOptions } from '@react-navigation/native'
 import {
   getStateFromPath,
-  LinkingOptions,
   NavigationContainer as RNNavigationContainer
 } from '@react-navigation/native'
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { RootScreenParamList } from 'app/screens/root-screen/RootScreen'
+import type { RootScreenParamList } from 'app/screens/root-screen/RootScreen'
 
 import { ThemeContext } from '../theme/ThemeContext'
 

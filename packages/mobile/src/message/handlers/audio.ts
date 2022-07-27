@@ -1,6 +1,7 @@
 import * as audioActions from 'app/store/audio/actions'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.PLAY_TRACK]: ({ dispatch }) => {

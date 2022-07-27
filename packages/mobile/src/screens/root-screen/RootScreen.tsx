@@ -1,18 +1,18 @@
 import { useState } from 'react'
 
-import {
-  createDrawerNavigator,
-  DrawerContentComponentProps
-} from '@react-navigation/drawer'
+import type { DrawerContentComponentProps } from '@react-navigation/drawer'
+import { createDrawerNavigator } from '@react-navigation/drawer'
 // eslint-disable-next-line import/no-unresolved
-import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
-import { NavigatorScreenParams, useNavigation } from '@react-navigation/native'
+import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
+import type { NavigatorScreenParams } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
-import { AppScreen, AppScreenParamList } from 'app/screens/app-screen'
+import type { AppScreenParamList } from 'app/screens/app-screen'
+import { AppScreen } from 'app/screens/app-screen'
 import {
   NotificationsScreen,
   NotificationsDrawerNavigationContextProvider

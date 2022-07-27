@@ -1,4 +1,5 @@
-import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
+import { Supporter, Supporting, UserTip } from '@audius/common'
+
 import { APIUser } from 'services/audius-api-client/types'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 

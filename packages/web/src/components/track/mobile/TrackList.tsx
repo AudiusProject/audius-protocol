@@ -1,10 +1,9 @@
 import { memo, useCallback } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, CoverArtSizes } from '@audius/common'
 import cn from 'classnames'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
-import { CoverArtSizes } from 'common/models/ImageSizes'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 
 import TrackListItem from './ConnectedTrackListItem'

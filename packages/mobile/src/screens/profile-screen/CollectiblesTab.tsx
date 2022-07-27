@@ -2,7 +2,8 @@ import { useCallback, useContext, useRef } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { View, Text, FlatList as RNFlatList } from 'react-native'
+import type { FlatList as RNFlatList } from 'react-native'
+import { View, Text } from 'react-native'
 
 import IconShare from 'app/assets/images/iconShare.svg'
 import { Tile, GradientText, FlatList, Button } from 'app/components/core'

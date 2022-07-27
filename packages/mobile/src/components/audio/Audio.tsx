@@ -1,15 +1,17 @@
-import { useState, useRef, useEffect, RefObject, useCallback } from 'react'
+import type { RefObject } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 import { Genre } from 'audius-client/src/common/utils/genres'
 import { Platform, StyleSheet, View } from 'react-native'
 import MusicControl from 'react-native-music-control'
 import { Command } from 'react-native-music-control/lib/types'
-import Video, { OnProgressData } from 'react-native-video'
+import type { OnProgressData } from 'react-native-video'
+import Video from 'react-native-video'
 import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import type { Dispatch } from 'redux'
 
 import { MessageType } from 'app/message'
-import { AppState } from 'app/store'
+import type { AppState } from 'app/store'
 import * as audioActions from 'app/store/audio/actions'
 import { RepeatMode } from 'app/store/audio/reducer'
 import {
@@ -22,7 +24,7 @@ import {
   getQueueAutoplay,
   getTrackAndIndex
 } from 'app/store/audio/selectors'
-import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
+import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import { postMessage } from 'app/utils/postMessage'
 
 import { useChromecast } from './GoogleCast'

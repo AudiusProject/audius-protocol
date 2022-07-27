@@ -1,6 +1,6 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
-import { Animated } from 'react-native'
+import type { Animated } from 'react-native'
 
 import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconCollectibles from 'app/assets/images/iconCollectibles.svg'

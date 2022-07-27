@@ -1,7 +1,7 @@
+import { Theme } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import { put, call, spawn, takeEvery } from 'redux-saga/effects'
 
-import Theme from 'common/models/Theme'
 import {
   SET_THEME,
   ThemeActions,

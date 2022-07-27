@@ -1,16 +1,18 @@
 import { useCallback } from 'react'
 
+import type { Nullable } from '@audius/common'
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { useTwitterButtonStatus } from 'common/hooks/useTwitterButtonStatus'
 import { fetchUserSocials } from 'common/store/cache/users/actions'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import { Button, ButtonProps, useOnOpenLink } from 'app/components/core'
+import type { ButtonProps } from 'app/components/core'
+import { Button, useOnOpenLink } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
-import { make, track } from 'app/utils/analytics'
+import type { make } from 'app/utils/analytics'
+import { track } from 'app/utils/analytics'
 import { getTwitterLink } from 'app/utils/twitter'
 
 const messages = {

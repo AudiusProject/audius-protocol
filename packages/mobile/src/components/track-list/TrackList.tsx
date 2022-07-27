@@ -1,19 +1,20 @@
-import { ReactElement } from 'react'
+import type { ReactElement } from 'react'
 
 import type { ID, UID } from '@audius/common'
-import { FlatList, FlatListProps, View } from 'react-native'
-import DraggableFlatList, {
-  DraggableFlatListProps
-} from 'react-native-draggable-flatlist'
+import type { FlatListProps } from 'react-native'
+import { FlatList, View } from 'react-native'
+import type { DraggableFlatListProps } from 'react-native-draggable-flatlist'
+import DraggableFlatList from 'react-native-draggable-flatlist'
 import { useSelector } from 'react-redux'
 
 import * as haptics from 'app/haptics'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 
-import { TrackItemAction, TrackListItem } from './TrackListItem'
+import type { TrackItemAction } from './TrackListItem'
+import { TrackListItem } from './TrackListItem'
 import { TrackListItemSkeleton } from './TrackListItemSkeleton'
-import { TrackMetadata, TracksMetadata } from './types'
+import type { TrackMetadata, TracksMetadata } from './types'
 
 type TrackListProps = {
   hideArt?: boolean

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import Status from 'audius-client/src/common/models/Status'
+import { Status } from '@audius/common'
 import { getConfirmCredentialsStatus } from 'audius-client/src/common/store/change-password/selectors'
 import { confirmCredentials } from 'audius-client/src/common/store/change-password/slice'
 import { View } from 'react-native'

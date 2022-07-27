@@ -1,9 +1,7 @@
 import { useCallback, MouseEvent } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, UserCollection, Status } from '@audius/common'
 
-import { UserCollection } from 'common/models/Collection'
-import Status from 'common/models/Status'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Card from 'components/card/desktop/Card'
 import Header from 'components/header/desktop/Header'

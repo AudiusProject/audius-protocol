@@ -1,4 +1,4 @@
-import Theme from 'common/models/Theme'
+import { Theme } from '@audius/common'
 
 import { NativeMobileMessage } from './helpers'
 import { MessageType } from './types'

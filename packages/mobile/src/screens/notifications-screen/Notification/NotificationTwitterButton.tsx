@@ -1,7 +1,5 @@
-import {
-  TwitterButton,
-  TwitterButtonProps
-} from 'app/components/twitter-button'
+import type { TwitterButtonProps } from 'app/components/twitter-button'
+import { TwitterButton } from 'app/components/twitter-button'
 import { makeStyles } from 'app/styles'
 
 const messages = {

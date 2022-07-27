@@ -9,7 +9,8 @@ import {
 
 import IconLink from 'app/assets/images/iconLink.svg'
 import Text from 'app/components/text'
-import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import type { ThemeColors } from 'app/hooks/useThemedStyles'
+import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useThemeColors } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>

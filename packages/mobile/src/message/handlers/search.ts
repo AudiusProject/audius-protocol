@@ -1,6 +1,7 @@
 import * as searchActions from 'app/store/search/actions'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.OPEN_SEARCH]: ({ message, dispatch }) => {

@@ -1,4 +1,5 @@
-import TimeRange from 'common/models/TimeRange'
+import { TimeRange } from '@audius/common'
+
 import { Genre } from 'common/utils/genres'
 
 export const SET_TRENDING_GENRE = 'TRENDING/SET_TRENDING_GENRE'

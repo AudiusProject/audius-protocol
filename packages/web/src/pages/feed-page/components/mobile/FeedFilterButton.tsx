@@ -1,4 +1,5 @@
-import FeedFilter from 'common/models/FeedFilter'
+import { FeedFilter } from '@audius/common'
+
 import HeaderButton from 'components/header-button/HeaderButton'
 
 const messages = {

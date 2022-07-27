@@ -1,6 +1,7 @@
+import type { Remix } from '@audius/common'
 import { useLoadImageWithTimeout } from 'audius-client/src/common/hooks/useImageSize'
-import { Remix } from 'audius-client/src/common/models/Track'
-import { ImageStyle, StyleProp, View, ViewStyle } from 'react-native'
+import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
+import { View } from 'react-native'
 
 import CoSign, { Size } from 'app/components/co-sign'
 import { DynamicImage } from 'app/components/core'

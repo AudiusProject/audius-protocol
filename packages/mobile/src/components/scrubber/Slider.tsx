@@ -1,19 +1,15 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAppState } from '@react-native-community/hooks'
-import {
-  StyleSheet,
-  View,
-  GestureResponderEvent,
-  Animated,
-  PanResponder
-} from 'react-native'
+import type { GestureResponderEvent } from 'react-native'
+import { StyleSheet, View, Animated, PanResponder } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { attachToDx } from 'app/utils/animation'
-import { ThemeColors, useThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 // How much the handle "grows" when pressing
 const HANDLE_GROW_SCALE = 1.1

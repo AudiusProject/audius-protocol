@@ -1,6 +1,7 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 
 import IconCoSign from 'app/assets/images/iconCoSign.svg'
 import { useThemeColors } from 'app/utils/theme'

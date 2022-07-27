@@ -1,13 +1,12 @@
-import { CID, ID, UID } from '@audius/common'
-
-import { Favorite } from 'common/models/Favorite'
-import { CoverArtSizes } from 'common/models/ImageSizes'
-import { Repost } from 'common/models/Repost'
-import { User, UserMetadata } from 'common/models/User'
-import { Nullable } from 'common/utils/typeUtils'
+import { Favorite } from 'models/Favorite'
+import { CID, ID, UID } from 'models/Identifiers'
+import { CoverArtSizes } from 'models/ImageSizes'
+import { Repost } from 'models/Repost'
+import { User, UserMetadata } from 'models/User'
+import { Nullable } from 'utils/typeUtils'
 
 import { StemCategory } from './Stems'
-import Timestamped from './Timestamped'
+import { Timestamped } from './Timestamped'
 
 export interface TrackSegment {
   duration: string

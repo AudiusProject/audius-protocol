@@ -1,6 +1,4 @@
-import { ID } from '@audius/common'
-
-import { LineupState } from 'common/models/Lineup'
+import { ID, LineupState } from '@audius/common'
 
 export default interface TrackPageState {
   trackId: ID | null

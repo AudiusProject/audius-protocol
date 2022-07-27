@@ -1,5 +1,5 @@
-import { Chain } from 'common/models/Chain'
-import { Nullable } from 'common/utils/typeUtils'
+import { Chain } from 'models/Chain'
+import { Nullable } from 'utils/typeUtils'
 
 export type CollectiblesMetadata = {
   [key: string]: object

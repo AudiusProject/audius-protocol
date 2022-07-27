@@ -1,6 +1,15 @@
 import { useCallback, memo } from 'react'
 
-import { ID, UID } from '@audius/common'
+import {
+  ID,
+  UID,
+  Name,
+  Collection,
+  CoverPhotoSizes,
+  ProfilePictureSizes,
+  LineupState,
+  Status
+} from '@audius/common'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.svg'
@@ -8,11 +17,6 @@ import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
 import { useSelectTierInfo } from 'common/hooks/wallet'
-import { Name } from 'common/models/Analytics'
-import { Collection } from 'common/models/Collection'
-import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
-import { LineupState } from 'common/models/Lineup'
-import Status from 'common/models/Status'
 import { feedActions } from 'common/store/pages/profile/lineups/feed/actions'
 import { tracksActions } from 'common/store/pages/profile/lineups/tracks/actions'
 import { ProfileUser, Tabs } from 'common/store/pages/profile/types'

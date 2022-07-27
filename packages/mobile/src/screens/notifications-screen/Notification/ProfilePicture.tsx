@@ -4,10 +4,8 @@ import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import {
-  ProfilePicture as ProfilePictureBase,
-  ProfilePictureProps as ProfilePictureBaseProps
-} from 'app/components/user'
+import type { ProfilePictureProps as ProfilePictureBaseProps } from 'app/components/user'
+import { ProfilePicture as ProfilePictureBase } from 'app/components/user'
 import { close } from 'app/store/notifications/actions'
 import { makeStyles } from 'app/styles'
 import { getUserRoute } from 'app/utils/routes'

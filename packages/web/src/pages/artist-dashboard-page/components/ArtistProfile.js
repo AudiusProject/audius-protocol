@@ -1,8 +1,8 @@
 import { memo } from 'react'
 
+import { SquareSizes } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 
-import { SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'

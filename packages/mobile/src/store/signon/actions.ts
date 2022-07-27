@@ -1,4 +1,4 @@
-import { FollowArtistsCategory } from './types'
+import type { FollowArtistsCategory } from './types'
 
 export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
 export const SIGN_IN_FAILED_RESET = 'SIGN_ON/SIGN_IN_FAILED_RESET'

@@ -1,8 +1,12 @@
-import { UID } from '@audius/common'
+import {
+  UID,
+  LineupState,
+  LineupStateTrack,
+  Order,
+  Status
+} from '@audius/common'
 import { Reducer } from 'redux'
 
-import { LineupState, LineupStateTrack, Order } from 'common/models/Lineup'
-import Status from 'common/models/Status'
 import {
   FETCH_LINEUP_METADATAS_REQUESTED,
   FETCH_LINEUP_METADATAS_SUCCEEDED,

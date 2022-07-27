@@ -1,6 +1,7 @@
 import * as haptics from 'app/haptics'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.HAPTIC_FEEDBACK]: () => {

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-import { Image, View, ImageProps } from 'react-native'
+import type { ImageProps } from 'react-native'
+import { Image, View } from 'react-native'
 
 const AutoSizeImage = (props: ImageProps) => {
   const [size, setSize] = useState(0)

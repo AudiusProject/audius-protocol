@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  Supporter,
+  User,
+  BNWei,
+  StringAudio,
+  StringWei,
+  Nullable
+} from '@audius/common'
 
-import { Supporter } from 'common/models/Tipping'
-import { User } from 'common/models/User'
-import { BNWei, StringAudio, StringWei } from 'common/models/Wallet'
 import { SupportersMap, SupportingMap } from 'common/store/tipping/types'
 import { parseWeiNumber } from 'common/utils/formatUtil'
-import { Nullable } from 'common/utils/typeUtils'
 import { parseAudioInputToWei, stringWeiToBN } from 'common/utils/wallet'
 
 const zeroWei = stringWeiToBN('0' as StringWei)

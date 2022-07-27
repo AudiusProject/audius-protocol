@@ -1,6 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  Name,
+  CoverPhotoSizes,
+  ProfilePictureSizes,
+  WidthSizes,
+  SquareSizes
+} from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -16,13 +23,6 @@ import Linkify from 'linkifyjs/react'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
-import { Name } from 'common/models/Analytics'
-import {
-  CoverPhotoSizes,
-  ProfilePictureSizes,
-  WidthSizes,
-  SquareSizes
-} from 'common/models/ImageSizes'
 import { formatCount, squashNewLines } from 'common/utils/formatUtil'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

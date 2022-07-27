@@ -1,5 +1,12 @@
 import { useCallback } from 'react'
 
+import {
+  SquareSizes,
+  WidthSizes,
+  Supporting,
+  User,
+  Nullable
+} from '@audius/common'
 import { IconTrophy } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -7,11 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
-import { SquareSizes, WidthSizes } from 'common/models/ImageSizes'
-import { Supporting } from 'common/models/Tipping'
-import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
-import { Nullable } from 'common/utils/typeUtils'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'

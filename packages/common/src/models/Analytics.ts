@@ -1,13 +1,8 @@
-import { ID, PlayableType } from '@audius/common'
-
-import FeedFilter from 'common/models/FeedFilter'
-import { MonitorPayload, ServiceMonitorType } from 'common/models/Services'
-import TimeRange from 'common/models/TimeRange'
-import {
-  SolanaWalletAddress,
-  StringAudio,
-  WalletAddress
-} from 'common/models/Wallet'
+import { FeedFilter } from 'models/FeedFilter'
+import { ID, PlayableType } from 'models/Identifiers'
+import { MonitorPayload, ServiceMonitorType } from 'models/Services'
+import { TimeRange } from 'models/TimeRange'
+import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 

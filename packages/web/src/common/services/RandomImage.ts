@@ -1,4 +1,4 @@
-import { Nullable } from 'common/utils/typeUtils'
+import { Nullable } from '@audius/common'
 
 const UNSPLASH_PUBLIC = 'https://source.unsplash.com/random'
 const UNSPLASH_API_GATEWAY = 'https://api.audius.co/unsplash/photos/random'

@@ -1,8 +1,7 @@
 import { memo } from 'react'
 
+import { Nullable } from '@audius/common'
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
-
-import { Nullable } from 'common/utils/typeUtils'
 
 import styles from './DeleteConfirmationModal.module.css'
 

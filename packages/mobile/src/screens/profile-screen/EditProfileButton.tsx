@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
-import { Button, ButtonProps } from 'app/components/core'
+import type { ButtonProps } from 'app/components/core'
+import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 type EditProfileButtonProps = Partial<ButtonProps>
 

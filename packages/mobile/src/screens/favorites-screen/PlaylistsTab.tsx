@@ -8,11 +8,11 @@ import { VirtualizedScrollView, Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
-import { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScreen'
+import type { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScreen'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
-import { ExtendedCollection } from './types'
+import type { ExtendedCollection } from './types'
 
 const messages = {
   emptyTabText: "You haven't favorited any playlists yet.",

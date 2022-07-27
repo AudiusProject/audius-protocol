@@ -1,7 +1,5 @@
-import { ID } from '@audius/common'
+import { ID, Status } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-import Status from 'common/models/Status'
 
 import { ExploreCollectionsVariant } from '../types'
 

@@ -1,4 +1,4 @@
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 import { getOptimisticSupporters } from 'audius-client/src/common/store/tipping/selectors'
 import { getId as getSupportersId } from 'audius-client/src/common/store/user-list/top-supporters/selectors'
 import { View } from 'react-native'

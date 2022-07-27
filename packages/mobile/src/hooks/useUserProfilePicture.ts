@@ -1,4 +1,4 @@
-import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
+import type { SquareSizes } from '@audius/common'
 import { fetchProfilePicture } from 'audius-client/src/common/store/cache/users/actions'
 
 import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'

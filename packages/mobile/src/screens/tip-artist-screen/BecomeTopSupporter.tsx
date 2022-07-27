@@ -1,4 +1,4 @@
-import { BNWei } from 'audius-client/src/common/models/Wallet'
+import type { BNWei } from '@audius/common'
 import { formatWei } from 'audius-client/src/common/utils/wallet'
 import { Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'

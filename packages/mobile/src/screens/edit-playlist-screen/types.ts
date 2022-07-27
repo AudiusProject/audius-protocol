@@ -1,6 +1,5 @@
-import type { ID } from '@audius/common'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
-import { getTracks } from 'common/store/ui/createPlaylistModal/selectors'
+import type { ID, Nullable } from '@audius/common'
+import type { getTracks } from 'common/store/ui/createPlaylistModal/selectors'
 
 export type Image = {
   height?: number

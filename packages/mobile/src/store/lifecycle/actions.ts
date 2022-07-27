@@ -1,4 +1,4 @@
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 
 export const BACKEND_LOADED = 'LIFECYCLE/BACKEND_LOADED'
 export const BACKEND_TEAR_DOWN = 'LIFECYCLE/BACKEND_TEAR_DOWN'

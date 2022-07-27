@@ -7,6 +7,7 @@ import {
   useState
 } from 'react'
 
+import { Chain, Collectible, CollectibleMediaType } from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -26,8 +27,6 @@ import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import { ReactComponent as IconMute } from 'assets/img/iconVolume0.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelectTierInfo } from 'common/hooks/wallet'
-import { Chain } from 'common/models/Chain'
-import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   getCollectibleDetails,

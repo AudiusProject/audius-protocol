@@ -1,10 +1,7 @@
-import { CID } from '@audius/common'
+import { CID, Color, Track, Nullable } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import Color from 'common/models/Color'
-import { Track } from 'common/models/Track'
 import { CommonState } from 'common/store'
-import { Nullable } from 'common/utils/typeUtils'
 
 const initialState: {
   averageColor: { [multihash: string]: Color }

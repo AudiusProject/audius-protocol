@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  StemCategory,
+  StemUploadWithFile,
+  Track,
+  removeNullable
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { StemCategory, StemUploadWithFile } from 'common/models/Stems'
-import { Track } from 'common/models/Track'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
 import { getCurrentUploads } from 'common/store/stems-upload/selectors'
 import { startStemUploads } from 'common/store/stems-upload/slice'
-import { removeNullable } from 'common/utils/typeUtils'
 import { uuid } from 'common/utils/uid'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import { dropdownRows } from 'components/source-files-modal/SourceFilesModal'

@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ID } from '@audius/common'
+import type { ID, User } from '@audius/common'
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
-import { User } from 'audius-client/src/common/models/User'
 import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
-import { CommonState } from 'audius-client/src/common/store'
+import type { CommonState } from 'audius-client/src/common/store'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
 import {
@@ -13,9 +12,9 @@ import {
   setLoading
 } from 'audius-client/src/common/store/user-list/actions'
 import { makeGetOptimisticUserIdsIfNeeded } from 'audius-client/src/common/store/user-list/selectors'
-import { UserListStoreState } from 'audius-client/src/common/store/user-list/types'
+import type { UserListStoreState } from 'audius-client/src/common/store/user-list/types'
 import { View } from 'react-native'
-import { Selector } from 'react-redux'
+import type { Selector } from 'react-redux'
 
 import { Divider, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'

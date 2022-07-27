@@ -1,11 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, User } from '@audius/common'
 import { Button, ButtonType, IconArrow, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconWand } from 'assets/img/iconWand.svg'
-import { User } from 'common/models/User'
 import UserCard from 'components/card/UserCard'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
 

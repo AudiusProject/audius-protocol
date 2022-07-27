@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
+import { BNWei, StringWei } from '@audius/common'
 import BN from 'bn.js'
 
-import { BNWei, StringWei } from 'common/models/Wallet'
 import { formatWei } from 'common/utils/wallet'
 
 export const useUIAudio = (weiAudio: StringWei): number =>

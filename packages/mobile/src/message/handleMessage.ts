@@ -1,8 +1,8 @@
-import Theme from 'audius-client/src/common/models/Theme'
+import type { Theme } from '@audius/common'
 import { Platform } from 'react-native'
-import { Dispatch } from 'redux'
+import type { Dispatch } from 'redux'
 
-import { AnalyticsMessage } from '../types/analytics'
+import type { AnalyticsMessage } from '../types/analytics'
 
 import { messageHandlers as analytics } from './handlers/analytics'
 import { messageHandlers as android } from './handlers/android'
@@ -20,7 +20,7 @@ import { messageHandlers as signon } from './handlers/signon'
 import { messageHandlers as theme } from './handlers/theme'
 import { messageHandlers as tipping } from './handlers/tipping'
 import { messageHandlers as version } from './handlers/version'
-import { Message, MessageHandlers } from './types'
+import type { Message, MessageHandlers } from './types'
 
 const isIos = Platform.OS === 'ios'
 

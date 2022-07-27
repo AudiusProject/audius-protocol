@@ -1,6 +1,4 @@
-import { Collection } from 'common/models/Collection'
-import Status from 'common/models/Status'
-import { Track } from 'common/models/Track'
+import { Status, Collection, Track } from '@audius/common'
 
 export default interface ArtistDashboardState {
   status: Status

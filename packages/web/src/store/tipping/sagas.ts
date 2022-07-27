@@ -1,4 +1,16 @@
-import { ID } from '@audius/common'
+import {
+  Kind,
+  ID,
+  Name,
+  RecentTipsStorage,
+  Supporter,
+  Supporting,
+  UserTip,
+  User,
+  BNWei,
+  StringWei,
+  Nullable
+} from '@audius/common'
 import BN from 'bn.js'
 import {
   call,
@@ -10,16 +22,6 @@ import {
   cancel
 } from 'typed-redux-saga/macro'
 
-import { Name } from 'common/models/Analytics'
-import Kind from 'common/models/Kind'
-import {
-  RecentTipsStorage,
-  Supporter,
-  Supporting,
-  UserTip
-} from 'common/models/Tipping'
-import { User } from 'common/models/User'
-import { BNWei, StringWei } from 'common/models/Wallet'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { update } from 'common/store/cache/actions'
@@ -51,7 +53,6 @@ import {
 } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { decreaseBalance } from 'common/store/wallet/slice'
-import { Nullable } from 'common/utils/typeUtils'
 import {
   parseAudioInputToWei,
   stringWeiToBN,

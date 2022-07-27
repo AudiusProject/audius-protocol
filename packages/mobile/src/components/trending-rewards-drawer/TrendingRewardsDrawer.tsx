@@ -1,18 +1,17 @@
 import { useCallback } from 'react'
 
-import Theme from 'audius-client/src/common/models/Theme'
+import { Theme } from '@audius/common'
 import { StringKeys } from 'audius-client/src/common/services/remote-config'
 import { getTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/selectors'
-import {
-  setTrendingRewardsModalType,
-  TrendingRewardsModalType
-} from 'audius-client/src/common/store/pages/audio-rewards/slice'
+import type { TrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
+import { setTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import {
   TRENDING_PAGE,
   TRENDING_PLAYLISTS_PAGE,
   TRENDING_UNDERGROUND_PAGE
 } from 'audius-client/src/utils/route'
-import { Image, ImageStyle, ScrollView, View } from 'react-native'
+import type { ImageStyle } from 'react-native'
+import { Image, ScrollView, View } from 'react-native'
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'
@@ -28,7 +27,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { AppScreenParamList } from 'app/screens/app-screen'
+import type { AppScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
 

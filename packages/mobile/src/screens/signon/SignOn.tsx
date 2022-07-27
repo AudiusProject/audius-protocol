@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActionsWeb from 'audius-client/src/pages/sign-on/store/actions'
 import querystring from 'query-string'
 import {
@@ -47,7 +47,7 @@ import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
 import { useThemeColors } from 'app/utils/theme'
 
-import { SignOnStackParamList } from './types'
+import type { SignOnStackParamList } from './types'
 
 const isAndroid = Platform.OS === 'android'
 const image = backgImage

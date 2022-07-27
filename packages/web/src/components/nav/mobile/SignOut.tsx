@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
-import { Name } from 'common/models/Analytics'
 import { disablePushNotifications } from 'pages/settings-page/store/mobileSagas'
 import { make, useRecord } from 'store/analytics/actions'
 import { signOut } from 'utils/signOut'

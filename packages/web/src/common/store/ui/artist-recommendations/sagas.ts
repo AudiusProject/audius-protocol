@@ -1,9 +1,8 @@
-import { ID } from '@audius/common'
+import { ID, User } from '@audius/common'
 import { Action } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'redux-saga/effects'
 
-import { User } from 'common/models/User'
 import { DoubleKeys } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'

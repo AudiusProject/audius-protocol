@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
 
+import { Name, Nullable } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { Name } from 'common/models/Analytics'
 import { getNotificationEntity } from 'common/store/notifications/selectors'
 import { TrackEntity, TrendingTrack } from 'common/store/notifications/types'
-import { Nullable } from 'common/utils/typeUtils'
 import { make } from 'store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 

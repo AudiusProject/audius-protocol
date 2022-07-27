@@ -1,4 +1,4 @@
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 import { getOptimisticSupporting } from 'audius-client/src/common/store/tipping/selectors'
 import { getId as getSupportingId } from 'common/store/user-list/supporting/selectors'
 

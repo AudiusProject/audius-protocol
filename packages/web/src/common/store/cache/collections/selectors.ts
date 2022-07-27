@@ -1,16 +1,11 @@
-import { ID, UID } from '@audius/common'
+import { ID, UID, Collection, Kind, Status, Track, User } from '@audius/common'
 
-import { Collection } from 'common/models/Collection'
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
 import { CommonState } from 'common/store'
-import { getEntry, getAllEntries } from 'common/store/cache/selectors'
+import { getAllEntries, getEntry } from 'common/store/cache/selectors'
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import {
-  getUsers,
-  getUser as getUserById
+  getUser as getUserById,
+  getUsers
 } from 'common/store/cache/users/selectors'
 import { Uid } from 'common/utils/uid'
 

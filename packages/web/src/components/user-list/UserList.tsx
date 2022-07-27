@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, FollowSource, User } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { FollowSource } from 'common/models/Analytics'
-import { User } from 'common/models/User'
 import { getUserId } from 'common/store/account/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { setNotificationSubscription } from 'common/store/pages/profile/actions'

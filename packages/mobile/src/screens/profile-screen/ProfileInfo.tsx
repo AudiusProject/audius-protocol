@@ -1,4 +1,4 @@
-import { FollowSource } from 'audius-client/src/common/models/Analytics'
+import { FollowSource } from '@audius/common'
 import { View, Text } from 'react-native'
 
 import { FollowButton, FollowsYouChip } from 'app/components/user'

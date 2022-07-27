@@ -1,8 +1,6 @@
+import { SquareSizes, User, Nullable } from '@audius/common'
 import cn from 'classnames'
 
-import { SquareSizes } from 'common/models/ImageSizes'
-import { User } from 'common/models/User'
-import { Nullable } from 'common/utils/typeUtils'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 

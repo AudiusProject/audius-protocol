@@ -1,32 +1,23 @@
-import {
-  ComponentType,
-  ReactNode,
-  useCallback,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import type { ComponentType, ReactNode } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { merge } from 'lodash'
-import {
-  Pressable,
-  Text,
+import type {
   ButtonProps as RNButtonProps,
-  Animated,
   PressableProps,
   ViewStyle,
   TextStyle,
-  View,
   LayoutChangeEvent,
-  GestureResponderEvent,
-  StyleSheet
+  GestureResponderEvent
 } from 'react-native'
-import { SvgProps } from 'react-native-svg'
+import { Pressable, Text, Animated, View, StyleSheet } from 'react-native'
+import type { SvgProps } from 'react-native-svg'
 
 import { light, medium } from 'app/haptics'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { flexRowCentered, makeStyles, StylesProp } from 'app/styles'
+import type { StylesProp } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { Link } from './Link'

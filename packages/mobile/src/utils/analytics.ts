@@ -2,13 +2,8 @@ import { Amplitude } from '@amplitude/react-native'
 import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
-import {
-  Identify,
-  Track,
-  Screen,
-  AllEvents,
-  EventNames
-} from '../types/analytics'
+import type { Identify, Track, Screen, AllEvents } from '../types/analytics'
+import { EventNames } from '../types/analytics'
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 

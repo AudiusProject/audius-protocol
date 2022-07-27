@@ -1,7 +1,8 @@
-import { UserCollection } from 'audius-client/src/common/models/Collection'
+import type { UserCollection } from '@audius/common'
 
 import { CollectionCard } from 'app/components/collection-card'
-import { CardList, CardListProps } from 'app/components/core'
+import type { CardListProps } from 'app/components/core'
+import { CardList } from 'app/components/core'
 
 type ListProps = Omit<
   CardListProps<UserCollection>,

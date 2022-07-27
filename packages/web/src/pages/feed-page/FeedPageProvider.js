@@ -1,5 +1,6 @@
 import { PureComponent } from 'react'
 
+import { Name } from '@audius/common'
 import {
   push as pushRoute,
   replace as replaceRoute
@@ -7,7 +8,6 @@ import {
 import { connect } from 'react-redux'
 import { withRouter, matchPath } from 'react-router-dom'
 
-import { Name } from 'common/models/Analytics'
 import { getHasAccount } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import * as discoverPageAction from 'common/store/pages/feed/actions'

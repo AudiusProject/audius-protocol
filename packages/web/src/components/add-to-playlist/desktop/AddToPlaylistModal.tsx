@@ -1,14 +1,12 @@
 import { useContext, useMemo, useState } from 'react'
 
+import { CreatePlaylistSource, Collection, SquareSizes } from '@audius/common'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselectAdd.svg'
 import { useModalState } from 'common/hooks/useModalState'
-import { CreatePlaylistSource } from 'common/models/Analytics'
-import { Collection } from 'common/models/Collection'
-import { SquareSizes } from 'common/models/ImageSizes'
 import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
 import {
   addTrackToPlaylist,

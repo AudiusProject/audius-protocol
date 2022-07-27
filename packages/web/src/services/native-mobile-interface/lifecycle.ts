@@ -1,4 +1,4 @@
-import { User } from 'common/models/User'
+import { User } from '@audius/common'
 
 import { NativeMobileMessage } from './helpers'
 import { MessageType } from './types'
