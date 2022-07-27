@@ -76,7 +76,7 @@ function bump-npm () {
     git checkout -b ${STUB}-${VERSION}
     git add .
     git commit -m "$(commit-message)"
-    # git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
+    git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
 
     # Push branch and tags to remote
     git push -u origin ${STUB}-${VERSION}
@@ -88,16 +88,15 @@ function merge-bump () {
     git checkout master -f
     git merge ${STUB}-${VERSION} -m "$(commit-message)"
 
-    # git push -u origin master
+    git push -u origin master
 
     # clean up release branches
-    # git push origin :${STUB}-${VERSION}
+    git push origin :${STUB}-${VERSION}
 }
 
 # publish to npm
 function publish () {
-    echo
-    # npm publish . --access public
+    npm publish . --access public
 }
 
 # configuration
