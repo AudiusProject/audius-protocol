@@ -7,6 +7,13 @@ else
     GIT_TAG=${1}
 fi
 
+if [[ $(whoami) != "circleci" ]]; then
+    echo "This script is intended to be run through CI."
+    echo "Please see:"
+    echo "    .circleci/bin/deploy-sdk.sh -h"
+    exit 1
+fi
+
 set -ex
 
 # Finds the lastest commit that looks like a version commit,
