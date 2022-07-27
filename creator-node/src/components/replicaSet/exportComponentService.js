@@ -150,10 +150,24 @@ const exportComponentService = async ({
   }
 }
 
-const _fixInconsistentUser = async () => {
-  models.sequelize.query(`
-    
-  `)
+const _fixInconsistentUser = async (userId) => {
+  models.sequelize.query(
+    `
+  UPDATE cnodeUsers
+  SET clock = subquery.max_clock
+  FROM (
+      SELECT cnodeUserUUID, MAX(clock) AS max_clock
+      FROM ClockRecords
+      WHERE cnodeUserUUID = :userId
+      GROUP BY cnodeUserUUID;
+  ) AS subquery
+  WHERE cnodeUserUUID = :userId
+  AND subquery.cnodeUserUUID = :userId;
+  `,
+    {
+      replacements: { userId }
+    }
+  )
 }
 
 module.exports = exportComponentService
