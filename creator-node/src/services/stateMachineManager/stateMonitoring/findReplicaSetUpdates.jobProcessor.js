@@ -210,7 +210,7 @@ const _findReplicaSetUpdatesForUser = async (
     )
 
     /**
-     * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
+     * For each secondary, add to `unhealthyReplicas` if unhealthy
      */
     for (const secondaryInfo of secondariesInfo) {
       const secondary = secondaryInfo.endpoint
@@ -228,14 +228,18 @@ const _findReplicaSetUpdatesForUser = async (
             secondaryInfo.spId
           }, found ${
             CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary]
-          }. Marking replica as unhealthy.`
+          }. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
+            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+          )}`
         )
         unhealthyReplicas.add(secondary)
 
         // Error case 2 - already marked unhealthy
       } else if (unhealthyPeersSet.has(secondary)) {
         logger.error(
-          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
+          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
+            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+          )}`
         )
         unhealthyReplicas.add(secondary)
 
@@ -245,7 +249,9 @@ const _findReplicaSetUpdatesForUser = async (
         successRate < minSecondaryUserSyncSuccessPercent
       ) {
         logger.error(
-          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${minSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
+          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${minSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
+            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+          )}`
         )
         unhealthyReplicas.add(secondary)
       }

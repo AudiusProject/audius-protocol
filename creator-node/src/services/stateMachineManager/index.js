@@ -7,6 +7,7 @@ const StateReconciliationManager = require('./stateReconciliation')
 const { RECONFIG_MODES, QUEUE_NAMES } = require('./stateMachineConstants')
 const QueueInterfacer = require('./QueueInterfacer')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
+const CNodeToSpIdMapManager = require('./CNodeToSpIdMapManager')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -19,6 +20,11 @@ class StateMachineManager {
 
     // TODO: Remove this and libs another way -- maybe init a new instance for each updateReplicaSet job
     QueueInterfacer.init(audiusLibs)
+
+    // Initialize class immediately since bull jobs are run on cadence even on deploy
+    await CNodeToSpIdMapManager.updateCnodeEndpointToSpIdMap(
+      audiusLibs.ethContracts
+    )
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
