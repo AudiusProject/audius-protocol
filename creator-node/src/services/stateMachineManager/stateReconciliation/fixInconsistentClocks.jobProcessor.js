@@ -6,3 +6,7 @@
  * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  */
 module.exports = async function ({ logger }) {}
+
+const _validateJobData = () => {}
+
+const _fixInconsistentClock = async () => {}
