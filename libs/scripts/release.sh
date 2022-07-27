@@ -50,9 +50,9 @@ function bump-npm () {
     # only allow tags/commits found on master, release branches, or tags to be deployed
     git branch -a --contains ${GIT_TAG} \
         | tee /dev/tty \
-        | grep -Eq 'remotes/origin/master|remotes/origin/HEAD|remotes/origin/release|tags/@audius' \
+        | grep -Eq 'remotes/origin/master|remotes/origin/release' \
         || (
-            echo "tag not found on master, release branches, nor tags"
+            echo "tag not found on master nor release branches"
             exit 1
         )
 

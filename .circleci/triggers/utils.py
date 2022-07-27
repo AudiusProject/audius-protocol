@@ -35,11 +35,11 @@ def run_cmd(cmd, exit_on_error=True, msg=None):
 def standardize_branch(branches):
     """Return 'master' and 'release' for all detected master/release branches"""
     for branch in branches:
-        if "remotes/origin/master" in branch or "remotes/origin/HEAD" in branch:
+        if "remotes/origin/master" in branch:
             return "master"
         if "remotes/origin/release" in branch:
             return "release"
-    return branch
+    return branch.strip()
 
 
 def ensure_tag_on_master(tag):
