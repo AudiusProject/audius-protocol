@@ -3,9 +3,14 @@
 # ONLY TO BE RUN ON MASTER
 # master is assumed when using -f and --hard git parameters
 
-set -ex
+if [[ -z ${1} ]]; then
+    echo "A git tag must be supplied as the first parameter."
+    exit 1
+else
+    GIT_TAG=${1}
+fi
 
-GIT_TAG=${1}
+set -ex
 
 # Finds the lastest commit that looks like a version commit,
 # and gets the list of commits after that
