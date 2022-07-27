@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# ONLY TO BE RUN ON MASTER
-# master is assumed when using -f and --hard git parameters
-
 if [[ -z ${1} ]]; then
     echo "A git tag must be supplied as the first parameter."
     exit 1
@@ -32,7 +29,7 @@ function commit-message () {
 ${CHANGE_LOG}"
 }
 
-# Make a new branch off the master branch, bumps npm,
+# Make a new branch off GIT_TAG, bumps npm,
 # commits with the relevant changelog, and pushes
 function bump-npm () {
     # Configure git client
