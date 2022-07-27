@@ -631,10 +631,10 @@ const config = convict({
     default: 8760 // 1 year in hrs
   },
   contentCacheLayerEnabled: {
-    doc: 'Flag to enable or disable the nginx cache layer that caches content',
+    doc: 'Flag to enable or disable the nginx cache layer that caches content. DO NOT SET THIS HERE, set in the Dockerfile because it needs to be set above the application layer',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
-    default: true
+    default: false
   },
   reconfigNodeWhitelist: {
     doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',
