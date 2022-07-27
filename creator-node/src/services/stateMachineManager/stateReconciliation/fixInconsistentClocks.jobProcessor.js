@@ -7,9 +7,9 @@ const models = require('../../../models')
  * @param {Object} param job data
  * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  */
-module.exports = async function ({ logger, userId, newClockValue }) {
-  _validateJobData({ logger, userId, newClockValue })
-  _fixInconsistentClock({ logger, userId, newClockValue })
+module.exports = async function ({ logger, userId }) {
+  _validateJobData({ logger, userId })
+  _fixInconsistentClock({ logger, userId })
 }
 
 const _validateJobData = ({ logger, userId, newClockValue }) => {
@@ -21,27 +21,28 @@ const _validateJobData = ({ logger, userId, newClockValue }) => {
 
   if (typeof userId !== 'string') {
     throw new Error(
-      `Invalid type ("${typeof wallet}") or value ("${userId}") of wallet param`
-    )
-  }
-
-  if (typeof newClockValue !== 'number') {
-    throw new Error(
-      `Invalid type ("${typeof wallet}") or value ("${newClockValue}") of wallet param`
+      `Invalid type ("${typeof userId}") or value ("${userId}") of userId param`
     )
   }
 }
 
-const _fixInconsistentClock = async ({ logger, userId, newClockValue }) => {
+const _fixInconsistentClock = async ({ logger, userId }) => {
   try {
     models.sequelize.query(`
         UPDATE cnodeUsers
-        SET clock = :newClockValue
-        WHERE cnodeUserUUID = :userId;
+        SET clock = subquery.max_clock
+        FROM (
+            SELECT cnodeUserUUID, MAX(clock) AS max_clock
+            FROM ClockRecords
+            WHERE cnodeUserUUID = :userId
+            GROUP BY cnodeUserUUID;
+        ) AS subquery
+        WHERE cnodeUserUUID = :userId
+        AND subquery.cnodeUserUUID = :userId;
     `)
   } catch (e) {
     logger.error(
-      `_fixInconsistentClock: error fixing an inconsistent clock on users ${userId} to ${newClockValue} - ${e.message}`
+      `_fixInconsistentClock: error fixing an inconsistent clock on users ${userId} - ${e.message}`
     )
   }
 }

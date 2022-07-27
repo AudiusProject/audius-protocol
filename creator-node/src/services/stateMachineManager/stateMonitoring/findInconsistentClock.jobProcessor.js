@@ -34,7 +34,7 @@ const _validateJobData = ({ logger }) => {
 const _findInconsistentClock = async ({ logger }) => {
   try {
     const inconsistentUsersReq = models.sequelize.query(`
-    SELECT cnodeUserUUID, max_clock
+    SELECT cnodeUserUUID
     FROM (
         SELECT cnodeUserUUID, MAX(clock) as max_clock
         FROM ClockRecords
@@ -44,11 +44,11 @@ const _findInconsistentClock = async ({ logger }) => {
     AND CNodeUsers.clock < subquery.max_clock;
   `)
 
-    const inconsistentUsersWithNewClock = inconsistentUsersReq.map(
-      ({ cnodeUserUUID, max_clock }) => [cnodeUserUUID, max_clock]
+    const inconsistentUsers = inconsistentUsersReq.map(
+      ({ cnodeUserUUID }) => cnodeUserUUID
     )
 
-    return inconsistentUsersWithNewClock
+    return inconsistentUsers
   } catch (e) {
     logger.error(
       `_findInconsistentClock: error finding inconsistent clock values - ${e.message}`
