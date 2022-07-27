@@ -3,8 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 import AppState from 'store/types'
-import { DiscoveryProvider, Playlist, Track } from 'types'
-import { useDiscoveryProviders } from '../discoveryProvider/hooks'
+import { Playlist, Track } from 'types'
 import { useEffect, useState } from 'react'
 import imageBlank from 'assets/img/imageBlank2x.png'
 import {
@@ -92,7 +91,7 @@ export function fetchTopAlbums(): ThunkAction<
     try {
       await aud.awaitSetup()
       const data = await fetchWithLibs({
-        endpoint: '/v1/playlists/top',
+        endpoint: '/v1/full/playlists/top',
         queryParams: { type: 'album', limit: 5 }
       })
       const albums: Playlist[] = data.map((d: any) => ({

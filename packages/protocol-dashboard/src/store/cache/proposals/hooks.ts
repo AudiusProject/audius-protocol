@@ -82,7 +82,9 @@ export function fetchActiveProposals(): ThunkAction<
   }
 }
 
-const filteredProposals = new Set([84, 85])
+// Filter proposals impacted by
+// https://blog.audius.co/article/audius-governance-takeover-post-mortem-7-23-22
+const filteredProposals = new Set([82, 83, 84, 85])
 
 export function fetchAllProposals(): ThunkAction<
   void,
