@@ -838,7 +838,7 @@ workflows:
             - GCP2
 
 
-  # in order to run a job in hold-workflows
+  # in order to trigger this job
   # 1. go to the CircleCI dashboard
   # 2. go to your branch of choice
   # 3. click "Trigger Pipeline"
