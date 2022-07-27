@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from os import path
 from pprint import pprint
 
 import click
@@ -10,11 +11,13 @@ from triggers.utils import ensure_tag_on_master
 
 @click.command()
 @click.help_option("-h", "--help")
-@click.option("-t", "--git-tag", help="Git tag or commit to deploy from", required=True)
+@click.option(
+    "-t", "--git-tag", help="Git tag or commit to deploy from.", required=True
+)
 @click.option(
     "-k",
     "--circle-api-key",
-    help="Used when $CIRCLE_API_KEY is not set",
+    help="Used when $CIRCLE_API_KEY is not set.",
     envvar="CIRCLE_API_KEY",
     required=True,
 )
@@ -46,4 +49,6 @@ def cli(git_tag, circle_api_key):
 
 
 if __name__ == "__main__":
-    cli(prog_name="deploy-sdk.sh")
+    # make --help message more "natural" by using bin/*.sh as the filename under Usage
+    prog_name = path.basename(__file__).replace(".py", ".sh")
+    cli(prog_name=prog_name)
