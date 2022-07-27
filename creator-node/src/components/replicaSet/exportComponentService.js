@@ -87,7 +87,7 @@ const exportComponentService = async ({
 
     /** Bundle all data into cnodeUser objects to maximize import speed. */
     const cnodeUsersDict = {}
-    cnodeUsers.forEach((cnodeUser) => {
+    cnodeUsers.forEach(async (cnodeUser) => {
       // Add cnodeUserUUID data fields
       cnodeUser.audiusUsers = []
       cnodeUser.tracks = []
@@ -112,8 +112,10 @@ const exportComponentService = async ({
         ...clockRecords.map((record) => record.clock)
       )
       if (!_.isEmpty(clockRecords) && cnodeUser.clock !== maxClockRecord) {
-        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}`
+        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
         logger.error(errorMsg)
+
+        await _fixInconsistentUser()
         if (!forceExport) {
           throw new Error(errorMsg)
         }
@@ -146,6 +148,12 @@ const exportComponentService = async ({
     await transaction.rollback()
     throw new Error(e)
   }
+}
+
+const _fixInconsistentUser = async () => {
+  models.sequelize.query(`
+    
+  `)
 }
 
 module.exports = exportComponentService
