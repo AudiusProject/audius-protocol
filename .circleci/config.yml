@@ -880,6 +880,10 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
+      - bake-gcp-dev-image:
+          context:
+            - GCP2
+          name: bake-gcp-dev-image
 
   # test master at midnight daily
   test-nightly:
