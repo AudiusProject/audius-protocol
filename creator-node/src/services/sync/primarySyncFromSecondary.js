@@ -489,7 +489,7 @@ async function fixUserIfInconsistent({
     fetchedClockRecords[0].clock !== localCNodeUser.clock + 1
   ) {
     logger.warn(`[fixUserIfInconsistent()] - fixing inconsistent user`)
-    const wallet = localCNodeUser.walletPublicKey
-    fixInconsistentUser(wallet)
+    const cnodeUserUUID = localCNodeUser.cnodeUserUUID
+    fixInconsistentUser(cnodeUserUUID)
   }
 }

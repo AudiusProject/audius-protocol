@@ -1,21 +1,20 @@
 import * as models from '../models'
 
-export const fixInconsistentUser = async (wallet: string) => {
+export const fixInconsistentUser = async (userId: string) => {
   models.sequelize.query(
     `
     UPDATE "CNodeUsers"
     SET clock = subquery.max_clock
     FROM (
-        SELECT "walletPublicKey", MAX(clock) AS max_clock
+        SELECT "cnodeUserUUID", MAX(clock) AS max_clock
         FROM "ClockRecords"
-        WHERE "walletPublicKey" = :wallet
-        GROUP BY "walletPublicKey"
+        WHERE "cnodeUserUUID" = :userId
+        GROUP BY "cnodeUserUUID"
     ) AS subquery
-    WHERE "walletPublicKey" = :wallet
-    AND subquery."walletPublicKey" = :wallet
+    WHERE "cnodeUserUUID" = subquery."cnodeUserUUID"
     `,
     {
-      replacements: { wallet }
+      replacements: { userId }
     }
   )
 }

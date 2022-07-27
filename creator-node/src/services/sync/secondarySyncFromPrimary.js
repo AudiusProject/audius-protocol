@@ -226,7 +226,7 @@ const handleSyncFromPrimary = async (
         fetchedClockRecords[0] &&
         fetchedClockRecords[0].clock !== localMaxClockVal + 1
       ) {
-        await fixInconsistentUser(fetchedWalletPublicKey)
+        await fixInconsistentUser(fetchedCNodeUser.cnodeUserUUID)
         return {
           error: new Error(
             `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`

@@ -116,7 +116,7 @@ const exportComponentService = async ({
         const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
         logger.error(errorMsg)
 
-        await fixInconsistentUser(cnodeUser.walletPublicKey)
+        await fixInconsistentUser(cnodeUser.cnodeUserUUID)
         if (!forceExport) {
           throw new Error(errorMsg)
         }
