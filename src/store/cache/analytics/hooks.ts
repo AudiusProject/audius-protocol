@@ -225,6 +225,11 @@ export function fetchTotalStaked(
     const timestamps: number[] = [ts]
     for (let i = 1; i < points; ++i) {
       const time = ts - i * (timeSliceMs / points)
+      // Filter timestamps impacted by
+      // https://blog.audius.co/article/audius-governance-takeover-post-mortem-7-23-22
+      if (time > 1658573677000 && time < 1658884462050) {
+        continue
+      }
       timestamps.push(time)
     }
 
