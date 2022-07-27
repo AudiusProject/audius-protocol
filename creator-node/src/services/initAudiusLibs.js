@@ -8,7 +8,7 @@ const { logger: genericLogger } = require('../logging')
  *
  * Configures dataWeb3 to be internal to libs, logged in with delegatePrivateKey in order to write chain TX
  */
-module.exports = async (logger = genericLogger) => {
+module.exports = async (excludeDiscovery = false, logger = genericLogger) => {
   /**
    * Define all config variables
    */
@@ -64,10 +64,12 @@ module.exports = async (logger = genericLogger) => {
       // TODO - formatting this private key here is not ideal
       delegatePrivateKey.replace('0x', '')
     ),
-    discoveryProviderConfig: {
-      whitelist: discoveryProviderWhitelist,
-      unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
-    },
+    discoveryProviderConfig: excludeDiscovery
+      ? null
+      : {
+          whitelist: discoveryProviderWhitelist,
+          unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
+        },
     // If an identity service config is present, set up libs with the connection, otherwise do nothing
     identityServiceConfig: identityService
       ? AudiusLibs.configIdentityService(identityService)
