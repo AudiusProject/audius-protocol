@@ -49,7 +49,7 @@ function bump-npm () {
 
     # only allow tags/commits found on master, release branches, or tags to be deployed
     git name-rev --name-only ${GIT_TAG} \
-        | tee \
+        | tee /dev/tty \
         | grep -Eq '^master|^remotes/origin/HEAD|^remotes/origin/release|^tags/@audius' \
         || (
             echo "tag not found on master, release branches, nor tags"
