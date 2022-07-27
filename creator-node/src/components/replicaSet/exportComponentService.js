@@ -2,6 +2,7 @@ const _ = require('lodash')
 
 const models = require('../../models')
 const { Transaction } = require('sequelize')
+const { fixInconsistentUser } = require('../../utils/fixInconsistentUsers')
 
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
@@ -115,7 +116,7 @@ const exportComponentService = async ({
         const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
         logger.error(errorMsg)
 
-        await _fixInconsistentUser(cnodeUser.cnodeUserUUID)
+        await fixInconsistentUser(cnodeUser.walletPublicKey)
         if (!forceExport) {
           throw new Error(errorMsg)
         }
@@ -148,26 +149,6 @@ const exportComponentService = async ({
     await transaction.rollback()
     throw new Error(e)
   }
-}
-
-const _fixInconsistentUser = async (userId) => {
-  models.sequelize.query(
-    `
-  UPDATE "CNodeUsers"
-  SET clock = subquery.max_clock
-  FROM (
-      SELECT "cnodeUserUUID", MAX(clock) AS max_clock
-      FROM "ClockRecords"
-      WHERE cnodeUserUUID = :userId
-      GROUP BY cnodeUserUUID
-  ) AS subquery
-  WHERE cnodeUserUUID = :userId
-  AND subquery.cnodeUserUUID = :userId
-  `,
-    {
-      replacements: { userId }
-    }
-  )
 }
 
 module.exports = exportComponentService
