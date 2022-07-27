@@ -1,17 +1,15 @@
 import { useCallback } from 'react'
 
-import type { UID } from '@audius/common'
+import type { UID, Track, User } from '@audius/common'
 import {
   FavoriteSource,
   RepostSource,
   ShareSource,
   Name,
-  PlaybackSource
-} from 'audius-client/src/common/models/Analytics'
-import { FavoriteType } from 'audius-client/src/common/models/Favorite'
-import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
-import { Track } from 'audius-client/src/common/models/Track'
-import { User } from 'audius-client/src/common/models/User'
+  PlaybackSource,
+  FavoriteType,
+  SquareSizes
+} from '@audius/common'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { tracksActions } from 'audius-client/src/common/store/pages/track/lineup/actions'
 import {
@@ -44,13 +42,13 @@ import { useSelector } from 'react-redux'
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
-import { DetailsTileDetail } from 'app/components/details-tile/types'
+import type { DetailsTileDetail } from 'app/components/details-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
-import { SearchTrack, SearchUser } from 'app/store/search/types'
+import type { SearchTrack, SearchUser } from 'app/store/search/types'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { make, track as record } from 'app/utils/analytics'
 import { moodMap } from 'app/utils/moods'

@@ -1,8 +1,8 @@
+import { Kind } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import moment from 'moment'
 import { call, fork, put, select, takeEvery } from 'redux-saga/effects'
 
-import Kind from 'common/models/Kind'
 import { StringKeys } from 'common/services/remote-config'
 import * as trackCacheActions from 'common/store/cache/tracks/actions'
 import { getTrack as getCachedTrack } from 'common/store/cache/tracks/selectors'

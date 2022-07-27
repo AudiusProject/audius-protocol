@@ -1,6 +1,5 @@
-import { ID } from '@audius/common'
+import { ID, FavoriteType } from '@audius/common'
 
-import { FavoriteType } from 'common/models/Favorite'
 import { UserListStoreState } from 'common/store/user-list/types'
 
 export type FavoritesOwnState = {

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { FavoriteSource } from 'audius-client/src/common/models/Analytics'
+import { FavoriteSource } from '@audius/common'
 import { getPlaylistLibrary } from 'audius-client/src/common/store/account/selectors'
 import { getCollection } from 'audius-client/src/common/store/pages/smart-collection/selectors'
 import { findInPlaylistLibrary } from 'audius-client/src/common/store/playlist-library/helpers'
@@ -15,7 +15,7 @@ import { VirtualizedScrollView } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
-import { SmartCollection as SmartCollectionsmartCollection } from 'app/screens/explore-screen/smartCollections'
+import type { SmartCollection as SmartCollectionsmartCollection } from 'app/screens/explore-screen/smartCollections'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({

@@ -1,13 +1,18 @@
 import { ReactNode, useCallback } from 'react'
 
+import {
+  Chain,
+  BNWei,
+  StringWei,
+  WalletAddress,
+  Nullable
+} from '@audius/common'
 import { IconDiscord } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
-import { Chain } from 'common/models/Chain'
-import { BNWei, StringWei, WalletAddress } from 'common/models/Wallet'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
@@ -26,7 +31,6 @@ import {
 } from 'common/store/pages/token-dashboard/slice'
 import { ModalState } from 'common/store/pages/token-dashboard/types'
 import { getAccountBalance } from 'common/store/wallet/selectors'
-import { Nullable } from 'common/utils/typeUtils'
 import { stringWeiToBN, weiToString } from 'common/utils/wallet'
 import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'

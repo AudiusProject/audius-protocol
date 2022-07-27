@@ -1,7 +1,7 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
-import { SvgProps } from 'react-native-svg'
+import type { BadgeTier } from '@audius/common'
+import type { SvgProps } from 'react-native-svg'
 
 import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
 import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'

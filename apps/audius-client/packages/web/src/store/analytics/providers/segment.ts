@@ -1,5 +1,5 @@
-import { Name } from 'common/models/Analytics'
-import { MobileOS } from 'common/models/OS'
+import { Name, MobileOS } from '@audius/common'
+
 import {
   isMobile as getIsMobile,
   isElectron as getIsElectron,

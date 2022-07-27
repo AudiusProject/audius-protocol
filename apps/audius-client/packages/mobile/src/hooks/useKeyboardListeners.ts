@@ -1,7 +1,8 @@
-import { RefObject, useEffect } from 'react'
+import type { RefObject } from 'react'
+import { useEffect } from 'react'
 
 import { Keyboard } from 'react-native'
-import { WebView } from 'react-native-webview'
+import type { WebView } from 'react-native-webview'
 
 import { MessageType } from '../message'
 import { postMessage } from '../utils/postMessage'

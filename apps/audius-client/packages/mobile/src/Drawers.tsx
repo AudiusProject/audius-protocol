@@ -1,6 +1,6 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import { Modals } from 'audius-client/src/common/store/ui/modals/slice'
+import type { Modals } from 'audius-client/src/common/store/ui/modals/slice'
 
 import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
@@ -29,7 +29,7 @@ import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 import { DiscordDrawer } from './components/discord-drawer'
 import { useDrawerState } from './components/drawer'
 import { useDrawer } from './hooks/useDrawer'
-import { Drawer } from './store/drawers/slice'
+import type { Drawer } from './store/drawers/slice'
 
 type CommonDrawerProps = {
   modal: ComponentType

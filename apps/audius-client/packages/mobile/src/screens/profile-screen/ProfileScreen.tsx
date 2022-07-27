@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { Status, ShareSource } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
-import { ShareSource } from 'audius-client/src/common/models/Analytics'
-import Status from 'audius-client/src/common/models/Status'
 import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
@@ -23,7 +22,7 @@ import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
 
-import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileHeaderV2 } from './ProfileHeaderV2'

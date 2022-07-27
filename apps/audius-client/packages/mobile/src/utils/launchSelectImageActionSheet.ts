@@ -1,12 +1,8 @@
 import { ActionSheetIOS, Alert, Platform } from 'react-native'
-import {
-  ImageLibraryOptions,
-  launchImageLibrary,
-  launchCamera,
-  Asset
-} from 'react-native-image-picker'
+import type { ImageLibraryOptions, Asset } from 'react-native-image-picker'
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker'
 
-import { Image } from 'app/types/image'
+import type { Image } from 'app/types/image'
 
 const photoOptions: ImageLibraryOptions = {
   includeBase64: true,

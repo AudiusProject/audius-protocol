@@ -1,13 +1,14 @@
-import { ID } from '@audius/common'
-
-import { ChallengeRewardID } from 'common/models/AudioRewards'
-import { BadgeTier } from 'common/models/BadgeTier'
-import { Collection } from 'common/models/Collection'
-import Status from 'common/models/Status'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
-import { StringWei } from 'common/models/Wallet'
-import { Nullable } from 'common/utils/typeUtils'
+import {
+  ID,
+  ChallengeRewardID,
+  BadgeTier,
+  Collection,
+  Status,
+  Track,
+  User,
+  StringWei,
+  Nullable
+} from '@audius/common'
 
 export enum NotificationType {
   Announcement = 'Announcement',

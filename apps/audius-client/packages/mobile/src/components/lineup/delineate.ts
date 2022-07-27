@@ -1,7 +1,7 @@
 import { groupBy } from 'lodash'
 import moment from 'moment'
 
-import { LineupItem } from './types'
+import type { LineupItem } from './types'
 
 const NOW = moment()
 const START_OF_DAY = moment(NOW).startOf('day')

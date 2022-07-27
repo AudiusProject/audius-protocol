@@ -1,4 +1,4 @@
-import Status from 'audius-client/src/common/models/Status'
+import { Status } from '@audius/common'
 import {
   getCollections,
   getStatus

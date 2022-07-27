@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
 import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
-import { Reaction } from 'audius-client/src/common/store/notifications/types'
+import type { Reaction } from 'audius-client/src/common/store/notifications/types'
 import { getReactionFromRawValue } from 'audius-client/src/common/store/ui/reactions/slice'
 import { View } from 'react-native'
 

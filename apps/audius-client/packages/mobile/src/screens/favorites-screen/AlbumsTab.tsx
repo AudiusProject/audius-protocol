@@ -9,7 +9,7 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
-import { ExtendedCollection } from './types'
+import type { ExtendedCollection } from './types'
 
 const messages = {
   emptyTabText: "You haven't favorited any albums yet.",

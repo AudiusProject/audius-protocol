@@ -1,5 +1,5 @@
-import { Name } from 'common/models/Analytics'
-import FeedFilter from 'common/models/FeedFilter'
+import { Name, FeedFilter } from '@audius/common'
+
 import { feedActions } from 'common/store/pages/feed/lineup/actions'
 import Header from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'

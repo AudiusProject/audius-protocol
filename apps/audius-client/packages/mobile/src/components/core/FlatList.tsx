@@ -1,13 +1,11 @@
-import { forwardRef, MutableRefObject, useContext, useRef } from 'react'
+import type { MutableRefObject } from 'react'
+import { forwardRef, useContext, useRef } from 'react'
 
-import {
-  Animated,
+import type {
   FlatList as RNFlatList,
-  FlatListProps as RNFlatListProps,
-  Platform,
-  RefreshControl,
-  View
+  FlatListProps as RNFlatListProps
 } from 'react-native'
+import { Animated, Platform, RefreshControl, View } from 'react-native'
 import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
 
 import { useThemeColors } from 'app/utils/theme'

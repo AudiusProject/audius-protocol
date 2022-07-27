@@ -2,7 +2,8 @@ import { useCallback, useRef, useState } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
 
-import { TextInput, TextInputRef } from 'app/components/core'
+import type { TextInputRef } from 'app/components/core'
+import { TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'

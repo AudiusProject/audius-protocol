@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { checkNotifications, RESULTS } from 'react-native-permissions'
 import { useDispatch } from 'react-redux'
-import { Dispatch } from 'redux'
+import type { Dispatch } from 'redux'
 
 import useSessionCount from 'app/hooks/useSessionCount'
 import { setVisibility } from 'app/store/drawers/slice'

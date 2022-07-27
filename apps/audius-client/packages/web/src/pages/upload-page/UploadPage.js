@@ -1,11 +1,11 @@
 import { Component } from 'react'
 
+import { Name } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { Spring } from 'react-spring/renderprops'
 
-import { Name } from 'common/models/Analytics'
 import { getAccountUser } from 'common/store/account/selectors'
 import { pause as pauseQueue } from 'common/store/queue/slice'
 import { openWithDelay } from 'components/first-upload-modal/store/slice'

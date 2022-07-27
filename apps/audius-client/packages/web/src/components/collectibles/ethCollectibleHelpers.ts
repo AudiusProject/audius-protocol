@@ -1,5 +1,5 @@
-import { Chain } from 'common/models/Chain'
-import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
+import { Chain, Collectible, CollectibleMediaType } from '@audius/common'
+
 import {
   OpenSeaAssetExtended,
   OpenSeaEvent,

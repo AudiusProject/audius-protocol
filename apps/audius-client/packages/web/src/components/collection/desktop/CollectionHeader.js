@@ -1,5 +1,6 @@
 import { PureComponent, useState, useEffect } from 'react'
 
+import { Variant, SquareSizes, SmartCollectionVariant } from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -17,9 +18,6 @@ import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
-import { Variant } from 'common/models/Collection'
-import { SquareSizes } from 'common/models/ImageSizes'
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { formatSecondsAsText, formatDate } from 'common/utils/timeUtil'
 import { ArtistPopover } from 'components/artist/ArtistPopover'

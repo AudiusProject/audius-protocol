@@ -1,4 +1,5 @@
-import { TrackSegment } from 'common/models/Track'
+import { TrackSegment } from '@audius/common'
+
 import {
   PlayTrackMessage,
   PauseTrackMessage,

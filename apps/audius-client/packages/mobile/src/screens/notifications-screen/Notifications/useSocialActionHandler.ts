@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
-import {
+import type { User, Nullable } from '@audius/common'
+import type {
   Favorite,
   Follow,
   Repost
 } from 'audius-client/src/common/store/notifications/types'
 import { setNotificationId } from 'audius-client/src/common/store/user-list/notifications/actions'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'

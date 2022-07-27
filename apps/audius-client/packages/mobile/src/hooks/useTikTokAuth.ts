@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {
+import type {
   Credentials,
-  UseTikTokAuthArguments,
-  createUseTikTokAuthHook
+  UseTikTokAuthArguments
 } from 'audius-client/src/common/hooks/useTikTokAuth'
+import { createUseTikTokAuthHook } from 'audius-client/src/common/hooks/useTikTokAuth'
 import Config from 'react-native-config'
 import { useDispatch } from 'react-redux'
 

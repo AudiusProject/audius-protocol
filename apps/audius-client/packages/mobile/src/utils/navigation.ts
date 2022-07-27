@@ -1,4 +1,4 @@
-import { NavigationState } from '@react-navigation/native'
+import type { NavigationState } from '@react-navigation/native'
 
 /**
  * Navigation state selector that selects the current route

@@ -6,7 +6,8 @@
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
   "license": "",
-  "main": "src/index.ts",
+  "main": "dist/index.cjs.js",
+  "types": "dist/index.d.ts",
   "module": "dist/index.es.js",
   "files": [
     "src"
@@ -23,7 +24,13 @@
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
+  "dependencies": {
+    "bn.js": "4.12.0",
+    "react": "17.0.2"
+  },
   "devDependencies": {
+    "@types/bn.js": "^5.1.0",
+    "@types/react": "17.0.2",
     "eslint": "8.19.0",
     "eslint-config-audius": "1.1.13",
     "rollup": "2.76.0",

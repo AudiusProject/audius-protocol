@@ -5,8 +5,8 @@ import IconRepost from 'app/assets/images/iconRepost.svg'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
-import { GestureResponderHandler } from 'app/types/gesture'
-import { ThemeColors } from 'app/utils/theme'
+import type { GestureResponderHandler } from 'app/types/gesture'
+import type { ThemeColors } from 'app/utils/theme'
 
 import { DetailsTileStat } from './DetailsStat'
 

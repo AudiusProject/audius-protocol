@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { useNavigation } from '@react-navigation/core'
 import { useDrawerStatus } from '@react-navigation/drawer'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { usePrevious } from 'react-use'
 
 /**

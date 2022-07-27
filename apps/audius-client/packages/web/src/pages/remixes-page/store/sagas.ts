@@ -1,6 +1,6 @@
+import { TrackMetadata } from '@audius/common'
 import { takeEvery, call, put } from 'redux-saga/effects'
 
-import { TrackMetadata } from 'common/models/Track'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
 import {
   fetchTrack,

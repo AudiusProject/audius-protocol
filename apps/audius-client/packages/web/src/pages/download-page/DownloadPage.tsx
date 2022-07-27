@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { MobileOS, OS } from '@audius/common'
 import { IconDownload } from '@audius/stems'
 import cn from 'classnames'
 import * as queryString from 'query-string'
@@ -8,7 +9,6 @@ import { ParallaxProvider } from 'react-scroll-parallax'
 
 import { ReactComponent as IconDownloadDesktop } from 'assets/img/publicSite/downloadDesktop.svg'
 import { ReactComponent as IconDownloadMobile } from 'assets/img/publicSite/downloadMobile.svg'
-import { MobileOS, OS } from 'common/models/OS'
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
 import Footer from 'components/public-site/Footer'
 import NavBanner from 'components/public-site/NavBanner'

@@ -1,14 +1,14 @@
 import { ReactNode } from 'react'
 
-import { ID } from '@audius/common'
-import cn from 'classnames'
-
-import placeholderArt from 'assets/img/imageBlank2x.png'
 import {
+  ID,
   ProfilePictureSizes,
   SquareSizes,
   CoverArtSizes
-} from 'common/models/ImageSizes'
+} from '@audius/common'
+import cn from 'classnames'
+
+import placeholderArt from 'assets/img/imageBlank2x.png'
 import { pluralize } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import RepostFavoritesStats, {

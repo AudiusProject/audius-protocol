@@ -1,6 +1,6 @@
 import { Fragment, useCallback } from 'react'
 
-import { FollowSource } from 'audius-client/src/common/models/Analytics'
+import { FollowSource } from '@audius/common'
 import {
   followUser,
   unfollowUser

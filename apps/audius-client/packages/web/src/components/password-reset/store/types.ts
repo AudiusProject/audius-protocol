@@ -1,4 +1,4 @@
-import Status from 'common/models/Status'
+import { Status } from '@audius/common'
 
 export type PasswordResetState = {
   status: Status

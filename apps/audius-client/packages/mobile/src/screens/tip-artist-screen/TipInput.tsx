@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react'
 
 import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 
-import { AudioText, TextInput, TextInputProps } from 'app/components/core'
+import type { TextInputProps } from 'app/components/core'
+import { AudioText, TextInput } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const messages = {

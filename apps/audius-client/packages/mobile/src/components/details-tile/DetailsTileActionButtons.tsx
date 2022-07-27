@@ -7,8 +7,9 @@ import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
-import { GestureResponderHandler } from 'app/types/gesture'
-import { ThemeColors, useThemeColors } from 'app/utils/theme'
+import type { GestureResponderHandler } from 'app/types/gesture'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 type DetailsTileActionButtonsProps = {
   hasReposted: boolean

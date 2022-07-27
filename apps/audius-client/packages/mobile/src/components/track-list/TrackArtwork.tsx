@@ -1,8 +1,5 @@
-import type { ID } from '@audius/common'
-import {
-  CoverArtSizes,
-  SquareSizes
-} from 'audius-client/src/common/models/ImageSizes'
+import type { ID, CoverArtSizes } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 import { View } from 'react-native'
 
 import IconPause from 'app/assets/images/pbIconPauseAlt.svg'

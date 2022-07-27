@@ -1,6 +1,5 @@
+import { PlaylistLibrary } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-import { PlaylistLibrary } from 'common/models/PlaylistLibrary'
 
 const initialState = {}
 

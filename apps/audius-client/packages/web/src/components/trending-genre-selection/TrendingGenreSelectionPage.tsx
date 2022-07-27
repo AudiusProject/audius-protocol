@@ -1,8 +1,8 @@
+import { TimeRange } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import TimeRange from 'common/models/TimeRange'
 import * as trendingPageActions from 'common/store/pages/trending/actions'
 import {
   trendingMonthActions,

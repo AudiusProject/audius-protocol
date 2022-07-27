@@ -1,4 +1,5 @@
-import Theme from 'common/models/Theme'
+import { Theme } from '@audius/common'
+
 import { getIsIOS } from 'utils/browser'
 
 import DarkTheme from './dark'

@@ -1,7 +1,6 @@
+import { BNWei } from '@audius/common'
 import BN from 'bn.js'
 import numeral from 'numeral'
-
-import { BNWei } from 'common/models/Wallet'
 
 /**
  * The format for counting numbers should be 4 characters if possible (3 numbers and 1 Letter) without trailing 0

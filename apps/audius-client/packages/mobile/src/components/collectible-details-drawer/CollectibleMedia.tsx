@@ -1,21 +1,16 @@
 import { useCallback, useState } from 'react'
 
-import {
-  Collectible,
-  CollectibleMediaType
-} from 'audius-client/src/common/models/Collectible'
-import {
-  ImageStyle,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View
-} from 'react-native'
+import type { Collectible } from '@audius/common'
+import { CollectibleMediaType } from '@audius/common'
+import type { ImageStyle } from 'react-native'
+import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native'
 
 import IconVolume from 'app/assets/images/iconVolume.svg'
 import IconMute from 'app/assets/images/iconVolume0.svg'
 import AutoSizeImage from 'app/components/image/AutoSizeImage'
 import AutoSizeVideo from 'app/components/video/AutoSizeVideo'
-import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import type { ThemeColors } from 'app/hooks/useThemedStyles'
+import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useColor } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>

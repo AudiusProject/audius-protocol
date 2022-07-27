@@ -1,8 +1,4 @@
-import { ID, UID } from '@audius/common'
-
-import { Collectible } from 'common/models/Collectible'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
+import { ID, UID, Collectible, Track, User } from '@audius/common'
 
 export enum RepeatMode {
   OFF = 'OFF',

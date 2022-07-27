@@ -1,11 +1,11 @@
-import { omit } from 'lodash'
-
 import {
   Collection,
   CollectionMetadata,
   UserCollectionMetadata,
   Variant
-} from 'common/models/Collection'
+} from '@audius/common'
+import { omit } from 'lodash'
+
 import AudiusBackend from 'services/AudiusBackend'
 
 /**

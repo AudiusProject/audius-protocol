@@ -1,12 +1,12 @@
-import { ID } from '@audius/common'
-
-import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import {
+  ID,
   CoverPhotoSizes,
   ProfilePictureSizes,
   SquareSizes,
   WidthSizes
-} from 'common/models/ImageSizes'
+} from '@audius/common'
+
+import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'

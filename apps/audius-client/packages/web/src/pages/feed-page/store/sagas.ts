@@ -1,7 +1,6 @@
-import { ID } from '@audius/common'
+import { ID, FollowSource } from '@audius/common'
 import { call, put, take, fork, takeEvery } from 'redux-saga/effects'
 
-import { FollowSource } from 'common/models/Analytics'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as discoverActions from 'common/store/pages/feed/actions'
 import { feedActions } from 'common/store/pages/feed/lineup/actions'

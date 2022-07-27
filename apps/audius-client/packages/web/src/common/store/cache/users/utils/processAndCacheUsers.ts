@@ -1,7 +1,6 @@
+import { User, Kind } from '@audius/common'
 import { put } from 'redux-saga/effects'
 
-import Kind from 'common/models/Kind'
-import { User } from 'common/models/User'
 import * as cacheActions from 'common/store/cache/actions'
 import { makeUid } from 'common/utils/uid'
 

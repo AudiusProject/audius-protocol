@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 import { beginTip } from 'audius-client/src/common/store/tipping/slice'
 import { View } from 'react-native'
 

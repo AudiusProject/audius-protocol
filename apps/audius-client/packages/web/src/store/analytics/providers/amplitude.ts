@@ -1,6 +1,5 @@
 // Amplitude Analytics
-import { Name } from 'common/models/Analytics'
-import { Nullable } from 'common/utils/typeUtils'
+import { Name, Nullable } from '@audius/common'
 
 import { getSource } from './segment'
 

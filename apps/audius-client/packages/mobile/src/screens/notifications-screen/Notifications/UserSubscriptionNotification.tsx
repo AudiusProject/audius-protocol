@@ -4,10 +4,8 @@ import {
   getNotificationEntities,
   getNotificationUser
 } from 'audius-client/src/common/store/notifications/selectors'
-import {
-  Entity,
-  UserSubscription
-} from 'audius-client/src/common/store/notifications/types'
+import type { UserSubscription } from 'audius-client/src/common/store/notifications/types'
+import { Entity } from 'audius-client/src/common/store/notifications/types'
 import { profilePage } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 

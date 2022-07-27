@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 
+import { MobileOS } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { MobileOS } from 'common/models/OS'
 import { getMobileOS } from 'utils/clientUtil'
 import {
   APP_REDIRECT,

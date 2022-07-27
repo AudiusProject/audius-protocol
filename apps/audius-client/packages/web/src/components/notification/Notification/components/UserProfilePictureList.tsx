@@ -1,6 +1,6 @@
+import { User } from '@audius/common'
 import cn from 'classnames'
 
-import { User } from 'common/models/User'
 import { formatCount } from 'common/utils/formatUtil'
 import Tooltip from 'components/tooltip/Tooltip'
 

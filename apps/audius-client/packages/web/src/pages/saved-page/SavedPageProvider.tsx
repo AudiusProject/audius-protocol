@@ -1,17 +1,18 @@
 import { ComponentType, PureComponent } from 'react'
 
-import { ID, UID } from '@audius/common'
+import {
+  ID,
+  UID,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  Name
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import {
-  RepostSource,
-  FavoriteSource,
-  PlaybackSource,
-  Name
-} from 'common/models/Analytics'
 import * as accountActions from 'common/store/account/reducer'
 import { getAccountWithSavedPlaylistsAndAlbums } from 'common/store/account/selectors'
 import { makeGetTableMetadatas } from 'common/store/lineup/selectors'

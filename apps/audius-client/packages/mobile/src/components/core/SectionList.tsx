@@ -1,15 +1,13 @@
-import { forwardRef, MutableRefObject, useContext } from 'react'
+import type { MutableRefObject } from 'react'
+import { forwardRef, useContext } from 'react'
 
 import { Portal } from '@gorhom/portal'
-import {
-  Animated,
+import type {
   DefaultSectionT,
-  Platform,
-  RefreshControl,
   SectionList as RNSectionList,
-  SectionListProps as RNSectionListProps,
-  View
+  SectionListProps as RNSectionListProps
 } from 'react-native'
+import { Animated, Platform, RefreshControl, View } from 'react-native'
 import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
 
 import { useThemeColors } from 'app/utils/theme'

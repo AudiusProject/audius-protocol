@@ -1,11 +1,10 @@
 import { useCallback, useState } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, SmartCollectionVariant } from '@audius/common'
 import { IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { AccountCollection } from 'common/store/account/reducer'
 import Draggable from 'components/dragndrop/Draggable'
 import Droppable from 'components/dragndrop/Droppable'

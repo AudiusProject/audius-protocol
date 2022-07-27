@@ -1,6 +1,15 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
-import { ID, UID } from '@audius/common'
+import {
+  ID,
+  UID,
+  Name,
+  FollowSource,
+  ShareSource,
+  BadgeTier,
+  Kind,
+  Status
+} from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import moment from 'moment'
@@ -8,10 +17,6 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { Name, FollowSource, ShareSource } from 'common/models/Analytics'
-import { BadgeTier } from 'common/models/BadgeTier'
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
 import { getAccountUser } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import * as profileActions from 'common/store/pages/profile/actions'

@@ -1,5 +1,9 @@
-import {
+import type {
   SignonActions,
+  SignupHandleStatusType,
+  SignupEmailStatusType
+} from './actions'
+import {
   SIGN_IN_FAILED,
   SIGN_IN_FAILED_RESET,
   SET_HANDLE_STATUS,
@@ -15,9 +19,7 @@ import {
   SET_USERS_TO_FOLLOW,
   SET_ACCOUNT_AVAILABLE,
   RESET_SIGNON_STATE,
-  SignupHandleStatusType,
-  SET_EMAIL_STATUS,
-  SignupEmailStatusType
+  SET_EMAIL_STATUS
 } from './actions'
 import { FollowArtistsCategory } from './types'
 

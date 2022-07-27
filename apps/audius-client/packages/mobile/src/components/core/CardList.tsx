@@ -1,11 +1,11 @@
 import { useCallback, useRef } from 'react'
 
-import {
+import type {
   FlatList as RNFlatList,
   FlatListProps,
-  ListRenderItem,
-  View
+  ListRenderItem
 } from 'react-native'
+import { View } from 'react-native'
 
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 

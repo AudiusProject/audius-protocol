@@ -20,12 +20,8 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import {
-  Theme,
-  ThemeColors,
-  useThemeColors,
-  useThemeVariant
-} from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import ActionDrawer from '../action-drawer'
 import { ToastContext } from '../toast/ToastContext'

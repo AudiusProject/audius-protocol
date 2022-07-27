@@ -1,4 +1,4 @@
-import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
+import type { SquareSizes } from '@audius/common'
 import { fetchCoverArt } from 'audius-client/src/common/store/cache/tracks/actions'
 
 import imageEmpty from 'app/assets/images/imageBlank2x.png'

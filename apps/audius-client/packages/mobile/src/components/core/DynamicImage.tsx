@@ -1,28 +1,19 @@
-import {
-  memo,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import type { ReactNode } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
+import type { Maybe } from '@audius/common'
 import useInstanceVar from 'audius-client/src/common/hooks/useInstanceVar'
-import { Maybe } from 'audius-client/src/common/utils/typeUtils'
-import {
-  Animated,
-  Image,
+import type {
   ImageProps,
   ImageStyle,
   LayoutChangeEvent,
   StyleProp,
-  StyleSheet,
-  View,
   ViewStyle
 } from 'react-native'
+import { Animated, Image, StyleSheet, View } from 'react-native'
 
 import Skeleton from 'app/components/skeleton'
-import { StylesProp } from 'app/styles'
+import type { StylesProp } from 'app/styles'
 
 export type DynamicImageProps = Omit<ImageProps, 'source'> & {
   // Image uri

@@ -2,8 +2,8 @@ import { useContext } from 'react'
 
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { AppTabScreenParamList } from '../app-screen'
-import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+import type { AppTabScreenParamList } from '../app-screen'
+import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { NotificationsDrawerNavigationContext } from './NotificationsDrawerNavigationContext'
 

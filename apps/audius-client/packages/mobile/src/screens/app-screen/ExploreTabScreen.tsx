@@ -23,7 +23,7 @@ import {
 import { MoodCollectionScreen } from 'app/screens/mood-collection-screen/MoodCollectionScreen'
 import { SmartCollectionScreen } from 'app/screens/smart-collection-screen/SmartCollectionScreen'
 
-import { AppTabScreenParamList } from './AppTabScreen'
+import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type ExploreTabScreenParamList = AppTabScreenParamList & {

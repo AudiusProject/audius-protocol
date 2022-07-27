@@ -1,8 +1,5 @@
-import {
-  WebActions,
-  ENABLE_PULL_TO_REFRESH,
-  DISABLE_PULL_TO_REFRESH
-} from './actions'
+import type { WebActions } from './actions'
+import { ENABLE_PULL_TO_REFRESH, DISABLE_PULL_TO_REFRESH } from './actions'
 
 export type WebState = {
   isEnabled: boolean

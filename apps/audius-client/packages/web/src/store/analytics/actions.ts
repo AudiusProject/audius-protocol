@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
+import { Name, AllTrackingEvents } from '@audius/common'
 import { useDispatch as useDispatchRedux } from 'react-redux'
-
-import { Name, AllTrackingEvents } from 'common/models/Analytics'
 
 /** UI EVENTS */
 export const IDENTIFY = 'ANALYTICS/IDENTIFY'

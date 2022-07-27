@@ -1,6 +1,6 @@
-import BN from 'bn.js'
+import type BN from 'bn.js'
 
-import { Brand } from 'common/utils/typeUtils'
+import { Brand } from 'utils/typeUtils'
 
 export type StringWei = Brand<string, 'stringWEI'>
 export type StringAudio = string

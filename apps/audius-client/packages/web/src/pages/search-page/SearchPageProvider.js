@@ -1,11 +1,11 @@
 import { Component } from 'react'
 
+import { Name } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Redirect } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
-import { Name } from 'common/models/Analytics'
 import { getUserId } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import * as searchPageActions from 'common/store/pages/search-results/actions'

@@ -3,13 +3,15 @@ import { useMemo } from 'react'
 // import { createUseFeatureFlagHook } from 'audius-client/src/common/hooks/useFeatureFlag'
 // import { createUseRemoteVarHook } from 'audius-client/src/common/hooks/useRemoteVar'
 
-import {
+import type {
   AllRemoteConfigKeys,
   BooleanKeys,
   DoubleKeys,
   IntKeys,
   StringKeys,
-  FeatureFlags,
+  FeatureFlags
+} from 'audius-client/src/common/services/remote-config'
+import {
   FeatureFlagCohortType,
   flagCohortType
 } from 'audius-client/src/common/services/remote-config'

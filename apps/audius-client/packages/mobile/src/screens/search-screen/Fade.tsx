@@ -1,4 +1,5 @@
-import { ReactElement, useEffect, useRef } from 'react'
+import type { ReactElement } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { Animated } from 'react-native'
 

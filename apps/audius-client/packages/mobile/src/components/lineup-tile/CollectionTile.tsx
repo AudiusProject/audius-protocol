@@ -1,19 +1,17 @@
 import { useCallback, useMemo } from 'react'
 
+import type { Collection, Track, User } from '@audius/common'
 import {
   FavoriteSource,
   PlaybackSource,
   RepostSource,
-  ShareSource
-} from 'audius-client/src/common/models/Analytics'
-import { Collection } from 'audius-client/src/common/models/Collection'
-import { FavoriteType } from 'audius-client/src/common/models/Favorite'
-import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
-import { Track } from 'audius-client/src/common/models/Track'
-import { User } from 'audius-client/src/common/models/User'
+  ShareSource,
+  FavoriteType,
+  SquareSizes
+} from '@audius/common'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import type { EnhancedCollectionTrack } from 'audius-client/src/common/store/cache/collections/selectors'
 import {
-  EnhancedCollectionTrack,
   getCollection,
   getTracksFromCollection
 } from 'audius-client/src/common/store/cache/collections/selectors'
@@ -38,12 +36,12 @@ import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { AppState } from 'app/store'
+import type { AppState } from 'app/store'
 import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
-import { LineupItemProps } from './types'
+import type { LineupItemProps } from './types'
 
 export const CollectionTile = (props: LineupItemProps) => {
   const { uid } = props

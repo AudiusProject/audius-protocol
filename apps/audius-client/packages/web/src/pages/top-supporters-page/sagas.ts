@@ -1,7 +1,6 @@
-import { ID } from '@audius/common'
+import { ID, User, removeNullable } from '@audius/common'
 import { put, select } from 'typed-redux-saga/macro'
 
-import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import { setSupportersForUser } from 'common/store/tipping/slice'
 import { SupportersMapForUser } from 'common/store/tipping/types'
@@ -13,7 +12,6 @@ import {
   getUserList,
   getUserIds
 } from 'common/store/user-list/top-supporters/selectors'
-import { removeNullable } from 'common/utils/typeUtils'
 import { createUserListProvider } from 'components/user-list/utils'
 import * as adapter from 'services/audius-api-client/ResponseAdapter'
 import {

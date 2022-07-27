@@ -1,6 +1,7 @@
 import { handleWebAppLog } from 'app/utils/logging'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.LOGGING]: ({ message }) => {

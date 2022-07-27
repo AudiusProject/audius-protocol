@@ -1,15 +1,15 @@
 import { MouseEvent, useState, useEffect, useCallback, ReactNode } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  ProfilePictureSizes,
+  SquareSizes,
+  CoverArtSizes
+} from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import {
-  ProfilePictureSizes,
-  SquareSizes,
-  CoverArtSizes
-} from 'common/models/ImageSizes'
 import { pluralize } from 'common/utils/formatUtil'
 import ActionsTab from 'components/actions-tab/ActionsTab'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

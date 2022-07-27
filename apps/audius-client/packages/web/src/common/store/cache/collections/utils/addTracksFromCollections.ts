@@ -1,5 +1,5 @@
-import { UserCollectionMetadata } from 'common/models/Collection'
-import { UserTrackMetadata } from 'common/models/Track'
+import { UserCollectionMetadata, UserTrackMetadata } from '@audius/common'
+
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 
 export function* addTracksFromCollections(

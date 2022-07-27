@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import type { Nullable } from '@audius/common'
 import {
   getStatus,
   getTrack
@@ -10,7 +11,6 @@ import {
   share
 } from 'audius-client/src/common/store/ui/share-sound-to-tiktok-modal/slice'
 import { Status } from 'audius-client/src/common/store/ui/share-sound-to-tiktok-modal/types'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { StyleSheet, View } from 'react-native'
 
 import IconTikTok from 'app/assets/images/iconTikTok.svg'
@@ -21,7 +21,8 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import type { ThemeColors } from 'app/hooks/useThemedStyles'
+import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
 
 enum FileRequirementError {

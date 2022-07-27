@@ -2,15 +2,16 @@ import {
   ChallengeRewardID,
   OptimisticUserChallenge,
   UserChallenge,
-  UserChallengeState
-} from 'common/models/AudioRewards'
+  UserChallengeState,
+  removeNullable
+} from '@audius/common'
+
 import {
   getUndisbursedUserChallenges,
   getUserChallenges,
   getUserChallengesOverrides
 } from 'common/store/pages/audio-rewards/selectors'
 import { UndisbursedUserChallenge } from 'common/store/pages/audio-rewards/slice'
-import { removeNullable } from 'common/utils/typeUtils'
 
 import { CommonState } from '../..'
 

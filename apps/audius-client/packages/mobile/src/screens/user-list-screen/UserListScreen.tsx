@@ -1,7 +1,8 @@
-import { ComponentType, ReactElement, ReactNode, useCallback } from 'react'
+import type { ComponentType, ReactElement, ReactNode } from 'react'
+import { useCallback } from 'react'
 
 import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
-import { SvgProps } from 'react-native-svg'
+import type { SvgProps } from 'react-native-svg'
 
 import { Screen } from 'app/components/core'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'

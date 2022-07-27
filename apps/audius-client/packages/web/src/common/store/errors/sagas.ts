@@ -1,7 +1,7 @@
+import { Name } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { takeEvery, put } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
 import { make } from 'store/analytics/actions'
 import { ERROR_PAGE } from 'utils/route'
 

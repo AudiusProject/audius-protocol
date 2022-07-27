@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import {
   Animated,
   StyleSheet,
@@ -33,7 +33,7 @@ import { track, make } from 'app/utils/analytics'
 import { useColor } from 'app/utils/theme'
 
 import SignupHeader from './SignupHeader'
-import { SignOnStackParamList } from './types'
+import type { SignOnStackParamList } from './types'
 
 const styles = StyleSheet.create({
   container: {

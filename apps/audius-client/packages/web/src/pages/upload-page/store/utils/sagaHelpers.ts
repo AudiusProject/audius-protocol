@@ -1,7 +1,7 @@
+import { Name } from '@audius/common'
 import { range } from 'lodash'
 import { all, put, select } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
 import { getAccountUser } from 'common/store/account/selectors'
 import { make } from 'store/analytics/actions'
 

@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 
-import Client from 'common/models/Client'
-import { OS, MobileOS } from 'common/models/OS'
+import { Client, OS, MobileOS } from '@audius/common'
 
 declare global {
   interface Window {

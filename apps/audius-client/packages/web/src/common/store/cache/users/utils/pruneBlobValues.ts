@@ -1,5 +1,4 @@
-import { SquareSizes, WidthSizes } from 'common/models/ImageSizes'
-import { User } from 'common/models/User'
+import { SquareSizes, WidthSizes, User } from '@audius/common'
 
 /**
  * Prunes blob url values off of a user.

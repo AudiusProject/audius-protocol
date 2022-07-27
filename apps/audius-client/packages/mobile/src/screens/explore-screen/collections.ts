@@ -1,6 +1,6 @@
-import { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
-import { SvgProps } from 'react-native-svg'
+import type { SvgProps } from 'react-native-svg'
 import {
   EXPLORE_LET_THEM_DJ_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
@@ -19,7 +19,7 @@ import IconExploreDJ from 'app/assets/images/iconExploreDJ.svg'
 import IconExploreTopAlbums from 'app/assets/images/iconExploreTopAlbums.svg'
 import IconExploreTopPlaylists from 'app/assets/images/iconExploreTopPlaylists.svg'
 
-import { ExploreCollectionsVariant } from './types'
+import type { ExploreCollectionsVariant } from './types'
 
 export type CollectionScreen =
   | 'LetThemDJ'

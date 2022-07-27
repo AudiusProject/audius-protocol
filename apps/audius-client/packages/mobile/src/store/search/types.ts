@@ -1,10 +1,8 @@
-import { Repost } from 'audius-client/src/common/models/Repost'
-import { TrackSegment } from 'audius-client/src/common/models/Track'
-import { User } from 'audius-client/src/common/models/User'
+import type { Repost, TrackSegment, User } from '@audius/common'
 
-import { CollectionImage } from 'app/models/Collection'
-import { TrackImage } from 'app/models/Track'
-import { UserImage, UserMultihash } from 'app/models/User'
+import type { CollectionImage } from 'app/models/Collection'
+import type { TrackImage } from 'app/models/Track'
+import type { UserImage, UserMultihash } from 'app/models/User'
 
 type BaseUser = Pick<
   User,

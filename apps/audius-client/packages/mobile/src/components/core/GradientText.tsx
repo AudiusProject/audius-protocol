@@ -1,8 +1,7 @@
 import MaskedView from '@react-native-masked-view/masked-view'
-import { TextProps } from 'react-native'
-import LinearGradient, {
-  LinearGradientProps
-} from 'react-native-linear-gradient'
+import type { TextProps } from 'react-native'
+import type { LinearGradientProps } from 'react-native-linear-gradient'
+import LinearGradient from 'react-native-linear-gradient'
 
 import Text from 'app/components/text'
 import { useThemeColors } from 'app/utils/theme'

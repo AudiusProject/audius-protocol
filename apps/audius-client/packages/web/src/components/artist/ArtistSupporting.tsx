@@ -1,11 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, User } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
-import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { getOptimisticSupporting } from 'common/store/tipping/selectors'
 import { fetchSupportingForUser } from 'common/store/tipping/slice'

@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  NavigationProp,
-  useFocusEffect,
-  useNavigation
-} from '@react-navigation/native'
+import type { NavigationProp } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 
 /**
  * A hook that listens for `scrollToTop` event on all parent navigators

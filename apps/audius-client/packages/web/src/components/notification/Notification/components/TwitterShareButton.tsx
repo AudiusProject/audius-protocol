@@ -1,5 +1,6 @@
 import { MouseEventHandler, useCallback } from 'react'
 
+import { Nullable } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
@@ -7,7 +8,6 @@ import { useTwitterButtonStatus } from 'common/hooks/useTwitterButtonStatus'
 import { CommonState } from 'common/store'
 import { fetchUserSocials } from 'common/store/cache/users/actions'
 import { getUser } from 'common/store/cache/users/selectors'
-import { Nullable } from 'common/utils/typeUtils'
 import { make, useRecord } from 'store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
 

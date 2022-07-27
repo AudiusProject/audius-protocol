@@ -1,4 +1,5 @@
-import { NotificationsActions, OPEN, CLOSE } from './actions'
+import type { NotificationsActions } from './actions'
+import { OPEN, CLOSE } from './actions'
 
 export type NotificationsState = {
   isOpen: boolean

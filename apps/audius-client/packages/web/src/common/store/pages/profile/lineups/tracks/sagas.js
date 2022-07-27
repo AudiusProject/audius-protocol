@@ -1,6 +1,6 @@
+import { Kind } from '@audius/common'
 import { all, call, select, takeEvery, put } from 'redux-saga/effects'
 
-import Kind from 'common/models/Kind'
 import { getUserId } from 'common/store/account/selectors'
 import { DELETE_TRACK } from 'common/store/cache/tracks/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'

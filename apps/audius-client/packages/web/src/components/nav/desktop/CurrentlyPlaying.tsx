@@ -1,11 +1,9 @@
 import { memo, useRef, MouseEvent } from 'react'
 
+import { Color, CoverArtSizes, SquareSizes, Nullable } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconVisualizer } from 'assets/img/iconVisualizer.svg'
-import Color from 'common/models/Color'
-import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
-import { Nullable } from 'common/utils/typeUtils'
 import Draggable from 'components/dragndrop/Draggable'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'

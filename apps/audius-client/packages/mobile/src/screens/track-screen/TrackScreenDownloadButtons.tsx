@@ -1,16 +1,15 @@
 import { useCallback } from 'react'
 
-import type { CID, ID } from '@audius/common'
+import type { CID, ID, User } from '@audius/common'
+import { Name } from '@audius/common'
+import type { ButtonType as DownloadButtonType } from 'audius-client/src/common/hooks/useDownloadTrackButtons'
 import {
   ButtonState,
-  ButtonType as DownloadButtonType,
   useDownloadTrackButtons
 } from 'audius-client/src/common/hooks/useDownloadTrackButtons'
-import { Name } from 'audius-client/src/common/models/Analytics'
-import { User } from 'audius-client/src/common/models/User'
 import { downloadTrack } from 'audius-client/src/common/store/social/tracks/actions'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
+import type { useSelector } from 'react-redux'
 
 import IconDownload from 'app/assets/images/iconDownload.svg'
 import { Button } from 'app/components/core'
@@ -18,7 +17,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useToast } from 'app/hooks/useToast'
-import { SearchUser } from 'app/store/search/types'
+import type { SearchUser } from 'app/store/search/types'
 import { makeStyles } from 'app/styles/makeStyles'
 import { make, track } from 'app/utils/analytics'
 

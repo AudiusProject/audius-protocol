@@ -1,4 +1,12 @@
-import { ID } from '@audius/common'
+import {
+  ID,
+  Kind,
+  PlaylistIdentifier,
+  PlaylistLibrary,
+  PlaylistLibraryFolder,
+  PlaylistLibraryIdentifier,
+  User
+} from '@audius/common'
 import {
   all,
   call,
@@ -9,14 +17,6 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import Kind from 'common/models/Kind'
-import {
-  PlaylistIdentifier,
-  PlaylistLibrary,
-  PlaylistLibraryFolder,
-  PlaylistLibraryIdentifier
-} from 'common/models/PlaylistLibrary'
-import { User } from 'common/models/User'
 import { AccountCollection } from 'common/store/account/reducer'
 import {
   getAccountNavigationPlaylists,

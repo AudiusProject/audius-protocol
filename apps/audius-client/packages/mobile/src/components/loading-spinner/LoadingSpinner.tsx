@@ -1,5 +1,6 @@
 import LottieView from 'lottie-react-native'
-import { StyleProp, StyleSheet, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { StyleSheet } from 'react-native'
 
 import loadingSpinner from 'app/assets/animations/loadingSpinner.json'
 import { useThemeColors } from 'app/utils/theme'

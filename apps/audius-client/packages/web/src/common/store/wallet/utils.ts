@@ -1,9 +1,13 @@
-import { ID } from '@audius/common'
+import {
+  ID,
+  BadgeTier,
+  User,
+  BNAudio,
+  StringAudio,
+  StringWei
+} from '@audius/common'
 import { createSelector } from 'reselect'
 
-import { BadgeTier } from 'common/models/BadgeTier'
-import { User } from 'common/models/User'
-import { BNAudio, StringAudio, StringWei } from 'common/models/Wallet'
 import { CommonState } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getUser } from 'common/store/cache/users/selectors'

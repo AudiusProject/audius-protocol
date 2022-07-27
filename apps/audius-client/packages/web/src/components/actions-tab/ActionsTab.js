@@ -1,5 +1,6 @@
 import { PureComponent } from 'react'
 
+import { ShareSource, RepostSource } from '@audius/common'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -7,7 +8,6 @@ import { connect } from 'react-redux'
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
 import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
-import { ShareSource, RepostSource } from 'common/models/Analytics'
 import { getUserHandle } from 'common/store/account/selectors'
 import {
   repostCollection,

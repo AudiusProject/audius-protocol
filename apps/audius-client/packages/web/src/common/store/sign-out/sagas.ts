@@ -1,6 +1,6 @@
+import { Name } from '@audius/common'
 import { takeLatest, put, call } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
 import { disablePushNotifications } from 'pages/settings-page/store/mobileSagas'
 import { make } from 'store/analytics/actions'
 import { signOut } from 'utils/signOut'

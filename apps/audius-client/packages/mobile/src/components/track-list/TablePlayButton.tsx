@@ -1,4 +1,5 @@
-import { StyleProp, TouchableOpacity, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 
 import IconPause from 'app/assets/images/pbIconPause.svg'
 import IconPlay from 'app/assets/images/pbIconPlay.svg'

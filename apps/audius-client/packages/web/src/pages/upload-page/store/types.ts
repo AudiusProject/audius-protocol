@@ -1,4 +1,5 @@
-import { TrackMetadata } from 'common/models/Track'
+import { TrackMetadata } from '@audius/common'
+
 import UploadType from 'pages/upload-page/components/uploadType'
 
 interface UploadTrack {

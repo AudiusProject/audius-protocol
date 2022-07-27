@@ -1,15 +1,15 @@
 import { Component } from 'react'
 
-import { Scrubber } from '@audius/stems'
-import { push as pushRoute } from 'connected-react-router'
-import { connect } from 'react-redux'
-
 import {
   RepostSource,
   FavoriteSource,
   Name,
   PlaybackSource
-} from 'common/models/Analytics'
+} from '@audius/common'
+import { Scrubber } from '@audius/stems'
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { getLineupHasTracks } from 'common/store/lineup/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'

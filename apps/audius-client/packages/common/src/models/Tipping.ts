@@ -1,6 +1,5 @@
-import { ID } from '@audius/common'
-
-import { Nullable } from 'common/utils/typeUtils'
+import { ID } from 'models/Identifiers'
+import { Nullable } from 'utils/typeUtils'
 
 import { StringWei } from './Wallet'
 

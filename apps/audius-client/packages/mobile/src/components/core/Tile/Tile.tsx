@@ -1,16 +1,17 @@
-import { ComponentProps, ComponentType, ReactNode, useCallback } from 'react'
+import type { ComponentProps, ComponentType, ReactNode } from 'react'
+import { useCallback } from 'react'
 
-import {
-  Animated,
+import type {
   GestureResponderEvent,
   PressableProps,
   StyleProp,
-  View,
   ViewStyle
 } from 'react-native'
+import { Animated, View } from 'react-native'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { shadow, StylesProp } from 'app/styles'
+import type { StylesProp } from 'app/styles'
+import { shadow } from 'app/styles'
 import { makeStyles } from 'app/styles/makeStyles'
 
 import { Pressable } from '../Pressable'

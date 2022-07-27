@@ -1,9 +1,9 @@
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 import { TouchableOpacity } from 'react-native'
 
 import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
-import { GestureResponderHandler } from 'app/types/gesture'
+import type { GestureResponderHandler } from 'app/types/gesture'
 
 type ArtistLinkProps = {
   artist: User

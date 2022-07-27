@@ -7,7 +7,7 @@ import {
   getModalVisibility,
   setVisibility
 } from 'audius-client/src/common/store/ui/modals/slice'
-import { NativeSyntheticEvent } from 'react-native'
+import type { NativeSyntheticEvent } from 'react-native'
 import Config from 'react-native-config'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'

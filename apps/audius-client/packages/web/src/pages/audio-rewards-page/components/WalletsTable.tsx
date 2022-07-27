@@ -1,13 +1,12 @@
 import { useCallback, useContext, useEffect, MouseEvent } from 'react'
 
+import { Chain, BNWei } from '@audius/common'
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemoveTrack.svg'
-import { Chain } from 'common/models/Chain'
-import { BNWei } from 'common/models/Wallet'
 import { FeatureFlags } from 'common/services/remote-config'
 import {
   getAssociatedWallets,

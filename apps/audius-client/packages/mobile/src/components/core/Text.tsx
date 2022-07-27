@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 
-import { Text as RNText, TextProps as RNTextProps } from 'react-native'
+import type { TextProps as RNTextProps } from 'react-native'
+import { Text as RNText } from 'react-native'
 
-import { FontSize, FontWeight, makeStyles, typography } from 'app/styles'
+import type { FontSize, FontWeight, typography } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
 export type TextProps = RNTextProps & {
   variant?: keyof typeof typography

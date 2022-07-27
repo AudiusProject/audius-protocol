@@ -1,11 +1,13 @@
-import { ID } from '@audius/common'
+import {
+  Kind,
+  ID,
+  Name,
+  PlaylistLibrary,
+  SmartCollectionVariant,
+  User
+} from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
-import { Name } from 'common/models/Analytics'
-import Kind from 'common/models/Kind'
-import { PlaylistLibrary } from 'common/models/PlaylistLibrary'
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
-import { User } from 'common/models/User'
 import * as accountActions from 'common/store/account/reducer'
 import { getPlaylistLibrary, getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'

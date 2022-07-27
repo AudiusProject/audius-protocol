@@ -1,7 +1,8 @@
-import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 
-import { DynamicImage, DynamicImageProps } from 'app/components/core'
+import type { DynamicImageProps } from 'app/components/core'
+import { DynamicImage } from 'app/components/core'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import { makeStyles } from 'app/styles/makeStyles'
 

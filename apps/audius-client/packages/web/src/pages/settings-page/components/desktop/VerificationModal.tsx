@@ -1,15 +1,18 @@
 import { useCallback, useState } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  Name,
+  ProfilePictureSizes,
+  SquareSizes,
+  Status
+} from '@audius/common'
 import { Modal, Button, ButtonType, IconNote, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
 import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
-import { Name } from 'common/models/Analytics'
-import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
-import Status from 'common/models/Status'
 import { BooleanKeys } from 'common/services/remote-config'
 import { TwitterProfile, InstagramProfile } from 'common/store/account/reducer'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

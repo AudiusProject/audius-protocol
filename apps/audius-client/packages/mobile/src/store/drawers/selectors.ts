@@ -1,6 +1,6 @@
-import { AppState } from '../'
+import type { AppState } from '../'
 
-import { Drawer } from './slice'
+import type { Drawer } from './slice'
 
 export const getVisibility = (drawer: Drawer) => (state: AppState) =>
   state.drawers[drawer]

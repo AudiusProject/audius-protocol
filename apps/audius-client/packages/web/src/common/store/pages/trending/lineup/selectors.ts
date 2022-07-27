@@ -1,5 +1,5 @@
-import { LineupStateTrack } from 'common/models/Lineup'
-import TimeRange from 'common/models/TimeRange'
+import { LineupStateTrack, TimeRange } from '@audius/common'
+
 import { AppState } from 'store/types'
 
 export const getTrendingEntries =

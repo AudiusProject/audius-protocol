@@ -1,12 +1,10 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-import Status from 'common/models/Status'
-
 import {
+  Status,
   UserChallenge,
   ChallengeRewardID,
   Specifier
-} from '../../../models/AudioRewards'
+} from '@audius/common'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export type TrendingRewardsModalType = 'tracks' | 'playlists' | 'underground'
 export type ChallengeRewardsModalType = ChallengeRewardID

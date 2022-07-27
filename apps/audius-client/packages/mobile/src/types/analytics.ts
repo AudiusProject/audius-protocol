@@ -1,9 +1,7 @@
-import {
-  Name as CommonEventNames,
-  AllTrackingEvents as CommonTrackingEvents
-} from 'audius-client/src/common/models/Analytics'
+import type { AllTrackingEvents as CommonTrackingEvents } from '@audius/common'
+import { Name as CommonEventNames } from '@audius/common'
 
-import { Message } from 'app/message'
+import type { Message } from 'app/message'
 
 enum MobileEventNames {
   NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification'
@@ -47,4 +45,4 @@ export {
   FavoriteSource,
   FollowSource,
   CreatePlaylistSource
-} from 'audius-client/src/common/models/Analytics'
+} from '@audius/common'

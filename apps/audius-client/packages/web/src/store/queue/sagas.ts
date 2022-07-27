@@ -1,4 +1,13 @@
-import { ID, UID } from '@audius/common'
+import {
+  Kind,
+  ID,
+  UID,
+  Name,
+  PlaybackSource,
+  LineupState,
+  User,
+  Nullable
+} from '@audius/common'
 import {
   all,
   call,
@@ -8,10 +17,6 @@ import {
   takeLatest
 } from 'typed-redux-saga/macro'
 
-import { Name, PlaybackSource } from 'common/models/Analytics'
-import Kind from 'common/models/Kind'
-import { LineupState } from 'common/models/Lineup'
-import { User } from 'common/models/User'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'
@@ -43,7 +48,6 @@ import {
   remove
 } from 'common/store/queue/slice'
 import { RepeatMode, Source } from 'common/store/queue/types'
-import { Nullable } from 'common/utils/typeUtils'
 import { makeUid, Uid } from 'common/utils/uid'
 import { make } from 'store/analytics/actions'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'

@@ -1,4 +1,5 @@
-import { Text, TextProps } from './Text'
+import type { TextProps } from './Text'
+import { Text } from './Text'
 
 const messages = {
   audio: 'audio tokens'

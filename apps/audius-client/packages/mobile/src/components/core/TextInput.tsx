@@ -1,19 +1,19 @@
-import { ComponentType, forwardRef, useCallback } from 'react'
+import type { ComponentType } from 'react'
+import { forwardRef, useCallback } from 'react'
 
-import {
-  Animated,
-  TextInput as RNTextInput,
+import type {
   TextInputProps as RNTextInputProps,
   TextStyle,
-  View,
   ViewStyle
 } from 'react-native'
+import { Animated, TextInput as RNTextInput, View } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
-import { SvgProps } from 'react-native-svg'
+import type { SvgProps } from 'react-native-svg'
 
 import IconClose from 'app/assets/images/iconRemove.svg'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { makeStyles, StylesProp } from 'app/styles'
+import type { StylesProp } from 'app/styles'
+import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({

@@ -1,4 +1,5 @@
-import Status from 'common/models/Status'
+import { Status } from '@audius/common'
+
 import { getAccountUser } from 'common/store/account/selectors'
 
 import { CommonState } from '../..'

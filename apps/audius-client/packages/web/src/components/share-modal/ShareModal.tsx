@@ -1,8 +1,8 @@
 import { useCallback, useContext } from 'react'
 
+import { Name } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { Name } from 'common/models/Analytics'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import {

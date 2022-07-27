@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import FeedFilter from 'common/models/FeedFilter'
+import { FeedFilter } from '@audius/common'
+
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 
 import styles from './FeedFilterModal.module.css'

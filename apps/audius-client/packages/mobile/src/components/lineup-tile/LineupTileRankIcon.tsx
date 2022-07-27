@@ -4,7 +4,8 @@ import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconTrending from 'app/assets/images/iconTrending.svg'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors, useThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 import { createStyles as createTrackTileStyles } from './styles'
 

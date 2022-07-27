@@ -1,10 +1,8 @@
 import { ComponentPropsWithoutRef } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, SquareSizes, User } from '@audius/common'
 import cn from 'classnames'
 
-import { SquareSizes } from 'common/models/ImageSizes'
-import { User } from 'common/models/User'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { MountPlacement } from 'components/types'

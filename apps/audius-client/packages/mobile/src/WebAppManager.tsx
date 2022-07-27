@@ -1,4 +1,4 @@
-import { ReactNode, RefObject } from 'react'
+import type { ReactNode, RefObject } from 'react'
 
 import { useSelector } from 'react-redux'
 
@@ -6,7 +6,7 @@ import { SplashScreen, useSplashScreenKey } from 'app/screens/splash-screen'
 
 import WebApp from './components/web/WebApp'
 import { getCommonStoreLoaded } from './store/lifecycle/selectors'
-import { MessagePostingWebView } from './types/MessagePostingWebView'
+import type { MessagePostingWebView } from './types/MessagePostingWebView'
 
 type WebAppManagerProps = {
   webRef: RefObject<MessagePostingWebView>

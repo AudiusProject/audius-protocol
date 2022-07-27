@@ -1,3 +1,11 @@
 module.exports = {
-  extends: ["audius"],
-};
+  settings: {
+    'import/resolver': {
+      node: {
+        paths: ['src'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+      }
+    }
+  },
+  extends: ['audius']
+}

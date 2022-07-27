@@ -7,19 +7,22 @@ import {
   ComponentType
 } from 'react'
 
+import {
+  ShareSource,
+  Chain,
+  Collectible,
+  Collection,
+  SmartCollection,
+  SmartCollectionVariant,
+  Status,
+  User
+} from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { matchPath } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { ShareSource } from 'common/models/Analytics'
-import { Chain } from 'common/models/Chain'
-import { Collectible } from 'common/models/Collectible'
-import { Collection, SmartCollection } from 'common/models/Collection'
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
-import Status from 'common/models/Status'
-import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import {
   CollectionTrack,

@@ -1,4 +1,4 @@
-import { Announcement } from 'audius-client/src/common/store/notifications/types'
+import type { Announcement } from 'audius-client/src/common/store/notifications/types'
 import Markdown from 'react-native-markdown-display'
 
 import IconAudius from 'app/assets/images/iconAudius.svg'

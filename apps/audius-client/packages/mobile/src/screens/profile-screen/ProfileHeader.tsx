@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { Animated, LayoutAnimation, View } from 'react-native'
+import type { Animated } from 'react-native'
+import { LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'

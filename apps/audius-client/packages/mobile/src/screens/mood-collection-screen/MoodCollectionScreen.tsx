@@ -1,4 +1,4 @@
-import Status from 'audius-client/src/common/models/Status'
+import { Status } from '@audius/common'
 import {
   getCollections,
   getStatus
@@ -10,7 +10,7 @@ import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
-import { ExploreCollection as CollectionMetadata } from 'app/screens/explore-screen/collections'
+import type { ExploreCollection as CollectionMetadata } from 'app/screens/explore-screen/collections'
 
 type MoodCollectionScreenProps = {
   collection: CollectionMetadata

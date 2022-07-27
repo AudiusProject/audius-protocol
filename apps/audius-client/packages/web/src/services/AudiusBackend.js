@@ -1,4 +1,5 @@
 /* globals web3 */
+import { Name, FailureReason, FeedFilter, DefaultSizes } from '@audius/common'
 import { IdentityAPI, DiscoveryAPI } from '@audius/sdk/dist/core'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
@@ -16,10 +17,6 @@ import utc from 'dayjs/plugin/utc'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
-import { Name } from 'common/models/Analytics'
-import { FailureReason } from 'common/models/AudioRewards'
-import FeedFilter from 'common/models/FeedFilter'
-import { DefaultSizes } from 'common/models/ImageSizes'
 import {
   IntKeys,
   StringKeys,

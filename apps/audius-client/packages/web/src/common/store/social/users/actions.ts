@@ -1,7 +1,5 @@
-import { ID } from '@audius/common'
+import { ID, FollowSource, ShareSource } from '@audius/common'
 import { createCustomAction } from 'typesafe-actions'
-
-import { FollowSource, ShareSource } from 'common/models/Analytics'
 
 export const FOLLOW_USER = 'SOCIAL/FOLLOW_USER'
 export const FOLLOW_USER_SUCCEEDED = 'SOCIAL/FOLLOW_USER_SUCCEEDED'

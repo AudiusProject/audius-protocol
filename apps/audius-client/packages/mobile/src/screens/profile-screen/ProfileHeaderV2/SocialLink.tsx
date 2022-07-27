@@ -1,17 +1,13 @@
 import { useCallback, useState } from 'react'
 
-import { StyleProp, View, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { View } from 'react-native'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconTikTok from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import {
-  Text,
-  LinkProps,
-  Link,
-  IconButtonProps,
-  Hyperlink
-} from 'app/components/core'
+import type { LinkProps, IconButtonProps } from 'app/components/core'
+import { Text, Link, Hyperlink } from 'app/components/core'
 import Skeleton from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'

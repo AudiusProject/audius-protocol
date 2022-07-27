@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
+import { Name, CreatePlaylistSource } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { Name, CreatePlaylistSource } from 'common/models/Analytics'
 import * as createPlaylistActions from 'common/store/ui/createPlaylistModal/actions'
 import { useRecord, make } from 'store/analytics/actions'
 import { AppState } from 'store/types'

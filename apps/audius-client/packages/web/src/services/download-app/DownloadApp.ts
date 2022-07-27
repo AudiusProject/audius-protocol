@@ -1,4 +1,4 @@
-import { OS } from 'common/models/OS'
+import { OS } from '@audius/common'
 
 const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
 

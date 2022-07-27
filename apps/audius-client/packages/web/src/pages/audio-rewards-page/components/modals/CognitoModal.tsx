@@ -1,15 +1,15 @@
 import { useCallback, useEffect } from 'react'
 
-import { useDispatch } from 'react-redux'
-
-import { useModalState } from 'common/hooks/useModalState'
-import { Name } from 'common/models/Analytics'
 import {
+  Name,
   FlowUIOpenEvent,
   FlowUICloseEvent,
   FlowSessionEvent,
   FlowErrorEvent
-} from 'common/models/AudioRewards'
+} from '@audius/common'
+import { useDispatch } from 'react-redux'
+
+import { useModalState } from 'common/hooks/useModalState'
 import { getUserHandle } from 'common/store/account/selectors'
 import {
   CognitoFlowStatus,

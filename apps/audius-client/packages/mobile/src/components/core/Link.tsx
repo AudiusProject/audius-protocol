@@ -1,11 +1,7 @@
 import { useCallback, useContext } from 'react'
 
-import {
-  GestureResponderEvent,
-  Linking,
-  Pressable,
-  PressableProps
-} from 'react-native'
+import type { GestureResponderEvent, PressableProps } from 'react-native'
+import { Linking, Pressable } from 'react-native'
 
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { EventNames } from 'app/types/analytics'

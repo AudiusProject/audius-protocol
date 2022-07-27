@@ -1,14 +1,11 @@
-import {
-  ChallengeRewardID,
-  TrendingRewardID
-} from 'audius-client/src/common/models/AudioRewards'
+import type { ChallengeRewardID, TrendingRewardID } from '@audius/common'
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
   TRENDING_PAGE,
   EXPLORE_HEAVY_ROTATION_PAGE,
   FAVORITES_PAGE
 } from 'audius-client/src/utils/route'
-import { ImageSourcePropType } from 'react-native'
+import type { ImageSourcePropType } from 'react-native'
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import Headphone from 'app/assets/images/emojis/headphone.png'

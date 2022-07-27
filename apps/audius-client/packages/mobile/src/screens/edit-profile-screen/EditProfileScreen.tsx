@@ -1,12 +1,10 @@
 import { useCallback } from 'react'
 
-import {
-  SquareSizes,
-  WidthSizes
-} from 'audius-client/src/common/models/ImageSizes'
-import { UserMetadata } from 'audius-client/src/common/models/User'
+import type { UserMetadata } from '@audius/common'
+import { SquareSizes, WidthSizes } from '@audius/common'
 import { updateProfile } from 'audius-client/src/common/store/pages/profile/actions'
-import { Formik, FormikProps } from 'formik'
+import type { FormikProps } from 'formik'
+import { Formik } from 'formik'
 import { View } from 'react-native'
 
 import IconDonate from 'app/assets/images/iconDonate.svg'
@@ -24,7 +22,7 @@ import { makeStyles } from 'app/styles'
 
 import { getProfile } from '../profile-screen/selectors'
 
-import { ProfileValues, UpdatedProfile } from './types'
+import type { ProfileValues, UpdatedProfile } from './types'
 
 const useStyles = makeStyles(({ palette }) => ({
   coverPhoto: {

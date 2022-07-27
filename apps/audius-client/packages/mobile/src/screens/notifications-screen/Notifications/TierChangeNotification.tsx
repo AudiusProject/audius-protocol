@@ -1,5 +1,5 @@
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { TierChange } from 'audius-client/src/common/store/notifications/types'
+import type { TierChange } from 'audius-client/src/common/store/notifications/types'
 import { fullProfilePage } from 'audius-client/src/utils/route'
 
 import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'

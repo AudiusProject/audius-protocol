@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import {
-  CastMethod,
-  updateMethod
-} from 'audius-client/src/common/store/cast/slice'
+import type { CastMethod } from 'audius-client/src/common/store/cast/slice'
+import { updateMethod } from 'audius-client/src/common/store/cast/slice'
 import { getMethod as getCastMethod } from 'common/store/cast/selectors'
 
 import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'

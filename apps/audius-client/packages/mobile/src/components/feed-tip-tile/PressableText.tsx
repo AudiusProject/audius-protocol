@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { StyleProp, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 
 type PressableTextProps = {

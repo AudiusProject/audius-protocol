@@ -1,10 +1,10 @@
+import { Kind } from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { take } from 'redux-saga/effects'
 
 import AudioStream from 'audio/AudioStream'
-import Kind from 'common/models/Kind'
 import accountSlice from 'common/store/account/reducer'
 import * as cacheActions from 'common/store/cache/actions'
 import reducer, * as actions from 'common/store/queue/slice'

@@ -1,7 +1,7 @@
+import { Theme } from '@audius/common'
 import { Button, ButtonType, ButtonSize } from '@audius/stems'
 
 import tileBackground from 'assets/img/notFoundTiledBackround.png'
-import Theme from 'common/models/Theme'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 

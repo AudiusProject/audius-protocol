@@ -11,7 +11,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
 
-import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { AccountSettingsRow } from './AccountSettingsRow'
 import { AppearanceSettingsRow } from './AppearanceSettingsRow'

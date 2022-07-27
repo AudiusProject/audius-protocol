@@ -1,6 +1,6 @@
 import { ReactNode, useCallback, useEffect, useContext } from 'react'
 
-import { ID, UID } from '@audius/common'
+import { ID, UID, Name, Lineup, Status, User } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
@@ -8,10 +8,6 @@ import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
-import { Name } from 'common/models/Analytics'
-import { Lineup } from 'common/models/Lineup'
-import Status from 'common/models/Status'
-import { User } from 'common/models/User'
 import {
   Tabs,
   SavedPageTrack,

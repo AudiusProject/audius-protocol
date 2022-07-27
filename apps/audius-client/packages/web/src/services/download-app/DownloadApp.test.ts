@@ -1,6 +1,5 @@
+import { OS } from '@audius/common'
 import fetchMock from 'fetch-mock'
-
-import { OS } from 'common/models/OS'
 
 import { getDownloadLinkForSystem } from './DownloadApp'
 

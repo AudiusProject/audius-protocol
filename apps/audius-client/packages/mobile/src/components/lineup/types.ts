@@ -1,11 +1,8 @@
-import { ReactElement } from 'react'
+import type { ReactElement } from 'react'
 
-import type { ID, UID } from '@audius/common'
-import Kind from 'audius-client/src/common/models/Kind'
-import { Lineup as LineupData } from 'audius-client/src/common/models/Lineup'
-import { LineupActions } from 'audius-client/src/common/store/lineup/actions'
-import { Maybe } from 'audius-client/src/common/utils/typeUtils'
-import { SectionListProps } from 'react-native'
+import type { ID, UID, Kind, Lineup as LineupData, Maybe } from '@audius/common'
+import type { LineupActions } from 'audius-client/src/common/store/lineup/actions'
+import type { SectionListProps } from 'react-native'
 
 export enum LineupVariant {
   MAIN = 'main',

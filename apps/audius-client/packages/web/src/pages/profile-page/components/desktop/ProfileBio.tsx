@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { Name } from '@audius/common'
 import cn from 'classnames'
 import { Options } from 'linkifyjs'
 import Linkify from 'linkifyjs/react'
@@ -7,7 +8,6 @@ import { animated } from 'react-spring'
 
 import { ReactComponent as IconCaretDownLine } from 'assets/img/iconCaretDownLine.svg'
 import { ReactComponent as IconCaretUpLine } from 'assets/img/iconCaretUpLine.svg'
-import { Name } from 'common/models/Analytics'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import { useSize } from 'hooks/useSize'

@@ -1,10 +1,14 @@
 import { ChangeEvent } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  Collection,
+  SmartCollection,
+  Variant,
+  Status,
+  User
+} from '@audius/common'
 
-import { Collection, SmartCollection, Variant } from 'common/models/Collection'
-import Status from 'common/models/Status'
-import { User } from 'common/models/User'
 import {
   CollectionTrack,
   TrackRecord,

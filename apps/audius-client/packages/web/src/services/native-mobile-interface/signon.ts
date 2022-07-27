@@ -1,4 +1,5 @@
-import { User } from 'common/models/User'
+import { User } from '@audius/common'
+
 import { FollowArtistsCategory } from 'pages/sign-on/store/types'
 
 import { NativeMobileMessage } from './helpers'

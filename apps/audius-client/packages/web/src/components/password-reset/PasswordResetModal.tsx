@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 
+import { Status } from '@audius/common'
 import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import Status from 'common/models/Status'
 import { getNeedsAccountRecovery } from 'common/store/account/selectors'
 import EnterPassword from 'components/sign-on/EnterPassword'
 import { RESET_REQUIRED_KEY } from 'store/account/mobileSagas'

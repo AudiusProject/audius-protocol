@@ -1,7 +1,5 @@
+import { SmartCollection, SmartCollectionVariant } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-import { SmartCollection } from 'common/models/Collection'
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 
 type FetchPayload = {
   variant: SmartCollectionVariant

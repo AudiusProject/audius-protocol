@@ -1,4 +1,5 @@
-import FeedFilter from 'common/models/FeedFilter'
+import { FeedFilter } from '@audius/common'
+
 import { asLineup } from 'common/store/lineup/reducer'
 import {
   SET_SUGGESTED_FOLLOWS,

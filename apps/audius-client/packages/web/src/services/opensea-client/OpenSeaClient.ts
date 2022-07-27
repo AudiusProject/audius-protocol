@@ -1,6 +1,6 @@
+import { Collectible } from '@audius/common'
 import * as allPromisesSettled from 'promise.allsettled'
 
-import { Collectible } from 'common/models/Collectible'
 import {
   isAssetValid,
   assetToCollectible,

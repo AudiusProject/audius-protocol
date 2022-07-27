@@ -1,11 +1,10 @@
 import { useEffect, useCallback, ComponentType } from 'react'
 
+import { Playable, User } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { Playable } from 'common/models/Playable'
-import { User } from 'common/models/User'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { LineupVariant } from 'components/lineup/types'

@@ -1,10 +1,6 @@
-import { ID } from '@audius/common'
+import { Kind, ID, Name, Track, User } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
-import { Name } from 'common/models/Analytics'
-import Kind from 'common/models/Kind'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
 import * as accountActions from 'common/store/account/reducer'
 import { getUserId, getUserHandle } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'

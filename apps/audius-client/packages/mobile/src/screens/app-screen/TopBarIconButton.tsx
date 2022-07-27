@@ -1,4 +1,5 @@
-import { IconButton, IconButtonProps } from 'app/components/core'
+import type { IconButtonProps } from 'app/components/core'
+import { IconButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

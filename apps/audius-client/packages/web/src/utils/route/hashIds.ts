@@ -1,6 +1,5 @@
+import { Nullable } from '@audius/common'
 import Hashids from 'hashids'
-
-import { Nullable } from 'common/utils/typeUtils'
 
 const HASH_SALT = 'azowernasdfoia'
 const MIN_LENGTH = 5

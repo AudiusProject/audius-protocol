@@ -1,7 +1,7 @@
+import { Nullable } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { CommonState } from 'common/store'
-import { Nullable } from 'common/utils/typeUtils'
 
 export type ReactionTypes = 'heart' | 'fire' | 'party' | 'explode'
 

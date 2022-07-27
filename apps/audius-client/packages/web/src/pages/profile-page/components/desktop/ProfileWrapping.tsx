@@ -1,9 +1,7 @@
-import { ID } from '@audius/common'
+import { ID, ProfilePictureSizes, Nullable } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
-import { ProfilePictureSizes } from 'common/models/ImageSizes'
-import { Nullable } from 'common/utils/typeUtils'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import EditableName from 'pages/profile-page/components/EditableName'

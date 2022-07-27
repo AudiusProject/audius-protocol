@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 
 import IconFavoriteOffLight from 'app/assets/animations/iconFavoriteOffLight.json'
 import IconFavoriteOnLight from 'app/assets/animations/iconFavoriteOnLight.json'
-import { AnimatedButton, AnimatedButtonProps } from 'app/components/core'
+import type { AnimatedButtonProps } from 'app/components/core'
+import { AnimatedButton } from 'app/components/core'
 import { colorize } from 'app/utils/colorizeLottie'
 import { useThemeColors } from 'app/utils/theme'
 

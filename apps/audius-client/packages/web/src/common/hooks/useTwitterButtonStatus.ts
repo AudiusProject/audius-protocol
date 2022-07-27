@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { User } from 'common/models/User'
-import { Nullable } from 'common/utils/typeUtils'
+import { User, Nullable } from '@audius/common'
 
 type ShareStatus = 'idle' | 'loading' | 'success'
 

@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { AppState } from 'app/store'
+import type { AppState } from 'app/store'
 
 import { RepeatMode } from './reducer'
 

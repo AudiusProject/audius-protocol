@@ -1,7 +1,8 @@
-import { Identify, Track, Screen } from 'app/types/analytics'
+import type { Identify, Track, Screen } from 'app/types/analytics'
 import { track, screen, identify } from 'app/utils/analytics'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.ANALYTICS_IDENTIFY]: async ({ message }) => {

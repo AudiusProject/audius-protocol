@@ -1,6 +1,6 @@
+import { TimeRange } from '@audius/common'
 import { select } from 'redux-saga/effects'
 
-import TimeRange from 'common/models/TimeRange'
 import { getUserId } from 'common/store/account/selectors'
 import {
   TRENDING_WEEK_PREFIX,

@@ -1,6 +1,7 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
-import { Pressable, StyleProp, View, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { Pressable, View } from 'react-native'
 
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import { Link } from 'app/components/core'

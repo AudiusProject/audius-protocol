@@ -1,7 +1,6 @@
-import { Chain } from 'common/models/Chain'
-import { BNWei } from 'common/models/Wallet'
+import { Chain, BNWei, Nullable } from '@audius/common'
+
 import { CommonState } from 'common/store'
-import { Nullable } from 'common/utils/typeUtils'
 import { stringWeiToBN } from 'common/utils/wallet'
 
 export const getSendData = (

@@ -1,8 +1,9 @@
-import { createContext, useRef, RefObject, ReactNode } from 'react'
+import type { RefObject, ReactNode } from 'react'
+import { createContext, useRef } from 'react'
 
-import WebView from 'react-native-webview'
+import type WebView from 'react-native-webview'
 
-import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
+import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 
 type WebRefContextProps = {
   webRef: RefObject<MessagePostingWebView> | null

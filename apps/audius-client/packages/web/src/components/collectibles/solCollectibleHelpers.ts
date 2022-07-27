@@ -1,6 +1,10 @@
-import { Chain } from 'common/models/Chain'
-import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
-import { Nullable } from 'common/utils/typeUtils'
+import {
+  Chain,
+  Collectible,
+  CollectibleMediaType,
+  Nullable
+} from '@audius/common'
+
 import {
   MetaplexNFT,
   MetaplexNFTPropertiesFile,

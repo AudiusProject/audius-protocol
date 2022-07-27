@@ -1,6 +1,6 @@
+import { Name } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
 
-import { Name } from 'common/models/Analytics'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import {

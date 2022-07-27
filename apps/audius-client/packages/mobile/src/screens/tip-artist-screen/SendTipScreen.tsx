@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import type { BNWei, StringWei } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
-import { BNWei, StringWei } from 'audius-client/src/common/models/Wallet'
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import {
   getOptimisticSupporters,
@@ -35,7 +35,7 @@ import { ErrorText } from './ErrorText'
 import { ReceiverDetails } from './ReceiverDetails'
 import { TipInput } from './TipInput'
 import { TipScreen } from './TipScreen'
-import { TipArtistNavigationParamList } from './navigation'
+import type { TipArtistNavigationParamList } from './navigation'
 
 const messages = {
   sendTip: 'Send Tip',

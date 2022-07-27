@@ -1,6 +1,6 @@
+import { Kind } from '@audius/common'
 import { select, call } from 'redux-saga/effects'
 
-import Kind from 'common/models/Kind'
 import { getUserId } from 'common/store/account/selectors'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getTracks } from 'common/store/cache/tracks/selectors'

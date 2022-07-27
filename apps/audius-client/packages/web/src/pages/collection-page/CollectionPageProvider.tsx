@@ -1,24 +1,27 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
-import { ID, UID, PlayableType } from '@audius/common'
+import {
+  ID,
+  UID,
+  PlayableType,
+  RepostSource,
+  FavoriteSource,
+  Name,
+  PlaybackSource,
+  ShareSource,
+  FollowSource,
+  Collection,
+  SmartCollection,
+  FavoriteType,
+  Kind,
+  Status
+} from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import {
-  RepostSource,
-  FavoriteSource,
-  Name,
-  PlaybackSource,
-  ShareSource,
-  FollowSource
-} from 'common/models/Analytics'
-import { Collection, SmartCollection } from 'common/models/Collection'
-import { FavoriteType } from 'common/models/Favorite'
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
 import {
   getUserId,
   getAccountCollections

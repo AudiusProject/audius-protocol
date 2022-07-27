@@ -1,7 +1,7 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import { ImageSourcePropType } from 'react-native'
-import { SvgProps } from 'react-native-svg'
+import type { ImageSourcePropType } from 'react-native'
+import type { SvgProps } from 'react-native-svg'
 
 import { Button } from 'app/components/core'
 import { makeStyles } from 'app/styles'

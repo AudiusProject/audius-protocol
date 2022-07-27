@@ -8,7 +8,16 @@ import {
   ReactChildren
 } from 'react'
 
-import { UID, ID } from '@audius/common'
+import {
+  UID,
+  ID,
+  ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  Name,
+  Track
+} from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -16,14 +25,6 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource,
-  PlaybackSource,
-  Name
-} from 'common/models/Analytics'
-import { Track } from 'common/models/Track'
 import { getUserHandle } from 'common/store/account/selectors'
 import {
   getCollection,
