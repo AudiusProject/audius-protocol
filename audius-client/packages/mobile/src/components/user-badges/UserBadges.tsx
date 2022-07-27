@@ -1,12 +1,6 @@
-import { User } from 'audius-client/src/common/models/User'
-import {
-  StyleSheet,
-  View,
-  Text,
-  ViewStyle,
-  StyleProp,
-  TextStyle
-} from 'react-native'
+import type { User } from '@audius/common'
+import type { ViewStyle, StyleProp, TextStyle } from 'react-native'
+import { StyleSheet, View, Text } from 'react-native'
 
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'

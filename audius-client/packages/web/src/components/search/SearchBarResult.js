@@ -1,10 +1,10 @@
 import { useState, useEffect, memo } from 'react'
 
+import { Kind } from '@audius/common'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import Kind from 'common/models/Kind'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 import AudiusBackend from 'services/AudiusBackend'

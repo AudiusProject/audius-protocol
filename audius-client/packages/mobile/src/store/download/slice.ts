@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
+import type { Nullable } from '@audius/common'
+import type { PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
 export type DownloadState = typeof initialState
 

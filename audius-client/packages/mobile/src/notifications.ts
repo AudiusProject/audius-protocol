@@ -1,14 +1,15 @@
-import { RefObject } from 'react'
+import type { RefObject } from 'react'
 
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Platform, PushNotificationPermissions } from 'react-native'
+import type { PushNotificationPermissions } from 'react-native'
+import { Platform } from 'react-native'
 import Config from 'react-native-config'
 // https://dev.to/edmondso006/react-native-local-ios-and-android-notifications-2c58
 import PushNotification from 'react-native-push-notification'
 
 import { dispatch } from 'app/App'
 import { open } from 'app/store/notifications/actions'
-import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
+import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
 

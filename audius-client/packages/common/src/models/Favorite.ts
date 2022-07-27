@@ -1,4 +1,4 @@
-import { ID } from '@audius/common'
+import { ID } from 'models/Identifiers'
 
 export enum FavoriteType {
   TRACK = 'track',

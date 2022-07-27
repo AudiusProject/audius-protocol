@@ -1,14 +1,18 @@
+import {
+  Chain,
+  BNWei,
+  StringWei,
+  WalletAddress,
+  Nullable
+} from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Chain } from 'common/models/Chain'
-import { BNWei, StringWei, WalletAddress } from 'common/models/Wallet'
 import {
   AssociatedWallets,
   ConfirmRemoveWalletAction,
   ModalState,
   TokenDashboardState
 } from 'common/store/pages/token-dashboard/types'
-import { Nullable } from 'common/utils/typeUtils'
 
 const initialState: TokenDashboardState = {
   modalState: null,

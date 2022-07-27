@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common'
 import { IconTrending } from '@audius/stems'
 
-import { Name } from 'common/models/Analytics'
 import Tag from 'components/track/Tag'
 import { make, useRecord } from 'store/analytics/actions'
 import { searchResultsPage } from 'utils/route'

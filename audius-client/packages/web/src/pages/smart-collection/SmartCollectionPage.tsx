@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
+import { SmartCollectionVariant } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { getPlaylistLibrary } from 'common/store/account/selectors'
 import { getCollection } from 'common/store/pages/smart-collection/selectors'
 import { fetchSmartCollection } from 'common/store/pages/smart-collection/slice'

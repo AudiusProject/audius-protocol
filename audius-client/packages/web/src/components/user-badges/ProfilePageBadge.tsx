@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, BadgeTier } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useSelectTierInfo } from 'common/hooks/wallet'
-import { BadgeTier } from 'common/models/BadgeTier'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 

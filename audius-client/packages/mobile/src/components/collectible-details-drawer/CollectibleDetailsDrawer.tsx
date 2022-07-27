@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { Chain } from 'audius-client/src/common/models/Chain'
+import { Chain } from '@audius/common'
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 import {
   getCollectible,

@@ -4,7 +4,8 @@ import IconQuestionMark from 'app/assets/images/iconQuestionMark.svg'
 import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { useThemeColors, ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({

@@ -1,4 +1,5 @@
-import Status from 'common/models/Status'
+import { Status } from '@audius/common'
+
 import {
   FETCH_SEARCH_REQUESTED,
   FETCH_SEARCH_SUCCEEDED,

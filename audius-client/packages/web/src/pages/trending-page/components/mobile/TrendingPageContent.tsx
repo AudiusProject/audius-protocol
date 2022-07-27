@@ -1,17 +1,15 @@
-import { useEffect, useContext, useCallback, useMemo } from 'react'
+import { useCallback, useContext, useEffect, useMemo } from 'react'
 
+import { Name, Status, TimeRange } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconAllTime } from 'assets/img/iconAllTime.svg'
 import { ReactComponent as IconDay } from 'assets/img/iconDay.svg'
 import { ReactComponent as IconMonth } from 'assets/img/iconMonth.svg'
-import { Name } from 'common/models/Analytics'
-import Status from 'common/models/Status'
-import TimeRange from 'common/models/TimeRange'
 import {
-  trendingWeekActions,
+  trendingAllTimeActions,
   trendingMonthActions,
-  trendingAllTimeActions
+  trendingWeekActions
 } from 'common/store/pages/trending/lineup/actions'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -20,8 +18,8 @@ import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
-  LeftPreset,
   CenterPreset,
+  LeftPreset,
   RightPreset
 } from 'components/nav/store/context'
 import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'

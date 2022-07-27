@@ -1,13 +1,15 @@
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
+import type { Nullable } from '@audius/common'
 import { Platform, Share } from 'react-native'
-import RNFetchBlob, {
+import type {
   FetchBlobResponse,
   RNFetchBlobConfig,
   StatefulPromise
 } from 'rn-fetch-blob'
+import RNFetchBlob from 'rn-fetch-blob'
 
 import { dispatch } from 'app/App'
-import { MessageType, MessageHandlers } from 'app/message/types'
+import type { MessageHandlers } from 'app/message/types'
+import { MessageType } from 'app/message/types'
 import {
   setDownloadedPercentage,
   setFileInfo,

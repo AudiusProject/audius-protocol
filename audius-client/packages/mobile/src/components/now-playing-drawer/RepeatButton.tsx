@@ -3,11 +3,8 @@ import { useMemo } from 'react'
 import IconRepeatAllLight from 'app/assets/animations/iconRepeatAllLight.json'
 import IconRepeatOffLight from 'app/assets/animations/iconRepeatOffLight.json'
 import IconRepeatSingleLight from 'app/assets/animations/iconRepeatSingleLight.json'
-import {
-  AnimatedButton,
-  AnimatedButtonProps,
-  Haptics
-} from 'app/components/core'
+import type { AnimatedButtonProps, Haptics } from 'app/components/core'
+import { AnimatedButton } from 'app/components/core'
 import { colorize } from 'app/utils/colorizeLottie'
 import { useThemeColors } from 'app/utils/theme'
 

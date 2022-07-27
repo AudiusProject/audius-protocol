@@ -1,5 +1,5 @@
 import { getNotificationUsers } from 'audius-client/src/common/store/notifications/selectors'
-import { Follow } from 'common/store/notifications/types'
+import type { Follow } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
 
 import IconUser from 'app/assets/images/iconUser.svg'

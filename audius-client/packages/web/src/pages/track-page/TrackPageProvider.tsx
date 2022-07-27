@@ -1,21 +1,23 @@
 import { Component, ComponentType } from 'react'
 
-import { ID, CID, PlayableType } from '@audius/common'
-import { push as pushRoute, replace } from 'connected-react-router'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
-
 import {
+  ID,
+  CID,
+  PlayableType,
   FollowSource,
   FavoriteSource,
   RepostSource,
   ShareSource,
   Name,
-  PlaybackSource
-} from 'common/models/Analytics'
-import { FavoriteType } from 'common/models/Favorite'
-import Status from 'common/models/Status'
-import { Track } from 'common/models/Track'
+  PlaybackSource,
+  FavoriteType,
+  Status,
+  Track
+} from '@audius/common'
+import { push as pushRoute, replace } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'

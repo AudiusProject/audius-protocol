@@ -1,13 +1,12 @@
 import { useCallback, useEffect } from 'react'
 
+import { Name, User } from '@audius/common'
 import { Button, IconButton, useMediaQueryListener } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
-import { Name } from 'common/models/Analytics'
-import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'

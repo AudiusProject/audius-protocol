@@ -1,16 +1,16 @@
 import { useCallback } from 'react'
 
-import { FollowSource } from 'audius-client/src/common/models/Analytics'
-import { User } from 'audius-client/src/common/models/User'
+import type { FollowSource, User } from '@audius/common'
 import {
   followUser,
   unfollowUser
 } from 'audius-client/src/common/store/social/users/actions'
-import { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native'
+import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native'
 
 import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
-import { Button, ButtonProps } from 'app/components/core'
+import type { ButtonProps } from 'app/components/core'
+import { Button } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 
 const messages = {

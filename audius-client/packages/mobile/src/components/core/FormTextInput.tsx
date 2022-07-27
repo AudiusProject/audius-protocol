@@ -1,18 +1,12 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
 import { useField } from 'formik'
-import {
-  View,
-  TextInput,
-  Text,
-  TextInputProps,
-  Dimensions,
-  ViewStyle,
-  TextStyle
-} from 'react-native'
-import { SvgProps } from 'react-native-svg'
+import type { TextInputProps, ViewStyle, TextStyle } from 'react-native'
+import { View, TextInput, Text, Dimensions } from 'react-native'
+import type { SvgProps } from 'react-native-svg'
 
-import { makeStyles, StylesProps } from 'app/styles'
+import type { StylesProps } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
 const validateRequired = (value: string) => {
   if (!value) return 'Required'

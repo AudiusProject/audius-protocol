@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import type { ID } from '@audius/common'
-import { FavoriteType } from 'audius-client/src/common/models/Favorite'
+import type { ID, FavoriteType } from '@audius/common'
 import { setFavorite } from 'audius-client/src/common/store/user-list/favorites/actions'
 import { setRepost } from 'audius-client/src/common/store/user-list/reposts/actions'
-import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
+import type { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { formatCount } from 'audius-client/src/common/utils/formatUtil'
 import {
   FAVORITING_USERS_ROUTE,
@@ -19,7 +18,8 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
-import { ThemeColors, useThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { createStyles as createTrackTileStyles } from './styles'

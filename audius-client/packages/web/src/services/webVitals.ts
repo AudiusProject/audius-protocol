@@ -1,6 +1,6 @@
+import { Name } from '@audius/common'
 import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'web-vitals'
 
-import { Name } from 'common/models/Analytics'
 import { track } from 'store/analytics/providers/amplitude'
 import { findRoute, getPathname } from 'utils/route'
 

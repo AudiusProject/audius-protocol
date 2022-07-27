@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { AppState, AppStateStatus } from 'react-native'
+import type { AppStateStatus } from 'react-native'
+import { AppState } from 'react-native'
 
 /**
  * `active` - The app is running in the foreground

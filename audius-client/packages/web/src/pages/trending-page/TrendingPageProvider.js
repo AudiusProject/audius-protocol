@@ -1,36 +1,35 @@
 import { PureComponent } from 'react'
 
+import { Name, TimeRange } from '@audius/common'
 import {
   push as pushRoute,
   replace as replaceRoute
 } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { withRouter, matchPath } from 'react-router-dom'
+import { matchPath, withRouter } from 'react-router-dom'
 
-import { Name } from 'common/models/Analytics'
-import TimeRange from 'common/models/TimeRange'
 import { getHasAccount } from 'common/store/account/selectors'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import * as trendingPageActions from 'common/store/pages/trending/actions'
 import {
-  trendingWeekActions,
-  trendingMonthActions,
+  trendingActions,
   trendingAllTimeActions,
-  trendingActions
+  trendingMonthActions,
+  trendingWeekActions
 } from 'common/store/pages/trending/lineup/actions'
 import {
-  getTrendingTimeRange,
-  getTrendingGenre,
-  getDiscoverTrendingWeekLineup,
   getDiscoverTrendingAllTimeLineup,
   getDiscoverTrendingMonthLineup,
-  getLastFetchedTrendingGenre
+  getDiscoverTrendingWeekLineup,
+  getLastFetchedTrendingGenre,
+  getTrendingGenre,
+  getTrendingTimeRange
 } from 'common/store/pages/trending/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { GENRES } from 'common/utils/genres'
 import { openSignOn } from 'pages/sign-on/store/actions'
 import { make } from 'store/analytics/actions'
-import { getPlaying, getBuffering } from 'store/player/selectors'
+import { getBuffering, getPlaying } from 'store/player/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
 

@@ -1,7 +1,4 @@
-import { ID } from '@audius/common'
-
-import { User, UserMetadata } from 'common/models/User'
-import { Nullable } from 'common/utils/typeUtils'
+import { ID, User, UserMetadata, Nullable } from '@audius/common'
 
 import { CollectionSortMode } from './types'
 

@@ -2,7 +2,7 @@ import {
   getNotificationEntity,
   getNotificationUsers
 } from 'audius-client/src/common/store/notifications/selectors'
-import { Repost } from 'common/store/notifications/types'
+import type { Repost } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'

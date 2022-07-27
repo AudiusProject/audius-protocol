@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import Status from 'audius-client/src/common/models/Status'
+import { Status } from '@audius/common'
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { Image, View } from 'react-native'

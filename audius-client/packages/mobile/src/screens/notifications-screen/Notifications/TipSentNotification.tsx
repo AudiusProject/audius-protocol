@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
 import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
-import { TipSend } from 'audius-client/src/common/store/notifications/types'
+import type { TipSend } from 'audius-client/src/common/store/notifications/types'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'

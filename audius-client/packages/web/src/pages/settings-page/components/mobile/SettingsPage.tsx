@@ -1,11 +1,9 @@
 import { useContext, useEffect, useCallback, FC } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, SquareSizes, ProfilePictureSizes, Theme } from '@audius/common'
 import cn from 'classnames'
 
 import horizontalLogo from 'assets/img/settingsPageLogo.png'
-import { SquareSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
-import Theme from 'common/models/Theme'
 import { InstagramProfile, TwitterProfile } from 'common/store/account/reducer'
 import { CastMethod } from 'common/store/cast/slice'
 import {

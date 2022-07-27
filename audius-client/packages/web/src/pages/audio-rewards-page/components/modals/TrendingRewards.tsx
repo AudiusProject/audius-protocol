@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Theme } from '@audius/common'
 import { TabSlider } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
 
 import { useModalState } from 'common/hooks/useModalState'
-import Theme from 'common/models/Theme'
 import { StringKeys } from 'common/services/remote-config'
 import { getTrendingRewardsModalType } from 'common/store/pages/audio-rewards/selectors'
 import {

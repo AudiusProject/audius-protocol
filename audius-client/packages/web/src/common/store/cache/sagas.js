@@ -1,7 +1,7 @@
+import { Status } from '@audius/common'
 import { pick } from 'lodash'
 import { all, call, put, select, takeEvery } from 'redux-saga/effects'
 
-import Status from 'common/models/Status'
 import * as cacheActions from 'common/store/cache/actions'
 import { CACHE_PRUNE_MIN } from 'common/store/cache/config'
 import { getCache } from 'common/store/cache/selectors'

@@ -1,4 +1,4 @@
-import { PlayableType } from '@audius/common'
+import { PlayableType } from 'models/Identifiers'
 
 import { Collection } from './Collection'
 import { Track } from './Track'

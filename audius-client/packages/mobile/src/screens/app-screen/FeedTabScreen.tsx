@@ -1,6 +1,6 @@
 import { FeedScreen } from 'app/screens/feed-screen'
 
-import { AppTabScreenParamList } from './AppTabScreen'
+import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type FeedTabScreenParamList = AppTabScreenParamList & {

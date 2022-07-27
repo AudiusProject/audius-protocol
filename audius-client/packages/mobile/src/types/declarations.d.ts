@@ -4,7 +4,7 @@ declare module 'fxa-common-password-list'
 declare module 'react-native-static-server'
 
 declare module '*.svg' {
-  import { SvgProps } from 'react-native-svg'
+  import type { SvgProps } from 'react-native-svg'
   const content: React.FC<
     SvgProps & {
       fillSecondary?: string
@@ -14,20 +14,20 @@ declare module '*.svg' {
 }
 
 declare module '*.png' {
-  import { ImageSourcePropType } from 'react-native'
+  import type { ImageSourcePropType } from 'react-native'
   const value: ImageSourcePropType
   export default value
 }
 
 declare module '*.jpg' {
-  import { ImageSourcePropType } from 'react-native'
+  import type { ImageSourcePropType } from 'react-native'
   const value: ImageSourcePropType
   export default value
 }
 
 declare module '@react-native-masked-view/masked-view' {
   import * as React from 'react'
-  import * as ReactNative from 'react-native'
+  import type * as ReactNative from 'react-native'
 
   interface MaskedViewProps extends ReactNative.ViewProps {
     maskElement: React.ReactElement

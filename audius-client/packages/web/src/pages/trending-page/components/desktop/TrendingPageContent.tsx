@@ -1,14 +1,13 @@
-import { useState, useRef, useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-import { Name } from 'common/models/Analytics'
-import Status from 'common/models/Status'
-import TimeRange from 'common/models/TimeRange'
+import { Name, Status, TimeRange } from '@audius/common'
+
 import {
-  trendingWeekActions,
+  trendingAllTimeActions,
   trendingMonthActions,
-  trendingAllTimeActions
+  trendingWeekActions
 } from 'common/store/pages/trending/lineup/actions'
-import { TRENDING_GENRES, ELECTRONIC_PREFIX } from 'common/utils/genres'
+import { ELECTRONIC_PREFIX, TRENDING_GENRES } from 'common/utils/genres'
 import Header from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'

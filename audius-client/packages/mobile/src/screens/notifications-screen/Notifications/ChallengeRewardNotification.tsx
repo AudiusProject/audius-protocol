@@ -1,5 +1,5 @@
-import { ChallengeRewardID } from 'audius-client/src/common/models/AudioRewards'
-import { ChallengeReward } from 'audius-client/src/common/store/notifications/types'
+import type { ChallengeRewardID } from '@audius/common'
+import type { ChallengeReward } from 'audius-client/src/common/store/notifications/types'
 
 import IconAudius from 'app/assets/images/iconAudius.svg'
 

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { RouteProp, useRoute } from '@react-navigation/core'
+import type { RouteProp } from '@react-navigation/core'
+import { useRoute } from '@react-navigation/core'
 import { tracksActions } from 'audius-client/src/common/store/pages/profile/lineups/tracks/actions'
 import {
   getProfileTracksLineup,

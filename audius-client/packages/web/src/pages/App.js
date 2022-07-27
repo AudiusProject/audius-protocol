@@ -1,16 +1,18 @@
 import { lazy, createRef, Component, Suspense } from 'react'
 
+import {
+  Client,
+  Name,
+  SmartCollectionVariant,
+  Status,
+  Theme
+} from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
-import { Name } from 'common/models/Analytics'
-import Client from 'common/models/Client'
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
-import Status from 'common/models/Status'
-import Theme from 'common/models/Theme'
 import { StringKeys } from 'common/services/remote-config'
 import {
   getHasAccount,

@@ -1,11 +1,15 @@
+import {
+  SmartCollection,
+  Variant,
+  SmartCollectionVariant
+} from '@audius/common'
+
 import { ReactComponent as IconExploreFeelingLucky } from 'assets/img/iconExploreFeelingLucky.svg'
 import { ReactComponent as IconExploreMostLoved } from 'assets/img/iconExploreMostLoved.svg'
 import { ReactComponent as IconExploreNewReleases } from 'assets/img/iconExploreNewReleases.svg'
 import { ReactComponent as IconExploreRemixables } from 'assets/img/iconExploreRemixables.svg'
 import { ReactComponent as IconExploreRotation } from 'assets/img/iconExploreRotation.svg'
 import { ReactComponent as IconExploreUnderRadar } from 'assets/img/iconExploreUnderRadar.svg'
-import { SmartCollection, Variant } from 'common/models/Collection'
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import {
   EXPLORE_HEAVY_ROTATION_PAGE,
   EXPLORE_BEST_NEW_RELEASES_PAGE,

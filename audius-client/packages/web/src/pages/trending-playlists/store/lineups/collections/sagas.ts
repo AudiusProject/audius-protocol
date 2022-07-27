@@ -1,6 +1,6 @@
+import { Collection, UserCollectionMetadata } from '@audius/common'
 import { call, select } from 'redux-saga/effects'
 
-import { Collection, UserCollectionMetadata } from 'common/models/Collection'
 import { StringKeys } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

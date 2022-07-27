@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { sampleSize } from 'lodash'
 import {
   Animated,
@@ -28,7 +28,8 @@ import {
   getAllFollowArtists,
   makeGetFollowArtists
 } from 'app/store/signon/selectors'
-import { artistCategories, FollowArtistsCategory } from 'app/store/signon/types'
+import type { FollowArtistsCategory } from 'app/store/signon/types'
+import { artistCategories } from 'app/store/signon/types'
 import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
 
@@ -36,7 +37,7 @@ import UserImage from '../../components/image/UserImage'
 import UserBadges from '../../components/user-badges/UserBadges'
 
 import SignupHeader from './SignupHeader'
-import { SignOnStackParamList } from './types'
+import type { SignOnStackParamList } from './types'
 
 const styles = StyleSheet.create({
   container: {

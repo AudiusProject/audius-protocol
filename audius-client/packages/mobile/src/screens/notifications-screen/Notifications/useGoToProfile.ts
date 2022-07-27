@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
+import type { User, Nullable } from '@audius/common'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 
 import { useNavigation } from 'app/hooks/useNavigation'

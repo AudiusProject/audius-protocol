@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs'
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { Animated } from 'react-native'
 
 import { BottomTabBar } from 'app/components/bottom-tab-bar'

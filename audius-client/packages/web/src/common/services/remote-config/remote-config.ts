@@ -1,4 +1,4 @@
-import { ID } from '@audius/common'
+import { ID, Nullable } from '@audius/common'
 import optimizely from '@optimizely/optimizely-sdk'
 
 import {
@@ -20,7 +20,6 @@ import {
   BooleanKeys,
   AllRemoteConfigKeys
 } from 'common/services/remote-config/types'
-import { Nullable } from 'common/utils/typeUtils'
 import { uuid } from 'common/utils/uid'
 
 export const USER_ID_AVAILABLE_EVENT = 'USER_ID_AVAILABLE_EVENT'

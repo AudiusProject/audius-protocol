@@ -1,4 +1,4 @@
-import { RecentTipsStorage } from 'common/models/Tipping'
+import { RecentTipsStorage } from '@audius/common'
 
 import { NativeMobileMessage } from './helpers'
 import { MessageType } from './types'

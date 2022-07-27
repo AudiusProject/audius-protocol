@@ -1,4 +1,4 @@
-import { BottomTabBarProps as _BottomTabBarProps } from './BottomTabBar'
+import type { BottomTabBarProps as _BottomTabBarProps } from './BottomTabBar'
 
 export { BottomTabBar } from './BottomTabBar'
 

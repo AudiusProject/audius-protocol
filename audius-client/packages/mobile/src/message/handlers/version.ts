@@ -1,6 +1,7 @@
 import VersionNumber from 'react-native-version-number'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.GET_VERSION]: ({ message, postMessage }) => {

@@ -1,4 +1,4 @@
-import { makeGetTableMetadatas } from 'audius-client/src/common/store/lineup/selectors'
+import type { makeGetTableMetadatas } from 'audius-client/src/common/store/lineup/selectors'
 import type { SetOptional } from 'type-fest'
 
 export type TrackMetadata = SetOptional<

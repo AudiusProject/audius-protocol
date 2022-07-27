@@ -1,6 +1,6 @@
 import { Component } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, ProfilePictureSizes, OS, Theme } from '@audius/common'
 import {
   Modal,
   Button,
@@ -13,9 +13,6 @@ import {
 import cn from 'classnames'
 
 import audiusIcon from 'assets/img/audiusIcon.png'
-import { ProfilePictureSizes } from 'common/models/ImageSizes'
-import { OS } from 'common/models/OS'
-import Theme from 'common/models/Theme'
 import { InstagramProfile } from 'common/store/account/reducer'
 import {
   Notifications,

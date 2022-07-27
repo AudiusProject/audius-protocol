@@ -1,7 +1,5 @@
-import { UID } from '@audius/common'
+import { UID, LineupState, Track } from '@audius/common'
 
-import { LineupState } from 'common/models/Lineup'
-import { Track } from 'common/models/Track'
 import { RESET_SUCCEEDED, stripPrefix } from 'common/store/lineup/actions'
 import { initialLineupState } from 'common/store/lineup/reducer'
 

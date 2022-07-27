@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { getSendTipData } from 'audius-client/src/common/store/tipping/selectors'
 import {
   beginTip,
@@ -20,7 +20,7 @@ import { ReceiverDetails } from './ReceiverDetails'
 import { SendTipStatusText } from './SendTipStatusText'
 import { TipHeader } from './TipHeader'
 import { TipScreen } from './TipScreen'
-import { TipArtistNavigationParamList } from './navigation'
+import type { TipArtistNavigationParamList } from './navigation'
 
 const messages = {
   title: 'Confirm Tip',

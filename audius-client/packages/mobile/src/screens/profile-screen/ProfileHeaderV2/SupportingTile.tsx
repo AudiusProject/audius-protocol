@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
-import { WidthSizes } from 'audius-client/src/common/models/ImageSizes'
-import { Supporting } from 'audius-client/src/common/models/Tipping'
+import type { Supporting } from '@audius/common'
+import { WidthSizes } from '@audius/common'
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
 import { profilePage } from 'audius-client/src/utils/route'
-import { ImageBackground, StyleProp, View, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'

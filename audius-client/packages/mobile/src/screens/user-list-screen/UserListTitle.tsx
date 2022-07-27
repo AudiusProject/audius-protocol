@@ -1,7 +1,7 @@
-import { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 import { View } from 'react-native'
-import { SvgProps } from 'react-native-svg'
+import type { SvgProps } from 'react-native-svg'
 
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'

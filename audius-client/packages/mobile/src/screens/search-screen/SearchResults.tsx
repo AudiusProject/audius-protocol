@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 
 import { SectionList } from 'app/components/core'
 import { getSearchResults } from 'app/store/search/selectors'
-import {
+import type {
   SearchUser,
   SearchTrack,
   SearchPlaylist,

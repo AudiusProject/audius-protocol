@@ -1,14 +1,13 @@
-import { ID, UID } from '@audius/common'
-
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
+import { ID, UID } from 'models/Identifiers'
+import { Kind } from 'models/Kind'
+import { Status } from 'models/Status'
 
 export type Cacheable<T> = {
   metadata: T
   _timestamp: number
 }
 
-type Cache<T> = {
+export type Cache<T> = {
   entries: { [id: number]: Cacheable<T> }
   statuses: { [id: number]: Status }
   uids: { [uid: string]: ID }
@@ -16,5 +15,3 @@ type Cache<T> = {
   subscriptions: { [id: number]: Set<{ uid: UID; kind: Kind }> }
   idsToPrune: Set<ID>
 }
-
-export default Cache

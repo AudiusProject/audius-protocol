@@ -1,5 +1,10 @@
-import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
-import { User, UserMetadata } from 'common/models/User'
+import {
+  CoverPhotoSizes,
+  ProfilePictureSizes,
+  User,
+  UserMetadata
+} from '@audius/common'
+
 import AudiusBackend from 'services/AudiusBackend'
 
 /**

@@ -1,6 +1,12 @@
 import { useCallback } from 'react'
 
 import {
+  StemCategory,
+  stemCategoryFriendlyNames,
+  StemUpload,
+  Download
+} from '@audius/common'
+import {
   Button,
   ButtonSize,
   ButtonType,
@@ -10,12 +16,6 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import {
-  StemCategory,
-  stemCategoryFriendlyNames,
-  StemUpload
-} from 'common/models/Stems'
-import { Download } from 'common/models/Track'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import Switch from 'components/switch/Switch'

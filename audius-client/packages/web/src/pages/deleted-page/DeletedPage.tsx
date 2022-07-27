@@ -1,5 +1,5 @@
-import { Playable } from 'common/models/Playable'
-import { User } from 'common/models/User'
+import { Playable, User } from '@audius/common'
+
 import { useIsMobile } from 'utils/clientUtil'
 
 import DeletedPageProvider from './DeletedPageProvider'

@@ -1,15 +1,14 @@
 import { useCallback } from 'react'
 
+import type { Track, User } from '@audius/common'
 import {
   PlaybackSource,
   FavoriteSource,
   RepostSource,
-  ShareSource
-} from 'audius-client/src/common/models/Analytics'
-import { FavoriteType } from 'audius-client/src/common/models/Favorite'
-import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
-import { Track } from 'audius-client/src/common/models/Track'
-import { User } from 'audius-client/src/common/models/User'
+  ShareSource,
+  FavoriteType,
+  SquareSizes
+} from '@audius/common'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
 import { getUserFromTrack } from 'audius-client/src/common/store/cache/users/selectors'
@@ -28,12 +27,12 @@ import { RepostType } from 'audius-client/src/common/store/user-list/reposts/typ
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import { useSelector } from 'react-redux'
 
-import { LineupItemProps } from 'app/components/lineup-tile/types'
+import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
-import { AppState } from 'app/store'
+import type { AppState } from 'app/store'
 import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { LineupTile } from './LineupTile'

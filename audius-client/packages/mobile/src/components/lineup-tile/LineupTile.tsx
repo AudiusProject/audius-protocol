@@ -4,7 +4,7 @@ import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { Animated, Easing } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { LineupTileProps } from 'app/components/lineup-tile/types'
+import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { getPlaying } from 'app/store/audio/selectors'
 

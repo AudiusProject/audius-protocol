@@ -1,13 +1,11 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 
-import { PlayableType, ID } from '@audius/common'
+import { PlayableType, ID, Name, Track } from '@audius/common'
 import { Modal, Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { Name } from 'common/models/Analytics'
-import { Track } from 'common/models/Track'
 import TabSlider from 'components/data-entry/TabSlider'
 import { useRecord, make } from 'store/analytics/actions'
 import { AppState } from 'store/types'

@@ -1,4 +1,4 @@
-import { LineupTrack } from 'audius-client/src/common/models/Track'
+import type { LineupTrack } from '@audius/common'
 import { range } from 'lodash'
 import { Pressable, Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import Skeleton from 'app/components/skeleton'
 import { getPlayingUid } from 'app/store/audio/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import { GestureResponderHandler } from 'app/types/gesture'
+import type { GestureResponderHandler } from 'app/types/gesture'
 
 // Max number of tracks to display
 const DISPLAY_TRACK_COUNT = 5

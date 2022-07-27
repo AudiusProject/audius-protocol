@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react'
 import { push as pushRoute } from 'connected-react-router'
 import { AppState } from 'store/types'
 import { Dispatch } from 'redux'
@@ -16,9 +16,9 @@ import { getTheme } from 'common/store/ui/theme/selectors'
 import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
 import { make, TrackEvent } from 'store/analytics/actions'
-import { Name } from 'common/models/Analytics'
-import { Track } from 'common/models/Track'
-import { SquareSizes } from 'common/models/ImageSizes'
+import { Name } from '@audius/common'
+import { Track } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrackInfo'
 import AudioStream from 'audio/AudioStream'
@@ -182,8 +182,7 @@ const Visualizer = ({
       className={cn(styles.visualizer, {
         [styles.fade]: fadeVisualizer,
         [styles.show]: showVisualizer
-      })}
-    >
+      })}>
       <div className='visualizer' />
       <div className={styles.logoWrapper}>
         <AudiusLogoHorizontal className={styles.logo} />
@@ -198,8 +197,7 @@ const Visualizer = ({
           onClick={() => {
             goToTrackPage()
             onClose()
-          }}
-        >
+          }}>
           <Artwork track={track} />
         </div>
         {renderTrackInfo()}

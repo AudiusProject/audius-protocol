@@ -1,4 +1,4 @@
-import type { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 
 export type UserImage = Pick<
   User,

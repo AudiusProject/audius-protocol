@@ -1,4 +1,5 @@
-import { StemTrack } from 'common/models/Track'
+import { StemTrack } from '@audius/common'
+
 import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
 import { AppState } from 'store/types'
 

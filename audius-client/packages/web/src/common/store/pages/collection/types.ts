@@ -1,11 +1,13 @@
-import { ID, UID } from '@audius/common'
+import {
+  ID,
+  UID,
+  Collectible,
+  LineupState,
+  SmartCollectionVariant,
+  Status,
+  LineupTrack
+} from '@audius/common'
 import { Moment } from 'moment'
-
-import { Collectible } from 'common/models/Collectible'
-import { LineupState } from 'common/models/Lineup'
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
-import Status from 'common/models/Status'
-import { LineupTrack } from 'common/models/Track'
 
 export type CollectionsPageState = {
   collectionId: ID | null

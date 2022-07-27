@@ -1,6 +1,6 @@
 import { useState, useEffect, MutableRefObject, useCallback } from 'react'
 
-import { Nullable } from 'common/utils/typeUtils'
+import { Nullable } from '@audius/common'
 
 type UseSizeProps = {
   ref: MutableRefObject<Nullable<HTMLElement>>

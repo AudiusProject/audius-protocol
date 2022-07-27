@@ -1,17 +1,18 @@
-import { ID } from '@audius/common'
-
-import { UserCollectionMetadata, Variant } from 'common/models/Collection'
-import { Favorite } from 'common/models/Favorite'
-import { Repost } from 'common/models/Repost'
 import {
+  ID,
+  UserCollectionMetadata,
+  Variant,
+  Favorite,
+  Repost,
   Remix,
   StemTrackMetadata,
   TrackMetadata,
-  UserTrackMetadata
-} from 'common/models/Track'
-import { UserMetadata } from 'common/models/User'
-import { StringWei } from 'common/models/Wallet'
-import { removeNullable } from 'common/utils/typeUtils'
+  UserTrackMetadata,
+  UserMetadata,
+  StringWei,
+  removeNullable
+} from '@audius/common'
+
 import { decodeHashId } from 'utils/route/hashIds'
 
 import {

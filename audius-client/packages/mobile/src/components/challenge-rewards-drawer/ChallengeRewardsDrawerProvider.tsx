@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
+import type { Maybe } from '@audius/common'
 import {
   IntKeys,
   StringKeys
@@ -15,13 +16,13 @@ import {
   resetAndCancelClaimReward
 } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
-import { Maybe } from 'audius-client/src/common/utils/typeUtils'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { challengesConfig, ChallengesParamList } from 'app/utils/challenges'
+import type { ChallengesParamList } from 'app/utils/challenges'
+import { challengesConfig } from 'app/utils/challenges'
 
 import Button, { ButtonType } from '../button'
 import { useDrawerState } from '../drawer/AppDrawer'

@@ -2,7 +2,8 @@ import { useCallback } from 'react'
 
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { squashNewLines } from 'audius-client/src/common/utils/formatUtil'
-import { ImageStyle, TouchableOpacity, View } from 'react-native'
+import type { ImageStyle } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
@@ -18,7 +19,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileStats } from './DetailsTileStats'
-import { DetailsTileProps } from './types'
+import type { DetailsTileProps } from './types'
 
 const messages = {
   play: 'play',

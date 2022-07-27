@@ -1,4 +1,5 @@
-import { Button, ButtonProps } from 'app/components/core'
+import type { ButtonProps } from 'app/components/core'
+import { Button } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 

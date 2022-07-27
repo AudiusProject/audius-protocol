@@ -11,7 +11,7 @@ import UserBadges from 'app/components/user-badges/UserBadges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { close as closeSearch } from 'app/store/search/actions'
 import useSearchHistory from 'app/store/search/hooks'
-import {
+import type {
   SearchPlaylist,
   SearchTrack,
   SearchUser,

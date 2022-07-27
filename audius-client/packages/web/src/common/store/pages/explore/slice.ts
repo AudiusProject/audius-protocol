@@ -1,6 +1,5 @@
+import { Status } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-import Status from 'common/models/Status'
 
 import ExplorePageState, { ExploreContent, Tabs } from './types'
 

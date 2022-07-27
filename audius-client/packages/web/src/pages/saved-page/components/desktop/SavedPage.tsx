@@ -1,11 +1,8 @@
-import { ID, UID } from '@audius/common'
+import { ID, UID, Lineup, Status, User } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
-import { Lineup } from 'common/models/Lineup'
-import Status from 'common/models/Status'
-import { User } from 'common/models/User'
 import {
   Tabs as ProfileTabs,
   TrackRecord,

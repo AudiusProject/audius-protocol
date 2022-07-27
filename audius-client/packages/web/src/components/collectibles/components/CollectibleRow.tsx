@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { Collectible, CollectibleMediaType } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { ReactComponent as IconShow } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconHide } from 'assets/img/iconRemoveTrack.svg'
-import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
 import { formatDateWithTimezoneOffset } from 'common/utils/timeUtil'
 import {
   collectibleMessages,

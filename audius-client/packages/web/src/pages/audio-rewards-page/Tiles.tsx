@@ -1,5 +1,6 @@
 import { useCallback, ReactNode } from 'react'
 
+import { BNWei, Nullable } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -8,7 +9,6 @@ import { useDispatch } from 'react-redux'
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { useModalState } from 'common/hooks/useModalState'
-import { BNWei } from 'common/models/Wallet'
 import { getHasAssociatedWallets } from 'common/store/pages/token-dashboard/selectors'
 import {
   pressConnectWallets,
@@ -19,7 +19,6 @@ import {
   getAccountBalance,
   getAccountTotalBalance
 } from 'common/store/wallet/selectors'
-import { Nullable } from 'common/utils/typeUtils'
 import { formatWei } from 'common/utils/wallet'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'

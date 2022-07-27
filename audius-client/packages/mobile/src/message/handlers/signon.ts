@@ -1,6 +1,7 @@
 import * as signonActions from 'app/store/signon/actions'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.SIGN_IN_FAILURE]: ({ dispatch, message }) => {

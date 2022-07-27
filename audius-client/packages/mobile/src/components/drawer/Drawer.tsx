@@ -1,27 +1,32 @@
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  Animated,
+import type {
   GestureResponderEvent,
-  Image,
   ImageSourcePropType,
   ImageStyle,
   LayoutChangeEvent,
-  PanResponder,
   PanResponderGestureState,
+  ViewStyle
+} from 'react-native'
+import {
+  Animated,
+  Image,
+  PanResponder,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View,
-  ViewStyle
+  View
 } from 'react-native'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import type { Edge } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import { useAndroidNavigationBarHeight } from 'app/hooks/useAndroidNavigationBarHeight'
-import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import type { ThemeColors } from 'app/hooks/useThemedStyles'
+import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { attachToDy } from 'app/utils/animation'
 import { useColor } from 'app/utils/theme'
 

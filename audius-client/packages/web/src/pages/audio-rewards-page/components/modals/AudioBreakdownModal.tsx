@@ -1,8 +1,8 @@
+import { BNWei } from '@audius/common'
 import { IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { BNWei } from 'common/models/Wallet'
 import { getAssociatedWallets } from 'common/store/pages/token-dashboard/selectors'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import Tooltip from 'components/tooltip/Tooltip'

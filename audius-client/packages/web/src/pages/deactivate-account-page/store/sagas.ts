@@ -1,9 +1,7 @@
-import { ID } from '@audius/common'
+import { ID, Name, Nullable } from '@audius/common'
 import { call, delay, put, select, takeEvery } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
-import { Nullable } from 'common/utils/typeUtils'
 import AudiusBackend from 'services/AudiusBackend'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'

@@ -1,16 +1,15 @@
 import { useContext, useEffect } from 'react'
 
-import type { ID } from '@audius/common'
-import { EventArg, NavigationState } from '@react-navigation/native'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { FavoriteType } from 'audius-client/src/common/models/Favorite'
-import { NotificationType } from 'audius-client/src/common/store/notifications/types'
-import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
+import type { ID, FavoriteType } from '@audius/common'
+import type { EventArg, NavigationState } from '@react-navigation/native'
+import type { createNativeStackNavigator } from '@react-navigation/native-stack'
+import type { NotificationType } from 'audius-client/src/common/store/notifications/types'
+import type { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { MessageType } from 'audius-client/src/services/native-mobile-interface/types'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
-import { ContextualParams } from 'app/hooks/useNavigation'
+import type { ContextualParams } from 'app/hooks/useNavigation'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import {
@@ -29,7 +28,7 @@ import {
   TopSupportersScreen,
   SupportingUsersScreen
 } from 'app/screens/user-list-screen'
-import { SearchPlaylist, SearchTrack } from 'app/store/search/types'
+import type { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
 import { NotificationsDrawerNavigationContext } from '../notifications-screen/NotificationsDrawerNavigationContext'

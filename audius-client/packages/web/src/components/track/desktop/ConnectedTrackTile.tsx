@@ -1,17 +1,18 @@
 import { memo, useState, useCallback, useEffect } from 'react'
 
-import { UID, ID } from '@audius/common'
+import {
+  UID,
+  ID,
+  ShareSource,
+  RepostSource,
+  FavoriteSource
+} from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import {
-  ShareSource,
-  RepostSource,
-  FavoriteSource
-} from 'common/models/Analytics'
 import { getUserHandle } from 'common/store/account/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUserFromTrack } from 'common/store/cache/users/selectors'

@@ -1,11 +1,11 @@
 import { useEffect, useCallback, useContext } from 'react'
 
+import { Status } from '@audius/common'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import Status from 'common/models/Status'
 import { fetchNotifications } from 'common/store/notifications/actions'
 import {
   getNotificationHasMore,

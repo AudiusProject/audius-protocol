@@ -1,3 +1,3 @@
-import { Track } from 'audius-client/src/common/models/Track'
+import type { Track } from '@audius/common'
 
 export type TrackImage = Pick<Track, 'cover_art' | 'cover_art_sizes'>

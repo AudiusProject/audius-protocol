@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
-import type { ID } from '@audius/common'
-import { FollowSource } from 'audius-client/src/common/models/Analytics'
-import { User } from 'audius-client/src/common/models/User'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
+import type { ID, User, Nullable } from '@audius/common'
+import { FollowSource } from '@audius/common'
 import { View, Text, Pressable } from 'react-native'
 
 import { ProfilePicture, FollowButton } from 'app/components/user'

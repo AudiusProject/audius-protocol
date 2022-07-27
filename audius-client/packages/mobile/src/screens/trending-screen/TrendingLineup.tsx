@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Name, TimeRange } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
-import { Name } from 'audius-client/src/common/models/Analytics'
-import TimeRange from 'audius-client/src/common/models/TimeRange'
 import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
 import { setTrendingTimeRange } from 'audius-client/src/common/store/pages/trending/actions'
 import {
@@ -17,7 +16,7 @@ import {
 } from 'audius-client/src/common/store/pages/trending/selectors'
 
 import { Lineup } from 'app/components/lineup'
-import { LineupProps } from 'app/components/lineup/types'
+import type { LineupProps } from 'app/components/lineup/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/utils/analytics'

@@ -1,4 +1,4 @@
-import { CommonState } from 'audius-client/src/common/store'
+import type { CommonState } from 'audius-client/src/common/store'
 
 export const RECEIVE = 'COMMON/RECEIVE'
 

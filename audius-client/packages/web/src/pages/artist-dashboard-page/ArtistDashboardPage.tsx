@@ -1,6 +1,6 @@
 import { Suspense, Component, useMemo, ReactNode } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, Status, Theme, Track, User } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { each } from 'lodash'
@@ -9,10 +9,6 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import Status from 'common/models/Status'
-import Theme from 'common/models/Theme'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
 import { getTheme } from 'common/store/ui/theme/selectors'
 import { formatCount } from 'common/utils/formatUtil'
 import Header from 'components/header/desktop/Header'

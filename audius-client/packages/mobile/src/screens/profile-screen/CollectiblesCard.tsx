@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import type { ID } from '@audius/common'
-import { Collectible } from 'audius-client/src/common/models/Collectible'
+import type { ID, Collectible } from '@audius/common'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { setCollectible } from 'audius-client/src/common/store/ui/collectible-details/slice'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
-import { ImageBackground, StyleProp, Text, View, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { ImageBackground, Text, View } from 'react-native'
 
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'

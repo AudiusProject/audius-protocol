@@ -1,12 +1,10 @@
 import { useCallback, useContext } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, CreatePlaylistSource, Collection } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { CreatePlaylistSource } from 'common/models/Analytics'
-import { Collection } from 'common/models/Collection'
 import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
 import {
   addTrackToPlaylist,

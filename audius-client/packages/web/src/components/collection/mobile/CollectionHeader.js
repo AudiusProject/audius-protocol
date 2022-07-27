@@ -1,13 +1,11 @@
 import { memo, useCallback } from 'react'
 
+import { Name, Variant, SquareSizes } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
 
-import { Name } from 'common/models/Analytics'
-import { Variant } from 'common/models/Collection'
-import { SquareSizes } from 'common/models/ImageSizes'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import { formatCount, squashNewLines } from 'common/utils/formatUtil'
 import { formatSecondsAsText, formatDate } from 'common/utils/timeUtil'

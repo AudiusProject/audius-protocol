@@ -1,8 +1,8 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
 import MaskedView from '@react-native-masked-view/masked-view'
 import LinearGradient from 'react-native-linear-gradient'
-import { SvgProps } from 'react-native-svg'
+import type { SvgProps } from 'react-native-svg'
 
 import { useThemeColors } from 'app/utils/theme'
 

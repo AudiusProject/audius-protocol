@@ -1,8 +1,7 @@
-import { ID, UID } from '@audius/common'
-
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
-import { Nullable } from 'common/utils/typeUtils'
+import { ID, UID } from 'models/Identifiers'
+import { Kind } from 'models/Kind'
+import { Status } from 'models/Status'
+import { Nullable } from 'utils/typeUtils'
 
 export type Lineup<T, ExtraProps = {}> = {
   entries: T[]

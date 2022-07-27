@@ -1,7 +1,4 @@
-import { Collection } from 'common/models/Collection'
-import Status from 'common/models/Status'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
+import { Collection, Status, Track, User } from '@audius/common'
 
 export default interface SearchBarState {
   searchText: string

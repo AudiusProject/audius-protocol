@@ -1,7 +1,7 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import { SmartCollectionVariant } from 'audius-client/src/common/models/SmartCollectionVariant'
-import { SvgProps } from 'react-native-svg'
+import { SmartCollectionVariant } from '@audius/common'
+import type { SvgProps } from 'react-native-svg'
 import {
   EXPLORE_HEAVY_ROTATION_PAGE,
   EXPLORE_BEST_NEW_RELEASES_PAGE,

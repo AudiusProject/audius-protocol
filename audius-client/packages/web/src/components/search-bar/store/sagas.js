@@ -1,6 +1,6 @@
+import { Name } from '@audius/common'
 import { call, cancel, fork, put, race, select, take } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
 import { getUserId } from 'common/store/account/selectors'
 import { setTracksIsBlocked } from 'common/store/cache/tracks/utils/blocklist'
 import * as searchActions from 'components/search-bar/store/actions'

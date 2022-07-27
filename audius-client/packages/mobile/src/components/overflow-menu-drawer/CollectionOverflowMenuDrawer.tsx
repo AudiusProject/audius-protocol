@@ -1,10 +1,6 @@
 import type { ID } from '@audius/common'
-import {
-  FavoriteSource,
-  RepostSource,
-  ShareSource
-} from 'audius-client/src/common/models/Analytics'
-import { CommonState } from 'audius-client/src/common/store'
+import { FavoriteSource, RepostSource, ShareSource } from '@audius/common'
+import type { CommonState } from 'audius-client/src/common/store'
 import { publishPlaylist } from 'audius-client/src/common/store/cache/collections/actions'
 import { getCollection } from 'audius-client/src/common/store/cache/collections/selectors'
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
@@ -20,10 +16,8 @@ import {
 import { open as openEditPlaylist } from 'audius-client/src/common/store/ui/createPlaylistModal/actions'
 import { requestOpen as openDeletePlaylist } from 'audius-client/src/common/store/ui/delete-playlist-confirmation-modal/slice'
 import { getMobileOverflowModal } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
-import {
-  OverflowAction,
-  OverflowActionCallbacks
-} from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
+import type { OverflowActionCallbacks } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
+import { OverflowAction } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 import {
   profilePage,
   playlistPage,

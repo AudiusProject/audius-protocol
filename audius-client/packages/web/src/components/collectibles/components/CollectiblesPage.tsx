@@ -7,6 +7,7 @@ import {
   useState
 } from 'react'
 
+import { Collectible, CollectiblesMetadata } from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -31,7 +32,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ReactComponent as IconGradientCollectibles } from 'assets/img/iconGradientCollectibles.svg'
 import useInstanceVar from 'common/hooks/useInstanceVar'
 import { useModalState } from 'common/hooks/useModalState'
-import { Collectible, CollectiblesMetadata } from 'common/models/Collectible'
 import { ProfileUser } from 'common/store/pages/profile/types'
 import { getCollectible } from 'common/store/ui/collectible-details/selectors'
 import { setCollectible } from 'common/store/ui/collectible-details/slice'

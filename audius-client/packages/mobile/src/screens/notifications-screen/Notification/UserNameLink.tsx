@@ -1,10 +1,11 @@
 import { useCallback, useContext } from 'react'
 
-import { User as UserType } from 'audius-client/src/common/models/User'
+import type { User as UserType } from '@audius/common'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { useDispatch } from 'react-redux'
 
-import { Text, TextProps } from 'app/components/core'
+import type { TextProps } from 'app/components/core'
+import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { close } from 'app/store/notifications/actions'

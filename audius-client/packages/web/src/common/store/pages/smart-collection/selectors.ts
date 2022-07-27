@@ -1,4 +1,5 @@
-import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
+import { SmartCollectionVariant } from '@audius/common'
+
 import { CommonState } from 'common/store'
 
 const getBaseState = (state: CommonState) => state.pages.smartCollection

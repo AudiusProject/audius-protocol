@@ -1,4 +1,5 @@
-import { Name } from 'common/models/Analytics'
+import { Name } from '@audius/common'
+
 import { Level } from 'common/store/errors/level'
 import { reportToSentry } from 'common/store/errors/reportToSentry'
 import { track } from 'store/analytics/providers'

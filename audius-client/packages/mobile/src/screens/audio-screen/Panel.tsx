@@ -1,4 +1,4 @@
-import { OptimisticUserChallenge } from 'audius-client/src/common/models/AudioRewards'
+import type { OptimisticUserChallenge } from '@audius/common'
 import { fillString } from 'audius-client/src/common/utils/fillString'
 import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 import { View, Image } from 'react-native'
@@ -8,7 +8,7 @@ import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button, Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
 import { makeStyles } from 'app/styles'
-import { ChallengeConfig } from 'app/utils/challenges'
+import type { ChallengeConfig } from 'app/utils/challenges'
 import { useThemeColors } from 'app/utils/theme'
 
 const messages = {

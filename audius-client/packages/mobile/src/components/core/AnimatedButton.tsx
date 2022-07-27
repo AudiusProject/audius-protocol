@@ -1,25 +1,19 @@
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-  ReactNode
-} from 'react'
+import type { ReactNode } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
-import LottieView, { AnimatedLottieViewProps } from 'lottie-react-native'
-import {
-  Pressable,
+import type { AnimatedLottieViewProps } from 'lottie-react-native'
+import LottieView from 'lottie-react-native'
+import type {
   PressableProps,
   PressableStateCallbackType,
   StyleProp,
-  View,
   ViewStyle
 } from 'react-native'
+import { Pressable, View } from 'react-native'
 import { usePrevious } from 'react-use'
 
 import { light, medium } from 'app/haptics'
-import { GestureResponderHandler } from 'app/types/gesture'
+import type { GestureResponderHandler } from 'app/types/gesture'
 
 type IconJSON = AnimatedLottieViewProps['source']
 

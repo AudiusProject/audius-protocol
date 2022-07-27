@@ -1,8 +1,7 @@
+import { StringWei, Nullable } from '@audius/common'
 import { createSelector } from '@reduxjs/toolkit'
 
-import { StringWei } from 'common/models/Wallet'
 import { CommonState } from 'common/store'
-import { Nullable } from 'common/utils/typeUtils'
 import { stringWeiToBN } from 'common/utils/wallet'
 
 // Previously, the getAccountBalance selector would return different

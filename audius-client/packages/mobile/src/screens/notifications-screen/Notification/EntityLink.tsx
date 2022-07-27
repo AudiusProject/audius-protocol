@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { EntityType } from 'audius-client/src/common/store/notifications/types'
+import type { EntityType } from 'audius-client/src/common/store/notifications/types'
 import { useDispatch } from 'react-redux'
 
 import { Text } from 'app/components/core'

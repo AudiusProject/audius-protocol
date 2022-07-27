@@ -1,8 +1,7 @@
-import { ID } from '@audius/common'
+import { ID, FollowSource } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { FollowSource } from 'common/models/Analytics'
 import { setNotificationSubscription } from 'common/store/pages/profile/actions'
 import * as socialActions from 'common/store/social/users/actions'
 import { AppState } from 'store/types'

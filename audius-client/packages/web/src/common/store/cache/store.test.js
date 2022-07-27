@@ -1,9 +1,8 @@
 /* eslint-disable no-import-assign */
+import { Kind, Status } from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 
-import Kind from 'common/models/Kind'
-import Status from 'common/models/Status'
 import * as actions from 'common/store/cache/actions'
 import * as config from 'common/store/cache/config'
 import { asCache, initialCacheState } from 'common/store/cache/reducer'

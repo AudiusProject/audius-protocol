@@ -1,5 +1,6 @@
 import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
-import { TextButton, TextButtonProps } from 'app/components/core'
+import type { TextButtonProps } from 'app/components/core'
+import { TextButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const messages = {

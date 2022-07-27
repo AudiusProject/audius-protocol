@@ -1,10 +1,9 @@
-import { ID } from '@audius/common'
+import { ID, User } from '@audius/common'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { User } from 'common/models/User'
 import ArtistChip from 'components/artist/ArtistChip'
 import FollowButton from 'components/follow-button/FollowButton'
 import { MountPlacement } from 'components/types'

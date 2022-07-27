@@ -1,7 +1,6 @@
+import { CoverArtSizes, Track, TrackMetadata } from '@audius/common'
 import { omit } from 'lodash'
 
-import { CoverArtSizes } from 'common/models/ImageSizes'
-import { Track, TrackMetadata } from 'common/models/Track'
 import AudiusBackend from 'services/AudiusBackend'
 
 /**

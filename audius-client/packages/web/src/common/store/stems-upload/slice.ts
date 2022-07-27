@@ -1,7 +1,5 @@
-import { ID } from '@audius/common'
+import { ID, StemUploadWithFile } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-import { StemUploadWithFile } from 'common/models/Stems'
 
 const initialState = {
   uploadsInProgress: {} as {

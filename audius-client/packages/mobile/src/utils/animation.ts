@@ -1,8 +1,5 @@
-import {
-  Animated,
-  GestureResponderEvent,
-  NativeScrollEvent
-} from 'react-native'
+import type { GestureResponderEvent, NativeScrollEvent } from 'react-native'
+import { Animated } from 'react-native'
 
 export const attachToDx =
   (animation: Animated.Value, newValue: number) =>

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
+import type { User } from '@audius/common'
 import { setNotificationSubscription } from 'audius-client/src/common/store/pages/profile/actions'
 
 import IconNotification from 'app/assets/images/iconNotification.svg'

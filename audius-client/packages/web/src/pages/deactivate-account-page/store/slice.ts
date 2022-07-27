@@ -1,6 +1,5 @@
+import { Status } from '@audius/common'
 import { createSlice } from '@reduxjs/toolkit'
-
-import Status from 'common/models/Status'
 
 export type DeactivateAccountState = {
   status?: Status

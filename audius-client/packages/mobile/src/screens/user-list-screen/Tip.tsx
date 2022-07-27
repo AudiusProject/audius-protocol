@@ -1,4 +1,4 @@
-import { StringWei } from 'audius-client/src/common/models/Wallet'
+import type { StringWei } from '@audius/common'
 import { formatWei, stringWeiToBN } from 'audius-client/src/common/utils/wallet'
 import { View } from 'react-native'
 

@@ -1,16 +1,11 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import {
-  ImageSourcePropType,
-  Text,
-  View,
-  Image,
-  TextStyle,
-  ViewStyle
-} from 'react-native'
-import { SvgProps } from 'react-native-svg'
+import type { ImageSourcePropType, TextStyle, ViewStyle } from 'react-native'
+import { Text, View, Image } from 'react-native'
+import type { SvgProps } from 'react-native-svg'
 
-import { makeStyles, StylesProps } from 'app/styles'
+import type { StylesProps } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: { flexDirection: 'row', alignItems: 'center' },

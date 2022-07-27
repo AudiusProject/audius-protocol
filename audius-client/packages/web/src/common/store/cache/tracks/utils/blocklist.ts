@@ -1,4 +1,5 @@
-import { TrackMetadata } from 'common/models/Track'
+import { TrackMetadata } from '@audius/common'
+
 import { waitForWeb3 } from 'services/AudiusBackend'
 
 declare global {

@@ -1,6 +1,7 @@
 import { formatSeconds } from 'audius-client/src/common/utils/timeUtil'
-import { StyleSheet, View, ViewStyle } from 'react-native'
-import { SvgProps } from 'react-native-svg'
+import type { ViewStyle } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import type { SvgProps } from 'react-native-svg'
 
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconStar from 'app/assets/images/iconStar.svg'

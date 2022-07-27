@@ -1,5 +1,6 @@
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
-import { MessageType, MessageHandlers } from 'app/message/types'
+import type { MessageHandlers } from 'app/message/types'
+import { MessageType } from 'app/message/types'
 import PushNotifications from 'app/notifications'
 
 export const messageHandlers: Partial<MessageHandlers> = {

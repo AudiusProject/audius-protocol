@@ -1,3 +1,4 @@
+import { FavoriteSource, Name } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import {
   all,
@@ -12,7 +13,6 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import { FavoriteSource, Name } from 'common/models/Analytics'
 import {
   FeatureFlags,
   IntKeys,

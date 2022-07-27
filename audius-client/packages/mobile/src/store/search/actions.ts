@@ -1,4 +1,4 @@
-import { SearchResults } from './types'
+import type { SearchResults } from './types'
 
 export const OPEN = 'SEARCH/OPEN'
 export const CLOSE = 'SEARCH/CLOSE'

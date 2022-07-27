@@ -1,10 +1,12 @@
-import { UID, ID } from '@audius/common'
+import {
+  UID,
+  ID,
+  Collection,
+  Favorite,
+  LineupState,
+  LineupTrack
+} from '@audius/common'
 import { Moment } from 'moment'
-
-import { Collection } from 'common/models/Collection'
-import { Favorite } from 'common/models/Favorite'
-import { LineupState } from 'common/models/Lineup'
-import { LineupTrack } from 'common/models/Track'
 
 export default interface SavesPageState {
   localSaves: { [id: number]: UID }

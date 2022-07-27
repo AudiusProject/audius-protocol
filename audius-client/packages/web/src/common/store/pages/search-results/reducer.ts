@@ -1,4 +1,5 @@
-import Status from 'common/models/Status'
+import { Status } from '@audius/common'
+
 import { asLineup } from 'common/store/lineup/reducer'
 import {
   FETCH_SEARCH_PAGE_RESULTS,

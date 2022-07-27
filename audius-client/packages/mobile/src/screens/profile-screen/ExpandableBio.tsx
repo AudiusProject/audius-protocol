@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  Pressable,
-  View,
-  Text,
-  LayoutChangeEvent,
-  LayoutAnimation
-} from 'react-native'
+import type { LayoutChangeEvent } from 'react-native'
+import { Pressable, View, Text, LayoutAnimation } from 'react-native'
 import { useToggle } from 'react-use'
 
 import { Hyperlink } from 'app/components/core'

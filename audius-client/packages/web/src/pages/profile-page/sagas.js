@@ -1,8 +1,7 @@
+import { DefaultSizes, Kind } from '@audius/common'
 import { merge } from 'lodash'
 import { call, delay, fork, put, select, takeEvery } from 'redux-saga/effects'
 
-import { DefaultSizes } from 'common/models/ImageSizes'
-import Kind from 'common/models/Kind'
 import { DoubleKeys, FeatureFlags } from 'common/services/remote-config'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'

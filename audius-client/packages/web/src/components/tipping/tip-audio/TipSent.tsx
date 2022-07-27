@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common'
 import { Button, ButtonType, IconTwitterBird, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { Name } from 'common/models/Analytics'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getSendTipData } from 'common/store/tipping/selectors'
 import { formatNumberCommas } from 'common/utils/formatUtil'

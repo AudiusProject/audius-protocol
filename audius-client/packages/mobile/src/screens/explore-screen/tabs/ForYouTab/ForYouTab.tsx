@@ -2,7 +2,8 @@ import { useRef } from 'react'
 
 import { View } from 'react-native'
 
-import { ScrollView, ScrollViewElement } from 'app/components/core'
+import type { ScrollViewElement } from 'app/components/core'
+import { ScrollView } from 'app/components/core'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 

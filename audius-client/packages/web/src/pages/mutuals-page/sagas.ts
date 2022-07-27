@@ -1,7 +1,6 @@
-import { ID } from '@audius/common'
+import { ID, User } from '@audius/common'
 import { put, select } from 'typed-redux-saga/macro'
 
-import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import { getMutualsError } from 'common/store/user-list/mutuals/actions'
 import { watchMutualsError } from 'common/store/user-list/mutuals/errorSagas'

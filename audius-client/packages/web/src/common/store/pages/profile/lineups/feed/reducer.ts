@@ -1,5 +1,5 @@
-import { LineupState } from 'common/models/Lineup'
-import { Track } from 'common/models/Track'
+import { LineupState, Track } from '@audius/common'
+
 import { RESET_SUCCEEDED, stripPrefix } from 'common/store/lineup/actions'
 import { initialLineupState } from 'common/store/lineup/reducer'
 import { PREFIX } from 'common/store/pages/profile/lineups/feed/actions'

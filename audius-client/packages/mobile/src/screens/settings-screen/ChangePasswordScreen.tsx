@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import Status from 'audius-client/src/common/models/Status'
+import { Status } from '@audius/common'
 import {
   getChangePasswordStatus,
   getCurrentPage
@@ -21,7 +21,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
-import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 const messages = {
   changeHeader: 'Change Password',

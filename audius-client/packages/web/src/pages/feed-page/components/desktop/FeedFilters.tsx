@@ -1,4 +1,5 @@
-import FeedFilter from 'common/models/FeedFilter'
+import { FeedFilter } from '@audius/common'
+
 import SelectablePills from 'components/selectable-pill/SelectablePills'
 
 type FeedFiltersProps = {

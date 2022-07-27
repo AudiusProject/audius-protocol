@@ -1,6 +1,6 @@
+import { ChallengeRewardID } from '@audius/common'
 import { createSelector } from 'reselect'
 
-import { ChallengeRewardID } from 'common/models/AudioRewards'
 import { CommonState } from 'common/store'
 
 export const getTrendingRewardsModalType = (state: CommonState) =>

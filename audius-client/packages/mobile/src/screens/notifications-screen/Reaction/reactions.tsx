@@ -1,8 +1,9 @@
-import { ComponentType } from 'react'
+import type { ComponentType } from 'react'
 
-import { ReactionTypes } from 'audius-client/src/common/store/ui/reactions/slice'
+import type { ReactionTypes } from 'audius-client/src/common/store/ui/reactions/slice'
 
-import { Reaction, ReactionProps as BaseReactionProps } from './Reaction'
+import type { ReactionProps as BaseReactionProps } from './Reaction'
+import { Reaction } from './Reaction'
 import explode from './exploding_head.json'
 import fire from './fire.json'
 import party from './partying_face.json'

@@ -1,14 +1,19 @@
 import { useCallback } from 'react'
 
-import { CID, ID } from '@audius/common'
+import {
+  CID,
+  ID,
+  Name,
+  SquareSizes,
+  CoverArtSizes,
+  FieldVisibility,
+  Remix
+} from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import { Name } from 'common/models/Analytics'
-import { SquareSizes, CoverArtSizes } from 'common/models/ImageSizes'
-import { FieldVisibility, Remix } from 'common/models/Track'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { getCanonicalName } from 'common/utils/genres'

@@ -1,11 +1,11 @@
 import { FormEvent, useEffect, useState } from 'react'
 
+import { Status } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { Spring } from 'react-spring/renderprops'
 
-import Status from 'common/models/Status'
 import { getConfirmCredentialsStatus } from 'common/store/change-password/selectors'
 import { confirmCredentials } from 'common/store/change-password/slice'
 import Input from 'components/data-entry/Input'

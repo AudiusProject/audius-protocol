@@ -2,7 +2,7 @@ import {
   getNotificationEntity,
   getNotificationUsers
 } from 'audius-client/src/common/store/notifications/selectors'
-import { Favorite } from 'common/store/notifications/types'
+import type { Favorite } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'

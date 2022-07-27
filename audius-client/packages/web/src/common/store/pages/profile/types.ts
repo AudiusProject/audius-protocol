@@ -1,8 +1,4 @@
-import { ID, UID } from '@audius/common'
-
-import { LineupState } from 'common/models/Lineup'
-import Status from 'common/models/Status'
-import { User } from 'common/models/User'
+import { ID, UID, LineupState, Status, User } from '@audius/common'
 
 export enum FollowType {
   FOLLOWERS = 'followers',

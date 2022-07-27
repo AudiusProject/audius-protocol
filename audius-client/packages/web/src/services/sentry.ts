@@ -1,7 +1,6 @@
+import { User } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import { CaptureConsole } from '@sentry/integrations'
-
-import { User } from 'common/models/User'
 
 const analyticsBlacklist = [
   'google-analytics',

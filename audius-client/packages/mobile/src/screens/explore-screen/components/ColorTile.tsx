@@ -1,17 +1,15 @@
-import { ComponentType, ReactNode, useCallback } from 'react'
+import type { ComponentType, ReactNode } from 'react'
+import { useCallback } from 'react'
 
-import {
-  Animated,
-  Image,
+import type {
   ImageSourcePropType,
   ImageStyle,
   StyleProp,
-  StyleSheet,
-  View,
   ViewStyle
 } from 'react-native'
+import { Animated, Image, StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import { SvgProps } from 'react-native-svg'
+import type { SvgProps } from 'react-native-svg'
 
 import IconAudioRewardsPill from 'app/assets/images/iconAudioRewardsPill.svg'
 import { Pressable } from 'app/components/core'
@@ -19,12 +17,12 @@ import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ExploreTabScreenParamList } from 'app/screens/app-screen/ExploreTabScreen'
+import type { ExploreTabScreenParamList } from 'app/screens/app-screen/ExploreTabScreen'
 import { font } from 'app/styles'
-import { ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
 
-import { CollectionScreen, MoodScreen } from '../collections'
-import { SmartCollectionScreen } from '../smartCollections'
+import type { CollectionScreen, MoodScreen } from '../collections'
+import type { SmartCollectionScreen } from '../smartCollections'
 
 type ColorTileProps = {
   style?: StyleProp<ViewStyle>

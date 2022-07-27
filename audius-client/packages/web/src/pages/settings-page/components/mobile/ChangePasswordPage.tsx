@@ -1,8 +1,8 @@
 import { useCallback, useContext, useEffect } from 'react'
 
+import { Name } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Name } from 'common/models/Analytics'
 import { getCurrentPage } from 'common/store/change-password/selectors'
 import { changePage, Page } from 'common/store/change-password/slice'
 import { ChangePassword } from 'components/change-password/ChangePassword'

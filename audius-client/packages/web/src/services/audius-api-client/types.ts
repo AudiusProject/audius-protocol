@@ -1,15 +1,17 @@
-import { CID } from '@audius/common'
-
-import { FavoriteType } from 'common/models/Favorite'
 import {
+  CID,
+  FavoriteType,
   CoverArtSizes,
   CoverPhotoSizes,
-  ProfilePictureSizes
-} from 'common/models/ImageSizes'
-import { StemCategory } from 'common/models/Stems'
-import { Download, FieldVisibility, TrackSegment } from 'common/models/Track'
-import { SolanaWalletAddress, WalletAddress } from 'common/models/Wallet'
-import { Nullable } from 'common/utils/typeUtils'
+  ProfilePictureSizes,
+  StemCategory,
+  Download,
+  FieldVisibility,
+  TrackSegment,
+  SolanaWalletAddress,
+  WalletAddress,
+  Nullable
+} from '@audius/common'
 
 export type OpaqueID = string
 

@@ -1,6 +1,7 @@
-import { ReactNode, useContext, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
-import Status from 'audius-client/src/common/models/Status'
+import { Status } from '@audius/common'
 import { getSearchStatus } from 'audius-client/src/common/store/pages/search-results/selectors'
 
 import { WithLoader } from 'app/components/with-loader/WithLoader'

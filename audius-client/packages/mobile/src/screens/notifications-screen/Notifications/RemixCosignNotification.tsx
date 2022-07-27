@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 
+import type { Nullable } from '@audius/common'
 import {
   getNotificationEntities,
   getNotificationUser
 } from 'audius-client/src/common/store/notifications/selectors'
-import {
+import type {
   RemixCosign,
   TrackEntity
 } from 'audius-client/src/common/store/notifications/types'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { View } from 'react-native'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'

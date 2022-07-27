@@ -1,5 +1,5 @@
-import { Collection } from 'common/models/Collection'
-import { LineupState } from 'common/models/Lineup'
+import { Collection, LineupState } from '@audius/common'
+
 import { RESET_SUCCEEDED, stripPrefix } from 'common/store/lineup/actions'
 import { initialLineupState } from 'common/store/lineup/reducer'
 

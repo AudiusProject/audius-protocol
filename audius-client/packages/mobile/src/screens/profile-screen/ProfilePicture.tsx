@@ -1,7 +1,5 @@
-import {
-  ProfilePicture as ProfilePictureBase,
-  ProfilePictureProps
-} from 'app/components/user'
+import type { ProfilePictureProps } from 'app/components/user'
+import { ProfilePicture as ProfilePictureBase } from 'app/components/user'
 
 import { useSelectProfile } from './selectors'
 

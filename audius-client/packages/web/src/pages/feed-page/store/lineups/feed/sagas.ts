@@ -1,14 +1,15 @@
-import { ID } from '@audius/common'
-import { select, all } from 'redux-saga/effects'
-
-import { Collection, UserCollectionMetadata } from 'common/models/Collection'
-import FeedFilter from 'common/models/FeedFilter'
-import Kind from 'common/models/Kind'
 import {
+  ID,
+  Collection,
+  UserCollectionMetadata,
+  FeedFilter,
+  Kind,
   LineupTrack,
   TrackMetadata,
   UserTrackMetadata
-} from 'common/models/Track'
+} from '@audius/common'
+import { select, all } from 'redux-saga/effects'
+
 import { CommonState } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

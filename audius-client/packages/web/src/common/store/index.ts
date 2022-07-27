@@ -1,8 +1,6 @@
+import { Kind, Cache, Collection } from '@audius/common'
 import { combineReducers } from 'redux'
 
-import Cache from 'common/models/Cache'
-import { Collection } from 'common/models/Collection'
-import Kind from 'common/models/Kind'
 import accountSlice from 'common/store/account/reducer'
 import averageColorReducer from 'common/store/average-color/slice'
 import collectionsErrorSagas from 'common/store/cache/collections/errorSagas'

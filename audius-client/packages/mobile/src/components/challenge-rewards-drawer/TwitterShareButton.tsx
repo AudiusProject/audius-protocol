@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react'
 
 import { Linking, StyleSheet } from 'react-native'
-import { Color } from 'react-native-svg'
+import type { Color } from 'react-native-svg'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import Button from 'app/components/button'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
 import { getTwitterLink } from 'app/utils/twitter'
 
 const makeStyles = (themeColors: ThemeColors) =>

@@ -1,10 +1,7 @@
-import { ID } from '@audius/common'
+import { ID, Supporter, Supporting, BNWei, Nullable } from '@audius/common'
 import { createSelector } from '@reduxjs/toolkit'
 
-import { Supporter, Supporting } from 'common/models/Tipping'
-import { BNWei } from 'common/models/Wallet'
 import { CommonState } from 'common/store'
-import { Nullable } from 'common/utils/typeUtils'
 import { stringWeiToBN } from 'common/utils/wallet'
 
 import { SupportersMap, SupportersMapForUser, SupportingMap } from './types'
@@ -25,7 +22,7 @@ export const getSendTipData = (state: CommonState) => state.tipping.send
 export const getRecentTips = (state: CommonState) => state.tipping.recentTips
 export const getTipToDisplay = (state: CommonState) =>
   state.tipping.tipToDisplay
-export const getShowTip = (state: CommonState) => state.tipping.showTip
+export const getShowTip = (state: CommonState) => state.tipping?.showTip
 
 const mergeMaps = <
   MapType extends Record<ID, Record<ID, Supporter | Supporting>>

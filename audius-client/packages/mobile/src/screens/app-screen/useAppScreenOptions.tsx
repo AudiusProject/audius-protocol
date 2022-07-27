@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react'
 
-import { ParamListBase, RouteProp } from '@react-navigation/core'
-import {
+import type { ParamListBase, RouteProp } from '@react-navigation/core'
+import type {
   NativeStackNavigationOptions,
   NativeStackNavigationProp
 } from '@react-navigation/native-stack'
@@ -16,15 +16,16 @@ import IconNotification from 'app/assets/images/iconNotification.svg'
 import IconSearch from 'app/assets/images/iconSearch.svg'
 import { IconButton } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { ContextualParams, useNavigation } from 'app/hooks/useNavigation'
+import type { ContextualParams } from 'app/hooks/useNavigation'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 import { useThemeColors } from 'app/utils/theme'
 
-import { AppScreenParamList } from './AppScreen'
-import { AppTabScreenParamList } from './AppTabScreen'
+import type { AppScreenParamList } from './AppScreen'
+import type { AppTabScreenParamList } from './AppTabScreen'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   headerLeft: { marginLeft: spacing(-2), width: 40 },

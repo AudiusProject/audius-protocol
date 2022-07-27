@@ -1,7 +1,7 @@
+import { Kind } from '@audius/common'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'
 
-import Kind from 'common/models/Kind'
 import { getTracks as getCacheTracks } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import * as saveActions from 'common/store/pages/saved-page/actions'

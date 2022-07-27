@@ -1,8 +1,10 @@
-import { Text, TextStyle, View, ViewStyle } from 'react-native'
+import type { TextStyle, ViewStyle } from 'react-native'
+import { Text, View } from 'react-native'
 
 import IconValidationCheck from 'app/assets/images/iconValidationCheck.svg'
 import IconValidationX from 'app/assets/images/iconValidationX.svg'
-import { makeStyles, StylesProps } from 'app/styles'
+import type { StylesProps } from 'app/styles'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 type MessageStatus = 'default' | 'valid' | 'error'

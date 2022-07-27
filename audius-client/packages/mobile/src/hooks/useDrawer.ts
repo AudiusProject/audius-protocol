@@ -3,7 +3,8 @@ import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { getVisibility } from 'app/store/drawers/selectors'
-import { Drawer, setVisibility } from 'app/store/drawers/slice'
+import type { Drawer } from 'app/store/drawers/slice'
+import { setVisibility } from 'app/store/drawers/slice'
 
 export const useDrawer = (drawerName: Drawer) => {
   const dispatch = useDispatch()

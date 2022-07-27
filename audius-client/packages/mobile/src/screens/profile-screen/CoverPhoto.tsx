@@ -1,5 +1,5 @@
+import { WidthSizes } from '@audius/common'
 import { BlurView } from '@react-native-community/blur'
-import { WidthSizes } from 'audius-client/src/common/models/ImageSizes'
 import { Animated, Platform, StyleSheet } from 'react-native'
 
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'

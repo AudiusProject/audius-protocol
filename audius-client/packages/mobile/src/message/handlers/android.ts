@@ -1,7 +1,8 @@
 import * as webActions from 'app/store/web/actions'
 import share from 'app/utils/share'
 
-import { MessageType, MessageHandlers } from '../types'
+import type { MessageHandlers } from '../types'
+import { MessageType } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.ENABLE_PULL_TO_REFRESH]: ({ message, dispatch }) => {

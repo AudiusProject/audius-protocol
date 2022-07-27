@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 
-import { CreatePlaylistSource } from 'audius-client/src/common/models/Analytics'
+import { CreatePlaylistSource } from '@audius/common'
 import { getAccountWithOwnPlaylists } from 'audius-client/src/common/store/account/selectors'
 import {
   addTrackToPlaylist,
@@ -12,7 +12,8 @@ import {
 } from 'audius-client/src/common/store/ui/add-to-playlist/selectors'
 import { newCollectionMetadata } from 'audius-client/src/schemas'
 import { FEED_PAGE, playlistPage } from 'audius-client/src/utils/route'
-import { NativeScrollEvent, NativeSyntheticEvent, View } from 'react-native'
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
+import { View } from 'react-native'
 
 import Button, { ButtonType } from 'app/components/button'
 import { Card } from 'app/components/card'

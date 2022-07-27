@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common'
 import ReactMarkdown from 'react-markdown'
 import { useDispatch } from 'react-redux'
 
-import { Name } from 'common/models/Analytics'
 import { setNotificationModal } from 'common/store/notifications/actions'
 import { Announcement } from 'common/store/notifications/types'
 import { make, useRecord } from 'store/analytics/actions'

@@ -1,4 +1,5 @@
-import { RecentTipsStorage } from 'common/models/Tipping'
+import { RecentTipsStorage } from '@audius/common'
+
 import { RECENT_TIPS_KEY } from 'utils/constants'
 
 export const getRecentTipsStorage = () => {

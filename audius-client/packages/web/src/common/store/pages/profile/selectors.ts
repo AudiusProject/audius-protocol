@@ -1,12 +1,10 @@
-import { ID } from '@audius/common'
+import { ID, UserCollection, removeNullable } from '@audius/common'
 import moment from 'moment'
 
-import { UserCollection } from 'common/models/Collection'
 import { CommonState } from 'common/store'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUser, getUsers } from 'common/store/cache/users/selectors'
 import { createDeepEqualSelector } from 'common/utils/selectorHelpers'
-import { removeNullable } from 'common/utils/typeUtils'
 
 import { CollectionSortMode } from './types'
 

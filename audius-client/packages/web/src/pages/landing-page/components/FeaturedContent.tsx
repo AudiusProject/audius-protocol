@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { UserCollectionMetadata } from '@audius/common'
 import { useSpring, animated } from 'react-spring'
 import { useAsyncFn } from 'react-use'
 
@@ -9,7 +10,6 @@ import hotAndNewPlaylistImg from 'assets/img/publicSite/HotAndNewPlaylistArt.jpe
 import { ReactComponent as IconLines } from 'assets/img/publicSite/Lines.svg'
 import moombahtonPlaylistImg from 'assets/img/publicSite/MoombahtonPlaylistArt.png'
 import { ReactComponent as IconListenOnAudius } from 'assets/img/publicSite/listen-on-audius.svg'
-import { UserCollectionMetadata } from 'common/models/Collection'
 import { fetchExploreContent } from 'common/store/pages/explore/sagas'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'

@@ -1,6 +1,12 @@
+import {
+  BNAudio,
+  BNWei,
+  StringAudio,
+  StringWei,
+  Nullable
+} from '@audius/common'
 import BN from 'bn.js'
 
-import { BNAudio, BNWei, StringAudio, StringWei } from 'common/models/Wallet'
 import {
   WEI,
   trimRightZeros,
@@ -9,8 +15,6 @@ import {
   parseWeiNumber,
   convertFloatToWei
 } from 'common/utils/formatUtil'
-
-import { Nullable } from './typeUtils'
 
 export const weiToAudioString = (bnWei: BNWei): StringAudio => {
   const stringAudio = formatWeiToAudioString(bnWei) as StringAudio

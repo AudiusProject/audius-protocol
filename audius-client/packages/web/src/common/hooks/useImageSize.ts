@@ -1,16 +1,16 @@
 import { useEffect } from 'react'
 
-import { Dispatch } from 'redux'
-
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import {
   DefaultSizes,
   ImageSizesObject,
   SquareSizes,
   URL,
-  WidthSizes
-} from 'common/models/ImageSizes'
-import { Maybe } from 'common/utils/typeUtils'
+  WidthSizes,
+  Maybe
+} from '@audius/common'
+import { Dispatch } from 'redux'
+
+import useInstanceVar from 'common/hooks/useInstanceVar'
 
 type Size = SquareSizes | WidthSizes
 

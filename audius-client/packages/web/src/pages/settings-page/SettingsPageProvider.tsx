@@ -1,11 +1,10 @@
 import { ComponentType, PureComponent } from 'react'
 
+import { Name, Theme } from '@audius/common'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { Name } from 'common/models/Analytics'
-import Theme from 'common/models/Theme'
 import * as accountActions from 'common/store/account/reducer'
 import {
   getAccountVerified,

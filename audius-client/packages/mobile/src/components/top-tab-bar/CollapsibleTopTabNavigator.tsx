@@ -1,9 +1,10 @@
-import { ComponentType, createContext, ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
+import { createContext } from 'react'
 
-import { MaterialTopTabNavigationOptions } from '@react-navigation/material-top-tabs'
-import { Animated } from 'react-native'
+import type { MaterialTopTabNavigationOptions } from '@react-navigation/material-top-tabs'
+import type { Animated } from 'react-native'
 import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsible-tab-view'
-import { SvgProps } from 'react-native-svg'
+import type { SvgProps } from 'react-native-svg'
 
 import { TopTabBar } from 'app/components/top-tab-bar'
 

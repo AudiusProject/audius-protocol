@@ -4,14 +4,12 @@ import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 import { next, previous } from 'audius-client/src/common/store/queue/slice'
 import { Genre } from 'audius-client/src/common/utils/genres'
-import {
-  View,
+import type {
   Animated,
   GestureResponderEvent,
-  PanResponderGestureState,
-  StatusBar,
-  Pressable
+  PanResponderGestureState
 } from 'react-native'
+import { View, StatusBar, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 

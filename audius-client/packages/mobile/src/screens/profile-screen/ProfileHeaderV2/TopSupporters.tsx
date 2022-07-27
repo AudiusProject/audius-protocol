@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type { ID } from '@audius/common'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
 import { getOptimisticSupportersForUser } from 'audius-client/src/common/store/tipping/selectors'
-import { SupportersMapForUser } from 'audius-client/src/common/store/tipping/types'
+import type { SupportersMapForUser } from 'audius-client/src/common/store/tipping/types'
 import { Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 

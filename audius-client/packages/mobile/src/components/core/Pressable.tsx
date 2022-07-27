@@ -1,10 +1,10 @@
 import { useCallback, useRef } from 'react'
 
-import {
+import type {
   GestureResponderEvent,
-  Pressable as RNPressable,
   PressableProps as RNPressableProps
 } from 'react-native'
+import { Pressable as RNPressable } from 'react-native'
 
 type PressableProps = RNPressableProps
 

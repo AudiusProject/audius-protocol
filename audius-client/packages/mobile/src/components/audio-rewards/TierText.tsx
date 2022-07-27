@@ -1,6 +1,7 @@
-import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
+import type { BadgeTier } from '@audius/common'
 
-import { GradientText, GradientTextProps } from 'app/components/core'
+import type { GradientTextProps } from 'app/components/core'
+import { GradientText } from 'app/components/core'
 
 const tierGradientMap = {
   none: {

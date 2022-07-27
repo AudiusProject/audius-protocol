@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { Name } from 'audius-client/src/common/models/Analytics'
-import FeedFilter from 'audius-client/src/common/models/FeedFilter'
+import { FeedFilter, Name } from '@audius/common'
 import { setFeedFilter } from 'audius-client/src/common/store/pages/feed/actions'
 import { feedActions } from 'audius-client/src/common/store/pages/feed/lineup/actions'
 import { Text } from 'react-native'

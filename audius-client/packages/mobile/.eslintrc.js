@@ -30,5 +30,13 @@ module.exports = {
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
       }
     }
+  },
+  rules: {
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      {
+        disallowTypeAnnotations: false
+      }
+    ]
   }
 }

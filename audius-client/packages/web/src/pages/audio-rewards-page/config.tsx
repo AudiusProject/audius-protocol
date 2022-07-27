@@ -1,16 +1,16 @@
 import { ReactNode } from 'react'
 
-import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
-
-import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import {
   amounts,
   ChallengeRewardID,
   OptimisticUserChallenge,
-  TrendingRewardID
-} from 'common/models/AudioRewards'
+  TrendingRewardID,
+  Nullable
+} from '@audius/common'
+import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
+
+import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { formatNumberCommas } from 'common/utils/formatUtil'
-import { Nullable } from 'common/utils/typeUtils'
 import {
   profilePage,
   SETTINGS_PAGE,

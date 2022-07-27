@@ -1,7 +1,7 @@
+import { BNAudio } from '@audius/common'
 import { TokenValueSlider } from '@audius/stems'
 import BN from 'bn.js'
 
-import { BNAudio } from 'common/models/Wallet'
 import { formatNumberCommas } from 'common/utils/formatUtil'
 
 import styles from './DashboardTokenValueSlider.module.css'

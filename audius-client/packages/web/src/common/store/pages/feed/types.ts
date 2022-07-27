@@ -1,8 +1,4 @@
-import { ID } from '@audius/common'
-
-import FeedFilter from 'common/models/FeedFilter'
-import { LineupState } from 'common/models/Lineup'
-import TimeRange from 'common/models/TimeRange'
+import { ID, FeedFilter, TimeRange, LineupState } from '@audius/common'
 
 export type FeedPageState = {
   suggestedFollows: ID[]

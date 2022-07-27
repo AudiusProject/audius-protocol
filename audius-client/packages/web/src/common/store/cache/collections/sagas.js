@@ -1,3 +1,4 @@
+import { Name, DefaultSizes, Kind } from '@audius/common'
 import { isEqual } from 'lodash'
 import {
   all,
@@ -9,9 +10,6 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import { Name } from 'common/models/Analytics'
-import { DefaultSizes } from 'common/models/ImageSizes'
-import Kind from 'common/models/Kind'
 import * as accountActions from 'common/store/account/reducer'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'

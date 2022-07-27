@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Status } from '@audius/common'
 import { Button, ButtonType, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Status from 'common/models/Status'
 import {
   getChangePasswordStatus,
   getCurrentPage

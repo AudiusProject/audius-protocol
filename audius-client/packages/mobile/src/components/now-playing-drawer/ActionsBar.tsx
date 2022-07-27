@@ -1,10 +1,7 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import {
-  FavoriteSource,
-  RepostSource,
-  ShareSource
-} from 'audius-client/src/common/models/Analytics'
+import type { Track } from '@audius/common'
+import { FavoriteSource, RepostSource, ShareSource } from '@audius/common'
 import { updateMethod } from 'audius-client/src/common/store/cast/slice'
 import {
   repostTrack,
@@ -12,7 +9,6 @@ import {
   undoRepostTrack,
   unsaveTrack
 } from 'audius-client/src/common/store/social/tracks/actions'
-import { Track } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
 import {
   getMethod as getCastMethod,

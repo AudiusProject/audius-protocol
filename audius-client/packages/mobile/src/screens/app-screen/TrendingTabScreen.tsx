@@ -1,6 +1,6 @@
 import { TrendingScreen } from 'app/screens/trending-screen'
 
-import { AppTabScreenParamList } from './AppTabScreen'
+import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type TrendingTabScreenParamList = AppTabScreenParamList & {

@@ -1,6 +1,6 @@
+import { Name } from '@audius/common'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
-import { Name } from 'common/models/Analytics'
 import * as actions from 'common/store/pages/settings/actions'
 import { getBrowserNotificationSettings } from 'common/store/pages/settings/selectors'
 import { BrowserNotificationSetting } from 'common/store/pages/settings/types'

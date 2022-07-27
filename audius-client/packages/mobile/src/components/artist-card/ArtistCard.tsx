@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { User } from 'audius-client/src/common/models/User'
-import { StyleProp, ViewStyle } from 'react-native'
+import type { User } from '@audius/common'
+import type { StyleProp, ViewStyle } from 'react-native'
 
 import { Card } from 'app/components/card'
 import { useNavigation } from 'app/hooks/useNavigation'

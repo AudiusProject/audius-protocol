@@ -1,8 +1,7 @@
+import { Name, Nullable } from '@audius/common'
 import { AccountInfo } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 
-import { Name } from 'common/models/Analytics'
-import { Nullable } from 'common/utils/typeUtils'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { track } from 'store/analytics/providers'
 

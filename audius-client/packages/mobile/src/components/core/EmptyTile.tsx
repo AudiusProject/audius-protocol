@@ -1,6 +1,7 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
-import { Text, View, Image, TextStyle } from 'react-native'
+import type { TextStyle } from 'react-native'
+import { Text, View, Image } from 'react-native'
 
 import Sophisticated from 'app/assets/images/emojis/face-with-monocle.png'
 import { Tile } from 'app/components/core'

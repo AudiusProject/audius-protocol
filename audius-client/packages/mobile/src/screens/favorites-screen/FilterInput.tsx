@@ -1,4 +1,4 @@
-import { TextInputProps } from 'react-native'
+import type { TextInputProps } from 'react-native'
 
 import IconFilter from 'app/assets/images/iconFilter.svg'
 import { TextInput, Tile } from 'app/components/core'

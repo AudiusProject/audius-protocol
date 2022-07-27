@@ -1,17 +1,11 @@
 import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
 
-import {
-  Animated,
-  LayoutChangeEvent,
-  Pressable,
-  TextStyle,
-  View,
-  ViewStyle,
-  Text
-} from 'react-native'
+import type { LayoutChangeEvent, TextStyle, ViewStyle } from 'react-native'
+import { Animated, Pressable, View, Text } from 'react-native'
 
 import { light } from 'app/haptics'
-import { makeStyles, StylesProps } from 'app/styles'
+import type { StylesProps } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
 // Note, offset is the inner padding of the container div
 const offset = 3

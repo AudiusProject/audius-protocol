@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { SEEK, seek } from 'app/store/audio/actions'
-import { ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
 
 import { Slider } from './Slider'
 

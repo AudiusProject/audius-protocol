@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { Button, EmptyTile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { AppScreenParamList } from '../app-screen'
+import type { AppScreenParamList } from '../app-screen'
 
 const messages = {
   afterSaved: "Once you have, this is where you'll find them!",

@@ -1,10 +1,13 @@
-import { ComponentProps, useCallback, useEffect, useRef, useState } from 'react'
+import type { ComponentProps } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Match } from 'autolinker/dist/es2015'
-import { LayoutRectangle, Text, TextStyle, View } from 'react-native'
+import type { Match } from 'autolinker/dist/es2015'
+import type { LayoutRectangle, TextStyle } from 'react-native'
+import { Text, View } from 'react-native'
 import Autolink from 'react-native-autolink'
 
-import { makeStyles, StylesProp } from 'app/styles'
+import type { StylesProp } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
 import { useOnOpenLink } from './Link'
 

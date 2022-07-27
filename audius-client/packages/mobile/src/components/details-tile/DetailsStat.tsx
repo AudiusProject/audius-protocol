@@ -4,7 +4,8 @@ import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
 import { formatCount } from 'app/utils/format'
-import { useThemeColors, ThemeColors } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 type DetailsTileStatProps = {
   count: number
