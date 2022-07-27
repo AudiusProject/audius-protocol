@@ -855,18 +855,12 @@ workflows:
             - hold-build-logspout
       - hold-bake-gcp-dev-image:
           type: approval
-          filters:
-            branches:
-              only: /(^master$)/
       - bake-gcp-dev-image:
           context:
             - GCP2
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
-          filters:
-            branches:
-              only: /(^master$)/
       - hold-publish-libs:
           type: approval
           filters:
@@ -880,10 +874,6 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
-      - bake-gcp-dev-image:
-          context:
-            - GCP2
-          name: bake-gcp-dev-image
 
   # test master at midnight daily
   test-nightly:
