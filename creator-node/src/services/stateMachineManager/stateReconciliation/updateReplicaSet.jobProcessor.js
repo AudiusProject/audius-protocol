@@ -48,7 +48,7 @@ module.exports = async function ({
    * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
    * There will be an explicit clock value check on the newly selected replica set nodes instead.
    */
-  const audiusLibs = await initAudiusLibs()
+  const audiusLibs = await initAudiusLibs(true)
   const { services: healthyServicesMap } =
     await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
       performSyncCheck: false,

@@ -11,7 +11,7 @@ const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
 module.exports = async function ({ logger }) {
   let errorMsg = ''
   try {
-    const audiusLibs = await initAudiusLibs()
+    const audiusLibs = await initAudiusLibs(true)
     await NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
       audiusLibs.ethContracts
     )

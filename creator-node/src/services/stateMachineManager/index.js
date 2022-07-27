@@ -5,20 +5,15 @@ const { logger: baseLogger } = require('../../logging')
 const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
 const { RECONFIG_MODES, QUEUE_NAMES } = require('./stateMachineConstants')
-const QueueInterfacer = require('./QueueInterfacer')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
  * the queue for reconciling anomalies in the state (syncs and replica set updates).
- * Use QueueInterfacer for interfacing with the queues.
  */
 class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
-
-    // TODO: Remove this and libs another way -- maybe init a new instance for each updateReplicaSet job
-    QueueInterfacer.init(audiusLibs)
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
