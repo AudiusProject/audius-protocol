@@ -37,7 +37,7 @@ const ASYNC_PROCESSING_QUEUE_HISTORY = 500
  */
 
 class AsyncProcessingQueue {
-  constructor(libs) {
+  constructor(libs, prometheusRegistry) {
     this.queue = new Bull('asyncProcessing', {
       redis: {
         host: config.get('redisHost'),
@@ -48,6 +48,8 @@ class AsyncProcessingQueue {
         removeOnFail: ASYNC_PROCESSING_QUEUE_HISTORY
       }
     })
+
+    prometheusRegistry.startQueueMetrics(this.queue)
 
     this.libs = libs
 
@@ -154,8 +156,8 @@ class AsyncProcessingQueue {
       `Adding ${task} task! uuid=${logContext.requestID}}`,
       logContext
     )
-
-    const job = await this.queue.add(params)
+    const jobName = task || '__default__'
+    const job = await this.queue.add(jobName, params)
 
     return job
   }
