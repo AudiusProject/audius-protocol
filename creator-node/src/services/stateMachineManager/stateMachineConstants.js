@@ -54,7 +54,9 @@ module.exports = {
     // Max number of completed/failed jobs to keep in redis for the recurring sync queue
     RECURRING_SYNC: 300,
     // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
-    UPDATE_REPLICA_SET: 300
+    UPDATE_REPLICA_SET: 300,
+    // Max number of completed/failed jobs to keep in redis for the fix-consistent-user queue
+    FIX_INCONSISTENT_USER: 300
   }),
 
   QUEUE_NAMES: Object.freeze({
@@ -73,7 +75,9 @@ module.exports = {
     // Name of queue that only processes jobs to issue a recurring sync
     RECURRING_SYNC: 'recurring-sync-queue',
     // Name of queue that only processes jobs to update a replica set
-    UPDATE_REPLICA_SET: 'update-replica-set-queue'
+    UPDATE_REPLICA_SET: 'update-replica-set-queue',
+    // Name of queue that only processes jobs to fix an inconsistent user
+    FIX_INCONSISTENT_USER: 'fix-inconsistent-user'
   }),
 
   MAX_QUEUE_RUNTIMES: Object.freeze({

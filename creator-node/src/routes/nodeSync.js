@@ -64,6 +64,8 @@ router.get(
 
       return successResponse({ cnodeUsers: cnodeUsersDict })
     } catch (e) {
+      // Add fixInconsistentUser job to the queue if found
+
       req.logger.error(
         `Error in /export for wallets ${walletPublicKeys} to source endpoint ${
           sourceEndpoint || '(not provided)'

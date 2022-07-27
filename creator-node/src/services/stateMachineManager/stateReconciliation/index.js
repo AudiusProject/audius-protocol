@@ -9,6 +9,7 @@ const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
+const fixInconsistentClockJobProcessor = require('./fixInconsistentUser.jobProcessor')
 
 const recurringSyncLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.RECURRING_SYNC
@@ -18,6 +19,9 @@ const manualSyncLogger = createChildLogger(baseLogger, {
 })
 const updateReplicaSetLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.UPDATE_REPLICA_SET
+})
+const fixInconsistentClockLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.FIX_INCONSISTENT_USER
 })
 
 /**
@@ -48,7 +52,12 @@ class StateReconciliationManager {
       lockDuration: MAX_QUEUE_RUNTIMES.UPDATE_REPLICA_SET
     })
 
-    // TODO: make queue for fixing inconsistent clock values
+    const fixInconsistentClockQueue = makeQueue({
+      name: QUEUE_NAMES.FIX_INCONSISTENT_USER,
+      removeOnComplete: QUEUE_HISTORY.FIX_INCONSISTENT_USER,
+      removeOnFail: QUEUE_HISTORY.FIX_INCONSISTENT_USER,
+      lockDuration: MAX_QUEUE_RUNTIMES.FIX_INCONSISTENT_USER
+    })
 
     // Clear any old state if redis was running but the rest of the server restarted
     await manualSyncQueue.clean({ force: true })
@@ -59,6 +68,7 @@ class StateReconciliationManager {
       manualSyncQueue,
       recurringSyncQueue,
       updateReplicaSetQueue,
+      fixInconsistentClockQueue,
       processManualSync:
         this.makeProcessManualSyncJob(prometheusRegistry).bind(this),
       processRecurringSync:
@@ -70,7 +80,8 @@ class StateReconciliationManager {
     return {
       manualSyncQueue,
       recurringSyncQueue,
-      updateReplicaSetQueue
+      updateReplicaSetQueue,
+      fixInconsistentClockQueue
     }
   }
 
@@ -88,9 +99,11 @@ class StateReconciliationManager {
     manualSyncQueue,
     recurringSyncQueue,
     updateReplicaSetQueue,
+    fixInconsistentClockQueue,
     processManualSync,
     processRecurringSync,
-    processUpdateReplicaSet
+    processUpdateReplicaSet,
+    processFixInconsistentClock
   }) {
     // Add handlers for logging
     registerQueueEvents(manualSyncQueue, manualSyncLogger)
@@ -116,6 +129,12 @@ class StateReconciliationManager {
       })
       logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
     })
+    updateReplicaSetQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(fixInconsistentClockLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
+    })
 
     // Register the logic that gets executed to process each new job from the queue
     manualSyncQueue.process(
@@ -128,6 +147,11 @@ class StateReconciliationManager {
       processRecurringSync
     )
     updateReplicaSetQueue.process(1 /** concurrency */, processUpdateReplicaSet)
+
+    fixInconsistentClockQueue.process(
+      1 /** concurrency */,
+      processFixInconsistentClock
+    )
   }
 
   /*
@@ -160,6 +184,16 @@ class StateReconciliationManager {
         job,
         updateReplicaSetJobProcessor,
         updateReplicaSetLogger,
+        prometheusRegistry
+      )
+  }
+
+  makeProcessFixInconsistentUserJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        job,
+        fixInconsistentClockJobProcessor,
+        fixInconsistentClockLogger,
         prometheusRegistry
       )
   }
