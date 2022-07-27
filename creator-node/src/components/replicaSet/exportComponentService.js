@@ -115,7 +115,7 @@ const exportComponentService = async ({
         const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
         logger.error(errorMsg)
 
-        await _fixInconsistentUser()
+        await _fixInconsistentUser(cnodeUser.cnodeUserUUID)
         if (!forceExport) {
           throw new Error(errorMsg)
         }
@@ -153,16 +153,16 @@ const exportComponentService = async ({
 const _fixInconsistentUser = async (userId) => {
   models.sequelize.query(
     `
-  UPDATE cnodeUsers
+  UPDATE "CNodeUsers"
   SET clock = subquery.max_clock
   FROM (
-      SELECT cnodeUserUUID, MAX(clock) AS max_clock
-      FROM ClockRecords
+      SELECT "cnodeUserUUID", MAX(clock) AS max_clock
+      FROM "ClockRecords"
       WHERE cnodeUserUUID = :userId
-      GROUP BY cnodeUserUUID;
+      GROUP BY cnodeUserUUID
   ) AS subquery
   WHERE cnodeUserUUID = :userId
-  AND subquery.cnodeUserUUID = :userId;
+  AND subquery.cnodeUserUUID = :userId
   `,
     {
       replacements: { userId }

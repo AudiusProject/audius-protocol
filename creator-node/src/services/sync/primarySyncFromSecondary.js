@@ -12,6 +12,7 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const asyncRetry = require('../../utils/asyncRetry')
+const { fixInconsistentUser } = require('utils/fixInconsistentUsers')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
@@ -306,7 +307,7 @@ async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
 
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
 
-      fixUserIfInconsistent({ localCNodeUser })
+      fixUserIfInconsistent({ localCNodeUser, fetchedCNodeUser, logger })
 
       const audiusUserComparisonFields = [
         'blockchainId',
@@ -475,7 +476,11 @@ async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
   }
 }
 
-async function fixUserIfInconsistent({ localCNodeUser, fetchedCNodeUser }) {
+async function fixUserIfInconsistent({
+  localCNodeUser,
+  fetchedCNodeUser,
+  logger
+}) {
   const { clockRecords: fetchedClockRecords } = fetchedCNodeUser
 
   if (
@@ -483,23 +488,8 @@ async function fixUserIfInconsistent({ localCNodeUser, fetchedCNodeUser }) {
     fetchedClockRecords[0] &&
     fetchedClockRecords[0].clock !== localCNodeUser.clock + 1
   ) {
+    logger.warn(`[fixUserIfInconsistent()] - fixing inconsistent user`)
     const wallet = localCNodeUser.walletPublicKey
-    models.sequelize.query(
-      `
-  UPDATE cnodeUsers
-  SET clock = subquery.max_clock
-  FROM (
-      SELECT walletPublicKey, MAX(clock) AS max_clock
-      FROM ClockRecords
-      WHERE walletPublicKey = :wallet
-      GROUP BY walletPublicKey;
-  ) AS subquery
-  WHERE walletPublicKey = :wallet
-  AND subquery.walletPublicKey = wallet;
-  `,
-      {
-        replacements: { wallet }
-      }
-    )
+    fixInconsistentUser(wallet)
   }
 }
