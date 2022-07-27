@@ -225,6 +225,7 @@ const handleSyncFromPrimary = async (
         fetchedClockRecords[0] &&
         fetchedClockRecords[0].clock !== localMaxClockVal + 1
       ) {
+        await _fixInconsistentUser(fetchedWalletPublicKey)
         return {
           error: new Error(
             `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
@@ -607,6 +608,26 @@ const handleSyncFromPrimary = async (
   )
 
   return { result: 'success' }
+}
+
+const _fixInconsistentUser = async (wallet) => {
+  models.sequelize.query(
+    `
+  UPDATE cnodeUsers
+  SET clock = subquery.max_clock
+  FROM (
+      SELECT walletPublicKey, MAX(clock) AS max_clock
+      FROM ClockRecords
+      WHERE walletPublicKey = :wallet
+      GROUP BY walletPublicKey;
+  ) AS subquery
+  WHERE walletPublicKey = :wallet
+  AND subquery.walletPublicKey = wallet;
+  `,
+    {
+      replacements: { wallet }
+    }
+  )
 }
 
 /**

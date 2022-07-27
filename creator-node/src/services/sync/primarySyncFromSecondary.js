@@ -306,6 +306,8 @@ async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
 
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
 
+      fixUserIfInconsistent({ localCNodeUser })
+
       const audiusUserComparisonFields = [
         'blockchainId',
         'metadataFileUUID',
@@ -470,5 +472,34 @@ async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
     return userReplicaSet
   } catch (e) {
     throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
+  }
+}
+
+async function fixUserIfInconsistent({ localCNodeUser, fetchedCNodeUser }) {
+  const { clockRecords: fetchedClockRecords } = fetchedCNodeUser
+
+  if (
+    localCNodeUser.clock !== -1 &&
+    fetchedClockRecords[0] &&
+    fetchedClockRecords[0].clock !== localCNodeUser.clock + 1
+  ) {
+    const wallet = localCNodeUser.walletPublicKey
+    models.sequelize.query(
+      `
+  UPDATE cnodeUsers
+  SET clock = subquery.max_clock
+  FROM (
+      SELECT walletPublicKey, MAX(clock) AS max_clock
+      FROM ClockRecords
+      WHERE walletPublicKey = :wallet
+      GROUP BY walletPublicKey;
+  ) AS subquery
+  WHERE walletPublicKey = :wallet
+  AND subquery.walletPublicKey = wallet;
+  `,
+      {
+        replacements: { wallet }
+      }
+    )
   }
 }
