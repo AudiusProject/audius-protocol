@@ -196,11 +196,7 @@ module.exports = async function ({
       // Enqueue another monitor-state job to monitor the next slice of users
       [QUEUE_NAMES.FIND_INCONSISTENT_CLOCK]: [
         {
-          logger,
-          users,
-          unhealthyPeers,
-          replicaToUserInfoMap,
-          userSecondarySyncMetricsMap
+          logger
         }
       ],
       // Enqueue another monitor-state job to monitor the next slice of users
