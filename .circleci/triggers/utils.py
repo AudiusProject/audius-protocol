@@ -35,9 +35,9 @@ def run_cmd(cmd, exit_on_error=True, msg=None):
 def standardize_branch(branches):
     """Return 'master' and 'release' for all detected master/release branches"""
     for branch in branches:
-        if "master" in branch or "remotes/origin/HEAD" in branch:
+        if "remotes/origin/master" in branch or "remotes/origin/HEAD" in branch:
             return "master"
-        if "tags/@audius" in branch or "remotes/origin/release" in branch:
+        if "remotes/origin/release" in branch:
             return "release"
     return branch
 
@@ -46,7 +46,7 @@ def ensure_tag_on_master(tag):
     """Ensure tag has been merged before proceeding"""
     try:
         branches = run_cmd(
-            f"git name-rev --name-only {tag}", exit_on_error=False
+            f"git branch -a --contains {tag}", exit_on_error=False
         ).split("\n")
     except:
         branches = ["missing"]
