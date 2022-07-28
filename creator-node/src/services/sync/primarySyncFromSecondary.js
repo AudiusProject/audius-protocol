@@ -485,20 +485,21 @@ async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
  * @param {CNodeUser} param.fetchedCNodeUser the recently imported cnode user
  * @param {Object} param.logger the child logger
  */
-async function fixUserIfInconsistent({
-  localCNodeUser,
-  fetchedCNodeUser,
-  logger
-}) {
-  const { clockRecords: fetchedClockRecords } = fetchedCNodeUser
+async function fixUserIfInconsistent({ localCNodeUser, logger }) {
+  const cnodeUserUUID = localCNodeUser.cnodeUserUUID
 
-  if (
-    localCNodeUser.clock !== -1 &&
-    fetchedClockRecords[0] &&
-    fetchedClockRecords[0].clock !== localCNodeUser.clock + 1
-  ) {
+  const clockRecords = await models.ClockRecord.findAll({
+    where: {
+      cnodeUserUUID: cnodeUserUUID
+    },
+    order: [['clock', 'ASC']],
+    raw: true
+  })
+
+  // Validate clock values or throw an error
+  const maxClockRecord = Math.max(...clockRecords.map((record) => record.clock))
+  if (!_.isEmpty(clockRecords) && localCNodeUser.clock !== maxClockRecord) {
     logger.warn(`[fixUserIfInconsistent()] - fixing inconsistent user`)
-    const cnodeUserUUID = localCNodeUser.cnodeUserUUID
-    fixInconsistentUser(cnodeUserUUID)
+    await fixInconsistentUser(localCNodeUser.cnodeUserUUID)
   }
 }
