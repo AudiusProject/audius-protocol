@@ -108,9 +108,9 @@ describe('test monitorState job processor', function () {
         .returns(cNodeEndpointToSpIdMap)
     }
 
-    // Make monitorState.jobProcessor.js's imports return our stubs
+    // Make monitorState.jobProcessor.ts's imports return our stubs
     return proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/monitorState.jobProcessor.js',
+      '../src/services/stateMachineManager/stateMonitoring/monitorState.jobProcessor.ts',
       {
         '../../../config': config,
         './stateMonitoringUtils': {
@@ -405,7 +405,18 @@ describe('test monitorState job processor', function () {
     verifyJobResult({
       jobResult,
       lastProcessedUserId: LAST_PROCESSED_USER_ID,
-      users: [{ user_id: LAST_PROCESSED_USER_ID }],
+      users: [
+        {
+          user_id: LAST_PROCESSED_USER_ID,
+          primary: '',
+          secondary1: '',
+          secondary2: '',
+          primarySpID: 0,
+          secondary1SpID: 0,
+          secondary2SpID: 0,
+          wallet: ''
+        }
+      ],
       unhealthyPeers: new Set(),
       replicaToUserInfoMap: {},
       userSecondarySyncMetricsMap: {}

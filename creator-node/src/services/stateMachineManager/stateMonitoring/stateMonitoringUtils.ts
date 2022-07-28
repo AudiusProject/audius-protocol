@@ -1,17 +1,23 @@
+import type {
+  ReplicaSetNodesToUserWalletsMap,
+  StateMonitoringUser,
+  UserSecondarySyncMetricsMap
+} from './types'
+import type { WalletsToSecondariesMapping } from '../types'
+
+// eslint-disable-next-line import/no-unresolved
+import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
+
 const _ = require('lodash')
 const axios = require('axios')
 const { CancelToken } = axios
 
-const config = require('../../../config')
 const asyncRetry = require('../../../utils/asyncRetry')
 const { logger } = require('../../../logging')
 
-const { isPrimaryHealthy } = require('../CNodeHealthManager')
-const SecondarySyncHealthTracker = require('../../../snapbackSM/secondarySyncHealthTracker')
 const DBManager = require('../../../dbManager')
 
 const {
-  AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE,
   GET_NODE_USERS_TIMEOUT_MS,
   GET_NODE_USERS_CANCEL_TOKEN_MS,
   GET_NODE_USERS_DEFAULT_PAGE_SIZE,
@@ -19,17 +25,11 @@ const {
   FETCH_FILES_HASH_NUM_RETRIES
 } = require('../stateMachineConstants')
 
-const MIN_FAILED_SYNC_REQUESTS_BEFORE_RECONFIG = config.get(
-  'minimumFailedSyncRequestsBeforeReconfig'
-)
-const MIN_SECONDARY_USER_SYNC_SUCCESS_PERCENT =
-  config.get('minimumSecondaryUserSyncSuccessPercent') / 100
-
 /**
  * @param discoveryNodeEndpoint the endpoint of the Discovery Node to request the latest user ID from
  * @returns the ID of the newest user on Audius
  */
-const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint) => {
+const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint: string) => {
   // Will throw error on non-200 response
   let latestUserId = 0
   try {
@@ -47,7 +47,7 @@ const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint) => {
       logger
     })
     latestUserId = resp.data.data
-  } catch (e) {
+  } catch (e: any) {
     throw new Error(
       `getLatestUserIdFromDiscovery() Error: ${e.toString()} - connected discovery node: [${discoveryNodeEndpoint}]`
     )
@@ -69,8 +69,8 @@ const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint) => {
  * @returns {Object[]} array of objects of shape { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
  */
 const getNodeUsers = async (
-  discoveryNodeEndpoint,
-  contentNodeEndpoint,
+  discoveryNodeEndpoint: string,
+  contentNodeEndpoint: string,
   prevUserId = 0,
   maxUsers = GET_NODE_USERS_DEFAULT_PAGE_SIZE
 ) => {
@@ -107,7 +107,7 @@ const getNodeUsers = async (
       logger
     })
     nodeUsers = resp.data.data
-  } catch (e) {
+  } catch (e: any) {
     if (axios.isCancel(e)) {
       logger.error(`getNodeUsers() request canceled: ${e.message}`)
     }
@@ -150,8 +150,10 @@ const getNodeUsers = async (
  * @param {Array} nodeUsers array of objects with schema { user_id, wallet, primary, secondary1, secondary2 }
  * @returns {Object} map of replica set endpoint strings to array of wallet strings of users with that node as part of replica set
  */
-const buildReplicaSetNodesToUserWalletsMap = (nodeUsers) => {
-  const replicaSetNodesToUserWalletsMap = {}
+const buildReplicaSetNodesToUserWalletsMap = (
+  nodeUsers: StateMonitoringUser[]
+): ReplicaSetNodesToUserWalletsMap => {
+  const replicaSetNodesToUserWalletsMap: ReplicaSetNodesToUserWalletsMap = {}
 
   nodeUsers.forEach((userInfo) => {
     const { wallet, primary, secondary1, secondary2 } = userInfo
@@ -169,231 +171,23 @@ const buildReplicaSetNodesToUserWalletsMap = (nodeUsers) => {
   return replicaSetNodesToUserWalletsMap
 }
 
-const computeUserSecondarySyncSuccessRatesMap = async (users = []) => {
+const computeUserSecondarySyncSuccessRatesMap = async (
+  users: StateMonitoringUser[] = []
+): Promise<UserSecondarySyncMetricsMap> => {
   // Map each user to truthy secondaries (ignore empty secondaries that result from incomplete replica sets)
-  const walletsToSecondariesMapping = {}
+  const walletsToSecondariesMapping: WalletsToSecondariesMapping = {}
   for (const user of users) {
     const { wallet, secondary1, secondary2 } = user
     const secondaries = [secondary1, secondary2].filter(Boolean)
     walletsToSecondariesMapping[wallet] = secondaries
   }
 
-  const userSecondarySyncMetricsMap =
+  const userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap =
     await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRatesForToday(
       walletsToSecondariesMapping
     )
 
   return userSecondarySyncMetricsMap
-}
-
-/**
- * For every node user, record sync requests to issue to secondaries if this node is primary
- * and record replica set updates to issue for any unhealthy replicas
- *
- * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
- * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
- * @param {Object} endpointToSPIdMap
- * @returns
- * {
- *  requiredUpdateReplicaSetOps: {Object[]} array of {...nodeUsers, unhealthyReplicas: {string[]} endpoints of unhealthy rset nodes }
- *  potentialSyncRequests: {Object[]} array of {...nodeUsers, endpoint: {string} endpoint to sync to }
- * }
- * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
- */
-const aggregateReconfigAndPotentialSyncOps = async (
-  nodeUsers,
-  unhealthyPeers,
-  userSecondarySyncMetricsMap,
-  endpointToSPIdMap,
-  thisContentNodeEndpoint
-) => {
-  // Parallelize calling _aggregateOps on chunks of 500 nodeUsers at a time
-  const nodeUserBatches = _.chunk(
-    nodeUsers,
-    AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE
-  )
-  const results = []
-  for (const nodeUserBatch of nodeUserBatches) {
-    const resultBatch = await Promise.allSettled(
-      nodeUserBatch.map((nodeUser) =>
-        _aggregateOps(
-          nodeUser,
-          unhealthyPeers,
-          userSecondarySyncMetricsMap[nodeUser.wallet],
-          endpointToSPIdMap,
-          thisContentNodeEndpoint
-        )
-      )
-    )
-    results.push(...resultBatch)
-  }
-
-  // Combine each batch's requiredUpdateReplicaSetOps and potentialSyncRequests
-  let requiredUpdateReplicaSetOps = []
-  let potentialSyncRequests = []
-  for (const promiseResult of results) {
-    // Skip and log failed promises
-    const {
-      status: promiseStatus,
-      value: reconfigAndSyncOps,
-      reason: promiseError
-    } = promiseResult
-    if (promiseStatus !== 'fulfilled') {
-      logger.error(
-        `aggregateReconfigAndPotentialSyncOps encountered unexpected failure: ${
-          promiseError.message || promiseError
-        }`
-      )
-      continue
-    }
-
-    // Combine each promise's requiredUpdateReplicaSetOps and potentialSyncRequests
-    const {
-      requiredUpdateReplicaSetOps: requiredUpdateReplicaSetOpsFromPromise,
-      potentialSyncRequests: potentialSyncRequestsFromPromise
-    } = reconfigAndSyncOps
-    requiredUpdateReplicaSetOps = requiredUpdateReplicaSetOps.concat(
-      requiredUpdateReplicaSetOpsFromPromise
-    )
-    potentialSyncRequests = potentialSyncRequests.concat(
-      potentialSyncRequestsFromPromise
-    )
-  }
-
-  return { requiredUpdateReplicaSetOps, potentialSyncRequests }
-}
-
-/**
- * Used to determine the `requiredUpdateReplicaSetOps` and `potentialSyncRequests` for a given nodeUser.
- * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
- * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetrics mapping of each secondary to the success metrics the nodeUser has had syncing to it
- * @param {Object} endpointToSPIdMap
- */
-const _aggregateOps = async (
-  nodeUser,
-  unhealthyPeers,
-  userSecondarySyncMetrics,
-  endpointToSPIdMap,
-  thisContentNodeEndpoint
-) => {
-  const requiredUpdateReplicaSetOps = []
-  const potentialSyncRequests = []
-  const unhealthyReplicas = new Set()
-
-  const {
-    wallet,
-    primary,
-    secondary1,
-    secondary2,
-    primarySpID,
-    secondary1SpID,
-    secondary2SpID
-  } = nodeUser
-
-  /**
-   * If this node is primary for user, check both secondaries for health
-   * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
-   */
-  let replicaSetNodesToObserve = [
-    { endpoint: secondary1, spId: secondary1SpID },
-    { endpoint: secondary2, spId: secondary2SpID }
-  ]
-
-  if (primary === thisContentNodeEndpoint) {
-    // filter out false-y values to account for incomplete replica sets
-    const secondariesInfo = replicaSetNodesToObserve.filter(
-      (entry) => entry.endpoint
-    )
-
-    /**
-     * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
-     */
-    for (const secondaryInfo of secondariesInfo) {
-      const secondary = secondaryInfo.endpoint
-
-      const { successRate, successCount, failureCount } =
-        userSecondarySyncMetrics[secondary]
-
-      // Error case 1 - mismatched spID
-      if (endpointToSPIdMap[secondary] !== secondaryInfo.spId) {
-        logger.error(
-          `processStateMachineOperation Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${endpointToSPIdMap[secondary]}. Marking replica as unhealthy.`
-        )
-        unhealthyReplicas.add(secondary)
-
-        // Error case 2 - already marked unhealthy
-      } else if (unhealthyPeers.has(secondary)) {
-        logger.error(
-          `processStateMachineOperation Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
-        )
-        unhealthyReplicas.add(secondary)
-
-        // Error case 3 - low user sync success rate
-      } else if (
-        failureCount >= MIN_FAILED_SYNC_REQUESTS_BEFORE_RECONFIG &&
-        successRate < MIN_SECONDARY_USER_SYNC_SUCCESS_PERCENT
-      ) {
-        logger.error(
-          `processStateMachineOperation Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${MIN_SECONDARY_USER_SYNC_SUCCESS_PERCENT}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
-        )
-        unhealthyReplicas.add(secondary)
-
-        // Success case
-      } else {
-        potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
-      }
-    }
-
-    /**
-     * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
-     */
-    if (unhealthyReplicas.size > 0) {
-      requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
-    }
-
-    /**
-     * If this node is secondary for user, check both secondaries for health and enqueue SyncRequests against healthy secondaries
-     * Ignore unhealthy secondaries for now
-     */
-  } else {
-    // filter out false-y values to account for incomplete replica sets and filter out the
-    // the self node
-    replicaSetNodesToObserve = [
-      { endpoint: primary, spId: primarySpID },
-      ...replicaSetNodesToObserve
-    ]
-    replicaSetNodesToObserve = replicaSetNodesToObserve.filter((entry) => {
-      return entry.endpoint && entry.endpoint !== thisContentNodeEndpoint
-    })
-
-    for (const replica of replicaSetNodesToObserve) {
-      // If the map's spId does not match the query's spId, then regardless
-      // of the relationship of the node to the user, issue a reconfig for that node
-      if (endpointToSPIdMap[replica.endpoint] !== replica.spId) {
-        unhealthyReplicas.add(replica.endpoint)
-      } else if (unhealthyPeers.has(replica.endpoint)) {
-        // Else, continue with conducting extra health check if the current observed node is a primary, and
-        // add to `unhealthyReplicas` if observed node is a secondary
-        let addToUnhealthyReplicas = true
-
-        if (replica.endpoint === primary) {
-          addToUnhealthyReplicas = !(await isPrimaryHealthy(primary))
-        }
-
-        if (addToUnhealthyReplicas) {
-          unhealthyReplicas.add(replica.endpoint)
-        }
-      }
-    }
-
-    if (unhealthyReplicas.size > 0) {
-      requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
-    }
-  }
-
-  return { requiredUpdateReplicaSetOps, potentialSyncRequests }
 }
 
 /**
@@ -416,6 +210,12 @@ const computeSyncModeForUserAndReplica = async ({
   secondaryClock,
   primaryFilesHash,
   secondaryFilesHash
+}: {
+  wallet: string
+  primaryClock: number
+  secondaryClock: number
+  primaryFilesHash: string | null
+  secondaryFilesHash: string | null
 }) => {
   if (
     !Number.isInteger(primaryClock) ||
@@ -470,7 +270,7 @@ const computeSyncModeForUserAndReplica = async ({
         logLabel:
           '[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()]'
       })
-    } catch (e) {
+    } catch (e: any) {
       const errorMsg = `[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()] Error - ${e.message}`
       logger.error(errorMsg)
       throw new Error(errorMsg)
@@ -496,6 +296,5 @@ module.exports = {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
   computeUserSecondarySyncSuccessRatesMap,
-  aggregateReconfigAndPotentialSyncOps,
   computeSyncModeForUserAndReplica
 }

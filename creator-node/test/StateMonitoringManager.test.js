@@ -56,7 +56,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     }
     const createChildLogger = sandbox.stub().returns(loggerStub)
     const processJobMock = proxyquire(
-      '../src/services/stateMachineManager/processJob.js',
+      '../src/services/stateMachineManager/processJob.ts',
       {
         '../../logging': {
           createChildLogger

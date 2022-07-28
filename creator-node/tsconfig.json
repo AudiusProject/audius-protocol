@@ -18,6 +18,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "noImplicitThis": false,
     "typeRoots": [
       "./types",
       "./node_modules/@types"

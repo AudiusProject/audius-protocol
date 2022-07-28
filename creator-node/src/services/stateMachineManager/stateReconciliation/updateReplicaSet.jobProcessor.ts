@@ -1,3 +1,13 @@
+import type Logger from 'bunyan'
+import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import type {
+  IssueSyncRequestJobParams,
+  NewReplicaSet,
+  ReplicaToUserInfoMap,
+  UpdateReplicaSetJobParams,
+  UpdateReplicaSetJobReturnValue
+} from './types'
+
 const _ = require('lodash')
 
 const config = require('../../../config')
@@ -41,7 +51,9 @@ module.exports = async function ({
   unhealthyReplicas,
   replicaToUserInfoMap,
   enabledReconfigModes
-}) {
+}: DecoratedJobParams<UpdateReplicaSetJobParams>): Promise<
+  DecoratedJobReturnValue<UpdateReplicaSetJobReturnValue>
+> {
   /**
    * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
    * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
@@ -62,22 +74,16 @@ module.exports = async function ({
       'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
     )
 
-  _validateJobData(
-    logger,
-    primary,
-    secondary1,
-    secondary2,
-    wallet,
-    unhealthyReplicas,
-    healthyNodes,
-    replicaToUserInfoMap,
-    enabledReconfigModes
-  )
-
   let errorMsg = ''
   let issuedReconfig = false
-  let syncJobsToEnqueue = []
-  let newReplicaSet = {}
+  let syncJobsToEnqueue: IssueSyncRequestJobParams[] = []
+  let newReplicaSet: NewReplicaSet = {
+    newPrimary: null,
+    newSecondary1: null,
+    newSecondary2: null,
+    issueReconfig: false,
+    reconfigType: null
+  }
   try {
     newReplicaSet = await _determineNewReplicaSet({
       logger,
@@ -101,7 +107,7 @@ module.exports = async function ({
         audiusLibs,
         logger
       ))
-  } catch (e) {
+  } catch (e: any) {
     logger.error(
       `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}`
     )
@@ -117,10 +123,21 @@ module.exports = async function ({
       ? {
           [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
         }
-      : {}
+      : undefined
   }
 }
 
+type DetermineNewReplicaSetParams = {
+  logger: Logger
+  primary: string
+  secondary1: string
+  secondary2: string
+  wallet: string
+  unhealthyReplicasSet: Set<string>
+  healthyNodes: string[]
+  replicaToUserInfoMap: ReplicaToUserInfoMap
+  enabledReconfigModes: string[]
+}
 /**
  * Logic to determine the new replica set.
  *
@@ -162,11 +179,11 @@ const _determineNewReplicaSet = async ({
   secondary1,
   secondary2,
   wallet,
-  unhealthyReplicasSet = new Set(),
+  unhealthyReplicasSet,
   healthyNodes,
   replicaToUserInfoMap,
   enabledReconfigModes
-}) => {
+}: DetermineNewReplicaSetParams) => {
   const currentReplicaSet = [primary, secondary1, secondary2]
   const healthyReplicaSet = new Set(
     currentReplicaSet.filter((node) => !unhealthyReplicasSet.has(node))
@@ -210,67 +227,6 @@ const _determineNewReplicaSet = async ({
   }
 }
 
-const _validateJobData = (
-  logger,
-  primary,
-  secondary1,
-  secondary2,
-  wallet,
-  unhealthyReplicas,
-  healthyNodes,
-  replicaToUserInfoMap,
-  enabledReconfigModes
-) => {
-  if (typeof logger !== 'object') {
-    throw new Error(
-      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
-    )
-  }
-  if (typeof primary !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof primary}") or value ("${primary}") of primary param`
-    )
-  }
-  if (typeof secondary1 !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof secondary1}") or value ("${secondary1}") of secondary1 param`
-    )
-  }
-  if (typeof secondary2 !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof secondary2}") or value ("${secondary2}") of secondary2 param`
-    )
-  }
-  if (typeof wallet !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof wallet}") or value ("${wallet}") of wallet param`
-    )
-  }
-  if (!(unhealthyReplicas instanceof Array)) {
-    throw new Error(
-      `Invalid type ("${typeof unhealthyReplicas}") or value ("${unhealthyReplicas}") of unhealthyReplicasSet param`
-    )
-  }
-  if (!(healthyNodes instanceof Array)) {
-    throw new Error(
-      `Invalid type ("${typeof healthyNodes}") or value ("${healthyNodes}") of healthyNodes param`
-    )
-  }
-  if (
-    typeof replicaToUserInfoMap !== 'object' ||
-    replicaToUserInfoMap instanceof Array
-  ) {
-    throw new Error(
-      `Invalid type ("${typeof replicaToUserInfoMap}") or value ("${replicaToUserInfoMap}") of replicaToUserInfoMap`
-    )
-  }
-  if (!(enabledReconfigModes instanceof Array)) {
-    throw new Error(
-      `Invalid type ("${typeof enabledReconfigModes}") or value ("${enabledReconfigModes}") of enabledReconfigModes param`
-    )
-  }
-}
-
 /**
  * Determines new replica set when one node in the current replica set is unhealthy.
  * @param {*} primary user's current primary endpoint
@@ -282,13 +238,13 @@ const _validateJobData = (
  * @returns reconfig info to update the user's replica set to replace the 1 unhealthy node
  */
 const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
-  primary,
-  secondary1,
-  secondary2,
-  unhealthyReplicasSet,
-  replicaToUserInfoMap,
-  newReplicaNode,
-  enabledReconfigModes
+  primary: string,
+  secondary1: string,
+  secondary2: string,
+  unhealthyReplicasSet: Set<string>,
+  replicaToUserInfoMap: ReplicaToUserInfoMap,
+  newReplicaNode: string,
+  enabledReconfigModes: string[]
 ) => {
   // If we already already checked this primary and it failed the health check, select the higher clock
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
@@ -336,12 +292,12 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
  * @returns reconfig info to update the user's replica set to replace the 1 unhealthy nodes
  */
 const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
-  primary,
-  secondary1,
-  secondary2,
-  unhealthyReplicasSet,
-  newReplicaNodes,
-  enabledReconfigModes
+  primary: string,
+  secondary1: string,
+  secondary2: string,
+  unhealthyReplicasSet: Set<string>,
+  newReplicaNodes: string[],
+  enabledReconfigModes: string[]
 ) => {
   // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
   if (unhealthyReplicasSet.has(primary)) {
@@ -386,19 +342,19 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
  * @returns {string[]} a string[] of the new replica set nodes
  */
 const _selectRandomReplicaSetNodes = async (
-  healthyReplicaSet,
-  numberOfUnhealthyReplicas,
-  healthyNodes,
-  wallet,
-  logger
-) => {
+  healthyReplicaSet: Set<string>,
+  numberOfUnhealthyReplicas: number,
+  healthyNodes: string[],
+  wallet: string,
+  logger: Logger
+): Promise<string[]> => {
   const logStr = `[_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
     ...healthyReplicaSet
   ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} healthyNodes=${[
     ...healthyNodes
   ]} ||`
 
-  const newReplicaNodesSet = new Set()
+  const newReplicaNodesSet = new Set<string>()
   let selectNewReplicaSetAttemptCounter = 0
   while (
     newReplicaNodesSet.size < numberOfUnhealthyReplicas &&
@@ -427,7 +383,7 @@ const _selectRandomReplicaSetNodes = async (
           `${logStr} Found a node with clock value of 0, selecting anyway`
         )
       }
-    } catch (e) {
+    } catch (e: any) {
       // Something went wrong in checking clock value. Reselect another secondary.
       logger.error(`${logStr} ${e.message}`)
     }
@@ -442,6 +398,11 @@ const _selectRandomReplicaSetNodes = async (
   return Array.from(newReplicaNodesSet)
 }
 
+type IssueUpdateReplicaSetResult = {
+  errorMsg: string
+  issuedReconfig: boolean
+  syncJobsToEnqueue: IssueSyncRequestJobParams[]
+}
 /**
  * 1. Write new replica set to URSM
  * 2. Return sync jobs that can be enqueued to write data to new replica set
@@ -455,21 +416,21 @@ const _selectRandomReplicaSetNodes = async (
  * @param {Object} logger a logger that can be filtered on jobName and jobId
  */
 const _issueUpdateReplicaSetOp = async (
-  userId,
-  wallet,
-  primary,
-  secondary1,
-  secondary2,
-  newReplicaSet,
-  audiusLibs,
-  logger
-) => {
-  const response = {
+  userId: number,
+  wallet: string,
+  primary: string,
+  secondary1: string,
+  secondary2: string,
+  newReplicaSet: NewReplicaSet,
+  audiusLibs: any,
+  logger: Logger
+): Promise<IssueUpdateReplicaSetResult> => {
+  const response: IssueUpdateReplicaSetResult = {
     errorMsg: '',
     issuedReconfig: false,
     syncJobsToEnqueue: []
   }
-  let newReplicaSetEndpoints = []
+  let newReplicaSetEndpoints: string[] = []
   const newReplicaSetSPIds = []
   try {
     const {
@@ -479,7 +440,11 @@ const _issueUpdateReplicaSetOp = async (
       issueReconfig,
       reconfigType
     } = newReplicaSet
-    newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
+    newReplicaSetEndpoints = [
+      newPrimary || '',
+      newSecondary1 || '',
+      newSecondary2 || ''
+    ].filter(Boolean)
 
     logger.info(
       `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} newReplicaSetEndpoints=${JSON.stringify(
@@ -525,7 +490,7 @@ const _issueUpdateReplicaSetOp = async (
       )
 
       response.issuedReconfig = true
-    } catch (e) {
+    } catch (e: any) {
       const timeElapsedMs = Date.now() - startTimeMs
       throw new Error(
         `UserReplicaSetManagerClient.updateReplicaSet() Failed in ${timeElapsedMs}ms - Error ${e.message}`
@@ -571,7 +536,7 @@ const _issueUpdateReplicaSetOp = async (
     logger.info(
       `[_issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
-  } catch (e) {
+  } catch (e: any) {
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
     return response
@@ -586,7 +551,7 @@ const _issueUpdateReplicaSetOp = async (
  * @param {string} mode current mode of the state machine
  * @returns boolean of whether or not reconfig is enabled
  */
-const _isReconfigEnabled = (enabledReconfigModes, mode) => {
+const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
   return enabledReconfigModes.includes(mode)
 }

@@ -90,7 +90,7 @@ describe('test updateReplicaSet job processor', function () {
       }
     }
     return proxyquire(
-      '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.js',
+      '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.ts',
       {
         '../../../config': config,
         '../../initAudiusLibs': sandbox.stub().resolves(audiusLibsStub),
@@ -241,7 +241,7 @@ describe('test updateReplicaSet job processor', function () {
         reconfigType: RECONFIG_MODES.ONE_SECONDARY.key
       },
       healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: {}
+      jobsToEnqueue: undefined
     })
   })
 
@@ -298,7 +298,7 @@ describe('test updateReplicaSet job processor', function () {
         reconfigType: null
       },
       healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: {}
+      jobsToEnqueue: undefined
     })
   })
 })
