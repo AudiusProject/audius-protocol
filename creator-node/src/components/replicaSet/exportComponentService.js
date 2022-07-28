@@ -146,6 +146,7 @@ const exportComponentService = async ({
 
     return cnodeUsersDict
   } catch (e) {
+    await transaction.rollback()
     throw new Error(e)
   }
 }
