@@ -125,6 +125,7 @@ export type ModalProps = {
 export type ModalContentProps = ScrollbarProps
 
 export type ModalHeaderProps = HTMLAttributes<HTMLDivElement> & {
+  dismissButtonClassName?: string
   showDismissButton?: boolean
   onClose?: () => void
   children: React.ReactNode

@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { Name, User } from '@audius/common'
-import { Button, IconButton, useMediaQueryListener } from '@audius/stems'
+import { IconButton, PillButton, useMediaQueryListener } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -109,43 +109,41 @@ const Tippers = ({ tippers, receiver }: TippersProps) => {
   )
 }
 
-type SendTipToButtonProps = {
+type SendTipButtonProps = {
   user: User
   hideName?: boolean
 }
 
-const SendTipToButton = ({ user, hideName = false }: SendTipToButtonProps) => {
+const SendTipButton = ({ user, hideName = false }: SendTipButtonProps) => {
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
     dispatch(beginTip({ user, source: 'feed' }))
   }, [dispatch, user])
 
+  const renderSendTipButtonTitle = () =>
+    hideName ? (
+      messages.sendTip
+    ) : (
+      <div className={styles.sendTipButtonTextContainer}>
+        {messages.sendTipToPrefix}
+        <span className={styles.sendTipName}>{user.name}</span>
+        <UserBadges
+          userId={user.user_id}
+          className={styles.badge}
+          badgeSize={12}
+          inline
+        />
+      </div>
+    )
+
   return (
-    <div>
-      <Button
-        className={styles.sendTipButton}
-        // todo: move to stems or see if button design
-        // already exists elsewhere
-        text={
-          hideName ? (
-            <div className={styles.sendTipButtonText}>{messages.sendTip}</div>
-          ) : (
-            <div className={styles.sendTipButtonText}>
-              {messages.sendTipToPrefix}
-              <span className={styles.sendTipName}>{user.name}</span>
-              <UserBadges
-                userId={user.user_id}
-                className={styles.badge}
-                badgeSize={12}
-                inline
-              />
-            </div>
-          )
-        }
-        onClick={handleClick}
-      />
-    </div>
+    <PillButton
+      className={styles.sendTipButton}
+      textClassName={styles.sendTipButtonText}
+      text={renderSendTipButtonTitle()}
+      onClick={handleClick}
+    />
   )
 }
 
@@ -256,7 +254,7 @@ export const FeedTipTile = () => {
         />
       </div>
       <div className={styles.buttons}>
-        <SendTipToButton
+        <SendTipButton
           user={usersMap[tipToDisplay.receiver_id]}
           hideName={useShortButtonFormat}
         />

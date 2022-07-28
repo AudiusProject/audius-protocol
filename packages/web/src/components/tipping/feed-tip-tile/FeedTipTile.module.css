@@ -109,35 +109,13 @@
 }
 
 .sendTipButton {
-  height: unset !important;
   margin-left: 8px;
-  padding: 10px 0;
-  border-radius: 100px;
-  border: 1px solid var(--neutral-light-4);
-  background: var(--white);
+}
+.sendTipButtonTextContainer {
+  display: flex;
 }
 .sendTipButtonText {
-  display: flex;
-  align-items: center;
-  font-weight: var(--font-bold);
-  font-size: var(--font-xs);
-  color: var(--neutral-light-4);
-  text-transform: uppercase;
-}
-.sendTipButton:hover {
-  transform: scale3d(1.01, 1.01, 1.01) !important;
-  border: unset;
-}
-.sendTipButton:active {
-  transform: scale3d(0.99, 0.99, 0.99) !important;
-}
-.sendTipButton:hover .sendTipButtonText,
-.sendTipButton:active .sendTipButtonText {
-  color: var(--white);
-}
-.sendTipButton:active,
-.sendTipButton:active .sendTipButtonText {
-  background: var(--primary-dark-2) !important;
+  color: var(--neutral-light-4) !important;
 }
 .sendTipName {
   margin-left: 2.5px;
