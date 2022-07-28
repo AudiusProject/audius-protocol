@@ -54,7 +54,6 @@ pycparser==2.20
 PyNaCl==1.4.0
 requests==2.25.1
 aiohttp==3.8.1
-six==1.16.0
 solana==0.23.1
 typing-extensions==3.10.0.0
 urllib3==1.26.3
