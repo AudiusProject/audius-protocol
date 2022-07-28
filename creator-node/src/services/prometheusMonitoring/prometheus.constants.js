@@ -80,7 +80,7 @@ const METRIC_LABELS = Object.freeze({
       'success_mode_disabled',
       'success_secondary_caught_up',
       'success_secondary_partially_caught_up',
-      'failure_validate_job_data',
+      'failure_missing_wallet',
       'failure_secondary_failure_count_threshold_met',
       'failure_primary_sync_from_secondary',
       'failure_issue_sync_request',

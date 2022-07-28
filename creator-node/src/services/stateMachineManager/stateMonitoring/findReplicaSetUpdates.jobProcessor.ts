@@ -1,4 +1,20 @@
-const _ = require('lodash')
+import type Logger from 'bunyan'
+import type { LoDashStatic } from 'lodash'
+import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import type {
+  UpdateReplicaSetUser,
+  ReplicaToUserInfoMap,
+  UpdateReplicaSetJobParamsWithoutEnabledReconfigModes
+} from '../stateReconciliation/types'
+import type {
+  FindReplicaSetUpdateJobParams,
+  ReplicaToAllUserInfoMaps,
+  UserSecondarySyncMetrics,
+  FindReplicaSetUpdatesJobReturnValue,
+  StateMonitoringUser
+} from './types'
+
+const _: LoDashStatic = require('lodash')
 
 const {
   FIND_REPLICA_SET_UPDATES_BATCH_SIZE,
@@ -22,7 +38,7 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * @param {Object} param job data
  * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
- * @param {Set<string>} param.unhealthyPeers set of unhealthy peers
+ * @param {string[]} param.unhealthyPeers array of unhealthy peers
  * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} param.userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
  */
@@ -32,82 +48,85 @@ module.exports = async function ({
   unhealthyPeers,
   replicaToUserInfoMap,
   userSecondarySyncMetricsMap
-}) {
-  _validateJobData(
-    logger,
-    users,
-    unhealthyPeers,
-    replicaToUserInfoMap,
-    userSecondarySyncMetricsMap
-  )
-
+}: DecoratedJobParams<FindReplicaSetUpdateJobParams>): Promise<
+  DecoratedJobReturnValue<FindReplicaSetUpdatesJobReturnValue>
+> {
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
 
   // Parallelize calling _findReplicaSetUpdatesForUser on chunks of 500 users at a time
-  const userBatches = _.chunk(users, FIND_REPLICA_SET_UPDATES_BATCH_SIZE)
-  const results = []
+  const userBatches: StateMonitoringUser[][] = _.chunk(
+    users,
+    FIND_REPLICA_SET_UPDATES_BATCH_SIZE
+  )
+  const results: (
+    | PromiseRejectedResult
+    | PromiseFulfilledResult<UpdateReplicaSetOp[]>
+  )[] = []
   for (const userBatch of userBatches) {
-    const resultBatch = await Promise.allSettled(
-      userBatch.map((user) =>
-        _findReplicaSetUpdatesForUser(
-          user,
-          thisContentNodeEndpoint,
-          unhealthyPeersSet,
-          userSecondarySyncMetricsMap[user.wallet] || {
-            [user.secondary1]: {
-              successRate: 1,
-              successCount: 0,
-              failureCount: 0
+    const resultBatch: PromiseSettledResult<UpdateReplicaSetOp[]>[] =
+      await Promise.allSettled(
+        userBatch.map((user: StateMonitoringUser) =>
+          _findReplicaSetUpdatesForUser(
+            user,
+            thisContentNodeEndpoint,
+            unhealthyPeersSet,
+            userSecondarySyncMetricsMap[user.wallet] || {
+              [user.secondary1]: {
+                successRate: 1,
+                successCount: 0,
+                failureCount: 0
+              },
+              [user.secondary2]: {
+                successRate: 1,
+                successCount: 0,
+                failureCount: 0
+              }
             },
-            [user.secondary2]: {
-              successRate: 1,
-              successCount: 0,
-              failureCount: 0
-            }
-          },
-          minSecondaryUserSyncSuccessPercent,
-          minFailedSyncRequestsBeforeReconfig,
-          logger
+            minSecondaryUserSyncSuccessPercent,
+            minFailedSyncRequestsBeforeReconfig,
+            logger
+          )
         )
       )
-    )
     results.push(...resultBatch)
   }
 
   // Combine each batch's updateReplicaSet jobs that need to be enqueued
-  const updateReplicaSetJobs = []
+  const updateReplicaSetJobs: UpdateReplicaSetJobParamsWithoutEnabledReconfigModes[] =
+    []
   for (const promiseResult of results) {
     // Skip and log failed promises
-    const {
-      status: promiseStatus,
-      value: updateReplicaSetOps,
-      reason: promiseError
-    } = promiseResult
-    if (promiseStatus !== 'fulfilled') {
+    const { status: promiseStatus } = promiseResult
+    if (promiseStatus === 'rejected') {
+      const { reason } = promiseResult
       logger.error(
         `_findReplicaSetUpdatesForUser() encountered unexpected failure: ${
-          promiseError.message || promiseError
+          reason.message || reason
         }`
       )
       continue
-    }
+    } else if (promiseStatus === 'fulfilled') {
+      // Combine each promise's updateReplicaSetOps into a job
+      for (const updateReplicaSetOp of promiseResult.value) {
+        const { wallet } = updateReplicaSetOp
 
-    // Combine each promise's updateReplicaSetOps into a job
-    for (const updateReplicaSetOp of updateReplicaSetOps) {
-      const { wallet } = updateReplicaSetOp
-
-      updateReplicaSetJobs.push({
-        wallet,
-        userId: updateReplicaSetOp.user_id,
-        primary: updateReplicaSetOp.primary,
-        secondary1: updateReplicaSetOp.secondary1,
-        secondary2: updateReplicaSetOp.secondary2,
-        unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
-        replicaToUserInfoMap: _transformAndFilterReplicaToUserInfoMap(
-          replicaToUserInfoMap,
-          wallet
-        )
-      })
+        updateReplicaSetJobs.push({
+          wallet,
+          userId: updateReplicaSetOp.userId,
+          primary: updateReplicaSetOp.primary,
+          secondary1: updateReplicaSetOp.secondary1,
+          secondary2: updateReplicaSetOp.secondary2,
+          unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
+          replicaToUserInfoMap: _transformAndFilterReplicaToUserInfoMap(
+            replicaToUserInfoMap,
+            wallet
+          )
+        })
+      }
+    } else {
+      throw new Error(
+        'Encountered a promise that was not fulfilled or rejected'
+      )
     }
   }
 
@@ -117,72 +136,37 @@ module.exports = async function ({
       ? {
           [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs
         }
-      : {}
+      : undefined
   }
 }
 
-const _validateJobData = (
-  logger,
-  users,
-  unhealthyPeers,
-  replicaToUserInfoMap,
-  userSecondarySyncMetricsMap
-) => {
-  if (typeof logger !== 'object') {
-    throw new Error(
-      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
-    )
-  }
-  if (!(users instanceof Array)) {
-    throw new Error(
-      `Invalid type ("${typeof users}") or value ("${users}") of users param`
-    )
-  }
-  if (!(unhealthyPeers instanceof Array)) {
-    throw new Error(
-      `Invalid type ("${typeof unhealthyPeers}") or value ("${unhealthyPeers}") of unhealthyPeers param`
-    )
-  }
-  if (
-    typeof replicaToUserInfoMap !== 'object' ||
-    replicaToUserInfoMap instanceof Array
-  ) {
-    throw new Error(
-      `Invalid type ("${typeof replicaToUserInfoMap}") or value ("${replicaToUserInfoMap}") of replicaToUserInfoMap`
-    )
-  }
-  if (
-    typeof userSecondarySyncMetricsMap !== 'object' ||
-    userSecondarySyncMetricsMap instanceof Array
-  ) {
-    throw new Error(
-      `Invalid type ("${typeof userSecondarySyncMetricsMap}") or value ("${userSecondarySyncMetricsMap}") of userSecondarySyncMetricsMap`
-    )
-  }
+type UpdateReplicaSetOp = UpdateReplicaSetUser & {
+  unhealthyReplicas: Set<string>
 }
-
 /**
  * Determines which replica set update operations should be performed for a given user.
  *
  * @param {Object} user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {string} thisContentNodeEndpoint URL or IP address of this Content Node
  * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetrics mapping of each secondary to the success metrics the nodeUser has had syncing to it
+ * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsBySecondary mapping of each secondary to the success metrics the nodeUser has had syncing to it
  * * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
  * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
  * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  */
 const _findReplicaSetUpdatesForUser = async (
-  user,
-  thisContentNodeEndpoint,
-  unhealthyPeersSet,
-  userSecondarySyncMetrics,
-  minSecondaryUserSyncSuccessPercent,
-  minFailedSyncRequestsBeforeReconfig,
-  logger
-) => {
-  const requiredUpdateReplicaSetOps = []
-  const unhealthyReplicas = new Set()
+  user: StateMonitoringUser,
+  thisContentNodeEndpoint: string,
+  unhealthyPeersSet: Set<string>,
+  userSecondarySyncMetricsBySecondary: {
+    [secondary: string]: UserSecondarySyncMetrics
+  },
+  minSecondaryUserSyncSuccessPercent: number,
+  minFailedSyncRequestsBeforeReconfig: number,
+  logger: Logger
+): Promise<UpdateReplicaSetOp[]> => {
+  const requiredUpdateReplicaSetOps: UpdateReplicaSetOp[] = []
+  const unhealthyReplicas = new Set<string>()
 
   const {
     wallet,
@@ -216,7 +200,7 @@ const _findReplicaSetUpdatesForUser = async (
       const secondary = secondaryInfo.endpoint
 
       const { successRate, successCount, failureCount } =
-        userSecondarySyncMetrics[secondary]
+        userSecondarySyncMetricsBySecondary[secondary]
 
       // Error case 1 - mismatched spID
       if (
@@ -252,15 +236,7 @@ const _findReplicaSetUpdatesForUser = async (
     }
 
     /**
-     * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
-     */
-    if (unhealthyReplicas.size > 0) {
-      requiredUpdateReplicaSetOps.push({ ...user, unhealthyReplicas })
-    }
-
-    /**
-     * If this node is secondary for user, check both secondaries for health and enqueue SyncRequests against healthy secondaries
-     * Ignore unhealthy secondaries for now
+     * If this node is secondary for user, check both secondaries for health and enqueue replica set updates if needed
      */
   } else {
     // filter out false-y values to account for incomplete replica sets and filter out the
@@ -297,10 +273,18 @@ const _findReplicaSetUpdatesForUser = async (
         }
       }
     }
+  }
 
-    if (unhealthyReplicas.size > 0) {
-      requiredUpdateReplicaSetOps.push({ ...user, unhealthyReplicas })
-    }
+  // If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
+  if (unhealthyReplicas.size > 0) {
+    requiredUpdateReplicaSetOps.push({
+      wallet: user.wallet,
+      userId: user.user_id,
+      primary: user.primary,
+      secondary1: user.secondary1,
+      secondary2: user.secondary2,
+      unhealthyReplicas
+    })
   }
 
   return requiredUpdateReplicaSetOps
@@ -308,23 +292,26 @@ const _findReplicaSetUpdatesForUser = async (
 
 /**
  * Filters input map to only user info for provided wallet, also filtering out nodes that have no clock value for provided wallet
- * @param {Object} replicaToUserInfoMap map(secondary endpoint => map(user wallet => { clock, filesHash }))
+ * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string} wallet the wallet to filter for (other wallets will be excluded from the output)
  * @returns map(replica (string) => { clock (number), filesHash (string) } ) mapping of node endpoint to user info on that node for the given wallet
  */
 const _transformAndFilterReplicaToUserInfoMap = (
-  replicaToUserInfoMap,
-  wallet
-) => {
+  replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps,
+  wallet: string
+): ReplicaToUserInfoMap => {
   return Object.fromEntries(
-    Object.entries(replicaToUserInfoMap) // [[replica, map(wallet => { clock, filesHash })]]
-      .map(([node, userInfoMap]) => [
-        node,
-        {
-          ...userInfoMap[wallet],
-          clock: userInfoMap[wallet]?.clock || -1 // default clock to -1 where not present
-        }
-      ])
+    Object.entries(replicaToAllUserInfoMaps) // [[replica, map(wallet => { clock, filesHash })]]
+      .map(
+        ([node, userInfoMapsForNode], i) =>
+          [
+            node,
+            {
+              ...userInfoMapsForNode[wallet],
+              clock: userInfoMapsForNode[wallet]?.clock || -1 // default clock to -1 where not present
+            }
+          ] as const
+      )
       // Only include nodes that have clock values -- this means only the nodes in the user's replica set
       .filter(([, userInfoMap]) => userInfoMap.clock !== -1)
   )

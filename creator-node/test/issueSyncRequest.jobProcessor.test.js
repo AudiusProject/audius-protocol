@@ -50,54 +50,6 @@ describe('test issueSyncRequest job processor param validation', function () {
     nock.enableNetConnect()
   })
 
-  it('catches bad sync request url', async function () {
-    const wallet = '0x123456789'
-    const url = '/sync'
-    const method = 'post'
-    const data = { wallet: [wallet] }
-    const syncRequestParameters = {
-      // Missing `baseURL`
-      url,
-      method,
-      data
-    }
-
-    const syncType = SyncType.Manual
-
-    const expectedErrorMessage = `Invalid sync data found: ${JSON.stringify(
-      syncRequestParameters
-    )}`
-
-    // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
-    const result = await issueSyncRequestJobProcessor({
-      logger,
-      syncType,
-      syncMode,
-      syncRequestParameters
-    })
-    expect(result).to.have.deep.property('error')
-    expect(result.error).to.have.deep.property('message', expectedErrorMessage)
-    expect(result).to.have.deep.property('jobsToEnqueue', {})
-    expect(result.metricsToRecord).to.have.lengthOf(1)
-    expect(result.metricsToRecord[0]).to.have.deep.property(
-      'metricName',
-      METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
-    )
-    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
-      sync_mode: _.snakeCase(syncMode),
-      sync_type: _.snakeCase(syncType),
-      result: 'failure_validate_job_data'
-    })
-    expect(result.metricsToRecord[0]).to.have.deep.property(
-      'metricType',
-      'HISTOGRAM_OBSERVE'
-    )
-    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(logger.error).to.have.been.calledOnceWithExactly(
-      expectedErrorMessage
-    )
-  })
-
   it('catches bad wallet in data', async function () {
     const wallet = '0x123456789'
     const secondary = 'http://some_cn.co'
@@ -133,7 +85,7 @@ describe('test issueSyncRequest job processor param validation', function () {
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
       sync_mode: _.snakeCase(syncMode),
       sync_type: _.snakeCase(syncType),
-      result: 'failure_validate_job_data'
+      result: 'failure_missing_wallet'
     })
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricType',

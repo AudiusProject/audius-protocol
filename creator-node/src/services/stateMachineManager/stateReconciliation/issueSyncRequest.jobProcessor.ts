@@ -1,5 +1,14 @@
+import type Logger from 'bunyan'
+import type { LoDashStatic } from 'lodash'
+import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import type {
+  IssueSyncRequestJobParams,
+  IssueSyncRequestJobReturnValue,
+  SyncRequestAxiosParams
+} from './types'
+
 const axios = require('axios')
-const _ = require('lodash')
+const _: LoDashStatic = require('lodash')
 
 const config = require('../../../config')
 const models = require('../../../models')
@@ -32,6 +41,23 @@ const mergePrimaryAndSecondaryEnabled = config.get(
   'mergePrimaryAndSecondaryEnabled'
 )
 
+type HandleIssueSyncReqParams = {
+  syncType: string
+  syncMode: string
+  syncRequestParameters: SyncRequestAxiosParams
+  logger: Logger
+  attemptNumber: number
+}
+type HandleIssueSyncReqResult = {
+  result: string
+  error?: any
+  syncReqToEnqueue?: IssueSyncRequestJobParams
+}
+type AdditionalSyncIsRequiredResponse = {
+  outcome: string
+  syncReqToEnqueue?: IssueSyncRequestJobParams
+}
+
 /**
  * Processes a job to issue a sync request from a user's primary (this node) to a user's secondary with syncType and syncMode
  * Secondary is specified in param.syncRequestParameters
@@ -49,10 +75,12 @@ module.exports = async function ({
   syncRequestParameters,
   logger,
   attemptNumber = 1
-}) {
+}: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
+  DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
+> {
   let jobsToEnqueue = {}
   let metricsToRecord = []
-  let error = {}
+  let error: any = {}
 
   const startTimeMs = Date.now()
 
@@ -64,7 +92,8 @@ module.exports = async function ({
     syncType,
     syncMode,
     syncRequestParameters,
-    logger
+    logger,
+    attemptNumber
   })
   if (errorResp) {
     error = errorResp
@@ -115,14 +144,12 @@ async function _handleIssueSyncRequest({
   syncType,
   syncMode,
   syncRequestParameters,
-  logger
-}) {
-  try {
-    _validateJobData(syncType, syncMode, syncRequestParameters, logger)
-  } catch (error) {
-    return { result: 'failure_validate_job_data', error }
+  logger,
+  attemptNumber
+}: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
+  if (!syncRequestParameters?.data?.wallet?.length) {
+    return { result: 'failure_missing_wallet' }
   }
-
   if (syncMode === SYNC_MODES.None) {
     return { result: 'success' }
   }
@@ -202,7 +229,7 @@ async function _handleIssueSyncRequest({
     } else {
       await axios(syncRequestParameters)
     }
-  } catch (e) {
+  } catch (e: any) {
     return {
       result: 'failure_issue_sync_request',
       error: {
@@ -211,7 +238,8 @@ async function _handleIssueSyncRequest({
       syncReqToEnqueue: {
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-        syncRequestParameters
+        syncRequestParameters,
+        attemptNumber
       }
     }
   }
@@ -223,12 +251,12 @@ async function _handleIssueSyncRequest({
 
   // Wait until has sync has completed (within time threshold)
   const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
-    userWallet,
     primaryClockValue,
-    secondaryEndpoint,
     syncType,
     syncMode,
-    logger
+    syncRequestParameters,
+    logger,
+    attemptNumber
   )
 
   return {
@@ -238,58 +266,12 @@ async function _handleIssueSyncRequest({
 }
 
 /**
- * Throw error on failure, else return nothing
- */
-const _validateJobData = (syncType, syncMode, syncRequestParameters) => {
-  if (typeof syncType !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof syncType}") or value ("${syncType}") of syncType param`
-    )
-  }
-
-  if (typeof syncMode !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof syncMode}") or value ("${syncMode}") of syncMode param`
-    )
-  }
-
-  if (
-    typeof syncRequestParameters !== 'object' ||
-    syncRequestParameters instanceof Array
-  ) {
-    throw new Error(
-      `Invalid type ("${typeof syncRequestParameters}") or value ("${syncRequestParameters}") of syncRequestParameters`
-    )
-  }
-
-  const isValidSyncJobData =
-    'baseURL' in syncRequestParameters &&
-    'url' in syncRequestParameters &&
-    'method' in syncRequestParameters &&
-    'data' in syncRequestParameters
-  if (!isValidSyncJobData) {
-    throw new Error(
-      `Invalid sync data found: ${JSON.stringify(syncRequestParameters)}`
-    )
-  }
-
-  if (
-    !(syncRequestParameters.data.wallet instanceof Array) ||
-    !syncRequestParameters.data.wallet?.length
-  ) {
-    throw new Error(
-      `Invalid sync data wallets (expected non-empty array): ${syncRequestParameters.data.wallet}`
-    )
-  }
-}
-
-/**
  * Given wallets array, queries DB and returns a map of all users with
  *    those wallets and their clock values, or -1 if wallet not found
  *
  * @returns map(wallet -> clock val)
  */
-const _getUserPrimaryClockValues = async (wallets) => {
+const _getUserPrimaryClockValues = async (wallets: string[]) => {
   // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
   const cnodeUsersFromDB = await models.CNodeUser.findAll({
     where: {
@@ -300,13 +282,13 @@ const _getUserPrimaryClockValues = async (wallets) => {
   })
 
   // Initialize clock values for all users to -1
-  const cnodeUserClockValuesMap = {}
-  wallets.forEach((wallet) => {
+  const cnodeUserClockValuesMap: { [wallet: string]: number } = {}
+  wallets.forEach((wallet: string) => {
     cnodeUserClockValuesMap[wallet] = -1
   })
 
   // Populate clock values into map with DB data
-  cnodeUsersFromDB.forEach((cnodeUser) => {
+  cnodeUsersFromDB.forEach((cnodeUser: any) => {
     cnodeUserClockValuesMap[cnodeUser.walletPublicKey] = cnodeUser.clock
   })
 
@@ -319,13 +301,15 @@ const _getUserPrimaryClockValues = async (wallets) => {
  * Record SyncRequest outcomes to SecondarySyncHealthTracker
  */
 const _additionalSyncIsRequired = async (
-  userWallet,
   primaryClockValue = -1,
-  secondaryUrl,
-  syncType,
-  syncMode,
-  logger
-) => {
+  syncType: string,
+  syncMode: string,
+  syncRequestParameters: SyncRequestAxiosParams,
+  logger: any,
+  attemptNumber: number
+): Promise<AdditionalSyncIsRequiredResponse> => {
+  const userWallet = syncRequestParameters.data.wallet[0]
+  const secondaryUrl = syncRequestParameters.baseURL
   const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
   const startTimeMs = Date.now()
@@ -364,7 +348,7 @@ const _additionalSyncIsRequired = async (
         secondaryCaughtUpToPrimary = true
         break
       }
-    } catch (e) {
+    } catch (e: any) {
       logger.warn(`${logMsgString} || Error: ${e.message}`)
     }
 
@@ -418,12 +402,13 @@ const _additionalSyncIsRequired = async (
     )
   }
 
-  const response = { outcome }
+  const response: AdditionalSyncIsRequiredResponse = { outcome }
   if (additionalSyncIsRequired) {
     response.syncReqToEnqueue = {
-      userWallet,
-      secondaryEndpoint: secondaryUrl,
-      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+      syncType: SyncType.Recurring,
+      syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+      syncRequestParameters,
+      attemptNumber
     }
   }
 
