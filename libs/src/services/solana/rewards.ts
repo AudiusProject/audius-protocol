@@ -1,16 +1,20 @@
-const { TOKEN_PROGRAM_ID } = require('@solana/spl-token')
-const {
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import {
+  PublicKey,
   Secp256k1Program,
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction
-} = require('@solana/web3.js')
-const borsh = require('borsh')
-const { getBankAccountAddress } = require('./userBank')
-const BN = require('bn.js')
-const SolanaUtils = require('./utils')
-const { RewardsManagerError } = require('./errors')
+} from '@solana/web3.js'
+import borsh from 'borsh'
+import { getBankAccountAddress } from './userBank'
+import BN from 'bn.js'
+import { SolanaUtils } from './SolanaUtils'
+import { RewardsManagerError } from './errors'
+import type { TransactionHandler } from './transactionHandler'
+import type { Logger } from '../../utils'
+import type { IdentityService } from '../identity'
 
 // Various prefixes used for rewards
 const SENDER_SEED_PREFIX = 'S_'
@@ -28,14 +32,8 @@ const ATTESTATION_INSTRUCTIONS_PER_TRANSACTION = 4
 const encoder = new TextEncoder()
 
 class SubmitAttestationInstructionData {
-  /**
-   * Creates an instance of SubmitAttestationInstructionData.
-   * @param {{transferId: string}} {
-   *     transferId
-   *   }
-   * @memberof SubmitAttestationInstructionData
-   */
-  constructor ({ transferId }) {
+  id: string
+  constructor({ transferId }: { transferId: string }) {
     this.id = transferId
   }
 }
@@ -50,21 +48,22 @@ const submitAttestationInstructionSchema = new Map([
   ]
 ])
 
+type ValidateAttestationsInstructionDataConfig = {
+  amount: number
+  id: string
+  ethRecipient: Uint8Array
+}
+
 class ValidateAttestationsInstructionData {
-  /**
-   * Creates an instance of ValidateAttestationsInstructionData.
-   * @param {{
-   *     amount: number,
-   *     id: string,
-   *     ethRecipient: Uint8Array
-   *   }} {
-   *     amount,
-   *     id,
-   *     ethRecipient
-   *   }
-   * @memberof ValidateAttestationsInstructionData
-   */
-  constructor ({ amount, id, ethRecipient }) {
+  amount: number
+  id: string
+  eth_recipient: Uint8Array
+
+  constructor({
+    amount,
+    id,
+    ethRecipient
+  }: ValidateAttestationsInstructionDataConfig) {
     this.amount = amount
     this.id = id
     this.eth_recipient = ethRecipient
@@ -86,80 +85,56 @@ const validateAttestationsInstructionSchema = new Map([
 ])
 
 class CreateSenderPublicInstructionData {
-  /**
-   * Creates an instance of CreateSenderPublicInstructionData
-   * @param {{
-   *    ethAddress: Uint8Array
-   *    operator: Uint8Array
-   * }} {
-   *    ethAddress,
-   *    operator
-   * }
-   */
-  constructor ({
+  eth_address: Uint8Array
+  operator: Uint8Array
+
+  constructor({
     ethAddress,
     operator
+  }: {
+    ethAddress: Uint8Array
+    operator: Uint8Array
   }) {
     this.eth_address = ethAddress
     this.operator = operator
   }
 }
 
-const createSenderPublicInstructionSchema = new Map(
+const createSenderPublicInstructionSchema = new Map([
   [
-    [
-      CreateSenderPublicInstructionData,
-      {
-        kind: 'struct',
-        fields: [
-          ['eth_address', [20]],
-          ['operator', [20]]
-        ]
-      }
-    ]
+    CreateSenderPublicInstructionData,
+    {
+      kind: 'struct',
+      fields: [
+        ['eth_address', [20]],
+        ['operator', [20]]
+      ]
+    }
   ]
-)
+])
 
-/**
- * @typedef {Object} AttestationMeta
- * @property {string} ethAddress
- * @property {string} signature
- */
+export type AttestationMeta = {
+  ethAddress: string
+  signature: string
+}
 
-/**
- * Submits attestations from Discovery Nodes and AAO that a user has completed a challenge.
- *
- *
- * @param {{
- *   rewardManagerProgramId: PublicKey,
- *   rewardManagerAccount: PublicKey,
- *   attestations: AttestationMeta[]
- *   oracleAttestation: AttestationMeta
- *   challengeId: string,
- *   specifier: string,
- *   feePayer: PublicKey,
- *   attestationSignature: string,
- *   recipientEthAddress: string,
- *   tokenAmount: BN,
- *   transactionHandler: TransactionHandler,
- *   instructionsPerTransaction?: number,
- *   logger: any
- * }} {
- *   rewardManagerProgramId,
- *   rewardManagerAccount,
- *   attestations,
- *   oracleAttestation,
- *   challengeId,
- *   specifier,
- *   feePayer,
- *   recipientEthAddress,
- *   tokenAmount,
- *   transactionHandler,
- *   instructionsPerTransaction,
- *   logger
- * }
- */
-async function submitAttestations ({
+export type SubmitAttestationsConfig = {
+  rewardManagerProgramId: PublicKey
+  rewardManagerAccount: PublicKey
+  attestations: AttestationMeta[]
+  oracleAttestation: AttestationMeta
+  challengeId: string
+  specifier: string
+  feePayer: PublicKey
+  attestationSignature?: string
+  recipientEthAddress: string
+  tokenAmount: BN
+  transactionHandler: TransactionHandler
+  instructionsPerTransaction?: number
+  logger: Logger
+}
+
+export async function submitAttestations({
   rewardManagerProgramId,
   rewardManagerAccount,
   attestations,
@@ -172,19 +147,17 @@ async function submitAttestations ({
   transactionHandler,
   instructionsPerTransaction = ATTESTATION_INSTRUCTIONS_PER_TRANSACTION,
   logger = console
-}) {
+}: SubmitAttestationsConfig) {
   // Construct combined transfer ID
   const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
 
   // Derive the message account we'll use to store the attestations
-  const [
-    rewardManagerAuthority,
-    derivedMessageAccount
-  ] = await deriveMessageAccount(
-    transferId,
-    rewardManagerProgramId,
-    rewardManagerAccount
-  )
+  const [rewardManagerAuthority, derivedMessageAccount] =
+    await deriveMessageAccount(
+      transferId,
+      rewardManagerProgramId,
+      rewardManagerAccount
+    )
 
   const encodedSenderMessage = SolanaUtils.constructAttestation(
     recipientEthAddress,
@@ -196,14 +169,11 @@ async function submitAttestations ({
   // Add instructions from DN attestations - each attestation
   // needs a pairing of SECP recovery instruction and submit
   // attestation instruction.
-  let instructions = await Promise.all(
+  let instructions: TransactionInstruction[] = await Promise.all(
     attestations.reduce((instructions, meta, i) => {
       const secpInstruction = Promise.resolve(
         generateAttestationSecpInstruction({
           attestationMeta: meta,
-          recipientEthAddress,
-          tokenAmount,
-          transferId,
           instructionIndex: (2 * i) % instructionsPerTransaction,
           encodedSenderMessage
         })
@@ -218,7 +188,7 @@ async function submitAttestations ({
         feePayer
       })
       return [...instructions, secpInstruction, verifyInstruction]
-    }, [])
+    }, [] as Promise<TransactionInstruction>[])
   )
 
   const encodedOracleMessage = SolanaUtils.constructAttestation(
@@ -228,12 +198,9 @@ async function submitAttestations ({
   )
 
   // Add instructions from oracle attestation
-  const oracleSecp = await generateAttestationSecpInstruction({
+  const oracleSecp = generateAttestationSecpInstruction({
     attestationMeta: oracleAttestation,
-    recipientEthAddress,
     instructionIndex: instructions.length % instructionsPerTransaction,
-    tokenAmount,
-    transferId,
     encodedSenderMessage: encodedOracleMessage
   })
 
@@ -249,24 +216,36 @@ async function submitAttestations ({
 
   // Break the instructions up into multiple transactions as per `instructionsPerTransaction`
   instructions = [...instructions, oracleSecp, oracleTransfer]
-  const bucketedInstructions = instructions.reduce((acc, cur) => {
-    if (acc[acc.length - 1].length < instructionsPerTransaction) {
-      acc[acc.length - 1].push(cur)
-    } else {
-      acc.push([cur])
-    }
-    return acc
-  }, [[]])
+  const bucketedInstructions: TransactionInstruction[][] = instructions.reduce(
+    (acc, cur) => {
+      const instruction = acc[acc.length - 1]
+      if (instruction && instruction.length < instructionsPerTransaction) {
+        instruction.push(cur)
+      } else {
+        acc.push([cur])
+      }
+      return acc
+    },
+    [[]] as TransactionInstruction[][]
+  )
 
-  const results = await Promise.all(bucketedInstructions.map(i => transactionHandler.handleTransaction({
-    instructions: i,
-    errorMapping: RewardsManagerError,
-    logger,
-    skipPreflight: false,
-    feePayerOverride: feePayer,
-    sendBlockhash: false
-  })))
-  logger.info(`submitAttestations: submitted attestations with results: ${JSON.stringify(results)}`)
+  const results = await Promise.all(
+    bucketedInstructions.map((i) =>
+      transactionHandler.handleTransaction({
+        instructions: i,
+        errorMapping: RewardsManagerError,
+        logger,
+        skipPreflight: false,
+        feePayerOverride: feePayer,
+        sendBlockhash: false
+      })
+    )
+  )
+  logger.info(
+    `submitAttestations: submitted attestations with results: ${JSON.stringify(
+      results
+    )}`
+  )
 
   // If there's any error in any of the transactions, just return that one
   for (const res of results) {
@@ -277,30 +256,21 @@ async function submitAttestations ({
   return results[0]
 }
 
+export type CreateSenderParams = {
+  rewardManagerProgramId: PublicKey
+  rewardManagerAccount: PublicKey
+  senderEthAddress: string
+  feePayer: PublicKey
+  operatorEthAddress: string
+  attestations: AttestationMeta[]
+  identityService: IdentityService
+  transactionHandler: TransactionHandler
+}
+
 /**
  * Creates a new rewards signer (one that can attest)
- *
- * @param {{
- *   rewardManagerProgramId: PublicKey,
- *   rewardManagerAccount: PublicKey,
- *   senderEthAddress: string,
- *   feePayer: PublicKey,
- *   operatorEthAddress: string,
- *   attestations: AttestationMeta[],
- *   identityService: any
- *   connection: Connection
- * }} {
- *   rewardManagerProgramId,
- *   rewardManagerAccount,
- *   senderEthAddress,
- *   feePayer,
- *   operatorEthAddress,
- *   attestations,
- *   identityService,
- *   connection
- * }
  */
-async function createSender ({
+export async function createSender({
   rewardManagerProgramId,
   rewardManagerAccount,
   senderEthAddress,
@@ -308,20 +278,20 @@ async function createSender ({
   operatorEthAddress,
   attestations,
   transactionHandler
-}) {
-  const [rewardManagerAuthority] = await SolanaUtils.findProgramAddressFromPubkey(
-    rewardManagerProgramId,
-    rewardManagerAccount
-  )
+}: CreateSenderParams) {
+  const [rewardManagerAuthority] =
+    await SolanaUtils.findProgramAddressFromPubkey(
+      rewardManagerProgramId,
+      rewardManagerAccount
+    )
 
   const encodedSenderMessage = constructCreateSenderMessage(
     senderEthAddress,
     rewardManagerAccount
   )
-  const signerEthAddresses = attestations.map(meta => meta.ethAddress)
+  const signerEthAddresses = attestations.map((meta) => meta.ethAddress)
   const signerInstructions = attestations.map((meta, i) => {
     return generateCreateSenderSecpInstruction({
-      ethAddress: senderEthAddress,
       attestationMeta: meta,
       instructionIndex: i,
       encodedSenderMessage
@@ -339,42 +309,32 @@ async function createSender ({
   })
 
   const instructions = [...signerInstructions, createSenderInstruction]
-  return transactionHandler.handleTransaction({ instructions, errorMapping: RewardsManagerError, feePayerOverride: feePayer })
+  return transactionHandler.handleTransaction({
+    instructions,
+    errorMapping: RewardsManagerError,
+    feePayerOverride: feePayer
+  })
+}
+
+export type EvaluateAttestationsConfig = {
+  rewardManagerProgramId: PublicKey
+  rewardManagerAccount: PublicKey
+  rewardManagerTokenSource: PublicKey
+  challengeId: string
+  specifier: string
+  recipientEthAddress: string
+  userBankProgramAccount: PublicKey
+  oracleEthAddress: string
+  feePayer: PublicKey
+  tokenAmount: BN
+  transactionHandler: TransactionHandler
+  logger: Logger
 }
 
 /**
  * Evaluates previously submitted attestations, disbursing if successful.
- *
- * @param {{
- *   rewardManagerProgramId: PublicKey
- *   rewardManagerAccount: PublicKey
- *   rewardManagerTokenSource: PublicKey
- *   challengeId: string
- *   specifier: string
- *   recipientEthAddress: string
- *   userBankProgramAccount: PublicKey,
- *   oracleEthAddress: string
- *   feePayer: PublicKey
- *   tokenAmount: BN
- *   tokenAmount: BN,
- *   transactionHandler: TransactionHandler,
- *   logger: any
- * }} {
- *   rewardManagerProgramId,
- *   rewardManagerAccount,
- *   rewardManagerTokenSource,
- *   challengeId,
- *   specifier,
- *   recipientEthAddress,
- *   userBankProgramAccount,
- *   oracleEthAddress,
- *   feePayer,
- *   tokenAmount,
- *   transactionHandler,
- *   logger
- * }
  */
-const evaluateAttestations = async ({
+export const evaluateAttestations = async ({
   rewardManagerProgramId,
   rewardManagerAccount,
   rewardManagerTokenSource,
@@ -387,19 +347,17 @@ const evaluateAttestations = async ({
   tokenAmount,
   transactionHandler,
   logger = console
-}) => {
+}: EvaluateAttestationsConfig) => {
   // Get transfer ID
   const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
 
   // Derive the messages account we previously stored attestations in
-  const [
-    rewardManagerAuthority,
-    verifiedMessagesAccount
-  ] = await deriveMessageAccount(
-    transferId,
-    rewardManagerProgramId,
-    rewardManagerAccount
-  )
+  const [rewardManagerAuthority, verifiedMessagesAccount] =
+    await deriveMessageAccount(
+      transferId,
+      rewardManagerProgramId,
+      rewardManagerAccount
+    )
   // Derive the transfer account we'll use to represent + dedupe
   // the disbursement.
   const transferAccount = await deriveTransferAccount(
@@ -526,27 +484,19 @@ const evaluateAttestations = async ({
 
 // Generate particular instructions
 
+type GenerateSubmitAttestationInstructionParams = {
+  attestationMeta: AttestationMeta
+  derivedMessageAccount: PublicKey
+  rewardManagerAccount: PublicKey
+  rewardManagerAuthority: PublicKey
+  rewardManagerProgramId: PublicKey
+  feePayer: PublicKey
+  transferId: string
+}
+
 /**
  *
  * Helper function to generate a submit attestation instruction.
- * @param {{
- *   attestationMeta: AttestationMeta,
- *   derivedMessageAccount: PublicKey
- *   rewardManagerAccount: PublicKey
- *   rewardManagerAuthority: PublicKey
- *   rewardManagerProgramId: PublicKey
- *   feePayer: PublicKey
- *   transferId: string
- * }} {
- *   attestationMeta,
- *   derivedMessageAccount,
- *   rewardManagerAccount,
- *   rewardManagerAuthority,
- *   rewardManagerProgramId,
- *   feePayer,
- *   transferId
- * }
- * @returns {Promise<TransactionInstruction>}
  */
 const generateSubmitAttestationInstruction = async ({
   attestationMeta,
@@ -556,7 +506,7 @@ const generateSubmitAttestationInstruction = async ({
   rewardManagerProgramId,
   feePayer,
   transferId
-}) => {
+}: GenerateSubmitAttestationInstructionParams) => {
   // Get the DN's derived Solana address from the eth pubkey
   const derivedSender = await deriveSolanaSenderFromEthAddress(
     attestationMeta.ethAddress,
@@ -634,10 +584,8 @@ const generateSubmitAttestationInstruction = async ({
 
 /**
  * Encodes a given signature to a 64 byte array for SECP recovery
- * @param {string} signature
- * @returns {{encodedSignature: string, recoveryId: number}} encodedSignature
  */
-const encodeSignature = (signature) => {
+const encodeSignature = (signature: string) => {
   // Perform signature manipulations:
   // - remove the 0x prefix for BN
   // - lose the final byte / recovery ID: the secp instruction constructor
@@ -657,34 +605,20 @@ const encodeSignature = (signature) => {
   return { encodedSignature, recoveryId }
 }
 
-/**
- *
- * @param {{
- *   attestationMeta: AttestationMeta
- *   recipientEthAddress: string
- *   tokenAmount: BN
- *   transferId: string
- *   instructionIndex: number
- *   encodedSenderMessage: string
- * }} {
- *   attestationMeta,
- *   recipientEthAddress,
- *   tokenAmount,
- *   transferId,
- *   instructionIndex,
- *   encodedSenderMessage
- * }
- * @returns {TransactionInstruction}
- */
+type GenerateAttestationSecpInstructionParams = {
+  attestationMeta: AttestationMeta
+  instructionIndex: number
+  encodedSenderMessage: Uint8Array
+}
+
 const generateAttestationSecpInstruction = ({
   attestationMeta,
-  recipientEthAddress,
-  tokenAmount,
-  transferId,
   instructionIndex,
   encodedSenderMessage
-}) => {
-  const { encodedSignature, recoveryId } = encodeSignature(attestationMeta.signature)
+}: GenerateAttestationSecpInstructionParams) => {
+  const { encodedSignature, recoveryId } = encodeSignature(
+    attestationMeta.signature
+  )
 
   return Secp256k1Program.createInstructionWithEthAddress({
     ethAddress: SolanaUtils.ethAddressToArray(attestationMeta.ethAddress),
@@ -695,28 +629,20 @@ const generateAttestationSecpInstruction = ({
   })
 }
 
-/**
- *
- * @param {{
- *   ethAddress: string
- *   attestationMeta: AttestationMeta
- *   instructionIndex: number
- *   encodedSenderMessage: string
- * }} {
- *   ethAddress,
- *   attestationMeta,
- *   instructionIndex,
- *   encodedSenderMessage
- * }
- * @returns {TransactionInstruction}
- */
+type GenerateCreateSenderSecpInstructionConfig = {
+  attestationMeta: AttestationMeta
+  instructionIndex: number
+  encodedSenderMessage: Uint8Array
+}
+
 const generateCreateSenderSecpInstruction = ({
-  ethAddress,
   attestationMeta,
   instructionIndex,
   encodedSenderMessage
-}) => {
-  const { encodedSignature, recoveryId } = encodeSignature(attestationMeta.signature)
+}: GenerateCreateSenderSecpInstructionConfig) => {
+  const { encodedSignature, recoveryId } = encodeSignature(
+    attestationMeta.signature
+  )
   return Secp256k1Program.createInstructionWithEthAddress({
     ethAddress: attestationMeta.ethAddress,
     message: encodedSenderMessage,
@@ -726,27 +652,19 @@ const generateCreateSenderSecpInstruction = ({
   })
 }
 
+type GenerateCreateSenderInstructionConfig = {
+  senderEthAddress: string
+  operatorEthAddress: string
+  rewardManagerAccount: PublicKey
+  rewardManagerAuthority: PublicKey
+  rewardManagerProgramId: PublicKey
+  feePayer: PublicKey
+  signerEthAddresses: string[]
+}
+
 /**
  *
  * Helper function generate a create sender instruction.
- * @param {{
- *   senderEthAddress: string,
- *   operatorEthAddress: string,
- *   rewardManagerAccount: PublicKey,
- *   rewardManagerAuthority: PublicKey,
- *   rewardManagerProgramId: PublicKey,
- *   feePayer: PublicKey,
- *   signerEthAddresses: string[]
- * }} {
- *   senderEthAddress,
- *   operatorEthAddress,
- *   rewardManagerAccount,
- *   rewardManagerAuthority,
- *   rewardManagerProgramId,
- *   feePayer,
- *   signerEthAddresses
- * }
- * @returns {TransactionInstruction}
  */
 const generateCreateSenderInstruction = async ({
   senderEthAddress,
@@ -756,7 +674,7 @@ const generateCreateSenderInstruction = async ({
   rewardManagerProgramId,
   feePayer,
   signerEthAddresses
-}) => {
+}: GenerateCreateSenderInstructionConfig) => {
   // Get the DN's derived Solana address from the eth pubkey
   const derivedSenderSolanaAddress = await deriveSolanaSenderFromEthAddress(
     senderEthAddress,
@@ -764,13 +682,15 @@ const generateCreateSenderInstruction = async ({
     rewardManagerAccount
   )
 
-  const signerSolanaPubKeys = await Promise.all(signerEthAddresses.map(async signerEthAddress =>
-    deriveSolanaSenderFromEthAddress(
-      signerEthAddress,
-      rewardManagerProgramId,
-      rewardManagerAccount
+  const signerSolanaPubKeys = await Promise.all(
+    signerEthAddresses.map(async (signerEthAddress) =>
+      deriveSolanaSenderFromEthAddress(
+        signerEthAddress,
+        rewardManagerProgramId,
+        rewardManagerAccount
+      )
     )
-  ))
+  )
 
   /// 0. `[]` Reward manager
   /// 1. `[]` Reward manager authority
@@ -813,27 +733,25 @@ const generateCreateSenderInstruction = async ({
       isSigner: false,
       isWritable: false
     },
-    ...signerSolanaPubKeys.map(pubkey =>
-      ({
-        pubkey,
-        isSigner: false,
-        isWritable: false
-      })
-    )
+    ...signerSolanaPubKeys.map((pubkey) => ({
+      pubkey,
+      isSigner: false,
+      isWritable: false
+    }))
   ]
 
-  const createSenderPublicInstructionData = new CreateSenderPublicInstructionData({
-    ethAddress: SolanaUtils.ethAddressToArray(senderEthAddress),
-    operator: SolanaUtils.ethAddressToArray(operatorEthAddress)
-  })
+  const createSenderPublicInstructionData =
+    new CreateSenderPublicInstructionData({
+      ethAddress: SolanaUtils.ethAddressToArray(senderEthAddress),
+      operator: SolanaUtils.ethAddressToArray(operatorEthAddress)
+    })
   const serializedInstructionData = borsh.serialize(
     createSenderPublicInstructionSchema,
     createSenderPublicInstructionData
   )
-  const serializedInstructionEnum = Buffer.from(Uint8Array.of(
-    CREATE_SENDER_PUBLIC_ENUM_VALUE,
-    ...serializedInstructionData
-  ))
+  const serializedInstructionEnum = Buffer.from(
+    Uint8Array.of(CREATE_SENDER_PUBLIC_ENUM_VALUE, ...serializedInstructionData)
+  )
 
   return new TransactionInstruction({
     keys: createSenderInstructionAccounts,
@@ -846,16 +764,11 @@ const generateCreateSenderInstruction = async ({
 
 /**
  * Derives the Solana account associated with a given sender Eth address.
- *
- * @param {string} ethAddress
- * @param {PublicKey} rewardManagerProgramId
- * @param {PublicKey} rewardManagerAccount
- * @returns {Promise<PublicKey>}
  */
-const deriveSolanaSenderFromEthAddress = async (
-  ethAddress,
-  rewardManagerProgramId,
-  rewardManagerAccount
+export const deriveSolanaSenderFromEthAddress = async (
+  ethAddress: string,
+  rewardManagerProgramId: PublicKey,
+  rewardManagerAccount: PublicKey
 ) => {
   const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
   const encodedPrefix = encoder.encode(SENDER_SEED_PREFIX)
@@ -874,15 +787,15 @@ const deriveSolanaSenderFromEthAddress = async (
  * @returns {Uint8Array}
  */
 const constructCreateSenderMessage = (
-  ethAddress,
-  rewardManagerAccount
+  ethAddress: string,
+  rewardManagerAccount: PublicKey
 ) => {
   const encodedPrefix = encoder.encode(ADD_SENDER_MESSAGE_PREFIX)
   const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
   const rewardManagerAccountArr = rewardManagerAccount.toBytes()
 
-  const items = [encodedPrefix, rewardManagerAccountArr, ethAddressArr]
-  const res = items.slice(1).reduce((prev, cur, i) => {
+  const items = [encodedPrefix, rewardManagerAccountArr, ethAddressArr] as const
+  const res = items.slice(1).reduce((prev, cur) => {
     return Uint8Array.of(...prev, ...cur)
   }, Uint8Array.from(items[0]))
   return res
@@ -891,16 +804,11 @@ const constructCreateSenderMessage = (
 /**
  * Derives the 'transfer account' - the account which represents a single successful disbursement
  * and is used to dedupe - from the transferId and other info
- *
- * @param {string} transferId
- * @param {PublicKey} rewardProgramId
- * @param {PublicKey} rewardManager
- * @returns {Promise<PublicKey>}
  */
 const deriveTransferAccount = async (
-  transferId,
-  rewardProgramId,
-  rewardManager
+  transferId: string,
+  rewardProgramId: PublicKey,
+  rewardManager: PublicKey
 ) => {
   const seed = Uint8Array.from([
     ...encoder.encode(TRANSFER_PREFIX),
@@ -916,26 +824,18 @@ const deriveTransferAccount = async (
 
 /**
  * Derives the account to store messages for a single challenge
- *
- * @param {string} transferId
- * @param {PublicKey} rewardsProgramId
- * @param {PublicKey} rewardManager
- * @returns {Promise<[PublicKey, PublicKey, number]>}
  */
 const deriveMessageAccount = async (
-  transferId,
-  rewardsProgramId,
-  rewardManager
+  transferId: string,
+  rewardsProgramId: PublicKey,
+  rewardManager: PublicKey
 ) => {
   const encodedPrefix = encoder.encode(VERIFY_TRANSFER_SEED_PREFIX)
   const encodedTransferId = encoder.encode(transferId)
   const seeds = Uint8Array.from([...encodedPrefix, ...encodedTransferId])
-  return SolanaUtils.findProgramAddressWithAuthority(rewardsProgramId, rewardManager, seeds)
-}
-
-module.exports = {
-  submitAttestations,
-  evaluateAttestations,
-  createSender,
-  deriveSolanaSenderFromEthAddress
+  return SolanaUtils.findProgramAddressWithAuthority(
+    rewardsProgramId,
+    rewardManager,
+    seeds
+  )
 }

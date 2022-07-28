@@ -1,7 +1,9 @@
 const {
   createUserBankFrom
 } = require('@audius/sdk/src/services/solanaWeb3Manager/userBank')
-const SolanaUtils = require('@audius/sdk/src/services/solanaWeb3Manager/utils')
+const {
+  SolanaUtils
+} = require('@audius/sdk/src/services/solanaWeb3Manager/SolanaUtils')
 const IdentityService = require('@audius/sdk/src/services/identity')
 const axios = require('axios')
 const solanaWeb3 = require('@solana/web3.js')

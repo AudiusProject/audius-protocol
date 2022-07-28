@@ -1,13 +1,16 @@
-const {
+import {
   SystemProgram,
   PublicKey,
   Secp256k1Program,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  TransactionInstruction
-} = require('@solana/web3.js')
+  TransactionInstruction,
+  Connection
+} from '@solana/web3.js'
+import type BN from 'bn.js'
+import type { TransactionHandler } from './transactionHandler'
 const borsh = require('borsh')
-const SolanaUtils = require('./utils')
+const { SolanaUtils } = require('./SolanaUtils')
 const secp256k1 = require('secp256k1')
 const { ClaimableProgramError } = require('./errors')
 
@@ -15,20 +18,21 @@ const encoder = new TextEncoder()
 
 const TRANSFER_NONCE_PREFIX = 'N_'
 
+type DeriveTransferNonceAccountConfig = {
+  ethAddress: string
+  mintKey: PublicKey
+  claimableTokenProgramKey: PublicKey
+}
+
 /**
  * Derives the 'transfer nonce account' - the account which contains the nonce for transfers
  * and is used to prevent replay attacks
- *
- * @param {string} ethAddress
- * @param {PublicKey} rewardProgramId
- * @param {PublicKey} rewardManager
- * @returns {Promise<PublicKey>}
  */
-const deriveTransferNonceAccount = async ({
+export const deriveTransferNonceAccount = async ({
   ethAddress,
   mintKey,
   claimableTokenProgramKey
-}) => {
+}: DeriveTransferNonceAccountConfig) => {
   const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
   const seed = Uint8Array.from([
     ...encoder.encode(TRANSFER_NONCE_PREFIX),
@@ -44,10 +48,10 @@ const deriveTransferNonceAccount = async ({
 }
 
 class NonceAccount {
-  constructor ({
-    version,
-    nonce
-  }) {
+  version: string
+  nonce: unknown
+
+  constructor({ version, nonce }: { version: string; nonce: unknown }) {
     this.version = version
     this.nonce = nonce
   }
@@ -66,29 +70,38 @@ const NonceAccountSchema = new Map([
   ]
 ])
 
+type GetAccountNonceParams = {
+  connection: Connection
+  ethAddress: string
+  mintKey: PublicKey
+  claimableTokenProgramKey: PublicKey
+}
+
 /**
  * Retrieves the nonce account for transfers, if non-existant it returns 0
- * @param {object} params
- * @param {object} params.connection Solana web3 connection
- * @param {string} params.ethAddress Eth Address
- * @param {PublicKey} params.mintKey Public key of the minted spl token
- * @param {PublicKey} params.claimableTokenProgramKey Program public key
  */
-async function getAccountNonce ({
+async function getAccountNonce({
   connection,
   ethAddress,
   mintKey,
   claimableTokenProgramKey
-}) {
+}: GetAccountNonceParams) {
   let nonce = 0
   const transferNonceAccount = await deriveTransferNonceAccount({
     ethAddress,
     mintKey,
     claimableTokenProgramKey
   })
-  const accInfo = await connection.getAccountInfoAndContext(transferNonceAccount, 'confirmed')
+  const accInfo = await connection.getAccountInfoAndContext(
+    transferNonceAccount,
+    'confirmed'
+  )
   if (accInfo.value) {
-    const nonceAccount = borsh.deserialize(NonceAccountSchema, NonceAccount, accInfo.value.data)
+    const nonceAccount = borsh.deserialize(
+      NonceAccountSchema,
+      NonceAccount,
+      accInfo.value.data
+    )
     nonce = nonceAccount.nonce
   }
   return {
@@ -97,15 +110,21 @@ async function getAccountNonce ({
   }
 }
 
+type TransferInstructionDataConfig = {
+  targetPubKey: Buffer
+  amount: BN
+  nonce: unknown
+}
+
 /**
  * Transfer wAUDIO between wallets on solana
  */
 class TransferInstructionData {
-  constructor ({
-    targetPubKey,
-    amount,
-    nonce
-  }) {
+  target_pubkey: Buffer
+  amount: BN
+  nonce: unknown
+
+  constructor({ targetPubKey, amount, nonce }: TransferInstructionDataConfig) {
     this.target_pubkey = targetPubKey
     this.amount = amount
     this.nonce = nonce
@@ -126,22 +145,27 @@ const transferInstructionDataSchema = new Map([
   ]
 ])
 
+type TransferWAudioBalanceConfig = {
+  amount: BN
+  senderEthAddress: string
+  senderEthPrivateKey: string
+  senderSolanaAddress: PublicKey
+  recipientSolanaAddress: string
+  claimableTokenPDA: PublicKey
+  solanaTokenProgramKey: PublicKey
+  connection: Connection
+  feePayerKey: PublicKey
+  claimableTokenProgramKey: PublicKey
+  mintKey: PublicKey
+  transactionHandler: TransactionHandler
+}
+
 /**
  * transferWAudioBalance transfers wrapped Audio from one generated solana account to another.
  * For it to work, you have to have the eth private key belonging to the eth public key
  * that generated the solana account
- *
- * @param {BN} amount amount to send
- * @param {string} senderEthAddress sender's eth address (e.g. you)
- * @param {string} senderEthPrivateKey sender's eth private key
- * @param {string} senderSolanaAddress sender's solana address
- * @param {string} recipientSolanaAddress recipient's solana address
- * @param {string} claimableTokenPDA
- * @param {PublicKey} solanaTokenProgramKey spl token key
- * @param {Connection} connection
- * @returns
  */
-async function transferWAudioBalance ({
+export async function transferWAudioBalance({
   amount,
   senderEthAddress,
   senderEthPrivateKey,
@@ -154,14 +178,11 @@ async function transferWAudioBalance ({
   connection,
   mintKey,
   transactionHandler
-}) {
+}: TransferWAudioBalanceConfig) {
   const senderSolanaPubkey = new PublicKey(senderSolanaAddress)
   const recipientPubkey = new PublicKey(recipientSolanaAddress)
 
-  const {
-    accountNonce,
-    nonce
-  } = await getAccountNonce({
+  const { accountNonce, nonce } = await getAccountNonce({
     connection,
     mintKey,
     ethAddress: senderEthAddress,
@@ -240,33 +261,33 @@ async function transferWAudioBalance ({
     instructionData
   )
 
-  const { signature, recoveryId } = SolanaUtils.signBytes(Buffer.from(serializedInstructionData), senderEthPrivateKey)
+  const { signature, recoveryId } = SolanaUtils.signBytes(
+    Buffer.from(serializedInstructionData),
+    senderEthPrivateKey
+  )
 
-  const secpTransactionInstruction = Secp256k1Program.createInstructionWithPublicKey({
-    publicKey: Buffer.from(ethPubkey),
-    message: Buffer.from(serializedInstructionData),
-    signature,
-    recoveryId
-  })
+  const secpTransactionInstruction =
+    Secp256k1Program.createInstructionWithPublicKey({
+      publicKey: Buffer.from(ethPubkey),
+      message: Buffer.from(serializedInstructionData),
+      signature,
+      recoveryId
+    })
 
   const ethAddressArr = SolanaUtils.ethAddressToArray(senderEthAddress)
-  const transferDataInstr = Uint8Array.of(
-    1,
-    ...ethAddressArr
-  )
+  const transferDataInstr = Uint8Array.of(1, ...ethAddressArr)
 
   const instructions = [
     secpTransactionInstruction,
     new TransactionInstruction({
       keys: accounts,
-      programId: claimableTokenProgramKey.toString(),
+      programId: claimableTokenProgramKey.toString() as unknown as PublicKey,
       data: Buffer.from(transferDataInstr)
     })
   ]
-  return transactionHandler.handleTransaction({ instructions, errorMapping: ClaimableProgramError, feePayerOverride: feePayerKey })
-}
-
-module.exports = {
-  deriveTransferNonceAccount,
-  transferWAudioBalance
+  return transactionHandler.handleTransaction({
+    instructions,
+    errorMapping: ClaimableProgramError,
+    feePayerOverride: feePayerKey
+  })
 }

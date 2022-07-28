@@ -1,10 +1,10 @@
 import * as AudiusData from '@audius/anchor-audius-data'
 import type { AudiusDataProgram } from '@audius/anchor-audius-data'
 import anchor, { BN, Idl } from '@project-serum/anchor'
-import type SolanaWeb3Manager from '../solanaWeb3Manager'
+import type { SolanaWeb3Manager } from '../solana'
 import type { Web3Manager } from '../web3Manager'
 import { PublicKey, Keypair, SystemProgram, Transaction } from '@solana/web3.js'
-import SolanaUtils from '../solanaWeb3Manager/utils'
+import { SolanaUtils } from '../solana'
 import { audiusDataErrorMapping } from './errors'
 
 type AnchorAudiusDataConfig = {

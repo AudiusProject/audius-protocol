@@ -3,7 +3,7 @@ const { sampleSize } = require('lodash')
 
 const { Base, Services } = require('./base')
 const BN = require('bn.js')
-const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
+const { RewardsManagerError } = require('../services/solana/errors')
 const { WAUDIO_DECMIALS } = require('../constants')
 const { Utils } = require('../utils/utils')
 
@@ -26,12 +26,10 @@ const GetAttestationError = Object.freeze({
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 })
 
-const AggregateAttestationError = Object.freeze(
-  {
-    INSUFFICIENT_DISCOVERY_NODE_COUNT: 'INSUFFICIENT_DISCOVERY_NODE_COUNT',
-    UNKNOWN_ERROR: 'UNKNOWN_ERROR'
-  }
-)
+const AggregateAttestationError = Object.freeze({
+  INSUFFICIENT_DISCOVERY_NODE_COUNT: 'INSUFFICIENT_DISCOVERY_NODE_COUNT',
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+})
 
 const GetSenderAttestationError = Object.freeze({
   REQUEST_FOR_ATTESTATION_FAILED: 'REQUEST_FOR_ATTESTATION_FAILED'
@@ -57,11 +55,11 @@ const AAO_REQUEST_TIMEOUT_MS = 15 * 1000
 const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECMIALS
 
 /**
- * @typedef {import("../services/solanaWeb3Manager/rewards.js").AttestationMeta} AttestationMeta
+ * @typedef {import("../services/solana/rewards.js").AttestationMeta} AttestationMeta
  */
 
 class Rewards extends Base {
-  constructor (ServiceProvider, ...args) {
+  constructor(ServiceProvider, ...args) {
     super(...args)
     this.ServiceProvider = ServiceProvider
   }
@@ -108,8 +106,21 @@ class Rewards extends Base {
    * @returns {Promise<GetSubmitAndEvaluateAttestationsReturn>}
    * @memberof Challenge
    */
-  async submitAndEvaluate ({
-    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, instructionsPerTransaction, maxAggregationAttempts = 20, endpoints = null, logger = console, feePayerOverride = null
+  async submitAndEvaluate({
+    challengeId,
+    encodedUserId,
+    handle,
+    recipientEthAddress,
+    specifier,
+    oracleEthAddress,
+    amount,
+    quorumSize,
+    AAOEndpoint,
+    instructionsPerTransaction,
+    maxAggregationAttempts = 20,
+    endpoints = null,
+    logger = console,
+    feePayerOverride = null
   }) {
     let phase
     let nodesToReselect = null
@@ -117,16 +128,35 @@ class Rewards extends Base {
       phase = AttestationPhases.SANITY_CHECKS
 
       // fail if amount is a decimal
-      if ((Number(amount) !== amount) || (amount % 1 !== 0)) {
+      if (Number(amount) !== amount || amount % 1 !== 0) {
         throw new Error('Invalid amount')
       }
 
       // Aggregate
 
-      logger.info(`submitAndEvaluate: aggregating attestations for userId [${decodeHashId(encodedUserId)}], challengeId [${challengeId}]`)
+      logger.info(
+        `submitAndEvaluate: aggregating attestations for userId [${decodeHashId(
+          encodedUserId
+        )}], challengeId [${challengeId}]`
+      )
       phase = AttestationPhases.AGGREGATE_ATTESTATIONS
-      const { discoveryNodeAttestations, aaoAttestation, error: aggregateError, erroringNodes } = await this.aggregateAttestations({
-        challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints, logger, maxAttempts: maxAggregationAttempts
+      const {
+        discoveryNodeAttestations,
+        aaoAttestation,
+        error: aggregateError,
+        erroringNodes
+      } = await this.aggregateAttestations({
+        challengeId,
+        encodedUserId,
+        handle,
+        specifier,
+        oracleEthAddress,
+        amount,
+        quorumSize,
+        AAOEndpoint,
+        endpoints,
+        logger,
+        maxAttempts: maxAggregationAttempts
       })
       if (aggregateError) {
         nodesToReselect = erroringNodes
@@ -135,36 +165,46 @@ class Rewards extends Base {
 
       // Submit
 
-      logger.info(`submitAndEvaluate: submitting for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}] with [${discoveryNodeAttestations.length}] DN and [${aaoAttestation ? 1 : 0}] oracle attestations.`)
+      logger.info(
+        `submitAndEvaluate: submitting for challenge [${challengeId}], userId: [${decodeHashId(
+          encodedUserId
+        )}] with [${discoveryNodeAttestations.length}] DN and [${
+          aaoAttestation ? 1 : 0
+        }] oracle attestations.`
+      )
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
       phase = AttestationPhases.SUBMIT_ATTESTATIONS
-      const { errorCode: submitErrorCode, error: submitError } = await this.solanaWeb3Manager.submitChallengeAttestations({
-        attestations: discoveryNodeAttestations,
-        oracleAttestation: aaoAttestation,
-        challengeId,
-        specifier,
-        recipientEthAddress,
-        tokenAmount: fullTokenAmount,
-        instructionsPerTransaction,
-        logger,
-        feePayerOverride
-      })
+      const { errorCode: submitErrorCode, error: submitError } =
+        await this.solanaWeb3Manager.submitChallengeAttestations({
+          attestations: discoveryNodeAttestations,
+          oracleAttestation: aaoAttestation,
+          challengeId,
+          specifier,
+          recipientEthAddress,
+          tokenAmount: fullTokenAmount,
+          instructionsPerTransaction,
+          logger,
+          feePayerOverride
+        })
 
       // In the case of an unparseable error,
       // we'll only have the error, not the code.
       if (submitErrorCode || submitError) {
-        const shouldRetryInSeperateTransactions = (
+        const shouldRetryInSeperateTransactions =
           submitErrorCode === RewardsManagerError.REPEATED_SENDERS ||
           submitErrorCode === RewardsManagerError.SIGN_COLLISION ||
           submitErrorCode === RewardsManagerError.OPERATOR_COLLISION
-        )
         // If we have sender collisions, we should
         // submit one attestation per transaction and try to get
         // into a good state.
         // TODO: in the case this retry fails, we still proceed
         // to evaluate phase and will error there (not ideal)
         if (shouldRetryInSeperateTransactions) {
-          logger.warn(`submitAndEvaluate: saw repeat senders for userId [${decodeHashId(encodedUserId)}] challengeId: [${challengeId}] with err: ${submitErrorCode}, breaking up into individual transactions`)
+          logger.warn(
+            `submitAndEvaluate: saw repeat senders for userId [${decodeHashId(
+              encodedUserId
+            )}] challengeId: [${challengeId}] with err: ${submitErrorCode}, breaking up into individual transactions`
+          )
           await this.solanaWeb3Manager.submitChallengeAttestations({
             attestations: discoveryNodeAttestations,
             oracleAttestation: aaoAttestation,
@@ -183,17 +223,22 @@ class Rewards extends Base {
 
       // Evaluate
 
-      logger.info(`submitAndEvaluate: evaluating for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}]`)
+      logger.info(
+        `submitAndEvaluate: evaluating for challenge [${challengeId}], userId: [${decodeHashId(
+          encodedUserId
+        )}]`
+      )
       phase = AttestationPhases.EVALUATE_ATTESTATIONS
-      const { errorCode: evaluateErrorCode, error: evaluateError } = await this.solanaWeb3Manager.evaluateChallengeAttestations({
-        challengeId,
-        specifier,
-        recipientEthAddress,
-        oracleEthAddress,
-        tokenAmount: fullTokenAmount,
-        logger,
-        feePayerOverride
-      })
+      const { errorCode: evaluateErrorCode, error: evaluateError } =
+        await this.solanaWeb3Manager.evaluateChallengeAttestations({
+          challengeId,
+          specifier,
+          recipientEthAddress,
+          oracleEthAddress,
+          tokenAmount: fullTokenAmount,
+          logger,
+          feePayerOverride
+        })
 
       if (evaluateErrorCode || evaluateError) {
         throw new Error(evaluateErrorCode || evaluateError)
@@ -202,8 +247,16 @@ class Rewards extends Base {
       return { success: true, error: null, phase: null, nodesToReselect: null }
     } catch (e) {
       const err = e.message
-      const log = (err === GetAttestationError.COGNITO_FLOW || err === GetAttestationError.HCAPTCHA) ? logger.info : logger.error
-      log(`submitAndEvaluate: failed for userId: [${decodeHashId(encodedUserId)}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`)
+      const log =
+        err === GetAttestationError.COGNITO_FLOW ||
+        err === GetAttestationError.HCAPTCHA
+          ? logger.info
+          : logger.error
+      log(
+        `submitAndEvaluate: failed for userId: [${decodeHashId(
+          encodedUserId
+        )}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`
+      )
       return { success: false, error: err, phase, nodesToReselect }
     }
   }
@@ -245,18 +298,34 @@ class Rewards extends Base {
    * @returns {Promise<AttestationsReturn>}
    * @memberof Rewards
    */
-  async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, maxAttempts, endpoints = null, logger = console }) {
+  async aggregateAttestations({
+    challengeId,
+    encodedUserId,
+    handle,
+    specifier,
+    oracleEthAddress,
+    amount,
+    quorumSize,
+    AAOEndpoint,
+    maxAttempts,
+    endpoints = null,
+    logger = console
+  }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
     if (endpoints) {
       endpoints = sampleSize(endpoints, quorumSize)
     } else {
       // If no endpoints array provided, select here
-      endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes({ quorumSize })
+      endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
+        quorumSize
+      })
     }
 
     if (endpoints.length < quorumSize) {
-      logger.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)
+      logger.error(
+        `Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`
+      )
 
       return {
         discoveryNodeAttestations: null,
@@ -271,14 +340,15 @@ class Rewards extends Base {
     let aaoAttestation = null
 
     try {
-      const { success, error: aaoAttestationError } = await this.getAAOAttestation({
-        challengeId,
-        specifier,
-        handle,
-        amount,
-        AAOEndpoint,
-        oracleEthAddress
-      })
+      const { success, error: aaoAttestationError } =
+        await this.getAAOAttestation({
+          challengeId,
+          specifier,
+          handle,
+          amount,
+          AAOEndpoint,
+          oracleEthAddress
+        })
 
       if (aaoAttestationError) {
         return {
@@ -291,7 +361,11 @@ class Rewards extends Base {
       aaoAttestation = success
     } catch (e) {
       const err = e.message
-      logger.error(`Failed to aggregate attestations for user [${decodeHashId(encodedUserId)}], challenge-id: [${challengeId}] with err: ${err}`)
+      logger.error(
+        `Failed to aggregate attestations for user [${decodeHashId(
+          encodedUserId
+        )}], challenge-id: [${challengeId}] with err: ${err}`
+      )
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
@@ -303,22 +377,29 @@ class Rewards extends Base {
     // Then attempt DNs
 
     try {
-      const discoveryNodeAttestationResults = await this._getDiscoveryAttestationsWithRetries({
-        endpoints,
-        challengeId,
-        encodedUserId,
-        specifier,
-        oracleEthAddress,
-        logger,
-        maxAttempts
-      })
+      const discoveryNodeAttestationResults =
+        await this._getDiscoveryAttestationsWithRetries({
+          endpoints,
+          challengeId,
+          encodedUserId,
+          specifier,
+          oracleEthAddress,
+          logger,
+          maxAttempts
+        })
 
-      const discoveryNodeSuccesses = discoveryNodeAttestationResults.map(r => r.success)
-      const discoveryNodeErrors = discoveryNodeAttestationResults.map(r => r.error)
+      const discoveryNodeSuccesses = discoveryNodeAttestationResults.map(
+        (r) => r.success
+      )
+      const discoveryNodeErrors = discoveryNodeAttestationResults.map(
+        (r) => r.error
+      )
       const error = discoveryNodeErrors.find(Boolean)
       if (error) {
         // Propagate out the specific nodes that errored
-        const erroringNodes = discoveryNodeAttestationResults.filter(r => r.error).map(r => r.endpoint)
+        const erroringNodes = discoveryNodeAttestationResults
+          .filter((r) => r.error)
+          .map((r) => r.endpoint)
         return {
           discoveryNodeAttestations: null,
           aaoAttestation: null,
@@ -335,7 +416,11 @@ class Rewards extends Base {
       }
     } catch (e) {
       const err = e.message
-      logger.error(`Failed to aggregate attestations for user [${decodeHashId(encodedUserId)}], challenge-id: [${challengeId}] with err: ${err}`)
+      logger.error(
+        `Failed to aggregate attestations for user [${decodeHashId(
+          encodedUserId
+        )}], challenge-id: [${challengeId}] with err: ${err}`
+      )
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
@@ -371,7 +456,14 @@ class Rewards extends Base {
    * @returns {Promise<GetAttestationReturn>}
    * @memberof Challenge
    */
-  async getChallengeAttestation ({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint, logger = console }) {
+  async getChallengeAttestation({
+    challengeId,
+    encodedUserId,
+    specifier,
+    oracleEthAddress,
+    discoveryProviderEndpoint,
+    logger = console
+  }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     try {
       const res = await this.discoveryProvider.getChallengeAttestation(
@@ -390,8 +482,14 @@ class Rewards extends Base {
       return { success: meta, error: null }
     } catch (e) {
       const err = e.message
-      logger.error(`Failed to get challenge attestation for userId [${decodeHashId(encodedUserId)}] challengeId [${challengeId}]from ${discoveryProviderEndpoint} with ${err}`)
-      const mappedErr = GetAttestationError[err] || GetAttestationError.DISCOVERY_NODE_UNKNOWN_RESPONSE
+      logger.error(
+        `Failed to get challenge attestation for userId [${decodeHashId(
+          encodedUserId
+        )}] challengeId [${challengeId}]from ${discoveryProviderEndpoint} with ${err}`
+      )
+      const mappedErr =
+        GetAttestationError[err] ||
+        GetAttestationError.DISCOVERY_NODE_UNKNOWN_RESPONSE
       return {
         success: null,
         error: mappedErr
@@ -399,7 +497,11 @@ class Rewards extends Base {
     }
   }
 
-  async getUndisbursedChallenges ({ limit, offset, completedBlockNumber, encodedUserId, logger = console } = { logger: console }) {
+  async getUndisbursedChallenges(
+    { limit, offset, completedBlockNumber, encodedUserId, logger = console } = {
+      logger: console
+    }
+  ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     try {
       const res = await this.discoveryProvider.getUndisbursedChallenges(
@@ -447,7 +549,15 @@ class Rewards extends Base {
    * @returns {Promise<GetAAOAttestationReturn>}
    * @memberof Challenge
    */
-  async getAAOAttestation ({ challengeId, specifier, handle, amount, AAOEndpoint, oracleEthAddress, logger = console }) {
+  async getAAOAttestation({
+    challengeId,
+    specifier,
+    handle,
+    amount,
+    AAOEndpoint,
+    oracleEthAddress,
+    logger = console
+  }) {
     const data = {
       challengeId,
       challengeSpecifier: specifier,
@@ -472,9 +582,12 @@ class Rewards extends Base {
       const { result, needs } = response.data
 
       if (!result) {
-        logger.error(`Failed to get AAO attestation${needs ? `: needs ${needs}` : ''}`)
+        logger.error(
+          `Failed to get AAO attestation${needs ? `: needs ${needs}` : ''}`
+        )
         const mappedErr = needs
-          ? GetAttestationError[needs] || GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
+          ? GetAttestationError[needs] ||
+            GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
           : GetAttestationError.AAO_ATTESTATION_REJECTION
         return {
           success: null,
@@ -499,7 +612,7 @@ class Rewards extends Base {
     }
   }
 
-  async _getDiscoveryAttestationsWithRetries ({
+  async _getDiscoveryAttestationsWithRetries({
     endpoints,
     challengeId,
     encodedUserId,
@@ -514,32 +627,39 @@ class Rewards extends Base {
     let needsAttestations = endpoints
 
     do {
-      logger.info(`Aggregating attestations with retries challenge: ${challengeId}, userId: ${encodedUserId}, endpoints: ${needsAttestations}, attempt ${retryCount}`)
+      logger.info(
+        `Aggregating attestations with retries challenge: ${challengeId}, userId: ${encodedUserId}, endpoints: ${needsAttestations}, attempt ${retryCount}`
+      )
       if (retryCount > 0) {
-        await (new Promise(resolve => setTimeout(resolve, 2000)))
+        await new Promise((resolve) => setTimeout(resolve, 2000))
       }
 
-      const attestations = await Promise.all(needsAttestations.map(async endpoint => {
-        const res = await this.getChallengeAttestation({
-          challengeId,
-          encodedUserId,
-          specifier,
-          oracleEthAddress,
-          discoveryProviderEndpoint: endpoint,
-          logger
+      const attestations = await Promise.all(
+        needsAttestations.map(async (endpoint) => {
+          const res = await this.getChallengeAttestation({
+            challengeId,
+            encodedUserId,
+            specifier,
+            oracleEthAddress,
+            discoveryProviderEndpoint: endpoint,
+            logger
+          })
+          return { endpoint, res }
         })
-        return { endpoint, res }
-      }))
+      )
 
       needsAttestations = []
-      attestations.forEach(a => {
+      attestations.forEach((a) => {
         // If it's a retryable error
-        const isRetryable = a.res.error === GetAttestationError.CHALLENGE_INCOMPLETE ||
+        const isRetryable =
+          a.res.error === GetAttestationError.CHALLENGE_INCOMPLETE ||
           a.res.error === GetAttestationError.MISSING_CHALLENGES
 
         if (isRetryable) {
           needsAttestations.push(a.endpoint)
-          logger.info(`Node ${a.endpoint} challenge still incomplete for challenge [${challengeId}], userId: ${encodedUserId}`)
+          logger.info(
+            `Node ${a.endpoint} challenge still incomplete for challenge [${challengeId}], userId: ${encodedUserId}`
+          )
           // If final attempt, make sure we return the result
           if (retryCount === maxAttempts) {
             completedAttestations.push({ ...a.res, endpoint: a.endpoint })
@@ -553,13 +673,20 @@ class Rewards extends Base {
       })
 
       retryCount++
-    }
-    while (needsAttestations.length && retryCount <= maxAttempts)
+    } while (needsAttestations.length && retryCount <= maxAttempts)
 
     if (needsAttestations.length || unrecoverableError) {
-      logger.info(`Failed to aggregate attestations for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}]`)
+      logger.info(
+        `Failed to aggregate attestations for challenge [${challengeId}], userId: [${decodeHashId(
+          encodedUserId
+        )}]`
+      )
     } else {
-      logger.info(`Successfully aggregated attestations for challenge [${challengeId}], userId: [${decodeHashId(encodedUserId)}]`)
+      logger.info(
+        `Successfully aggregated attestations for challenge [${challengeId}], userId: [${decodeHashId(
+          encodedUserId
+        )}]`
+      )
     }
     return completedAttestations
   }
@@ -590,7 +717,7 @@ class Rewards extends Base {
    * }
    * @memberof Rewards
    */
-  async createSenderPublic ({
+  async createSenderPublic({
     senderEthAddress,
     operatorEthAddress,
     senderEndpoint,
@@ -602,38 +729,48 @@ class Rewards extends Base {
     if (endpoints) {
       attestEndpoints = sampleSize(endpoints, numAttestations)
     } else {
-      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
-        quorumSize: numAttestations,
-        useWhitelist: false,
-        filter: async (node) => {
-          const isRegistered = await this.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
-          return isRegistered
-        }
-      })
+      attestEndpoints =
+        await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
+          quorumSize: numAttestations,
+          useWhitelist: false,
+          filter: async (node) => {
+            const isRegistered =
+              await this.solanaWeb3Manager.getIsDiscoveryNodeRegistered(
+                node.delegateOwnerWallet
+              )
+            return isRegistered
+          }
+        })
     }
 
     if (attestEndpoints.length < numAttestations) {
-      throw new Error(`Not enough other nodes found, need ${numAttestations}, found ${attestEndpoints.length}`)
+      throw new Error(
+        `Not enough other nodes found, need ${numAttestations}, found ${attestEndpoints.length}`
+      )
     }
 
     let error = null
-    const attestations = await Promise.all(attestEndpoints.map(async attestEndpoint => {
-      try {
-        const res = await this.discoveryProvider.getCreateSenderAttestation(
-          senderEthAddress,
-          attestEndpoint
-        )
-        return {
-          ethAddress: res.owner_wallet,
-          signature: res.attestation
+    const attestations = await Promise.all(
+      attestEndpoints.map(async (attestEndpoint) => {
+        try {
+          const res = await this.discoveryProvider.getCreateSenderAttestation(
+            senderEthAddress,
+            attestEndpoint
+          )
+          return {
+            ethAddress: res.owner_wallet,
+            signature: res.attestation
+          }
+        } catch (e) {
+          console.error(e)
+          error = true
         }
-      } catch (e) {
-        console.error(e)
-        error = true
-      }
-    }))
+      })
+    )
     if (error) {
-      console.error(`Failed to get attestations from other nodes ${attestEndpoints}`)
+      console.error(
+        `Failed to get attestations from other nodes ${attestEndpoints}`
+      )
       return {
         success: null,
         error: GetSenderAttestationError.REQUEST_FOR_ATTESTATION_FAILED
@@ -666,7 +803,17 @@ class Rewards extends Base {
    * }} { status, userId, challengeId, amount, error, phase, specifier, reason }
    * @memberof IdentityService
    */
-  async sendAttestationResult ({ status, userId, challengeId, amount, error, phase, source, specifier, reason }) {
+  async sendAttestationResult({
+    status,
+    userId,
+    challengeId,
+    amount,
+    error,
+    phase,
+    source,
+    specifier,
+    reason
+  }) {
     await this.identityService.sendAttestationResult({
       status,
       userId,

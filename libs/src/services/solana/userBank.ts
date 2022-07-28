@@ -1,17 +1,18 @@
-const {
+import {
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction
-} = require('@solana/web3.js')
-const borsh = require('borsh')
-const bs58 = require('bs58')
-const { ethAddressToArray } = require('./utils')
+} from '@solana/web3.js'
+import borsh from 'borsh'
+import bs58 from 'bs58'
+import { SolanaUtils } from './SolanaUtils'
+import type { TransactionHandler } from './transactionHandler'
 
 class CreateTokenAccountInstructionData {
-  constructor ({
-    ethAddress
-  }) {
+  hashed_eth_pk: Uint8Array
+
+  constructor({ ethAddress }: { ethAddress: Uint8Array }) {
     this.hashed_eth_pk = ethAddress
   }
 }
@@ -21,26 +22,20 @@ const createTokenAccountInstructionSchema = new Map([
     CreateTokenAccountInstructionData,
     {
       kind: 'struct',
-      fields: [
-        ['hashed_eth_pk', [20]]
-      ]
+      fields: [['hashed_eth_pk', [20]]]
     }
   ]
 ])
 
 /**
  * Gets the back account address for a user given their ethAddress
- * @param {string} ethAddress
- * @param {PublicKey} claimableTokenPDA
- * @param {PublicKey} solanaTokenProgramKey
- * @returns
  */
-const getBankAccountAddress = async (
-  ethAddress,
-  claimableTokenPDA,
-  solanaTokenProgramKey
+export const getBankAccountAddress = async (
+  ethAddress: string,
+  claimableTokenPDA: PublicKey,
+  solanaTokenProgramKey: PublicKey
 ) => {
-  const ethAddressArr = ethAddressToArray(ethAddress)
+  const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
 
   // We b58 encode our eth address to use as seed later on
   const b58EthAddress = bs58.encode(ethAddressArr)
@@ -53,20 +48,22 @@ const getBankAccountAddress = async (
   return accountToGenerate
 }
 
+type CreateUserBankFromConfig = {
+  ethAddress: string
+  claimableTokenPDAKey: PublicKey
+  feePayerKey: PublicKey
+  mintKey: PublicKey
+  solanaTokenProgramKey: PublicKey
+  claimableTokenProgramKey: PublicKey
+  transactionHandler: TransactionHandler
+  recentBlockhash?: string
+}
+
 /**
  * createUserBank deterministically creates a Solana wAudio token account
  * from a provided ethAddress
- * @param {string} ethAddress
- * @param {PublicKey} claimableTokenPDAKey
- * @param {PublicKey} feePayerKey
- * @param {PublicKey} mintKey
- * @param {PublicKey} solanaTokenProgramKey
- * @param {PublicKey} claimableTokenProgramKey
- * @param {*} transactionHandler
- * @param {string?} recentBlockhash
- * @returns
  */
-const createUserBankFrom = async ({
+export const createUserBankFrom = async ({
   ethAddress,
   claimableTokenPDAKey,
   feePayerKey,
@@ -75,9 +72,9 @@ const createUserBankFrom = async ({
   claimableTokenProgramKey,
   transactionHandler,
   recentBlockhash
-}) => {
+}: CreateUserBankFromConfig) => {
   // Create instruction data
-  const ethAddressArr = ethAddressToArray(ethAddress)
+  const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
 
   const instructionData = new CreateTokenAccountInstructionData({
     ethAddress: ethAddressArr
@@ -145,16 +142,17 @@ const createUserBankFrom = async ({
     }
   ]
 
-  const instructions = [new TransactionInstruction({
-    keys: accounts,
-    programId: claimableTokenProgramKey.toString(),
-    data: Buffer.from(serializedInstructionEnum)
-  })]
+  const instructions = [
+    new TransactionInstruction({
+      keys: accounts,
+      programId: claimableTokenProgramKey.toString() as unknown as PublicKey,
+      data: Buffer.from(serializedInstructionEnum)
+    })
+  ]
 
-  return transactionHandler.handleTransaction({ instructions, recentBlockhash, feePayerOverride: feePayerKey })
-}
-
-module.exports = {
-  getBankAccountAddress,
-  createUserBankFrom
+  return transactionHandler.handleTransaction({
+    instructions,
+    recentBlockhash,
+    feePayerOverride: feePayerKey
+  })
 }

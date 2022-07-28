@@ -27,8 +27,8 @@ export type RelayTransaction = {
 
 export type RelayTransactionData = {
   instructions: TransactionInstruction[]
-  skipPreflight: boolean
-  feePayerOverride: string | null
+  skipPreflight?: boolean
+  feePayerOverride?: string | null
   signatures?: Array<{ publicKey: string; signature: Buffer }> | null
   retry?: boolean
   recentBlockhash?: string

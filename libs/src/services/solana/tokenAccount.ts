@@ -1,23 +1,27 @@
-const { ASSOCIATED_TOKEN_PROGRAM_ID, Token } = require('@solana/spl-token')
-const {
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token } from '@solana/spl-token'
+import {
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
-  Keypair
-} = require('@solana/web3.js')
+  Keypair,
+  Connection
+} from '@solana/web3.js'
+import type { IdentityService } from '../identity'
+
+type FindAssociatedTokenAddressConfig = {
+  solanaWalletKey: PublicKey
+  mintKey: PublicKey
+  solanaTokenProgramKey: PublicKey
+}
 
 /**
  * Finds the associated token address given a solana wallet public key
- * @param {PublicKey} solanaWalletKey Public Key for a given solana account (a wallet)
- * @param {PublicKey} mintKey
- * @param {PublicKey} solanaTokenProgramKey
- * @returns {PublicKey} token account public key
  */
-async function findAssociatedTokenAddress ({
+export async function findAssociatedTokenAddress({
   solanaWalletKey,
   mintKey,
   solanaTokenProgramKey
-}) {
+}: FindAssociatedTokenAddressConfig) {
   const addresses = await PublicKey.findProgramAddress(
     [
       solanaWalletKey.toBuffer(),
@@ -29,20 +33,22 @@ async function findAssociatedTokenAddress ({
   return addresses[0]
 }
 
+type GetAssociatedTokenAccountInfoConfig = {
+  tokenAccountAddressKey: PublicKey
+  mintKey: PublicKey
+  solanaTokenProgramKey: PublicKey
+  connection: Connection
+}
+
 /**
  * Gets token account information (e.g. balance, ownership, etc.)
- * @param {PublicKey} tokenAccountAddressKey
- * @param {PublicKey} mintKey
- * @param {PublicKey} solanaTokenProgramKey
- * @param {Connection} connection
- * @returns {AccountInfo}
  */
-async function getAssociatedTokenAccountInfo ({
+export async function getAssociatedTokenAccountInfo({
   tokenAccountAddressKey,
   mintKey,
   solanaTokenProgramKey,
   connection
-}) {
+}: GetAssociatedTokenAccountInfoConfig) {
   const token = new Token(
     connection,
     mintKey,
@@ -53,23 +59,26 @@ async function getAssociatedTokenAccountInfo ({
   return info
 }
 
+type CreateAssociatedTokenAccountParams = {
+  feePayerKey: PublicKey
+  solanaWalletKey: PublicKey
+  mintKey: PublicKey
+  solanaTokenProgramKey: PublicKey
+  connection: Connection
+  identityService: IdentityService
+}
+
 /**
  * Creates an associated token account for a given solana account (a wallet)
- * @param {PublicKey} feePayerKey
- * @param {PublicKey} solanaWalletKey the wallet we wish to create a token account for
- * @param {PublicKey} mintKey
- * @param {PublicKey} solanaTokenProgramKey
- * @param {Connection} connection
- * @param {IdentityService} identityService
  */
-async function createAssociatedTokenAccount ({
+export async function createAssociatedTokenAccount({
   feePayerKey,
   solanaWalletKey,
   mintKey,
   solanaTokenProgramKey,
   connection,
   identityService
-}) {
+}: CreateAssociatedTokenAccountParams) {
   const associatedTokenAddress = await findAssociatedTokenAddress({
     solanaWalletKey,
     mintKey,
@@ -125,25 +134,22 @@ async function createAssociatedTokenAccount ({
 
   const transactionData = {
     recentBlockhash: blockhash,
-    instructions: [{
-      keys: accounts.map(account => {
-        return {
-          pubkey: account.pubkey.toString(),
-          isSigner: account.isSigner,
-          isWritable: account.isWritable
-        }
-      }),
-      programId: ASSOCIATED_TOKEN_PROGRAM_ID.toString(),
-      data: Buffer.from([])
-    }]
+    instructions: [
+      {
+        keys: accounts.map((account) => {
+          return {
+            pubkey: account.pubkey.toString() as unknown as PublicKey,
+            isSigner: account.isSigner,
+            isWritable: account.isWritable
+          }
+        }),
+        programId:
+          ASSOCIATED_TOKEN_PROGRAM_ID.toString() as unknown as PublicKey,
+        data: Buffer.from([])
+      }
+    ]
   }
 
   const response = await identityService.solanaRelay(transactionData)
   return response
-}
-
-module.exports = {
-  findAssociatedTokenAddress,
-  getAssociatedTokenAccountInfo,
-  createAssociatedTokenAccount
 }

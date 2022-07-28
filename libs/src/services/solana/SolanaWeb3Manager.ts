@@ -1,28 +1,32 @@
-const solanaWeb3 = require('@solana/web3.js')
-const splToken = require('@solana/spl-token')
-const anchor = require('@project-serum/anchor')
-const { idl } = require('@audius/anchor-audius-data')
+import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import type BN from 'bn.js'
+import splToken from '@solana/spl-token'
+import anchor, { Address, Idl, Program } from '@project-serum/anchor'
+import { idl } from '@audius/anchor-audius-data'
 
-const { transferWAudioBalance } = require('./transfer')
-const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
-const {
+import { transferWAudioBalance } from './transfer'
+import { getBankAccountAddress, createUserBankFrom } from './userBank'
+import {
   createAssociatedTokenAccount,
   getAssociatedTokenAccountInfo,
   findAssociatedTokenAddress
-} = require('./tokenAccount')
-const { wAudioFromWeiAudio } = require('./wAudio')
-const { Utils } = require('../../utils')
-const SolanaUtils = require('./utils')
-const { TransactionHandler } = require('./transactionHandler')
-const {
+} from './tokenAccount'
+import { wAudioFromWeiAudio } from './wAudio'
+import { Nullable, Utils } from '../../utils'
+import { SolanaUtils } from './SolanaUtils'
+import { TransactionHandler } from './transactionHandler'
+import {
   submitAttestations,
   evaluateAttestations,
   createSender,
-  deriveSolanaSenderFromEthAddress
-} = require('./rewards')
-const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
-
-const { PublicKey } = solanaWeb3
+  deriveSolanaSenderFromEthAddress,
+  SubmitAttestationsConfig,
+  EvaluateAttestationsConfig,
+  CreateSenderParams
+} from './rewards'
+import { AUDIO_DECMIALS, WAUDIO_DECMIALS } from '../../constants'
+import type { IdentityService } from '../identity'
+import type { Web3Manager } from '../web3Manager'
 
 // Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
@@ -33,9 +37,23 @@ const SOL_PER_LAMPORT = 0.000000001
 // Generous default connection confirmation timeout to better cope with RPC congestion
 const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
 
-/**
- * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
- */
+export type SolanaWeb3Config = {
+  solanaClusterEndpoint: string
+  mintAddress: string
+  solanaTokenAddress: string
+  claimableTokenPDA: string
+  feePayerAddress: string
+  claimableTokenProgramAddress: string
+  rewardsManagerProgramId: string
+  rewardsManagerProgramPDA: string
+  rewardsManagerTokenPDA: string
+  useRelay: boolean
+  feePayerKeypairs: Keypair[]
+  confirmationTimeout: number
+  audiusDataProgramId: PublicKey
+  audiusDataAdminStorageKeypairPublicKey: PublicKey
+  audiusDataIdl: Idl
+}
 
 /**
  * SolanaWeb3Manager acts as the interface to solana contracts from a client.
@@ -46,42 +64,38 @@ const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
  * The internals of this class should handle the conversion from wei AUDIO to wormhole
  * $AUDIO amounts.
  */
-class SolanaWeb3Manager {
-  /**
-   * @param {Object} solanaWeb3Config
-   * @param {string} solanaWeb3Config.solanaClusterEndpoint
-   *  the solana cluster RPC endpoint
-   * @param {string} solanaWeb3Config.mintAddress
-   *  address for the wAudio mint - Audius (Wormhole) token
-   * @param {string} solanaWeb3Config.solanaTokenAddress
-   *  the SPL token program address
-   * @param {string} solanaWeb3Config.claimableTokenPDA
-   *  the program derived address for the claimable token program (using the mint)
-   * @param {string} solanaWeb3Config.feePayerAddress
-   *  the address for the specific fee payer to be used in relayed transactions
-   * @param {string} solanaWeb3Config.claimableTokenProgramAddress
-   *  the address for the claimable token program used to create banks and transfer wAudio
-   * @param {string} solanaWeb3Config.rewardsManagerProgramId
-   *  the ID of the rewards manager program
-   * @param {string} solanaWeb3Config.rewardsManagerProgramPDA
-   *  the manager account of the rewards manager program
-   * @param {string} solanaWeb3Config.rewardsManagerTokenPDA
-   *  the token holder account of the rewards manager program
-   * @param {boolean} solanaWeb3Config.useRelay
-   *  whether to submit transactions via a relay, or locally
-   * @param {KeyPair} solanaWeb3Config.feePayerKepairs
-   *  KeyPairs for feepayers
-   * @param {number} [solanaWeb3Config.confirmationTimeout] optional default confirmation timeout
-   * @param {PublicKey} [solanaWeb3Config.audiusDataProgramId]
-   *  Program ID for audius-data anchor program
-   * @param {PublicKey} [solanaWeb3Config.audiusDataAdminStorageKeypairPublicKey]
-   *  PK for audius-data admin storage keypair
-   * @param {anchor.Idl} [solanaWeb3Config.audiusDataIdl]
-   *  IDL for audius-data program
-   * @param {IdentityService} identityService
-   * @param {Web3Manager} web3Manager
-   */
-  constructor (solanaWeb3Config, identityService, web3Manager) {
+
+export class SolanaWeb3Manager {
+  solanaWeb3Config: SolanaWeb3Config
+  identityService: IdentityService
+  web3Manager: Web3Manager
+  solanaWeb3: typeof solanaWeb3
+  splToken: typeof splToken
+  solanaClusterEndpoint!: string
+  transactionHandler!: TransactionHandler
+  connection!: Connection
+  mintAddress!: string
+  mintKey!: PublicKey
+  solanaTokenAddress!: string
+  solanaTokenKey!: PublicKey
+  feePayerAddress!: string
+  feePayerKey!: PublicKey
+  claimableTokenProgramKey!: PublicKey
+  claimableTokenPDA!: string
+  claimableTokenPDAKey!: PublicKey
+  rewardManagerProgramId!: PublicKey
+  rewardManagerProgramPDA!: PublicKey
+  rewardManagerTokenPDA!: PublicKey
+  audiusDataProgramId!: PublicKey
+  audiusDataAdminStorageKeypairPublicKey!: PublicKey
+  audiusDataIdl!: Idl
+  anchorProgram!: Program
+
+  constructor(
+    solanaWeb3Config: SolanaWeb3Config,
+    identityService: IdentityService,
+    web3Manager: Web3Manager
+  ) {
     this.solanaWeb3Config = solanaWeb3Config
     this.identityService = identityService
     this.web3Manager = web3Manager
@@ -90,7 +104,7 @@ class SolanaWeb3Manager {
     this.splToken = splToken
   }
 
-  async init () {
+  async init() {
     const {
       solanaClusterEndpoint,
       mintAddress,
@@ -132,9 +146,10 @@ class SolanaWeb3Manager {
       this.feePayerAddress = feePayerAddress
       this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerAddress)
     } else if (feePayerKeypairs && feePayerKeypairs.length) {
-      this.feePayerAddress = feePayerKeypairs[0].publicKey
+      // @ts-expect-error this seems wrong
+      this.feePayerAddress = feePayerKeypairs[0]?.publicKey
       this.feePayerKey = SolanaUtils.newPublicKeyNullable(
-        feePayerKeypairs[0].publicKey
+        feePayerKeypairs[0]?.publicKey as unknown as string
       )
     }
 
@@ -143,14 +158,14 @@ class SolanaWeb3Manager {
     )
     this.claimableTokenPDA =
       claimableTokenPDA ||
-      (this.claimableTokenProgramKey
+      ((this.claimableTokenProgramKey
         ? (
             await SolanaUtils.findProgramAddressFromPubkey(
               this.claimableTokenProgramKey,
               this.mintKey
             )
           )[0].toString()
-        : null)
+        : null) as string)
     this.claimableTokenPDAKey = SolanaUtils.newPublicKeyNullable(
       this.claimableTokenPDA
     )
@@ -180,6 +195,7 @@ class SolanaWeb3Manager {
       )
       const anchorProvider = new anchor.AnchorProvider(
         connection,
+        // @ts-expect-error weirdness with 3rd party types
         solanaWeb3.Keypair.generate(),
         anchor.AnchorProvider.defaultOptions()
       )
@@ -194,7 +210,7 @@ class SolanaWeb3Manager {
   /**
    * Creates a solana bank account from the web3 provider's eth address
    */
-  async createUserBank (feePayerOverride) {
+  async createUserBank(feePayerOverride: string) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -210,7 +226,6 @@ class SolanaWeb3Manager {
       mintKey: this.mintKey,
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
-      connection: this.connection,
       transactionHandler: this.transactionHandler
     })
   }
@@ -218,9 +233,8 @@ class SolanaWeb3Manager {
   /**
    * Creates a token account for the provided solana address (a wallet)
    * See https://spl.solana.com/associated-token-account
-   * @param {string} solanaAddress
    */
-  async createAssociatedTokenAccount (solanaAddress) {
+  async createAssociatedTokenAccount(solanaAddress: string) {
     await createAssociatedTokenAccount({
       feePayerKey: this.feePayerKey,
       solanaWalletKey: new PublicKey(solanaAddress),
@@ -234,9 +248,8 @@ class SolanaWeb3Manager {
   /**
    * Finds the wAudio token account for a provided solana address (a wallet)
    * See https://spl.solana.com/associated-token-account
-   * @param {string} solanaAddress
    */
-  async findAssociatedTokenAddress (solanaAddress) {
+  async findAssociatedTokenAddress(solanaAddress: string) {
     return findAssociatedTokenAddress({
       solanaWalletKey: new PublicKey(solanaAddress),
       mintKey: this.mintKey,
@@ -246,9 +259,8 @@ class SolanaWeb3Manager {
 
   /**
    * Gets a solana bank account from the current we3 provider's eth address
-   * @returns {PublicKey} UserBank
    */
-  async getUserBank () {
+  async getUserBank() {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -266,9 +278,8 @@ class SolanaWeb3Manager {
   /**
    * Gets the info for a user bank/wAudio token account given a solana address.
    * If the solanaAddress is not a valid token account, returns `null`
-   * @returns {AccountInfo | null}
    */
-  async getAssociatedTokenAccountInfo (solanaAddress) {
+  async getAssociatedTokenAccountInfo(solanaAddress: string) {
     try {
       const res = await getAssociatedTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
@@ -284,9 +295,8 @@ class SolanaWeb3Manager {
 
   /**
    * Gets the SPL waudio balance for a solana address in wei with 18 decimals
-   * @returns {BN | null}
    */
-  async getWAudioBalance (solanaAddress) {
+  async getWAudioBalance(solanaAddress: string) {
     try {
       let tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
 
@@ -327,7 +337,7 @@ class SolanaWeb3Manager {
    * Generally speaking, callers into the solanaWeb3Manager should use BN.js representation
    * of wei $AUDIO for all method calls
    */
-  async transferWAudio (recipientSolanaAddress, amount) {
+  async transferWAudio(recipientSolanaAddress: string, amount: BN) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -374,7 +384,8 @@ class SolanaWeb3Manager {
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
       feePayerKey: this.feePayerKey,
-      senderEthPrivateKey: this.web3Manager.getOwnerWalletPrivateKey(),
+      senderEthPrivateKey:
+        this.web3Manager.getOwnerWalletPrivateKey() as unknown as string,
       senderSolanaAddress,
       recipientSolanaAddress,
       claimableTokenPDA: this.claimableTokenPDAKey,
@@ -388,31 +399,8 @@ class SolanaWeb3Manager {
 
   /**
    * Submits attestations for challenge completion to the RewardsManager program on Solana.
-   *
-   * @param {{
-   *     attestations: AttestationMeta[],
-   *     oracleAttestation: AttestationMeta,
-   *     challengeId: string,
-   *     specifier: string,
-   *     recipientEthAddress: string,
-   *     tokenAmount: BN,
-   *     instructionsPerTransaction?: number,
-   *     logger: any
-   *     feePayerOverride: string | null
-   * }} {
-   *     attestations,
-   *     oracleAttestation,
-   *     challengeId,
-   *     specifier,
-   *     recipientEthAddress,
-   *     tokenAmount,
-   *     instructionsPerTransaction,
-   *     logger
-   *     feePayerOverride
-   *    }
-   * @memberof SolanaWeb3Manager
    */
-  async submitChallengeAttestations ({
+  async submitChallengeAttestations({
     attestations,
     oracleAttestation,
     challengeId,
@@ -422,7 +410,7 @@ class SolanaWeb3Manager {
     instructionsPerTransaction,
     logger = console,
     feePayerOverride = null
-  }) {
+  }: SubmitAttestationsConfig & { feePayerOverride: Nullable<string> }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
@@ -442,26 +430,8 @@ class SolanaWeb3Manager {
 
   /**
    * Evaluates existing submitted attestations, disbursing if successful.
-   *
-   * @param {{
-   *    challengeId: string,
-   *    specifier: string,
-   *    recipientEthAddress: string
-   *    oracleEthAddress: string
-   *    logger: any
-   *    feePayerOverride: string | null
-   * }} {
-   *     challengeId,
-   *     specifier,
-   *     recipientEthAddress,
-   *     oracleEthAddress,
-   *     tokenAmount,
-   *     logger
-   *     feePayerOverride
-   *   }
-   * @memberof SolanaWeb3Manager
    */
-  async evaluateChallengeAttestations ({
+  async evaluateChallengeAttestations({
     challengeId,
     specifier,
     recipientEthAddress,
@@ -469,7 +439,7 @@ class SolanaWeb3Manager {
     tokenAmount,
     logger = console,
     feePayerOverride = null
-  }) {
+  }: EvaluateAttestationsConfig & { feePayerOverride: Nullable<string> }) {
     return evaluateAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
@@ -497,12 +467,12 @@ class SolanaWeb3Manager {
    * }} {
    * @memberof SolanaWeb3Manager
    */
-  async createSender ({
+  async createSender({
     senderEthAddress,
     operatorEthAddress,
     attestations,
     feePayerOverride = null
-  }) {
+  }: CreateSenderParams & { feePayerOverride: Nullable<string> }) {
     return createSender({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
@@ -512,56 +482,44 @@ class SolanaWeb3Manager {
       operatorEthAddress,
       attestations,
       identityService: this.identityService,
-      connection: this.connection,
       transactionHandler: this.transactionHandler
     })
   }
 
   /**
    * Gets the balance of a PublicKey, in SOL
-   *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
-   * @memberof SolanaWeb3Manager
    */
-  async getBalance ({ publicKey }) {
+  async getBalance({ publicKey }: { publicKey: PublicKey }) {
     const lamports = await this.connection.getBalance(publicKey)
     return lamports * SOL_PER_LAMPORT
   }
 
   /**
    * Gets whether a PublicKey has a usable balance
-   *
-   * @param {{
-   *  publicKey: PublicKey,
-   *  epsilon?: number
-   * }} { publicKey }
-   * @return {Promise<boolean>}
-   * @memberof SolanaWeb3Manager
    */
-  async hasBalance ({ publicKey, epsilon = ZERO_SOL_EPSILON }) {
+  async hasBalance({
+    publicKey,
+    epsilon = ZERO_SOL_EPSILON
+  }: {
+    publicKey: PublicKey
+    epsilon?: number
+  }) {
     const balance = await this.getBalance({ publicKey })
     return balance > epsilon
   }
 
-  async getSlot () {
+  async getSlot() {
     return this.connection.getSlot('processed')
   }
 
-  async getRandomFeePayer () {
+  async getRandomFeePayer() {
     return this.identityService.getRandomFeePayer()
   }
 
   /**
    * Gets whether a given node registered on eth with `senderEthAddress` is registered on Solana
-   *
-   * @param {string} senderEthAddress
-   * @return {Promise<boolean>}
-   * @memberof SolanaWeb3Manager
    */
-  async getIsDiscoveryNodeRegistered (senderEthAddress) {
+  async getIsDiscoveryNodeRegistered(senderEthAddress: string) {
     const derivedSenderSolanaAddress = await deriveSolanaSenderFromEthAddress(
       senderEthAddress,
       this.rewardManagerProgramId,
@@ -572,7 +530,7 @@ class SolanaWeb3Manager {
     return !!res
   }
 
-  async findProgramAddress (programId, pubkey) {
+  async findProgramAddress(programId: PublicKey, pubkey: PublicKey) {
     return PublicKey.findProgramAddress(
       [pubkey.toBytes().slice(0, 32)],
       programId
@@ -582,13 +540,13 @@ class SolanaWeb3Manager {
   /**
    * Finds a 'derived' address by finding a programAddress with
    * seeds array  as first 32 bytes of base + seeds
-   * Returns [derivedAddress, bumpSeed]
-   * @param {string} programId
-   * @param {string} base
-   * @param {Buffer | Uint8Array} seed
    * @returns the program address
    */
-  async findDerivedAddress (programId, base, seed) {
+  async findDerivedAddress(
+    programId: PublicKey,
+    base: PublicKey,
+    seed: Buffer | Uint8Array
+  ) {
     return PublicKey.findProgramAddress(
       [base.toBytes().slice(0, 32), seed],
       programId
@@ -598,11 +556,12 @@ class SolanaWeb3Manager {
   /**
    * Finds the target PDA with the base audius admin as the initial seed
    * In conjunction with the secondary seed as the users id in bytes
-   * @param {PublicKey} programId
-   * @param {PublicKey} adminAccount
-   * @param {Buffer | Uint8Array} seed
    */
-  async findDerivedPair (programId, adminAccount, seed) {
+  async findDerivedPair(
+    programId: PublicKey,
+    adminAccount: PublicKey,
+    seed: Buffer | Uint8Array
+  ) {
     programId = SolanaUtils.newPublicKeyNullable(programId)
     adminAccount = SolanaUtils.newPublicKeyNullable(adminAccount)
 
@@ -624,12 +583,11 @@ class SolanaWeb3Manager {
 
   /**
    * Fetch account on Solana given the program derived address
-   * @param {PublicKey} pda the program derived address from findDerivedPair()
    */
-  async fetchAccount (pda) {
+  async fetchAccount(pda: Address) {
     let account
     try {
-      account = await this.anchorProgram.account.user.fetch(pda)
+      account = await this.anchorProgram.account?.['user']?.fetch(pda)
       return account
     } catch (e) {
       return null
@@ -638,10 +596,9 @@ class SolanaWeb3Manager {
 
   /**
    * Given the eth address buffer from the account, convert to hex
-   * @param {Buffer} accountEthAddress
    * @returns hex string of input bytes
    */
-  async deriveEthWalletFromAddress (accountEthAddress) {
+  async deriveEthWalletFromAddress(accountEthAddress: Buffer) {
     let encodedEthAddress = Buffer.from(accountEthAddress).toString('hex')
 
     if (!encodedEthAddress.startsWith('0x')) {
@@ -651,5 +608,3 @@ class SolanaWeb3Manager {
     return encodedEthAddress
   }
 }
-
-module.exports = SolanaWeb3Manager
