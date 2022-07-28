@@ -1,3 +1,10 @@
+import type Logger from 'bunyan'
+import type {
+  AnyDecoratedJobParams,
+  AnyDecoratedJobReturnValue,
+  AnyJobParams
+} from './types'
+
 const _ = require('lodash')
 
 const { createChildLogger } = require('../../logging')
@@ -14,15 +21,15 @@ const { QUEUE_NAMES } = require('./stateMachineConstants')
  * @returns the result of the completed job, or an object with an error property if the job throws
  */
 module.exports = async function (
-  job,
-  jobProcessor,
-  parentLogger,
-  prometheusRegistry
+  job: { id: string; data: AnyJobParams },
+  jobProcessor: (job: AnyDecoratedJobParams) => AnyDecoratedJobReturnValue,
+  parentLogger: Logger,
+  prometheusRegistry: any
 ) {
   // Make sure logger has `queue` property
   const queueName = parentLogger?.fields?.queue
   if (!queueName) {
-    parentLogger?.error(
+    parentLogger.error(
       `Missing required queue property on logger for job ${job}`
     )
     throw new Error('Missing required queue property on logger!')
@@ -45,7 +52,7 @@ module.exports = async function (
     result = await jobProcessor({ logger: jobLogger, ...jobData })
     metricEndTimerFn({ uncaughtError: false, ...getLabels(queueName, result) })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
-  } catch (error) {
+  } catch (error: any) {
     jobLogger.error(`Error processing job: ${error}`)
     jobLogger.error(error.stack)
     result = { error: error.message || `${error}` }
@@ -60,7 +67,7 @@ module.exports = async function (
  * @param {string} jobName the name of the job to generate metrics for
  * @param {Object} jobResult the result of the job to generate metrics for
  */
-const getLabels = (jobName, jobResult) => {
+const getLabels = (jobName: string, jobResult: any) => {
   if (jobName === QUEUE_NAMES.UPDATE_REPLICA_SET) {
     const { issuedReconfig, newReplicaSet } = jobResult
     return {

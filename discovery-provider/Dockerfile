@@ -33,15 +33,15 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         postgresql-dev=11.12-r0 \
         postgresql-libs=11.12-r0 \
         postgresql=11.12-r0 \
-        py3-pip=20.3.4-r1 \
-        py3-wheel=0.36.2-r2 \
-        python3-dev=3.9.7-r4 \
-        python3=3.9.7-r4 \
         py3-numpy \
+        py3-pip \
         py3-scipy \
+        py3-wheel \
+        python3 \
+        python3-dev \
         redis=6.2.7-r0 \
         rsyslog \
-        sudo=1.9.8_p2-r1 && \
+        sudo && \
     apk add --virtual .build-deps \
         gcc \
         musl-dev \

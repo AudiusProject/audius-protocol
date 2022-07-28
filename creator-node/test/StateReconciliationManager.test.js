@@ -57,7 +57,7 @@ describe('test StateReconciliationManager initialization, events, and job proces
     }
     const createChildLogger = sandbox.stub().returns(loggerStub)
     const processJobMock = proxyquire(
-      '../src/services/stateMachineManager/processJob.js',
+      '../src/services/stateMachineManager/processJob.ts',
       {
         '../../logging': {
           createChildLogger
