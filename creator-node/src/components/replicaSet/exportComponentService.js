@@ -88,7 +88,7 @@ const exportComponentService = async ({
 
     /** Bundle all data into cnodeUser objects to maximize import speed. */
     const cnodeUsersDict = {}
-    cnodeUsers.forEach(async (cnodeUser) => {
+    for (const cnodeUser of cnodeUsers) {
       // Add cnodeUserUUID data fields
       cnodeUser.audiusUsers = []
       cnodeUser.tracks = []
@@ -127,7 +127,7 @@ const exportComponentService = async ({
         requestedClockRangeMax,
         localClockMax: cnodeUser.clock
       }
-    })
+    }
 
     audiusUsers.forEach((audiusUser) => {
       cnodeUsersDict[audiusUser.cnodeUserUUID].audiusUsers.push(audiusUser)
@@ -146,7 +146,6 @@ const exportComponentService = async ({
 
     return cnodeUsersDict
   } catch (e) {
-    await transaction.rollback()
     throw new Error(e)
   }
 }

@@ -26,6 +26,7 @@ const exportComponentService = require('../src/components/replicaSet/exportCompo
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
+const { fixInconsistentUser } = require('../src/utils/fixInconsistentUsers')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -714,6 +715,7 @@ describe('test nodesync', async function () {
         const clockRecordTableClock = 8
         const clockRecordsFindAllStub = sandbox.stub().resolves([
           {
+            cnodeUserUUID: '48523a08-2a11-4200-8aac-ae74b8a39dd0',
             clock: clockRecordTableClock
           }
         ])
@@ -727,7 +729,7 @@ describe('test nodesync', async function () {
         ])
 
         const modelsMock = {
-          ...require('../src/models'),
+          ...models,
           ClockRecord: {
             findAll: clockRecordsFindAllStub
           },
@@ -747,10 +749,11 @@ describe('test nodesync', async function () {
             walletPublicKeys: pubKey.toLowerCase(),
             requestedClockRangeMin: 0,
             requestedClockRangeMax: maxExportClockValueRange,
-            logger: console
+            logger: console,
+            forceExport: false
           })
         ).to.eventually.be.rejectedWith(
-          `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUserTableClock} and exported max ClockRecord val ${clockRecordTableClock}`
+          `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUserTableClock} and exported max ClockRecord val ${clockRecordTableClock}. Fixing and trying again...`
         )
 
         expect(clockRecordsFindAllStub).to.have.been.calledOnce
