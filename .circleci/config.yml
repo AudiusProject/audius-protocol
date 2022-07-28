@@ -5,6 +5,7 @@
 version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
+  slack: circleci/slack@4.9.3
 
 commands:
   diff-if-necessary:
@@ -109,6 +110,43 @@ parameters:
     default: false
 
 jobs:
+  slack/basic:
+    docker:
+      - image: 'cimg/base:stable'
+    parameters:
+      branch_pattern:
+        description: branch_pattern arg for slack/notify
+        type: string
+        default: .+
+      channel:
+        description: Slack channel to send message to
+        type: string
+        default: C03EK0C69QD
+      text:
+        description: Markdown formatted Slack message
+        type: string
+        default: ""
+    steps:
+      - slack/notify:
+          channel: << pipeline.parameters.channel >>
+          branch_pattern: << pipeline.parameters.branch_pattern >>
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "<< pipeline.parameters.text >>",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+          event: always
+
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -156,6 +194,10 @@ jobs:
       - image: circleci/node:14.17.5
     resource_class: xlarge
     steps:
+      - slack/basic:
+          event: always
+          branch_pattern: master
+          text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
       - checkout
       - setup_remote_docker
       - add_ssh_keys:
@@ -169,6 +211,14 @@ jobs:
           command: |
             export PROTOCOL_DIR=/home/circleci/project
             libs/scripts/release.sh
+      - slack/notify:
+          event: fail
+          branch_pattern: master
+          template: basic_fail_1
+      # - slack/notify:
+      #     event: pass
+      #     branch_pattern: master
+      #     template: success_tagged_deploy_1
 
   test-mad-dog-e2e:
     parameters:
