@@ -29,7 +29,7 @@ const handleReaction = async ({ senderWallet, reactionType, reactedTo, libs, rea
   }
 
   const { erc_wallet: tipReceiverWallet } = tips[0].receiver
-  if (tipReceiverWallet.toLowerCase() != senderWallet.toLowerCase()) {
+  if (tipReceiverWallet.toLowerCase() !== senderWallet.toLowerCase()) {
     throw new Error(`Can't react unless user was the tip recipient`)
   }
 
