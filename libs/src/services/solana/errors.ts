@@ -64,7 +64,7 @@ export const RewardsManagerError = {
       RewardsManagerError.MATH_OVERFLOW,
       RewardsManagerError.INVALID_RECIPIENT
     ]
-    return errors[code] || RewardsManagerError.UNKNOWN
+    return errors[code] ?? RewardsManagerError.UNKNOWN
   }
 }
 
@@ -91,6 +91,6 @@ export const ClaimableProgramError = {
       ClaimableProgramError.INSTRUCTION_LOAD_ERROR,
       ClaimableProgramError.NONCE_VERIFICATION_ERROR
     ]
-    return errors[code] || ClaimableProgramError.UNKNOWN
+    return errors[code] ?? ClaimableProgramError.UNKNOWN
   }
 }

@@ -150,7 +150,7 @@ export const createUserBankFrom = async ({
     })
   ]
 
-  return transactionHandler.handleTransaction({
+  return await transactionHandler.handleTransaction({
     instructions,
     recentBlockhash,
     feePayerOverride: feePayerKey

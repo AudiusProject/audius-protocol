@@ -25,7 +25,7 @@ class Wormhole {
    * @param {string} ethTokenBridgeAddress
    * @param {boolean} isServer
    */
-  constructor(
+  constructor (
     hedgehog,
     ethWeb3Manager,
     ethContracts,
@@ -54,7 +54,7 @@ class Wormhole {
     this.wormholeSDK = wormholeSDK
   }
 
-  async getSignedVAAWithRetry(
+  async getSignedVAAWithRetry (
     hosts,
     emitterChain,
     emitterAddress,
@@ -101,7 +101,7 @@ class Wormhole {
         logs: Array<string>
       }
    */
-  async attestAndCompleteTransferEthToSol(
+  async attestAndCompleteTransferEthToSol (
     ethTxReceipt,
     customSignTransaction,
     options = {}
@@ -238,7 +238,7 @@ class Wormhole {
    * @param {string} ethTargetAddress The eth address to transfer AUDIO
    * @param {Object?} options The grpc options passed to get signed VAA for different transport
    */
-  async sendTokensFromSolToEthViaWormhole(
+  async sendTokensFromSolToEthViaWormhole (
     amount,
     ethTargetAddress,
     options = {}
@@ -389,7 +389,7 @@ class Wormhole {
    * @param {BN} amount The amount of AUDIO to send in WEI (18 decimals)
    * @param {string} solanaAccount The solana token account
    */
-  async _getTransferTokensToEthWormholeParams(
+  async _getTransferTokensToEthWormholeParams (
     fromAccount,
     amount,
     solanaAccount
@@ -444,7 +444,7 @@ class Wormhole {
    * @param {string} solanaAccount The solana token account
    * @param {string} relayer The eth relayer to permission to aprrove and transfer
    */
-  async transferTokensToEthWormhole(
+  async transferTokensToEthWormhole (
     fromAccount,
     amount,
     solanaAccount,
@@ -469,7 +469,7 @@ class Wormhole {
     return tx
   }
 
-  async getTransferTokensToEthWormholeMethod(
+  async getTransferTokensToEthWormholeMethod (
     fromAccount,
     amount,
     solanaAccount,

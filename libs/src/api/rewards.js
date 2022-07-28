@@ -59,7 +59,7 @@ const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECMIALS
  */
 
 class Rewards extends Base {
-  constructor(ServiceProvider, ...args) {
+  constructor (ServiceProvider, ...args) {
     super(...args)
     this.ServiceProvider = ServiceProvider
   }
@@ -106,7 +106,7 @@ class Rewards extends Base {
    * @returns {Promise<GetSubmitAndEvaluateAttestationsReturn>}
    * @memberof Challenge
    */
-  async submitAndEvaluate({
+  async submitAndEvaluate ({
     challengeId,
     encodedUserId,
     handle,
@@ -298,7 +298,7 @@ class Rewards extends Base {
    * @returns {Promise<AttestationsReturn>}
    * @memberof Rewards
    */
-  async aggregateAttestations({
+  async aggregateAttestations ({
     challengeId,
     encodedUserId,
     handle,
@@ -456,7 +456,7 @@ class Rewards extends Base {
    * @returns {Promise<GetAttestationReturn>}
    * @memberof Challenge
    */
-  async getChallengeAttestation({
+  async getChallengeAttestation ({
     challengeId,
     encodedUserId,
     specifier,
@@ -497,7 +497,7 @@ class Rewards extends Base {
     }
   }
 
-  async getUndisbursedChallenges(
+  async getUndisbursedChallenges (
     { limit, offset, completedBlockNumber, encodedUserId, logger = console } = {
       logger: console
     }
@@ -549,7 +549,7 @@ class Rewards extends Base {
    * @returns {Promise<GetAAOAttestationReturn>}
    * @memberof Challenge
    */
-  async getAAOAttestation({
+  async getAAOAttestation ({
     challengeId,
     specifier,
     handle,
@@ -612,7 +612,7 @@ class Rewards extends Base {
     }
   }
 
-  async _getDiscoveryAttestationsWithRetries({
+  async _getDiscoveryAttestationsWithRetries ({
     endpoints,
     challengeId,
     encodedUserId,
@@ -717,7 +717,7 @@ class Rewards extends Base {
    * }
    * @memberof Rewards
    */
-  async createSenderPublic({
+  async createSenderPublic ({
     senderEthAddress,
     operatorEthAddress,
     senderEndpoint,
@@ -803,7 +803,7 @@ class Rewards extends Base {
    * }} { status, userId, challengeId, amount, error, phase, specifier, reason }
    * @memberof IdentityService
    */
-  async sendAttestationResult({
+  async sendAttestationResult ({
     status,
     userId,
     challengeId,

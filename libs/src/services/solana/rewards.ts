@@ -170,25 +170,28 @@ export async function submitAttestations({
   // needs a pairing of SECP recovery instruction and submit
   // attestation instruction.
   let instructions: TransactionInstruction[] = await Promise.all(
-    attestations.reduce((instructions, meta, i) => {
-      const secpInstruction = Promise.resolve(
-        generateAttestationSecpInstruction({
+    attestations.reduce<Array<Promise<TransactionInstruction>>>(
+      (instructions, meta, i) => {
+        const secpInstruction = Promise.resolve(
+          generateAttestationSecpInstruction({
+            attestationMeta: meta,
+            instructionIndex: (2 * i) % instructionsPerTransaction,
+            encodedSenderMessage
+          })
+        )
+        const verifyInstruction = generateSubmitAttestationInstruction({
           attestationMeta: meta,
-          instructionIndex: (2 * i) % instructionsPerTransaction,
-          encodedSenderMessage
+          derivedMessageAccount,
+          rewardManagerAccount,
+          rewardManagerProgramId,
+          rewardManagerAuthority,
+          transferId,
+          feePayer
         })
-      )
-      const verifyInstruction = generateSubmitAttestationInstruction({
-        attestationMeta: meta,
-        derivedMessageAccount,
-        rewardManagerAccount,
-        rewardManagerProgramId,
-        rewardManagerAuthority,
-        transferId,
-        feePayer
-      })
-      return [...instructions, secpInstruction, verifyInstruction]
-    }, [] as Promise<TransactionInstruction>[])
+        return [...instructions, secpInstruction, verifyInstruction]
+      },
+      []
+    )
   )
 
   const encodedOracleMessage = SolanaUtils.constructAttestation(
@@ -216,7 +219,9 @@ export async function submitAttestations({
 
   // Break the instructions up into multiple transactions as per `instructionsPerTransaction`
   instructions = [...instructions, oracleSecp, oracleTransfer]
-  const bucketedInstructions: TransactionInstruction[][] = instructions.reduce(
+  const bucketedInstructions: TransactionInstruction[][] = instructions.reduce<
+    TransactionInstruction[][]
+  >(
     (acc, cur) => {
       const instruction = acc[acc.length - 1]
       if (instruction && instruction.length < instructionsPerTransaction) {
@@ -226,19 +231,20 @@ export async function submitAttestations({
       }
       return acc
     },
-    [[]] as TransactionInstruction[][]
+    [[]]
   )
 
   const results = await Promise.all(
-    bucketedInstructions.map((i) =>
-      transactionHandler.handleTransaction({
-        instructions: i,
-        errorMapping: RewardsManagerError,
-        logger,
-        skipPreflight: false,
-        feePayerOverride: feePayer,
-        sendBlockhash: false
-      })
+    bucketedInstructions.map(
+      async (i) =>
+        await transactionHandler.handleTransaction({
+          instructions: i,
+          errorMapping: RewardsManagerError,
+          logger,
+          skipPreflight: false,
+          feePayerOverride: feePayer,
+          sendBlockhash: false
+        })
     )
   )
   logger.info(
@@ -249,7 +255,7 @@ export async function submitAttestations({
 
   // If there's any error in any of the transactions, just return that one
   for (const res of results) {
-    if (res.error || res.errorCode) {
+    if (res.error ?? res.errorCode) {
       return res
     }
   }
@@ -309,7 +315,7 @@ export async function createSender({
   })
 
   const instructions = [...signerInstructions, createSenderInstruction]
-  return transactionHandler.handleTransaction({
+  return await transactionHandler.handleTransaction({
     instructions,
     errorMapping: RewardsManagerError,
     feePayerOverride: feePayer
@@ -470,7 +476,7 @@ export const evaluateAttestations = async ({
     data: serializedInstructionEnum
   })
 
-  return transactionHandler.handleTransaction({
+  return await transactionHandler.handleTransaction({
     instructions: [transferInstruction],
     errorMapping: RewardsManagerError,
     logger,
@@ -683,12 +689,13 @@ const generateCreateSenderInstruction = async ({
   )
 
   const signerSolanaPubKeys = await Promise.all(
-    signerEthAddresses.map(async (signerEthAddress) =>
-      deriveSolanaSenderFromEthAddress(
-        signerEthAddress,
-        rewardManagerProgramId,
-        rewardManagerAccount
-      )
+    signerEthAddresses.map(
+      async (signerEthAddress) =>
+        await deriveSolanaSenderFromEthAddress(
+          signerEthAddress,
+          rewardManagerProgramId,
+          rewardManagerAccount
+        )
     )
   )
 
@@ -833,7 +840,7 @@ const deriveMessageAccount = async (
   const encodedPrefix = encoder.encode(VERIFY_TRANSFER_SEED_PREFIX)
   const encodedTransferId = encoder.encode(transferId)
   const seeds = Uint8Array.from([...encodedPrefix, ...encodedTransferId])
-  return SolanaUtils.findProgramAddressWithAuthority(
+  return await SolanaUtils.findProgramAddressWithAuthority(
     rewardsProgramId,
     rewardManager,
     seeds

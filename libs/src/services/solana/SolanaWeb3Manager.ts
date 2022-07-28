@@ -145,7 +145,7 @@ export class SolanaWeb3Manager {
     if (feePayerAddress) {
       this.feePayerAddress = feePayerAddress
       this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerAddress)
-    } else if (feePayerKeypairs && feePayerKeypairs.length) {
+    } else if (feePayerKeypairs?.length) {
       // @ts-expect-error this seems wrong
       this.feePayerAddress = feePayerKeypairs[0]?.publicKey
       this.feePayerKey = SolanaUtils.newPublicKeyNullable(
@@ -218,7 +218,7 @@ export class SolanaWeb3Manager {
     }
 
     const ethAddress = this.web3Manager.getWalletAddress()
-    return createUserBankFrom({
+    return await createUserBankFrom({
       ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
       feePayerKey:
@@ -250,7 +250,7 @@ export class SolanaWeb3Manager {
    * See https://spl.solana.com/associated-token-account
    */
   async findAssociatedTokenAddress(solanaAddress: string) {
-    return findAssociatedTokenAddress({
+    return await findAssociatedTokenAddress({
       solanaWalletKey: new PublicKey(solanaAddress),
       mintKey: this.mintKey,
       solanaTokenProgramKey: this.solanaTokenKey
@@ -380,7 +380,7 @@ export class SolanaWeb3Manager {
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
-    return transferWAudioBalance({
+    return await transferWAudioBalance({
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
       feePayerKey: this.feePayerKey,
@@ -411,7 +411,7 @@ export class SolanaWeb3Manager {
     logger = console,
     feePayerOverride = null
   }: SubmitAttestationsConfig & { feePayerOverride: Nullable<string> }) {
-    return submitAttestations({
+    return await submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
       attestations,
@@ -419,7 +419,7 @@ export class SolanaWeb3Manager {
       challengeId,
       specifier,
       feePayer:
-        SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
+        SolanaUtils.newPublicKeyNullable(feePayerOverride) ?? this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
       transactionHandler: this.transactionHandler,
@@ -440,7 +440,7 @@ export class SolanaWeb3Manager {
     logger = console,
     feePayerOverride = null
   }: EvaluateAttestationsConfig & { feePayerOverride: Nullable<string> }) {
-    return evaluateAttestations({
+    return await evaluateAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
       rewardManagerTokenSource: this.rewardManagerTokenPDA,
@@ -450,7 +450,7 @@ export class SolanaWeb3Manager {
       userBankProgramAccount: this.claimableTokenPDAKey,
       oracleEthAddress,
       feePayer:
-        SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
+        SolanaUtils.newPublicKeyNullable(feePayerOverride) ?? this.feePayerKey,
       tokenAmount,
       transactionHandler: this.transactionHandler,
       logger
@@ -473,12 +473,12 @@ export class SolanaWeb3Manager {
     attestations,
     feePayerOverride = null
   }: CreateSenderParams & { feePayerOverride: Nullable<string> }) {
-    return createSender({
+    return await createSender({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
       senderEthAddress,
       feePayer:
-        SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
+        SolanaUtils.newPublicKeyNullable(feePayerOverride) ?? this.feePayerKey,
       operatorEthAddress,
       attestations,
       identityService: this.identityService,
@@ -509,11 +509,11 @@ export class SolanaWeb3Manager {
   }
 
   async getSlot() {
-    return this.connection.getSlot('processed')
+    return await this.connection.getSlot('processed')
   }
 
   async getRandomFeePayer() {
-    return this.identityService.getRandomFeePayer()
+    return await this.identityService.getRandomFeePayer()
   }
 
   /**
@@ -531,7 +531,7 @@ export class SolanaWeb3Manager {
   }
 
   async findProgramAddress(programId: PublicKey, pubkey: PublicKey) {
-    return PublicKey.findProgramAddress(
+    return await PublicKey.findProgramAddress(
       [pubkey.toBytes().slice(0, 32)],
       programId
     )
@@ -547,7 +547,7 @@ export class SolanaWeb3Manager {
     base: PublicKey,
     seed: Buffer | Uint8Array
   ) {
-    return PublicKey.findProgramAddress(
+    return await PublicKey.findProgramAddress(
       [base.toBytes().slice(0, 32), seed],
       programId
     )

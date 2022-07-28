@@ -101,7 +101,7 @@ export class SolanaUtils {
     if (seed) {
       seedsArr.push(seed)
     }
-    return PublicKey.findProgramAddress(seedsArr, programId)
+    return await PublicKey.findProgramAddress(seedsArr, programId)
   }
 
   /**
