@@ -14,40 +14,31 @@ RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait
 COPY scripts/wait /wait
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
-    apk update && \
+RUN apk update && \
     apk add \
-        alpine-sdk=1.0-r1 \
-        bash=5.1.16-r0 \
+        alpine-sdk \
+        bash \
         curl \
         docker \
         libffi-dev \
-        libpq=11.12-r0 \
         libseccomp-dev \
-        linux-headers=5.10.41-r0 \
+        linux-headers \
         nodejs \
         npm \
-        postgresql-client=11.12-r0 \
-        postgresql-contrib=11.12-r0 \
-        postgresql-dev=11.12-r0 \
-        postgresql-libs=11.12-r0 \
-        postgresql=11.12-r0 \
         py3-numpy \
         py3-pip \
         py3-scipy \
         py3-wheel \
         python3 \
         python3-dev \
-        redis=6.2.7-r0 \
+        redis \
         rsyslog \
-        sudo && \
-    apk add --virtual .build-deps \
+        wget \
+        sudo \
         gcc \
-        musl-dev \
-        postgresql-dev=11.12-r0
+        musl-dev
 
 RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
-    apk add wget && \
     wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
     source /etc/os-release && \
@@ -60,16 +51,24 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     mkdir /usr/local/openresty/conf && \
     mkdir /usr/local/openresty/logs
 
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
+    apk update && \
+    apk add \
+        libpq=11.12-r0 \
+        postgresql-client=11.12-r0 \
+        postgresql-contrib=11.12-r0 \
+        postgresql-dev=11.12-r0 \
+        postgresql-libs=11.12-r0 \
+        postgresql=11.12-r0
+
 COPY nginx_conf /usr/local/openresty/conf/
 
 COPY scripts/init-db.sh scripts/init-db.sh
 RUN bash scripts/init-db.sh
 
 # Upgrade pip first to accomodate anchor.py installation
-RUN python3 -m pip install --upgrade pip && \
-    apk --purge del .build-deps
 COPY requirements.txt requirements.txt
-RUN python3 -m pip install -r requirements.txt --no-cache-dir
+RUN python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 RUN cd es-indexer && npm install && npm run build
