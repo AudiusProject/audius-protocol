@@ -306,8 +306,6 @@ async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
 
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
 
-      fixUserIfInconsistent({ localCNodeUser, fetchedCNodeUser, logger })
-
       const audiusUserComparisonFields = [
         'blockchainId',
         'metadataFileUUID',
@@ -472,33 +470,5 @@ async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
     return userReplicaSet
   } catch (e) {
     throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
-  }
-}
-
-/**
- * Given a user on this node as well as an imported user
- * ensure the local user's clock value is consistent otherwise fix it
- *
- * @param {Object} param
- * @param {CNodeUser} param.localCNodeUser the cnode user on this node
- * @param {CNodeUser} param.fetchedCNodeUser the recently imported cnode user
- * @param {Object} param.logger the child logger
- */
-async function fixUserIfInconsistent({ localCNodeUser, logger }) {
-  const cnodeUserUUID = localCNodeUser.cnodeUserUUID
-
-  const clockRecords = await models.ClockRecord.findAll({
-    where: {
-      cnodeUserUUID: cnodeUserUUID
-    },
-    order: [['clock', 'ASC']],
-    raw: true
-  })
-
-  // Validate clock values or throw an error
-  const maxClockRecord = Math.max(...clockRecords.map((record) => record.clock))
-  if (!_.isEmpty(clockRecords) && localCNodeUser.clock !== maxClockRecord) {
-    logger.warn(`[fixUserIfInconsistent()] - fixing inconsistent user`)
-    await DBManager.fixInconsistentUser(localCNodeUser.cnodeUserUUID)
   }
 }
