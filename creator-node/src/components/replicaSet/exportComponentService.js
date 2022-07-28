@@ -116,7 +116,6 @@ const exportComponentService = async ({
         const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
         logger.error(errorMsg)
 
-        await DBManager.fixInconsistentUser(cnodeUser.cnodeUserUUID)
         if (!forceExport) {
           throw new Error(errorMsg)
         }
@@ -142,6 +141,9 @@ const exportComponentService = async ({
       cnodeUsersDict[clockRecord.cnodeUserUUID].clockRecords.push(clockRecord)
     })
 
+    for (const cnodeUserUUID in cnodeUsersDict) {
+      await DBManager.fixInconsistentUser(cnodeUserUUID)
+    }
     await transaction.commit()
 
     return cnodeUsersDict
