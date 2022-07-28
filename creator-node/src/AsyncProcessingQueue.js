@@ -156,8 +156,8 @@ class AsyncProcessingQueue {
       `Adding ${task} task! uuid=${logContext.requestID}}`,
       logContext
     )
-    const jobName = task || '__default__'
-    const job = await this.queue.add(jobName, params)
+
+    const job = await this.queue.add(params)
 
     return job
   }

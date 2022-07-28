@@ -98,7 +98,7 @@ describe('test findReplicaSetUpdates job processor', function () {
     getCNodeEndpointToSpIdMapStub
   ) {
     return proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.js',
+      '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.ts',
       {
         '../../../config': config,
         '../CNodeHealthManager': {
@@ -164,7 +164,7 @@ describe('test findReplicaSetUpdates job processor', function () {
               }
             ]
           }
-        : {}
+        : undefined
     })
   }
 

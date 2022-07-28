@@ -315,6 +315,7 @@ class AudiusLibs {
     comstockConfig,
     wormholeConfig,
     captchaConfig,
+    hedgehogConfig,
     isServer,
     logger = console,
     isDebug = false,
@@ -336,6 +337,7 @@ class AudiusLibs {
     this.comstockConfig = comstockConfig
     this.wormholeConfig = wormholeConfig
     this.captchaConfig = captchaConfig
+    this.hedgehogConfig = hedgehogConfig
     this.isServer = isServer
     this.isDebug = isDebug
     this.logger = logger
@@ -397,7 +399,8 @@ class AudiusLibs {
       const hedgehogService = new Hedgehog({
         identityService: this.identityService,
         useLocalStorage: this.identityServiceConfig.useHedgehogLocalStorage,
-        localStorage: this.localStorage
+        localStorage: this.localStorage,
+        ...this.hedgehogConfig
       })
       this.hedgehog = hedgehogService.instance
       await this.hedgehog.waitUntilReady()

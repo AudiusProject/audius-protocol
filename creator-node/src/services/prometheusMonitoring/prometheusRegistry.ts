@@ -13,7 +13,7 @@ import * as PrometheusClient from 'prom-client'
  * See `prometheusMonitoring/README.md` for usage details
  */
 
-enum JobStatus {
+enum JOB_STATUS {
   COMPLETED = 'completed',
   FAILED = 'failed'
 }
@@ -70,7 +70,7 @@ export class PrometheusRegistry {
 
   public recordJobMetrics(
     labels: { [key: string]: string },
-    status: JobStatus,
+    status: JOB_STATUS,
     job: Job
   ) {
     if (!job.finishedOn) {
@@ -110,26 +110,30 @@ export class PrometheusRegistry {
     if (useGlobal) {
       queue.on('global:completed', async (jobId: number) => {
         const job = await queue.getJob(jobId)
-        const job_name = job?.name || ''
+        const job_name = job?.data?.task || job?.name || ''
         this.recordJobMetrics(
           { job_name, ...labels },
-          JobStatus.COMPLETED,
+          JOB_STATUS.COMPLETED,
           job!
         )
       })
       queue.on('global:failed', async (jobId: number) => {
         const job = await queue.getJob(jobId)
-        const job_name = job?.name || ''
-        this.recordJobMetrics({ job_name, ...labels }, JobStatus.FAILED, job!)
+        const job_name = job?.data?.task || job?.name || ''
+        this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.FAILED, job!)
       })
     } else {
       queue.on('completed', (job: Job) => {
-        const job_name = job.name
-        this.recordJobMetrics({ job_name, ...labels }, JobStatus.COMPLETED, job)
+        const job_name = job?.data?.task || job.name
+        this.recordJobMetrics(
+          { job_name, ...labels },
+          JOB_STATUS.COMPLETED,
+          job
+        )
       })
       queue.on('failed', (job: Job) => {
-        const job_name = job.name
-        this.recordJobMetrics({ job_name, ...labels }, JobStatus.FAILED, job)
+        const job_name = job?.data?.task || job.name
+        this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.FAILED, job)
       })
     }
 
