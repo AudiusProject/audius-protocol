@@ -33,6 +33,16 @@ export type ReplicaSetNodesToUserWalletsMap = {
   [node: string]: string[]
 }
 
+// Fetch CNode To SP_ID Map job
+export type CNodeEndpointToSpIdMap = {
+  [endpoint: string]: number
+}
+export type FetchCNodeEndpointToSpIdMapJobParams = {}
+export type FetchCNodeEndpointToSpIdMapJobReturnValue = {
+  cNodeEndpointToSpIdMap: any
+  errorMsg: string
+}
+
 // Monitor State job
 export type MonitorStateJobParams = {
   lastProcessedUserId: number
@@ -65,5 +75,5 @@ export type FindReplicaSetUpdateJobParams = {
   userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap
 }
 export type FindReplicaSetUpdatesJobReturnValue = {
-  cNodeEndpointToSpIdMap: any // TODO: Type this like { [endpoint: string]: number }
+  cNodeEndpointToSpIdMap: CNodeEndpointToSpIdMap
 }
