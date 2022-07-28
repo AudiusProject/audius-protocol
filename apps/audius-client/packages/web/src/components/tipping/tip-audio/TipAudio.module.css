@@ -8,9 +8,14 @@
   margin-left: 8px;
 }
 
+.modalHeader {
+  border-bottom: 1px solid var(--neutral-light-6);
+}
+
 .modalBody {
   width: 488px;
   height: 492px;
+  max-height: 95vh;
 }
 
 .modalContentContainer {
@@ -28,6 +33,16 @@
   align-items: center;
 }
 
+.modalTitleIcon {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.dismissButton {
+  color: var(--neutral-light-4);
+}
+
 .container > div {
   margin-top: 24px;
   margin-bottom: 24px;
@@ -35,6 +50,7 @@
 
 .container {
   width: 100%;
+  padding: 0 var(--unit-6);
 }
 
 .flexCenter {

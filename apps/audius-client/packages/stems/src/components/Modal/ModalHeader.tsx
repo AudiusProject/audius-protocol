@@ -14,7 +14,14 @@ import { ModalHeaderProps, ModalTitleProps } from './types'
  */
 export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
   function ModalHeader(
-    { className, onClose, showDismissButton = true, children, ...props },
+    {
+      className,
+      onClose,
+      dismissButtonClassName,
+      showDismissButton = true,
+      children,
+      ...props
+    },
     ref
   ) {
     return (
@@ -29,7 +36,7 @@ export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
         {showDismissButton ? (
           <IconButton
             aria-label='dismiss dialog'
-            className={styles.dismissButton}
+            className={cn(styles.dismissButton, dismissButtonClassName)}
             icon={<IconRemove />}
             onClick={onClose}
           />
