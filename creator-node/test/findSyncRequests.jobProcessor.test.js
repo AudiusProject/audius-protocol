@@ -137,7 +137,7 @@ describe('test findSyncRequests job processor', function () {
     const unhealthyPeers = []
 
     // Since secondary1.wallet.clock < primary.wallet.clock, we will sync from primary to secondary1
-    const replicaToUserInfoMap = {
+    const replicaToAllUserInfoMaps = {
       [primary]: {
         [wallet]: { clock: 10, filesHash: '0xabc' }
       },
@@ -186,20 +186,20 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary1][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary1][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary1][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary1][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -249,7 +249,7 @@ describe('test findSyncRequests job processor', function () {
     const actualOutput = await findSyncRequestsJobProcessor({
       users,
       unhealthyPeers,
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap,
       logger
     })
@@ -281,7 +281,7 @@ describe('test findSyncRequests job processor', function () {
     const unhealthyPeers = []
 
     // Clock value of secondary1 being less than primary means we'll sync from primary to secondary1
-    const replicaToUserInfoMap = {
+    const replicaToAllUserInfoMaps = {
       [primary]: {
         [wallet]: { clock: 10, filesHash: '0xabc' }
       },
@@ -327,20 +327,20 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary1][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary1][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary1][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary1][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -388,7 +388,7 @@ describe('test findSyncRequests job processor', function () {
     const actualOutput = await findSyncRequestsJobProcessor({
       users,
       unhealthyPeers,
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap,
       logger
     })
@@ -421,7 +421,7 @@ describe('test findSyncRequests job processor', function () {
     const unhealthyPeers = [secondary1]
 
     // Since secondary1.wallet.clock < primary.wallet.clock, we would sync from primary to secondary1 if it were healthy
-    const replicaToUserInfoMap = {
+    const replicaToAllUserInfoMaps = {
       [primary]: {
         [wallet]: { clock: 10, filesHash: '0xabc' }
       },
@@ -457,10 +457,10 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -508,7 +508,7 @@ describe('test findSyncRequests job processor', function () {
     const actualOutput = await findSyncRequestsJobProcessor({
       users,
       unhealthyPeers,
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap,
       logger
     })
@@ -536,7 +536,7 @@ describe('test findSyncRequests job processor', function () {
     const unhealthyPeers = []
 
     // Since secondary1.wallet.clock < primary.wallet.clock, we would sync from primary to secondary1 if spID matched
-    const replicaToUserInfoMap = {
+    const replicaToAllUserInfoMaps = {
       [primary]: {
         [wallet]: { clock: 10, filesHash: '0xabc' }
       },
@@ -573,10 +573,10 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -624,7 +624,7 @@ describe('test findSyncRequests job processor', function () {
     const actualOutput = await findSyncRequestsJobProcessor({
       users,
       unhealthyPeers,
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap,
       logger
     })
@@ -652,7 +652,7 @@ describe('test findSyncRequests job processor', function () {
     const unhealthyPeers = []
 
     // Since secondary1.wallet.clock < primary.wallet.clock, we would sync from primary to secondary1 if sync success rate were higher
-    const replicaToUserInfoMap = {
+    const replicaToAllUserInfoMaps = {
       [primary]: {
         [wallet]: { clock: 10, filesHash: '0xabc' }
       },
@@ -695,10 +695,10 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -745,7 +745,7 @@ describe('test findSyncRequests job processor', function () {
     const actualOutput = await findSyncRequestsJobProcessor({
       users,
       unhealthyPeers,
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap,
       logger
     })
@@ -773,7 +773,7 @@ describe('test findSyncRequests job processor', function () {
     const unhealthyPeers = []
 
     // Since secondary1.wallet.clock < primary.wallet.clock, we will sync from primary to secondary1
-    const replicaToUserInfoMap = {
+    const replicaToAllUserInfoMaps = {
       [primary]: {
         [wallet]: { clock: 10, filesHash: '0xabc' }
       },
@@ -816,20 +816,20 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary1][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary1][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary1][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary1][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -878,7 +878,7 @@ describe('test findSyncRequests job processor', function () {
     const actualOutput = await findSyncRequestsJobProcessor({
       users,
       unhealthyPeers,
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap,
       logger
     })
@@ -910,7 +910,7 @@ describe('test findSyncRequests job processor', function () {
     const unhealthyPeers = []
 
     // Both secondaries are behind -> will enqueue syncs to both
-    const replicaToUserInfoMap = {
+    const replicaToAllUserInfoMaps = {
       [primary]: {
         [wallet]: { clock: 10, filesHash: '0xabc' }
       },
@@ -966,20 +966,20 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary1][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary1][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary1][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary1][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
       {
         input: {
           wallet,
-          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
-          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
-          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+          primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
+          secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       }
@@ -1029,7 +1029,7 @@ describe('test findSyncRequests job processor', function () {
     const actualOutput = await findSyncRequestsJobProcessor({
       users,
       unhealthyPeers,
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap,
       logger
     })
@@ -1098,7 +1098,7 @@ describe('test findSyncRequests job processor', function () {
 
     // wallet1 - primary (CN1) clock value > secondary1 (CN2) clock value
     // wallet2 - primary (CN1) files hash != secondary1 (CN3) files hash with same clock val
-    const replicaToUserInfoMap = {
+    const replicaToAllUserInfoMaps = {
       [CN1]: {
         [wallet1]: { clock: 10, filesHash: '0xW1C10FH' }, // primary
         [wallet2]: { clock: 10, filesHash: '0xW2C10FH' } // primary
@@ -1131,10 +1131,10 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet: wallet1,
-          primaryClock: replicaToUserInfoMap[CN1][wallet1].clock,
-          secondaryClock: replicaToUserInfoMap[CN2][wallet1].clock,
-          primaryFilesHash: replicaToUserInfoMap[CN1][wallet1].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[CN2][wallet1].filesHash
+          primaryClock: replicaToAllUserInfoMaps[CN1][wallet1].clock,
+          secondaryClock: replicaToAllUserInfoMaps[CN2][wallet1].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[CN1][wallet1].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[CN2][wallet1].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
@@ -1142,10 +1142,10 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet: wallet1,
-          primaryClock: replicaToUserInfoMap[CN1][wallet1].clock,
-          secondaryClock: replicaToUserInfoMap[CN3][wallet1].clock,
-          primaryFilesHash: replicaToUserInfoMap[CN1][wallet1].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[CN3][wallet1].filesHash
+          primaryClock: replicaToAllUserInfoMaps[CN1][wallet1].clock,
+          secondaryClock: replicaToAllUserInfoMaps[CN3][wallet1].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[CN1][wallet1].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[CN3][wallet1].filesHash
         },
         output: SYNC_MODES.None
       },
@@ -1153,10 +1153,10 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet: wallet2,
-          primaryClock: replicaToUserInfoMap[CN1][wallet2].clock,
-          secondaryClock: replicaToUserInfoMap[CN3][wallet2].clock,
-          primaryFilesHash: replicaToUserInfoMap[CN1][wallet2].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[CN3][wallet2].filesHash
+          primaryClock: replicaToAllUserInfoMaps[CN1][wallet2].clock,
+          secondaryClock: replicaToAllUserInfoMaps[CN3][wallet2].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[CN1][wallet2].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[CN3][wallet2].filesHash
         },
         output: SYNC_MODES.MergePrimaryAndSecondary
       },
@@ -1164,10 +1164,10 @@ describe('test findSyncRequests job processor', function () {
       {
         input: {
           wallet: wallet2,
-          primaryClock: replicaToUserInfoMap[CN1][wallet2].clock,
-          secondaryClock: replicaToUserInfoMap[CN2][wallet2].clock,
-          primaryFilesHash: replicaToUserInfoMap[CN1][wallet2].filesHash,
-          secondaryFilesHash: replicaToUserInfoMap[CN2][wallet2].filesHash
+          primaryClock: replicaToAllUserInfoMaps[CN1][wallet2].clock,
+          secondaryClock: replicaToAllUserInfoMaps[CN2][wallet2].clock,
+          primaryFilesHash: replicaToAllUserInfoMaps[CN1][wallet2].filesHash,
+          secondaryFilesHash: replicaToAllUserInfoMaps[CN2][wallet2].filesHash
         },
         output: SYNC_MODES.None
       },
@@ -1258,7 +1258,7 @@ describe('test findSyncRequests job processor', function () {
     const actualOutput = await findSyncRequestsJobProcessor({
       users,
       unhealthyPeers,
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap,
       logger
     })
