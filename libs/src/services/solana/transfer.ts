@@ -9,10 +9,10 @@ import {
 } from '@solana/web3.js'
 import type BN from 'bn.js'
 import type { TransactionHandler } from './transactionHandler'
-const borsh = require('borsh')
-const { SolanaUtils } = require('./SolanaUtils')
-const secp256k1 = require('secp256k1')
-const { ClaimableProgramError } = require('./errors')
+import borsh from 'borsh'
+import { SolanaUtils } from './SolanaUtils'
+import secp256k1 from 'secp256k1'
+import { ClaimableProgramError } from './errors'
 
 const encoder = new TextEncoder()
 
