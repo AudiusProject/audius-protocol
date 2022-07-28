@@ -476,6 +476,15 @@ async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
   }
 }
 
+/**
+ * Given a user on this node as well as an imported user
+ * ensure the local user's clock value is consistent otherwise fix it
+ *
+ * @param {Object} param
+ * @param {CNodeUser} param.localCNodeUser the cnode user on this node
+ * @param {CNodeUser} param.fetchedCNodeUser the recently imported cnode user
+ * @param {Object} param.logger the child logger
+ */
 async function fixUserIfInconsistent({
   localCNodeUser,
   fetchedCNodeUser,
