@@ -408,7 +408,7 @@ const _additionalSyncIsRequired = async (
       syncType: SyncType.Recurring,
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
       syncRequestParameters,
-      attemptNumber
+      attemptNumber: attemptNumber + 1
     }
   }
 

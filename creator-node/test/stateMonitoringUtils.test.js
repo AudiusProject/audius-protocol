@@ -90,7 +90,7 @@ describe('test getNodeUsers()', function () {
     GET_NODE_USERS_CANCEL_TOKEN_MS = DEFAULT_GET_NODE_USERS_CANCEL_TOKEN_MS
   }) {
     const { getNodeUsers } = proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils.js',
+      '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils.ts',
       {
         axios,
         '../stateMachineConstants': {

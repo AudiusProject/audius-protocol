@@ -5,9 +5,9 @@ export type SyncRequestAxiosParams = {
   method: string
   data: {
     wallet: string[]
-    creator_node_endpoint: string
-    sync_type: string
-    immediate: boolean
+    creator_node_endpoint?: string
+    sync_type?: string
+    immediate?: boolean
   }
 }
 export type IssueSyncRequestJobParams = {
