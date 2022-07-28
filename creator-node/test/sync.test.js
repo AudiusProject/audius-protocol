@@ -26,7 +26,6 @@ const exportComponentService = require('../src/components/replicaSet/exportCompo
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
-const { fixInconsistentUser } = require('../src/utils/fixInconsistentUsers')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
