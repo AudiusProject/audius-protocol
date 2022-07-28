@@ -409,7 +409,7 @@ const _additionalSyncIsRequired = async (
   const response: AdditionalSyncIsRequiredResponse = { outcome }
   if (additionalSyncIsRequired) {
     response.syncReqToEnqueue = {
-      syncType: SyncType.Recurring,
+      syncType,
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
       syncRequestParameters,
       attemptNumber: attemptNumber + 1
