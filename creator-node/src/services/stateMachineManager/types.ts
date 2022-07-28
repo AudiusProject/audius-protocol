@@ -28,7 +28,10 @@ export type WalletsToSecondariesMapping = {
  * Job params (inputs)
  */
 
-export type DecoratedJobParams<JobParams> = JobParams & { logger: Logger }
+export type DecoratedJobParams<JobParams> = JobParams & {
+  logger: Logger
+  enqueuedBy?: string
+}
 
 export type AnyJobParams =
   | MonitorStateJobParams
