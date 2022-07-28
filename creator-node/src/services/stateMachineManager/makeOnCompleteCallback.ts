@@ -11,7 +11,7 @@ import type { TQUEUE_NAMES } from './stateMachineConstants'
 import { Queue } from 'bull'
 
 const { logger: baseLogger, createChildLogger } = require('../../logging')
-const { QUEUE_NAMES } = require('./stateMachineConstants')
+const { QUEUE_NAMES, MAX_QUEUE_RUNTIMES } = require('./stateMachineConstants')
 const {
   METRIC_RECORD_TYPE
 } = require('../prometheusMonitoring/prometheus.constants')
@@ -127,10 +127,17 @@ const enqueueJobs = async (
 
   // Add 'enqueuedBy' field for tracking
   try {
+    const jobTimeout = MAX_QUEUE_RUNTIMES[queueName]
     const bulkAddResult = await queue.addBulk(
       jobs.map((job) => {
         return {
-          data: { enqueuedBy: `${queueName}#${triggeredByJobId}`, ...job }
+          data: {
+            enqueuedBy: `${queueName}#${triggeredByJobId}`,
+            ...job,
+            opts: {
+              timeout: jobTimeout
+            }
+          }
         }
       })
     )

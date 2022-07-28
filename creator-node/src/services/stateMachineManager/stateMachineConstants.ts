@@ -76,20 +76,23 @@ export const QUEUE_NAMES = {
 export type TQUEUE_NAMES = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES]
 
 export const MAX_QUEUE_RUNTIMES = Object.freeze({
-  // Max millis to run a monitor-state job for before marking it as stalled (1 hour)
-  MONITOR_STATE: 1000 * 60 * 60,
-  // Max millis to run a find-sync-requests job for before marking it as stalled (1 hour)
-  FIND_SYNC_REQUESTS: 1000 * 60 * 60,
-  // Max millis to run a find-replica-set-updates job for before marking it as stalled (1 hour)
-  FIND_REPLICA_SET_UPDATES: 1000 * 60 * 60,
-  // Max millis to run a fetch cNodeEndpoint->spId mapping job for before marking it as stalled (1 minute)
-  FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 1000 * 60,
-  // Max millis to run a manual sync job for before marking it as stalled (60 seconds)
-  MANUAL_SYNC: 1000 * 60,
-  // Max millis to run a recurring sync job for before marking it as stalled (1 hour)
-  RECURRING_SYNC: 1000 * 60 * 60,
-  // Max millis to run an update-replica-set job for before marking it as stalled (1 hour)
-  UPDATE_REPLICA_SET: 1000 * 60 * 60
+  // Max millis to run a monitor-state job for before marking it as stalled
+  MONITOR_STATE:
+    30 /* min */ *
+    60 *
+    1000 /* Should actually be 5 minutes after optimizations */,
+  // Max millis to run a find-sync-requests job for before marking it as stalled
+  FIND_SYNC_REQUESTS: 5 /* min */ * 60 * 1000,
+  // Max millis to run a find-replica-set-updates job for before marking it as stalled
+  FIND_REPLICA_SET_UPDATES: 5 /* min */ * 60 * 1000,
+  // Max millis to run a fetch cNodeEndpoint->spId mapping job for before marking it as stalled
+  FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 1 /* min */ * 60 * 1000,
+  // Max millis to run a manual sync job for before marking it as stalled
+  MANUAL_SYNC: 1 /* min */ * 60 * 1000,
+  // Max millis to run a recurring sync job for before marking it as stalled
+  RECURRING_SYNC: 6 /* min */ * 60 * 1000,
+  // Max millis to run an update-replica-set job for before marking it as stalled
+  UPDATE_REPLICA_SET: 1 /* min */ * 60 * 1000
 })
 
 /**
