@@ -76,7 +76,7 @@ module.exports = async function ({
 
   let errorMsg = ''
   let issuedReconfig = false
-  let syncJobsToEnqueue: any[] = []
+  let syncJobsToEnqueue: IssueSyncRequestJobParams[] = []
   let newReplicaSet: NewReplicaSet = {
     newPrimary: null,
     newSecondary1: null,
@@ -123,7 +123,7 @@ module.exports = async function ({
       ? {
           [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
         }
-      : {}
+      : undefined
   }
 }
 
@@ -421,7 +421,7 @@ const _issueUpdateReplicaSetOp = async (
   primary: string,
   secondary1: string,
   secondary2: string,
-  newReplicaSet: any, // TODO
+  newReplicaSet: NewReplicaSet,
   audiusLibs: any,
   logger: Logger
 ): Promise<IssueUpdateReplicaSetResult> => {
@@ -430,7 +430,7 @@ const _issueUpdateReplicaSetOp = async (
     issuedReconfig: false,
     syncJobsToEnqueue: []
   }
-  let newReplicaSetEndpoints: any[] = [] // TODO
+  let newReplicaSetEndpoints: string[] = []
   const newReplicaSetSPIds = []
   try {
     const {
@@ -440,7 +440,11 @@ const _issueUpdateReplicaSetOp = async (
       issueReconfig,
       reconfigType
     } = newReplicaSet
-    newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
+    newReplicaSetEndpoints = [
+      newPrimary || '',
+      newSecondary1 || '',
+      newSecondary2 || ''
+    ].filter(Boolean)
 
     logger.info(
       `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} newReplicaSetEndpoints=${JSON.stringify(
