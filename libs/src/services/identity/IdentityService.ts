@@ -7,9 +7,18 @@ import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
 import type { TransactionReceipt } from 'web3-core'
 import type Wallet from 'ethereumjs-wallet'
-import type { TransactionInstruction } from '@solana/web3.js'
 
 type Data = Record<string, unknown>
+
+type RelayTransactionInstruction = {
+  programId: string
+  data: Buffer
+  keys: Array<{
+    pubkey: string
+    isSigner: boolean
+    isWritable: boolean
+  }>
+}
 
 export type RelayTransaction = {
   resp: {
@@ -26,7 +35,7 @@ export type RelayTransaction = {
 }
 
 export type RelayTransactionData = {
-  instructions: TransactionInstruction[]
+  instructions: RelayTransactionInstruction[]
   skipPreflight?: boolean
   feePayerOverride?: string | null
   signatures?: Array<{ publicKey: string; signature: Buffer }> | null

@@ -11,13 +11,13 @@ import type { Logger, Nullable } from '../../utils'
 
 type HandleTransactionParams = {
   instructions: TransactionInstruction[]
-  errorMapping?: { fromErrorCode: (errorCode: number) => string } | null
-  recentBlockhash?: string | null
+  errorMapping?: Nullable<{ fromErrorCode: (errorCode: number) => string }>
+  recentBlockhash?: Nullable<string>
   logger?: Logger
-  skipPreflight?: boolean | null
+  skipPreflight?: Nullable<boolean>
   feePayerOverride?: Nullable<PublicKey>
   sendBlockhash?: boolean
-  signatures?: Array<{ publicKey: string; signature: Buffer }> | null
+  signatures?: Nullable<Array<{ publicKey: string; signature: Buffer }>>
   retry?: boolean
 }
 

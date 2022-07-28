@@ -1,7 +1,7 @@
 import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
-import anchor, { Address, Idl, Program } from '@project-serum/anchor'
+import anchor, { Idl, Program } from '@project-serum/anchor'
 import { idl } from '@audius/anchor-audius-data'
 
 import { transferWAudioBalance } from './transfer'
@@ -42,7 +42,7 @@ export type SolanaWeb3Config = {
   mintAddress: string
   solanaTokenAddress: string
   claimableTokenPDA: string
-  feePayerAddress: string
+  feePayerAddress: PublicKey
   claimableTokenProgramAddress: string
   rewardsManagerProgramId: string
   rewardsManagerProgramPDA: string
@@ -78,7 +78,7 @@ export class SolanaWeb3Manager {
   mintKey!: PublicKey
   solanaTokenAddress!: string
   solanaTokenKey!: PublicKey
-  feePayerAddress!: string
+  feePayerAddress!: PublicKey
   feePayerKey!: PublicKey
   claimableTokenProgramKey!: PublicKey
   claimableTokenPDA!: string
@@ -146,8 +146,7 @@ export class SolanaWeb3Manager {
       this.feePayerAddress = feePayerAddress
       this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerAddress)
     } else if (feePayerKeypairs?.length) {
-      // @ts-expect-error this seems wrong
-      this.feePayerAddress = feePayerKeypairs[0]?.publicKey
+      this.feePayerAddress = feePayerKeypairs[0]!.publicKey
       this.feePayerKey = SolanaUtils.newPublicKeyNullable(
         feePayerKeypairs[0]?.publicKey as unknown as string
       )
@@ -584,7 +583,7 @@ export class SolanaWeb3Manager {
   /**
    * Fetch account on Solana given the program derived address
    */
-  async fetchAccount(pda: Address) {
+  async fetchAccount(pda: PublicKey) {
     let account
     try {
       account = await this.anchorProgram.account?.['user']?.fetch(pda)

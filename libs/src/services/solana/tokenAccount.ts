@@ -138,13 +138,12 @@ export async function createAssociatedTokenAccount({
       {
         keys: accounts.map((account) => {
           return {
-            pubkey: account.pubkey.toString() as unknown as PublicKey,
+            pubkey: account.pubkey.toString(),
             isSigner: account.isSigner,
             isWritable: account.isWritable
           }
         }),
-        programId:
-          ASSOCIATED_TOKEN_PROGRAM_ID.toString() as unknown as PublicKey,
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID.toString(),
         data: Buffer.from([])
       }
     ]

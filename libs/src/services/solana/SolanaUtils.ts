@@ -31,9 +31,7 @@ export class SolanaUtils {
    * Puts an instruction in a serializable form that our relay can understand.
    * Note we are faking the return type for callers to work with it easier
    */
-  static prepareInstructionForRelay(
-    instruction: TransactionInstruction
-  ): TransactionInstruction {
+  static prepareInstructionForRelay(instruction: TransactionInstruction) {
     return {
       programId: instruction.programId.toString(),
       data: instruction.data,
@@ -42,7 +40,7 @@ export class SolanaUtils {
         isSigner,
         isWritable
       }))
-    } as unknown as TransactionInstruction
+    }
   }
 
   /**
