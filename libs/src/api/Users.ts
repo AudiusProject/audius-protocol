@@ -1,7 +1,12 @@
-const { pick, isEqual } = require('lodash')
-const { Base, Services } = require('./base')
-const { Utils } = require('../utils')
-const { CreatorNode, getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorNode')
+import { pick, isEqual } from 'lodash'
+import { Base, BaseConstructorArgs, Services } from './base'
+import { Nullable, UserMetadata, Utils } from '../utils'
+import {
+  CreatorNode,
+  getSpIDForEndpoint,
+  setSpIDForEndpoint
+} from '../services/creatorNode'
+import type { ServiceProvider } from './ServiceProvider'
 
 // User metadata fields that are required on the metadata object and can have
 // null or non-null values
@@ -22,25 +27,22 @@ const USER_PROPS = [
   'collectibles',
   'playlist_library',
   'events'
-]
+] as Array<keyof UserMetadata>
 // User metadata fields that are required on the metadata object and only can have
 // non-null values
-const USER_REQUIRED_PROPS = [
-  'name',
-  'handle'
-]
+const USER_REQUIRED_PROPS = ['name', 'handle']
 // Constants for user metadata fields
-const USER_PROP_NAME_CONSTANTS = Object.freeze({
-  NAME: 'name',
-  BIO: 'bio',
-  LOCATION: 'location',
-  PROFILE_PICTURE_SIZES: 'profile_picture_sizes',
-  COVER_PHOTO_SIZES: 'cover_photo_sizes',
-  CREATOR_NODE_ENDPOINT: 'creator_node_endpoint'
-})
 
-class Users extends Base {
-  constructor (serviceProvider, preferHigherPatchForPrimary, preferHigherPatchForSecondaries, ...args) {
+export class Users extends Base {
+  ServiceProvider: ServiceProvider
+  preferHigherPatchForPrimary: boolean
+  preferHigherPatchForSecondaries: boolean
+  constructor(
+    serviceProvider: ServiceProvider,
+    preferHigherPatchForPrimary: boolean,
+    preferHigherPatchForSecondaries: boolean,
+    ...args: BaseConstructorArgs
+  ) {
     super(...args)
 
     this.ServiceProvider = serviceProvider
@@ -65,15 +67,18 @@ class Users extends Base {
     // For adding replica set to users on sign up
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
 
-    this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
-    this._waitForCreatorNodeEndpointIndexing = this._waitForCreatorNodeEndpointIndexing.bind(this)
+    this.getClockValuesFromReplicaSet =
+      this.getClockValuesFromReplicaSet.bind(this)
+    this._waitForCreatorNodeEndpointIndexing =
+      this._waitForCreatorNodeEndpointIndexing.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
     this.cleanUserMetadata = this.cleanUserMetadata.bind(this)
 
     // For adding a creator_node_endpoint for a user if null
-    this.assignReplicaSetIfNecessary = this.assignReplicaSetIfNecessary.bind(this)
+    this.assignReplicaSetIfNecessary =
+      this.assignReplicaSetIfNecessary.bind(this)
   }
 
   /* ----------- GETTERS ---------- */
@@ -81,13 +86,7 @@ class Users extends Base {
   /**
    * get users with all relevant user data
    * can be filtered by providing an integer array of ids
-   * @param {number} limit
-   * @param {number} offset
-   * @param {Object} idsArray
-   * @param {String} walletAddress
-   * @param {String} handle
-   * @param {number} currentUserId the currently logged in user
-   * @returns {Object} {Array of User metadata Objects}
+   * @returns Array of User metadata Objects
    * additional metadata fields on user objects:
    *  {Integer} track_count - track count for given user
    *  {Integer} playlist_count - playlist count for given user
@@ -102,55 +101,75 @@ class Users extends Base {
    * await getUsers()
    * await getUsers(100, 0, [3,2,6]) - Invalid user ids will not be accepted
    */
-  async getUsers (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, minBlockNumber = null) {
+  async getUsers(
+    limit = 100,
+    offset = 0,
+    idsArray: Nullable<number[]> = null,
+    walletAddress: Nullable<string> = null,
+    handle: Nullable<string> = null,
+    minBlockNumber: Nullable<number> = null
+  ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getUsers(limit, offset, idsArray, walletAddress, handle, minBlockNumber)
+    return await this.discoveryProvider.getUsers(
+      limit,
+      offset,
+      idsArray,
+      walletAddress,
+      handle,
+      minBlockNumber
+    )
   }
 
   /**
    * get intersection of users that follow followeeUserId and users that are followed by followerUserId
-   * @param {number} followeeUserId user that is followed
+   * @param followeeUserId user that is followed
    * @example
    * getMutualFollowers(100, 0, 1, 1) - IDs must be valid
    */
-  async getMutualFollowers (limit = 100, offset = 0, followeeUserId) {
+  async getMutualFollowers(limit = 100, offset = 0, followeeUserId: number) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     const followerUserId = this.userStateManager.getCurrentUserId()
     if (followerUserId) {
-      return this.discoveryProvider.getFollowIntersectionUsers(limit, offset, followeeUserId, followerUserId)
+      return await this.discoveryProvider.getFollowIntersectionUsers(
+        limit,
+        offset,
+        followeeUserId,
+        followerUserId
+      )
     }
     return []
   }
 
   /**
    * get users that follow followeeUserId, sorted by follower count descending
-   * @param {number} currentUserId the currently logged in user
-   * @param {number} followeeUserId user that is followed
-   * @return {Array} array of user objects with standard user metadata
    */
-  async getFollowersForUser (limit = 100, offset = 0, followeeUserId) {
+  async getFollowersForUser(limit = 100, offset = 0, followeeUserId: string) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getFollowersForUser(limit, offset, followeeUserId)
+    return await this.discoveryProvider.getFollowersForUser(
+      limit,
+      offset,
+      followeeUserId
+    )
   }
 
   /**
    * get users that are followed by followerUserId, sorted by follower count descending
-   * @param {number} currentUserId the currently logged in user
-   * @param {number} followerUserId user - i am the one who follows
-   * @return {Array} array of user objects with standard user metadata
    */
-  async getFolloweesForUser (limit = 100, offset = 0, followerUserId) {
+  async getFolloweesForUser(limit = 100, offset = 0, followerUserId: string) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getFolloweesForUser(limit, offset, followerUserId)
+    return await this.discoveryProvider.getFolloweesForUser(
+      limit,
+      offset,
+      followerUserId
+    )
   }
 
   /**
    * Return repost feed for requested user
-   * @param {number} userId - requested user id
-   * @param {filter} string - filter by "all", "original", or "repost"
-   * @param {number} limit - max # of items to return (for pagination)
-   * @param {number} offset - offset into list to return from (for pagination)
-   * @returns {Object} {Array of track and playlist metadata objects}
+   * @param userId - requested user id
+   * @param limit - max # of items to return (for pagination)
+   * @param offset - offset into list to return from (for pagination)
+   * @returns Array of track and playlist metadata objects
    * additional metadata fields on track and playlist objects:
    *  {String} activity_timestamp - timestamp of requested user's repost for given track or playlist,
    *    used for sorting feed
@@ -159,17 +178,27 @@ class Users extends Base {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getUserRepostFeed (userId, filter, limit = 100, offset = 0, withUsers = false) {
+  async getUserRepostFeed(
+    userId: number,
+    limit = 100,
+    offset = 0,
+    withUsers = false
+  ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getUserRepostFeed(userId, filter, limit, offset, withUsers)
+    return await this.discoveryProvider.getUserRepostFeed(
+      userId,
+      limit,
+      offset,
+      withUsers
+    )
   }
 
   /**
    * Return social feed for current user
-   * @param {number} limit - max # of items to return
-   * @param {filter} string - filter by "all", "original", or "repost"
-   * @param {number} offset - offset into list to return from (for pagination)
-   * @returns {Object} {Array of track and playlist metadata objects}
+   * @param limit - max # of items to return
+   * @param filter - filter by "all", "original", or "repost"
+   * @param offset - offset into list to return from (for pagination)
+   * @returns Array of track and playlist metadata objects
    * additional metadata fields on track and playlist objects:
    *  {String} activity_timestamp - timestamp of requested user's repost for given track or playlist,
    *    used for sorting feed
@@ -178,11 +207,23 @@ class Users extends Base {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) {
+  async getSocialFeed(
+    filter: string,
+    limit = 100,
+    offset = 0,
+    withUsers = false,
+    tracksOnly = false
+  ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     const owner = this.userStateManager.getCurrentUser()
     if (owner) {
-      return this.discoveryProvider.getSocialFeed(filter, limit, offset, withUsers, tracksOnly)
+      return await this.discoveryProvider.getSocialFeed(
+        filter,
+        limit,
+        offset,
+        withUsers,
+        tracksOnly
+      )
     }
 
     return []
@@ -190,15 +231,25 @@ class Users extends Base {
 
   /**
    * Returns the top users for the specified genres
-   * @param {number} limit - max # of items to return
-   * @param {number} offset - offset into list to return from (for pagination)
-   * @param {Object} {Array of genres} - filter by genres ie. "Rock", "Alternative"
-   * @param {Boolean} with_users - If the userIds should be returned or the full user metadata
-   * @returns {Object} {Array of user objects if with_users set, else array of userIds}
+   * @param genres - filter by genres ie. "Rock", "Alternative"
+   * @param limit - max # of items to return
+   * @param offset - offset into list to return from (for pagination)
+   * @param withUsers - If the userIds should be returned or the full user metadata
+   * @returns  Array of user objects if with_users set, else array of userIdr
    */
-  async getTopCreatorsByGenres (genres, limit = 30, offset = 0, withUsers = false) {
+  async getTopCreatorsByGenres(
+    genres: string[],
+    limit = 30,
+    offset = 0,
+    withUsers = false
+  ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getTopCreatorsByGenres(genres, limit, offset, withUsers)
+    return await this.discoveryProvider.getTopCreatorsByGenres(
+      genres,
+      limit,
+      offset,
+      withUsers
+    )
   }
 
   /* ------- SETTERS ------- */
@@ -206,12 +257,8 @@ class Users extends Base {
   /**
    * Assigns a replica set to the user's metadata and adds new metadata to chain.
    * This creates a record for that user on the connected creator node.
-   * @param {Object} param
-   * @param {number} param.userId
    */
-  async assignReplicaSet ({
-    userId
-  }) {
+  async assignReplicaSet({ userId }: { userId: number }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
       CLEAN_AND_VALIDATE_METADATA: 'CLEAN_AND_VALIDATE_METADATA',
@@ -228,9 +275,12 @@ class Users extends Base {
 
     const user = this.userStateManager.getCurrentUser()
     // Failed the addUser() step
-    if (!user) { throw new Error('No current user') }
+    if (!user) {
+      throw new Error('No current user')
+    }
     // No-op if the user already has a replica set assigned under creator_node_endpoint
-    if (user.creator_node_endpoint && user.creator_node_endpoint.length > 0) return
+    if (user.creator_node_endpoint && user.creator_node_endpoint.length > 0)
+      return
 
     // The new metadata object that will contain the replica set
     const newMetadata = { ...user }
@@ -245,7 +295,11 @@ class Users extends Base {
         preferHigherPatchForPrimary: this.preferHigherPatchForPrimary,
         preferHigherPatchForSecondaries: this.preferHigherPatchForSecondaries
       })
-      console.log(`${logPrefix} [phase: ${phase}] ServiceProvider.autoSelectCreatorNodes() completed in ${Date.now() - startMs}ms`)
+      console.log(
+        `${logPrefix} [phase: ${phase}] ServiceProvider.autoSelectCreatorNodes() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
       startMs = Date.now()
 
       // Ideally, 1 primary and n-1 secondaries are chosen. The best-worst case scenario is that at least 1 primary
@@ -256,7 +310,10 @@ class Users extends Base {
         throw new Error('Could not select a primary.')
       }
 
-      const newContentNodeEndpoints = CreatorNode.buildEndpoint(primary, secondaries)
+      const newContentNodeEndpoints = CreatorNode.buildEndpoint(
+        primary,
+        secondaries
+      )
       newMetadata.creator_node_endpoint = newContentNodeEndpoints
 
       // Update the new primary to the auto-selected primary
@@ -269,11 +326,17 @@ class Users extends Base {
         newMetadata,
         userId
       })
-      console.log(`${logPrefix} [phase: ${phase}] updateAndUploadMetadata() completed in ${Date.now() - startMs}ms`)
+      console.log(
+        `${logPrefix} [phase: ${phase}] updateAndUploadMetadata() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
 
       console.log(`${logPrefix} completed in ${Date.now() - fnStartMs}ms`)
     } catch (e) {
-      const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${Date.now() - fnStartMs}ms: ${e}`
+      const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${
+        Date.now() - fnStartMs
+      }ms: ${e}`
       console.log(errorMsg)
       throw new Error(errorMsg)
     }
@@ -284,12 +347,16 @@ class Users extends Base {
   /**
    * Util to upload profile picture and cover photo images and update
    * a metadata object. This method inherently calls triggerSecondarySyncs().
-   * @param {?File} profilePictureFile an optional file to upload as the profile picture
-   * @param {?File} coverPhotoFile an optional file to upload as the cover photo
-   * @param {Object} metadata to update
-   * @returns {Object} the passed in metadata object with profile_picture_sizes and cover_photo_sizes fields added
+   * @param profilePictureFile an optional file to upload as the profile picture
+   * @param coverPhotoFile an optional file to upload as the cover photo
+   * @param metadata to update
+   * @returns the passed in metadata object with profile_picture_sizes and cover_photo_sizes fields added
    */
-  async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
+  async uploadProfileImages(
+    profilePictureFile: File,
+    coverPhotoFile: File,
+    metadata: UserMetadata
+  ) {
     let didMetadataUpdate = false
     if (profilePictureFile) {
       const resp = await this.creatorNode.uploadImage(profilePictureFile, true)
@@ -317,21 +384,22 @@ class Users extends Base {
    * creator_node_endpoint); this should error if the metadata given attempts to set them.
    * @param {Object} metadata metadata to associate with the user
    */
-  async addUser (metadata) {
+  async addUser(metadata: UserMetadata) {
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
     let userId
     const currentUser = this.userStateManager.getCurrentUser()
-    if (currentUser && currentUser.handle) {
+    if (currentUser?.handle) {
       userId = currentUser.user_id
     } else {
-      userId = (await this.contracts.UserFactoryClient.addUser(newMetadata.handle)).userId
+      userId = (
+        await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
+      ).userId
     }
-    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } = await this._addUserOperations(
-      userId, newMetadata
-    )
+    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } =
+      await this._addUserOperations(userId, newMetadata)
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
@@ -350,33 +418,38 @@ class Users extends Base {
 
   /**
    * Updates a user
-   * @param {number} userId
-   * @param {Object} metadata
    */
-  async updateUser (userId, metadata) {
+  async updateUser(userId: number, metadata: UserMetadata) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
     // Retrieve the current user metadata
-    const users = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, false, null)
-    if (!users || !users[0]) throw new Error(`Cannot update user because no current record exists for user id ${userId}`)
+    const users = await this.discoveryProvider.getUsers(
+      1,
+      0,
+      [userId],
+      null,
+      null,
+      null
+    )
+    if (!users || !users[0])
+      throw new Error(
+        `Cannot update user because no current record exists for user id ${userId}`
+      )
 
     const oldMetadata = users[0]
-    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } = await this._updateUserOperations(
-      newMetadata, oldMetadata, userId
-    )
+    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } =
+      await this._updateUserOperations(newMetadata, oldMetadata, userId)
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
     return { blockHash, blockNumber }
   }
 
   /**
    * Updates a creator (updates their data on the creator node)
-   * @param {number} userId
-   * @param {Object} metadata
    */
-  async updateCreator (userId, metadata) {
+  async updateCreator(userId: number, metadata: UserMetadata) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
@@ -393,8 +466,15 @@ class Users extends Base {
     }
 
     // Ensure libs is connected to correct CN
-    if (this.creatorNode.getEndpoint() !== CreatorNode.getPrimary(newMetadata.creator_node_endpoint)) {
-      throw new Error(`Not connected to correct content node. Expected ${CreatorNode.getPrimary(newMetadata.creator_node_endpoint)}, got ${this.creatorNode.getEndpoint()}`)
+    if (
+      this.creatorNode.getEndpoint() !==
+      CreatorNode.getPrimary(newMetadata.creator_node_endpoint!)
+    ) {
+      throw new Error(
+        `Not connected to correct content node. Expected ${CreatorNode.getPrimary(
+          newMetadata.creator_node_endpoint!
+        )}, got ${this.creatorNode.getEndpoint()}`
+      )
     }
 
     // Preserve old metadata object
@@ -402,34 +482,61 @@ class Users extends Base {
 
     // Update user creator_node_endpoint on chain if applicable
     let updateEndpointTxBlockNumber = null
-    if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
+    if (
+      newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint
+    ) {
       // Perform update to new contract
       startMs = Date.now()
-      const {
-        txReceipt: updateEndpointTxReceipt, replicaSetSPIDs
-      } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
-      updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
-      console.log(`${logPrefix} _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
+      const { txReceipt: updateEndpointTxReceipt, replicaSetSPIDs } =
+        await this._updateReplicaSetOnChain(
+          userId,
+          newMetadata.creator_node_endpoint!
+        )
+      updateEndpointTxBlockNumber = updateEndpointTxReceipt?.blockNumber
+      console.log(
+        `${logPrefix} _updateReplicaSetOnChain() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
       startMs = Date.now()
 
-      await this._waitForURSMCreatorNodeEndpointIndexing(userId, replicaSetSPIDs)
-      console.log(`${logPrefix} _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
+      await this._waitForURSMCreatorNodeEndpointIndexing(
+        userId,
+        replicaSetSPIDs
+      )
+      console.log(
+        `${logPrefix} _waitForURSMCreatorNodeEndpointIndexing() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
+    const { metadataMultihash, metadataFileUUID } =
+      await this.creatorNode.uploadCreatorContent(
+        // @ts-expect-error pretty tough one to type
+        newMetadata,
+        updateEndpointTxBlockNumber
+      )
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+    const { txReceipt } =
+      await this.contracts.UserFactoryClient.updateMultihash(
+        userId,
+        updatedMultihashDecoded.digest
+      )
 
     // Write remaining metadata fields to chain
-    let { latestBlockHash, latestBlockNumber } = await this._updateUserOperations(
-      newMetadata, oldMetadata, userId
-    )
+    let { latestBlockHash, latestBlockNumber } =
+      await this._updateUserOperations(newMetadata, oldMetadata, userId)
 
     // Write to CN to associate blockchain user id with updated metadata and block number
-    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
+    await this.creatorNode.associateCreator(
+      userId,
+      metadataFileUUID,
+      Math.max(txReceipt.blockNumber, latestBlockNumber)
+    )
 
     // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
@@ -439,43 +546,55 @@ class Users extends Base {
       latestBlockNumber = txReceipt.blockNumber
     }
 
-    return { blockHash: latestBlockHash, blockNumber: latestBlockNumber, userId }
+    return {
+      blockHash: latestBlockHash,
+      blockNumber: latestBlockNumber,
+      userId
+    }
   }
 
   /**
    * Updates a user on whether they are verified on Audius
-   * @param {number} userId
-   * @param {boolean} isVerified
    */
-  async updateIsVerified (userId, isVerified, privateKey) {
-    return this.contracts.UserFactoryClient.updateIsVerified(userId, isVerified, privateKey)
+  async updateIsVerified(
+    userId: number,
+    isVerified: boolean,
+    privateKey: string
+  ) {
+    return await this.contracts.UserFactoryClient.updateIsVerified(
+      userId,
+      isVerified,
+      privateKey
+    )
   }
 
   /**
    * Adds a user follow for a given follower and followee
-   * @param {number} followerUserId who is following
-   * @param {number} followeeUserId who is being followed...
-  */
-  async addUserFollow (followeeUserId) {
+   */
+  async addUserFollow(followeeUserId: number) {
     const followerUserId = this.userStateManager.getCurrentUserId()
-    return this.contracts.SocialFeatureFactoryClient.addUserFollow(followerUserId, followeeUserId)
+    return await this.contracts.SocialFeatureFactoryClient.addUserFollow(
+      followerUserId!,
+      followeeUserId
+    )
   }
 
   /**
    * Deletes a user follow for a given follower and followee
-   * @param {number} followerUserId who is no longer following
-   * @param {number} followeeUserId who is no longer being followed...
-  */
-  async deleteUserFollow (followeeUserId) {
+   */
+  async deleteUserFollow(followeeUserId: number) {
     const followerUserId = this.userStateManager.getCurrentUserId()
-    return this.contracts.SocialFeatureFactoryClient.deleteUserFollow(followerUserId, followeeUserId)
+    return await this.contracts.SocialFeatureFactoryClient.deleteUserFollow(
+      followerUserId!,
+      followeeUserId
+    )
   }
 
   /**
    * Gets the clock status for user in userStateManager across replica set.
    */
-  async getClockValuesFromReplicaSet () {
-    return this.creatorNode.getClockValuesFromReplicaSet()
+  async getClockValuesFromReplicaSet() {
+    return await this.creatorNode.getClockValuesFromReplicaSet()
   }
 
   /* ------- PRIVATE  ------- */
@@ -483,15 +602,19 @@ class Users extends Base {
   /**
    * 1. Uploads metadata to primary Content Node (which inherently calls a sync accross secondaries)
    * 2. Updates metadata on chain
-   * @param {Object} param
-   * @param {Object} param.newMetadata new metadata object
-   * @param {number} param.userId
    */
-  async updateAndUploadMetadata ({ newMetadata, userId }) {
+  async updateAndUploadMetadata({
+    newMetadata,
+    userId
+  }: {
+    newMetadata: UserMetadata
+    userId: number
+  }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
     const phases = {
-      UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN: 'UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN',
+      UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN:
+        'UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN',
       UPLOAD_METADATA: 'UPLOAD_METADATA',
       UPDATE_METADATA_ON_CHAIN: 'UPDATE_METADATA_ON_CHAIN',
       UPDATE_USER_ON_CHAIN_OPS: 'UPDATE_USER_ON_CHAIN_OPS',
@@ -500,7 +623,9 @@ class Users extends Base {
     let phase = ''
 
     const oldMetadata = this.userStateManager.getCurrentUser()
-    if (!oldMetadata) { throw new Error('No current user.') }
+    if (!oldMetadata) {
+      throw new Error('No current user.')
+    }
 
     newMetadata = this.cleanUserMetadata(newMetadata)
     this._validateUserMetadata(newMetadata)
@@ -511,39 +636,86 @@ class Users extends Base {
 
     try {
       // Update user creator_node_endpoint on chain if applicable
-      if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
+      if (
+        newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint
+      ) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        const { replicaSetSPIDs } = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
-        console.log(`${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${Date.now() - startMs}ms`)
+        const { replicaSetSPIDs } = await this._updateReplicaSetOnChain(
+          userId,
+          newMetadata.creator_node_endpoint!
+        )
+        console.log(
+          `${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${
+            Date.now() - startMs
+          }ms`
+        )
         startMs = Date.now()
 
-        await this._waitForURSMCreatorNodeEndpointIndexing(userId, replicaSetSPIDs)
-        console.log(`${logPrefix} [phase: ${phase}] _waitForURSMCreatorNodeEndpointIndexing() completed in ${Date.now() - startMs}ms`)
+        await this._waitForURSMCreatorNodeEndpointIndexing(
+          userId,
+          replicaSetSPIDs
+        )
+        console.log(
+          `${logPrefix} [phase: ${phase}] _waitForURSMCreatorNodeEndpointIndexing() completed in ${
+            Date.now() - startMs
+          }ms`
+        )
       }
 
       // Upload new metadata object to CN
       phase = phases.UPLOAD_METADATA
-      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
-      console.log(`${logPrefix} [phase: ${phase}] creatorNode.uploadCreatorContent() completed in ${Date.now() - startMs}ms`)
+      const { metadataMultihash, metadataFileUUID } =
+        // @ts-expect-error tough converting UserMetadata to Metadata
+        await this.creatorNode.uploadCreatorContent(newMetadata)
+      console.log(
+        `${logPrefix} [phase: ${phase}] creatorNode.uploadCreatorContent() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
       startMs = Date.now()
 
       // Write metadata multihash to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN
       const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
-      const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
-      console.log(`${logPrefix} [phase: ${phase}] UserFactoryClient.updateMultihash() completed in ${Date.now() - startMs}ms`)
+      const { txReceipt } =
+        await this.contracts.UserFactoryClient.updateMultihash(
+          userId,
+          updatedMultihashDecoded.digest
+        )
+      console.log(
+        `${logPrefix} [phase: ${phase}] UserFactoryClient.updateMultihash() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
       startMs = Date.now()
 
       // Write remaining metadata fields to chain
       phase = phases.UPDATE_USER_ON_CHAIN_OPS
-      const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
-      console.log(`${logPrefix} [phase: ${phase}] _updateUserOperations() completed in ${Date.now() - startMs}ms`)
+      const { latestBlockNumber } = await this._updateUserOperations(
+        newMetadata,
+        oldMetadata,
+        userId,
+        ['creator_node_endpoint']
+      )
+      console.log(
+        `${logPrefix} [phase: ${phase}] _updateUserOperations() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
       startMs = Date.now()
 
       // Write to CN to associate blockchain user id with updated metadata and block number
       phase = phases.ASSOCIATE_USER
-      await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
-      console.log(`${logPrefix} [phase: ${phase}] creatorNode.associateCreator() completed in ${Date.now() - startMs}ms`)
+      await this.creatorNode.associateCreator(
+        userId,
+        metadataFileUUID,
+        Math.max(txReceipt.blockNumber, latestBlockNumber)
+      )
+      console.log(
+        `${logPrefix} [phase: ${phase}] creatorNode.associateCreator() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
       startMs = Date.now()
 
       // Update libs instance with new user metadata object
@@ -552,7 +724,9 @@ class Users extends Base {
       console.log(`${logPrefix} completed in ${Date.now() - fnStartMs}ms`)
     } catch (e) {
       // TODO: think about handling the update metadata on chain and associating..
-      const errorMsg = `updateAndUploadMetadata() Error -- Phase ${phase} in ${Date.now() - fnStartMs}ms: ${e}`
+      const errorMsg = `updateAndUploadMetadata() Error -- Phase ${phase} in ${
+        Date.now() - fnStartMs
+      }ms: ${e}`
       console.log(errorMsg)
       throw new Error(errorMsg)
     }
@@ -562,7 +736,7 @@ class Users extends Base {
    * If a user's creator_node_endpoint is null, assign a replica set.
    * Used during the sanity check and in uploadImage() in files.js
    */
-  async assignReplicaSetIfNecessary () {
+  async assignReplicaSetIfNecessary() {
     const user = this.userStateManager.getCurrentUser()
 
     // If no user is logged in, or a creator node endpoint is already assigned,
@@ -573,12 +747,17 @@ class Users extends Base {
     try {
       await this.assignReplicaSet({ userId: user.user_id })
     } catch (e) {
-      throw new Error(`assignReplicaSetIfNecessary error - ${e.toString()}`)
+      throw new Error(
+        `assignReplicaSetIfNecessary error - ${(e as any).toString()}`
+      )
     }
   }
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
-  async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
+  async _waitForCreatorNodeEndpointIndexing(
+    userId: number,
+    creatorNodeEndpoint: string
+  ) {
     while (true) {
       const userList = await this.discoveryProvider.getUsers(1, 0, [userId])
       if (userList) {
@@ -592,10 +771,17 @@ class Users extends Base {
     }
   }
 
-  async _waitForURSMCreatorNodeEndpointIndexing (userId, replicaSetSPIDs, timeoutMs = 60000) {
+  async _waitForURSMCreatorNodeEndpointIndexing(
+    userId: number,
+    replicaSetSPIDs: number[],
+    timeoutMs = 60000
+  ) {
     const asyncFn = async () => {
       while (true) {
-        const replicaSet = await this.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+        const replicaSet =
+          await this.contracts.UserReplicaSetManagerClient?.getUserReplicaSet(
+            userId
+          )
         if (
           replicaSet &&
           Object.prototype.hasOwnProperty.call(replicaSet, 'primaryId') &&
@@ -615,43 +801,65 @@ class Users extends Base {
     )
   }
 
-  async _addUserOperations (userId, newMetadata, exclude = []) {
+  async _addUserOperations(
+    userId: number,
+    newMetadata: UserMetadata,
+    exclude = []
+  ) {
     const addOps = []
 
     // Remove excluded keys from metadata object
     const metadata = { ...newMetadata }
-    exclude.map(excludedKey => delete metadata[excludedKey])
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    exclude.map((excludedKey) => delete metadata[excludedKey])
 
-    if (metadata[USER_PROP_NAME_CONSTANTS.NAME]) {
-      addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[USER_PROP_NAME_CONSTANTS.NAME]))
+    if (metadata.name) {
+      addOps.push(
+        this.contracts.UserFactoryClient.updateName(userId, metadata.name)
+      )
     }
-    if (metadata[USER_PROP_NAME_CONSTANTS.LOCATION]) {
-      addOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata[USER_PROP_NAME_CONSTANTS.LOCATION]))
+    if (metadata.location) {
+      addOps.push(
+        this.contracts.UserFactoryClient.updateLocation(
+          userId,
+          metadata.location
+        )
+      )
     }
-    if (metadata[USER_PROP_NAME_CONSTANTS.BIO]) {
-      addOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata[USER_PROP_NAME_CONSTANTS.BIO]))
+    if (metadata.bio) {
+      addOps.push(
+        this.contracts.UserFactoryClient.updateBio(userId, metadata.bio)
+      )
     }
-    if (metadata[USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]) {
-      addOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
-        userId,
-        Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]).digest
-      ))
+    if (metadata.profile_picture_sizes) {
+      addOps.push(
+        this.contracts.UserFactoryClient.updateProfilePhoto(
+          userId,
+          Utils.decodeMultihash(metadata.profile_picture_sizes).digest
+        )
+      )
     }
-    if (metadata[USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]) {
-      addOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
-        userId,
-        Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]).digest
-      ))
+    if (metadata.cover_photo_sizes) {
+      addOps.push(
+        this.contracts.UserFactoryClient.updateCoverPhoto(
+          userId,
+          Utils.decodeMultihash(metadata.cover_photo_sizes).digest
+        )
+      )
     }
 
-    let ops; let latestBlockNumber = -Infinity; let latestBlockHash
+    let ops
+    let latestBlockNumber = -Infinity
+    let latestBlockHash
     if (addOps.length > 0) {
       // Execute update promises concurrently
       // TODO - what if one or more of these fails?
       // sort transactions by blocknumber and return most recent transaction
       ops = await Promise.all(addOps)
-      const sortedOpsDesc = ops.sort((op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber)
-      const latestTx = sortedOpsDesc[0].txReceipt
+      const sortedOpsDesc = ops.sort(
+        (op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber
+      )
+      const latestTx = sortedOpsDesc[0]!.txReceipt
       latestBlockNumber = latestTx.blockNumber
       latestBlockHash = latestTx.blockHash
     }
@@ -659,46 +867,74 @@ class Users extends Base {
     return { ops, latestBlockNumber, latestBlockHash }
   }
 
-  async _updateUserOperations (newMetadata, currentMetadata, userId, exclude = []) {
+  async _updateUserOperations(
+    newMetadata: UserMetadata,
+    currentMetadata: UserMetadata,
+    userId: number,
+    exclude: Array<keyof UserMetadata> = []
+  ) {
     const updateOps = []
 
     // Remove excluded keys from metadata object
     const metadata = { ...newMetadata }
-    exclude.map(excludedKey => delete metadata[excludedKey])
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    exclude.map((excludedKey) => delete metadata[excludedKey])
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
     for (const key in metadata) {
-      if (Object.prototype.hasOwnProperty.call(metadata, key) && Object.prototype.hasOwnProperty.call(currentMetadata, key) && metadata[key] !== currentMetadata[key]) {
-        if (key === USER_PROP_NAME_CONSTANTS.NAME) {
-          updateOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[USER_PROP_NAME_CONSTANTS.NAME]))
+      const typedKey = key as keyof UserMetadata
+      if (
+        Object.prototype.hasOwnProperty.call(metadata, key) &&
+        Object.prototype.hasOwnProperty.call(currentMetadata, key) &&
+        metadata[typedKey] !== currentMetadata[typedKey]
+      ) {
+        if (key === 'name') {
+          updateOps.push(
+            this.contracts.UserFactoryClient.updateName(userId, metadata.name)
+          )
         }
-        if (key === USER_PROP_NAME_CONSTANTS.BIO) {
-          updateOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata[USER_PROP_NAME_CONSTANTS.BIO]))
+        if (key === 'bio') {
+          updateOps.push(
+            this.contracts.UserFactoryClient.updateBio(userId, metadata.bio)
+          )
         }
-        if (key === USER_PROP_NAME_CONSTANTS.LOCATION) {
-          updateOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata[USER_PROP_NAME_CONSTANTS.LOCATION]))
+        if (key === 'location') {
+          updateOps.push(
+            this.contracts.UserFactoryClient.updateLocation(
+              userId,
+              metadata.location!
+            )
+          )
         }
-        if (key === USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES) {
-          updateOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
-            userId,
-            Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]).digest
-          ))
+        if (key === 'profile_picture_sizes') {
+          updateOps.push(
+            this.contracts.UserFactoryClient.updateProfilePhoto(
+              userId,
+              Utils.decodeMultihash(metadata.profile_picture_sizes!).digest
+            )
+          )
         }
-        if (key === USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES) {
-          updateOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
-            userId,
-            Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]).digest
-          ))
+        if (key === 'cover_photo_sizes') {
+          updateOps.push(
+            this.contracts.UserFactoryClient.updateCoverPhoto(
+              userId,
+              Utils.decodeMultihash(metadata.cover_photo_sizes!).digest
+            )
+          )
         }
       }
     }
 
-    let ops; let latestBlockNumber = -Infinity; let latestBlockHash
+    let ops
+    let latestBlockNumber = -Infinity
+    let latestBlockHash
     if (updateOps.length > 0) {
       // sort transactions by blocknumber and return most recent transaction
       ops = await Promise.all(updateOps)
-      const sortedOpsDesc = ops.sort((op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber)
-      const latestTx = sortedOpsDesc[0].txReceipt
+      const sortedOpsDesc = ops.sort(
+        (op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber
+      )
+      const latestTx = sortedOpsDesc[0]!.txReceipt
       latestBlockNumber = latestTx.blockNumber
       latestBlockHash = latestTx.blockHash
     }
@@ -706,7 +942,7 @@ class Users extends Base {
     return { ops, latestBlockNumber, latestBlockHash }
   }
 
-  _validateUserMetadata (metadata) {
+  _validateUserMetadata(metadata: UserMetadata) {
     this.OBJECT_HAS_PROPS(metadata, USER_PROPS, USER_REQUIRED_PROPS)
   }
 
@@ -715,9 +951,12 @@ class Users extends Base {
    * - Add what user props might be missing to normalize
    * - Only keep core fields in USER_PROPS and 'user_id'.
    */
-  cleanUserMetadata (metadata) {
-    USER_PROPS.forEach(prop => {
-      if (!(prop in metadata)) { metadata[prop] = null }
+  cleanUserMetadata(metadata: UserMetadata) {
+    USER_PROPS.forEach((prop) => {
+      if (!(prop in metadata)) {
+        // @ts-expect-error
+        metadata[prop] = null
+      }
     })
     return pick(metadata, USER_PROPS.concat('user_id'))
   }
@@ -725,7 +964,7 @@ class Users extends Base {
   // Perform replica set update
   // Conditionally write to UserFactory contract, else write to UserReplicaSetManager
   // This behavior is to ensure backwards compatibility prior to contract deploy
-  async _updateReplicaSetOnChain (userId, creatorNodeEndpoint) {
+  async _updateReplicaSetOnChain(userId: number, creatorNodeEndpoint: string) {
     // Attempt to update through UserReplicaSetManagerClient if present
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
@@ -735,21 +974,24 @@ class Users extends Base {
     const secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
 
     if (secondaries.length < 2) {
-      throw new Error(`Invalid number of secondaries found - received ${secondaries}`)
+      throw new Error(
+        `Invalid number of secondaries found - received ${secondaries}`
+      )
     }
 
     const [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
-      this._retrieveSpIDFromEndpoint(primaryEndpoint),
-      this._retrieveSpIDFromEndpoint(secondaries[0]),
-      this._retrieveSpIDFromEndpoint(secondaries[1])
+      this._retrieveSpIDFromEndpoint(primaryEndpoint!),
+      this._retrieveSpIDFromEndpoint(secondaries[0]!),
+      this._retrieveSpIDFromEndpoint(secondaries[1]!)
     ])
 
     // Update in new contract
-    const txReceipt = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
-      userId,
-      primarySpID,
-      [secondary1SpID, secondary2SpID]
-    )
+    const txReceipt =
+      await this.contracts.UserReplicaSetManagerClient?.updateReplicaSet(
+        userId,
+        primarySpID,
+        [secondary1SpID, secondary2SpID]
+      )
     const replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
     return {
       txReceipt,
@@ -759,13 +1001,14 @@ class Users extends Base {
 
   // Retrieve cached value for spID from endpoint if present, otherwise fetch from eth web3
   // Any error in the web3 fetch will short circuit the entire operation as expected
-  async _retrieveSpIDFromEndpoint (endpoint) {
+  async _retrieveSpIDFromEndpoint(endpoint: string) {
     const cachedSpID = getSpIDForEndpoint(endpoint)
     let spID = cachedSpID
     if (!spID) {
-      const spEndpointInfo = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
-        endpoint
-      )
+      const spEndpointInfo =
+        await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
+          endpoint
+        )
       // Throw if this spID is 0, indicating invalid
       spID = spEndpointInfo.spID
       if (spID === 0) {
@@ -777,6 +1020,3 @@ class Users extends Base {
     return spID
   }
 }
-
-module.exports = Users
-module.exports.USER_PROP_NAME_CONSTANTS = USER_PROP_NAME_CONSTANTS

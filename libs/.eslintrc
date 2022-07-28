@@ -21,6 +21,7 @@
     "@typescript-eslint/quotes": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/require-array-sort-compare":"off",
     "comma-dangle": "off",
     "mocha/no-mocha-arrows": "off",
     "mocha/max-top-level-suites": "off"

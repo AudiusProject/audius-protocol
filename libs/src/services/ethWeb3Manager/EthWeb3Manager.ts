@@ -220,7 +220,7 @@ export class EthWeb3Manager {
   async getRelayMethodParams(
     contractAddress: string,
     contractMethod: ContractMethod,
-    relayerWallet: Wallet
+    relayerWallet: string
   ) {
     const encodedABI = contractMethod.encodeABI()
     const gasLimit = await estimateGas({

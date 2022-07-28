@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const Users = require('./user.js')
+const { Users } = require('./Users')
 
 describe('Users tests', () => {
   it('_addUserOperations finds latest block hash', async () => {
@@ -61,16 +61,14 @@ describe('Users tests', () => {
 
     const userId = 1
     const metadata = {
-      [Users.USER_PROP_NAME_CONSTANTS.NAME]: 'Rob Stark',
-      [Users.USER_PROP_NAME_CONSTANTS.LOCATION]: 'Winterfell',
-      [Users.USER_PROP_NAME_CONSTANTS.BIO]: 'King in the North',
-      [Users.USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo',
-      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo'
+      name: 'Rob Stark',
+      location: 'Winterfell',
+      bio: 'King in the North',
+      profile_picture_sizes: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo',
+      cover_photo_sizes: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo'
     }
-    const {
-      latestBlockNumber,
-      latestBlockHash
-    } = await UsersAPI._addUserOperations(userId, metadata)
+    const { latestBlockNumber, latestBlockHash } =
+      await UsersAPI._addUserOperations(userId, metadata)
     assert(latestBlockNumber === 6)
     assert(latestBlockHash === '0x6')
   })
@@ -133,24 +131,22 @@ describe('Users tests', () => {
 
     const userId = 1
     const oldMetadata = {
-      [Users.USER_PROP_NAME_CONSTANTS.NAME]: 'Rob Stark',
-      [Users.USER_PROP_NAME_CONSTANTS.LOCATION]: 'Winterfell',
-      [Users.USER_PROP_NAME_CONSTANTS.BIO]: 'King in the North',
-      [Users.USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo',
-      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo'
+      name: 'Rob Stark',
+      location: 'Winterfell',
+      bio: 'King in the North',
+      profile_picture_sizes: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo',
+      cover_photo_sizes: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWo'
     }
     const newMetadata = {
-      [Users.USER_PROP_NAME_CONSTANTS.NAME]: 'Jon Snow',
-      [Users.USER_PROP_NAME_CONSTANTS.LOCATION]: 'Dragonstone',
+      name: 'Jon Snow',
+      location: 'Dragonstone',
       // Does not change
-      [Users.USER_PROP_NAME_CONSTANTS.BIO]: 'King in the North',
-      [Users.USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWf',
-      [Users.USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWf'
+      bio: 'King in the North',
+      profile_picture_sizes: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWf',
+      cover_photo_sizes: 'QmUQSH4yKWLtykDuTmC17UKrCt1AiKhtjN7w1VHmpKfbWf'
     }
-    const {
-      latestBlockNumber,
-      latestBlockHash
-    } = await UsersAPI._updateUserOperations(newMetadata, oldMetadata, userId)
+    const { latestBlockNumber, latestBlockHash } =
+      await UsersAPI._updateUserOperations(newMetadata, oldMetadata, userId)
     assert(latestBlockNumber === 5)
     assert(latestBlockHash === '0x5')
   })

@@ -7,6 +7,7 @@ import semver from 'semver'
 
 import { Utils } from './utils'
 import { promiseFight } from './promiseFight'
+import type { Nullable } from './types'
 
 export type ServiceName = string
 export interface ServiceWithEndpoint {
@@ -177,7 +178,7 @@ async function raceRequests(
   urls: string[],
   callback: (url: string) => void,
   axiosConfig: AxiosRequestConfig,
-  timeout = 3000,
+  timeout: Nullable<number> = 3000,
   timeBetweenRequests = 100,
   validationCheck = (_: AxiosResponse) => true
 ) {

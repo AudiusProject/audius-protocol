@@ -1,7 +1,7 @@
 import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
-import anchor, { Idl, Program } from '@project-serum/anchor'
+import anchor, { Address, Idl, Program } from '@project-serum/anchor'
 import { idl } from '@audius/anchor-audius-data'
 
 import { transferWAudioBalance } from './transfer'
@@ -42,7 +42,7 @@ export type SolanaWeb3Config = {
   mintAddress: string
   solanaTokenAddress: string
   claimableTokenPDA: string
-  feePayerAddress: PublicKey
+  feePayerAddress: string
   claimableTokenProgramAddress: string
   rewardsManagerProgramId: string
   rewardsManagerProgramPDA: string
@@ -78,7 +78,7 @@ export class SolanaWeb3Manager {
   mintKey!: PublicKey
   solanaTokenAddress!: string
   solanaTokenKey!: PublicKey
-  feePayerAddress!: PublicKey
+  feePayerAddress!: Address
   feePayerKey!: PublicKey
   claimableTokenProgramKey!: PublicKey
   claimableTokenPDA!: string

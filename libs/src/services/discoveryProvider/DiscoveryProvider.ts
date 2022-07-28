@@ -1,7 +1,7 @@
 // TODO: strictly type each method with the models defined in audius-client
 import axios, { AxiosError, AxiosRequestConfig, Method } from 'axios'
 
-import { Utils } from '../../utils'
+import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
 
 import { DEFAULT_UNHEALTHY_BLOCK_DIFF, REQUEST_TIMEOUT_MS } from './constants'
 
@@ -177,12 +177,7 @@ export class DiscoveryProvider {
   /**
    * Get users with all relevant user data
    * can be filtered by providing an integer array of ids
-   * @param limit
-   * @param offset
-   * @param idsArray
-   * @param walletAddress
-   * @param handle
-   * @returns {Object} {Array of User metadata Objects}
+   * @returns Array of User metadata Objects
    * additional metadata fields on user objects:
    *  {Integer} track_count - track count for given user
    *  {Integer} playlist_count - playlist count for given user
@@ -200,10 +195,10 @@ export class DiscoveryProvider {
   async getUsers(
     limit = 100,
     offset = 0,
-    idsArray?: string[],
-    walletAddress?: string,
-    handle?: string,
-    minBlockNumber?: number
+    idsArray: Nullable<number[]>,
+    walletAddress?: Nullable<string>,
+    handle?: Nullable<string>,
+    minBlockNumber?: Nullable<number>
   ) {
     const req = Requests.getUsers(
       limit,
@@ -213,7 +208,7 @@ export class DiscoveryProvider {
       handle,
       minBlockNumber
     )
-    return await this._makeRequest(req)
+    return await this._makeRequest<Nullable<User[]>>(req)
   }
 
   /**
@@ -240,11 +235,11 @@ export class DiscoveryProvider {
   async getTracks(
     limit = 100,
     offset = 0,
-    idsArray?: string[],
-    targetUserId?: string,
-    sort?: boolean,
-    minBlockNumber?: number,
-    filterDeleted?: boolean,
+    idsArray: Nullable<string[]>,
+    targetUserId: Nullable<string>,
+    sort: Nullable<boolean>,
+    minBlockNumber: Nullable<number>,
+    filterDeleted: Nullable<boolean>,
     withUsers?: boolean
   ) {
     const req = Requests.getTracks(
@@ -334,7 +329,11 @@ export class DiscoveryProvider {
    * @param offset
    * @returns {(Array)} track
    */
-  async getRemixesOfTrack(trackId: number, limit?: number, offset?: number) {
+  async getRemixesOfTrack(
+    trackId: number,
+    limit: Nullable<number>,
+    offset: Nullable<number>
+  ) {
     const req = Requests.getRemixesOfTrack(trackId, limit, offset)
     return await this._makeRequest(req)
   }
@@ -343,9 +342,12 @@ export class DiscoveryProvider {
    * Gets the remix parents of a given trackId as an array of tracks.
    * @param limit
    * @param offset
-   * @returns {(Array)} track
    */
-  async getRemixTrackParents(trackId: number, limit?: number, offset?: number) {
+  async getRemixTrackParents(
+    trackId: number,
+    limit: Nullable<number>,
+    offset: Nullable<number>
+  ) {
     const req = Requests.getRemixTrackParents(trackId, limit, offset)
     return await this._makeRequest(req)
   }
@@ -359,11 +361,11 @@ export class DiscoveryProvider {
    * @param offset
    */
   async getTrendingTracks(
-    genre?: string,
-    timeFrame?: string,
-    idsArray?: number[],
-    limit?: number,
-    offset?: number,
+    genre: Nullable<string>,
+    timeFrame: Nullable<string>,
+    idsArray: Nullable<number[]>,
+    limit: Nullable<number>,
+    offset: Nullable<number>,
     withUsers = false
   ) {
     const req = Requests.getTrendingTracks(
@@ -381,7 +383,7 @@ export class DiscoveryProvider {
 
   /**
    * get full playlist objects, including tracks, for passed in array of playlistId
-   * @returns {Array} array of playlist objects
+   * @returns array of playlist objects
    * additional metadata fields on playlist objects:
    *  {Integer} repost_count - repost count for given playlist
    *  {Integer} save_count - save count for given playlist
@@ -393,8 +395,8 @@ export class DiscoveryProvider {
   async getPlaylists(
     limit = 100,
     offset = 0,
-    idsArray = null,
-    targetUserId = null,
+    idsArray: Nullable<number[]> = null,
+    targetUserId: Nullable<number> = null,
     withUsers = false
   ) {
     const req = Requests.getPlaylists(
@@ -404,7 +406,7 @@ export class DiscoveryProvider {
       targetUserId,
       withUsers
     )
-    return await this._makeRequest(req)
+    return await this._makeRequest<CollectionMetadata[]>(req)
   }
 
   /**
@@ -535,7 +537,7 @@ export class DiscoveryProvider {
    * @param followeeUserId user that is followed
    * @return {Array} array of user objects with standard user metadata
    */
-  async getFollowersForUser(limit = 100, offset = 0, followeeUserId: number) {
+  async getFollowersForUser(limit = 100, offset = 0, followeeUserId: string) {
     const req = Requests.getFollowersForUser(limit, offset, followeeUserId)
     return await this._makeRequest(req)
   }
@@ -545,7 +547,7 @@ export class DiscoveryProvider {
    * @param followerUserId user - i am the one who follows
    * @return {Array} array of user objects with standard user metadata
    */
-  async getFolloweesForUser(limit = 100, offset = 0, followerUserId: number) {
+  async getFolloweesForUser(limit = 100, offset = 0, followerUserId: string) {
     const req = Requests.getFolloweesForUser(limit, offset, followerUserId)
     return await this._makeRequest(req)
   }
@@ -900,7 +902,7 @@ export class DiscoveryProvider {
      method: string,
      headers: object,
    }} requestObj
-   * @param {string} discoveryProviderEndpoint
+   * @param discoveryProviderEndpoint
    * @returns
    * @memberof DiscoveryProvider
    */
@@ -1229,7 +1231,7 @@ export class DiscoveryProvider {
     }
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
-      headers['X-User-ID'] = currentUserId
+      headers['X-User-ID'] = currentUserId as unknown as string
     }
 
     const timeout = requestObj.timeout ?? this.selectionRequestTimeout
