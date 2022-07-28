@@ -1,4 +1,4 @@
-const { logger } = require('../../logging')
+const { logger: genericLogger } = require('../../logging')
 
 /**
  * Queries to periodically keep the mapping of (Content Node endpoint -> SP ID)
@@ -29,7 +29,9 @@ class CNodeToSpIdMapManager {
         cNodeEndpointToSpIdMap[cn.endpoint] = cn.spID
       })
     } catch (e) {
-      logger.error(`updateCnodeEndpointToSpIdMap Error: ${e.message}`)
+      genericLogger.error(
+        `CNodeToSpIdMapManager - Could not fetch content nodes: ${e.message}`
+      )
     }
 
     if (Object.keys(cNodeEndpointToSpIdMap).length > 0) {
@@ -39,12 +41,14 @@ class CNodeToSpIdMapManager {
     const mapLength = Object.keys(this.cNodeEndpointToSpIdMap).length
     if (mapLength === 0) {
       const errorMessage =
-        'updateCnodeEndpointToSpIdMap() Unable to initialize cNodeEndpointToSpIdMap'
-      logger.error(errorMessage)
+        'CNodeToSpIdMapManager - Unable to initialize cNodeEndpointToSpIdMap'
+      genericLogger.error(errorMessage)
       throw new Error(errorMessage)
     }
 
-    logger.info(`updateEndpointToSpIdMap Success. Size: ${mapLength}`)
+    genericLogger.info(
+      `CNodeToSpIdMapManager - updateCnodeEndpointToSpIdMap Success. Size: ${mapLength}`
+    )
   }
 }
 

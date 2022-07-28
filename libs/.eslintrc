@@ -19,6 +19,7 @@
     "@typescript-eslint/space-before-function-paren": "off",
     "@typescript-eslint/indent": "off",
     "@typescript-eslint/quotes": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/consistent-type-definitions": "off",
     "comma-dangle": "off",
     "mocha/no-mocha-arrows": "off",

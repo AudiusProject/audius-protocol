@@ -21,6 +21,7 @@ const {
 const { uploadTrack } = require('./lib/helpers')
 const BlacklistManager = require('../src/blacklistManager')
 const sessionManager = require('../src/sessionManager')
+const exportComponentService = require('../src/components/replicaSet/exportComponentService')
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
@@ -702,7 +703,7 @@ describe('test nodesync', async function () {
       })
     })
 
-    describe('Confirm export throws an error with inconsitent data', async function () {
+    describe('Confirm export throws an error with inconsistent data', async function () {
       beforeEach(setupDepsAndApp)
 
       beforeEach(createUserAndTrack)
@@ -710,22 +711,24 @@ describe('test nodesync', async function () {
       it('Inconsistent clock values', async function () {
         // Mock findOne DB function for cnodeUsers and ClockRecords
         // Have them return inconsistent values
+        const clockRecordTableClock = 8
         const clockRecordsFindAllStub = sandbox.stub().resolves([
           {
-            clock: 8
+            clock: clockRecordTableClock
           }
         ])
+        const cnodeUserTableClock = 7
         const cNodeUserFindAll = sandbox.stub().resolves([
           {
             // Random UUID
             cnodeUserUUID: '48523a08-2a11-4200-8aac-ae74b8a39dd0',
-            clock: 7
+            clock: cnodeUserTableClock
           }
         ])
 
         const modelsMock = {
           ...require('../src/models'),
-          ClockRecords: {
+          ClockRecord: {
             findAll: clockRecordsFindAllStub
           },
           CNodeUser: {
@@ -747,13 +750,11 @@ describe('test nodesync', async function () {
             logger: console
           })
         ).to.eventually.be.rejectedWith(
-          'Cannot export - exported data is not consistent. Exported max clock val = 7 and exported max ClockRecord val -Infinity'
+          `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUserTableClock} and exported max ClockRecord val ${clockRecordTableClock}`
         )
 
-        /**
-         *
-         * Verify
-         */
+        expect(clockRecordsFindAllStub).to.have.been.calledOnce
+        expect(cNodeUserFindAll).to.have.been.calledOnce
       })
     })
   })
@@ -1009,11 +1010,15 @@ describe('test nodesync', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      await secondarySyncFromPrimary(
+      const result = await secondarySyncFromPrimary(
         serviceRegistryMock,
         userWallets,
         TEST_ENDPOINT
       )
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser
@@ -1054,11 +1059,15 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      await secondarySyncFromPrimary(
+      const result = await secondarySyncFromPrimary(
         serviceRegistryMock,
         userWallets,
         TEST_ENDPOINT
       )
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       await verifyLocalCNodeUserStateForUser(exportedCnodeUser)
 
@@ -1097,13 +1106,17 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary with `forceResync` = true
-      await secondarySyncFromPrimary(
+      const result = await secondarySyncFromPrimary(
         serviceRegistryMock,
         userWallets,
         TEST_ENDPOINT,
         /* blockNumber */ null,
         /* forceResync */ true
       )
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser

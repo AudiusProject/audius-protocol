@@ -5,9 +5,7 @@ const config = require('../../../config')
 const {
   QUEUE_HISTORY,
   QUEUE_NAMES,
-  JOB_NAMES,
-  STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
-  C_NODE_ENDPOINT_TO_SP_ID_MAP_QUEUE_MAX_JOB_RUNTIME_MS,
+  MAX_QUEUE_RUNTIMES,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
 } = require('../stateMachineConstants')
 const { makeQueue, registerQueueEvents } = require('../stateMachineUtils')
@@ -19,11 +17,17 @@ const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
 const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
 const fetchCNodeEndpointToSpIdMapJobProcessor = require('./fetchCNodeEndpointToSpIdMap.jobProcessor')
 
-const monitoringQueueLogger = createChildLogger(baseLogger, {
-  queue: QUEUE_NAMES.STATE_MONITORING
+const monitorStateLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.MONITOR_STATE
+})
+const findSyncRequestsLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.FIND_SYNC_REQUESTS
+})
+const findReplicaSetUpdatesLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.FIND_REPLICA_SET_UPDATES
 })
 const cNodeEndpointToSpIdMapQueueLogger = createChildLogger(baseLogger, {
-  queue: QUEUE_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP
+  queue: QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
 })
 
 /**
@@ -36,12 +40,10 @@ class StateMonitoringManager {
   async init(discoveryNodeEndpoint, prometheusRegistry) {
     // Create and start queue to fetch cNodeEndpoint->spId mapping
     const cNodeEndpointToSpIdMapQueue = makeQueue({
-      redisHost: config.get('redisHost'),
-      redisPort: config.get('redisPort'),
-      name: QUEUE_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP,
-      removeOnComplete: QUEUE_HISTORY.C_NODE_ENDPOINT_TO_SP_ID_MAP,
-      removeOnFail: QUEUE_HISTORY.C_NODE_ENDPOINT_TO_SP_ID_MAP,
-      lockDuration: C_NODE_ENDPOINT_TO_SP_ID_MAP_QUEUE_MAX_JOB_RUNTIME_MS,
+      name: QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
+      removeOnComplete: QUEUE_HISTORY.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
+      removeOnFail: QUEUE_HISTORY.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
+      lockDuration: MAX_QUEUE_RUNTIMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
       limiter: {
         max: 1,
         duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
@@ -52,22 +54,39 @@ class StateMonitoringManager {
       prometheusRegistry
     )
 
-    // Create and start queue to monitor state for syncs and reconfigs
-    const stateMonitoringQueue = makeQueue({
-      redisHost: config.get('redisHost'),
-      redisPort: config.get('redisPort'),
-      name: QUEUE_NAMES.STATE_MONITORING,
-      removeOnComplete: QUEUE_HISTORY.STATE_MONITORING,
-      removeOnFail: QUEUE_HISTORY.STATE_MONITORING,
-      lockDuration: STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
+    // Create queue to slice through batches of users and gather data to be passed to find-sync and find-replica-set-update jobs
+    const monitorStateQueue = makeQueue({
+      name: QUEUE_NAMES.MONITOR_STATE,
+      removeOnComplete: QUEUE_HISTORY.MONITOR_STATE,
+      removeOnFail: QUEUE_HISTORY.MONITOR_STATE,
+      lockDuration: MAX_QUEUE_RUNTIMES.MONITOR_STATE,
       limiter: {
         // Bull doesn't allow either of these to be set to 0
         max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
       }
     })
+
+    // Create queue to find sync requests
+    const findSyncRequestsQueue = makeQueue({
+      name: QUEUE_NAMES.FIND_SYNC_REQUESTS,
+      removeOnComplete: QUEUE_HISTORY.FIND_SYNC_REQUESTS,
+      removeOnFail: QUEUE_HISTORY.FIND_SYNC_REQUESTS,
+      lockDuration: MAX_QUEUE_RUNTIMES.FIND_SYNC_REQUESTS
+    })
+
+    // Create queue to find replica set updates
+    const findReplicaSetUpdatesQueue = makeQueue({
+      name: QUEUE_NAMES.FIND_REPLICA_SET_UPDATES,
+      removeOnComplete: QUEUE_HISTORY.FIND_REPLICA_SET_UPDATES,
+      removeOnFail: QUEUE_HISTORY.FIND_REPLICA_SET_UPDATES,
+      lockDuration: MAX_QUEUE_RUNTIMES.FIND_REPLICA_SET_UPDATES
+    })
+
     this.registerMonitoringQueueEventHandlersAndJobProcessors({
-      monitoringQueue: stateMonitoringQueue,
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
       cNodeEndpointToSpIdMapQueue,
       monitorStateJobFailureCallback: this.enqueueMonitorStateJobAfterFailure,
       processMonitorStateJob:
@@ -77,10 +96,19 @@ class StateMonitoringManager {
       processFindReplicaSetUpdatesJob:
         this.makeProcessFindReplicaSetUpdatesJob(prometheusRegistry).bind(this)
     })
-    await this.startMonitoringQueue(stateMonitoringQueue, discoveryNodeEndpoint)
+
+    // Clear any old state if redis was running but the rest of the server restarted
+    await monitorStateQueue.obliterate({ force: true })
+    await findSyncRequestsQueue.obliterate({ force: true })
+    await findReplicaSetUpdatesQueue.obliterate({ force: true })
+
+    // Enqueue first monitor-state job
+    await this.startMonitorStateQueue(monitorStateQueue, discoveryNodeEndpoint)
 
     return {
-      stateMonitoringQueue,
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
       cNodeEndpointToSpIdMapQueue
     }
   }
@@ -88,7 +116,9 @@ class StateMonitoringManager {
   /**
    * Registers event handlers for logging and job success/failure.
    * @param {Object} params
-   * @param {Object} params.monitoringQueue the monitoring queue to register events for
+   * @param {Object} params.monitoringStateQueue the monitor-state queue to register events for
+   * @param {Object} params.findSyncRequestsQueue the find-sync-requests queue to register events for
+   * @param {Object} params.findReplicaSetUpdatesQueue the find-replica-set-updates queue to register events for
    * @param {Object} params.cNodeEndpointToSpIdMapQueue the queue that fetches the cNodeEndpoint->spId map
    * @param {Function<failedJob>} params.monitorStateJobFailureCallback the function to call when a monitorState job fails
    * @param {Function<job>} params.processMonitorStateJob the function to call when processing a job from the queue to monitor state
@@ -96,7 +126,9 @@ class StateMonitoringManager {
    * @param {Function<job>} params.processFindReplicaSetUpdatesJob the function to call when processing a job from the queue to find users' replica sets that are unhealthy and need to be updated
    */
   registerMonitoringQueueEventHandlersAndJobProcessors({
-    monitoringQueue,
+    monitorStateQueue,
+    findSyncRequestsQueue,
+    findReplicaSetUpdatesQueue,
     cNodeEndpointToSpIdMapQueue,
     monitorStateJobFailureCallback,
     processMonitorStateJob,
@@ -104,36 +136,48 @@ class StateMonitoringManager {
     processFindReplicaSetUpdatesJob
   }) {
     // Add handlers for logging
-    registerQueueEvents(monitoringQueue, monitoringQueueLogger)
+    registerQueueEvents(monitorStateQueue, monitorStateLogger)
+    registerQueueEvents(findSyncRequestsQueue, findSyncRequestsLogger)
+    registerQueueEvents(findReplicaSetUpdatesQueue, findReplicaSetUpdatesLogger)
     registerQueueEvents(
       cNodeEndpointToSpIdMapQueue,
       cNodeEndpointToSpIdMapQueueLogger
     )
 
     // Log when a job fails to complete and re-enqueue another monitoring job
-    monitoringQueue.on('failed', (job, err) => {
-      const logger = createChildLogger(monitoringQueueLogger, {
+    monitorStateQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(monitorStateLogger, {
         jobId: job?.id || 'unknown'
       })
       logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
-      if (job?.name === JOB_NAMES.MONITOR_STATE) {
-        monitorStateJobFailureCallback(monitoringQueue, job)
-      }
+      monitorStateJobFailureCallback(monitorStateQueue, job)
+    })
+    findSyncRequestsQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(findSyncRequestsLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
+    })
+    findReplicaSetUpdatesQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(findReplicaSetUpdatesLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
+    })
+    cNodeEndpointToSpIdMapQueue.on('failed', (job, err) => {
+      const logger = createChildLogger(cNodeEndpointToSpIdMapQueueLogger, {
+        jobId: job?.id || 'unknown'
+      })
+      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
     })
 
-    // Register the logic that gets executed to process each new job from the queue
-    monitoringQueue.process(
-      JOB_NAMES.MONITOR_STATE,
-      1 /** concurrency */,
-      processMonitorStateJob
-    )
-    monitoringQueue.process(
-      JOB_NAMES.FIND_SYNC_REQUESTS,
+    // Register the logic that gets executed to process each new job from the queues
+    monitorStateQueue.process(1 /** concurrency */, processMonitorStateJob)
+    findSyncRequestsQueue.process(
       1 /** concurrency */,
       processFindSyncRequestsJob
     )
-    monitoringQueue.process(
-      JOB_NAMES.FIND_REPLICA_SET_UPDATES,
+    findReplicaSetUpdatesQueue.process(
       1 /** concurrency */,
       processFindReplicaSetUpdatesJob
     )
@@ -149,13 +193,13 @@ class StateMonitoringManager {
       cNodeEndpointToSpIdMapQueueLogger.info(
         `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
       )
-      queue.add(JOB_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP, /** data */ {})
+      queue.add({})
     })
     queue.on('failed', (job, err) => {
       cNodeEndpointToSpIdMapQueueLogger.error(
         `Queue Job Failed - ID ${job?.id} - Error ${err}`
       )
-      queue.add(JOB_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP, /** data */ {})
+      queue.add({})
     })
   }
 
@@ -169,7 +213,7 @@ class StateMonitoringManager {
       data: { lastProcessedUserId, discoveryNodeEndpoint }
     } = failedJob
 
-    monitoringQueue.add(JOB_NAMES.MONITOR_STATE, {
+    monitoringQueue.add({
       lastProcessedUserId,
       discoveryNodeEndpoint
     })
@@ -182,10 +226,7 @@ class StateMonitoringManager {
    * @param {Object} queue the StateMonitoringQueue to consume jobs from
    * @param {string} discoveryNodeEndpoint the IP address or URL of a Discovery Node
    */
-  async startMonitoringQueue(queue, discoveryNodeEndpoint) {
-    // Clear any old state if redis was running but the rest of the server restarted
-    await queue.obliterate({ force: true })
-
+  async startMonitorStateQueue(queue, discoveryNodeEndpoint) {
     // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
     // pausing the queue and not enqueuing the first job
     if (config.get('stateMonitoringQueueRateLimitJobsPerInterval') === 0) {
@@ -201,7 +242,6 @@ class StateMonitoringManager {
 
     // Enqueue first monitorState job after a delay. This job requeues itself upon completion or failure
     await queue.add(
-      JOB_NAMES.MONITOR_STATE,
       /** data */
       {
         lastProcessedUserId,
@@ -222,7 +262,6 @@ class StateMonitoringManager {
     await queue.obliterate({ force: true })
 
     queue.process(
-      JOB_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP,
       1 /** concurrency */,
       this.makeProcessFetchCNodeEndpointToSpIdMapJob(prometheusRegistry).bind(
         this
@@ -237,7 +276,7 @@ class StateMonitoringManager {
     }
 
     // Enqueue first job, which requeues itself upon completion or failure
-    await queue.add(JOB_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP, /** data */ {})
+    await queue.add({})
     this.makeCNodeToEndpointSpIdMapReEnqueueItself(queue)
   }
 
@@ -248,10 +287,9 @@ class StateMonitoringManager {
   makeProcessMonitorStateJob(prometheusRegistry) {
     return async (job) =>
       processJob(
-        JOB_NAMES.MONITOR_STATE,
         job,
         monitorStateJobProcessor,
-        monitoringQueueLogger,
+        monitorStateLogger,
         prometheusRegistry
       )
   }
@@ -259,10 +297,9 @@ class StateMonitoringManager {
   makeProcessFindSyncRequestsJob(prometheusRegistry) {
     return async (job) =>
       processJob(
-        JOB_NAMES.FIND_SYNC_REQUESTS,
         job,
         findSyncRequestsJobProcessor,
-        monitoringQueueLogger,
+        findSyncRequestsLogger,
         prometheusRegistry
       )
   }
@@ -270,10 +307,9 @@ class StateMonitoringManager {
   makeProcessFindReplicaSetUpdatesJob(prometheusRegistry) {
     return async (job) =>
       processJob(
-        JOB_NAMES.FIND_REPLICA_SET_UPDATES,
         job,
         findReplicaSetUpdatesJobProcessor,
-        monitoringQueueLogger,
+        findReplicaSetUpdatesLogger,
         prometheusRegistry
       )
   }
@@ -281,7 +317,6 @@ class StateMonitoringManager {
   makeProcessFetchCNodeEndpointToSpIdMapJob(prometheusRegistry) {
     return async (job) =>
       processJob(
-        JOB_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP,
         job,
         fetchCNodeEndpointToSpIdMapJobProcessor,
         cNodeEndpointToSpIdMapQueueLogger,

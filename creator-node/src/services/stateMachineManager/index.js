@@ -4,50 +4,55 @@ const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
 const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
-const { RECONFIG_MODES } = require('./stateMachineConstants')
-const QueueInterfacer = require('./QueueInterfacer')
+const { RECONFIG_MODES, QUEUE_NAMES } = require('./stateMachineConstants')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
+const CNodeToSpIdMapManager = require('./CNodeToSpIdMapManager')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
  * the queue for reconciling anomalies in the state (syncs and replica set updates).
- * Use QueueInterfacer for interfacing with the queues.
  */
 class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
-    // TODO: Remove this and libs another way -- maybe init a new instance for each updateReplicaSet job
-    QueueInterfacer.init(audiusLibs)
+    // Initialize class immediately since bull jobs are run on cadence even on deploy
+    await CNodeToSpIdMapManager.updateCnodeEndpointToSpIdMap(
+      audiusLibs.ethContracts
+    )
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
     const stateReconciliationManager = new StateReconciliationManager()
-    const { stateMonitoringQueue, cNodeEndpointToSpIdMapQueue } =
-      await stateMonitoringManager.init(
-        audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-        prometheusRegistry
-      )
-    const { stateReconciliationQueue, manualSyncQueue } =
+    const {
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
+      cNodeEndpointToSpIdMapQueue
+    } = await stateMonitoringManager.init(
+      audiusLibs.discoveryProvider.discoveryProviderEndpoint,
+      prometheusRegistry
+    )
+    const { manualSyncQueue, recurringSyncQueue, updateReplicaSetQueue } =
       await stateReconciliationManager.init(prometheusRegistry)
 
-    // Upon completion, make jobs record metrics and enqueue other jobs as necessary
-    stateMonitoringQueue.on(
-      'global:completed',
-      makeOnCompleteCallback(
-        stateMonitoringQueue,
-        stateReconciliationQueue,
-        prometheusRegistry
-      ).bind(this)
-    )
-    stateReconciliationQueue.on(
-      'global:completed',
-      makeOnCompleteCallback(
-        stateMonitoringQueue,
-        stateReconciliationQueue,
-        prometheusRegistry
-      ).bind(this)
-    )
+    // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
+    const queueNameToQueueMap = {
+      [QUEUE_NAMES.MONITOR_STATE]: monitorStateQueue,
+      [QUEUE_NAMES.FIND_SYNC_REQUESTS]: findSyncRequestsQueue,
+      [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: findReplicaSetUpdatesQueue,
+      [QUEUE_NAMES.MANUAL_SYNC]: manualSyncQueue,
+      [QUEUE_NAMES.RECURRING_SYNC]: recurringSyncQueue,
+      [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetQueue
+    }
+    for (const queue of Object.values(queueNameToQueueMap)) {
+      queue.on(
+        'global:completed',
+        makeOnCompleteCallback(queueNameToQueueMap, prometheusRegistry).bind(
+          this
+        )
+      )
+    }
 
     // Update the mapping in this StateMachineManager whenever a job successfully fetches it
     cNodeEndpointToSpIdMapQueue.on(
@@ -56,10 +61,13 @@ class StateMachineManager {
     )
 
     return {
-      stateMonitoringQueue,
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
       cNodeEndpointToSpIdMapQueue,
-      stateReconciliationQueue,
-      manualSyncQueue
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue
     }
   }
 

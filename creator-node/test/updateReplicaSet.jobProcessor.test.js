@@ -90,12 +90,10 @@ describe('test updateReplicaSet job processor', function () {
       }
     }
     return proxyquire(
-      '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.js',
+      '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.ts',
       {
         '../../../config': config,
-        '../QueueInterfacer': {
-          getAudiusLibs: () => audiusLibsStub
-        },
+        '../../initAudiusLibs': sandbox.stub().resolves(audiusLibsStub),
         './stateReconciliationUtils': {
           getNewOrExistingSyncReq: getNewOrExistingSyncReqStub
         },
@@ -170,7 +168,7 @@ describe('test updateReplicaSet job processor', function () {
       },
       healthyNodes: [primary, secondary2, fourthHealthyNode],
       jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [
+        [QUEUE_NAMES.RECURRING_SYNC]: [
           {
             primaryEndpoint: primary,
             secondaryEndpoint: secondary2,
@@ -243,7 +241,7 @@ describe('test updateReplicaSet job processor', function () {
         reconfigType: RECONFIG_MODES.ONE_SECONDARY.key
       },
       healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: {}
+      jobsToEnqueue: undefined
     })
   })
 
@@ -300,7 +298,7 @@ describe('test updateReplicaSet job processor', function () {
         reconfigType: null
       },
       healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: {}
+      jobsToEnqueue: undefined
     })
   })
 })

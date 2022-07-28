@@ -25,16 +25,18 @@ async function getApp(
 
   if (spId) nodeConfig.set('spID', spId)
 
+  const prometheusRegistry = new PrometheusRegistry()
+  const apq = new AsyncProcessingQueueMock(libsClient, prometheusRegistry)
   const mockServiceRegistry = {
     libs: libsClient,
     blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
-    asyncProcessingQueue: new AsyncProcessingQueueMock(),
+    asyncProcessingQueue: apq,
     nodeConfig,
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
-    prometheusRegistry: new PrometheusRegistry()
+    prometheusRegistry
   }
 
   // Update the import to be the mocked ServiceRegistry instance
@@ -58,7 +60,8 @@ function getServiceRegistryMock(libsClient, blacklistManager) {
     monitoringQueue: new MonitoringQueueMock(),
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     nodeConfig,
-    initLibs: async function () {}
+    initLibs: async function () {},
+    prometheusRegistry: new PrometheusRegistry()
   }
 }
 

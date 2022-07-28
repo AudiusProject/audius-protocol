@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "0.0.19",
+  "version": "0.0.21",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/types.d.ts",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@audius/anchor-audius-data": "0.0.2",
-    "@audius/hedgehog": "2.0.0",
+    "@audius/hedgehog": "2.1.0",
     "@babel/runtime": "^7.18.3",
     "@certusone/wormhole-sdk": "0.1.1",
     "@ethersproject/solidity": "5.0.5",

@@ -10,8 +10,7 @@ const { getLibsMock } = require('./lib/libsMock')
 
 const config = require('../src/config')
 const {
-  QUEUE_NAMES,
-  JOB_NAMES
+  QUEUE_NAMES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 
 chai.use(require('sinon-chai'))
@@ -109,9 +108,9 @@ describe('test monitorState job processor', function () {
         .returns(cNodeEndpointToSpIdMap)
     }
 
-    // Make monitorState.jobProcessor.js's imports return our stubs
+    // Make monitorState.jobProcessor.ts's imports return our stubs
     return proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/monitorState.jobProcessor.js',
+      '../src/services/stateMachineManager/stateMonitoring/monitorState.jobProcessor.ts',
       {
         '../../../config': config,
         './stateMonitoringUtils': {
@@ -128,8 +127,7 @@ describe('test monitorState job processor', function () {
           getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
         },
         '../stateMachineUtils': {
-          retrieveUserInfoFromReplicaSet:
-            retrieveUserInfoFromReplicaSetStub
+          retrieveUserInfoFromReplicaSet: retrieveUserInfoFromReplicaSetStub
         }
       }
     )
@@ -163,38 +161,33 @@ describe('test monitorState job processor', function () {
     replicaToUserInfoMap = REPLICA_TO_USER_INFO_MAP,
     userSecondarySyncMetricsMap = USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
   }) {
-    const monitorJobs = jobResult.jobsToEnqueue[QUEUE_NAMES.STATE_MONITORING]
-
-    // Verify that there are 3 jobs all being added to the state monitoring queue
-    expect(monitorJobs).to.have.lengthOf(3)
+    const monitorJobs = jobResult.jobsToEnqueue[QUEUE_NAMES.MONITOR_STATE]
+    const findSyncRequestsJobs =
+      jobResult.jobsToEnqueue[QUEUE_NAMES.FIND_SYNC_REQUESTS]
+    const findReplicaSetUpdatesJobs =
+      jobResult.jobsToEnqueue[QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]
 
     // Verify jobResult enqueues the correct monitorState job starting at the expected userId
+    expect(monitorJobs).to.have.lengthOf(1)
     expect(monitorJobs).to.deep.include({
-      jobName: JOB_NAMES.MONITOR_STATE,
-      jobData: {
-        lastProcessedUserId,
-        discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT
-      }
+      lastProcessedUserId,
+      discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT
     })
     // Verify jobResult enqueues the correct findSyncRequests job
-    expect(monitorJobs).to.deep.include({
-      jobName: JOB_NAMES.FIND_SYNC_REQUESTS,
-      jobData: {
-        users,
-        unhealthyPeers: Array.from(unhealthyPeers),
-        replicaToUserInfoMap,
-        userSecondarySyncMetricsMap
-      }
+    expect(findSyncRequestsJobs).to.have.lengthOf(1)
+    expect(findSyncRequestsJobs).to.deep.include({
+      users,
+      unhealthyPeers: Array.from(unhealthyPeers),
+      replicaToUserInfoMap,
+      userSecondarySyncMetricsMap
     })
     // Verify jobResult enqueues the correct findReplicaSetUpdates job
-    expect(monitorJobs).to.deep.include({
-      jobName: JOB_NAMES.FIND_REPLICA_SET_UPDATES,
-      jobData: {
-        users,
-        unhealthyPeers: Array.from(unhealthyPeers),
-        replicaToUserInfoMap,
-        userSecondarySyncMetricsMap
-      }
+    expect(findReplicaSetUpdatesJobs).to.have.lengthOf(1)
+    expect(findReplicaSetUpdatesJobs).to.deep.include({
+      users,
+      unhealthyPeers: Array.from(unhealthyPeers),
+      replicaToUserInfoMap,
+      userSecondarySyncMetricsMap
     })
   }
 
@@ -358,8 +351,7 @@ describe('test monitorState job processor', function () {
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
-    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been
-      .called
+    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been.called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
@@ -383,8 +375,7 @@ describe('test monitorState job processor', function () {
     )
     expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
     expect(buildReplicaSetNodesToUserWalletsMapStub).to.not.have.been.called
-    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been
-      .called
+    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been.called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
@@ -409,13 +400,23 @@ describe('test monitorState job processor', function () {
     )
     expect(getUnhealthyPeersStub).to.not.have.been.called
     expect(buildReplicaSetNodesToUserWalletsMapStub).to.not.have.been.called
-    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been
-      .called
+    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been.called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
       lastProcessedUserId: LAST_PROCESSED_USER_ID,
-      users: [{ user_id: LAST_PROCESSED_USER_ID }],
+      users: [
+        {
+          user_id: LAST_PROCESSED_USER_ID,
+          primary: '',
+          secondary1: '',
+          secondary2: '',
+          primarySpID: 0,
+          secondary1SpID: 0,
+          secondary2SpID: 0,
+          wallet: ''
+        }
+      ],
       unhealthyPeers: new Set(),
       replicaToUserInfoMap: {},
       userSecondarySyncMetricsMap: {}

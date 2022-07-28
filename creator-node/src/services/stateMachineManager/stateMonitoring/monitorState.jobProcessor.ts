@@ -1,3 +1,17 @@
+import type Logger from 'bunyan'
+import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import type {
+  FindReplicaSetUpdateJobParams,
+  FindSyncRequestsJobParams,
+  MonitorStateJobParams,
+  MonitorStateJobReturnValue,
+  StateMonitoringUser,
+  UserSecondarySyncMetricsMap
+} from './types'
+
+// eslint-disable-next-line import/no-unresolved
+import { QUEUE_NAMES } from '../stateMachineConstants'
+
 const config = require('../../../config')
 const NodeHealthManager = require('../CNodeHealthManager')
 const {
@@ -6,11 +20,18 @@ const {
   computeUserSecondarySyncSuccessRatesMap
 } = require('./stateMonitoringUtils')
 const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
-const { QUEUE_NAMES, JOB_NAMES } = require('../stateMachineConstants')
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
 const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
+
+type Decision = {
+  stage: string
+  data?: any
+  time: number
+  duration?: number
+  fullDuration?: number
+}
 
 /**
  * Processes a job to monitor the current state of `USERS_PER_JOB` users.
@@ -26,11 +47,11 @@ module.exports = async function ({
   logger,
   lastProcessedUserId,
   discoveryNodeEndpoint
-}) {
-  _validateJobData(logger, lastProcessedUserId, discoveryNodeEndpoint)
-
+}: DecoratedJobParams<MonitorStateJobParams>): Promise<
+  DecoratedJobReturnValue<MonitorStateJobReturnValue>
+> {
   // Record all stages of this function along with associated information for use in logging
-  const decisionTree = []
+  const decisionTree: Decision[] = []
   _addToDecisionTree(
     decisionTree,
     'BEGIN monitor-state job processor',
@@ -43,10 +64,10 @@ module.exports = async function ({
     }
   )
 
-  let users = []
-  let unhealthyPeers = new Set()
+  let users: StateMonitoringUser[] = []
+  let unhealthyPeers = new Set<string>()
   let replicaToUserInfoMap = {}
-  let userSecondarySyncMetricsMap = {}
+  let userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap = {}
   try {
     try {
       users = await getNodeUsers(
@@ -59,9 +80,20 @@ module.exports = async function ({
       _addToDecisionTree(decisionTree, 'getNodeUsers Success', logger, {
         usersLength: users?.length
       })
-    } catch (e) {
+    } catch (e: any) {
       // Make the next job try again instead of looping back to userId 0
-      users = [{ user_id: lastProcessedUserId }]
+      users = [
+        {
+          user_id: lastProcessedUserId,
+          primary: '',
+          secondary1: '',
+          secondary2: '',
+          primarySpID: 0,
+          secondary1SpID: 0,
+          secondary2SpID: 0,
+          wallet: ''
+        }
+      ]
 
       logger.error(e.stack)
       _addToDecisionTree(decisionTree, 'getNodeUsers Error', logger, {
@@ -78,7 +110,7 @@ module.exports = async function ({
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
       })
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -121,7 +153,7 @@ module.exports = async function ({
         'retrieveUserInfoFromReplicaSet Success',
         logger
       )
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -148,7 +180,7 @@ module.exports = async function ({
           )?.length
         }
       )
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -160,7 +192,7 @@ module.exports = async function ({
         'monitor-state job processor computeUserSecondarySyncSuccessRatesMap Error'
       )
     }
-  } catch (e) {
+  } catch (e: any) {
     logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
   } finally {
     _addToDecisionTree(decisionTree, 'END monitor-state job processor', logger)
@@ -170,69 +202,44 @@ module.exports = async function ({
   }
 
   // The next job should start processing where this one ended or loop back around to the first user
-  const lastProcessedUser = users[users.length - 1] || {
+  const lastProcessedUser: { user_id: number } = users[users.length - 1] || {
     user_id: 0
+  }
+  const findSyncRequestsJob: FindSyncRequestsJobParams = {
+    users,
+    unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
+    replicaToUserInfoMap,
+    userSecondarySyncMetricsMap
+  }
+  const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
+    users,
+    unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
+    replicaToUserInfoMap,
+    userSecondarySyncMetricsMap
+  }
+  const monitorStateJob: MonitorStateJobParams = {
+    lastProcessedUserId: lastProcessedUser?.user_id || 0,
+    discoveryNodeEndpoint
   }
   return {
     jobsToEnqueue: {
-      [QUEUE_NAMES.STATE_MONITORING]: [
-        // Enqueue findFindSyncRequests and findReplicaSetUpdates jobs to find which state anomalies
-        // need to be reconciled for the slice of users we just monitored
-        {
-          jobName: JOB_NAMES.FIND_SYNC_REQUESTS,
-          jobData: {
-            users,
-            unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
-            replicaToUserInfoMap,
-            userSecondarySyncMetricsMap
-          }
-        },
-        {
-          jobName: JOB_NAMES.FIND_REPLICA_SET_UPDATES,
-          jobData: {
-            users,
-            unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
-            replicaToUserInfoMap,
-            userSecondarySyncMetricsMap
-          }
-        },
-        // Enqueue another monitorState job to monitor the next slice of users
-        {
-          jobName: JOB_NAMES.MONITOR_STATE,
-          jobData: {
-            lastProcessedUserId: lastProcessedUser?.user_id || 0,
-            discoveryNodeEndpoint
-          }
-        }
-      ]
+      // Enqueue a job to find sync requests that need to be issued for the slice of users we just monitored
+      [QUEUE_NAMES.FIND_SYNC_REQUESTS]: [findSyncRequestsJob],
+      // Enqueue a job to find sync replica sets that need to be updated for the slice of users we just monitored
+      [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: [findReplicaSetUpdatesJob],
+      // Enqueue another monitor-state job to monitor the next slice of users
+      [QUEUE_NAMES.MONITOR_STATE]: [monitorStateJob]
     }
   }
 }
 
-const _validateJobData = (
-  logger,
-  lastProcessedUserId,
-  discoveryNodeEndpoint
+const _addToDecisionTree = (
+  decisionTree: Decision[],
+  stage: string,
+  logger: Logger,
+  data = {}
 ) => {
-  if (typeof logger !== 'object') {
-    throw new Error(
-      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
-    )
-  }
-  if (typeof lastProcessedUserId !== 'number') {
-    throw new Error(
-      `Invalid type ("${typeof lastProcessedUserId}") or value ("${lastProcessedUserId}") of lastProcessedUserId`
-    )
-  }
-  if (typeof discoveryNodeEndpoint !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof discoveryNodeEndpoint}") or value ("${discoveryNodeEndpoint}") of discoveryNodeEndpoint`
-    )
-  }
-}
-
-const _addToDecisionTree = (decisionTree, stage, logger, data = {}) => {
-  const obj = { stage, data, time: Date.now() }
+  const obj: Decision = { stage, data, time: Date.now() }
 
   let logStr = `monitor-state job processor ${stage} - Data ${JSON.stringify(
     data
@@ -254,7 +261,7 @@ const _addToDecisionTree = (decisionTree, stage, logger, data = {}) => {
   }
 }
 
-const _printDecisionTree = (decisionTree, logger) => {
+const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
   // Compute and record `fullDuration`
   if (decisionTree.length > 2) {
     const startTime = decisionTree[0].time

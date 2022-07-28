@@ -1,4 +1,5 @@
 const express = require('express')
+const _ = require('lodash')
 
 const {
   successResponse,
@@ -59,6 +60,17 @@ const respondToURSMRequestForProposalController = async (req) => {
  */
 const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
+  req.logger.debug(`/sync serviceRegistry empty: ${_.isEmpty(serviceRegistry)}`)
+  req.logger.debug(
+    `/sync serviceRegistry?.nodeConfig empty: ${_.isEmpty(
+      serviceRegistry?.nodeConfig
+    )}`
+  )
+  req.logger.debug(
+    `/sync serviceRegistry?.syncQueue empty: ${_.isEmpty(
+      serviceRegistry?.syncQueue
+    )}`
+  )
   const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
@@ -90,15 +102,16 @@ const syncRouteController = async (req, res) => {
    * Else, debounce + add sync to queue
    */
   if (immediate) {
-    const errorObj = await secondarySyncFromPrimary(
-      serviceRegistry,
-      walletPublicKeys,
-      creatorNodeEndpoint,
-      blockNumber,
-      forceResync
-    )
-    if (errorObj) {
-      return errorResponseServerError(errorObj)
+    try {
+      await secondarySyncFromPrimary(
+        serviceRegistry,
+        walletPublicKeys,
+        creatorNodeEndpoint,
+        blockNumber,
+        forceResync
+      )
+    } catch (e) {
+      return errorResponseServerError(e)
     }
   } else {
     const debounceTime = nodeConfig.get('debounceTime')
