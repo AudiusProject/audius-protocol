@@ -22,6 +22,7 @@ const exportComponentService = async ({
     isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
   })
 
+  const cnodeUsersDict = {}
   try {
     // Fetch cnodeUser for each walletPublicKey.
     const cnodeUsers = await models.CNodeUser.findAll({
@@ -87,7 +88,6 @@ const exportComponentService = async ({
     ])
 
     /** Bundle all data into cnodeUser objects to maximize import speed. */
-    const cnodeUsersDict = {}
     for (const cnodeUser of cnodeUsers) {
       // Add cnodeUserUUID data fields
       cnodeUser.audiusUsers = []
@@ -141,13 +141,13 @@ const exportComponentService = async ({
       cnodeUsersDict[clockRecord.cnodeUserUUID].clockRecords.push(clockRecord)
     })
 
-    for (const cnodeUserUUID in cnodeUsersDict) {
-      await DBManager.fixInconsistentUser(cnodeUserUUID)
-    }
     await transaction.commit()
 
     return cnodeUsersDict
   } catch (e) {
+    for (const cnodeUserUUID in cnodeUsersDict) {
+      await DBManager.fixInconsistentUser(cnodeUserUUID)
+    }
     await transaction.rollback()
     throw new Error(e)
   }
