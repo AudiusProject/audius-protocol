@@ -93,9 +93,7 @@ describe('test updateReplicaSet job processor', function () {
       '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.js',
       {
         '../../../config': config,
-        '../QueueInterfacer': {
-          getAudiusLibs: () => audiusLibsStub
-        },
+        '../../initAudiusLibs': sandbox.stub().resolves(audiusLibsStub),
         './stateReconciliationUtils': {
           getNewOrExistingSyncReq: getNewOrExistingSyncReqStub
         },

@@ -71,8 +71,8 @@ module.exports = function (
     try {
       logger.info(`Job successfully completed. Parsing result: ${resultString}`)
       jobResult = JSON.parse(resultString) || {}
-    } catch (e) {
-      logger.error(`Failed to parse job result string`)
+    } catch (e: any) {
+      logger.error(`Failed to parse job result string: ${e.message}`)
       return
     }
 

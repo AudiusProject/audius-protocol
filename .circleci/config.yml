@@ -136,6 +136,8 @@ jobs:
             cd audius-protocol/;
             git checkout -f;
           post-gcp-command: |
+            BAKE_IMAGE_NAME=ci-image-bake-latest
+
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
 
@@ -853,18 +855,12 @@ workflows:
             - hold-build-logspout
       - hold-bake-gcp-dev-image:
           type: approval
-          filters:
-            branches:
-              only: /(^master$)/
       - bake-gcp-dev-image:
           context:
             - GCP2
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
-          filters:
-            branches:
-              only: /(^master$)/
       - hold-publish-libs:
           type: approval
           filters:

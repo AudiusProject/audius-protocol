@@ -79,6 +79,7 @@ ENV logglyDisable=$audius_loggly_disable
 ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
 ENV port=4000
+ENV contentCacheLayerEnabled=true
 
 EXPOSE 4000
 
