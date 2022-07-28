@@ -145,10 +145,10 @@ const exportComponentService = async ({
 
     return cnodeUsersDict
   } catch (e) {
+    await transaction.rollback()
     for (const cnodeUserUUID in cnodeUsersDict) {
       await DBManager.fixInconsistentUser(cnodeUserUUID)
     }
-    await transaction.rollback()
     throw new Error(e)
   }
 }
