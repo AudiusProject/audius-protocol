@@ -1,7 +1,7 @@
 # requires authentication to Dockerhub
 FROM audius/contracts:1.0.0 AS contracts
 
-FROM alpine:3.15
+FROM alpine:3.14
 LABEL maintainer="Hareesh Nagaraj <hareesh@audius.co>"
 
 ENV INSTALL_PATH /audius-discovery-provider
@@ -15,14 +15,13 @@ RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
 COPY scripts/wait /wait
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
-    echo 'http://dl-cdn.alpinelinux.org/alpine/v3.14/community' >> /etc/apk/repositories && \
     apk update && \
     apk add \
         alpine-sdk=1.0-r1 \
         bash=5.1.16-r0 \
         curl \
         docker \
-        libffi-dev=3.4.2-r1 \
+        libffi-dev \
         libpq=11.12-r0 \
         libseccomp-dev \
         linux-headers=5.10.41-r0 \
