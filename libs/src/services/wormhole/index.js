@@ -361,8 +361,8 @@ class Wormhole {
       nonce,
       deadline
     )
-    const myPrivateKey = this.hedgehog.wallet._privKey
-    const signedDigest = sign(digest, myPrivateKey)
+    const { privateKey } = this.hedgehog.getWallet()
+    const signedDigest = sign(digest, privateKey)
     return {
       chainId,
       deadline,
