@@ -1,17 +1,23 @@
-import { Hedgehog as HedgehogBase, WalletManager } from '@audius/hedgehog'
+import {
+  Hedgehog as HedgehogBase,
+  WalletManager,
+  getPlatformCreateKey
+} from '@audius/hedgehog'
 import type { IdentityService } from '../identity'
 import type { LocalStorage } from '../../utils/localStorage'
+import type { SetAuthFn, SetUserFn, GetFn, CreateKey } from '@audius/hedgehog'
 
 export type HedgehogConfig = {
   identityService: IdentityService
   useLocalStorage?: boolean
   localStorage?: LocalStorage
+  createKey?: CreateKey
 }
 export class Hedgehog {
   identityService: IdentityService
   getFn: IdentityService['getFn']
-  setAuthFn: IdentityService['setAuthFn']
-  setUserFn: IdentityService['setUserFn']
+  setAuthFn: SetAuthFn
+  setUserFn: SetUserFn
   instance: HedgehogBase
 
   // TODO - update this comment
@@ -25,7 +31,8 @@ export class Hedgehog {
   constructor({
     identityService,
     useLocalStorage = true,
-    localStorage
+    localStorage,
+    createKey = getPlatformCreateKey()
   }: HedgehogConfig) {
     this.identityService = identityService
 
@@ -42,17 +49,22 @@ export class Hedgehog {
     }
 
     const hedgehog = new HedgehogBase(
-      this.getFn,
+      this.getFn as GetFn,
       this.setAuthFn,
       this.setUserFn,
       useLocalStorage,
-      localStorage
+      localStorage,
+      createKey
     )
 
     // we override the login function here because getFn needs both lookupKey and email
     // in identity service, but hedgehog only sends lookupKey
-    hedgehog.login = async (email, password) => {
-      const lookupKey = await WalletManager.createAuthLookupKey(email, password)
+    hedgehog.login = async (email: string, password: string) => {
+      const lookupKey = await WalletManager.createAuthLookupKey(
+        email,
+        password,
+        createKey
+      )
 
       // hedgehog property is called username so being consistent instead of calling it email
       const data = await this.getFn({ lookupKey: lookupKey, username: email })
@@ -62,7 +74,8 @@ export class Hedgehog {
           await WalletManager.decryptCipherTextAndRetrieveWallet(
             password,
             data.iv,
-            data.cipherText
+            data.cipherText,
+            createKey
           )
 
         // set wallet property on the class
@@ -82,6 +95,7 @@ export class Hedgehog {
     /**
      * Generate secure credentials to allow login
      */
+    // @ts-expect-error -- adding our own custom method to hedgehog
     hedgehog.generateRecoveryInfo = async () => {
       const entropy = await WalletManager.getEntropyFromLocalStorage(
         hedgehog.localStorage
