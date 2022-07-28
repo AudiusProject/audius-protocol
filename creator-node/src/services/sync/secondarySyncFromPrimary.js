@@ -8,7 +8,6 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
-const { fixInconsistentUser } = require('../../utils/fixInconsistentUsers')
 
 const handleSyncFromPrimary = async (
   serviceRegistry,
@@ -561,7 +560,7 @@ const handleSyncFromPrimary = async (
 
         await transaction.rollback()
 
-        await fixInconsistentUser(fetchedCNodeUser.cnodeUserUUID)
+        await DBManager.fixInconsistentUser(fetchedCNodeUser.cnodeUserUUID)
 
         return {
           error: new Error(e),

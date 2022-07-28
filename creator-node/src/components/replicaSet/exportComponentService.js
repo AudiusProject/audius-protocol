@@ -2,7 +2,7 @@ const _ = require('lodash')
 
 const models = require('../../models')
 const { Transaction } = require('sequelize')
-const { fixInconsistentUser } = require('../../utils/fixInconsistentUsers')
+const DBManager = require('../../dbManager')
 
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
@@ -116,7 +116,7 @@ const exportComponentService = async ({
         const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
         logger.error(errorMsg)
 
-        await fixInconsistentUser(cnodeUser.cnodeUserUUID)
+        await DBManager.fixInconsistentUser(cnodeUser.cnodeUserUUID)
         if (!forceExport) {
           throw new Error(errorMsg)
         }
