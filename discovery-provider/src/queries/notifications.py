@@ -1242,7 +1242,11 @@ def solana_notifications():
 
         reactions = []
         for (reaction, user_id) in reaction_results:
-            tip = tips_map[reaction.reacted_to]
+            tip = (
+                tips_map[reaction.reacted_to]
+                if reaction.reacted_to in tips_map
+                else None
+            )
             if not tip:
                 continue
             reactions.append(
