@@ -6,6 +6,7 @@ import {
   QUEUE_NAMES as STATE_MACHINE_JOB_NAMES,
   SyncType,
   SYNC_MODES
+  // eslint-disable-next-line import/no-unresolved
 } from '../stateMachineManager/stateMachineConstants'
 import * as config from '../../config'
 
