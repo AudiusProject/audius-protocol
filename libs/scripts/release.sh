@@ -99,11 +99,17 @@ function publish () {
     npm publish . --access public
 }
 
+# cleanup when merging step fails
+function cleanup () {
+    git push origin :${STUB}-${VERSION} || true
+    git push --delete origin @audius/${STUB}@${VERSION} || true
+    exit 1
+}
+
 # configuration
 STUB=sdk
 cd ${PROTOCOL_DIR}/libs
 
 # perform release
 bump-npm
-merge-bump
-publish
+merge-bump && publish || cleanup

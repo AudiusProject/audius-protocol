@@ -6,7 +6,7 @@ from pprint import pprint
 
 import click
 import requests
-from triggers.utils import ensure_tag_on_master
+from triggers import ensure_tag_on_master
 
 
 @click.command()
@@ -26,12 +26,10 @@ def cli(git_tag, circle_api_key):
     ensure_tag_on_master(git_tag)
 
     # trigger a circleci job
-    org = "AudiusProject"
     project = "audius-protocol"
-    branch = "jc-inf-209"
-    data = {"branch": branch, "parameters": {"sdk_release_tag": git_tag}}
+    data = {"branch": "master", "parameters": {"sdk_release_tag": git_tag}}
     r = requests.post(
-        f"https://circleci.com/api/v2/project/github/{org}/{project}/pipeline",
+        f"https://circleci.com/api/v2/project/github/AudiusProject/{project}/pipeline",
         allow_redirects=True,
         auth=(circle_api_key, ""),
         data=json.dumps(data),
@@ -44,7 +42,7 @@ def cli(git_tag, circle_api_key):
 
     # print quick url
     pipeline_number = response["number"]
-    url = f"https://app.circleci.com/pipelines/github/{org}/{project}/{pipeline_number}"
+    url = f"https://app.circleci.com/pipelines/github/AudiusProject/{project}/{pipeline_number}"
     print(f"\n{url}")
 
 
