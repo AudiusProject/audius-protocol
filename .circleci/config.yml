@@ -153,6 +153,7 @@ jobs:
               ]
             }
           event: << pipeline.parameters.event >>
+
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
