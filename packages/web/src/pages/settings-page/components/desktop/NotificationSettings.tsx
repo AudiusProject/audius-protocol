@@ -43,7 +43,8 @@ const ToggleNotification = ({
     <div
       className={cn(styles.toggleContainer, {
         [styles.isDisabled]: isDisabled
-      })}>
+      })}
+    >
       <div>{text}</div>
       <div>
         <Switch isOn={isOn} handleToggle={handleToggle} />
@@ -124,7 +125,8 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
       isOpen={props.isOpen}
       bodyClassName={styles.bodyClassName}
       onClose={props.onClose}
-      allowScroll={false}>
+      allowScroll={false}
+    >
       <div className={styles.container}>
         <div className={styles.header}>
           <IconRemove className={styles.iconRemove} onClick={props.onClose} />

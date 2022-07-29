@@ -380,7 +380,8 @@ const NowPlaying = g(
       <div
         className={cn(styles.nowPlaying, {
           [styles.native]: NATIVE_MOBILE
-        })}>
+        })}
+      >
         <div className={styles.header}>
           <div className={styles.caretContainer} onClick={onClose}>
             <IconCaret className={styles.iconCaret} />
@@ -395,11 +396,13 @@ const NowPlaying = g(
             hasReposted={_co_sign.has_remix_author_reposted}
             coSignName={_co_sign.user.name}
             forwardRef={artworkRef}
-            userId={_co_sign.user.user_id}>
+            userId={_co_sign.user.user_id}
+          >
             <div
               className={styles.image}
               onClick={goToTrackPage}
-              style={artworkAverageColor}>
+              style={artworkAverageColor}
+            >
               <DynamicImage image={image} />
             </div>
           </CoSign>
@@ -408,7 +411,8 @@ const NowPlaying = g(
             className={cn(styles.artwork, styles.image)}
             onClick={goToTrackPage}
             ref={artworkRef}
-            style={artworkAverageColor}>
+            style={artworkAverageColor}
+          >
             <DynamicImage image={image} />
           </div>
         )}

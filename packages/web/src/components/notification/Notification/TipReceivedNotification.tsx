@@ -97,7 +97,8 @@ export const TipReceivedNotification = (
       notification={notification}
       disabled={isTileDisabled}
       disableClosePanel
-      onClick={handleClick}>
+      onClick={handleClick}
+    >
       <NotificationHeader icon={<IconTip />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
@@ -122,7 +123,8 @@ export const TipReceivedNotification = (
         <div
           className={styles.reactionList}
           onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}>
+          onMouseLeave={handleMouseLeave}
+        >
           {reactionList.map(([reactionType, Reaction]) => (
             <Reaction
               key={reactionType}

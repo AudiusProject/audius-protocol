@@ -91,7 +91,8 @@ const LandingPage = (props: LandingPageProps) => {
       <div
         id='landingPage'
         className={styles.container}
-        style={{ opacity: hasImageLoaded ? 1 : 0 }}>
+        style={{ opacity: hasImageLoaded ? 1 : 0 }}
+      >
         {showCookieBanner && (
           <CookieBanner
             isMobile={props.isMobile}

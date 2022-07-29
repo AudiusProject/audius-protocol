@@ -44,9 +44,8 @@ export const ProfileMutualsButton = () => {
   return (
     <Tile
       styles={{ root: styles.root, tile: styles.tile, content: styles.content }}
-      onPress={
-        current_user_followee_follow_count > 0 ? handlePress : undefined
-      }>
+      onPress={current_user_followee_follow_count > 0 ? handlePress : undefined}
+    >
       <IconFollowing
         height={20}
         width={20}

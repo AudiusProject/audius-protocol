@@ -38,7 +38,8 @@ const Row = ({
         [styles.hasBody]: !!children,
         [styles.includeSpacing]: includeSpacing
       })}
-      onClick={onClick}>
+      onClick={onClick}
+    >
       <div className={styles.content}>
         {title && (
           <div className={styles.title}>

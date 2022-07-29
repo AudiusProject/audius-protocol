@@ -32,7 +32,8 @@ export const HeaderContextProvider = memo(
           value={{
             header,
             setHeader
-          }}>
+          }}
+        >
           {props.children}
         </HeaderContext.Provider>
       )

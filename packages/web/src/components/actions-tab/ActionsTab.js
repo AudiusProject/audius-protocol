@@ -74,18 +74,21 @@ const ExpandedActionsTab = (props) => {
       <Tooltip
         text={currentUserReposted ? 'Unrepost' : 'Repost'}
         disabled={isHidden || isDisabled || isOwner}
-        placement={direction === 'horizontal' ? 'bottom' : 'right'}>
+        placement={direction === 'horizontal' ? 'bottom' : 'right'}
+      >
         <div
           className={cn(styles.actionButton, {
             [styles.disabled]: isOwner
           })}
-          onClick={isDisabled || isOwner ? () => {} : onToggleRepost}>
+          onClick={isDisabled || isOwner ? () => {} : onToggleRepost}
+        >
           <Toast
             text={'Reposted!'}
             disabled={currentUserReposted || isHidden || isDisabled || isOwner}
             delay={REPOST_TOAST_TIMEOUT_MILLIS}
             containerClassName={styles.actionIconContainer}
-            placement={direction === 'horizontal' ? 'bottom' : 'right'}>
+            placement={direction === 'horizontal' ? 'bottom' : 'right'}
+          >
             <IconRepost
               className={cn(styles.iconRepost, {
                 [styles.reposted]: currentUserReposted
@@ -97,10 +100,12 @@ const ExpandedActionsTab = (props) => {
       <Tooltip
         text='Share'
         disabled={isHidden || isDisabled}
-        placement={direction === 'horizontal' ? 'bottom' : 'right'}>
+        placement={direction === 'horizontal' ? 'bottom' : 'right'}
+      >
         <div
           className={styles.actionButton}
-          onClick={isDisabled ? () => {} : onShare}>
+          onClick={isDisabled ? () => {} : onShare}
+        >
           <div className={styles.actionIconContainer}>
             <IconShare className={styles.iconShare} />
           </div>
@@ -116,7 +121,8 @@ const ExpandedActionsTab = (props) => {
             {(ref, triggerPopup) => (
               <div
                 className={styles.iconKebabHorizontalWrapper}
-                onClick={triggerPopup}>
+                onClick={triggerPopup}
+              >
                 <IconKebabHorizontal
                   className={styles.iconKebabHorizontal}
                   ref={ref}
@@ -217,7 +223,8 @@ export class ActionsTab extends PureComponent {
           [styles.disabled]: isDisabled,
           [styles.standalone]: standalone,
           [containerStyles]: !!containerStyles
-        })}>
+        })}
+      >
         {minimized ? (
           <MinimizedActionsTab {...this.props} overflowMenu={overflowMenu} />
         ) : (

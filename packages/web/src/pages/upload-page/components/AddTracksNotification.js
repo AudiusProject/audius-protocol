@@ -16,7 +16,8 @@ const AddTracksNotification = (props) => {
       className={cn(styles.container, {
         [props.className]: !!props.className,
         [styles.hidden]: !props.show
-      })}>
+      })}
+    >
       <div className={styles.notice}>{messages.notice}</div>
       <div className={styles.dismiss} onClick={props.onDismiss}>
         {messages.dismiss}

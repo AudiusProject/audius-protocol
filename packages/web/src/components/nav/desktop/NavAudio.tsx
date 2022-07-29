@@ -109,7 +109,8 @@ const NavAudio = () => {
         { [styles.hasBalance]: positiveTotalBalance },
         { [styles.show]: true }
       )}
-      onClick={goToAudioPage}>
+      onClick={goToAudioPage}
+    >
       <div className={styles.amountContainer}>
         {positiveTotalBalance && audioBadge ? (
           cloneElement(audioBadge, {
@@ -129,14 +130,16 @@ const NavAudio = () => {
           from={{ opacity: 0 }}
           enter={{ opacity: 1 }}
           leave={{ opacity: 0 }}
-          config={{ duration: 100 }}>
+          config={{ duration: 100 }}
+        >
           {(item) => (props) =>
             item !== 'none' && (
               <animated.span
                 style={props}
                 className={cn(styles.actionBubble, {
                   [styles.claimRewards]: item === 'claim'
-                })}>
+                })}
+              >
                 <span>
                   {item === 'claim'
                     ? messages.claimRewards

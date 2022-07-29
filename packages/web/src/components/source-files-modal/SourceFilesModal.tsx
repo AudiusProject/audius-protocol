@@ -279,7 +279,8 @@ const SourceFilesModal = ({
       bodyClassName={styles.modalContainer}
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
-      subtitleClassName={styles.modalSubtitle}>
+      subtitleClassName={styles.modalSubtitle}
+    >
       <SourceFilesView
         downloadSettings={downloadSettings}
         onUpdateDownloadSettings={onUpdateDownloadSettings}

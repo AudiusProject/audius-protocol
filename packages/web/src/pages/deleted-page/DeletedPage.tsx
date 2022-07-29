@@ -36,7 +36,8 @@ const DeletedPage = ({
       canonicalUrl={canonicalUrl}
       playable={playable}
       user={user}
-      deletedByArtist={deletedByArtist}>
+      deletedByArtist={deletedByArtist}
+    >
       {content}
     </DeletedPageProvider>
   )

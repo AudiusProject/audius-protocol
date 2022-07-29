@@ -103,7 +103,8 @@ const SearchBar = ({
     <div
       className={cn(styles.searchBar, className, {
         [styles.open]: open
-      })}>
+      })}
+    >
       {showHeader && <div className={styles.header}>{headerText || ''}</div>}
       <input
         autoFocus={open && shouldAutoFocus}
@@ -119,7 +120,8 @@ const SearchBar = ({
         className={cn(styles.searchWrapper, iconClassname, {
           [styles.native]: !!NATIVE_MOBILE
         })}
-        onMouseDown={onClick}>
+        onMouseDown={onClick}
+      >
         <DetailIcon
           tooltipText={tooltipText}
           isLoading={status === Status.LOADING && open}

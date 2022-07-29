@@ -441,7 +441,8 @@ class PlayBar extends Component {
                 text={repostText}
                 disabled={isFavoriteAndRepostDisabled}
                 mount='parent'
-                placement='top'>
+                placement='top'
+              >
                 <span>
                   <RepostButton
                     aria-label={repostText}
@@ -460,7 +461,8 @@ class PlayBar extends Component {
                 text={favoriteText}
                 disabled={isFavoriteAndRepostDisabled}
                 placement='top'
-                mount='parent'>
+                mount='parent'
+              >
                 <span>
                   <FavoriteButton
                     isDisabled={isFavoriteAndRepostDisabled}

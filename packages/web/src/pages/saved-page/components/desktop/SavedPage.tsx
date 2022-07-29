@@ -108,7 +108,8 @@ const SavedPage = ({
       style={{
         opacity: playButtonActive ? 1 : 0,
         pointerEvents: playButtonActive ? 'auto' : 'none'
-      }}>
+      }}
+    >
       <Button
         className={styles.playAllButton}
         iconClassName={styles.playAllButtonIcon}
@@ -129,7 +130,8 @@ const SavedPage = ({
       style={{
         opacity: filterActive ? 1 : 0,
         pointerEvents: filterActive ? 'auto' : 'none'
-      }}>
+      }}
+    >
       <FilterInput
         placeholder={messages.filterPlaceholder}
         onChange={onFilterChange}
@@ -255,7 +257,8 @@ const SavedPage = ({
       title={title}
       description={description}
       contentClassName={styles.savedPageWrapper}
-      header={header}>
+      header={header}
+    >
       <div className={styles.bodyWrapper}>{body}</div>
     </Page>
   )

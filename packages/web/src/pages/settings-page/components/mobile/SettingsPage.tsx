@@ -206,7 +206,8 @@ const SettingsPage = (props: SettingsPageProps) => {
       title={messages.title}
       description={messages.description}
       contentClassName={styles.pageContent}
-      containerClassName={styles.page}>
+      containerClassName={styles.page}
+    >
       <div className={styles.bodyContainer}>
         <div className={styles.logo}>
           <img
@@ -246,7 +247,8 @@ const SettingsPage = (props: SettingsPageProps) => {
             <Row
               prefix={<i className='emoji small waning-crescent-moon' />}
               title={messages.appearanceTitle}
-              body={messages.appearance}>
+              body={messages.appearance}
+            >
               {renderThemeSlider()}
             </Row>
             {isIOS && NATIVE_MOBILE && (
@@ -255,7 +257,8 @@ const SettingsPage = (props: SettingsPageProps) => {
                   <i className='emoji small speaker-with-three-sound-waves' />
                 }
                 title='Cast to Devices'
-                body={messages.cast}>
+                body={messages.cast}
+              >
                 <TabSlider
                   isMobile
                   fullWidth

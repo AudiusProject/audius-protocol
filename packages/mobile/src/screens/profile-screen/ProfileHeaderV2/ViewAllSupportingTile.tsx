@@ -80,7 +80,8 @@ export const ViewAllSupportingTile = () => {
         root: styles.root,
         content: styles.content
       }}
-      onPress={handlePress}>
+      onPress={handlePress}
+    >
       <ProfilePictureList
         users={rankedSupporting.slice(MAX_PROFILE_SUPPORTING_TILES)}
         totalUserCount={supporting_count - MAX_PROFILE_SUPPORTING_TILES}

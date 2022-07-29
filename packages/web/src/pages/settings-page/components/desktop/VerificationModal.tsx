@@ -317,7 +317,8 @@ const VerificationModal = (props: VerificationModalProps) => {
         title={messages.title}
         wrapperClassName={styles.wrapperClassName}
         bodyClassName={styles.modalBodyStyle}
-        headerContainerClassName={styles.headerContainer}>
+        headerContainerClassName={styles.headerContainer}
+      >
         {body}
       </Modal>
     </>

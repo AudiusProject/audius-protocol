@@ -23,7 +23,8 @@ const ModalDrawer = (props: ModalDrawerProps) => {
         onClose={props.onClose}
         isFullscreen={
           props.isFullscreen === undefined ? true : props.isFullscreen
-        }>
+        }
+      >
         <div className={styles.drawer}>
           <div className={styles.titleContainer}>
             <span
@@ -31,7 +32,8 @@ const ModalDrawer = (props: ModalDrawerProps) => {
                 [props.titleClassName!]: !!props.titleClassName,
                 [styles.drawerGradientTitle]: gradientTitle,
                 [styles.drawerTitle]: !gradientTitle
-              })}>
+              })}
+            >
               {props.title}
             </span>
           </div>
@@ -62,7 +64,8 @@ const ModalDrawer = (props: ModalDrawerProps) => {
       bodyClassName={cn(styles.modalBody, {
         [styles.gradientHeader]: gradientTitle,
         [props.bodyClassName!]: !!props.bodyClassName
-      })}>
+      })}
+    >
       {props.children}
     </Modal>
   )

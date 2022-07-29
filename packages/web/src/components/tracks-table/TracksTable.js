@@ -70,7 +70,8 @@ const trackNameCell = (val, record, props) => {
       onClick={(e) => {
         e.stopPropagation()
         if (!deleted) props.onClickTrackName(record)
-      }}>
+      }}
+    >
       <div className={cn(styles.textCell, { [styles.trackName]: !deleted })}>
         {val}
         {deleted ? ` [Deleted By Artist]` : ''}
@@ -90,7 +91,8 @@ const artistNameCell = (val, record, props) => {
         onClick={(e) => {
           e.stopPropagation()
           props.onClickArtistName(record)
-        }}>
+        }}
+      >
         <div className={cn(styles.textCell, styles.artistName)}>{val}</div>
         <UserBadges
           userId={record.owner_id}
@@ -208,7 +210,8 @@ const DraggableRow = (props) => {
         link={link}
         isOwner={record.isOwner}
         isDisabled={record.is_unlisted}
-        {...otherProps}>
+        {...otherProps}
+      >
         {children}
       </Draggable>
     )
@@ -570,7 +573,8 @@ class TracksTable extends Component {
         className={cn(styles.tracksTableContainer, {
           [styles.loading]: loading
         })}
-        ref={this.onSetTableRef}>
+        ref={this.onSetTableRef}
+      >
         <DragDropContext onDragEnd={this.onDragEnd}>
           <Table
             showSorterTooltip={false}

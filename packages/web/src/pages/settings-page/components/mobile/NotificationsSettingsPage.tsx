@@ -44,7 +44,8 @@ const ToggleNotification = ({
       <div
         className={cn(styles.bodyText, {
           [styles.isOn]: isOn && !isDisabled
-        })}>
+        })}
+      >
         {text}
       </div>
       <div>
@@ -133,7 +134,8 @@ const NotificationsSettingsPage = ({
     <Page
       title={messages.title}
       contentClassName={settingsPageStyles.pageContent}
-      containerClassName={settingsPageStyles.page}>
+      containerClassName={settingsPageStyles.page}
+    >
       <div className={settingsPageStyles.bodyContainer}>
         <div className={styles.notificationsSettings}>
           <GroupableList>

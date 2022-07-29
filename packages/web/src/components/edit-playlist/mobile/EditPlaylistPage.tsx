@@ -378,7 +378,8 @@ const EditPlaylistPage = g(
                 : existingImage || formFields.artwork.url || placeholderCoverArt
             }
             className={styles.image}
-            wrapperClassName={styles.imageWrapper}>
+            wrapperClassName={styles.imageWrapper}
+          >
             {
               <UploadStub
                 onChange={onDropArtwork}

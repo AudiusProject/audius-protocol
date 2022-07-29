@@ -222,11 +222,13 @@ const CollectionPage = ({
   return (
     <NetworkConnectivityMonitor
       pageDidLoad={tracksLoading}
-      onDidRegainConnectivity={refresh}>
+      onDidRegainConnectivity={refresh}
+    >
       <MobilePageContainer
         title={title}
         description={pageDescription}
-        canonicalUrl={canonicalUrl}>
+        canonicalUrl={canonicalUrl}
+      >
         <div className={styles.collectionContent}>
           <div>
             <CollectionHeader

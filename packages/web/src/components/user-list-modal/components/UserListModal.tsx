@@ -168,12 +168,14 @@ const UserListModal = ({
       bodyClassName={styles.modalBody}
       titleClassName={styles.modalTitle}
       headerContainerClassName={styles.modalHeader}
-      showDismissButton>
+      showDismissButton
+    >
       <Scrollbar
         className={styles.scrollable}
         containerRef={(containerRef) => {
           scrollParentRef.current = containerRef
-        }}>
+        }}
+      >
         <UserList
           stateSelector={selector!}
           tag={tag}

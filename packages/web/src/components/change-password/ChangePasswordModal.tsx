@@ -48,7 +48,8 @@ export const ChangePasswordModal = (props: any) => {
       showDismissButton={allowClose}
       dismissOnClickOutside={allowClose}
       isOpen={showModal}
-      onClose={onClose}>
+      onClose={onClose}
+    >
       <ChangePassword isMobile={false} onComplete={onClose} />
     </Modal>
   )

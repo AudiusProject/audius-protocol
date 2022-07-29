@@ -54,7 +54,8 @@ export const HCaptchaModal = () => {
       showTitleHeader
       dismissOnClickOutside
       showDismissButton
-      bodyClassName={styles.modalBody}>
+      bodyClassName={styles.modalBody}
+    >
       <HCaptcha sitekey={sitekey} onVerify={onVerify} />
     </ModalDrawer>
   ) : null

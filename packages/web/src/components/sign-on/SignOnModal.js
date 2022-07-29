@@ -30,7 +30,8 @@ export const SignOnModal = (props) => {
     <div className={cn(styles.modalContainer, props.containerStyles)}>
       <div
         ref={contentRef}
-        className={cn(styles.contentContainer, props.contentStyles)}>
+        className={cn(styles.contentContainer, props.contentStyles)}
+      >
         {props.children}
       </div>
       <div className={cn(styles.imageContainer, props.imageContainerStyle)}>

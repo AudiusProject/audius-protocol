@@ -191,7 +191,8 @@ export const ArtistRecommendations = forwardRef(
               styles.profilePictureList,
               styles.contentItem,
               itemClassName
-            )}>
+            )}
+          >
             {suggestedArtists.map((a) => (
               <div key={a.user_id} className={styles.profilePictureWrapper}>
                 <ArtistProfilePictureWrapper
@@ -237,12 +238,14 @@ export const ArtistRecommendations = forwardRef(
     return (
       <div className={cn(styles.content, className)} ref={ref}>
         <div
-          className={cn(styles.headerBar, styles.contentItem, itemClassName)}>
+          className={cn(styles.headerBar, styles.contentItem, itemClassName)}
+        >
           <div
             role='button'
             title='Dismiss'
             className={styles.closeButton}
-            onClick={onClose}>
+            onClick={onClose}
+          >
             <IconClose className={cn(styles.icon, styles.remove)} />
           </div>
           {renderHeader()}

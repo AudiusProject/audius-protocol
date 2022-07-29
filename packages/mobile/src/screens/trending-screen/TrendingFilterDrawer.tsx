@@ -84,7 +84,8 @@ export const TrendingFilterDrawer = () => {
       modalName={MODAL_NAME}
       isFullscreen
       title={messages.title}
-      isGestureSupported={false}>
+      isGestureSupported={false}
+    >
       <View style={styles.root}>
         <TextInput
           placeholder={messages.searchPlaceholder}

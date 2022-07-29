@@ -69,7 +69,8 @@ export const ProfileSocials = () => {
         style={[
           styles.socials,
           tier !== 'none' && { justifyContent: 'center' }
-        ]}>
+        ]}
+      >
         {socialLinks.map(([handle, Link], index) => {
           const link = <Link key={index} showText={socialsCount === 1} />
           if (handle === null || handle === '') return null

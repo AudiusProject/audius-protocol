@@ -16,7 +16,8 @@ const Banner = (props) => {
           [styles.alert]: props.alert
         },
         props.className
-      )}>
+      )}
+    >
       <IconRemove className={styles.iconRemove} onClick={props.onClose} />
       {props.children}
     </div>

@@ -82,7 +82,8 @@ const SearchBarResult = memo((props) => {
       />
       <div className={styles.textContainer}>
         <span
-          className={cn(styles.primaryContainer, searchBarStyles.resultText)}>
+          className={cn(styles.primaryContainer, searchBarStyles.resultText)}
+        >
           <div className={styles.primaryText}>{primary}</div>
           {isUser && (
             <UserBadges
@@ -99,7 +100,8 @@ const SearchBarResult = memo((props) => {
             className={cn(
               styles.secondaryContainer,
               searchBarStyles.resultText
-            )}>
+            )}
+          >
             {secondary}
             {!isUser && (
               <UserBadges

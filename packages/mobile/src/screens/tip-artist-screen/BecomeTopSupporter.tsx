@@ -47,7 +47,8 @@ export const BecomeTopSupporter = ({
       style={styles.root}
       colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
       useAngle
-      angle={350}>
+      angle={350}
+    >
       <IconTrophy fill={white} width={16} height={16} />
       <Text style={styles.text}>
         {messages.becomeTopSupporterPrefix}

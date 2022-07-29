@@ -37,7 +37,8 @@ export const CookieBanner = ({
       className={cn(styles.container, {
         [styles.isMobile]: isMobile,
         [styles.isPlaying]: isPlaying
-      })}>
+      })}
+    >
       <div className={styles.description}>
         {messages.description}
         <span className={styles.link} onClick={goToCookiePolicy}>

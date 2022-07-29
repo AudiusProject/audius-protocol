@@ -190,7 +190,8 @@ const AnimatedSwitch = ({
           bottom: 0,
           ...extraStyles
         }}
-        key={key}>
+        key={key}
+      >
         <Switch location={item}>{children}</Switch>
       </animated.div>
     )

@@ -274,9 +274,11 @@ const VerificationPage = ({
     <Page
       title={messages.title}
       contentClassName={settingsPageStyles.pageContent}
-      containerClassName={settingsPageStyles.page}>
+      containerClassName={settingsPageStyles.page}
+    >
       <div
-        className={cn(settingsPageStyles.bodyContainer, styles.bodyContainer)}>
+        className={cn(settingsPageStyles.bodyContainer, styles.bodyContainer)}
+      >
         {body}
       </div>
     </Page>

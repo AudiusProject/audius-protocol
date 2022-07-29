@@ -258,7 +258,8 @@ export const PullToRefresh = ({
           ],
           opacity: didHitTop ? 1 : interpolateOpacity(scrollAnim)
         }
-      ]}>
+      ]}
+    >
       <LottieView
         ref={(animation) => (animationRef.current = animation)}
         loop={shouldShowSpinner}

@@ -110,7 +110,8 @@ export const CoinbasePayButtonProvider = ({
         isOpen,
         open,
         resetParams
-      }}>
+      }}
+    >
       {children}
     </CoinbasePayContext.Provider>
   )

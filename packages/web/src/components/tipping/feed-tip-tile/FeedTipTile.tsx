@@ -230,7 +230,8 @@ export const FeedTipTile = () => {
         />
         <ArtistPopover
           handle={usersMap[tipToDisplay.receiver_id].handle}
-          component='div'>
+          component='div'
+        >
           <div className={styles.name} onClick={handleClick}>
             <span>{usersMap[tipToDisplay.receiver_id].name}</span>
             <UserBadges

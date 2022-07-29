@@ -181,7 +181,8 @@ export const AnimatedButton = ({
       onPress={handlePress}
       onLongPress={handleLongPress}
       hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-      style={style}>
+      style={style}
+    >
       {(pressableState) => (
         <>
           {renderUnderlay?.(pressableState)}

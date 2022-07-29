@@ -47,14 +47,16 @@ export const SomethingWrong = () => {
     <div
       className={cn(styles.somethingWrong, {
         [styles.isMobile]: isMobile
-      })}>
+      })}
+    >
       <div
         className={styles.content}
         style={{
           backgroundImage: `url(${tiledBackground})`,
           backgroundBlendMode:
             isDarkMode() || isMatrix() ? 'color-burn' : 'none'
-        }}>
+        }}
+      >
         <div className={styles.body}>
           <div>{messages.body1}</div>
           <div>

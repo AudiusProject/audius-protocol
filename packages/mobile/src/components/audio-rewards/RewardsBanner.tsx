@@ -85,7 +85,8 @@ export const RewardsBanner = (props: RewardsBannerProps) => {
         tile: styles.tile,
         content: styles.tileContent
       }}
-      onPress={handlePress}>
+      onPress={handlePress}
+    >
       <View style={styles.title}>
         <IconCrown
           style={styles.iconCrown}

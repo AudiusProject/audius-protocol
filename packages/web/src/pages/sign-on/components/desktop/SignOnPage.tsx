@@ -210,7 +210,8 @@ const SignOnProvider = ({
           ...style,
           ...animatedStyle.base,
           ...animatedStyle.pane
-        }}>
+        }}
+      >
         <SignInPage
           hasMetaMask={!!showMetaMaskOption}
           loading={status === 'loading'}
@@ -231,7 +232,8 @@ const SignOnProvider = ({
           ...style,
           ...animatedStyle.base,
           ...animatedStyle.pane
-        }}>
+        }}
+      >
         <EmailPage
           hasMetaMask={!!showMetaMaskOption}
           email={email}
@@ -248,7 +250,8 @@ const SignOnProvider = ({
           ...style,
           ...animatedStyle.base,
           ...animatedStyle.pane
-        }}>
+        }}
+      >
         <PasswordPage
           email={email}
           onPasswordChange={onPasswordChange}
@@ -262,7 +265,8 @@ const SignOnProvider = ({
           ...style,
           ...animatedStyle.base,
           ...animatedStyle.pane
-        }}>
+        }}
+      >
         <ProfilePage
           name={name}
           handle={handle}
@@ -287,7 +291,8 @@ const SignOnProvider = ({
           ...style,
           ...animatedStyle.base,
           ...animatedStyle.full
-        }}>
+        }}
+      >
         <FollowPage
           users={suggestedFollowEntries}
           followedArtists={selectedUserIds}
@@ -306,7 +311,8 @@ const SignOnProvider = ({
           ...style,
           ...animatedStyle.base,
           ...animatedStyle.full
-        }}>
+        }}
+      >
         <LoadingPage />
       </animated.div>
     ),
@@ -316,7 +322,8 @@ const SignOnProvider = ({
           ...style,
           ...animatedStyle.base,
           ...animatedStyle.full
-        }}>
+        }}
+      >
         <StartPlatformPage
           onUploadTrack={onUploadTrack}
           onStartListening={onStartListening}
@@ -329,7 +336,8 @@ const SignOnProvider = ({
           ...style,
           ...animatedStyle.base,
           ...animatedStyle.pane
-        }}>
+        }}
+      >
         <AppCTA onNextPage={onNextPage} />
       </animated.div>
     )
@@ -393,7 +401,8 @@ const SignOnProvider = ({
       canonicalUrl={`${BASE_URL}${SIGN_UP_PAGE}`}
       containerClassName={styles.pageContainer}
       contentClassName={styles.pageContent}
-      fadeDuration={400}>
+      fadeDuration={400}
+    >
       <BackgroundWaves key={'bg-waves'} className={cn(styles.bgWaves)} />
       {isPageBeforeFollow ? (
         <IconRemove className={styles.closeIcon} onClick={closeModal} />
@@ -410,13 +419,15 @@ const SignOnProvider = ({
         animateImageIn={
           page !== Pages.SIGNIN && page !== Pages.EMAIL && hasOpened
         }
-        hideImageTransition={page === Pages.LOADING || page === Pages.START}>
+        hideImageTransition={page === Pages.LOADING || page === Pages.START}
+      >
         <form
           method='post'
           onSubmit={(e) => {
             e.preventDefault()
           }}
-          autoComplete='off'>
+          autoComplete='off'
+        >
           <Transition
             items={page}
             unique
@@ -447,7 +458,8 @@ const SignOnProvider = ({
                 : isPageBeforeFollow
                 ? {}
                 : { duration: 220 }
-            }>
+            }
+          >
             {(item) => pages[item]}
           </Transition>
         </form>

@@ -86,7 +86,8 @@ export const ConfirmSendTipScreen = ({
   return (
     <TipScreen
       title={messages.title}
-      topbarLeft={inProgress ? null : undefined}>
+      topbarLeft={inProgress ? null : undefined}
+    >
       <TipHeader status='confirm' />
       <ReceiverDetails />
       <SendTipStatusText />

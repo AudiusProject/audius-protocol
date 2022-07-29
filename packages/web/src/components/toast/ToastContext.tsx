@@ -75,7 +75,8 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
       value={{
         clear,
         toast: handleToast
-      }}>
+      }}
+    >
       {transitions.map(({ item, props, key }, i) => (
         <animated.div
           key={key}
@@ -84,7 +85,8 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
             // @ts-ignore
             transform: props.y.interpolate(interp(i)),
             opacity: props.opacity
-          }}>
+          }}
+        >
           <Toast content={item.content} isControlled isOpen />
         </animated.div>
       ))}

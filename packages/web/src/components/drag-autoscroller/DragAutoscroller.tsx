@@ -100,7 +100,8 @@ export const DragAutoscroller = ({
       onDragEnter={handleDrag}
       // This gets called repeatedly during drag if dragged item is inside the container
       onDrag={handleDrag}
-      onDragEnd={handleDragEnd}>
+      onDragEnd={handleDragEnd}
+    >
       {children}
     </div>
   )

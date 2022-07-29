@@ -169,7 +169,8 @@ class TwitterLogin extends Component {
         onClick={NATIVE_MOBILE ? this.doNativeMobileAuth : this.onButtonClick}
         style={this.props.style}
         disabled={this.props.disabled}
-        className={this.props.className}>
+        className={this.props.className}
+      >
         {this.props.children
           ? this.props.children
           : this.getDefaultButtonContent()}

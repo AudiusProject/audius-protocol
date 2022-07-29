@@ -116,7 +116,8 @@ export const Reaction = (props: ReactionProps) => {
     <Animated.View
       ref={ref}
       style={[styles.root, animatedStyles, style]}
-      {...other}>
+      {...other}
+    >
       <LottieView
         ref={(animation) => {
           animationRef.current = animation

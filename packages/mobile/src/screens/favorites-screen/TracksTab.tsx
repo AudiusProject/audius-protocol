@@ -107,7 +107,8 @@ export const TracksTab = () => {
     <WithLoader
       loading={
         savedTracksStatus === Status.LOADING && savedTracks.entries.length === 0
-      }>
+      }
+    >
       <VirtualizedScrollView listKey='favorites-screen'>
         {!savedTracks.entries.length && !filterValue ? (
           <EmptyTab message={messages.emptyTabText} />
@@ -123,7 +124,8 @@ export const TracksTab = () => {
                 styles={{
                   root: styles.container,
                   tile: styles.trackListContainer
-                }}>
+                }}
+              >
                 <TrackList
                   onSave={onToggleSave}
                   showDivider

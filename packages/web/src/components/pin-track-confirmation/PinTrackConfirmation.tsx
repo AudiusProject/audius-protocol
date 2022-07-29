@@ -77,7 +77,8 @@ const PinTrackConfirmation = (props: PinTrackConfirmationProps) => {
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
       isOpen={props.pinTrack.isVisible}
-      onClose={props.onCancel}>
+      onClose={props.onCancel}
+    >
       <div className={styles.container}>
         <div className={styles.description}>{messages.description}</div>
         <div className={styles.buttons}>

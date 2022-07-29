@@ -171,7 +171,8 @@ const SignUpEmail = ({
         <Spring
           from={{ opacity: 0 }}
           to={{ opacity: 1 }}
-          config={{ duration: 200 }}>
+          config={{ duration: 200 }}
+        >
           {(animProps) => (
             <StatusMessage
               status='error'
@@ -270,7 +271,8 @@ const SignIn = ({
         <Spring
           from={{ opacity: 0 }}
           to={{ opacity: 1 }}
-          config={{ duration: 1000 }}>
+          config={{ duration: 1000 }}
+        >
           {(animProps) => (
             <StatusMessage
               status='error'
@@ -330,7 +332,8 @@ export const InitialPage = ({
     <div
       className={cn(styles.container, {
         [styles.native]: NATIVE_MOBILE
-      })}>
+      })}
+    >
       <div className={styles.topSection}>
         <div className={styles.topSectionTransition} ref={topAreaRef}>
           {isSignIn ? (
@@ -360,7 +363,8 @@ export const InitialPage = ({
         className={styles.bottomContainer}
         style={{
           backgroundImage: `radial-gradient(circle, rgba(91,35,225,0.8) 0%, rgba(113,41,230,0.64) 67.96%, rgba(162,47,235,0.5) 100%), url(${djBackgroundImage})`
-        }}>
+        }}
+      >
         <div className={styles.featuresImage}>
           <div style={{ backgroundImage: `url(${signupCtaImage})` }} />
         </div>

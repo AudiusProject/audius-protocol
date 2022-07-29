@@ -69,7 +69,8 @@ const AppCTAModal = () => {
       showTitleHeader
       showDismissButton
       contentHorizontalPadding={16}
-      allowScroll>
+      allowScroll
+    >
       <div className={styles.container}>
         <img className={styles.qr} src={QRCode} alt='QR Code' />
         <div className={styles.subtitle}>{messages.subtitle}</div>

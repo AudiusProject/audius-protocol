@@ -160,7 +160,8 @@ const PlayBar = ({
                 hasFavorited={_co_sign.has_remix_author_saved}
                 hasReposted={_co_sign.has_remix_author_reposted}
                 coSignName={_co_sign.user.name}
-                userId={_co_sign.user.user_id}>
+                userId={_co_sign.user.user_id}
+              >
                 <div
                   className={styles.image}
                   style={{

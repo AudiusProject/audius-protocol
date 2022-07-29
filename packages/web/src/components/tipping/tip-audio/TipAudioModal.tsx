@@ -127,14 +127,16 @@ export const TipAudioModal = () => {
       bodyClassName={styles.modalBody}
       dismissOnClickOutside={
         sendStatus !== 'SENDING' && sendStatus !== 'CONVERTING'
-      }>
+      }
+    >
       <ModalHeader
         className={styles.modalHeader}
         onClose={onClose}
         dismissButtonClassName={styles.dismissButton}
         showDismissButton={
           sendStatus !== 'SENDING' && sendStatus !== 'CONVERTING'
-        }>
+        }
+      >
         <ModalTitle
           title={sendStatus ? titleMessagesMap[sendStatus] : ''}
           icon={sendStatus ? titleIconsMap[sendStatus] : null}
@@ -148,7 +150,8 @@ export const TipAudioModal = () => {
           from={transitions.from}
           enter={transitions.enter}
           leave={transitions.leave}
-          unique={true}>
+          unique={true}
+        >
           {(item) => (style) =>
             (
               <animated.div style={{ ...style }}>

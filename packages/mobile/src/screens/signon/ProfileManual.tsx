@@ -487,16 +487,19 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
     <SafeAreaView style={{ backgroundColor: 'white' }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ overflow: 'hidden' }}>
+        style={{ overflow: 'hidden' }}
+      >
         <ScrollView
           style={{ height: '100%' }}
-          keyboardShouldPersistTaps='always'>
+          keyboardShouldPersistTaps='always'
+        >
           <View>
             <SignupHeader />
             <TouchableWithoutFeedback
               onPress={Keyboard.dismiss}
               accessible={false}
-              style={styles.container}>
+              style={styles.container}
+            >
               <View style={styles.containerForm}>
                 <FormTitle />
                 <View style={styles.profilePicContainer}>
@@ -543,7 +546,8 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                   style={[
                     styles.handleInputContainer,
                     { borderColor: handleBorderColor }
-                  ]}>
+                  ]}
+                >
                   <Text style={styles.atLabel}>@</Text>
                   <TextInput
                     style={styles.handleInput}

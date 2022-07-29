@@ -168,14 +168,16 @@ const Button = ({
         { transform: [{ scale }] },
         containerStyle,
         disabled && !ignoreDisabledStyle ? styles.disabled : {}
-      ]}>
+      ]}
+    >
       <TouchableHighlight
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
         underlayColor={underlay}
-        style={[styles.button, style]}>
+        style={[styles.button, style]}
+      >
         <View style={styles.buttonContent}>
           {(icon || renderIcon) && iconPosition === 'left' ? (
             <View style={[styles.iconLeft, iconStyle]}>

@@ -96,7 +96,8 @@ const CoverPhoto = ({
         wrapperClassName={styles.photo}
         imageStyle={backgroundStyle}
         usePlaceholder={false}
-        immediate={immediate}>
+        immediate={immediate}
+      >
         <div className={styles.spinner}>
           {processing ? loadingElement : null}
         </div>

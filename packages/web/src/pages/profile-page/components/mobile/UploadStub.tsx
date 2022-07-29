@@ -48,7 +48,8 @@ const UploadStub = ({
       className={cn(styles.uploadStub, {
         [styles.hide]: isHidden
       })}
-      onClick={onClickInput}>
+      onClick={onClickInput}
+    >
       <div className={styles.screen} />
       {processing || isProcessing ? (
         <div className={styles.animation}>

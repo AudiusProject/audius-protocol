@@ -25,11 +25,13 @@ const Notice = ({ shouldPadTop }: { shouldPadTop: boolean }) => {
       className={cn(styles.notice, {
         [styles.show]: isVisible,
         [styles.shouldPadTop]: shouldPadTop
-      })}>
+      })}
+    >
       <div
         className={cn(styles.content, {
           [styles.contentShow]: isVisible
-        })}>
+        })}
+      >
         <IconRemove className={styles.iconRemove} onClick={hide} />
         {noticeText}
       </div>

@@ -144,7 +144,8 @@ const SocialLinkInput = ({
       className={cn(styles.socialLinkInput, {
         [styles.focused]: focused,
         [styles.hasValue]: value
-      })}>
+      })}
+    >
       <div className={styles.icon}>{icon}</div>
       {isHandle && <span className={styles.at}>{'@'}</span>}
       <Input

@@ -336,7 +336,8 @@ export const Button = (props: ButtonProps) => {
   return (
     <View
       style={rootHeightRef.current ? { height: rootHeightRef.current } : null}
-      onLayout={handleRootLayout}>
+      onLayout={handleRootLayout}
+    >
       <Animated.View
         style={[
           styles.root,
@@ -345,7 +346,8 @@ export const Button = (props: ButtonProps) => {
           style,
           stylesProp?.root,
           disabled && { backgroundColor: neutralLight7 }
-        ]}>
+        ]}
+      >
         <PressableComponent
           url={url as string}
           style={[
@@ -362,7 +364,8 @@ export const Button = (props: ButtonProps) => {
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           disabled={disabled}
-          {...other}>
+          {...other}
+        >
           {iconPosition !== 'left' ? null : icon}
           {noText ? null : typeof title === 'string' ? (
             <Text style={[styles.text, stylesProp?.text]}>{title}</Text>

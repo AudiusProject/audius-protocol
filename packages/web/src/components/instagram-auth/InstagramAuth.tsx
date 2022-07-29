@@ -259,7 +259,8 @@ const InstagramAuth = ({
       className={cn({
         [className!]: !!className,
         disabled: !!disabled
-      })}>
+      })}
+    >
       {children || getDefaultButtonContent()}
     </div>
   )

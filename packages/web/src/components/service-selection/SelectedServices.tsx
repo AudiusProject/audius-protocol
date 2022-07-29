@@ -63,7 +63,8 @@ export const SelectedServices = (props: SelectedServicesProps) => {
       className={cn(styles.selectedServices, {
         [styles.show]: show,
         [styles.lighter]: variant === 'lighter'
-      })}>
+      })}
+    >
       <div className={styles.services}>
         {`Selected Servers: `}
         {services.map((service, i) => (
@@ -81,7 +82,8 @@ export const SelectedServices = (props: SelectedServicesProps) => {
       <Tooltip
         text={`Configure which servers host your content. This is an advanced feature. Make sure you know what you're doing!`}
         mouseEnterDelay={0.1}
-        mouseLeaveDelay={0.1}>
+        mouseLeaveDelay={0.1}
+      >
         <IconInfo className={styles.iconInfo} />
       </Tooltip>
     </div>

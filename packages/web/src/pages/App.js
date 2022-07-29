@@ -570,7 +570,8 @@ class App extends Component {
           className={cn(styles.mainContentWrapper, {
             [styles.bannerMargin]: showBanner,
             [styles.mainContentWrapperMobile]: isMobileClient
-          })}>
+          })}
+        >
           {isMobileClient && <TopLevelPage />}
           {isMobileClient && <HeaderContextConsumer />}
 

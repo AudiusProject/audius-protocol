@@ -151,20 +151,23 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
       title={kind ? messages.title[kind] : ''}
       contentHorizontalPadding={32}
       bodyClassName={styles.modalBodyStyle}
-      titleClassName={styles.modalTitleStyle}>
+      titleClassName={styles.modalTitleStyle}
+    >
       <div className={styles.embed}>
         <div className={styles.frame}>
           <div
             className={cn(styles.switcher, {
               [styles.show]: size === Size.STANDARD
-            })}>
+            })}
+          >
             {delayedOpen && <EmbedFrame frameString={standardFrameString} />}
           </div>
           {kind === PlayableType.TRACK && (
             <div
               className={cn(styles.switcher, {
                 [styles.show]: size === Size.COMPACT
-              })}>
+              })}
+            >
               {delayedOpen && <EmbedFrame frameString={compactFrameString} />}
             </div>
           )}
@@ -172,7 +175,8 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
             <div
               className={cn(styles.switcher, {
                 [styles.show]: size === Size.TINY
-              })}>
+              })}
+            >
               {delayedOpen && (
                 <EmbedFrame width={265} frameString={tinyFrameString} />
               )}

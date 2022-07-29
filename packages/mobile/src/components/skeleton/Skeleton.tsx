@@ -61,7 +61,8 @@ const Skeleton = ({ width, height, style }: SkeletonProps) => {
           setShimmerWidth(width)
           setShimmerPos(new Animated.Value(-0.75 * width))
         }}
-        style={[styles.skeleton, { transform: [{ translateX: shimmerPos }] }]}>
+        style={[styles.skeleton, { transform: [{ translateX: shimmerPos }] }]}
+      >
         <LinearGradient
           useAngle
           angle={90}

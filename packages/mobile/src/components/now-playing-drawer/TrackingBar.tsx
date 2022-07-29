@@ -70,14 +70,16 @@ export const TrackingBar = ({ translationAnim }: TrackingBarProps) => {
             outputRange: [0, 0, 2]
           })
         }
-      ]}>
+      ]}
+    >
       <View
         style={[
           styles.tracker,
           {
             width: `${percentComplete * 100}%`
           }
-        ]}>
+        ]}
+      >
         <LinearGradient
           useAngle
           angle={135}

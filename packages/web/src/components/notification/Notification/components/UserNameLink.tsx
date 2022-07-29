@@ -89,7 +89,8 @@ export const UserNameLink = (props: UserNameLinkProps) => {
       <ArtistPopover
         handle={handle}
         component='span'
-        onNavigateAway={handleNavigateAway}>
+        onNavigateAway={handleNavigateAway}
+      >
         {userNameElement}
       </ArtistPopover>
     )

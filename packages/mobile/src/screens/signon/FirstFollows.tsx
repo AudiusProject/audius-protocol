@@ -339,7 +339,8 @@ export const FollowArtistCard = ({
     <View>
       <LinearGradient
         colors={isSelected ? ['#9849d6', '#6516a3'] : ['white', 'white']}
-        style={styles.card}>
+        style={styles.card}
+      >
         <View style={styles.cardImage}>
           <UserImage user={user} imageStyle={styles.userImage} />
         </View>
@@ -353,7 +354,8 @@ export const FollowArtistCard = ({
             styles.cardFollowers,
             isSelected ? styles.cardTextActive : {}
           ]}
-          numberOfLines={1}>
+          numberOfLines={1}
+        >
           {user.follower_count} Followers
         </Text>
       </LinearGradient>
@@ -470,15 +472,18 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
 
     return (
       <Animated.View
-        style={[styles.animatedPillView, { transform: [{ scale }] }]}>
+        style={[styles.animatedPillView, { transform: [{ scale }] }]}
+      >
         <TouchableOpacity
           style={[styles.pill, isActive ? styles.pillActive : {}]}
           activeOpacity={1}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          onPress={updateSelectedCategory}>
+          onPress={updateSelectedCategory}
+        >
           <Text
-            style={[styles.pillText, isActive ? styles.pillTextActive : {}]}>
+            style={[styles.pillText, isActive ? styles.pillTextActive : {}]}
+          >
             {category}
           </Text>
         </TouchableOpacity>
@@ -543,9 +548,11 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
                     delay: 0,
                     useNativeDriver: true
                   }).start()
-                }}>
+                }}
+              >
                 <Animated.View
-                  style={{ transform: [{ scale: pickForMeScale }] }}>
+                  style={{ transform: [{ scale: pickForMeScale }] }}
+                >
                   <PickForMeButton active={isPickForMeActive} />
                 </Animated.View>
               </TouchableOpacity>
@@ -555,10 +562,12 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
                   .map((artistId) => (
                     <Animated.View
                       style={{ opacity: cardOpacity }}
-                      key={`${selectedCategory}-${artistId}`}>
+                      key={`${selectedCategory}-${artistId}`}
+                    >
                       <TouchableOpacity
                         activeOpacity={1}
-                        onPress={() => toggleFollowedArtist(artistId)}>
+                        onPress={() => toggleFollowedArtist(artistId)}
+                      >
                         <FollowArtistCard
                           user={suggestedFollowArtistsMap[artistId]}
                           isSelected={followedArtistIds.includes(artistId)}

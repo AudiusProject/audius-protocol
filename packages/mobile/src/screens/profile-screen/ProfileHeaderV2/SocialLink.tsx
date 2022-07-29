@@ -102,7 +102,8 @@ export const SocialLink = (props: SocialLinkProps) => {
         style={[styles.withText, style]}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        {...other}>
+        {...other}
+      >
         {iconButtonElement}
         {hyperlink ? (
           <Hyperlink
@@ -120,7 +121,8 @@ export const SocialLink = (props: SocialLinkProps) => {
         ) : (
           <Text
             numberOfLines={1}
-            style={[styles.text, isActive && styles.active]}>
+            style={[styles.text, isActive && styles.active]}
+          >
             {text}
           </Text>
         )}
@@ -132,7 +134,8 @@ export const SocialLink = (props: SocialLinkProps) => {
       url={url}
       style={style}
       onPressIn={handlePressIn}
-      onPressOut={handlePressOut}>
+      onPressOut={handlePressOut}
+    >
       {iconButtonElement}
     </Link>
   )

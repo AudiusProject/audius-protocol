@@ -74,7 +74,8 @@ const UserBadges = ({
       <span
         className={cn(styles.inlineContainer, className, {
           [noContentClassName]: !hasContent
-        })}>
+        })}
+      >
         {(isVerifiedOverride ?? isVerified) && (
           <IconVerified height={badgeSize} width={badgeSize} />
         )}
@@ -87,7 +88,8 @@ const UserBadges = ({
     <div
       className={cn(styles.container, className, {
         [noContentClassName]: !hasContent
-      })}>
+      })}
+    >
       {(isVerifiedOverride ?? isVerified) && (
         <IconVerified height={badgeSize} width={badgeSize} />
       )}

@@ -29,7 +29,8 @@ const PlatformTagline = (props: PlatformTaglineProps) => {
     <div
       className={cn(styles.container, {
         [styles.isMobile]: props.isMobile
-      })}>
+      })}
+    >
       <div ref={refInView} className={styles.content}>
         <IconQuotePyramid className={styles.quotePyramid} />
         <div className={styles.animateTitleContainer}>
@@ -40,7 +41,8 @@ const PlatformTagline = (props: PlatformTaglineProps) => {
                 (x) => `translate3d(0,${x}px,0)`
               ),
               width: '100%'
-            }}>
+            }}
+          >
             <div className={styles.tagline}>{messages.tagline}</div>
           </animated.div>
         </div>
@@ -53,7 +55,8 @@ const PlatformTagline = (props: PlatformTaglineProps) => {
             bottom: '-280px',
             left: '-152px',
             height: '100%'
-          }}></Parallax>
+          }}
+        ></Parallax>
       )}
     </div>
   )

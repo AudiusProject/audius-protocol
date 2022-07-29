@@ -74,7 +74,8 @@ class DropdownInput extends Component {
             key={item.text}
             value={item.text}
             query={item.text}
-            role='option'>
+            role='option'
+          >
             {item.el}
           </Option>
         )
@@ -140,7 +141,8 @@ class DropdownInput extends Component {
             }
             notFoundContent={''}
             getPopupContainer={popupContainer}
-            onDropdownVisibleChange={this.onVisibleChange}>
+            onDropdownVisibleChange={this.onVisibleChange}
+          >
             {options}
           </Select>
           <IconCaretDown className={styles.arrow} />

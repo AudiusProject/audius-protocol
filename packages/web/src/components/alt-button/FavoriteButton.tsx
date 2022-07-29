@@ -102,7 +102,8 @@ const FavoriteButton = ({
         setXAnim(true)
         setYAnim(true)
         onClick(e)
-      }}>
+      }}
+    >
       <div
         className={cn(
           styles.heart,

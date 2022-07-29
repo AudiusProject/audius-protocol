@@ -622,7 +622,8 @@ const ProfilePage = ({
       canonicalUrl={fullProfilePage(handle)}
       variant='flush'
       contentClassName={styles.profilePageWrapper}
-      scrollableSearch>
+      scrollableSearch
+    >
       <div className={styles.headerWrapper}>
         <ProfileWrapping
           userId={userId}

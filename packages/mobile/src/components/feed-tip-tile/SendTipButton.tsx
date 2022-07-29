@@ -69,12 +69,14 @@ export const SendTipButton = ({ receiver }: SendTipButtonProps) => {
         title={
           <View style={styles.sendTipButtonTitleContainer}>
             <Text
-              style={[styles.sendTipButtonTitle, isActive && styles.textWhite]}>
+              style={[styles.sendTipButtonTitle, isActive && styles.textWhite]}
+            >
               {messages.sendTipToPrefix}
             </Text>
             <Text
               style={[styles.buttonReceiverName, isActive && styles.textWhite]}
-              numberOfLines={1}>
+              numberOfLines={1}
+            >
               {receiver.name}
             </Text>
             <UserBadges user={receiver} badgeSize={12} hideName />

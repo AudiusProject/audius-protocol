@@ -19,7 +19,8 @@ export const DeactivateAccountPageDesktop = ({
     <Page
       title={messages.title}
       description={messages.description}
-      header={<Header primary={messages.title} />}>
+      header={<Header primary={messages.title} />}
+    >
       {children}
       <DeactivateAccountConfirmationModal
         isVisible={isConfirmationVisible}

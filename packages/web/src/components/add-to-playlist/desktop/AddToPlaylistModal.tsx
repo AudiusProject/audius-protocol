@@ -109,7 +109,8 @@ const AddToPlaylistModal = () => {
       onClose={() => setIsOpen(false)}
       allowScroll={false}
       bodyClassName={styles.modalBody}
-      headerContainerClassName={styles.modalHeader}>
+      headerContainerClassName={styles.modalHeader}
+    >
       <SearchBar
         className={styles.searchBar}
         iconClassname={styles.searchIcon}

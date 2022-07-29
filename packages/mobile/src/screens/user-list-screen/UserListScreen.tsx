@@ -33,7 +33,8 @@ export const UserListScreen = (props: UserListScreenProps) => {
       variant='white'
       title={isTippingEnabled ? undefined : title}
       headerTitle={isTippingEnabled ? headerTitle : undefined}
-      topbarRight={null}>
+      topbarRight={null}
+    >
       {children}
     </Screen>
   )

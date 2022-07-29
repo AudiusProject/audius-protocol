@@ -215,7 +215,8 @@ export const TrendingRewardsDrawer = () => {
     <AppDrawer
       modalName={TRENDING_REWARDS_DRAWER_NAME}
       isFullscreen
-      isGestureSupported={false}>
+      isGestureSupported={false}
+    >
       <View style={styles.content}>
         <View style={styles.modalTitleContainer}>
           <Image

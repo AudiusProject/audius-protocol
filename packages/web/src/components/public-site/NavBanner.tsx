@@ -96,7 +96,8 @@ const NavBanner = (props: NavBannerProps) => {
         className={cn(styles.mobileContainer, {
           [props.className!]: !!props.className,
           [styles.invertColors]: isScrolling || props.invertColors
-        })}>
+        })}
+      >
         <IconKebabHorizontal
           className={styles.kebabMenu}
           onClick={props.openNavScreen}
@@ -121,27 +122,31 @@ const NavBanner = (props: NavBannerProps) => {
       className={cn(styles.container, {
         [props.className!]: !!props.className,
         [styles.invertColors]: isScrolling || props.invertColors
-      })}>
+      })}
+    >
       <div className={styles.contentContainer}>
         <div className={styles.iconContainer}>
           <a
             className={styles.iconLink}
             onClick={onClickExplore}
-            href={AUDIUS_EXPLORE_LINK}>
+            href={AUDIUS_EXPLORE_LINK}
+          >
             <IconExplore className={styles.linkIcon} />
             <h3 className={styles.iconLinkText}>{messages.explore}</h3>
           </a>
           <a
             className={styles.iconLink}
             onClick={onClickTrending}
-            href={AUDIUS_LISTENING_LINK}>
+            href={AUDIUS_LISTENING_LINK}
+          >
             <IconTrending className={styles.linkIcon} />
             <h3 className={styles.iconLinkText}>{messages.trending}</h3>
           </a>
           <a
             className={styles.iconLink}
             onClick={onClickHotAndNew}
-            href={AUDIUS_HOT_AND_NEW}>
+            href={AUDIUS_HOT_AND_NEW}
+          >
             <IconCampFire className={styles.linkIcon} />
             <h3 className={styles.iconLinkText}>{messages.hotAndNew}</h3>
           </a>

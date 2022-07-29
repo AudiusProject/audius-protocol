@@ -44,11 +44,13 @@ const PerspectiveCard = ({
       ref={cardRef}
       onClick={onClick}
       onMouseMove={onMove}
-      onMouseLeave={onLeave}>
+      onMouseLeave={onLeave}
+    >
       <animated.div
         className={styles.perspective}
         // @ts-ignore -- TODO figure out why react-spring transform type doesn't work here
-        style={{ transform }}>
+        style={{ transform }}
+      >
         <div
           className={cn(styles.perspectiveCard, className, {
             [styles.isDisabled]: isDisabled,
@@ -57,7 +59,8 @@ const PerspectiveCard = ({
           style={{
             boxShadow: `0 2px 8px -2px ${shadowColor}`,
             background: backgroundGradient
-          }}>
+          }}
+        >
           {isIncentivized ? (
             <div className={styles.rewardsPill}>
               <IconAudioRewardsPill />

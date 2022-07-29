@@ -90,7 +90,8 @@ const ProfileImage = ({
             activeOpacity={1}
             onPress={() => {
               setPhotoBtnIsHidden(!photoBtnIsHidden)
-            }}>
+            }}
+          >
             <Image
               source={profileImage}
               height={206}

@@ -203,7 +203,8 @@ export const PasswordPage = ({
     <div
       className={cn(styles.container, {
         [styles.isMobile]: isMobile
-      })}>
+      })}
+    >
       <h2 className={styles.header}>{messages.header}</h2>
       <div className={styles.warning}>
         <p className={styles.text}>

@@ -33,7 +33,8 @@ const Template: Story<PopupProps> = (args) => {
           }
           return false
         }}
-        onClose={() => setIsVisible(false)}>
+        onClose={() => setIsVisible(false)}
+      >
         Popup content
       </Popup>
     </>

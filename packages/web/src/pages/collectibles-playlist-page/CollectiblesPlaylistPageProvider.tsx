@@ -390,7 +390,8 @@ export const CollectiblesPlaylistPageProvider = ({
           onClick={(e) => {
             e.stopPropagation()
             onClickTrackName(record)
-          }}>
+          }}
+        >
           {val}
         </div>
       )

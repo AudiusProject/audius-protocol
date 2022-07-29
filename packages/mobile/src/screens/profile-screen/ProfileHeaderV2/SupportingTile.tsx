@@ -122,13 +122,15 @@ export const SupportingTile = (props: SupportingTileProps) => {
         style={styles.backgroundImage}
         source={{
           uri: isDefaultImage ? `https://audius.co/${coverPhoto}` : coverPhoto
-        }}>
+        }}
+      >
         <LinearGradient
           colors={['#0000001A', '#0000004D']}
           useAngle
           angle={180}
           angleCenter={{ x: 0.5, y: 0.5 }}
-          style={styles.gradient}>
+          style={styles.gradient}
+        >
           {isTopRank ? (
             <View style={styles.rank}>
               <IconTrophy fill={secondary} {...iconProps} />
@@ -136,14 +138,16 @@ export const SupportingTile = (props: SupportingTileProps) => {
                 style={styles.rankNumberSymbol}
                 variant='label'
                 color='secondary'
-                fontSize='small'>
+                fontSize='small'
+              >
                 #
               </Text>
               <Text
                 style={styles.rankText}
                 variant='label'
                 color='secondary'
-                fontSize='large'>
+                fontSize='large'
+              >
                 {supporting.rank}
               </Text>
             </View>
@@ -154,7 +158,8 @@ export const SupportingTile = (props: SupportingTileProps) => {
               style={styles.nameText}
               variant='h3'
               noGutter
-              numberOfLines={1}>
+              numberOfLines={1}
+            >
               {name}
             </Text>
             <UserBadges user={user} hideName />

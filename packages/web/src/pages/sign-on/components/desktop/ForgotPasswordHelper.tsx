@@ -55,7 +55,8 @@ export const ForgotPasswordHelper = ({
       title={renderTitle()}
       allowScroll={false}
       dismissOnClickOutside={true}
-      bodyClassName={styles.modalWidth}>
+      bodyClassName={styles.modalWidth}
+    >
       <div className={styles.modalBody}>
         <div className={styles.restoreAccessText}>{messages.restoreAccess}</div>
         <div className={styles.emailContainer}>
@@ -70,7 +71,8 @@ export const ForgotPasswordHelper = ({
               mount={MountPlacement.PARENT}
               placement={ComponentPlacement.TOP_LEFT}
               requireAccount={false}
-              delay={TOOLTIP_DELAY}>
+              delay={TOOLTIP_DELAY}
+            >
               <div onClick={onCopyFrom} className={styles.emailBody}>
                 {messages.from}
               </div>
@@ -81,7 +83,8 @@ export const ForgotPasswordHelper = ({
               mount={MountPlacement.PARENT}
               placement={ComponentPlacement.TOP_LEFT}
               requireAccount={false}
-              delay={TOOLTIP_DELAY}>
+              delay={TOOLTIP_DELAY}
+            >
               <div onClick={onCopySubject} className={styles.emailBody}>
                 {messages.subject}
               </div>

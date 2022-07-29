@@ -206,12 +206,14 @@ export const TrackListItem = ({
         styles.trackContainer,
         isActive && styles.trackContainerActive,
         isDeleted && styles.trackContainerDisabled
-      ]}>
+      ]}
+    >
       <TouchableOpacity
         style={styles.trackInnerContainer}
         onPress={onPressTrack}
         onLongPress={drag}
-        disabled={isDeleted}>
+        disabled={isDeleted}
+      >
         {!hideArt ? (
           <TrackArtwork
             trackId={track_id}
@@ -234,7 +236,8 @@ export const TrackListItem = ({
         <View style={styles.nameArtistContainer}>
           <View
             style={styles.trackTitle}
-            onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}>
+            onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}
+          >
             <Text
               numberOfLines={1}
               style={[
@@ -242,12 +245,14 @@ export const TrackListItem = ({
                 {
                   maxWidth: titleWidth ? titleWidth - deletedTextWidth : '100%'
                 }
-              ]}>
+              ]}
+            >
               {title}
             </Text>
             <Text
               numberOfLines={1}
-              style={[styles.trackTitleText, { flexBasis: deletedTextWidth }]}>
+              style={[styles.trackTitleText, { flexBasis: deletedTextWidth }]}
+            >
               {messages.deleted}
             </Text>
           </View>

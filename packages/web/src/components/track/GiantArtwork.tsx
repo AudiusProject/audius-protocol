@@ -38,7 +38,8 @@ const GiantArtwork = ({
       hasReposted={coSign.has_remix_author_reposted}
       coSignName={coSign.user.name}
       className={styles.giantArtwork}
-      userId={coSign.user?.user_id}>
+      userId={coSign.user?.user_id}
+    >
       <DynamicImage wrapperClassName={styles.imageWrapper} image={image} />
     </CoSign>
   ) : (
