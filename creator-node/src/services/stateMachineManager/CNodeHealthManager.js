@@ -81,6 +81,9 @@ class CNodeHealthManager {
       }
     }
 
+    // Test to trigger unhealthy replica set queue
+    unhealthyPeers.add('https://creatornode7.staging.audius.co')
+
     return unhealthyPeers
   }
 
@@ -219,6 +222,7 @@ class CNodeHealthManager {
    * @returns boolean of whether primary is healthy or not
    */
   async isPrimaryHealthy(primary) {
+    if (primary === 'https://creatornode7.staging.audius.co') return false
     const isHealthy = await this.isNodeHealthy(primary, true)
 
     if (!isHealthy) {
