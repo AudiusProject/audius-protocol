@@ -192,7 +192,7 @@ export default [
   },
 
   {
-    input: './src/types.ts',
+    input: 'src/types.ts',
     output: [{ file: 'dist/legacy.d.ts', format: 'es' }],
     ...commonTypeConfig
   },
@@ -209,7 +209,7 @@ export default [
     ...commonConfig
   },
   {
-    input: './src/core.ts',
+    input: 'src/core.ts',
     output: [{ file: pkg.coreTypes, format: 'es' }],
     ...commonTypeConfig
   }
