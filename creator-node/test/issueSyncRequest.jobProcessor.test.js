@@ -230,7 +230,7 @@ describe('test issueSyncRequest job processor', function () {
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
       syncMode,
-      syncType: SyncType.Recurring,
+      syncType,
       syncRequestParameters: {
         baseURL: secondary,
         data: {
@@ -310,7 +310,7 @@ describe('test issueSyncRequest job processor', function () {
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
       syncMode,
-      syncType: SyncType.Recurring,
+      syncType,
       syncRequestParameters: {
         baseURL: secondary,
         data: {
