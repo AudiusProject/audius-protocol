@@ -117,6 +117,10 @@ jobs:
     docker:
       - image: 'cimg/base:stable'
     parameters:
+      event:
+        description: when this notification will fire. options are fail, pass, always.
+        type: string
+        default: always
       branch_pattern:
         description: branch_pattern arg for slack/notify
         type: string
@@ -148,7 +152,7 @@ jobs:
                 }
               ]
             }
-          event: always
+          event: << pipeline.parameters.event >>
 
   bake-gcp-dev-image:
     docker:
@@ -202,10 +206,10 @@ jobs:
         type: string
         default: ""
     steps:
-      - slack/basic:
-          event: always
-          branch_pattern: master
-          text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
+      # - slack/basic:
+      #     event: always
+      #     branch_pattern: master
+      #     text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
       - checkout
       - setup_remote_docker
       - add_ssh_keys:
