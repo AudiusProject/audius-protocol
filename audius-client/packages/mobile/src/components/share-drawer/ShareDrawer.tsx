@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { shareCollection } from 'audius-client/src/common/store/social/collections/actions'
 import { shareTrack } from 'audius-client/src/common/store/social/tracks/actions'

@@ -5,7 +5,8 @@ import {
   CreatePlaylistSource,
   Collection,
   SquareSizes,
-  Nullable
+  Nullable,
+  RandomImage
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -13,7 +14,6 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
-import RandomImage from 'common/services/RandomImage'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   createPlaylist,

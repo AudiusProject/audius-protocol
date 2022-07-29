@@ -6,14 +6,14 @@ import {
   Name,
   PlaylistLibrary as PlaylistLibraryType,
   PlaylistLibraryFolder,
-  SmartCollectionVariant
+  SmartCollectionVariant,
+  FeatureFlags
 } from '@audius/common'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { FeatureFlags } from 'common/services/remote-config'
 import {
   getAccountCollectibles,
   getAccountNavigationPlaylists,

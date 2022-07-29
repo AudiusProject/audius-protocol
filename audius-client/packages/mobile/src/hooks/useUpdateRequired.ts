@@ -1,4 +1,4 @@
-import { StringKeys } from 'audius-client/src/common/services/remote-config'
+import { StringKeys } from '@audius/common'
 import VersionNumber from 'react-native-version-number'
 import semver from 'semver'
 

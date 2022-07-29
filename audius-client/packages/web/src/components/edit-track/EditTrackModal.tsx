@@ -5,7 +5,8 @@ import {
   StemCategory,
   StemUploadWithFile,
   Track,
-  removeNullable
+  removeNullable,
+  uuid
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -16,7 +17,6 @@ import { Dispatch } from 'redux'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
 import { getCurrentUploads } from 'common/store/stems-upload/selectors'
 import { startStemUploads } from 'common/store/stems-upload/slice'
-import { uuid } from 'common/utils/uid'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import { dropdownRows } from 'components/source-files-modal/SourceFilesModal'
 import EditTrackModalComponent from 'components/track/EditTrackModal'

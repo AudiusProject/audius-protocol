@@ -1,6 +1,6 @@
 import { useState, MouseEvent } from 'react'
 
-import { uuid } from 'common/utils/uid'
+import { uuid } from '@audius/common'
 
 import AnimatedButtonProvider from './AnimatedButtonProvider'
 

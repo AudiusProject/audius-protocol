@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
 
-import { useSelector } from 'react-redux'
-
 import {
   FeatureFlags,
   FeatureFlagCohortType,
   RemoteConfigInstance,
   flagCohortType
-} from 'common/services/remote-config'
+} from '@audius/common'
+import { useSelector } from 'react-redux'
+
 import { getAccountUser } from 'common/store/account/selectors'
 import { isRemoteConfigLoaded } from 'common/store/remote-config/selectors'
 import { StateWithRemoteConfig } from 'common/store/remote-config/slice'
@@ -52,7 +52,7 @@ export const createUseFeatureFlagHook =
       },
       // We want configLoaded and shouldRecompute to trigger refreshes of the memo
       // eslint-disable-next-line
-    [flag, configLoaded, shouldRecompute]
+      [flag, configLoaded, shouldRecompute]
     )
     return { isLoaded: configLoaded, isEnabled, setOverride }
   }

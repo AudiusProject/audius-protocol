@@ -1,4 +1,4 @@
-import { Kind } from '@audius/common'
+import { Kind, makeUid, makeUids, Uid } from '@audius/common'
 import {
   all,
   call,
@@ -19,7 +19,6 @@ import { getUsers } from 'common/store/cache/users/selectors'
 import * as baseLineupActions from 'common/store/lineup/actions'
 import { getSource, getUid, getPositions } from 'common/store/queue/selectors'
 import * as queueActions from 'common/store/queue/slice'
-import { makeUid, makeUids, Uid } from 'common/utils/uid'
 import { getUid as getCurrentPlayerTrackUid } from 'store/player/selectors'
 import { getToQueue } from 'store/queue/sagas'
 import { isMobile } from 'utils/clientUtil'

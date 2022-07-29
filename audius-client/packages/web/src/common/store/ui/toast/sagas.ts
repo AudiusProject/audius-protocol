@@ -1,6 +1,5 @@
+import { uuid } from '@audius/common'
 import { put, takeEvery, delay } from 'typed-redux-saga'
-
-import { uuid } from 'common/utils/uid'
 
 import { addToast, dismissToast, toast, ToastAction } from './slice'
 

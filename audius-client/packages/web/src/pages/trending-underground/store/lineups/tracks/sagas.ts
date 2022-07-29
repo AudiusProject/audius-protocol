@@ -1,7 +1,6 @@
-import { Track, UserTrackMetadata } from '@audius/common'
+import { Track, UserTrackMetadata, StringKeys } from '@audius/common'
 import { call, select } from 'redux-saga/effects'
 
-import { StringKeys } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import {

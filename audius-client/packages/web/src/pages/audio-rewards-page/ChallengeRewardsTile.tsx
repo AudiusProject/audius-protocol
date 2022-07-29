@@ -3,14 +3,14 @@ import { ReactNode, useEffect, useState } from 'react'
 import {
   ChallengeRewardID,
   OptimisticUserChallenge,
-  removeNullable
+  removeNullable,
+  StringKeys
 } from '@audius/common'
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
-import { StringKeys } from 'common/services/remote-config'
 import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
 import {
   getUserChallenges,

@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Status, ShareSource } from '@audius/common'
+import { Status, ShareSource, FeatureFlags } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
-import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
 import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'

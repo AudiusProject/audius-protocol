@@ -8,7 +8,9 @@ import {
   StringAudio,
   StringWei,
   WalletAddress,
-  Nullable
+  Nullable,
+  FeatureFlags,
+  IntKeys
 } from '@audius/common'
 import {
   Button,
@@ -19,7 +21,6 @@ import {
 } from '@audius/stems'
 
 import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
-import { FeatureFlags, IntKeys } from 'common/services/remote-config'
 import {
   parseAudioInputToWei,
   stringAudioToBN,

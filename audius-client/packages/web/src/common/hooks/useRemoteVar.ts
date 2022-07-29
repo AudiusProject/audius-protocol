@@ -1,7 +1,5 @@
 import { useMemo } from 'react'
 
-import { useSelector } from 'react-redux'
-
 import {
   AllRemoteConfigKeys,
   BooleanKeys,
@@ -9,7 +7,9 @@ import {
   DoubleKeys,
   StringKeys,
   RemoteConfigInstance
-} from 'common/services/remote-config'
+} from '@audius/common'
+import { useSelector } from 'react-redux'
+
 import { isRemoteConfigLoaded } from 'common/store/remote-config/selectors'
 import { StateWithRemoteConfig } from 'common/store/remote-config/slice'
 

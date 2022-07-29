@@ -1,4 +1,10 @@
-import { FailureReason, UserChallenge, StringAudio } from '@audius/common'
+import {
+  FailureReason,
+  UserChallenge,
+  StringAudio,
+  IntKeys,
+  StringKeys
+} from '@audius/common'
 import {
   call,
   fork,
@@ -11,7 +17,6 @@ import {
   delay
 } from 'typed-redux-saga/macro'
 
-import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import {
   getAccountUser,

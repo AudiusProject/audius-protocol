@@ -1,9 +1,8 @@
 import { MouseEventHandler, useCallback, useMemo } from 'react'
 
-import { FollowSource, User } from '@audius/common'
+import { FollowSource, User, FeatureFlags } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { FeatureFlags } from 'common/services/remote-config'
 import { setNotificationSubscription } from 'common/store/pages/profile/actions'
 import { followUser, unfollowUser } from 'common/store/social/users/actions'
 import FollowButton from 'components/follow-button/FollowButton'

@@ -1,4 +1,4 @@
-import { Kind, ID, Name } from '@audius/common'
+import { Kind, ID, Name, makeKindId } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
 import { getUserId } from 'common/store/account/selectors'
@@ -6,7 +6,6 @@ import * as cacheActions from 'common/store/cache/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import { getUsers, getUser } from 'common/store/cache/users/selectors'
 import * as socialActions from 'common/store/social/users/actions'
-import { makeKindId } from 'common/utils/uid'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import AudiusBackend from 'services/AudiusBackend'
 import { make } from 'store/analytics/actions'
