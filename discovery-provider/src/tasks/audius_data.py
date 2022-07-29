@@ -15,6 +15,8 @@ from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
+PLAYLIST_ID_OFFSET = 400000
+
 
 class Action(str, Enum):
     CREATE = "Create"
@@ -40,7 +42,7 @@ def audius_data_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    ipfs_metadata
+    ipfs_metadata,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     try:
         num_total_changes = 0
@@ -154,8 +156,11 @@ class ManagePlaylistParameters:
 
 def create_playlist(params: ManagePlaylistParameters):
     metadata = params.ipfs_metadata[params.metadata_cid]
-    # check if playlist already exists
-    if params.entity_id in params.existing_playlist_id_to_playlist:
+    # check if playlist already exists or is below offset
+    if (
+        params.entity_id in params.existing_playlist_id_to_playlist
+        or params.entity_id < PLAYLIST_ID_OFFSET
+    ):
         return
 
     track_ids = metadata.get("playlist_contents", [])

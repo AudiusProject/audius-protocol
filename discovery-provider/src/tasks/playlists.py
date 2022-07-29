@@ -7,6 +7,7 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
+from src.tasks.audius_data import PLAYLIST_ID_OFFSET
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -16,7 +17,6 @@ from src.utils.playlist_event_constants import (
 )
 
 logger = logging.getLogger(__name__)
-MAX_PLAYLIST_ID = 400000
 
 
 def playlist_state_update(
@@ -73,8 +73,10 @@ def playlist_state_update(
                         block_timestamp,
                         session,
                     )
-                    if playlist_record.playlist_id >= MIN_PLAYLIST_ID:
-                        logger.info(f"index.py | playlists.py | Playlist {playlist_record.playlist_id} is above the playlist ID offset {MIN_PLAYLIST_ID}. Skipping transaction.")
+                    if playlist_record.playlist_id >= PLAYLIST_ID_OFFSET:
+                        logger.info(
+                            f"index.py | playlists.py | Playlist {playlist_record.playlist_id} is above the playlist ID offset {PLAYLIST_ID_OFFSET}. Skipping transaction."
+                        )
                         continue
 
                     # process playlist record
