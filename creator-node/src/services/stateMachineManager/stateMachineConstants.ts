@@ -92,7 +92,7 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   // Max millis to run a recurring sync job for before marking it as stalled
   RECURRING_SYNC: 6 /* min */ * 60 * 1000,
   // Max millis to run an update-replica-set job for before marking it as stalled
-  UPDATE_REPLICA_SET: 1 /* min */ * 60 * 1000
+  UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000
 })
 
 /**
