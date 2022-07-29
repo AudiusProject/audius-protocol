@@ -64,6 +64,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
         {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}
         <DynamicImage
           wrapperClassName={styles.profilePictureWrapper}
+          skeletonClassName={styles.profilePictureSkeleton}
           className={styles.profilePicture}
           image={profilePicture}
           immediate
