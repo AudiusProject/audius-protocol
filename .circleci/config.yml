@@ -22,7 +22,7 @@ commands:
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
-  slack/basic:
+  slack-basic:
     parameters:
       branch_pattern:
         description: branch_pattern arg for slack/notify
@@ -199,7 +199,7 @@ jobs:
         type: string
         default: ""
     steps:
-      - slack/basic:
+      - slack-basic:
           event: always
           branch_pattern: master
           text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
