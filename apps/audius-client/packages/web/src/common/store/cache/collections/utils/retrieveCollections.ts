@@ -4,7 +4,8 @@ import {
   CollectionMetadata,
   UserCollectionMetadata,
   Kind,
-  Track
+  Track,
+  makeUid
 } from '@audius/common'
 import { call, select } from 'redux-saga/effects'
 
@@ -14,7 +15,6 @@ import { getCollections } from 'common/store/cache/collections/selectors'
 import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { makeUid } from 'common/utils/uid'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 

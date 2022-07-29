@@ -1,4 +1,10 @@
-import { FavoriteSource, Name } from '@audius/common'
+import {
+  FavoriteSource,
+  Name,
+  FeatureFlags,
+  IntKeys,
+  StringKeys
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import {
   all,
@@ -13,11 +19,6 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import {
-  FeatureFlags,
-  IntKeys,
-  StringKeys
-} from 'common/services/remote-config'
 import * as accountActions from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
 import { retrieveCollections } from 'common/store/cache/collections/utils'

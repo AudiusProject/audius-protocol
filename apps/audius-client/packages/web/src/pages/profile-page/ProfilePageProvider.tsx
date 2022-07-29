@@ -8,7 +8,8 @@ import {
   ShareSource,
   BadgeTier,
   Kind,
-  Status
+  Status,
+  makeKindId
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -48,7 +49,6 @@ import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-moda
 import { setFollowers } from 'common/store/user-list/followers/actions'
 import { setFollowing } from 'common/store/user-list/following/actions'
 import { formatCount } from 'common/utils/formatUtil'
-import { makeKindId } from 'common/utils/uid'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { newUserMetadata } from 'schemas'
 import { make, TrackEvent } from 'store/analytics/actions'

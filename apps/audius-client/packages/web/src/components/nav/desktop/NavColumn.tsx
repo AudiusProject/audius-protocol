@@ -6,7 +6,8 @@ import {
   Name,
   SquareSizes,
   PlaylistLibrary as PlaylistLibraryType,
-  Status
+  Status,
+  FeatureFlags
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -23,7 +24,6 @@ import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
 import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
-import { FeatureFlags } from 'common/services/remote-config'
 import {
   getAccountStatus,
   getAccountUser,

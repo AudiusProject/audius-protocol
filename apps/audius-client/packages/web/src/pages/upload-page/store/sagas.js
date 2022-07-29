@@ -1,4 +1,4 @@
-import { Kind, Name, Status } from '@audius/common'
+import { Kind, Name, Status, makeUid } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
 import { channel, buffers } from 'redux-saga'
@@ -26,7 +26,6 @@ import * as tracksActions from 'common/store/cache/tracks/actions'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
 import { formatUrlName } from 'common/utils/formatUtil'
-import { makeUid } from 'common/utils/uid'
 import {
   getSelectedServices,
   getStatus

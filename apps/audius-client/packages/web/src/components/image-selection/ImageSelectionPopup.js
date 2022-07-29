@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useContext } from 'react'
 
+import { RandomImage } from '@audius/common'
 import { Button, ButtonType, Popup } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -7,7 +8,6 @@ import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 import { useSelectTierInfo } from 'common/hooks/wallet'
-import RandomImage from 'common/services/RandomImage'
 import { getAccountUser } from 'common/store/account/selectors'
 import { badgeTiers } from 'common/store/wallet/utils'
 import TabSlider from 'components/data-entry/TabSlider'

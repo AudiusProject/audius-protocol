@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from 'utils/typeUtils'
 
 const UNSPLASH_PUBLIC = 'https://source.unsplash.com/random'
 const UNSPLASH_API_GATEWAY = 'https://api.audius.co/unsplash/photos/random'
@@ -13,7 +13,7 @@ function isResponse(x: Response | Timeout): x is Response {
 }
 
 // Tries our API gateway first, then the public one.
-export default class RandomImage {
+export class RandomImage {
   static get = async (query?: string) => {
     const timer = (timeout: number): Promise<Timeout> =>
       new Promise((resolve) => {

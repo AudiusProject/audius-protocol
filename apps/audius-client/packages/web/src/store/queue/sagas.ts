@@ -6,7 +6,9 @@ import {
   PlaybackSource,
   LineupState,
   User,
-  Nullable
+  Nullable,
+  makeUid,
+  Uid
 } from '@audius/common'
 import {
   all,
@@ -48,7 +50,6 @@ import {
   remove
 } from 'common/store/queue/slice'
 import { RepeatMode, Source } from 'common/store/queue/types'
-import { makeUid, Uid } from 'common/utils/uid'
 import { make } from 'store/analytics/actions'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import {

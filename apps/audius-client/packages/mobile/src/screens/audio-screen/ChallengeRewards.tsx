@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import type { ChallengeRewardID } from '@audius/common'
-import { removeNullable } from '@audius/common'
-import { StringKeys } from 'audius-client/src/common/services/remote-config'
+import { removeNullable, StringKeys } from '@audius/common'
 import { getOptimisticUserChallenges } from 'audius-client/src/common/store/challenges/selectors/optimistic-challenges'
 import {
   getUserChallenges,

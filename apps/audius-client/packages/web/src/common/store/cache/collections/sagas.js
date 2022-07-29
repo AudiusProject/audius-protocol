@@ -1,4 +1,4 @@
-import { Name, DefaultSizes, Kind } from '@audius/common'
+import { Name, DefaultSizes, Kind, makeKindId, makeUid } from '@audius/common'
 import { isEqual } from 'lodash'
 import {
   all,
@@ -19,7 +19,6 @@ import { getTrack } from 'common/store/cache/tracks/selectors'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
 import { squashNewLines } from 'common/utils/formatUtil'
-import { makeKindId, makeUid } from 'common/utils/uid'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'

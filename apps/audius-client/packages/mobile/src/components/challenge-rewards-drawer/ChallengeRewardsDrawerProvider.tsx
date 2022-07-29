@@ -1,10 +1,7 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import type { Maybe } from '@audius/common'
-import {
-  IntKeys,
-  StringKeys
-} from 'audius-client/src/common/services/remote-config'
+import { IntKeys, StringKeys } from '@audius/common'
 import { getOptimisticUserChallenges } from 'audius-client/src/common/store/challenges/selectors/optimistic-challenges'
 import {
   getChallengeRewardsModalType,

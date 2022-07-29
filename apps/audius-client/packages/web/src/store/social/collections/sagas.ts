@@ -4,7 +4,9 @@ import {
   Name,
   PlaylistLibrary,
   SmartCollectionVariant,
-  User
+  User,
+  makeUid,
+  makeKindId
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
@@ -21,7 +23,6 @@ import * as notificationActions from 'common/store/notifications/actions'
 import { removeFromPlaylistLibrary } from 'common/store/playlist-library/helpers'
 import * as socialActions from 'common/store/social/collections/actions'
 import { formatShareText } from 'common/utils/formatUtil'
-import { makeUid, makeKindId } from 'common/utils/uid'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import AudiusBackend from 'services/AudiusBackend'
 import { make } from 'store/analytics/actions'

@@ -3,10 +3,11 @@ import {
   TimeRange,
   StemTrackMetadata,
   Nullable,
-  removeNullable
+  removeNullable,
+  IntKeys,
+  StringKeys
 } from '@audius/common'
 
-import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { SearchKind } from 'common/store/pages/search-results/types'
 import AudiusBackend, { AuthHeaders } from 'services/AudiusBackend'
 import { SupporterResponse } from 'services/audius-backend/Tipping'

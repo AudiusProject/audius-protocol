@@ -1,7 +1,6 @@
+import { RemoteConfigInstance } from '@audius/common'
 import { eventChannel, END } from 'redux-saga'
 import { put, take } from 'redux-saga/effects'
-
-import { RemoteConfigInstance } from 'common/services/remote-config'
 
 import { setDidLoad } from './slice'
 

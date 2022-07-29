@@ -1,8 +1,8 @@
+import { IntKeys } from '@audius/common'
 import { each } from 'lodash'
 import moment from 'moment'
 import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 
-import { IntKeys } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { getBalance } from 'common/store/wallet/slice'

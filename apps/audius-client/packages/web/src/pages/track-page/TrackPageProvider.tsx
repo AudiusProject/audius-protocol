@@ -12,7 +12,8 @@ import {
   PlaybackSource,
   FavoriteType,
   Status,
-  Track
+  Track,
+  Uid
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -47,7 +48,6 @@ import { setRepost } from 'common/store/user-list/reposts/actions'
 import { RepostType } from 'common/store/user-list/reposts/types'
 import { getCanonicalName } from 'common/utils/genres'
 import { formatSeconds, formatDate } from 'common/utils/timeUtil'
-import { Uid } from 'common/utils/uid'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { TrackEvent, make } from 'store/analytics/actions'

@@ -1,4 +1,4 @@
-import { Kind, removeNullable } from '@audius/common'
+import { Kind, removeNullable, Uid } from '@audius/common'
 import { keyBy } from 'lodash'
 import moment from 'moment'
 import { select, call } from 'redux-saga/effects'
@@ -16,7 +16,6 @@ import {
 } from 'common/store/pages/collection/selectors'
 import { getCollection as getSmartCollection } from 'common/store/pages/smart-collection/selectors'
 import { getPositions } from 'common/store/queue/selectors'
-import { Uid } from 'common/utils/uid'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
 

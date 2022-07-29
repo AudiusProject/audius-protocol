@@ -1,8 +1,8 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { FeatureFlags } from 'common/services/remote-config'
 import { preloadWalletProviders } from 'common/store/pages/token-dashboard/slice'
 import { getBalance } from 'common/store/wallet/slice'
 import Header from 'components/header/desktop/Header'

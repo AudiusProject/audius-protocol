@@ -1,26 +1,27 @@
-import { ID, Nullable } from '@audius/common'
 import optimizely from '@optimizely/optimizely-sdk'
 
+import { ID } from 'models/Identifiers'
 import {
   remoteConfigIntDefaults,
   remoteConfigStringDefaults,
   remoteConfigDoubleDefaults,
   remoteConfigBooleanDefaults
-} from 'common/services/remote-config/defaults'
+} from 'services/remote-config/defaults'
 import {
   FeatureFlags,
   flagDefaults,
   flagCohortType,
   FeatureFlagCohortType
-} from 'common/services/remote-config/feature-flags'
+} from 'services/remote-config/feature-flags'
 import {
   IntKeys,
   StringKeys,
   DoubleKeys,
   BooleanKeys,
   AllRemoteConfigKeys
-} from 'common/services/remote-config/types'
-import { uuid } from 'common/utils/uid'
+} from 'services/remote-config/types'
+import { Nullable } from 'utils/typeUtils'
+import { uuid } from 'utils/uid'
 
 export const USER_ID_AVAILABLE_EVENT = 'USER_ID_AVAILABLE_EVENT'
 
@@ -125,8 +126,8 @@ export const remoteConfig = <
    * Access a remotely configured value.
    * @param key
    */
-  function getRemoteVar(key: BooleanKeys): boolean | null
   function getRemoteVar(key: StringKeys): string | null
+  function getRemoteVar(key: BooleanKeys): boolean | null
   function getRemoteVar(key: IntKeys): number | null
   function getRemoteVar(key: DoubleKeys): number | null
   function getRemoteVar(

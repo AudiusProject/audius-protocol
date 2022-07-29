@@ -1,10 +1,9 @@
 import { ReactNode } from 'react'
 
-import { TrendingRewardID } from '@audius/common'
+import { TrendingRewardID, StringKeys } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
-import { StringKeys } from 'common/services/remote-config'
 import { setTrendingRewardsModalType } from 'common/store/pages/audio-rewards/slice'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'

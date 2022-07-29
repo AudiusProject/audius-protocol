@@ -1,4 +1,4 @@
-import { Kind } from '@audius/common'
+import { Kind, StringKeys } from '@audius/common'
 import { eventChannel, END } from 'redux-saga'
 import {
   select,
@@ -10,7 +10,6 @@ import {
   delay
 } from 'typed-redux-saga/macro'
 
-import { StringKeys } from 'common/services/remote-config'
 import * as cacheActions from 'common/store/cache/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'

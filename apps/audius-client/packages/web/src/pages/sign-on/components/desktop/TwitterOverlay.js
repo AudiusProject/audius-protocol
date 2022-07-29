@@ -1,10 +1,10 @@
+import { BooleanKeys } from '@audius/common'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Transition } from 'react-spring/renderprops'
 
 import { ReactComponent as IconGradientSave } from 'assets/img/gradientSave.svg'
 import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
-import { BooleanKeys } from 'common/services/remote-config'
 import InstagramButton from 'components/instagram-button/InstagramButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import TwitterAuthButton from 'components/twitter-auth/TwitterAuthButton'

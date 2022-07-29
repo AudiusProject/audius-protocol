@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { Theme } from '@audius/common'
-import { StringKeys } from 'audius-client/src/common/services/remote-config'
+import { Theme, StringKeys } from '@audius/common'
 import { getTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/selectors'
 import type { TrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import { setTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'

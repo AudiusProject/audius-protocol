@@ -1,4 +1,4 @@
-import { Kind } from '@audius/common'
+import { Kind, makeUid } from '@audius/common'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'
 
@@ -17,7 +17,6 @@ import {
 } from 'common/store/pages/saved-page/selectors'
 import * as queueActions from 'common/store/queue/slice'
 import { SAVE_TRACK, UNSAVE_TRACK } from 'common/store/social/tracks/actions'
-import { makeUid } from 'common/utils/uid'
 import { LineupSagas } from 'store/lineup/sagas'
 import { getUid as getPlayerUid } from 'store/player/selectors'
 

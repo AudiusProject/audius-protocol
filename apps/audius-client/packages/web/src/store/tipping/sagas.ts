@@ -9,7 +9,8 @@ import {
   User,
   BNWei,
   StringWei,
-  Nullable
+  Nullable,
+  FeatureFlags
 } from '@audius/common'
 import BN from 'bn.js'
 import {
@@ -22,7 +23,6 @@ import {
   cancel
 } from 'typed-redux-saga/macro'
 
-import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { update } from 'common/store/cache/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'

@@ -1,9 +1,16 @@
-import { Kind, ID, Chain, BNWei, WalletAddress, Nullable } from '@audius/common'
+import {
+  Kind,
+  ID,
+  Chain,
+  BNWei,
+  WalletAddress,
+  Nullable,
+  BooleanKeys
+} from '@audius/common'
 import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
 import { WalletLinkProvider } from 'walletlink'
 
-import { BooleanKeys } from 'common/services/remote-config'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
