@@ -28,7 +28,7 @@ const { Users } = require('./api/Users')
 const { Track } = require('./api/Track')
 const { Playlist } = require('./api/Playlist')
 const { File } = require('./api/File')
-const Rewards = require('./api/Rewards')
+const { Rewards } = require('./api/Rewards')
 const { Reactions } = require('./api/Reactions')
 const Web3 = require('./web3')
 

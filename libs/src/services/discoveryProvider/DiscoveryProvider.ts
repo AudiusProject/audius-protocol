@@ -1,5 +1,10 @@
 // TODO: strictly type each method with the models defined in audius-client
-import axios, { AxiosError, AxiosRequestConfig, Method } from 'axios'
+import axios, {
+  AxiosError,
+  AxiosRequestConfig,
+  AxiosResponse,
+  Method
+} from 'axios'
 
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
 
@@ -221,7 +226,7 @@ export class DiscoveryProvider {
    * @param sort a string of form eg. blocknumber:asc,timestamp:desc describing a sort path
    * @param minBlockNumber The min block number
    * @param filterDeleted If set to true, filters the deleted tracks
-   * @returns {Object} {Array of track metadata Objects}
+   * @returns Array of track metadata Objects
    * additional metadata fields on track objects:
    *  {Integer} repost_count - repost count for given track
    *  {Integer} save_count - save count for given track
@@ -260,7 +265,7 @@ export class DiscoveryProvider {
    * Gets a particular track by its creator's handle and the track's URL slug
    * @param handle the handle of the owner of the track
    * @param slug the URL slug of the track, generally the title urlized
-   * @returns {Object} the requested track's metadata
+   * @returns the requested track's metadata
    */
   async getTracksByHandleAndSlug(handle: string, slug: string) {
     // Note: retries are disabled here because the v1 API response returns a 404 instead
@@ -274,17 +279,8 @@ export class DiscoveryProvider {
   }
 
   /**
-   * @typedef {Object} getTracksIdentifier
-   * @property {string} handle
-   * @property {number} id
-   * @property {string} url_title
-   */
-
-  /**
    * gets all tracks matching identifiers, including unlisted.
    *
-   * @param identifiers
-   * @returns {(Array)} track
    */
   async getTracksIncludingUnlisted(identifiers: string[], withUsers = false) {
     const req = Requests.getTracksIncludingUnlisted(identifiers, withUsers)
@@ -295,12 +291,6 @@ export class DiscoveryProvider {
    * Gets random tracks from trending tracks for a given genre.
    * If genre not given, will return trending tracks across all genres.
    * Excludes specified track ids.
-   *
-   * @param genre
-   * @param limit
-   * @param exclusionList
-   * @param time
-   * @returns {(Array)} track
    */
   async getRandomTracks(
     genre: string,
@@ -314,8 +304,6 @@ export class DiscoveryProvider {
 
   /**
    * Gets all stems for a given trackId as an array of tracks.
-   * @param trackId
-   * @returns {(Array)} track
    */
   async getStemsForTrack(trackId: number) {
     const req = Requests.getStemsForTrack(trackId)
@@ -324,10 +312,6 @@ export class DiscoveryProvider {
 
   /**
    * Gets all the remixes of a given trackId as an array of tracks.
-   * @param trackId
-   * @param limit
-   * @param offset
-   * @returns {(Array)} track
    */
   async getRemixesOfTrack(
     trackId: number,
@@ -340,8 +324,6 @@ export class DiscoveryProvider {
 
   /**
    * Gets the remix parents of a given trackId as an array of tracks.
-   * @param limit
-   * @param offset
    */
   async getRemixTrackParents(
     trackId: number,
@@ -414,7 +396,7 @@ export class DiscoveryProvider {
    * @param filter - filter by "all", "original", or "repost"
    * @param limit - max # of items to return
    * @param offset - offset into list to return from (for pagination)
-   * @returns {Object} {Array of track and playlist metadata objects}
+   * @returns Array of track and playlist metadata objects
    * additional metadata fields on track and playlist objects:
    *  {String} activity_timestamp - timestamp of requested user's repost for given track or playlist,
    *    used for sorting feed
@@ -445,7 +427,7 @@ export class DiscoveryProvider {
    * @param userId - requested user id
    * @param limit - max # of items to return (for pagination)
    * @param offset - offset into list to return from (for pagination)
-   * @returns {Object} {Array of track and playlist metadata objects}
+   * @returns Array of track and playlist metadata objects}
    * additional metadata fields on track and playlist objects:
    *  {String} activity_timestamp - timestamp of requested user's repost for given track or playlist,
    *    used for sorting feed
@@ -545,7 +527,7 @@ export class DiscoveryProvider {
   /**
    * get users that are followed by followerUserId, sorted by follower count descending
    * @param followerUserId user - i am the one who follows
-   * @return {Array} array of user objects with standard user metadata
+   * @return array of user objects with standard user metadata
    */
   async getFolloweesForUser(limit = 100, offset = 0, followerUserId: string) {
     const req = Requests.getFolloweesForUser(limit, offset, followerUserId)
@@ -555,7 +537,7 @@ export class DiscoveryProvider {
   /**
    * get users that reposted repostTrackId, sorted by follower count descending
    * @param repostTrackId
-   * @return {Array} array of user objects
+   * @return array of user objects
    * additional metadata fields on user objects:
    *  {Integer} follower_count - follower count of given user
    * @example
@@ -569,7 +551,7 @@ export class DiscoveryProvider {
   /**
    * get users that reposted repostPlaylistId, sorted by follower count descending
    * @param repostPlaylistId
-   * @return {Array} array of user objects
+   * @return array of user objects
    * additional metadata fields on user objects:
    *  {Integer} follower_count - follower count of given user
    * @example
@@ -591,7 +573,7 @@ export class DiscoveryProvider {
   /**
    * get users that saved saveTrackId, sorted by follower count descending
    * @param saveTrackId
-   * @return {Array} array of user objects
+   * @return array of user objects
    * additional metadata fields on user objects:
    *  {Integer} follower_count - follower count of given user
    * @example
@@ -605,7 +587,7 @@ export class DiscoveryProvider {
   /**
    * get users that saved savePlaylistId, sorted by follower count descending
    * @param savePlaylistId
-   * @return {Array} array of user objects
+   * @return array of user objects
    * additional metadata fields on user objects:
    *  {Integer} follower_count - follower count of given user
    * @example
@@ -619,7 +601,7 @@ export class DiscoveryProvider {
   /**
    * get whether a JWT given by Audius Oauth popup is valid
    * @param token - JWT
-   * @return {UserProfile | false} profile info of user attached to JWT payload if the JWT is valid, else false
+   * @return profile info of user attached to JWT payload if the JWT is valid, else false
    */
   async verifyToken(token: string): Promise<UserProfile | false> {
     const req = Requests.verifyToken(token)
@@ -853,10 +835,9 @@ export class DiscoveryProvider {
       specifier,
       oracleAddress
     )
-    const { data } = await this._performRequestWithMonitoring(
-      req,
-      discoveryProviderEndpoint
-    )
+    const { data } = await this._performRequestWithMonitoring<{
+      data: { owner_wallet: string; attestation: string }
+    }>(req, discoveryProviderEndpoint)
     return data
   }
 
@@ -865,10 +846,9 @@ export class DiscoveryProvider {
     discoveryProviderEndpoint: string
   ) {
     const req = Requests.getCreateSenderAttestation(senderEthAddress)
-    const { data } = await this._performRequestWithMonitoring(
-      req,
-      discoveryProviderEndpoint
-    )
+    const { data } = await this._performRequestWithMonitoring<{
+      data: { owner_wallet: string; attestation: string }
+    }>(req, discoveryProviderEndpoint)
     return data
   }
 
@@ -895,18 +875,8 @@ export class DiscoveryProvider {
    * Performs a single request, defined in the request, via axios, calling any
    * monitoring callbacks as needed.
    *
-   * @param {{
-     endpoint: string,
-     urlParams: string,
-     queryParams: object,
-     method: string,
-     headers: object,
-   }} requestObj
-   * @param discoveryProviderEndpoint
-   * @returns
-   * @memberof DiscoveryProvider
    */
-  async _performRequestWithMonitoring(
+  async _performRequestWithMonitoring<Response>(
     requestObj: RequestParams,
     discoveryProviderEndpoint: string
   ) {
@@ -914,8 +884,11 @@ export class DiscoveryProvider {
       requestObj,
       discoveryProviderEndpoint
     )
-    let response
-    let parsedResponse
+    let response: AxiosResponse<{
+      signer: string
+      signature: string
+    }>
+    let parsedResponse: Response
 
     const url = new URL(axiosRequest.url ?? '')
     const start = Date.now()
@@ -1079,7 +1052,13 @@ export class DiscoveryProvider {
       console.error(e)
       return
     }
-    let parsedResponse
+    let parsedResponse: {
+      latest_indexed_block: number
+      latest_chain_block: number
+      latest_indexed_slot_plays: number
+      latest_chain_slot_plays: number
+      data: Response
+    }
     try {
       parsedResponse = await this._performRequestWithMonitoring(
         requestObj as RequestParams,

@@ -1,11 +1,14 @@
-const axios = require('axios')
-const { sampleSize } = require('lodash')
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import { sampleSize } from 'lodash'
 
-const { Base, Services } = require('./base')
-const BN = require('bn.js')
-const { RewardsManagerError } = require('../services/solana/errors')
-const { WAUDIO_DECMIALS } = require('../constants')
-const { Utils } = require('../utils/utils')
+import { Base, BaseConstructorArgs, Services } from './base'
+import BN from 'bn.js'
+import { RewardsManagerError } from '../services/solana/errors'
+import { WAUDIO_DECMIALS } from '../constants'
+import { Utils } from '../utils/utils'
+import type { ServiceProvider } from './ServiceProvider'
+import type { Logger, Nullable } from '../utils'
+import type { AttestationMeta } from '../services/solana/rewards'
 
 const { decodeHashId } = Utils
 
@@ -38,75 +41,108 @@ const GetSenderAttestationError = Object.freeze({
 /**
  * Combined error type for `SubmitAndEvaluate`
  */
-const SubmitAndEvaluateError = Object.freeze({
+export const SubmitAndEvaluateError = Object.freeze({
   ...GetAttestationError,
   ...AggregateAttestationError,
   ...RewardsManagerError
 })
 
-const AttestationPhases = Object.freeze({
+export const AttestationPhases = Object.freeze({
   SANITY_CHECKS: 'SANITY_CHECKS',
   AGGREGATE_ATTESTATIONS: 'AGGREGATE_ATTESTATIONS',
   SUBMIT_ATTESTATIONS: 'SUBMIT_ATTESTATIONS',
   EVALUATE_ATTESTATIONS: 'EVALUATE_ATTESTATIONS'
 })
 
+type SubmitAndEvaluateConfig = {
+  challengeId: string
+  encodedUserId: string
+  handle: string
+  recipientEthAddress: string
+  specifier: string
+  oracleEthAddress: string
+  amount: number
+  quorumSize: number
+  AAOEndpoint: string
+  endpoints: Nullable<string[]>
+  instructionsPerTransaction?: number
+  maxAggregationAttempts?: number
+  logger: Logger
+  feePayerOverride: string | null
+}
+
+type AggregateAttestationsConfig = {
+  challengeId: string
+  encodedUserId: string
+  handle: string
+  specifier: string
+  oracleEthAddress: string
+  amount: number
+  quorumSize: number
+  AAOEndpoint: string
+  maxAttempts: number
+  endpoints: Nullable<string[]>
+  logger: Logger
+}
+
+type GetChallengeAttestationConfig = {
+  challengeId: string
+  encodedUserId: string
+  specifier: string
+  oracleEthAddress: string
+  discoveryProviderEndpoint: string
+  logger: Logger
+}
+
+type GetAAOAttestationConfig = {
+  challengeId: string
+  specifier: string
+  handle: string
+  amount: number
+  AAOEndpoint: string
+  oracleEthAddress: string
+  logger?: Logger
+}
+
+type SendAttestationResultConfig = {
+  status: string
+  userId: string
+  challengeId: string
+  amount: number
+  source: string
+  specifier: string
+  error?: string
+  phase?: string
+  reason?: string
+}
+
+type CreateSenderPublicConfig = {
+  // the new sender eth address to add. The delegate wallet.
+  senderEthAddress: string
+  // the unique address of the operator that runs this service
+  operatorEthAddress: string
+  // optional endpoints from other nodes. If not provided, nodes are selected from chain.
+  endpoints?: string[]
+  // optional number of attestations to get from other nodes, default 3
+  numAttestations?: number
+  // optional override feepayer
+  feePayerOverride?: string
+}
+
 const AAO_REQUEST_TIMEOUT_MS = 15 * 1000
 const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECMIALS
 
-/**
- * @typedef {import("../services/solana/rewards.js").AttestationMeta} AttestationMeta
- */
-
-class Rewards extends Base {
-  constructor (ServiceProvider, ...args) {
+export class Rewards extends Base {
+  ServiceProvider: ServiceProvider
+  constructor(ServiceProvider: ServiceProvider, ...args: BaseConstructorArgs) {
     super(...args)
     this.ServiceProvider = ServiceProvider
   }
 
   /**
-   *
    * Top level method to aggregate attestations, submit them to RewardsManager, and evalute the result.
-   *
-   * @typedef {Object} GetSubmitAndEvaluateAttestationsReturn
-   * @property {Boolean} success
-   * @property {GetAttestationError} error
-   *
-   * @param {{
-   *   challengeId: string,
-   *   encodedUserId: string,
-   *   handle: string,
-   *   recipientEthAddress: string,
-   *   specifier: string,
-   *   oracleEthAddress: string,
-   *   amount: number,
-   *   quorumSize: number,
-   *   AAOEndpoint: string,
-   *   endpoints: Array<string>,
-   *   instructionsPerTransaction?: number,
-   *   maxAggregationAttempts?: number
-   *   logger: any
-   *   feePayerOverride: string | null
-   * }} {
-   *   challengeId,
-   *   encodedUserId,
-   *   handle,
-   *   recipientEthAddress,
-   *   specifier,
-   *   oracleEthAddress,
-   *   amount,
-   *   quorumSize,
-   *   AAOEndpoint,
-   *   endpoints,
-   *   maxAggregationAttempts,
-   *   instructionsPerTransaction,
-   *   logger,
-   *   feePayerOverride
-   * }
-   * @returns {Promise<GetSubmitAndEvaluateAttestationsReturn>}
-   * @memberof Challenge
    */
-  async submitAndEvaluate ({
+  async submitAndEvaluate({
     challengeId,
     encodedUserId,
     handle,
@@ -121,7 +157,7 @@ class Rewards extends Base {
     endpoints = null,
     logger = console,
     feePayerOverride = null
-  }) {
+  }: SubmitAndEvaluateConfig) {
     let phase
     let nodesToReselect = null
     try {
@@ -168,16 +204,17 @@ class Rewards extends Base {
       logger.info(
         `submitAndEvaluate: submitting for challenge [${challengeId}], userId: [${decodeHashId(
           encodedUserId
-        )}] with [${discoveryNodeAttestations.length}] DN and [${
+        )}] with [${discoveryNodeAttestations?.length}] DN and [${
           aaoAttestation ? 1 : 0
         }] oracle attestations.`
       )
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
       phase = AttestationPhases.SUBMIT_ATTESTATIONS
+      // @ts-expect-error the return types are a bit strange here
       const { errorCode: submitErrorCode, error: submitError } =
         await this.solanaWeb3Manager.submitChallengeAttestations({
-          attestations: discoveryNodeAttestations,
-          oracleAttestation: aaoAttestation,
+          attestations: discoveryNodeAttestations as AttestationMeta[],
+          oracleAttestation: aaoAttestation!,
           challengeId,
           specifier,
           recipientEthAddress,
@@ -206,8 +243,8 @@ class Rewards extends Base {
             )}] challengeId: [${challengeId}] with err: ${submitErrorCode}, breaking up into individual transactions`
           )
           await this.solanaWeb3Manager.submitChallengeAttestations({
-            attestations: discoveryNodeAttestations,
-            oracleAttestation: aaoAttestation,
+            attestations: discoveryNodeAttestations as AttestationMeta[],
+            oracleAttestation: aaoAttestation!,
             challengeId,
             specifier,
             recipientEthAddress,
@@ -240,13 +277,15 @@ class Rewards extends Base {
           feePayerOverride
         })
 
-      if (evaluateErrorCode || evaluateError) {
-        throw new Error(evaluateErrorCode || evaluateError)
+      if (evaluateErrorCode ?? evaluateError) {
+        throw new Error(
+          (evaluateErrorCode ?? evaluateError) as unknown as string
+        )
       }
 
       return { success: true, error: null, phase: null, nodesToReselect: null }
     } catch (e) {
-      const err = e.message
+      const err = (e as Error).message
       const log =
         err === GetAttestationError.COGNITO_FLOW ||
         err === GetAttestationError.HCAPTCHA
@@ -262,43 +301,9 @@ class Rewards extends Base {
   }
 
   /**
-   *
    * Aggregates attestations from Discovery Nodes and AAO.
-   *
-   * @typedef {Object} AttestationsReturn
-   * @property {Array<AttestationMeta>} discoveryNodeAttestations
-   * @property {AttestationMeta} aaoAttestation
-   * @property {GetAttestationError} error
-   *
-   * @param {{
-   *   challengeId: string,
-   *   encodedUserId: string,
-   *   handle: string,
-   *   specifier: string,
-   *   oracleEthAddress: string,
-   *   amount: number,
-   *   quorumSize: number,
-   *   AAOEndpoint: string,
-   *   maxAttempts: number
-   *   endpoints = null
-   *   logger: any
-   * }} {
-   *   challengeId,
-   *   encodedUserId,
-   *   handle,
-   *   specifier,
-   *   oracleEthAddress,
-   *   amount,
-   *   quorumSize,
-   *   AAOEndpoint,
-   *   maxAttempts
-   *   endpoints = null,
-   *   logger
-   * }
-   * @returns {Promise<AttestationsReturn>}
-   * @memberof Rewards
    */
-  async aggregateAttestations ({
+  async aggregateAttestations({
     challengeId,
     encodedUserId,
     handle,
@@ -310,7 +315,7 @@ class Rewards extends Base {
     maxAttempts,
     endpoints = null,
     logger = console
-  }) {
+  }: AggregateAttestationsConfig) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
     if (endpoints) {
@@ -337,7 +342,7 @@ class Rewards extends Base {
 
     // First attempt AAO
 
-    let aaoAttestation = null
+    let aaoAttestation: Nullable<AttestationMeta> = null
 
     try {
       const { success, error: aaoAttestationError } =
@@ -359,7 +364,7 @@ class Rewards extends Base {
         }
       }
       aaoAttestation = success
-    } catch (e) {
+    } catch (e: any) {
       const err = e.message
       logger.error(
         `Failed to aggregate attestations for user [${decodeHashId(
@@ -414,7 +419,7 @@ class Rewards extends Base {
         error: null,
         erroringNodes: null
       }
-    } catch (e) {
+    } catch (e: any) {
       const err = e.message
       logger.error(
         `Failed to aggregate attestations for user [${decodeHashId(
@@ -431,39 +436,16 @@ class Rewards extends Base {
   }
 
   /**
-   *
    * Retrieves a Discovery Node attestation for a given userId.
-   *
-   * @typedef {Object} GetAttestationReturn
-   * @property {AttestationMeta} success
-   * @property {GetAttestationError} error
-   *
-   * @param {{
-   *   challengeId: string,
-   *   encodedUserId: string,
-   *   specifier: string,
-   *   oracleEthAddress: string,
-   *   discoveryProviderEndpoint: string
-   *   logger: any
-   * }} {
-   *   challengeId,
-   *   encodedUserId,
-   *   specifier,
-   *   oracleEthAddress,
-   *   discoveryProviderEndpoint
-   *   logger
-   * }
-   * @returns {Promise<GetAttestationReturn>}
-   * @memberof Challenge
    */
-  async getChallengeAttestation ({
+  async getChallengeAttestation({
     challengeId,
     encodedUserId,
     specifier,
     oracleEthAddress,
     discoveryProviderEndpoint,
     logger = console
-  }) {
+  }: GetChallengeAttestationConfig) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     try {
       const res = await this.discoveryProvider.getChallengeAttestation(
@@ -481,14 +463,14 @@ class Rewards extends Base {
 
       return { success: meta, error: null }
     } catch (e) {
-      const err = e.message
+      const err = (e as Error).message
       logger.error(
         `Failed to get challenge attestation for userId [${decodeHashId(
           encodedUserId
         )}] challengeId [${challengeId}]from ${discoveryProviderEndpoint} with ${err}`
       )
       const mappedErr =
-        GetAttestationError[err] ||
+        GetAttestationError[err as keyof typeof GetAttestationError] ||
         GetAttestationError.DISCOVERY_NODE_UNKNOWN_RESPONSE
       return {
         success: null,
@@ -497,8 +479,20 @@ class Rewards extends Base {
     }
   }
 
-  async getUndisbursedChallenges (
-    { limit, offset, completedBlockNumber, encodedUserId, logger = console } = {
+  async getUndisbursedChallenges(
+    {
+      limit,
+      offset,
+      completedBlockNumber,
+      encodedUserId,
+      logger = console
+    }: {
+      limit?: number
+      offset?: number
+      completedBlockNumber?: string
+      encodedUserId?: number
+      logger?: Logger
+    } = {
       logger: console
     }
   ) {
@@ -512,7 +506,7 @@ class Rewards extends Base {
       )
       return { success: res, error: null }
     } catch (e) {
-      const error = e.message
+      const error = (e as Error).message
       logger.error(`Failed to get undisbursed challenges with error: ${error}`)
       return {
         success: null,
@@ -522,34 +516,9 @@ class Rewards extends Base {
   }
 
   /**
-   *
    * Retrieves an AAO attestation for a given user handle.
-   *
-   * @typedef {Object} GetAAOAttestationReturn
-   * @property {AttestationMeta} success
-   * @property {GetAttestationError} error
-   *
-   * @param {{
-   *   challengeId: string,
-   *   specifier: string,
-   *   handle: string,
-   *   amount: number,
-   *   AAOEndpoint: string,
-   *   oracleEthAddress: string
-   *   logger: any
-   * }} {
-   *   challengeId,
-   *   specifier,
-   *   handle,
-   *   amount,
-   *   AAOEndpoint,
-   *   oracleEthAddress,
-   *   logger
-   * }
-   * @returns {Promise<GetAAOAttestationReturn>}
-   * @memberof Challenge
    */
-  async getAAOAttestation ({
+  async getAAOAttestation({
     challengeId,
     specifier,
     handle,
@@ -557,13 +526,9 @@ class Rewards extends Base {
     AAOEndpoint,
     oracleEthAddress,
     logger = console
-  }) {
-    const data = {
-      challengeId,
-      challengeSpecifier: specifier,
-      amount
-    }
-    const request = {
+  }: GetAAOAttestationConfig) {
+    const data = { challengeId, challengeSpecifier: specifier, amount }
+    const request: AxiosRequestConfig = {
       method: 'post',
       headers: {
         'Content-Type': 'application/json'
@@ -574,7 +539,10 @@ class Rewards extends Base {
     }
 
     try {
-      const response = await axios(request)
+      const response: AxiosResponse<{
+        result: string
+        needs: keyof typeof GetAttestationError
+      }> = await axios(request)
       // if attestation is successful, 'result' represents a signature
       // otherwise, 'result' is false
       // - there may or may not be a value for `needs` if the attestation fails
@@ -603,7 +571,7 @@ class Rewards extends Base {
         error: null
       }
     } catch (e) {
-      const err = e.message
+      const err = (e as Error).message
       logger.error(`Failed to get AAO attestation: ${err}`)
       return {
         success: null,
@@ -612,7 +580,7 @@ class Rewards extends Base {
     }
   }
 
-  async _getDiscoveryAttestationsWithRetries ({
+  async _getDiscoveryAttestationsWithRetries({
     endpoints,
     challengeId,
     encodedUserId,
@@ -620,10 +588,22 @@ class Rewards extends Base {
     oracleEthAddress,
     logger,
     maxAttempts
+  }: {
+    endpoints: string[]
+    challengeId: string
+    encodedUserId: string
+    specifier: string
+    oracleEthAddress: string
+    logger: Logger
+    maxAttempts: number
   }) {
     let retryCount = 0
     let unrecoverableError = false
-    const completedAttestations = []
+    const completedAttestations: Array<{
+      success: Nullable<{ ethAddress: string; signature: string }>
+      error: Nullable<string>
+      endpoint: string
+    }> = []
     let needsAttestations = endpoints
 
     do {
@@ -692,39 +672,20 @@ class Rewards extends Base {
   }
 
   /**
-   *
    * Creates a new discovery node sender for rewards. A sender may
    * attest in user challenge completion to issue rewards.
    *
    * This method queries other discovery nodes asking for attestation of
    * a given new senderEthAddress (delegate wallet) and operatorEthAddress (owner wallet).
    * Those attestations are bundled
-   *
-   * @param {{
-   *   senderEthAddress: string
-   *   operatorEthAddress: string
-   *   senderEndpoint: string
-   *   endpoints?: string[]
-   *   numAttestations?: number
-   *   feePayerOverride?: string
-   * }} {
-   *   senderEthAddress: the new sender eth address to add. The delegate wallet.
-   *   operatorEthAddress: the unique address of the operator that runs this service
-   *   senderEndpoint: the new sender's service endpoint
-   *   endpoints: optional endpoints from other nodes. If not provided, nodes are selected from chain.
-   *   numAttestations: optional number of attestations to get from other nodes, default 3
-   *   feePayerOverride: optional override feepayer
-   * }
-   * @memberof Rewards
    */
-  async createSenderPublic ({
+  async createSenderPublic({
     senderEthAddress,
     operatorEthAddress,
-    senderEndpoint,
     endpoints,
     numAttestations = 3,
     feePayerOverride
-  }) {
+  }: CreateSenderPublicConfig) {
     let attestEndpoints
     if (endpoints) {
       attestEndpoints = sampleSize(endpoints, numAttestations)
@@ -764,6 +725,7 @@ class Rewards extends Base {
         } catch (e) {
           console.error(e)
           error = true
+          return undefined
         }
       })
     )
@@ -781,29 +743,16 @@ class Rewards extends Base {
     const receipt = await this.solanaWeb3Manager.createSender({
       senderEthAddress,
       operatorEthAddress,
-      attestations,
-      feePayerOverride
+      attestations: attestations as AttestationMeta[],
+      feePayerOverride: feePayerOverride as string
     })
     return receipt
   }
 
   /**
    * Logs results of an attestation to identity.
-   *
-   * @param {{
-   *  status: string,
-   *  userId: string,
-   *  challengeId: string,
-   *  amount: number,
-   *  source: string
-   *  specifier: string
-   *  error?: string,
-   *  phase?: string,
-   *  reason?: string
-   * }} { status, userId, challengeId, amount, error, phase, specifier, reason }
-   * @memberof IdentityService
    */
-  async sendAttestationResult ({
+  async sendAttestationResult({
     status,
     userId,
     challengeId,
@@ -813,7 +762,7 @@ class Rewards extends Base {
     source,
     specifier,
     reason
-  }) {
+  }: SendAttestationResultConfig) {
     await this.identityService.sendAttestationResult({
       status,
       userId,
@@ -827,7 +776,3 @@ class Rewards extends Base {
     })
   }
 }
-
-module.exports = Rewards
-module.exports.SubmitAndEvaluateError = SubmitAndEvaluateError
-module.exports.AttestationPhases = AttestationPhases

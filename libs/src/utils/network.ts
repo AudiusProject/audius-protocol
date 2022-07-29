@@ -14,6 +14,7 @@ export interface ServiceWithEndpoint {
   endpoint: string
   spID?: string
   owner: string
+  delegateOwnerWallet: string
 }
 export type Service = ServiceName | ServiceWithEndpoint
 

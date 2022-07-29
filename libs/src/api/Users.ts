@@ -235,7 +235,7 @@ export class Users extends Base {
    * @param limit - max # of items to return
    * @param offset - offset into list to return from (for pagination)
    * @param withUsers - If the userIds should be returned or the full user metadata
-   * @returns  Array of user objects if with_users set, else array of userIdr
+   * @returns  Array of user objects if with_users set, else array of userId
    */
   async getTopCreatorsByGenres(
     genres: string[],

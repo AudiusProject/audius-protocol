@@ -28,6 +28,7 @@ type ID = number
 type UID = string
 
 export type UserMetadata = {
+  user_id: number
   album_count: number
   bio: string | null
   cover_photo: Nullable<CID>
@@ -59,7 +60,6 @@ export type UserMetadata = {
   // Only present on the "current" account
   does_follow_current_user?: boolean
   track_save_count?: number
-  user_id: number
   twitter_handle?: string
   instagram_handle?: string
   tiktok_handle?: string

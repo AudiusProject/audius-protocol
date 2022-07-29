@@ -60,7 +60,7 @@ export class Track extends Base {
 
   /**
    * get tracks with all relevant track data
-   * can be iltered by providing an integer array of ids
+   * can be filtered by providing an integer array of ids
    * @param limit
    * @param offset
    * @param idsArray
