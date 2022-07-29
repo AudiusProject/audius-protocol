@@ -53,13 +53,13 @@ type FindSyncsForUserResult = {
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {string[]} param.unhealthyPeers array of unhealthy peers
- * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => map(user wallet => { clock, filesHash }))
+ * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
  */
 module.exports = async function ({
   users,
   unhealthyPeers,
-  replicaToUserInfoMap,
+  replicaToAllUserInfoMaps,
   userSecondarySyncMetricsMap,
   logger
 }: DecoratedJobParams<FindSyncRequestsJobParams>): Promise<
@@ -94,7 +94,7 @@ module.exports = async function ({
       userSecondarySyncMetrics,
       minSecondaryUserSyncSuccessPercent,
       minFailedSyncRequestsBeforeReconfig,
-      replicaToUserInfoMap
+      replicaToAllUserInfoMaps
     )
 
     if (userSyncReqsToEnqueue?.length) {
@@ -162,7 +162,7 @@ module.exports = async function ({
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsMap mapping of each secondary to the success metrics the user has had syncing to it
  * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
  * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
- * @param {Object} replicaToUserInfoMap map(secondary endpoint => map(user wallet => { clock value, filesHash }))
+ * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock value, filesHash }))
  */
 async function _findSyncsForUser(
   user: StateMonitoringUser,
@@ -172,7 +172,7 @@ async function _findSyncsForUser(
   },
   minSecondaryUserSyncSuccessPercent: number,
   minFailedSyncRequestsBeforeReconfig: number,
-  replicaToUserInfoMap: ReplicaToAllUserInfoMaps
+  replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
 ): Promise<FindSyncsForUserResult> {
   const {
     wallet,
@@ -245,9 +245,9 @@ async function _findSyncsForUser(
     // Determine if secondary requires a sync by comparing its user data against primary (this node)
     let syncMode
     const { clock: primaryClock, filesHash: primaryFilesHash } =
-      replicaToUserInfoMap[primary][wallet]
+      replicaToAllUserInfoMaps[primary][wallet]
     const { clock: secondaryClock, filesHash: secondaryFilesHash } =
-      replicaToUserInfoMap[secondary][wallet]
+      replicaToAllUserInfoMaps[secondary][wallet]
     try {
       syncMode = await computeSyncModeForUserAndReplica({
         wallet,

@@ -230,7 +230,7 @@ describe('test issueSyncRequest job processor', function () {
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
       syncMode,
-      syncType: SyncType.Recurring,
+      syncType,
       syncRequestParameters: {
         baseURL: secondary,
         data: {
@@ -273,7 +273,7 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
+      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue]
     })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
@@ -310,7 +310,7 @@ describe('test issueSyncRequest job processor', function () {
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
       syncMode,
-      syncType: SyncType.Recurring,
+      syncType,
       syncRequestParameters: {
         baseURL: secondary,
         data: {
@@ -350,7 +350,7 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
+      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue]
     })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(

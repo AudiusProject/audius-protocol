@@ -39,14 +39,14 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
  * @param {string[]} param.unhealthyPeers array of unhealthy peers
- * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => map(user wallet => { clock, filesHash }))
+ * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} param.userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
  */
 module.exports = async function ({
   logger,
   users,
   unhealthyPeers,
-  replicaToUserInfoMap,
+  replicaToAllUserInfoMaps,
   userSecondarySyncMetricsMap
 }: DecoratedJobParams<FindReplicaSetUpdateJobParams>): Promise<
   DecoratedJobReturnValue<FindReplicaSetUpdatesJobReturnValue>
@@ -118,8 +118,13 @@ module.exports = async function ({
           secondary2: updateReplicaSetOp.secondary2,
           unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
           replicaToUserInfoMap: _transformAndFilterReplicaToUserInfoMap(
-            replicaToUserInfoMap,
-            wallet
+            replicaToAllUserInfoMaps,
+            wallet,
+            [
+              updateReplicaSetOp.primary,
+              updateReplicaSetOp.secondary1,
+              updateReplicaSetOp.secondary2
+            ]
           )
         })
       }
@@ -297,19 +302,21 @@ const _findReplicaSetUpdatesForUser = async (
 }
 
 /**
- * Filters input map to only user info for provided wallet, also filtering out nodes that have no clock value for provided wallet
+ * Filters input map to only include the given wallet and replica set nodes
  * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
- * @param {string} wallet the wallet to filter for (other wallets will be excluded from the output)
- * @returns map(replica (string) => { clock (number), filesHash (string) } ) mapping of node endpoint to user info on that node for the given wallet
+ * @param {string} wallet the wallet to filter by (other wallets will be excluded from the output)
+ * @param {string[]} replicaSet the replica set to filter by (other replica sets will be excluded from the output)
+ * @returns map(replica (string) => { clock (number), filesHash (string) } ) mapping of node endpoint to user info on that node for the given wallet and replica set
  */
 const _transformAndFilterReplicaToUserInfoMap = (
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps,
-  wallet: string
+  wallet: string,
+  replicaSet: string[]
 ): ReplicaToUserInfoMap => {
   return Object.fromEntries(
     Object.entries(replicaToAllUserInfoMaps) // [[replica, map(wallet => { clock, filesHash })]]
       .map(
-        ([node, userInfoMapsForNode], i) =>
+        ([node, userInfoMapsForNode]) =>
           [
             node,
             {
@@ -318,7 +325,7 @@ const _transformAndFilterReplicaToUserInfoMap = (
             }
           ] as const
       )
-      // Only include nodes that have clock values -- this means only the nodes in the user's replica set
-      .filter(([, userInfoMap]) => userInfoMap.clock !== -1)
+      // Only include nodes in the user's replica set
+      .filter(([node, _]) => replicaSet.includes(node))
   )
 }

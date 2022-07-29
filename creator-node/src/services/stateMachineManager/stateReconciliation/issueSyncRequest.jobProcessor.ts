@@ -1,6 +1,10 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
-import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import type {
+  DecoratedJobParams,
+  DecoratedJobReturnValue,
+  JobsToEnqueue
+} from '../types'
 import type {
   IssueSyncRequestJobParams,
   IssueSyncRequestJobReturnValue,
@@ -78,7 +82,7 @@ module.exports = async function ({
 }: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
   DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
 > {
-  let jobsToEnqueue = {}
+  let jobsToEnqueue: JobsToEnqueue = {}
   let metricsToRecord = []
   let error: any = {}
 
@@ -405,7 +409,7 @@ const _additionalSyncIsRequired = async (
   const response: AdditionalSyncIsRequiredResponse = { outcome }
   if (additionalSyncIsRequired) {
     response.syncReqToEnqueue = {
-      syncType: SyncType.Recurring,
+      syncType,
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
       syncRequestParameters,
       attemptNumber: attemptNumber + 1
