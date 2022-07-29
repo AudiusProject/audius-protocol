@@ -1,12 +1,13 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { AuthHeaders } from '../../constants'
 import { uuid } from '../../utils/uuid'
-import type { Captcha } from '../../utils'
+import type { Captcha, Nullable } from '../../utils'
 
 import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
 import type { TransactionReceipt } from 'web3-core'
 import type Wallet from 'ethereumjs-wallet'
+import type BN from 'bn.js'
 
 type Data = Record<string, unknown>
 
@@ -212,8 +213,8 @@ export class IdentityService {
   async logTrackListen(
     trackId: number,
     userId: number,
-    listenerAddress: string,
-    signatureData?: { signature: string; timestamp: string },
+    listenerAddress: Nullable<string>,
+    signatureData: Nullable<{ signature: string; timestamp: string }>,
     solanaListen = false
   ) {
     const data: {
@@ -417,8 +418,16 @@ export class IdentityService {
     transferTokens
   }: {
     senderAddress: string
-    permit: string
-    transferTokens: string[]
+    permit: {
+      contractAddress: string
+      encodedABI: string
+      gasLimit: number
+    }
+    transferTokens: {
+      contractAddress: string
+      encodedABI: string
+      gasLimit: number
+    }
   }) {
     return await this._makeRequest({
       url: '/wormhole_relay',
@@ -436,7 +445,7 @@ export class IdentityService {
    * @param senderAddress wallet
    */
   async getEthRelayer(senderAddress: string) {
-    return await this._makeRequest({
+    return await this._makeRequest<{ selectedEthWallet: string }>({
       url: '/eth_relayer',
       method: 'get',
       params: {
@@ -484,7 +493,7 @@ export class IdentityService {
 
   async updateMinimumDelegationAmount(
     wallet: string,
-    minimumDelegationAmount: number,
+    minimumDelegationAmount: BN,
     signedData: AxiosRequestConfig['headers']
   ) {
     return await this._makeRequest({

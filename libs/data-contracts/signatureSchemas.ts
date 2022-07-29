@@ -982,7 +982,7 @@ const getUpdatePlaylistPrivacyRequestData = (
   chainId: number,
   contractAddress: string,
   playlistId: number,
-  updatedPlaylistPrivacy: string,
+  updatedPlaylistPrivacy: boolean,
   nonce: string
 ) => {
   const message = {

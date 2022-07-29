@@ -1,12 +1,11 @@
 import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from './constants'
+import type { User } from './utils'
 import type { LocalStorage } from './utils/localStorage'
 
-export type CurrentUser = {
-  user_id: string
-  wallet: string
-  blocknumber: number
-  track_blocknumber: number
-  creator_node_endpoint: string
+export type CurrentUser = User & {
+  wallet?: string
+  blocknumber?: number
+  track_blocknumber?: number
 }
 
 type UserStateManagerConfig = {

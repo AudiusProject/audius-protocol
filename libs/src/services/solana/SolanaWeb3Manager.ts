@@ -1,7 +1,7 @@
 import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
-import anchor, { Idl, Program } from '@project-serum/anchor'
+import anchor, { Address, Idl, Program } from '@project-serum/anchor'
 import { idl } from '@audius/anchor-audius-data'
 
 import { transferWAudioBalance } from './transfer'
@@ -12,7 +12,7 @@ import {
   findAssociatedTokenAddress
 } from './tokenAccount'
 import { wAudioFromWeiAudio } from './wAudio'
-import { Nullable, Utils } from '../../utils'
+import { Logger, Nullable, Utils } from '../../utils'
 import { SolanaUtils } from './SolanaUtils'
 import { TransactionHandler } from './transactionHandler'
 import {
@@ -20,13 +20,40 @@ import {
   evaluateAttestations,
   createSender,
   deriveSolanaSenderFromEthAddress,
-  SubmitAttestationsConfig,
-  EvaluateAttestationsConfig,
-  CreateSenderParams
+  SubmitAttestationsConfig as SubmitAttestationsBaseConfig,
+  CreateSenderParams as CreateSenderBaseParams
 } from './rewards'
 import { AUDIO_DECMIALS, WAUDIO_DECMIALS } from '../../constants'
 import type { IdentityService } from '../identity'
 import type { Web3Manager } from '../web3Manager'
+
+type EvaluateChallengeAttestationsConfig = {
+  challengeId: string
+  specifier: string
+  recipientEthAddress: string
+  oracleEthAddress: string
+  tokenAmount: BN
+  logger: Logger
+}
+
+type SubmitAttestationsConfig = Omit<
+  SubmitAttestationsBaseConfig,
+  | 'rewardManagerProgramId'
+  | 'rewardManagerAccount'
+  | 'rewardManagerTokenSource'
+  | 'userBankProgramAccount'
+  | 'feePayer'
+  | 'transactionHandler'
+> & { feePayerOverride: Nullable<string> }
+
+type CreateSenderParams = Omit<
+  CreateSenderBaseParams,
+  | 'rewardManagerProgramId'
+  | 'rewardManagerAccount'
+  | 'feePayer'
+  | 'transactionHandler'
+  | 'identityService'
+> & { feePayerOverride: Nullable<string> }
 
 // Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
@@ -42,7 +69,7 @@ export type SolanaWeb3Config = {
   mintAddress: string
   solanaTokenAddress: string
   claimableTokenPDA: string
-  feePayerAddress: PublicKey
+  feePayerAddress: string
   claimableTokenProgramAddress: string
   rewardsManagerProgramId: string
   rewardsManagerProgramPDA: string
@@ -78,7 +105,7 @@ export class SolanaWeb3Manager {
   mintKey!: PublicKey
   solanaTokenAddress!: string
   solanaTokenKey!: PublicKey
-  feePayerAddress!: PublicKey
+  feePayerAddress!: Address
   feePayerKey!: PublicKey
   claimableTokenProgramKey!: PublicKey
   claimableTokenPDA!: string
@@ -409,7 +436,7 @@ export class SolanaWeb3Manager {
     instructionsPerTransaction,
     logger = console,
     feePayerOverride = null
-  }: SubmitAttestationsConfig & { feePayerOverride: Nullable<string> }) {
+  }: SubmitAttestationsConfig) {
     return await submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
@@ -438,7 +465,9 @@ export class SolanaWeb3Manager {
     tokenAmount,
     logger = console,
     feePayerOverride = null
-  }: EvaluateAttestationsConfig & { feePayerOverride: Nullable<string> }) {
+  }: EvaluateChallengeAttestationsConfig & {
+    feePayerOverride: Nullable<string>
+  }) {
     return await evaluateAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
@@ -458,20 +487,13 @@ export class SolanaWeb3Manager {
 
   /**
    * Creates a new rewards signer (one that can attest)
-   * @param {{
-   *   senderEthAddress: string,
-   *   operatorEthAddress: string,
-   *   attestations: AttestationMeta[],
-   *   feePayerOverride?: string
-   * }} {
-   * @memberof SolanaWeb3Manager
    */
   async createSender({
     senderEthAddress,
     operatorEthAddress,
     attestations,
     feePayerOverride = null
-  }: CreateSenderParams & { feePayerOverride: Nullable<string> }) {
+  }: CreateSenderParams) {
     return await createSender({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
