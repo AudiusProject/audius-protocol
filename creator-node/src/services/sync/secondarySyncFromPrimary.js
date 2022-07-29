@@ -560,6 +560,8 @@ const handleSyncFromPrimary = async (
 
         await transaction.rollback()
 
+        await DBManager.fixInconsistentUser(fetchedCNodeUser.cnodeUserUUID)
+
         return {
           error: new Error(e),
           result: 'failure_db_transaction'
