@@ -24,6 +24,10 @@ commands:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
   slack-basic:
     parameters:
+      event:
+        description: when this notification will fire. options are fail, pass, always.
+        type: string
+        default: always
       branch_pattern:
         description: branch_pattern arg for slack/notify
         type: string
@@ -55,7 +59,7 @@ commands:
                 }
               ]
             }
-          event: always
+          event: << pipeline.parameters.event >>
   run-on-gcp:
     parameters:
       command:
