@@ -329,13 +329,11 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
 }
 
 /**
- * Select a random node that is not from the current replica set. Make sure the random node does not have any
- * existing user data for the current user. If there is pre-existing data in the randomly selected node, keep
- * searching for a node that has no state.
+ * Select a random healthy node that is not from the current replica set and not in the unhealthy replica set.
  *
  * If an insufficient amount of new replica set nodes are chosen, this method will throw an error.
  * @param {Set<string>} healthyReplicaSet a set of the healthy replica set endpoints
- * @param {number} numberOfUnhealthyReplicas the number of unhealthy replica set endpoints
+ * @param {Set<string>} unhealthyReplicasSet a set of the unhealthy replica set endpoints
  * @param {string[]} healthyNodes an array of all the healthy nodes available on the network
  * @param {string} wallet the wallet of the current user
  * @param {Object} logger a logger that can be filtered on jobName and jobId
@@ -385,9 +383,9 @@ const _selectRandomReplicaSetNodes = async (
         wallet
       )
       newReplicaNodesSet.add(randomHealthyNode)
-      if (clockValue === -1) {
+      if (clockValue !== -1) {
         logger.warn(
-          `${logStr} Found a node with clock value of ${clockValue}, selecting anyway`
+          `${logStr} Found a node with previous state (clock value of ${clockValue}), selecting anyway`
         )
       }
     } catch (e: any) {
