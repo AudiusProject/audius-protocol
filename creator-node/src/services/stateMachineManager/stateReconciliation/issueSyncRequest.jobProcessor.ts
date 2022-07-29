@@ -1,5 +1,18 @@
+import type Logger from 'bunyan'
+import type { LoDashStatic } from 'lodash'
+import type {
+  DecoratedJobParams,
+  DecoratedJobReturnValue,
+  JobsToEnqueue
+} from '../types'
+import type {
+  IssueSyncRequestJobParams,
+  IssueSyncRequestJobReturnValue,
+  SyncRequestAxiosParams
+} from './types'
+
 const axios = require('axios')
-const _ = require('lodash')
+const _: LoDashStatic = require('lodash')
 
 const config = require('../../../config')
 const models = require('../../../models')
@@ -11,14 +24,14 @@ const {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord
 } = require('../stateMachineUtils')
-const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
 const {
   SYNC_MONITORING_RETRY_DELAY_MS,
   QUEUE_NAMES,
   SYNC_MODES,
   SyncType,
-  MAX_ISSUE_SYNC_JOB_ATTEMPTS
+  MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
+  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 
@@ -28,9 +41,29 @@ const secondaryUserSyncDailyFailureCountThreshold = config.get(
 const maxSyncMonitoringDurationInMs = config.get(
   'maxSyncMonitoringDurationInMs'
 )
+const maxManualSyncMonitoringDurationInMs = config.get(
+  'maxManualSyncMonitoringDurationInMs'
+)
 const mergePrimaryAndSecondaryEnabled = config.get(
   'mergePrimaryAndSecondaryEnabled'
 )
+
+type HandleIssueSyncReqParams = {
+  syncType: string
+  syncMode: string
+  syncRequestParameters: SyncRequestAxiosParams
+  logger: Logger
+  attemptNumber: number
+}
+type HandleIssueSyncReqResult = {
+  result: string
+  error?: any
+  syncReqToEnqueue?: IssueSyncRequestJobParams
+}
+type AdditionalSyncIsRequiredResponse = {
+  outcome: string
+  syncReqToEnqueue?: IssueSyncRequestJobParams
+}
 
 /**
  * Processes a job to issue a sync request from a user's primary (this node) to a user's secondary with syncType and syncMode
@@ -49,10 +82,12 @@ module.exports = async function ({
   syncRequestParameters,
   logger,
   attemptNumber = 1
-}) {
-  let jobsToEnqueue = {}
+}: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
+  DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
+> {
+  let jobsToEnqueue: JobsToEnqueue = {}
   let metricsToRecord = []
-  let error = {}
+  let error: any = {}
 
   const startTimeMs = Date.now()
 
@@ -64,7 +99,8 @@ module.exports = async function ({
     syncType,
     syncMode,
     syncRequestParameters,
-    logger
+    logger,
+    attemptNumber
   })
   if (errorResp) {
     error = errorResp
@@ -72,10 +108,11 @@ module.exports = async function ({
   }
 
   // Enqueue a new sync request if one needs to be enqueued and we haven't retried too many times yet
-  if (
-    !_.isEmpty(syncReqToEnqueue) &&
-    attemptNumber < MAX_ISSUE_SYNC_JOB_ATTEMPTS
-  ) {
+  const maxRetries =
+    syncReqToEnqueue?.syncType === SyncType.Manual
+      ? MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS
+      : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
+  if (!_.isEmpty(syncReqToEnqueue) && attemptNumber < maxRetries) {
     logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
     const queueName =
       syncReqToEnqueue?.syncType === SyncType.Manual
@@ -86,7 +123,7 @@ module.exports = async function ({
     }
   } else {
     logger.info(
-      `Gave up retrying issue-sync-request after ${attemptNumber} failed attempts`
+      `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
     )
   }
 
@@ -114,14 +151,12 @@ async function _handleIssueSyncRequest({
   syncType,
   syncMode,
   syncRequestParameters,
-  logger
-}) {
-  try {
-    _validateJobData(syncType, syncMode, syncRequestParameters, logger)
-  } catch (error) {
-    return { result: 'failure_validate_job_data', error }
+  logger,
+  attemptNumber
+}: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
+  if (!syncRequestParameters?.data?.wallet?.length) {
+    return { result: 'failure_missing_wallet' }
   }
-
   if (syncMode === SYNC_MODES.None) {
     return { result: 'success' }
   }
@@ -133,9 +168,13 @@ async function _handleIssueSyncRequest({
 
   /**
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
-   * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting
+   * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
+   * We don't dedupe manual syncs.
    */
-  SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
+  if (syncType === SyncType.Recurring) {
+    const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+    SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
+  }
 
   /**
    * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
@@ -197,7 +236,7 @@ async function _handleIssueSyncRequest({
     } else {
       await axios(syncRequestParameters)
     }
-  } catch (e) {
+  } catch (e: any) {
     return {
       result: 'failure_issue_sync_request',
       error: {
@@ -206,7 +245,8 @@ async function _handleIssueSyncRequest({
       syncReqToEnqueue: {
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-        syncRequestParameters
+        syncRequestParameters,
+        attemptNumber
       }
     }
   }
@@ -218,12 +258,12 @@ async function _handleIssueSyncRequest({
 
   // Wait until has sync has completed (within time threshold)
   const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
-    userWallet,
     primaryClockValue,
-    secondaryEndpoint,
     syncType,
     syncMode,
-    logger
+    syncRequestParameters,
+    logger,
+    attemptNumber
   )
 
   return {
@@ -233,58 +273,12 @@ async function _handleIssueSyncRequest({
 }
 
 /**
- * Throw error on failure, else return nothing
- */
-const _validateJobData = (syncType, syncMode, syncRequestParameters) => {
-  if (typeof syncType !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof syncType}") or value ("${syncType}") of syncType param`
-    )
-  }
-
-  if (typeof syncMode !== 'string') {
-    throw new Error(
-      `Invalid type ("${typeof syncMode}") or value ("${syncMode}") of syncMode param`
-    )
-  }
-
-  if (
-    typeof syncRequestParameters !== 'object' ||
-    syncRequestParameters instanceof Array
-  ) {
-    throw new Error(
-      `Invalid type ("${typeof syncRequestParameters}") or value ("${syncRequestParameters}") of syncRequestParameters`
-    )
-  }
-
-  const isValidSyncJobData =
-    'baseURL' in syncRequestParameters &&
-    'url' in syncRequestParameters &&
-    'method' in syncRequestParameters &&
-    'data' in syncRequestParameters
-  if (!isValidSyncJobData) {
-    throw new Error(
-      `Invalid sync data found: ${JSON.stringify(syncRequestParameters)}`
-    )
-  }
-
-  if (
-    !(syncRequestParameters.data.wallet instanceof Array) ||
-    !syncRequestParameters.data.wallet?.length
-  ) {
-    throw new Error(
-      `Invalid sync data wallets (expected non-empty array): ${syncRequestParameters.data.wallet}`
-    )
-  }
-}
-
-/**
  * Given wallets array, queries DB and returns a map of all users with
  *    those wallets and their clock values, or -1 if wallet not found
  *
  * @returns map(wallet -> clock val)
  */
-const _getUserPrimaryClockValues = async (wallets) => {
+const _getUserPrimaryClockValues = async (wallets: string[]) => {
   // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
   const cnodeUsersFromDB = await models.CNodeUser.findAll({
     where: {
@@ -295,13 +289,13 @@ const _getUserPrimaryClockValues = async (wallets) => {
   })
 
   // Initialize clock values for all users to -1
-  const cnodeUserClockValuesMap = {}
-  wallets.forEach((wallet) => {
+  const cnodeUserClockValuesMap: { [wallet: string]: number } = {}
+  wallets.forEach((wallet: string) => {
     cnodeUserClockValuesMap[wallet] = -1
   })
 
   // Populate clock values into map with DB data
-  cnodeUsersFromDB.forEach((cnodeUser) => {
+  cnodeUsersFromDB.forEach((cnodeUser: any) => {
     cnodeUserClockValuesMap[cnodeUser.walletPublicKey] = cnodeUser.clock
   })
 
@@ -314,17 +308,23 @@ const _getUserPrimaryClockValues = async (wallets) => {
  * Record SyncRequest outcomes to SecondarySyncHealthTracker
  */
 const _additionalSyncIsRequired = async (
-  userWallet,
   primaryClockValue = -1,
-  secondaryUrl,
-  syncType,
-  syncMode,
-  logger
-) => {
+  syncType: string,
+  syncMode: string,
+  syncRequestParameters: SyncRequestAxiosParams,
+  logger: any,
+  attemptNumber: number
+): Promise<AdditionalSyncIsRequiredResponse> => {
+  const userWallet = syncRequestParameters.data.wallet[0]
+  const secondaryUrl = syncRequestParameters.baseURL
   const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
   const startTimeMs = Date.now()
-  const maxMonitoringTimeMs = startTimeMs + maxSyncMonitoringDurationInMs
+  const maxMonitoringTimeMs =
+    startTimeMs +
+    (syncType === SyncType.MANUAL
+      ? maxManualSyncMonitoringDurationInMs
+      : maxSyncMonitoringDurationInMs)
 
   /**
    * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
@@ -359,7 +359,7 @@ const _additionalSyncIsRequired = async (
         secondaryCaughtUpToPrimary = true
         break
       }
-    } catch (e) {
+    } catch (e: any) {
       logger.warn(`${logMsgString} || Error: ${e.message}`)
     }
 
@@ -413,12 +413,13 @@ const _additionalSyncIsRequired = async (
     )
   }
 
-  const response = { outcome }
+  const response: AdditionalSyncIsRequiredResponse = { outcome }
   if (additionalSyncIsRequired) {
     response.syncReqToEnqueue = {
-      userWallet,
-      secondaryEndpoint: secondaryUrl,
-      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+      syncType,
+      syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+      syncRequestParameters,
+      attemptNumber: attemptNumber + 1
     }
   }
 

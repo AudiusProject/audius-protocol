@@ -73,13 +73,15 @@ const getNewOrExistingSyncReq = ({
     syncRequestParameters
   }
 
-  // Record sync in syncDeDuplicator
-  SyncRequestDeDuplicator.recordSync(
-    syncType,
-    userWallet,
-    secondaryEndpoint,
-    syncReqToEnqueue
-  )
+  // Record sync in syncDeDuplicator for recurring syncs only
+  if (syncType === SyncType.Recurring) {
+    SyncRequestDeDuplicator.recordSync(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      syncReqToEnqueue
+    )
+  }
 
   return { syncReqToEnqueue }
 }
@@ -138,35 +140,9 @@ const issueSyncRequestsUntilSynced = async (
       // If secondary is synced, return successfully
       if (secondaryClockVal >= primaryClockVal) {
         return
-
-        // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
-      } else if (!syncInProgress) {
-        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-          userWallet: wallet,
-          secondaryEndpoint: secondaryUrl,
-          primaryEndpoint: primaryUrl,
-          syncType: SyncType.Manual,
-          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
-        })
-        if (!_.isEmpty(duplicateSyncReq)) {
-          // Log duplicate and return
-          logger.warn(`Duplicate sync request: ${duplicateSyncReq}`)
-          return
-        } else if (!_.isEmpty(syncReqToEnqueue)) {
-          await queue.add({
-            enqueuedBy: 'issueSyncRequestsUntilSynced retry',
-            ...syncReqToEnqueue
-          })
-        } else {
-          // Log error that the sync request couldn't be created and return
-          logger.error(
-            `Failed to create manual sync request: ${duplicateSyncReq}`
-          )
-          return
-        }
       }
 
-      // Give secondary some time to process ongoing or newly enqueued sync
+      // Give secondary some time to process ongoing sync
       // NOTE - we might want to make this timeout longer
       await Utils.timeout(500)
     } catch (e) {

@@ -1,3 +1,15 @@
+import type Logger from 'bunyan'
+import type {
+  AnyJobParams,
+  QueueNameToQueueMap,
+  AnyDecoratedJobReturnValue,
+  ParamsForJobsToEnqueue
+} from './types'
+import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
+import type { TQUEUE_NAMES } from './stateMachineConstants'
+
+import { Queue } from 'bull'
+
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES } = require('./stateMachineConstants')
 const {
@@ -34,8 +46,11 @@ const {
  * - bulk-enqueues all jobs under result[QUEUE_NAMES.STATE_RECONCILIATION] into the state reconciliation queue
  * - records metrics from result.metricsToRecord
  */
-module.exports = function (queueNameToQueueMap, prometheusRegistry) {
-  return async function (jobId, resultString) {
+module.exports = function (
+  queueNameToQueueMap: QueueNameToQueueMap,
+  prometheusRegistry: any
+) {
+  return async function (jobId: string, resultString: string) {
     // Create a logger so that we can filter logs by the tag `jobId` = <id of the job that successfully completed>
     const logger = createChildLogger(baseLogger, { jobId })
 
@@ -47,24 +62,28 @@ module.exports = function (queueNameToQueueMap, prometheusRegistry) {
       )
       return
     }
-    const enabledReconfigModes = Array.from(this.enabledReconfigModesSet)
+    const enabledReconfigModes: string[] = Array.from(
+      this.enabledReconfigModesSet
+    )
 
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
-    let jobResult = {}
+    let jobResult: AnyDecoratedJobReturnValue
     try {
       logger.info(`Job successfully completed. Parsing result: ${resultString}`)
       jobResult = JSON.parse(resultString) || {}
-    } catch (e) {
-      logger.error(`Failed to parse job result string`)
+    } catch (e: any) {
+      logger.error(`Failed to parse job result string: ${e.message}`)
       return
     }
 
     const { jobsToEnqueue, metricsToRecord } = jobResult
 
     // Enqueue jobs into each queue
-    for (const [queueName, queueJobs] of Object.entries(jobsToEnqueue || {})) {
+    for (const [queueName, queueJobs] of Object.entries(
+      jobsToEnqueue || {}
+    ) as [TQUEUE_NAMES, ParamsForJobsToEnqueue[]][]) {
       // Make sure we're working with a valid queue
-      const queue = queueNameToQueueMap[queueName]
+      const queue: Queue = queueNameToQueueMap[queueName]
       if (!queue) {
         logger.error(
           `Job returned data trying to enqueue jobs to a queue whose name isn't recognized: ${queueName}`
@@ -72,16 +91,23 @@ module.exports = function (queueNameToQueueMap, prometheusRegistry) {
         continue
       }
 
-      // Sanitize job data and inject fields into jobs if the queue requires extra data
-      let decoratedJobs = queueJobs
-      if (queueName === QUEUE_NAMES.UPDATE_REPLICA_SET) {
-        decoratedJobs = injectEnabledReconfigModes(
-          queueJobs,
-          enabledReconfigModes
-        )
+      // Inject data into jobs that require extra params
+      let jobs: AnyJobParams[]
+      switch (queueName) {
+        case QUEUE_NAMES.UPDATE_REPLICA_SET: {
+          jobs = injectEnabledReconfigModes(
+            queueJobs as UpdateReplicaSetJobParams[],
+            enabledReconfigModes
+          )
+          break
+        }
+        default: {
+          jobs = queueJobs as AnyJobParams[]
+          break
+        }
       }
 
-      await enqueueJobs(decoratedJobs, queue, queueName, jobId, logger)
+      await enqueueJobs(jobs, queue, queueName, jobId, logger)
     }
 
     recordMetrics(prometheusRegistry, logger, metricsToRecord)
@@ -89,17 +115,17 @@ module.exports = function (queueNameToQueueMap, prometheusRegistry) {
 }
 
 const enqueueJobs = async (
-  jobs,
-  queue,
-  queueName,
-  triggeredByJobId,
-  logger
+  jobs: AnyJobParams[],
+  queue: Queue,
+  queueName: string,
+  triggeredByJobId: string,
+  logger: Logger
 ) => {
   logger.info(
     `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueName}`
   )
 
-  // Transform output into the job format that Bull expects for bulkAdd and add 'enqueuedBy' field for tracking
+  // Add 'enqueuedBy' field for tracking
   try {
     const bulkAddResult = await queue.addBulk(
       jobs.map((job) => {
@@ -119,13 +145,22 @@ const enqueueJobs = async (
 }
 
 // Injects enabledReconfigModes into update-replica-set jobs
-const injectEnabledReconfigModes = (jobs, enabledReconfigModes) => {
+const injectEnabledReconfigModes = (
+  jobs: UpdateReplicaSetJobParams[],
+  enabledReconfigModes: string[]
+): (UpdateReplicaSetJobParams & {
+  enabledReconfigModes: string[]
+})[] => {
   return jobs.map((job) => {
     return { ...job, enabledReconfigModes }
   })
 }
 
-const recordMetrics = (prometheusRegistry, logger, metricsToRecord = []) => {
+const recordMetrics = (
+  prometheusRegistry: any,
+  logger: Logger,
+  metricsToRecord = []
+) => {
   for (const metricInfo of metricsToRecord) {
     try {
       const { metricName, metricType, metricValue, metricLabels } = metricInfo

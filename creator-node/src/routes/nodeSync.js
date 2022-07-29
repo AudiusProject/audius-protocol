@@ -41,7 +41,7 @@ router.get(
     try {
       const cnodeUsersDict = await retry(
         async () => {
-          return exportComponentService({
+          return await exportComponentService({
             walletPublicKeys,
             requestedClockRangeMin,
             requestedClockRangeMax,

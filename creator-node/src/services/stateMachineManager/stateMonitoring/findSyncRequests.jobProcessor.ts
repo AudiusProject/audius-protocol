@@ -1,4 +1,19 @@
-const _ = require('lodash')
+import type { LoDashStatic } from 'lodash'
+import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import type {
+  FindSyncRequestsJobParams,
+  FindSyncRequestsJobReturnValue,
+  OutcomeCountsMap,
+  ReplicaToAllUserInfoMaps,
+  StateMonitoringUser,
+  UserSecondarySyncMetrics
+} from './types'
+import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
+
+// eslint-disable-next-line import/no-unresolved
+import { QUEUE_NAMES } from '../stateMachineConstants'
+
+const _: LoDashStatic = require('lodash')
 
 const config = require('../../../config')
 const {
@@ -6,11 +21,7 @@ const {
 } = require('../../prometheusMonitoring/prometheus.constants')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const { makeGaugeIncToRecord } = require('../stateMachineUtils')
-const {
-  SyncType,
-  QUEUE_NAMES,
-  SYNC_MODES
-} = require('../stateMachineConstants')
+const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
 const {
   getNewOrExistingSyncReq
 } = require('../stateReconciliation/stateReconciliationUtils')
@@ -23,6 +34,18 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
   'minimumFailedSyncRequestsBeforeReconfig'
 )
 
+type FindSyncsForUserResult = {
+  syncReqsToEnqueue: IssueSyncRequestJobParams[]
+  duplicateSyncReqs: IssueSyncRequestJobParams[]
+  errors: string[]
+  outcomesBySecondary: {
+    [secondary: string]: {
+      syncMode: string
+      result: string
+    }
+  }
+}
+
 /**
  * Processes a job to find and return sync requests that should be issued for the given array of users.
  *
@@ -30,34 +53,28 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {string[]} param.unhealthyPeers array of unhealthy peers
- * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => map(user wallet => { clock, filesHash }))
+ * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
  */
 module.exports = async function ({
   users,
   unhealthyPeers,
-  replicaToUserInfoMap,
+  replicaToAllUserInfoMaps,
   userSecondarySyncMetricsMap,
   logger
-}) {
-  _validateJobData(
-    logger,
-    users,
-    unhealthyPeers,
-    replicaToUserInfoMap,
-    userSecondarySyncMetricsMap
-  )
-
+}: DecoratedJobParams<FindSyncRequestsJobParams>): Promise<
+  DecoratedJobReturnValue<FindSyncRequestsJobReturnValue>
+> {
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
   const metricsToRecord = []
 
   // mapping ( syncMode => mapping ( result => count ) )
-  const outcomeCountsMap = {}
+  const outcomeCountsMap: OutcomeCountsMap = {}
 
   // Find any syncs that should be performed from each user to any of their secondaries
-  let syncReqsToEnqueue = []
-  let duplicateSyncReqs = []
-  let errors = []
+  let syncReqsToEnqueue: IssueSyncRequestJobParams[] = []
+  let duplicateSyncReqs: IssueSyncRequestJobParams[] = []
+  let errors: string[] = []
   for (const user of users) {
     const { wallet, primary, secondary1, secondary2 } = user
 
@@ -77,7 +94,7 @@ module.exports = async function ({
       userSecondarySyncMetrics,
       minSecondaryUserSyncSuccessPercent,
       minFailedSyncRequestsBeforeReconfig,
-      replicaToUserInfoMap
+      replicaToAllUserInfoMaps
     )
 
     if (userSyncReqsToEnqueue?.length) {
@@ -132,48 +149,8 @@ module.exports = async function ({
     errors,
     jobsToEnqueue: syncReqsToEnqueue?.length
       ? { [QUEUE_NAMES.RECURRING_SYNC]: syncReqsToEnqueue }
-      : {},
+      : undefined,
     metricsToRecord
-  }
-}
-
-const _validateJobData = (
-  logger,
-  users,
-  unhealthyPeers,
-  replicaToUserInfoMap,
-  userSecondarySyncMetricsMap
-) => {
-  if (typeof logger !== 'object') {
-    throw new Error(
-      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
-    )
-  }
-  if (!(users instanceof Array)) {
-    throw new Error(
-      `Invalid type ("${typeof users}") or value ("${users}") of users param`
-    )
-  }
-  if (!(unhealthyPeers instanceof Array)) {
-    throw new Error(
-      `Invalid type ("${typeof unhealthyPeers}") or value ("${unhealthyPeers}") of unhealthyPeers param`
-    )
-  }
-  if (
-    typeof replicaToUserInfoMap !== 'object' ||
-    replicaToUserInfoMap instanceof Array
-  ) {
-    throw new Error(
-      `Invalid type ("${typeof replicaToUserInfoMap}") or value ("${replicaToUserInfoMap}") of replicaToUserInfoMap`
-    )
-  }
-  if (
-    typeof userSecondarySyncMetricsMap !== 'object' ||
-    userSecondarySyncMetricsMap instanceof Array
-  ) {
-    throw new Error(
-      `Invalid type ("${typeof userSecondarySyncMetricsMap}") or value ("${userSecondarySyncMetricsMap}") of userSecondarySyncMetricsMap`
-    )
   }
 }
 
@@ -185,16 +162,18 @@ const _validateJobData = (
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsMap mapping of each secondary to the success metrics the user has had syncing to it
  * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
  * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
- * @param {Object} replicaToUserInfoMap map(secondary endpoint => map(user wallet => { clock value, filesHash }))
+ * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock value, filesHash }))
  */
 async function _findSyncsForUser(
-  user,
-  unhealthyPeers,
-  userSecondarySyncMetricsMap,
-  minSecondaryUserSyncSuccessPercent,
-  minFailedSyncRequestsBeforeReconfig,
-  replicaToUserInfoMap
-) {
+  user: StateMonitoringUser,
+  unhealthyPeers: Set<string>,
+  userSecondarySyncMetricsMap: {
+    [secondary: string]: UserSecondarySyncMetrics
+  },
+  minSecondaryUserSyncSuccessPercent: number,
+  minFailedSyncRequestsBeforeReconfig: number,
+  replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
+): Promise<FindSyncsForUserResult> {
   const {
     wallet,
     primary,
@@ -211,7 +190,12 @@ async function _findSyncsForUser(
 
   // Only sync from this node to other nodes if this node is the user's primary
   if (primary !== thisContentNodeEndpoint) {
-    return { outcomesBySecondary }
+    return {
+      outcomesBySecondary,
+      syncReqsToEnqueue: [],
+      duplicateSyncReqs: [],
+      errors: []
+    }
   }
 
   const replicaSetNodesToObserve = [
@@ -226,7 +210,7 @@ async function _findSyncsForUser(
 
   const syncReqsToEnqueue = []
   const duplicateSyncReqs = []
-  const errors = []
+  const errors: string[] = []
 
   // For each secondary, add a potential sync request if healthy
   for (const secondaryInfo of secondariesInfo) {
@@ -261,9 +245,9 @@ async function _findSyncsForUser(
     // Determine if secondary requires a sync by comparing its user data against primary (this node)
     let syncMode
     const { clock: primaryClock, filesHash: primaryFilesHash } =
-      replicaToUserInfoMap[primary][wallet]
+      replicaToAllUserInfoMaps[primary][wallet]
     const { clock: secondaryClock, filesHash: secondaryFilesHash } =
-      replicaToUserInfoMap[secondary][wallet]
+      replicaToAllUserInfoMaps[secondary][wallet]
     try {
       syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -272,7 +256,7 @@ async function _findSyncsForUser(
         primaryFilesHash,
         secondaryFilesHash
       })
-    } catch (e) {
+    } catch (e: any) {
       outcomesBySecondary[secondary].result =
         'no_sync_error_computing_sync_mode'
       errors.push(
@@ -281,7 +265,7 @@ async function _findSyncsForUser(
       continue
     }
 
-    let result
+    let result = 'not_checked'
     if (syncMode === SYNC_MODES.None) {
       result = 'no_sync_secondary_data_matches_primary'
     } else if (
@@ -306,7 +290,7 @@ async function _findSyncsForUser(
         } else {
           result = 'new_sync_request_unable_to_enqueue'
         }
-      } catch (e) {
+      } catch (e: any) {
         result = 'no_sync_unexpected_error'
         errors.push(
           `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary} - ${e.message}`

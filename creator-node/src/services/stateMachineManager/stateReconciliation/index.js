@@ -115,17 +115,19 @@ class StateReconciliationManager {
       logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
     })
 
-    // Register the logic that gets executed to process each new job from the queue
+    // Register the logic that gets executed to process each new job from the queues
     manualSyncQueue.process(
-      1, // config.get('maxManualRequestSyncJobConcurrency'),
+      config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
-
     recurringSyncQueue.process(
       config.get('maxRecurringRequestSyncJobConcurrency'),
       processRecurringSync
     )
-    updateReplicaSetQueue.process(1 /** concurrency */, processUpdateReplicaSet)
+    updateReplicaSetQueue.process(
+      config.get('maxUpdateReplicaSetJobConcurrency'),
+      processUpdateReplicaSet
+    )
   }
 
   /*

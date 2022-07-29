@@ -368,7 +368,7 @@ def default_function_score(dsl, ranking_field):
             "script_score": {
                 "query": {"bool": dsl},
                 "script": {
-                    "source": f" Math.log(Math.max(doc['{ranking_field}'].value, 0) + 2)"
+                    "source": f"_score * Math.log(Math.max(doc['{ranking_field}'].value, 0) + 2)"
                 },
             }
         },

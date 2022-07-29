@@ -532,6 +532,12 @@ const config = convict({
     env: 'maxRecurringRequestSyncJobConcurrency',
     default: 5
   },
+  maxUpdateReplicaSetJobConcurrency: {
+    doc: 'Max bull queue concurrency for update replica set jobs',
+    format: 'nat',
+    env: 'maxUpdateReplicaSetJobConcurrency',
+    default: 15
+  },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
     format: 'nat',
@@ -601,10 +607,16 @@ const config = convict({
     default: 20
   },
   maxSyncMonitoringDurationInMs: {
-    doc: 'Max duration that primary will monitor secondary for syncRequest completion',
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion for non-manual syncs',
     format: 'nat',
     env: 'maxSyncMonitoringDurationInMs',
     default: 300000 // 5min (prod default)
+  },
+  maxManualSyncMonitoringDurationInMs: {
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion for manual syncs',
+    format: 'nat',
+    env: 'maxManualSyncMonitoringDurationInMs',
+    default: 45000 // 45 sec (prod default)
   },
   syncRequestMaxUserFailureCountBeforeSkip: {
     doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
@@ -625,10 +637,10 @@ const config = convict({
     default: 8760 // 1 year in hrs
   },
   contentCacheLayerEnabled: {
-    doc: 'Flag to enable or disable the nginx cache layer that caches content',
+    doc: 'Flag to enable or disable the nginx cache layer that caches content. DO NOT SET THIS HERE, set in the Dockerfile because it needs to be set above the application layer',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
-    default: true
+    default: false
   },
   reconfigNodeWhitelist: {
     doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',

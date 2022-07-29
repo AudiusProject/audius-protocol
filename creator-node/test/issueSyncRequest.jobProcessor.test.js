@@ -21,131 +21,6 @@ chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
 
-describe('test issueSyncRequest job processor param validation', function () {
-  let server, sandbox, originalContentNodeEndpoint, logger
-
-  const syncMode = SYNC_MODES.SyncSecondaryFromPrimary
-
-  beforeEach(async function () {
-    const appInfo = await getApp(getLibsMock())
-    await appInfo.app.get('redisClient').flushdb()
-    server = appInfo.server
-    sandbox = sinon.createSandbox()
-    config.set('spID', 1)
-    originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
-    logger = {
-      info: sandbox.stub(),
-      warn: sandbox.stub(),
-      error: sandbox.stub()
-    }
-    nock.disableNetConnect()
-  })
-
-  afterEach(async function () {
-    await server.close()
-    sandbox.restore()
-    config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
-    logger = null
-    nock.cleanAll()
-    nock.enableNetConnect()
-  })
-
-  it('catches bad sync request url', async function () {
-    const wallet = '0x123456789'
-    const url = '/sync'
-    const method = 'post'
-    const data = { wallet: [wallet] }
-    const syncRequestParameters = {
-      // Missing `baseURL`
-      url,
-      method,
-      data
-    }
-
-    const syncType = SyncType.Manual
-
-    const expectedErrorMessage = `Invalid sync data found: ${JSON.stringify(
-      syncRequestParameters
-    )}`
-
-    // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
-    const result = await issueSyncRequestJobProcessor({
-      logger,
-      syncType,
-      syncMode,
-      syncRequestParameters
-    })
-    expect(result).to.have.deep.property('error')
-    expect(result.error).to.have.deep.property('message', expectedErrorMessage)
-    expect(result).to.have.deep.property('jobsToEnqueue', {})
-    expect(result.metricsToRecord).to.have.lengthOf(1)
-    expect(result.metricsToRecord[0]).to.have.deep.property(
-      'metricName',
-      METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
-    )
-    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
-      sync_mode: _.snakeCase(syncMode),
-      sync_type: _.snakeCase(syncType),
-      result: 'failure_validate_job_data'
-    })
-    expect(result.metricsToRecord[0]).to.have.deep.property(
-      'metricType',
-      'HISTOGRAM_OBSERVE'
-    )
-    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(logger.error).to.have.been.calledOnceWithExactly(
-      expectedErrorMessage
-    )
-  })
-
-  it('catches bad wallet in data', async function () {
-    const wallet = '0x123456789'
-    const secondary = 'http://some_cn.co'
-    const url = '/sync'
-    const method = 'post'
-    const data = { wallet } // Bad wallet -- should be an array
-    const syncRequestParameters = {
-      baseURL: secondary,
-      url,
-      method,
-      data
-    }
-    const syncType = SyncType.Manual
-
-    const expectedErrorMessage = `Invalid sync data wallets (expected non-empty array): ${data.wallet}`
-
-    // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
-    // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
-    const result = await issueSyncRequestJobProcessor({
-      logger,
-      syncType,
-      syncMode,
-      syncRequestParameters
-    })
-    expect(result).to.have.deep.property('error')
-    expect(result.error).to.have.deep.property('message', expectedErrorMessage)
-    expect(result).to.have.deep.property('jobsToEnqueue', {})
-    expect(result.metricsToRecord).to.have.lengthOf(1)
-    expect(result.metricsToRecord[0]).to.have.deep.property(
-      'metricName',
-      METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM
-    )
-    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
-      sync_mode: _.snakeCase(syncMode),
-      sync_type: _.snakeCase(syncType),
-      result: 'failure_validate_job_data'
-    })
-    expect(result.metricsToRecord[0]).to.have.deep.property(
-      'metricType',
-      'HISTOGRAM_OBSERVE'
-    )
-    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(logger.error).to.have.been.calledOnceWithExactly(
-      expectedErrorMessage
-    )
-  })
-})
-
 describe('test issueSyncRequest job processor', function () {
   let server,
     sandbox,
@@ -235,7 +110,7 @@ describe('test issueSyncRequest job processor', function () {
     }
 
     return proxyquire(
-      '../src/services/stateMachineManager/stateReconciliation/issueSyncRequest.jobProcessor.js',
+      '../src/services/stateMachineManager/stateReconciliation/issueSyncRequest.jobProcessor.ts',
       stubs
     )
   }
@@ -354,9 +229,16 @@ describe('test issueSyncRequest job processor', function () {
 
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
-      secondaryEndpoint: secondary,
       syncMode,
-      userWallet: wallet
+      syncType,
+      syncRequestParameters: {
+        baseURL: secondary,
+        data: {
+          wallet: [wallet]
+        },
+        method: 'post',
+        url: '/sync'
+      }
     }
 
     const getSecondaryUserSyncFailureCountForTodayStub = sandbox
@@ -391,7 +273,7 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
+      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue]
     })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
@@ -427,9 +309,16 @@ describe('test issueSyncRequest job processor', function () {
 
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
-      secondaryEndpoint: secondary,
       syncMode,
-      userWallet: wallet
+      syncType,
+      syncRequestParameters: {
+        baseURL: secondary,
+        data: {
+          wallet: [wallet]
+        },
+        method: 'post',
+        url: '/sync'
+      }
     }
 
     const getSecondaryUserSyncFailureCountForTodayStub = sandbox
@@ -461,7 +350,7 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
+      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue]
     })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(

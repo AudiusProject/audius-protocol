@@ -98,7 +98,7 @@ describe('test findReplicaSetUpdates job processor', function () {
     getCNodeEndpointToSpIdMapStub
   ) {
     return proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.js',
+      '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.ts',
       {
         '../../../config': config,
         '../CNodeHealthManager': {
@@ -134,7 +134,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       logger,
       users,
       unhealthyPeers,
-      replicaToUserInfoMap: DEFAULT_REPLICA_TO_USER_INFO_MAP,
+      replicaToAllUserInfoMaps: DEFAULT_REPLICA_TO_USER_INFO_MAP,
       userSecondarySyncMetricsMap
     })
   }
@@ -164,7 +164,7 @@ describe('test findReplicaSetUpdates job processor', function () {
               }
             ]
           }
-        : {}
+        : undefined
     })
   }
 

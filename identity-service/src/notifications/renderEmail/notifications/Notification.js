@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.getTrackLink = exports.getEntity = exports.getUsers = exports.NotificationType = void 0;
+exports["default"] = exports.getTrackLink = exports.getEntity = exports.getUsers = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -13,7 +13,9 @@ var _NotificationBody = _interopRequireDefault(require("./NotificationBody"));
 
 var _Icons = require("./Icons");
 
-var _utils = require("./utils");
+var _constants = require("../../constants");
+
+var _utils = require("../../processNotifications/utils");
 
 var _notificationMap;
 
@@ -35,20 +37,6 @@ function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var NotificationType = Object.freeze({
-  Follow: 'Follow',
-  Repost: 'Repost',
-  Favorite: 'Favorite',
-  Milestone: 'Milestone',
-  UserSubscription: 'UserSubscription',
-  Announcement: 'Announcement',
-  RemixCreate: 'RemixCreate',
-  RemixCosign: 'RemixCosign',
-  TrendingTrack: 'TrendingTrack',
-  ChallengeReward: 'ChallengeReward',
-  AddTrackToPlaylist: 'AddTrackToPlaylist'
-});
-exports.NotificationType = NotificationType;
 var challengeRewardsConfig = {
   referred: {
     title: 'Invite your Friends',
@@ -157,7 +145,7 @@ var getEntity = function getEntity(entity) {
 };
 
 exports.getEntity = getEntity;
-var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, NotificationType.Favorite, function (notification) {
+var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, _constants.notificationTypes.Favorite.base, function (notification) {
   var user = getUsers(notification.users);
   var entity = getEntity(notification.entity);
   return /*#__PURE__*/_react["default"].createElement("span", {
@@ -165,7 +153,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }, user, /*#__PURE__*/_react["default"].createElement(BodyText, {
     text: " favorited your "
   }), entity);
-}), _defineProperty(_notificationMap, NotificationType.Repost, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.Repost.base, function (notification) {
   var user = getUsers(notification.users);
   var entity = getEntity(notification.entity);
   return /*#__PURE__*/_react["default"].createElement("span", {
@@ -173,19 +161,19 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }, user, /*#__PURE__*/_react["default"].createElement(BodyText, {
     text: " reposted your "
   }), entity);
-}), _defineProperty(_notificationMap, NotificationType.Follow, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.Follow, function (notification) {
   var user = getUsers(notification.users);
   return /*#__PURE__*/_react["default"].createElement("span", {
     className: 'notificationText'
   }, user, /*#__PURE__*/_react["default"].createElement(BodyText, {
     text: " followed you"
   }));
-}), _defineProperty(_notificationMap, NotificationType.Announcement, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.Announcement, function (notification) {
   return /*#__PURE__*/_react["default"].createElement(BodyText, {
     className: 'notificationText',
     text: notification.text
   });
-}), _defineProperty(_notificationMap, NotificationType.Milestone, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.Milestone, function (notification) {
   if (notification.entity) {
     var entity = notification.entity.type.toLowerCase();
     var highlight = notification.entity.name;
@@ -205,7 +193,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
       text: "You have reached over ".concat(notification.value, " Followers ")
     });
   }
-}), _defineProperty(_notificationMap, NotificationType.TrendingTrack, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.TrendingTrack, function (notification) {
   var highlight = notification.entity.title;
   var rank = notification.rank;
   var rankSuffix = (0, _formatNotificationMetadata.getRankSuffix)(rank);
@@ -218,11 +206,11 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }), /*#__PURE__*/_react["default"].createElement(BodyText, {
     text: " is ".concat(rank).concat(rankSuffix, " on Trending Right Now! \uD83C\uDF7E")
   }));
-}), _defineProperty(_notificationMap, NotificationType.UserSubscription, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.UserSubscription, function (notification) {
   var _notification$users = _slicedToArray(notification.users, 1),
       user = _notification$users[0];
 
-  if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+  if (notification.entity.type === _constants.notificationTypes.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
     return /*#__PURE__*/_react["default"].createElement("span", {
       className: 'notificationText'
     }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
@@ -239,7 +227,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }), /*#__PURE__*/_react["default"].createElement(BodyText, {
     text: " released a new ".concat(notification.entity.type, " ").concat(notification.entity.name)
   }));
-}), _defineProperty(_notificationMap, NotificationType.RemixCreate, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.RemixCreate, function (notification) {
   var remixUser = notification.remixUser,
       remixTrack = notification.remixTrack,
       parentTrackUser = notification.parentTrackUser,
@@ -253,7 +241,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
     text: remixUser.name
   }));
-}), _defineProperty(_notificationMap, NotificationType.RemixCosign, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.RemixCosign, function (notification) {
   var parentTrackUser = notification.parentTrackUser,
       parentTracks = notification.parentTracks;
   var parentTrack = parentTracks.find(function (t) {
@@ -268,7 +256,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
     text: parentTrack.title
   }));
-}), _defineProperty(_notificationMap, NotificationType.ChallengeReward, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.ChallengeReward, function (notification) {
   var rewardAmount = notification.rewardAmount;
   var _challengeRewardsConf = challengeRewardsConfig[notification.challengeId],
       title = _challengeRewardsConf.title,
@@ -294,7 +282,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   })))), /*#__PURE__*/_react["default"].createElement(BodyText, {
     text: bodyText
   }));
-}), _defineProperty(_notificationMap, NotificationType.AddTrackToPlaylist, function (notification) {
+}), _defineProperty(_notificationMap, _constants.notificationTypes.AddTrackToPlaylist, function (notification) {
   return /*#__PURE__*/_react["default"].createElement("span", {
     className: 'notificationText'
   }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
@@ -308,6 +296,56 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
     text: notification.playlist.playlist_name
   }));
+}), _defineProperty(_notificationMap, _constants.notificationTypes.Reaction, function (notification) {
+  return /*#__PURE__*/_react["default"].createElement("span", {
+    className: 'notificationText'
+  }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: (0, _utils.capitalize)(notification.reactingUser.name)
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " reacted to your tip of "
+  }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: notification.amount
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " $AUDIO"
+  }));
+}), _defineProperty(_notificationMap, _constants.notificationTypes.SupporterRankUp, function (notification) {
+  return /*#__PURE__*/_react["default"].createElement("span", {
+    className: 'notificationText'
+  }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: (0, _utils.capitalize)(notification.sendingUser.name)
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " became your "
+  }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: "#".concat(notification.rank)
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " Top Supporter!"
+  }));
+}), _defineProperty(_notificationMap, _constants.notificationTypes.SupportingRankUp, function (notification) {
+  return /*#__PURE__*/_react["default"].createElement("span", {
+    className: 'notificationText'
+  }, /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: "You're now "
+  }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: (0, _utils.capitalize)(notification.receivingUser.name)
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: "'s "
+  }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: "#".concat(notification.rank)
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " Top Supporter!"
+  }));
+}), _defineProperty(_notificationMap, _constants.notificationTypes.TipReceive, function (notification) {
+  return /*#__PURE__*/_react["default"].createElement("span", {
+    className: 'notificationText'
+  }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: (0, _utils.capitalize)(notification.sendingUser.name)
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " sent you a tip of "
+  }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: notification.amount
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " $AUDIO"
+  }));
 }), _notificationMap);
 
 var getMessage = function getMessage(notification) {
@@ -318,7 +356,7 @@ var getMessage = function getMessage(notification) {
 
 var getTitle = function getTitle(notification) {
   switch (notification.type) {
-    case NotificationType.RemixCreate:
+    case _constants.notificationTypes.RemixCreate:
       {
         var parentTrack = notification.parentTrack;
         return /*#__PURE__*/_react["default"].createElement("span", {
@@ -337,7 +375,7 @@ var getTitle = function getTitle(notification) {
 
 var getTrackMessage = function getTrackMessage(notification) {
   switch (notification.type) {
-    case NotificationType.RemixCosign:
+    case _constants.notificationTypes.RemixCosign:
       {
         var remixTrack = notification.remixTrack;
         return /*#__PURE__*/_react["default"].createElement("span", {
@@ -360,7 +398,7 @@ exports.getTrackLink = getTrackLink;
 
 var getTwitter = function getTwitter(notification) {
   switch (notification.type) {
-    case NotificationType.RemixCreate:
+    case _constants.notificationTypes.RemixCreate:
       {
         var parentTrack = notification.parentTrack,
             parentTrackUser = notification.parentTrackUser,
@@ -375,7 +413,7 @@ var getTwitter = function getTwitter(notification) {
         };
       }
 
-    case NotificationType.RemixCosign:
+    case _constants.notificationTypes.RemixCosign:
       {
         var parentTracks = notification.parentTracks,
             _parentTrackUser = notification.parentTrackUser,
@@ -397,7 +435,7 @@ var getTwitter = function getTwitter(notification) {
         };
       }
 
-    case NotificationType.TrendingTrack:
+    case _constants.notificationTypes.TrendingTrack:
       {
         var rank = notification.rank,
             entity = notification.entity;
@@ -414,7 +452,7 @@ var getTwitter = function getTwitter(notification) {
         };
       }
 
-    case NotificationType.ChallengeReward:
+    case _constants.notificationTypes.ChallengeReward:
       {
         var _text3 = "I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards";
         return {
