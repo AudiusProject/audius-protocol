@@ -3,7 +3,7 @@ const sinon = require('sinon')
 const {
   AttestationPhases,
   SubmitAndEvaluateError
-} = require('../src/api/rewards')
+} = require('../src/api/Rewards')
 const {
   RewardsAttester,
   AttestationDelayCalculator
