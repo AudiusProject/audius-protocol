@@ -41,6 +41,9 @@ const secondaryUserSyncDailyFailureCountThreshold = config.get(
 const maxSyncMonitoringDurationInMs = config.get(
   'maxSyncMonitoringDurationInMs'
 )
+const maxManualSyncMonitoringDurationInMs = config.get(
+  'maxManualSyncMonitoringDurationInMs'
+)
 const mergePrimaryAndSecondaryEnabled = config.get(
   'mergePrimaryAndSecondaryEnabled'
 )
@@ -317,7 +320,11 @@ const _additionalSyncIsRequired = async (
   const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
   const startTimeMs = Date.now()
-  const maxMonitoringTimeMs = startTimeMs + maxSyncMonitoringDurationInMs
+  const maxMonitoringTimeMs =
+    startTimeMs +
+    (syncType === SyncType.MANUAL
+      ? maxManualSyncMonitoringDurationInMs
+      : maxSyncMonitoringDurationInMs)
 
   /**
    * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
