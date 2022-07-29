@@ -135,14 +135,15 @@ export default [
   {
     input: 'src/index.js',
     output: [
-      { file: pkg.main, format: 'cjs', exports: 'auto', sourcemap: true }
+      { file: pkg.main, format: 'cjs', sourcemap: true },
+      { file: pkg.module, format: 'es', sourcemap: true }
     ],
     ...commonConfig
   },
 
   {
-    input: './src/types.ts',
-    output: [{ file: pkg.types, format: 'cjs' }],
+    input: 'src/types.ts',
+    output: [{ file: pkg.types, format: 'es' }],
     ...commonTypeConfig
   },
 
@@ -153,7 +154,8 @@ export default [
   {
     input: 'src/sdk/index.ts',
     output: [
-      { file: pkg.browser, format: 'cjs', exports: 'auto', sourcemap: true }
+      { file: 'dist/index.browser.cjs.js', format: 'es', sourcemap: true },
+      { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
     ],
     ...browserConfig
   },
@@ -166,7 +168,7 @@ export default [
     input: 'src/sdk/sdkBrowserDist.ts',
     output: [
       {
-        file: pkg.sdkBrowserDistFile,
+        file: 'dist/sdk.js',
         globals: {
           web3: 'window.Web3'
         },
@@ -185,15 +187,13 @@ export default [
    */
   {
     input: 'src/index.js',
-    output: [
-      { file: pkg.legacy, format: 'cjs', exports: 'auto', sourcemap: true }
-    ],
+    output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
     ...browserLegacyConfig
   },
 
   {
     input: './src/types.ts',
-    output: [{ file: pkg.legacyTypes, format: 'cjs' }],
+    output: [{ file: 'dist/legacy.d.ts', format: 'es' }],
     ...commonTypeConfig
   },
 
@@ -203,13 +203,14 @@ export default [
   {
     input: 'src/core.ts',
     output: [
-      { file: pkg.core, format: 'cjs', exports: 'auto', sourcemap: true }
+      { file: 'dist/core.cjs.js', format: 'cjs', sourcemap: true },
+      { file: 'dist/core.esm.js', format: 'es', sourcemap: true }
     ],
     ...commonConfig
   },
   {
     input: './src/core.ts',
-    output: [{ file: pkg.coreTypes, format: 'cjs' }],
+    output: [{ file: pkg.coreTypes, format: 'es' }],
     ...commonTypeConfig
   }
 ]
