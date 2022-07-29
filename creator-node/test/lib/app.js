@@ -8,7 +8,12 @@ const TrustedNotifierManager = require('../../src/services/TrustedNotifierManage
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
 const BlacklistManager = require('../../src/blacklistManager')
 
-async function getApp (libsClient, blacklistManager = new BlacklistManager(), setMockFn = null, spId = null) {
+async function getApp(
+  libsClient,
+  blacklistManager = BlacklistManager,
+  setMockFn = null,
+  spId = null
+) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
   // as all files that consume it
@@ -20,16 +25,18 @@ async function getApp (libsClient, blacklistManager = new BlacklistManager(), se
 
   if (spId) nodeConfig.set('spID', spId)
 
+  const prometheusRegistry = new PrometheusRegistry()
+  const apq = new AsyncProcessingQueueMock(libsClient, prometheusRegistry)
   const mockServiceRegistry = {
     libs: libsClient,
-    blacklistManager: blacklistManager,
+    blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
-    asyncProcessingQueue: new AsyncProcessingQueueMock(),
+    asyncProcessingQueue: apq,
     nodeConfig,
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
-    prometheusRegistry: new PrometheusRegistry()
+    prometheusRegistry
   }
 
   // Update the import to be the mocked ServiceRegistry instance
@@ -45,7 +52,7 @@ async function getApp (libsClient, blacklistManager = new BlacklistManager(), se
   return appInfo
 }
 
-function getServiceRegistryMock (libsClient, blacklistManager) {
+function getServiceRegistryMock(libsClient, blacklistManager) {
   return {
     libs: libsClient,
     blacklistManager: blacklistManager,
@@ -53,16 +60,20 @@ function getServiceRegistryMock (libsClient, blacklistManager) {
     monitoringQueue: new MonitoringQueueMock(),
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     nodeConfig,
-    initLibs: async function () {}
+    initLibs: async function () {},
+    prometheusRegistry: new PrometheusRegistry()
   }
 }
 
-function clearRequireCache () {
+function clearRequireCache() {
   console.log('DELETING CACHE')
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool
     // every time and we hit a db error if we clear the cache and keep creating new pg pools
-    if (key.includes('creator-node/src/') && !key.includes('creator-node/src/models/index.js')) {
+    if (
+      key.includes('creator-node/src/') &&
+      !key.includes('creator-node/src/models/index.js')
+    ) {
       delete require.cache[key]
     }
   })

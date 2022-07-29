@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const axios = require('axios')
 
 const { logger } = require('../../logging')
@@ -8,27 +9,14 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
 
-/**
- * This function is only run on secondaries, to export and sync data from a user's primary.
- *
- * @notice - By design, will reject any syncs with non-contiguous clock values. For now,
- *    any data corruption from primary needs to be handled separately and should not be replicated.
- *
- * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
- *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
- *    with progressively increasing clock values until secondaries have completely synced up.
- *    Secondaries have no knowledge of the current data state on primary, they simply replicate
- *    what they receive in each export.
- */
-module.exports = async function (
+const handleSyncFromPrimary = async (
   serviceRegistry,
   walletPublicKeys,
   creatorNodeEndpoint,
   blockNumber = null,
   forceResync = false
-) {
-  const { nodeConfig, redis } = serviceRegistry
-
+) => {
+  const { nodeConfig, redis, libs } = serviceRegistry
   const FileSaveMaxConcurrency = nodeConfig.get(
     'nodeSyncFileSaveMaxConcurrency'
   )
@@ -39,9 +27,6 @@ module.exports = async function (
   const start = Date.now()
 
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
-
-  // object to track if the function errored, returned at the end of the function
-  let errorObj = null
 
   /**
    * Ensure access to each wallet, then acquire redis lock for duration of sync
@@ -56,10 +41,12 @@ module.exports = async function (
         redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
       )
     } catch (e) {
-      errorObj = new Error(
-        `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
-      )
-      return errorObj
+      return {
+        error: new Error(
+          `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
+        ),
+        result: 'failure_sync_in_progress'
+      }
     }
   }
 
@@ -115,19 +102,30 @@ module.exports = async function (
         `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`,
         walletPublicKeys
       )
-      throw new Error(resp.data.error)
+      return {
+        error: new Error(resp.data.error),
+        result: 'failure_export_wallet'
+      }
     }
 
     // TODO - explain patch
     if (!resp.data) {
       if (resp.request && resp.request.responseText) {
         resp.data = JSON.parse(resp.request.responseText)
-      } else throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
+      } else {
+        return {
+          error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
+          result: 'failure_malformed_export'
+        }
+      }
     }
 
     const { data: body } = resp
     if (!body.data.hasOwnProperty('cnodeUsers')) {
-      throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
+      return {
+        error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
+        result: 'failure_malformed_export'
+      }
     }
 
     logger.info(
@@ -145,9 +143,12 @@ module.exports = async function (
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
-        throw new Error(
-          `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
-        )
+        return {
+          error: new Error(
+            `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
+          ),
+          result: 'failure_malformed_export'
+        }
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
 
@@ -160,7 +161,7 @@ module.exports = async function (
       try {
         const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
         userReplicaSet = await getCreatorNodeEndpoints({
-          serviceRegistry,
+          libs,
           logger: logger,
           wallet: fetchedWalletPublicKey,
           blockNumber,
@@ -181,9 +182,12 @@ module.exports = async function (
       }
 
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
-        throw new Error(
-          `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
-        )
+        return {
+          error: new Error(
+            `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
+          ),
+          result: 'failure_malformed_export'
+        }
       }
 
       /**
@@ -197,11 +201,18 @@ module.exports = async function (
         clockRecords: fetchedClockRecords
       } = fetchedCNodeUser
 
+      const maxClockRecordId = Math.max(
+        ...fetchedCNodeUser.clockRecords.map((record) => record.clock)
+      )
+
       // Error if returned data is not within requested range
       if (fetchedLatestClockVal < localMaxClockVal) {
-        throw new Error(
-          `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
-        )
+        return {
+          error: new Error(
+            `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
+          ),
+          result: 'failure_inconsistent_clock'
+        }
       } else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
         logger.info(
@@ -214,9 +225,22 @@ module.exports = async function (
         fetchedClockRecords[0] &&
         fetchedClockRecords[0].clock !== localMaxClockVal + 1
       ) {
-        throw new Error(
-          `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
-        )
+        return {
+          error: new Error(
+            `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
+          ),
+          result: 'failure_import_not_contiguous'
+        }
+      } else if (
+        !_.isEmpty(fetchedCNodeUser.clockRecords) &&
+        maxClockRecordId !== fetchedLatestClockVal
+      ) {
+        return {
+          error: new Error(
+            `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
+          ),
+          result: 'failure_import_not_consistent'
+        }
       }
 
       // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
@@ -274,9 +298,12 @@ module.exports = async function (
 
           // Error if update failed
           if (numRowsUpdated !== 1 || respObj.length !== 1) {
-            throw new Error(
-              `Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`
-            )
+            return {
+              error: new Error(
+                `Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`
+              ),
+              result: 'failure_db_transaction'
+            }
           }
           cnodeUser = respObj[0]
         } else {
@@ -345,7 +372,7 @@ module.exports = async function (
           await Promise.all(
             trackFilesSlice.map(async (trackFile) => {
               const success = await saveFileForMultihashToFS(
-                serviceRegistry,
+                libs,
                 logger,
                 trackFile.multihash,
                 trackFile.storagePath,
@@ -391,7 +418,7 @@ module.exports = async function (
                   nonTrackFile.fileName !== null
                 ) {
                   success = await saveFileForMultihashToFS(
-                    serviceRegistry,
+                    libs,
                     logger,
                     multihash,
                     nonTrackFile.storagePath,
@@ -400,7 +427,7 @@ module.exports = async function (
                   )
                 } else {
                   success = await saveFileForMultihashToFS(
-                    serviceRegistry,
+                    libs,
                     logger,
                     multihash,
                     nonTrackFile.storagePath,
@@ -433,7 +460,10 @@ module.exports = async function (
           if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
             const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
             logger.error(logPrefix, errorMsg)
-            throw new Error(errorMsg)
+            return {
+              error: new Error(errorMsg),
+              result: 'failure_skip_threshold_not_reached'
+            }
 
             // If max failure threshold reached, continue with sync and reset failure count
           } else {
@@ -530,14 +560,28 @@ module.exports = async function (
 
         await transaction.rollback()
 
-        throw new Error(e)
+        return {
+          error: new Error(e),
+          result: 'failure_db_transaction'
+        }
       }
     }
   } catch (e) {
-    errorObj = e
-
     for (const wallet of walletPublicKeys) {
       await SyncHistoryAggregator.recordSyncFail(wallet)
+    }
+    logger.error(
+      logPrefix,
+      `Sync complete for wallets: ${walletPublicKeys.join(
+        ','
+      )}. Status: Error, message: ${e.message}. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}.`
+    )
+
+    return {
+      error: new Error(e),
+      result: 'failure_sync_secondary_from_primary'
     }
   } finally {
     // Release all redis locks
@@ -551,27 +595,58 @@ module.exports = async function (
         )
       }
     }
-
-    if (errorObj) {
-      logger.error(
-        logPrefix,
-        `Sync complete for wallets: ${walletPublicKeys.join(
-          ','
-        )}. Status: Error, message: ${errorObj.message}. Duration sync: ${
-          Date.now() - start
-        }. From endpoint ${creatorNodeEndpoint}.`
-      )
-    } else {
-      logger.info(
-        logPrefix,
-        `Sync complete for wallets: ${walletPublicKeys.join(
-          ','
-        )}. Status: Success. Duration sync: ${
-          Date.now() - start
-        }. From endpoint ${creatorNodeEndpoint}.`
-      )
-    }
   }
 
-  return errorObj
+  logger.info(
+    logPrefix,
+    `Sync complete for wallets: ${walletPublicKeys.join(
+      ','
+    )}. Status: Success. Duration sync: ${
+      Date.now() - start
+    }. From endpoint ${creatorNodeEndpoint}.`
+  )
+
+  return { result: 'success' }
+}
+
+/**
+ * This function is only run on secondaries, to export and sync data from a user's primary.
+ *
+ * @notice - By design, will reject any syncs with non-contiguous clock values. For now,
+ *    any data corruption from primary needs to be handled separately and should not be replicated.
+ *
+ * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
+ *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
+ *    with progressively increasing clock values until secondaries have completely synced up.
+ *    Secondaries have no knowledge of the current data state on primary, they simply replicate
+ *    what they receive in each export.
+ */
+module.exports = async function (
+  serviceRegistry,
+  walletPublicKeys,
+  creatorNodeEndpoint,
+  blockNumber = null,
+  forceResync = false
+) {
+  const { prometheusRegistry } = serviceRegistry
+  const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames
+      .SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM
+  )
+  const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
+
+  const { error, ...labels } = await handleSyncFromPrimary(
+    serviceRegistry,
+    walletPublicKeys,
+    creatorNodeEndpoint,
+    blockNumber,
+    forceResync
+  )
+  metricEndTimerFn(labels)
+
+  if (error) {
+    throw new Error(error)
+  }
+
+  return labels
 }

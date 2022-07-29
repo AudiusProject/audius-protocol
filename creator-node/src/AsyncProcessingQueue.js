@@ -27,6 +27,8 @@ const PROCESS_STATES = Object.freeze({
   FAILED: 'FAILED'
 })
 
+const ASYNC_PROCESSING_QUEUE_HISTORY = 500
+
 /**
  * This queue accepts jobs (any function) that needs to be processed asynchonously.
  * Once the job is complete, the response is added to redis. The response can be
@@ -35,17 +37,19 @@ const PROCESS_STATES = Object.freeze({
  */
 
 class AsyncProcessingQueue {
-  constructor(libs) {
+  constructor(libs, prometheusRegistry) {
     this.queue = new Bull('asyncProcessing', {
       redis: {
         host: config.get('redisHost'),
         port: config.get('redisPort')
       },
       defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: true
+        removeOnComplete: ASYNC_PROCESSING_QUEUE_HISTORY,
+        removeOnFail: ASYNC_PROCESSING_QUEUE_HISTORY
       }
     })
+
+    prometheusRegistry.startQueueMetrics(this.queue)
 
     this.libs = libs
 
@@ -152,8 +156,8 @@ class AsyncProcessingQueue {
       `Adding ${task} task! uuid=${logContext.requestID}}`,
       logContext
     )
-
-    const job = await this.queue.add(params)
+    const jobName = task || '__default__'
+    const job = await this.queue.add(jobName, params)
 
     return job
   }

@@ -3,6 +3,8 @@ const Bull = require('bull')
 const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
+const SYNC_QUEUE_HISTORY = 500
+
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
  * sync job = this node (secondary) will sync data for a user from their primary
@@ -24,8 +26,8 @@ class SyncQueue {
         port: this.nodeConfig.get('redisPort')
       },
       defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: true
+        removeOnComplete: SYNC_QUEUE_HISTORY,
+        removeOnFail: SYNC_QUEUE_HISTORY
       }
     })
 

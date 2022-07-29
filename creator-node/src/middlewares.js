@@ -420,11 +420,11 @@ async function issueAndWaitForSecondarySyncRequests(
       const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
         Date.now() - replicationStart
       }ms`
-      req.logger.error(errorMsg)
+      req.logger.error(`${errorMsg}: ${e.message}`)
 
       // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
       if (enforceWriteQuorum) {
-        throw new Error(errorMsg)
+        throw new Error(`${errorMsg}: ${e.message}`)
       }
       // else do nothing
     }
@@ -443,7 +443,7 @@ async function issueAndWaitForSecondarySyncRequests(
     )
     if (enforceWriteQuorum) {
       throw new Error(
-        `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}`
+        `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
       )
     }
   }
@@ -526,15 +526,13 @@ async function getOwnEndpoint({ libs }) {
  * @returns {Array} - array of strings of replica set
  */
 async function getCreatorNodeEndpoints({
-  serviceRegistry,
+  libs,
   logger,
   wallet,
   blockNumber,
   ensurePrimary,
   myCnodeEndpoint
 }) {
-  const { libs } = serviceRegistry
-
   logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
   const start = Date.now()
 

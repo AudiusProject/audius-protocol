@@ -9,8 +9,7 @@ const { getLibsMock } = require('./lib/libsMock')
 
 const config = require('../src/config')
 const {
-  QUEUE_NAMES,
-  JOB_NAMES
+  QUEUE_NAMES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 
 chai.use(require('sinon-chai'))
@@ -99,7 +98,7 @@ describe('test findReplicaSetUpdates job processor', function () {
     getCNodeEndpointToSpIdMapStub
   ) {
     return proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.js',
+      '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.ts',
       {
         '../../../config': config,
         '../CNodeHealthManager': {
@@ -152,23 +151,20 @@ describe('test findReplicaSetUpdates job processor', function () {
         DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
       jobsToEnqueue: expectedUnhealthyReplicas?.length
         ? {
-            [QUEUE_NAMES.STATE_RECONCILIATION]: [
+            [QUEUE_NAMES.UPDATE_REPLICA_SET]: [
               {
-                jobName: JOB_NAMES.UPDATE_REPLICA_SET,
-                jobData: {
-                  wallet,
-                  userId: user_id,
-                  primary,
-                  secondary1,
-                  secondary2,
-                  unhealthyReplicas: expectedUnhealthyReplicas,
-                  replicaToUserInfoMap:
+                wallet,
+                userId: user_id,
+                primary,
+                secondary1,
+                secondary2,
+                unhealthyReplicas: expectedUnhealthyReplicas,
+                replicaToUserInfoMap:
                   REPLICA_TO_USER_INFO_MAP_FILTERED_TO_WALLET
-                }
               }
             ]
           }
-        : {}
+        : undefined
     })
   }
 

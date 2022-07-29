@@ -50,6 +50,9 @@ DEREGISTERED_CONTENT_NODES=""
 # Whether to see Sequelize logs
 SQL_LOGGING=false
 
+# The SPIDs for the Audius Foundation Nodes
+FOUNDATION_NODES_SPIDS=1,2,3,4
+
 # URL for the prometheus push-gateway 
 # Unless using a custom gateway, don't change this
 PUSH_GATEWAY_URL="http://network-monitoring-push-gateway:9091"

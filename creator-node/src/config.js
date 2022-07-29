@@ -494,7 +494,7 @@ const config = convict({
     doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
     format: 'nat',
     env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
-    default: 5000 // 5000ms = 5s (prod default)
+    default: 60000 // 60000ms = 1m (prod default)
   },
   enforceWriteQuorum: {
     doc: 'Boolean flag indicating whether or not primary should reject write until 2/3 replication across replica set',
@@ -531,6 +531,12 @@ const config = convict({
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
     default: 5
+  },
+  maxUpdateReplicaSetJobConcurrency: {
+    doc: 'Max bull queue concurrency for update replica set jobs',
+    format: 'nat',
+    env: 'maxUpdateReplicaSetJobConcurrency',
+    default: 15
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
@@ -625,7 +631,7 @@ const config = convict({
     default: 8760 // 1 year in hrs
   },
   contentCacheLayerEnabled: {
-    doc: 'Flag to enable or disable the nginx cache layer that caches content',
+    doc: 'Flag to enable or disable the nginx cache layer that caches content. DO NOT SET THIS HERE, set in the Dockerfile because it needs to be set above the application layer',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
     default: false

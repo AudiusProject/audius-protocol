@@ -71,7 +71,7 @@ describe('test findSyncRequests job processor', function () {
     computeSyncModeForUserAndReplicaStub
   ) {
     return proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/findSyncRequests.jobProcessor.js',
+      '../src/services/stateMachineManager/stateMonitoring/findSyncRequests.jobProcessor.ts',
       {
         '../../../config': config,
         '../stateReconciliation/stateReconciliationUtils': {
@@ -223,7 +223,7 @@ describe('test findSyncRequests job processor', function () {
       duplicateSyncReqs: [],
       errors: [],
       jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
+        [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
       },
       metricsToRecord: [
         {
@@ -363,7 +363,7 @@ describe('test findSyncRequests job processor', function () {
     const expectedOutput = {
       duplicateSyncReqs: [expectedDuplicateSyncReq],
       errors: [],
-      jobsToEnqueue: {},
+      jobsToEnqueue: undefined,
       metricsToRecord: [
         {
           metricLabels: {
@@ -483,7 +483,7 @@ describe('test findSyncRequests job processor', function () {
     const expectedOutput = {
       duplicateSyncReqs: [],
       errors: [],
-      jobsToEnqueue: {},
+      jobsToEnqueue: undefined,
       metricsToRecord: [
         {
           metricLabels: {
@@ -599,7 +599,7 @@ describe('test findSyncRequests job processor', function () {
     const expectedOutput = {
       duplicateSyncReqs: [],
       errors: [],
-      jobsToEnqueue: {},
+      jobsToEnqueue: undefined,
       metricsToRecord: [
         {
           metricLabels: {
@@ -720,7 +720,7 @@ describe('test findSyncRequests job processor', function () {
     const expectedOutput = {
       duplicateSyncReqs: [],
       errors: [],
-      jobsToEnqueue: {},
+      jobsToEnqueue: undefined,
       metricsToRecord: [
         {
           metricLabels: {
@@ -853,7 +853,7 @@ describe('test findSyncRequests job processor', function () {
       errors: [
         `Error getting new or existing sync request for syncMode ${SYNC_MODES.SyncSecondaryFromPrimary}, user ${wallet} and secondary ${secondary1} - ${expectedErrorMsg}`
       ],
-      jobsToEnqueue: {},
+      jobsToEnqueue: undefined,
       metricsToRecord: [
         {
           metricLabels: {
@@ -1003,7 +1003,7 @@ describe('test findSyncRequests job processor', function () {
       duplicateSyncReqs: [expectedDuplicateSyncReq],
       errors: [],
       jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
+        [QUEUE_NAMES.RECURRING_SYNC]: [expectedSyncReqToEnqueue]
       },
       metricsToRecord: [
         {
@@ -1221,7 +1221,7 @@ describe('test findSyncRequests job processor', function () {
       duplicateSyncReqs: [],
       errors: [],
       jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [
+        [QUEUE_NAMES.RECURRING_SYNC]: [
           expectedSyncReqToEnqueueWallet1, expectedSyncReqToEnqueueWallet2
         ]
       },

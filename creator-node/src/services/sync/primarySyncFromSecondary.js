@@ -10,7 +10,7 @@ const DBManager = require('../../dbManager')
 const { getCreatorNodeEndpoints } = require('../../middlewares')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
-const { serviceRegistry } = require('../../serviceRegistry')
+const initAudiusLibs = require('../initAudiusLibs')
 const asyncRetry = require('../../utils/asyncRetry')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
@@ -28,20 +28,25 @@ module.exports = async function primarySyncFromSecondary({
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
-  await serviceRegistry.initLibs()
-
-  // This is used only for logging record endpoint of requesting node
-  const selfEndpoint = config.get('creatorNodeEndpoint') || null
-
   const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
   const logger = genericLogger.child(logContext)
   logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
   const start = Date.now()
 
+  // This is used only for logging record endpoint of requesting node
+  const selfEndpoint = config.get('creatorNodeEndpoint') || null
+
   // object to track if the function errored, returned at the end of the function
   let error = null
 
   try {
+    let libs
+    try {
+      libs = await initAudiusLibs()
+    } catch (e) {
+      throw new Error(`InitAudiusLibs Error - ${e.message}`)
+    }
+
     await WalletWriteLock.acquire(
       wallet,
       WalletWriteLock.VALID_ACQUIRERS.PrimarySyncFromSecondary
@@ -52,7 +57,7 @@ module.exports = async function primarySyncFromSecondary({
       wallet,
       selfEndpoint,
       logger,
-      logPrefix
+      libs
     })
 
     // Keep importing data from secondary until full clock range has been retrieved
@@ -70,6 +75,7 @@ module.exports = async function primarySyncFromSecondary({
       await saveFilesToDisk({
         files: fetchedCNodeUser.files,
         userReplicaSet,
+        libs,
         logger
       })
 
@@ -122,7 +128,8 @@ async function fetchExportFromSecondary({
   const exportQueryParams = {
     wallet_public_key: [wallet], // export requires a wallet array
     clock_range_min: clockRangeMin,
-    source_endpoint: selfEndpoint
+    source_endpoint: selfEndpoint,
+    force_export: true
   }
 
   try {
@@ -170,7 +177,7 @@ async function fetchExportFromSecondary({
  * - `saveFileForMultihashToFS` will exit early if files already exist on disk
  * - Performed in batches to limit concurrent load
  */
-async function saveFilesToDisk({ files, userReplicaSet, logger }) {
+async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
   try {
@@ -196,7 +203,7 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
       await Promise.all(
         trackFilesSlice.map(async (trackFile) => {
           const succeeded = await saveFileForMultihashToFS(
-            serviceRegistry,
+            libs,
             logger,
             trackFile.multihash,
             trackFile.storagePath,
@@ -237,7 +244,7 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
           let succeeded
           if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
             succeeded = await saveFileForMultihashToFS(
-              serviceRegistry,
+              libs,
               logger,
               multihash,
               nonTrackFile.storagePath,
@@ -246,7 +253,7 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
             )
           } else {
             succeeded = await saveFileForMultihashToFS(
-              serviceRegistry,
+              libs,
               logger,
               multihash,
               nonTrackFile.storagePath,
@@ -443,10 +450,10 @@ async function filterOutAlreadyPresentDBEntries({
   return filteredEntries
 }
 
-async function getUserReplicaSet({ wallet, selfEndpoint, logger }) {
+async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
   try {
     let userReplicaSet = await getCreatorNodeEndpoints({
-      serviceRegistry,
+      libs,
       logger,
       wallet,
       blockNumber: null,

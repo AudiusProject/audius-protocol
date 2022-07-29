@@ -2,7 +2,7 @@ const _ = require('lodash')
 const axios = require('axios')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
-const { SyncType, JOB_NAMES } = require('../stateMachineConstants')
+const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
 /**
@@ -21,6 +21,17 @@ const getNewOrExistingSyncReq = ({
   syncMode,
   immediate = false
 }) => {
+  if (
+    !userWallet ||
+    !primaryEndpoint ||
+    !secondaryEndpoint ||
+    !syncType ||
+    !syncMode
+  ) {
+    throw new Error(
+      `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
+    )
+  }
   /**
    * If duplicate sync already exists, do not add and instead return existing sync job info
    * Ignore syncMode when checking for duplicates, since it doesn't matter
@@ -30,7 +41,7 @@ const getNewOrExistingSyncReq = ({
     userWallet,
     secondaryEndpoint
   )
-  if (duplicateSyncJobInfo) {
+  if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
@@ -56,27 +67,21 @@ const getNewOrExistingSyncReq = ({
   }
 
   // Add job to issue manual or recurring sync request based on `syncType` param
-  const jobName =
-    syncType === SyncType.Manual
-      ? JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST
-      : JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST
-  const jobData = {
+  const syncReqToEnqueue = {
     syncType,
     syncMode,
     syncRequestParameters
   }
-  const syncReqToEnqueue = {
-    jobName,
-    jobData
-  }
 
-  // Record sync in syncDeDuplicator
-  SyncRequestDeDuplicator.recordSync(
-    syncType,
-    userWallet,
-    secondaryEndpoint,
-    jobData
-  )
+  // Record sync in syncDeDuplicator for recurring syncs only
+  if (syncType === SyncType.Recurring) {
+    SyncRequestDeDuplicator.recordSync(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      syncReqToEnqueue
+    )
+  }
 
   return { syncReqToEnqueue }
 }
@@ -99,6 +104,7 @@ const issueSyncRequestsUntilSynced = async (
     secondaryEndpoint: secondaryUrl,
     primaryEndpoint: primaryUrl,
     syncType: SyncType.Manual,
+    syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
     immediate: true
   })
   if (!_.isEmpty(duplicateSyncReq)) {
@@ -106,8 +112,10 @@ const issueSyncRequestsUntilSynced = async (
     logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
-    const { jobName, jobData } = syncReqToEnqueue
-    await queue.add(jobName, jobData)
+    await queue.add({
+      enqueuedBy: 'issueSyncRequestsUntilSynced',
+      ...syncReqToEnqueue
+    })
   } else {
     // Log error that the sync request couldn't be created and return
     logger.error(`Failed to create manual sync request`)
@@ -139,15 +147,18 @@ const issueSyncRequestsUntilSynced = async (
           userWallet: wallet,
           secondaryEndpoint: secondaryUrl,
           primaryEndpoint: primaryUrl,
-          syncType: SyncType.Manual
+          syncType: SyncType.Manual,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
         })
         if (!_.isEmpty(duplicateSyncReq)) {
           // Log duplicate and return
           logger.warn(`Duplicate sync request: ${duplicateSyncReq}`)
           return
         } else if (!_.isEmpty(syncReqToEnqueue)) {
-          const { jobName, jobData } = syncReqToEnqueue
-          await queue.add(jobName, jobData)
+          await queue.add({
+            enqueuedBy: 'issueSyncRequestsUntilSynced retry',
+            ...syncReqToEnqueue
+          })
         } else {
           // Log error that the sync request couldn't be created and return
           logger.error(

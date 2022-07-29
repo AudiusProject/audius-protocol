@@ -266,3 +266,14 @@ UPDATE network_monitoring_users
 SET primary_clock_value = :clock
 WHERE wallet = :walletPublicKey
 AND run_id = :run_id;
+
+   SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = 103
+    AND 
+        primaryspid = ANY ( '{1,2,3,4}'::int[] )
+    AND
+        secondary1spid = ANY ( '{1,2,3,4}'::int[] )
+    AND 
+        secondary2spid = ANY ( '{1,2,3,4}'::int[] );

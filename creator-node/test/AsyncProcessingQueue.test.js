@@ -3,14 +3,19 @@ const sinon = require('sinon')
 
 const uuid = require('uuid')
 
+const { getServiceRegistryMock } = require('./lib/app')
 const AsyncProcessingQueue = require('../src/AsyncProcessingQueue')
 
 describe('test AsyncProcessingQueue', function () {
   let apq, libsMock, doneMock
+  const serviceRegistryMock = getServiceRegistryMock()
   before(function () {
     libsMock = {}
     doneMock = () => {}
-    apq = new AsyncProcessingQueue(libsMock)
+    apq = new AsyncProcessingQueue(
+      libsMock,
+      serviceRegistryMock.prometheusRegistry
+    )
   })
 
   afterEach(function () {
