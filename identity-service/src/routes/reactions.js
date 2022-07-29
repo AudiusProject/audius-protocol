@@ -2,12 +2,36 @@ const { handleResponse, errorResponseBadRequest, errorResponseServerError, succe
 const authMiddleware = require('../authMiddleware')
 const models = require('../models')
 const { logger } = require('../logging')
+const { default: Axios } = require('axios')
 
 const MAX_REACTIONS_PER_FETCH = 100
 
 const handleReaction = async ({ senderWallet, reactionType, reactedTo, libs, reactionValue }) => {
   const { solanaWeb3Manager } = libs
   const currentSlot = await solanaWeb3Manager.getSlot()
+
+  // Get tips on DN to ensure reactions only to received tips
+  const { discoveryProviderEndpoint } = libs.discoveryProvider
+  const url = `${discoveryProviderEndpoint}/v1/full/tips`
+  const resp = await Axios({
+    method: 'get',
+    url,
+    params: {
+      tx_signatures: reactedTo
+    }
+  })
+
+  const tips = resp.data.data
+
+  if (tips.length !== 1) {
+    // Can't react to something that doesn't exist
+    throw new Error(`No tip for tx_id ${reactedTo}`)
+  }
+
+  const { erc_wallet: tipReceiverWallet } = tips[0].receiver
+  if (tipReceiverWallet.toLowerCase() !== senderWallet.toLowerCase()) {
+    throw new Error(`Can't react unless user was the tip recipient`)
+  }
 
   const now = Date.now()
   await models.Reactions.create({

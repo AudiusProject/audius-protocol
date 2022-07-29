@@ -1,7 +1,5 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11,13 +9,11 @@ var _react = _interopRequireDefault(require("react"));
 
 var _Footer = _interopRequireDefault(require("./Footer"));
 
-var _Notification = _interopRequireWildcard(require("./notifications/Notification"));
+var _Notification = _interopRequireDefault(require("./notifications/Notification"));
+
+var _constants = require("../constants");
 
 var _snippetMap;
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -79,68 +75,76 @@ var getNumberSuffix = function getNumberSuffix(num) {
   return 'th';
 };
 
-var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.NotificationType.Favorite, function (notification) {
+var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _constants.notificationTypes.Favorite.base, function (notification) {
   var _notification$users = _slicedToArray(notification.users, 1),
       user = _notification$users[0];
 
   return "".concat(user.name, " favorited your ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
-}), _defineProperty(_snippetMap, _Notification.NotificationType.Repost, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.Repost.base, function (notification) {
   var _notification$users2 = _slicedToArray(notification.users, 1),
       user = _notification$users2[0];
 
   return "".concat(user.name, " reposted your ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
-}), _defineProperty(_snippetMap, _Notification.NotificationType.Follow, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.Follow, function (notification) {
   var _notification$users3 = _slicedToArray(notification.users, 1),
       user = _notification$users3[0];
 
   return "".concat(user.name, " followed you");
-}), _defineProperty(_snippetMap, _Notification.NotificationType.Announcement, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.Announcement, function (notification) {
   return notification.text;
-}), _defineProperty(_snippetMap, _Notification.NotificationType.Milestone, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.Milestone, function (notification) {
   if (notification.entity) {
     var entity = notification.entity.type.toLowerCase();
     return "Your ".concat(entity, " ").concat(notification.entity.name, " has reached over ").concat(notification.value, " ").concat(notification.achievement, "s");
   } else {
     return "You have reached over ".concat(notification.value, " Followers");
   }
-}), _defineProperty(_snippetMap, _Notification.NotificationType.TrendingTrack, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.TrendingTrack, function (notification) {
   var rank = notification.rank;
   var suffix = getNumberSuffix(rank);
   return "Your Track ".concat(notification.entity.title, " is ").concat(notification.rank).concat(suffix, " on Trending Right Now!");
-}), _defineProperty(_snippetMap, _Notification.NotificationType.UserSubscription, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.UserSubscription, function (notification) {
   var _notification$users4 = _slicedToArray(notification.users, 1),
       user = _notification$users4[0];
 
-  if (notification.entity.type === _Notification.NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+  if (notification.entity.type === _constants.notificationTypes.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
     return "".concat(user.name, " released ").concat(notification.entity.count, " new ").concat(notification.entity.type);
   }
 
   return "".concat(user.name, " released a new ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
-}), _defineProperty(_snippetMap, _Notification.NotificationType.RemixCreate, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.RemixCreate, function (notification) {
   var parentTrack = notification.parentTrack;
   return "New remix of your track ".concat(parentTrack.title);
-}), _defineProperty(_snippetMap, _Notification.NotificationType.RemixCosign, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.RemixCosign, function (notification) {
   var parentTrackUser = notification.parentTrackUser,
       parentTracks = notification.parentTracks;
   var parentTrack = parentTracks.find(function (t) {
     return t.ownerId === parentTrackUser.userId;
   });
   return "".concat(parentTrackUser.name, " Co-signed your Remix of ").concat(parentTrack.title);
-}), _defineProperty(_snippetMap, _Notification.NotificationType.ChallengeReward, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.ChallengeReward, function (notification) {
   return "You've earned $AUDIO for completing challenges";
-}), _defineProperty(_snippetMap, _Notification.NotificationType.AddTrackToPlaylist, function (notification) {
+}), _defineProperty(_snippetMap, _constants.notificationTypes.AddTrackToPlaylist, function (notification) {
   return "".concat(notification.playlistOwner.name, " added ").concat(notification.track.title, " to ").concat(notification.playlist.playlist_name);
+}), _defineProperty(_snippetMap, _constants.notificationTypes.TipReceive, function (notification) {
+  return "".concat(notification.sendingUser.name, " sent you a tip of ").concat(notification.amount, " $AUDIO");
+}), _defineProperty(_snippetMap, _constants.notificationTypes.Reaction, function (notification) {
+  return "".concat(notification.reactingUser.name, " reacted to your tip of ").concat(notification.amount, " $AUDIO");
+}), _defineProperty(_snippetMap, _constants.notificationTypes.SupporterRankUp, function (notification) {
+  return "".concat(notification.sendingUser.name, " became your #").concat(notification.rank, " top supporter");
+}), _defineProperty(_snippetMap, _constants.notificationTypes.SupportingRankUp, function (notification) {
+  return "You're now ".concat(notification.receivingUser.name, "'s #").concat(notification.rank, " top supporter");
 }), _snippetMap);
 
 var mapNotification = function mapNotification(notification) {
   switch (notification.type) {
-    case _Notification.NotificationType.RemixCreate:
+    case _constants.notificationTypes.RemixCreate:
       {
         notification.users = [notification.remixUser];
         return notification;
       }
 
-    case _Notification.NotificationType.RemixCosign:
+    case _constants.notificationTypes.RemixCosign:
       {
         notification.track = notification.remixTrack;
         return notification;
