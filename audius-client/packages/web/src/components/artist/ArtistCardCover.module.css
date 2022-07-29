@@ -37,6 +37,12 @@
   width: 72px !important;
 }
 
+.profilePictureSkeleton {
+  height: 72px;
+  width: 72px;
+  border-radius: 50%;
+}
+
 .profilePicture {
   height: 72px;
   width: 72px;
