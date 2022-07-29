@@ -903,7 +903,9 @@ workflows:
     when: << pipeline.parameters.sdk_release_tag >>
     jobs:
       - publish-libs:
-          context: Audius Client
+          context:
+            - Audius Client
+            - slack-secrets
           name: publish-libs (<< pipeline.parameters.sdk_release_tag >>)
           sdk_release_tag: << pipeline.parameters.sdk_release_tag >>
           filters:

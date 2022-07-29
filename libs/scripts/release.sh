@@ -86,12 +86,16 @@ function bump-npm () {
 # Merge the created branch into master, then delete the branch
 function merge-bump () {
     git checkout master -f
+
+    # pull in any additional commits that may have trickled in
+    git pull
+
     git merge ${STUB}-${VERSION} -m "$(commit-message)"
 
-    git push -u origin master
-
-    # clean up release branches
-    git push origin :${STUB}-${VERSION}
+    # if pushing fails, ensure we cleanup()
+    git push -u origin master \
+    && git push origin :${STUB}-${VERSION} \
+    || $(exit 1)
 }
 
 # publish to npm
