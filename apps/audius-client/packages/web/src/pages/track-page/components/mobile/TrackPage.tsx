@@ -162,9 +162,8 @@ const TrackPage = ({
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
       <div
-        className={
-          styles.lineupHeader
-        }>{`${messages.moreBy} ${user?.name}`}</div>
+        className={styles.lineupHeader}
+      >{`${messages.moreBy} ${user?.name}`}</div>
     ) : null
 
   return (
@@ -172,7 +171,8 @@ const TrackPage = ({
       <MobilePageContainer
         title={title}
         description={description}
-        canonicalUrl={canonicalUrl}>
+        canonicalUrl={canonicalUrl}
+      >
         <div className={styles.trackContent}>
           <TrackPageHeader
             isLoading={loading}

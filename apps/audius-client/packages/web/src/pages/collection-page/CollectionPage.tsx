@@ -26,7 +26,8 @@ const CollectionPage = ({ type, smartCollection }: CollectionPageProps) => {
     <CollectionPageProvider
       isMobile={isMobileClient}
       smartCollection={smartCollection}
-      type={type}>
+      type={type}
+    >
       {content}
     </CollectionPageProvider>
   )

@@ -104,7 +104,8 @@ const UnloadDialog = (props) => {
       wrapperClassName={styles.modalWrapper}
       titleClassName={styles.modalTitle}
       headerContainerClassName={styles.modalHeader}
-      showDismissButton>
+      showDismissButton
+    >
       <ConfirmationBox
         text={MESSAGE_TEXT}
         rightText='GOT IT'

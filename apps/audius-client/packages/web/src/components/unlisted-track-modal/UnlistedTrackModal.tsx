@@ -57,7 +57,8 @@ const TrackMetadataSection = ({
 }: TrackMetadataSectionProps) => {
   return (
     <div
-      className={cn(styles.section, { [styles.disabledSection]: isDisabled })}>
+      className={cn(styles.section, { [styles.disabledSection]: isDisabled })}
+    >
       <span>{title}</span>
       <div className={styles.switchContainer}>
         <Switch
@@ -118,7 +119,8 @@ const UnlistedTrackModal = ({
       subtitle={messages.subtitle}
       contentHorizontalPadding={32}
       bodyClassName={styles.modalBodyStyle}
-      titleClassName={styles.modalTitleStyle}>
+      titleClassName={styles.modalTitleStyle}
+    >
       <div className={styles.container}>
         {showHideTrackSwitch && (
           <div className={styles.hideTracksSection}>

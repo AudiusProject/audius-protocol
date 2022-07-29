@@ -118,7 +118,8 @@ class RepeatButton extends Component {
           [styles.buttonFixedSize]: this.props.isMobile,
           [styles.repeat]: this.props.isMobile
         })}
-        onClick={this.nextState}>
+        onClick={this.nextState}
+      >
         <Lottie
           options={animationOptions}
           eventListeners={eventListeners}

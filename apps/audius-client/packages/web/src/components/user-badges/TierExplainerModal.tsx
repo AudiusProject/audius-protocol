@@ -43,7 +43,8 @@ const TierExplainerModal = () => {
       title={messages.title}
       showDismissButton
       dismissOnClickOutside
-      contentHorizontalPadding={48}>
+      contentHorizontalPadding={48}
+    >
       <div className={styles.container}>
         <div className={styles.left}>
           <div className={styles.textContainer}>

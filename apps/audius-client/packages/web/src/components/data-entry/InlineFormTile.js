@@ -80,7 +80,8 @@ class InlineFormTile extends Component {
           </div>
         </div>
         <div
-          className={cn(styles.advanced, { [styles.show]: advancedVisible })}>
+          className={cn(styles.advanced, { [styles.show]: advancedVisible })}
+        >
           <div className={styles.row}>
             <DropdownInput
               placeholder='What is the Genre?'

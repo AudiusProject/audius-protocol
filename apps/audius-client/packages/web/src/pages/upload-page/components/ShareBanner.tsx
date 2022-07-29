@@ -194,7 +194,8 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
       className={cn(styles.container, { [styles.fullHeight]: !isHidden })}
       style={{
         backgroundImage: `linear-gradient(315deg, rgba(91, 35, 225, 0.8) 0%, rgba(162, 47, 237, 0.8) 100%), url(${backgroundPlaceholder})`
-      }}>
+      }}
+    >
       <div className={styles.title}>{messages.title(type)}</div>
       <div className={styles.description}>{messages.description}</div>
       <div className={styles.buttonContainer}>
@@ -228,7 +229,8 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
           placement={ComponentPlacement.TOP}
           overlayClassName={styles.toast}
           delay={TOAST_DELAY}
-          text={messages.copiedToClipboard}>
+          text={messages.copiedToClipboard}
+        >
           <div className={styles.copyLinkContainer}>
             <IconShare className={styles.shareIcon} />
             <div className={styles.copyText}>{messages.copy(continuePage)}</div>

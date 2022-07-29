@@ -79,7 +79,8 @@ class GiantTrackTile extends PureComponent {
         <Tooltip
           text={messages.hiddenTrackTooltip}
           mouseEnterDelay={0}
-          shouldWrapContent={false}>
+          shouldWrapContent={false}
+        >
           <div>
             <HiddenTrackHeader />
           </div>
@@ -149,10 +150,12 @@ class GiantTrackTile extends PureComponent {
           text={'Reposted!'}
           disabled={isReposted}
           delay={REPOST_TIMEOUT}
-          fillParent={false}>
+          fillParent={false}
+        >
           <Tooltip
             disabled={isOwner || repostCount === 0}
-            text={isReposted ? 'Unrepost' : 'Repost'}>
+            text={isReposted ? 'Unrepost' : 'Repost'}
+          >
             <div>
               <Button
                 name='repost'
@@ -191,10 +194,12 @@ class GiantTrackTile extends PureComponent {
           text={'Favorited!'}
           disabled={isSaved}
           delay={SAVED_TIMEOUT}
-          fillParent={false}>
+          fillParent={false}
+        >
           <Tooltip
             disabled={isOwner || saveCount === 0}
-            text={isSaved ? 'Unfavorite' : 'Favorite'}>
+            text={isSaved ? 'Unfavorite' : 'Favorite'}
+          >
             <div>
               <Button
                 name='favorite'
@@ -465,7 +470,8 @@ class GiantTrackTile extends PureComponent {
             <div
               className={cn(styles.commonButtonSection, fadeIn)}
               role='group'
-              aria-label='track actions'>
+              aria-label='track actions'
+            >
               {this.renderShareButton()}
               {this.renderMakePublicButton()}
               {this.renderRepostButton()}

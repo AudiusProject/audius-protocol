@@ -67,7 +67,8 @@ const ArtworkIcon = ({
     <div
       className={cn(styles.artworkIcon, {
         [artworkIconClassName!]: !!artworkIconClassName
-      })}>
+      })}
+    >
       {artworkIcon}
     </div>
   )
@@ -101,7 +102,8 @@ const Artwork = memo(
           [styles.large]: size === 'large'
         })}
         className={styles.artwork}
-        image={showSkeleton ? '' : image}>
+        image={showSkeleton ? '' : image}
+      >
         {showArtworkIcon && (
           <ArtworkIcon
             playStatus={playStatus}
@@ -120,7 +122,8 @@ const Artwork = memo(
         className={cn(styles.artworkInset, {
           [styles.small]: size === 'small',
           [styles.large]: size === 'large'
-        })}>
+        })}
+      >
         {imageElement}
       </CoSign>
     ) : (

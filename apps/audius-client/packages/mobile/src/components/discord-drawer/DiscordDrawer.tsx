@@ -68,7 +68,8 @@ export const DiscordDrawer = () => {
       onClose={handleClose}
       isFullscreen
       isGestureSupported={false}
-      title={messages.title}>
+      title={messages.title}
+    >
       <View style={styles.container}>
         <Text style={styles.body}>{messages.body}</Text>
         <CopyTextTile hint={messages.copyThisCode} text={discordCode} />

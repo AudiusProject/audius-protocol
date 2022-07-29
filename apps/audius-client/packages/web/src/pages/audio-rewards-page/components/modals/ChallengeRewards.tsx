@@ -115,7 +115,8 @@ const InviteLink = ({ className, inviteLink }: InviteLinkProps) => {
           text={messages.copiedLabel}
           delay={2000}
           placement={ComponentPlacement.TOP}
-          mount={MountPlacement.PARENT}>
+          mount={MountPlacement.PARENT}
+        >
           <PurpleBox
             className={wm(styles.inviteButtonContainer)}
             onClick={onButtonClick}
@@ -253,7 +254,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         [styles.inProgress]: challenge?.state === 'in_progress',
         [styles.complete]:
           challenge?.state === 'completed' || challenge?.state === 'disbursed'
-      })}>
+      })}
+    >
       {challenge?.state === 'incomplete' && (
         <h3 className={styles.incomplete}>Incomplete</h3>
       )}
@@ -481,7 +483,8 @@ export const ChallengeRewardsModal = () => {
       }
       dismissOnClickOutside={
         !isHCaptchaModalOpen && cognitoFlowStatus === CognitoFlowStatus.CLOSED
-      }>
+      }
+    >
       <ChallengeRewardsBody dismissModal={onClose} />
     </ModalDrawer>
   )

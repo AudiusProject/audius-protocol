@@ -30,7 +30,8 @@ const SelectablePill = ({
         [styles.selectedPill]: isSelected,
         [className!]: !!className,
         [styles.isMobile]: isMobile()
-      })}>
+      })}
+    >
       {content}
     </div>
   )

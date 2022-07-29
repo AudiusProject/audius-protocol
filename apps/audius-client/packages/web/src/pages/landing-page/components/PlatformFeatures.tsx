@@ -52,7 +52,8 @@ const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
         <a
           href='https://twitter.com/AudiusProject/status/1272614652623519744?s=20'
           rel='noopener noreferrer'
-          target='_blank'>
+          target='_blank'
+        >
           Run your own contest
         </a>
         .
@@ -98,7 +99,8 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
     <div
       className={cn(styles.container, {
         [styles.isMobile]: props.isMobile
-      })}>
+      })}
+    >
       <div className={styles.content} ref={refInView}>
         <div className={styles.animateTitleContainer}>
           <animated.div
@@ -107,7 +109,8 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
               transform: textStyles.x.interpolate(
                 (x) => `translate3d(0,${x}px,0)`
               )
-            }}>
+            }}
+          >
             <div className={styles.header}>
               <h3 className={styles.title}>{messages.title}</h3>
               <h4 className={styles.subTitle}>{messages.subTitle}</h4>

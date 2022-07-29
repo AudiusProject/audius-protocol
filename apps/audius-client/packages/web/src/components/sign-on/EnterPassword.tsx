@@ -207,7 +207,8 @@ const EnterPassword = ({
         onSubmit={(e) => {
           e.preventDefault()
         }}
-        autoComplete='off'>
+        autoComplete='off'
+      >
         <div className={styles.passwordContainer}>
           <Input
             placeholder='Password'

@@ -24,7 +24,8 @@ const TwitterButton = (props) => {
       <span
         className={cn('btnTextLabel', styles.textLabel, {
           [props.textClassName]: !!props.textClassName
-        })}>
+        })}
+      >
         {props.textLabel}
       </span>
     </div>

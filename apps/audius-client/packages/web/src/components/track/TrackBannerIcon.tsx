@@ -33,7 +33,8 @@ const TrackBannerIcon = ({
       className={cn(styles.artistPick, {
         [styles.isMobile]: isMobile,
         [styles.matrix]: isMatrixMode
-      })}>
+      })}
+    >
       <div
         className={cn(styles.container, {
           [styles.star]: type === TrackBannerIconType.STAR,

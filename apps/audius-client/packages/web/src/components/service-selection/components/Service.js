@@ -36,7 +36,8 @@ const Service = (props) => {
       {...otherProps}
       className={cn(styles.service, className, {
         [styles.dragging]: dragging
-      })}>
+      })}
+    >
       {isEmpty ? (
         <div className={styles.empty}>
           {name}
@@ -47,7 +48,8 @@ const Service = (props) => {
           <div
             className={cn(styles.button, {
               [styles.disabled]: disabled || isSyncing
-            })}>
+            })}
+          >
             {isSyncing ? (
               <div className={styles.syncing}>
                 <Lottie

@@ -126,7 +126,8 @@ export const CollectibleDetailsDrawer = () => {
                   styles.badge,
                   collectible.isOwned ? styles.owned : styles.created
                 ]}
-                weight='bold'>
+                weight='bold'
+              >
                 {collectible.isOwned ? messages.owned : messages.created}
               </Text>
               <View style={styles.chainIcon}>

@@ -111,7 +111,8 @@ const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
     <ModalBodyWrapper
       className={cn(styles.container, {
         [styles.solContainer]: useSolSPLAudio
-      })}>
+      })}
+    >
       {useSolSPLAudio ? renderReceiveSol() : renderReceiveEth()}
     </ModalBodyWrapper>
   )

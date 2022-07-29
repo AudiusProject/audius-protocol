@@ -56,7 +56,8 @@ export const NotificationTile = (props: NotificationTileProps) => {
   return (
     <Tile
       onPress={onPress}
-      styles={{ root: styles.root, content: styles.content }}>
+      styles={{ root: styles.root, content: styles.content }}
+    >
       {children}
       <View style={styles.footer}>
         <Text style={styles.timestamp}>{timeLabel}</Text>

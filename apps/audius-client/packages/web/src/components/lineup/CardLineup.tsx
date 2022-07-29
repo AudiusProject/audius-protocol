@@ -37,7 +37,8 @@ const DesktopCardContainer = ({
               text={card.props.primaryText}
               kind={card.props.isPlaylist ? 'playlist' : 'album'}
               id={card.props.playlistId}
-              link={card.props.link}>
+              link={card.props.link}
+            >
               {card}
             </Draggable>
           ) : (

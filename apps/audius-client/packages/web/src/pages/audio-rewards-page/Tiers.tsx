@@ -121,7 +121,8 @@ export const Tier = ({
       className={cn(styles.tierContainerWrapper, {
         [styles.tierContainerActive]: isActive,
         [styles.compact]: isCompact
-      })}>
+      })}
+    >
       {isActive && (
         <div className={styles.currentTier}>
           {messages.currentTier}
@@ -139,7 +140,8 @@ export const Tier = ({
           {
             [styles.compact]: isCompact
           }
-        )}>
+        )}
+      >
         <TierNumber tier={tier} />
         <BadgeTierText
           tier={tier}

@@ -88,7 +88,8 @@ const RemixesPage = g(
         title={title}
         description={messages.getDescription(originalTrack.title, user.name)}
         canonicalUrl={fullTrackRemixesPage(originalTrack.permalink)}
-        header={renderHeader()}>
+        header={renderHeader()}
+      >
         <Lineup {...getLineupProps()} />
       </Page>
     )

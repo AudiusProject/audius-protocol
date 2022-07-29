@@ -430,7 +430,8 @@ const SearchPageContent = (props: SearchPageContentProps) => {
         <div
           className={cn(styles.tabBar, {
             [styles.nativeTabBar]: NATIVE_MOBILE
-          })}>
+          })}
+        >
           {tabs}
         </div>
       </>
@@ -441,7 +442,8 @@ const SearchPageContent = (props: SearchPageContentProps) => {
     <MobilePageContainer
       title={`${searchTitle} ${searchText}`}
       description={`Search results for ${searchText}`}
-      canonicalUrl={fullSearchResultsPage(searchText)}>
+      canonicalUrl={fullSearchResultsPage(searchText)}
+    >
       <div className={styles.tabContainer}>
         <div className={styles.pageContainer}>{body}</div>
       </div>

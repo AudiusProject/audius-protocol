@@ -15,7 +15,8 @@ const TwitterAuthButton = (props) => {
       onFailure={props.onFailure}
       onSuccess={props.onSuccess}
       requestTokenUrl={`${IDENTITY_SERVICE}/twitter`}
-      loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}>
+      loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}
+    >
       <TwitterButton {...props} />
     </TwitterAuth>
   )

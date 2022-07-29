@@ -516,7 +516,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
 
   return (
     <div
-      className={cn(styles.collectiblesWrapper, { [styles.mobile]: isMobile })}>
+      className={cn(styles.collectiblesWrapper, { [styles.mobile]: isMobile })}
+    >
       <div className={styles.wrapper}>
         <div className={styles.header}>
           <div className={styles.headerText}>
@@ -611,7 +612,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         bodyClassName={cn(styles.modalBody, styles.editModalBody)}
         headerContainerClassName={styles.modalHeader}
         titleClassName={styles.modalTitle}
-        allowScroll>
+        allowScroll
+      >
         <div className={styles.editModal}>
           {getVisibleCollectibles().length > 0 && (
             <div className={styles.editListSection}>
@@ -632,7 +634,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                         showVisibleTableBottomShadow
                     }
                   )}
-                  ref={visibleTableRef}>
+                  ref={visibleTableRef}
+                >
                   <Droppable droppableId={VISIBLE_COLLECTIBLES_DROPPABLE_ID}>
                     {(provided) => (
                       <div ref={provided.innerRef} {...provided.droppableProps}>
@@ -640,7 +643,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                           <Draggable
                             key={c.id}
                             draggableId={c.id}
-                            index={index}>
+                            index={index}
+                          >
                             {(provided, snapshot) => (
                               <VisibleCollectibleRow
                                 {...provided.draggableProps}
@@ -676,7 +680,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   [styles.tableVerticalShadow]:
                     showHiddenTableTopShadow && showHiddenTableBottomShadow
                 })}
-                ref={hiddenTableRef}>
+                ref={hiddenTableRef}
+              >
                 {getHiddenCollectibles().map((c) => (
                   <HiddenCollectibleRow
                     key={c.id}
@@ -708,7 +713,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         titleClassName={styles.embedModalTitle}
         headerContainerClassName={styles.embedModalHeader}
         allowScroll
-        zIndex={zIndex.COLLECTIBLE_EMBED_VIEW_MODAL}>
+        zIndex={zIndex.COLLECTIBLE_EMBED_VIEW_MODAL}
+      >
         <div className={styles.embedContainer}>
           <EmbedFrame
             className={styles.embedFrame}
@@ -723,10 +729,12 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                 mount={MountPlacement.PARENT}
                 placement={ComponentPlacement.TOP}
                 requireAccount={false}
-                tooltipClassName={styles.embedTooltip}>
+                tooltipClassName={styles.embedTooltip}
+              >
                 <div
                   className={styles.embedCopyWrapper}
-                  onClick={copyEmbedLink}>
+                  onClick={copyEmbedLink}
+                >
                   <div className={styles.embedCopyContainer}>
                     <div className={styles.embedCopyLink}>{embedIFrameUrl}</div>
                   </div>
@@ -750,7 +758,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       {!NATIVE_MOBILE ? (
         <Drawer
           isOpen={showUseDesktopDrawer}
-          onClose={() => setShowUseDesktopDrawer(false)}>
+          onClose={() => setShowUseDesktopDrawer(false)}
+        >
           <div className={styles.editDrawer}>
             <IconGradientCollectibles className={styles.editDrawerIcon} />
             <div className={styles.editDrawerTitle}>

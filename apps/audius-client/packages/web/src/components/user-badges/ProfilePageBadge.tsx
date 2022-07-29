@@ -57,7 +57,8 @@ export const BadgeTierText = ({
   return (
     <span
       className={cn(styles.tierText, className)}
-      style={{ ...tierGradientMap[tier], fontSize }}>
+      style={{ ...tierGradientMap[tier], fontSize }}
+    >
       {tier}
     </span>
   )
@@ -90,14 +91,14 @@ const ProfilePageBadge = ({
         { [styles.isCompact]: isCompact },
         className
       )}
-      onClick={onClick}>
+      onClick={onClick}
+    >
       {badge}
       {!isCompact && <div className={styles.divider} />}
       <div className={styles.text}>
         <span
-          className={
-            styles.tierNumber
-          }>{`${messages.tier} ${tierNumber}`}</span>
+          className={styles.tierNumber}
+        >{`${messages.tier} ${tierNumber}`}</span>
         <BadgeTierText
           tier={tier}
           fontSize={22}

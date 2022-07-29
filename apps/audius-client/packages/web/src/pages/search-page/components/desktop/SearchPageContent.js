@@ -143,7 +143,8 @@ class SearchPageContent extends Component {
           text={cardToast[toastId] && cardToast[toastId].message}
           open={cardToast[toastId] && cardToast[toastId].open}
           placement='bottom'
-          fillParent={false}>
+          fillParent={false}
+        >
           <Card
             id={artist.user_id}
             userId={artist.user_id}
@@ -200,7 +201,8 @@ class SearchPageContent extends Component {
             playlist.playlist_name,
             playlist.playlist_id
           )}
-          primaryText={playlist.playlist_name}>
+          primaryText={playlist.playlist_name}
+        >
           <Card
             size={'small'}
             id={playlist.playlist_id}
@@ -261,7 +263,8 @@ class SearchPageContent extends Component {
             album.playlist_name,
             album.playlist_id
           )}
-          primaryText={album.playlist_name}>
+          primaryText={album.playlist_name}
+        >
           <Card
             size={'small'}
             id={album.playlist_id}
@@ -472,7 +475,8 @@ class SearchPageContent extends Component {
         description={`Search results for ${searchText}`}
         canonicalUrl={fullSearchResultsPage(searchText)}
         contentClassName={styles.searchResults}
-        header={header}>
+        header={header}
+      >
         {status === Status.ERROR ? (
           <p>Oh no! Something went wrong!</p>
         ) : status === Status.LOADING ? (

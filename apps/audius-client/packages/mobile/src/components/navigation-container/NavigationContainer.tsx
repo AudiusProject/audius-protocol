@@ -157,7 +157,8 @@ const NavigationContainer = ({ children }: Props) => {
   return (
     <RNNavigationContainer
       linking={linking}
-      theme={navigationThemes[navigationTheme]}>
+      theme={navigationThemes[navigationTheme]}
+    >
       {children}
     </RNNavigationContainer>
   )

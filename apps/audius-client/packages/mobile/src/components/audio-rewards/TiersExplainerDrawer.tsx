@@ -86,7 +86,8 @@ export const TiersExplainerDrawer = () => {
           </TierText>
           <Text
             accessibilityLabel={`${minAudioText} or more audio tokens`}
-            style={styles.minAudio}>
+            style={styles.minAudio}
+          >
             {minAudio.toString()}+ $AUDIO
           </Text>
         </View>

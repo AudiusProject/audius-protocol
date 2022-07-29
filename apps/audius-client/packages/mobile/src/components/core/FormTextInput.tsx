@@ -84,7 +84,8 @@ export const FormTextInput = ({
         isFirstInput && styles.firstInput,
         style,
         stylesProp?.root
-      ]}>
+      ]}
+    >
       {Icon ? (
         <View style={styles.label}>
           <Icon

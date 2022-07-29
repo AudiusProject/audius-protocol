@@ -224,7 +224,8 @@ const TrackHeader = ({
               <h2
                 key={tag}
                 onClick={() => onClickTag(tag)}
-                className={styles.tag}>
+                className={styles.tag}
+              >
                 {tag}
               </h2>
             ))}
@@ -272,7 +273,8 @@ const TrackHeader = ({
       hasReposted={coSign.has_remix_author_reposted}
       coSignName={coSign.user.name}
       className={styles.coverArt}
-      userId={coSign.user.user_id}>
+      userId={coSign.user.user_id}
+    >
       <DynamicImage image={image} wrapperClassName={styles.imageWrapper} />
     </CoSign>
   ) : (
@@ -351,7 +353,8 @@ const TrackHeader = ({
       <div
         className={cn(styles.infoSection, {
           [styles.noStats]: isUnlisted && !fieldVisibility.play_count
-        })}>
+        })}
+      >
         {renderTrackLabels()}
       </div>
       {renderDownloadButtons()}

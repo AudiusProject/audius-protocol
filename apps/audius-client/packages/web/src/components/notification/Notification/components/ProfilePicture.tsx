@@ -83,7 +83,8 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     <ArtistPopover
       handle={user.handle}
       component='span'
-      onNavigateAway={handleNavigateAway}>
+      onNavigateAway={handleNavigateAway}
+    >
       {profilePictureElement}
     </ArtistPopover>
   )

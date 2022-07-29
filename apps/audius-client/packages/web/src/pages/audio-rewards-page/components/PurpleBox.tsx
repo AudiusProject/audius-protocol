@@ -26,7 +26,8 @@ const PurpleBox = ({
   return (
     <div
       className={wm(styles.container, { [className!]: !!className })}
-      onClick={onClick}>
+      onClick={onClick}
+    >
       {label && <div className={wm(styles.label)}>{label}</div>}
       <div className={cn(wm(styles.text), { [styles.compact]: isCompact })}>
         {text}

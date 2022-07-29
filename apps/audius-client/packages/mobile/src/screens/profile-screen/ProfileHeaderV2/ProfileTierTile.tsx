@@ -86,7 +86,8 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
           tile: styles.tile,
           content: styles.content
         }}
-        onPress={handlePress}>
+        onPress={handlePress}
+      >
         {content}
       </Tile>
     )

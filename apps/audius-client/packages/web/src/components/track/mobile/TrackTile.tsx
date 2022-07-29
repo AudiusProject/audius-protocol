@@ -151,7 +151,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
         onClick={() => {
           if (showSkeleton) return
           props.togglePlay(props.uid, id)
-        }}>
+        }}
+      >
         <div className={cn(styles.topRight, styles.statText)}>
           {props.showArtistPick && props.isArtistPick && (
             <div className={styles.topRightIcon}>
@@ -183,7 +184,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             className={cn(styles.titles, {
               [styles.titlesActive]: props.isPlaying,
               [styles.titlesSkeleton]: props.showSkeleton
-            })}>
+            })}
+          >
             <div className={styles.title} onClick={props.goToTrackPage}>
               <div className={cn(fadeIn)}>{props.title}</div>
               {props.isPlaying && <IconVolume />}
@@ -249,7 +251,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                 })}
                 onClick={
                   props.repostCount ? props.makeGoToRepostsPage(id) : undefined
-                }>
+                }
+              >
                 {formatCount(props.repostCount)}
                 <RepostButton
                   iconMode
@@ -265,7 +268,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                 })}
                 onClick={
                   props.saveCount ? props.makeGoToFavoritesPage(id) : undefined
-                }>
+                }
+              >
                 {formatCount(props.saveCount)}
                 <FavoriteButton
                   iconMode
@@ -279,7 +283,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
           <div
             className={cn(styles.listenCount, fadeIn, {
               [styles.isHidden]: hidePlays
-            })}>
+            })}
+          >
             {formatListenCount(props.listenCount)}
           </div>
         </div>

@@ -175,7 +175,8 @@ class EditPage extends Component {
             }
             onChangeOrder={(source, destination) =>
               onChangeOrder(source, destination)
-            }>
+            }
+          >
             {tracks.map((track, i) => (
               <InlineFormTile
                 key={i}

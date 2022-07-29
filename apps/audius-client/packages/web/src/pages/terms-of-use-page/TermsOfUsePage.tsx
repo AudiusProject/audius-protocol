@@ -33,7 +33,8 @@ const TermsOfUsePage = (props: TermsOfUsePageProps) => {
             <a
               href={termsOfUseDocumentRoute}
               className={styles.downloadLink}
-              download>
+              download
+            >
               {messages.download}
             </a>
           </div>
@@ -41,7 +42,8 @@ const TermsOfUsePage = (props: TermsOfUsePageProps) => {
           <iframe
             title='Terms of Service'
             src={termsOfUseDocumentRoute}
-            className={styles.pdfIFrame}></iframe>
+            className={styles.pdfIFrame}
+          ></iframe>
         )}
       </div>
       <Footer

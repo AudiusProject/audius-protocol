@@ -248,7 +248,8 @@ const ExplorePage = ({
       <TabBodyHeader
         key='justForYou'
         title={messages.justForYou}
-        description={messages.justForYouDescription}>
+        description={messages.justForYouDescription}
+      >
         <div className={cn(styles.section, styles.tripleHeaderSectionTenTile)}>
           {justForYouTiles}
         </div>
@@ -256,7 +257,8 @@ const ExplorePage = ({
       <TabBodyHeader
         key='moodPlaylists'
         title={messages.moodPlaylists}
-        description={messages.moodPlaylistsDescription}>
+        description={messages.moodPlaylistsDescription}
+      >
         <div className={styles.section}>{lifestyleTiles}</div>
       </TabBodyHeader>,
       <TabBodyHeader key='featuredPlaylists' title={messages.featuredPlaylists}>
@@ -313,7 +315,8 @@ const ExplorePage = ({
     <MobilePageContainer
       title={title}
       description={description}
-      canonicalUrl={`${BASE_URL}${EXPLORE_PAGE}`}>
+      canonicalUrl={`${BASE_URL}${EXPLORE_PAGE}`}
+    >
       <div className={styles.tabContainer}>
         <div className={styles.pageContainer}>{body}</div>
       </div>

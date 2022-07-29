@@ -67,14 +67,16 @@ class TrackInfo extends PureComponent {
       <div
         className={cn(styles.trackInfoWrapper, {
           [styles.disabled]: disabled
-        })}>
+        })}
+      >
         <div className={trackTitleStyle}>
           <div className={hideShow}>
             <div
               className={cn(styles.trackName, {
                 [styles.trackNameLink]: onClickTrackName
               })}
-              onClick={this.onClickTrackName}>
+              onClick={this.onClickTrackName}
+            >
               {trackTitle}
             </div>
             {active ? (
@@ -94,7 +96,8 @@ class TrackInfo extends PureComponent {
               <ArtistPopover handle={artistHandle}>
                 <span
                   className={cn({ [styles.artistNameLink]: onClickArtistName })}
-                  onClick={this.onClickArtistName}>
+                  onClick={this.onClickArtistName}
+                >
                   {artistName}
                 </span>
               </ArtistPopover>
@@ -103,7 +106,8 @@ class TrackInfo extends PureComponent {
                 className={cn(styles.artistName, {
                   [styles.artistNameLink]: onClickArtistName
                 })}
-                onClick={this.onClickArtistName}>
+                onClick={this.onClickArtistName}
+              >
                 {artistName}
               </span>
             )}

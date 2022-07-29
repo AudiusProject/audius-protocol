@@ -62,7 +62,8 @@ const EditProfileForm = (props: FormikProps<ProfileValues>) => {
       variant='secondary'
       onReset={handleReset}
       onSubmit={handleSubmit}
-      goBackOnSubmit>
+      goBackOnSubmit
+    >
       <FormImageInput
         name='cover_photo'
         styles={{ imageContainer: styles.coverPhoto }}

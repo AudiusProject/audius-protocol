@@ -611,17 +611,20 @@ const ProfilePage = g(
       <>
         <NetworkConnectivityMonitor
           pageDidLoad={status !== Status.LOADING}
-          onDidRegainConnectivity={asyncRefresh}>
+          onDidRegainConnectivity={asyncRefresh}
+        >
           <MobilePageContainer
             title={name && handle ? `${name} (${handle})` : ''}
             description={bio}
             canonicalUrl={fullProfilePage(handle)}
-            containerClassName={styles.container}>
+            containerClassName={styles.container}
+          >
             <PullToRefresh
               fetchContent={asyncRefresh}
               shouldPad={false}
               overImage
-              isDisabled={isEditing || isUserConfirming}>
+              isDisabled={isEditing || isUserConfirming}
+            >
               <ProfileHeader
                 isDeactivated={profile?.is_deactivated}
                 name={name}

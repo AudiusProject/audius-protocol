@@ -65,7 +65,8 @@ export const Scrollbar = ({
       id={elementId}
       className={cn(styles.scrollbar, className)}
       onMouseEnter={showScrollbar}
-      onMouseLeave={hideScrollbar}>
+      onMouseLeave={hideScrollbar}
+    >
       <div ref={ref}>{children}</div>
     </PerfectScrollbar>
   )

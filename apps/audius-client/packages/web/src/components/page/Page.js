@@ -57,7 +57,8 @@ const HeaderContainer = ({ header, containerRef }) => {
       ref={containerRef}
       style={{
         right: `${scrollBarWidth}px`
-      }}>
+      }}
+    >
       <div
         ref={headerContainerRef}
         className={styles.frosted}
@@ -68,7 +69,8 @@ const HeaderContainer = ({ header, containerRef }) => {
           background: isChromeOrSafari
             ? 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 20%, var(--page-header-gradient-2) 65%)'
             : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
-        }}>
+        }}
+      >
         {cloneElement(header, {
           isChromeOrSafari,
           scrollBarWidth,
@@ -97,14 +99,16 @@ export const Page = (props) => {
     <Spring
       from={{ opacity: 0.2 }}
       to={{ opacity: 1 }}
-      config={{ duration: props.fadeDuration }}>
+      config={{ duration: props.fadeDuration }}
+    >
       {(animProps) => (
         <div
           ref={props.containerRef}
           style={animProps}
           className={cn(styles.pageContainer, {
             [props.containerClassName]: !!props.containerClassName
-          })}>
+          })}
+        >
           <Helmet>
             {props.title ? (
               <title>{`${props.title} ${messages.dotAudius}`}</title>
@@ -136,13 +140,15 @@ export const Page = (props) => {
               props.variant === 'inset'
                 ? { paddingTop: `${headerHeight + HEADER_MARGIN_PX}px` }
                 : null
-            }>
+            }
+          >
             {/* Set an id so that nested components can mount in relation to page if needed, e.g. fixed menu popups. */}
             <div
               id='page'
               className={cn(styles.pageContent, {
                 [props.contentClassName]: !!props.contentClassName
-              })}>
+              })}
+            >
               {props.children}
             </div>
           </div>

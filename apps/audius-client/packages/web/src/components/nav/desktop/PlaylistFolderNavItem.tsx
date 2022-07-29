@@ -53,13 +53,15 @@ const FolderNavLink = ({
       text={name}
       kind='playlist-folder'
       onDrag={onDrag}
-      onDrop={onDrop}>
+      onDrop={onDrop}
+    >
       <button
         {...buttonProps}
         draggable={false}
         className={cn(className, styles.navLink, {
           [styles.dragging]: isDragging
-        })}>
+        })}
+      >
         {children}
       </button>
     </Draggable>
@@ -128,7 +130,8 @@ export const PlaylistFolderNavItem = ({
         onDrop={(playlistId, kind) => {
           onDropInFolder(folder, kind, playlistId)
         }}
-        acceptedKinds={['library-playlist', 'playlist']}>
+        acceptedKinds={['library-playlist', 'playlist']}
+      >
         <FolderNavLink
           onMouseEnter={() => {
             setIsHovering(true)
@@ -140,7 +143,8 @@ export const PlaylistFolderNavItem = ({
             [navColumnStyles.droppableLink]: dragging && isDroppableKind,
             [navColumnStyles.disabledLink]: dragging && !isDroppableKind
           })}
-          onClick={handleClickFolder}>
+          onClick={handleClickFolder}
+        >
           <div className={styles.libraryLinkContentContainer}>
             {children == null ? (
               <IconFolderOutline

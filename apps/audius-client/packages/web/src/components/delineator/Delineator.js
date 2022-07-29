@@ -21,7 +21,8 @@ const Delineator = ({
         [styles.large]: size === 'large',
         [styles.padTop]: padTop,
         [styles.isMobile]: isMobile
-      })}>
+      })}
+    >
       {alignment === 'center' && <div className={styles.line} />}
       {text && (
         <div className={styles.box}>

@@ -21,7 +21,8 @@ const Pill = (props) => {
       className={cn(styles.pill, props.className, {
         [styles.clickable]: props.clickable
       })}
-      onClick={onClick}>
+      onClick={onClick}
+    >
       {props.showIcon ? (
         <div className={styles.icon}>{icons[props.icon]}</div>
       ) : null}

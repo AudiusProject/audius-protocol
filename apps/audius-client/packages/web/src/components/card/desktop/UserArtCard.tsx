@@ -84,7 +84,8 @@ const UserArtCard = g(
       <div className={cn(styles.card, className)}>
         <PerspectiveCard
           onClick={goToProfile}
-          className={styles.perspectiveCard}>
+          className={styles.perspectiveCard}
+        >
           <DynamicImage
             wrapperClassName={styles.profilePicture}
             image={isLoading ? '' : image}

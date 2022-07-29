@@ -160,7 +160,8 @@ class TagInput extends Component {
           [styles.last]: i === tags.size - 1 && tags.size === maxTags
         })}
         key={tag}
-        onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}
+      >
         {trimToAlphaNumeric(tag)}
         <div className={styles.tagIconWrapper}>
           <IconRemove
@@ -181,7 +182,8 @@ class TagInput extends Component {
     ) : (
       <Tag
         className={cn(styles.tag, styles.newTag, styles.last)}
-        onClick={this.setTypingMode}>
+        onClick={this.setTypingMode}
+      >
         {placeholder}
         <div className={styles.tagIconWrapper}>
           <IconSave className={styles.iconSave} />
@@ -200,7 +202,8 @@ class TagInput extends Component {
           <div
             className={cn(styles.tagCount, {
               [styles.nearLimit]: tags.size > (7.0 / 8.0) * maxTags
-            })}>
+            })}
+          >
             {tags.size}/{maxTags}
           </div>
         </div>

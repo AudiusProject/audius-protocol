@@ -143,11 +143,13 @@ class Toast extends PureComponent<ToastProps, ToastState> {
         overlayClassName={cn(styles.toast, {
           [overlayClassName as string]: !!overlayClassName && isVisible,
           [styles.hideCaret]: !useCaret
-        })}>
+        })}
+      >
         <div
           onClick={this.handleClick}
           className={containerClassName}
-          style={containerStyles}>
+          style={containerStyles}
+        >
           {children}
         </div>
         {useCaret ? <div className={cn(styles.caret)} /> : null}

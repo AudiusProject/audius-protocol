@@ -54,7 +54,8 @@ const PlaylistTile = memo(
         <Scrollbar
           className={cn(styles.playlistTracks, {
             [tracksContainerClassName!]: !!tracksContainerClassName
-          })}>
+          })}
+        >
           {trackList}
         </Scrollbar>
       ),
@@ -81,7 +82,8 @@ const PlaylistTile = memo(
           [styles.small]: size === TrackTileSize.SMALL,
           [styles.large]: size === TrackTileSize.LARGE,
           [styles.disabled]: !!isDisabled
-        })}>
+        })}
+      >
         <TileTrackContainer>
           <TrackTile
             size={size}

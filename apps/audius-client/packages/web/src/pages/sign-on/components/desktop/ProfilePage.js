@@ -153,7 +153,8 @@ export class ProfilePage extends Component {
       <div
         className={cn(styles.container, {
           [styles.isMobile]: isMobile
-        })}>
+        })}
+      >
         {isMobile ? null : (
           <>
             <h2 className={styles.header}>{messages.header}</h2>

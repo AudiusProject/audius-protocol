@@ -107,7 +107,8 @@ class ShuffleButton extends Component {
           [styles.buttonFixedSize]: this.props.isMobile,
           [styles.shuffle]: this.props.isMobile
         })}
-        onClick={this.nextState}>
+        onClick={this.nextState}
+      >
         <Lottie
           options={animationOptions}
           eventListeners={eventListeners}

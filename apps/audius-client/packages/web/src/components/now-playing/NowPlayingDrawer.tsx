@@ -398,7 +398,8 @@ const NowPlayingDrawer = ({
           bottom: `-${DEFAULT_HEIGHT}px`,
           // @ts-ignore
           transform: drawerSlideProps.y.interpolate(interpY)
-        }}>
+        }}
+      >
         <animated.div className={styles.header} style={headerFadeProps}>
           <AudiusLogo />
         </animated.div>
@@ -417,7 +418,8 @@ const NowPlayingDrawer = ({
       <animated.div
         className={styles.bottomBar}
         // @ts-ignore
-        style={{ transform: bottomBarSlideProps.y.interpolate(interpY) }}>
+        style={{ transform: bottomBarSlideProps.y.interpolate(interpY) }}
+      >
         <ConnectedBottomBar />
       </animated.div>
     </>

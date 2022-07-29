@@ -110,7 +110,8 @@ const RewardPanel = ({
         <p
           className={cn(styles.rewardProgressLabel, {
             [styles.complete]: shouldShowCompleted
-          })}>
+          })}
+        >
           {progressLabelFilled}
         </p>
         {shouldShowProgressBar && (

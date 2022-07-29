@@ -142,14 +142,16 @@ export const PlayBar = ({
             extrapolate: 'extend'
           })
         }
-      ]}>
+      ]}
+    >
       <TrackingBar translationAnim={translationAnim} />
       <View style={styles.container}>
         {renderFavoriteButton()}
         <TouchableOpacity
           activeOpacity={1}
           style={styles.trackInfo}
-          onPress={onPress}>
+          onPress={onPress}
+        >
           <View style={styles.artwork}>
             {track && <PlayBarArtwork track={track} />}
           </View>
@@ -160,7 +162,8 @@ export const PlayBar = ({
             <Text
               weight='bold'
               style={styles.separator}
-              accessibilityElementsHidden>
+              accessibilityElementsHidden
+            >
               {track ? '•' : ''}
             </Text>
             <Text numberOfLines={1} weight='medium' style={styles.artist}>

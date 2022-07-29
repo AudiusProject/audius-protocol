@@ -197,7 +197,8 @@ export const BottomTabBar = ({
       <SafeAreaView
         style={styles.bottomBar}
         edges={['bottom']}
-        pointerEvents='auto'>
+        pointerEvents='auto'
+      >
         {state.routes.map((route, index) => {
           const isFocused = !isNavigating && state.index === index
           const key = `${route.name}-button`

@@ -29,7 +29,8 @@ const Stat = ({ number, onClick, title }: StatProps) => {
   return (
     <div
       className={cn(styles.stat, style)}
-      onClick={!zero ? onClick : () => {}}>
+      onClick={!zero ? onClick : () => {}}
+    >
       <div className={styles.number}>{formatCount(number)}</div>
       <div className={styles.title}>{title}</div>
     </div>

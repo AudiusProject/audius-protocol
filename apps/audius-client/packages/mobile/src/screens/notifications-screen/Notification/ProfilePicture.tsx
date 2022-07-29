@@ -65,7 +65,8 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     return (
       <TouchableOpacity
         activeOpacity={0.7}
-        onPress={interactive ? handlePress : undefined}>
+        onPress={interactive ? handlePress : undefined}
+      >
         {profilePictureElement}
       </TouchableOpacity>
     )

@@ -60,7 +60,8 @@ export const ToastContextProvider = memo((props: { children: ReactNode }) => {
       value={{
         clear,
         toast
-      }}>
+      }}
+    >
       {toasts.map((toast) => (
         <ToastView
           key={toast.key}

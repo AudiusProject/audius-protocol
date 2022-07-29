@@ -16,7 +16,8 @@ const BackwardSkipButton = ({ onClick, isMobile }: BackwardSkipButtonProps) => {
         [styles.buttonFixedSize]: isMobile,
         [styles.previousNext]: isMobile
       })}
-      onClick={onClick}>
+      onClick={onClick}
+    >
       <IconPodcastBack className={styles.noAnimation} />
     </button>
   )

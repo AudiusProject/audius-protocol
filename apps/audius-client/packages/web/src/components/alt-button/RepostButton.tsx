@@ -109,7 +109,8 @@ const RepostButton = forwardRef<HTMLButtonElement, RepostButtonProps>(
           setIsSpinning(true)
           setIsDepressed(true)
           onClick(e)
-        }}>
+        }}
+      >
         <div
           className={cn(styles.icon, { [styles.spin]: isSpinning }, className)}
           style={{

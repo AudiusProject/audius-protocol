@@ -46,7 +46,8 @@ export const DeactivateAccountPageMobile = ({
       title={messages.title}
       description={messages.description}
       canonicalUrl={`${BASE_URL}${DEACTIVATE_PAGE}`}
-      hasDefaultHeader>
+      hasDefaultHeader
+    >
       {children}
       {!IS_NATIVE_MOBILE && (
         <ActionDrawer

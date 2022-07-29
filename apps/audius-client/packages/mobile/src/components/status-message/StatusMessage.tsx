@@ -64,7 +64,8 @@ export const StatusMessage = ({
           styles.label,
           { color: status === 'error' ? '#e03d51' : neutral },
           stylesProp.text
-        ]}>
+        ]}
+      >
         {label}
       </Text>
     </View>

@@ -298,7 +298,8 @@ const ConnectedPlaylistTile = memo(
               className={cn(styles.name, {
                 [styles.artistNameLink]: onClickArtistName
               })}
-              onClick={onClickArtistName}>
+              onClick={onClickArtistName}
+            >
               {name}
             </span>
           </ArtistPopover>
@@ -382,7 +383,8 @@ const ConnectedPlaylistTile = memo(
             isAlbum
               ? fullAlbumPage(handle, title, id)
               : fullPlaylistPage(handle, title, id)
-          }>
+          }
+        >
           {children as any}
         </Draggable>
       ),
@@ -419,7 +421,8 @@ const ConnectedPlaylistTile = memo(
           kind='track'
           id={track.track_id}
           isOwner={track.user.handle === userHandle}
-          link={fullTrackPage(track.permalink)}>
+          link={fullTrackPage(track.permalink)}
+        >
           <TrackListItem
             index={i}
             key={`${track.title}+${i}`}

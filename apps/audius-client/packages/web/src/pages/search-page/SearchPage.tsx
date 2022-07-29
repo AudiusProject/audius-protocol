@@ -25,7 +25,8 @@ const SearchPage = ({ scrollToTop, containerRef }: SearchPageProps) => {
     <SearchPageProvider
       scrollToTop={scrollToTop}
       containerRef={containerRef}
-      isMobile={isMobile}>
+      isMobile={isMobile}
+    >
       {content}
     </SearchPageProvider>
   )

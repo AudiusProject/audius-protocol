@@ -45,7 +45,8 @@ const ConvertingInfo = ({ isVisible }: { isVisible: boolean }) => (
     from={{ opacity: 0 }}
     enter={{ opacity: 1 }}
     leave={{}}
-    unique>
+    unique
+  >
     {(item) => (style) =>
       item ? (
         <animated.div style={style} className={styles.info}>
@@ -162,7 +163,8 @@ export const ConfirmSendTip = () => {
       {!isSending && !isConverting ? (
         <div
           className={cn(styles.flexCenter, styles.goBackContainer)}
-          onClick={handleGoBackClick}>
+          onClick={handleGoBackClick}
+        >
           <IconCaretLeft />
           <span className={styles.goBack}>{messages.goBack}</span>
         </div>

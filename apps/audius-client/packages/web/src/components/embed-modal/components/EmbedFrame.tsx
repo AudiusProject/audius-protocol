@@ -20,7 +20,8 @@ const EmbedFrame = ({ className, frameString, width }: EmbedFrameProps) => {
   return width ? (
     <div
       className={cn(styles.wrapper, className ?? '')}
-      style={{ width: `${width}px` }}>
+      style={{ width: `${width}px` }}
+    >
       {frame}
     </div>
   ) : (

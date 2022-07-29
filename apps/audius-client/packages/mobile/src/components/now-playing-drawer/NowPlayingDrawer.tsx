@@ -257,12 +257,14 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
       isGestureSupported={isGestureEnabled}
       translationAnim={translationAnim}
       // Disable safe area view edges because they are handled manually
-      disableSafeAreaView>
+      disableSafeAreaView
+    >
       <View
         style={[
           styles.container,
           { paddingTop: staticTopInset.current, paddingBottom: insets.bottom }
-        ]}>
+        ]}
+      >
         {track && user && (
           <>
             <View style={styles.playBarContainer}>
@@ -279,7 +281,8 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
             </View>
             <Pressable
               onPress={handlePressTitle}
-              style={styles.artworkContainer}>
+              style={styles.artworkContainer}
+            >
               <Artwork track={track} />
             </Pressable>
             <View style={styles.trackInfoContainer}>

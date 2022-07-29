@@ -73,7 +73,8 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
         style={{
           flexDirection: 'row',
           alignItems: 'center'
-        }}>
+        }}
+      >
         <ProfilePicture profile={user} />
         <NotificationText style={{ flexShrink: 1 }}>
           {messages.sent} <TipText value={uiAmount} /> {messages.to}{' '}

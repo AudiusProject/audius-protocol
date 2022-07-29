@@ -285,7 +285,8 @@ export const Slider = ({
       })}
       onMouseDown={isDisabled ? () => {} : onMouseDown}
       onTouchStart={isDisabled ? () => {} : onTouchStart}
-      style={getSliderStyle()}>
+      style={getSliderStyle()}
+    >
       <div ref={railRef} className={styles.rail} style={getRailStyle()}>
         <div ref={trackRef} className={styles.trackWrapper}>
           <div

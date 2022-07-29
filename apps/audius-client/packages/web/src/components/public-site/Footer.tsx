@@ -118,7 +118,8 @@ const Footer = (props: FooterProps) => {
     <div
       className={cn(styles.container, {
         [styles.isMobile]: props.isMobile
-      })}>
+      })}
+    >
       <div className={styles.content}>
         <div className={styles.logoLinkContainer}>
           <img
@@ -135,7 +136,8 @@ const Footer = (props: FooterProps) => {
               AUDIUS_LISTENING_LINK,
               props.setRenderPublicSite
             )}
-            className={styles.startListeningButton}>
+            className={styles.startListeningButton}
+          >
             {messages.startListening}
             <IconArrow className={styles.arrowRight} />
           </button>
@@ -153,7 +155,8 @@ const Footer = (props: FooterProps) => {
                       siteLink.link,
                       props.setRenderPublicSite
                     )}
-                    className={cn(styles.siteLink, styles.link)}>
+                    className={cn(styles.siteLink, styles.link)}
+                  >
                     {siteLink.text}
                   </a>
                 ))}
@@ -173,7 +176,8 @@ const Footer = (props: FooterProps) => {
                   key={text}
                   href={link}
                   className={cn(styles.bottomLink, styles.link)}
-                  onClick={handleClickRoute(link, props.setRenderPublicSite)}>
+                  onClick={handleClickRoute(link, props.setRenderPublicSite)}
+                >
                   {text}
                 </a>
               ))}
@@ -185,7 +189,8 @@ const Footer = (props: FooterProps) => {
                 key={idx}
                 onClick={handleClickRoute(link, props.setRenderPublicSite)}
                 href={link}
-                className={styles.socialIconLinkContainer}>
+                className={styles.socialIconLinkContainer}
+              >
                 <Icon className={styles.socialIconLink} />
               </a>
             ))}

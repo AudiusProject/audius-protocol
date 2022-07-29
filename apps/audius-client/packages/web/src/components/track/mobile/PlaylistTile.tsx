@@ -35,7 +35,8 @@ const TrackItem = (props: TrackItemProps) => {
       <div
         className={cn(styles.trackItem, {
           [styles.activeTrackItem]: props.active
-        })}>
+        })}
+      >
         {props.forceSkeleton ? (
           <Skeleton width='100%' height='10px' />
         ) : props.track ? (
@@ -162,7 +163,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
           <div
             className={cn(styles.titles, {
               [styles.titlesActive]: props.isActive
-            })}>
+            })}
+          >
             <div className={styles.title} onClick={props.goToCollectionPage}>
               <div className={cn(fadeIn)}>{props.playlistTitle}</div>
               {props.isPlaying && <IconVolume />}
@@ -210,7 +212,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   props.saveCount
                     ? props.makeGoToFavoritesPage(props.id)
                     : undefined
-                }>
+                }
+              >
                 {formatCount(props.saveCount)}
                 <FavoriteButton
                   iconMode
@@ -227,7 +230,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   props.repostCount
                     ? props.makeGoToRepostsPage(props.id)
                     : undefined
-                }>
+                }
+              >
                 {formatCount(props.repostCount)}
                 <RepostButton
                   iconMode

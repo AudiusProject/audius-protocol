@@ -42,7 +42,8 @@ export const AppScreen = () => {
   return (
     <Tab.Navigator
       tabBar={(props) => <AppTabBar {...props} />}
-      screenOptions={{ headerShown: false, unmountOnBlur: true }}>
+      screenOptions={{ headerShown: false, unmountOnBlur: true }}
+    >
       <Tab.Screen name='feed' component={FeedTabScreen} />
       <Tab.Screen name='trending' component={TrendingTabScreen} />
       <Tab.Screen name='explore' component={ExploreTabScreen} />

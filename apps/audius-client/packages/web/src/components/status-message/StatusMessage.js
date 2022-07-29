@@ -27,7 +27,8 @@ export const StatusError = (props) => (
     style={props.iconStyles}
     className={cn(styles.statusIcon, styles.removeIcon, {
       [props.containerStyles]: !!props.containerStyles
-    })}>
+    })}
+  >
     {' '}
     <IconValidationX />{' '}
   </animated.div>
@@ -37,7 +38,8 @@ export const StatusSuccess = (props) => (
     style={props.iconStyles}
     className={cn(styles.statusIcon, styles.checkIcon, {
       [props.containerStyles]: !!props.containerStyles
-    })}>
+    })}
+  >
     {' '}
     <IconValidationCheck />
   </animated.div>
@@ -63,7 +65,8 @@ export const StatusMessage = (props) => {
         [props.containerClassName]: !!props.containerClassName,
         [styles.clickable]: props.isClickable
       })}
-      onClick={props.onClick}>
+      onClick={props.onClick}
+    >
       <StatusDefault containerStyles={cn(styles.defaultStatusIcon)} />
       {transitions.map(
         ({ item: StatusIcon, props: animateProps, key }) =>
@@ -87,7 +90,8 @@ export const StatusMessage = (props) => {
         className={cn(styles.label, {
           [styles.errorLabel]: props.status === 'error',
           [props.labelClassName]: !!props.labelClassName
-        })}>
+        })}
+      >
         {props.label}
         {props.isClickable && <IconArrow className={styles.iconArrow} />}
       </div>

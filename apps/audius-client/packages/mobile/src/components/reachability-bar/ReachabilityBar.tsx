@@ -70,7 +70,8 @@ export const ReachabilityBar = () => {
           style={[
             styles.text,
             { transform: [{ translateY: translationAnim }] }
-          ]}>
+          ]}
+        >
           {messages.alert}
         </Animated.Text>
       </View>

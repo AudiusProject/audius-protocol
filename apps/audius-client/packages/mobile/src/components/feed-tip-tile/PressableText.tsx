@@ -19,7 +19,8 @@ export const PressableText = (props: PressableTextProps) => {
     <TouchableWithoutFeedback
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      {...other}>
+      {...other}
+    >
       {children({ pressed })}
     </TouchableWithoutFeedback>
   )

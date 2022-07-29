@@ -64,7 +64,8 @@ const SignOn = ({
       isMobile={isMobile}
       signIn={signIn}
       initialPage={initialPage}
-      page={page}>
+      page={page}
+    >
       {content}
     </SignOnProvider>
   ) : null

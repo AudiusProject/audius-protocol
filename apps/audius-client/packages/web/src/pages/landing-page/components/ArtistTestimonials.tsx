@@ -160,7 +160,8 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
                   (x) => `translate3d(0,${x}px,0)`
                 ),
                 width: '100%'
-              }}>
+              }}
+            >
               <h3 className={styles.title}>{messages.title}</h3>
               <h3 className={styles.subTitle}>{messages.subtitle}</h3>
             </animated.div>
@@ -177,10 +178,12 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
             position: 'absolute',
             top: '-70px',
             height: '100%'
-          }}>
+          }}
+        >
           <div
             className={styles.dotsBackground}
-            style={{ backgroundImage: `url(${dots2x})` }}></div>
+            style={{ backgroundImage: `url(${dots2x})` }}
+          ></div>
         </Parallax>
       </div>
     </div>

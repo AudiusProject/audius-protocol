@@ -58,13 +58,15 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           ref={ref}
           title={title || ''}
           zIndex={zIndex}
-          containerRef={containerRef}>
+          containerRef={containerRef}
+        >
           <div className={styles.menu}>
             {items.map((item, i) => (
               <div
                 key={typeof item.text === 'string' ? `${item.text}_${i}` : i}
                 className={cn(styles.item, item.className)}
-                onClick={handleMenuItemClick(item)}>
+                onClick={handleMenuItemClick(item)}
+              >
                 {item.icon && (
                   <div className={cn(styles.icon, item.iconClassName)}>
                     {item.icon}

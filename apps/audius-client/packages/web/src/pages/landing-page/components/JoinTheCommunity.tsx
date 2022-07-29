@@ -69,7 +69,8 @@ const Card = (props: CardProps) => {
         setMouseDown(false)
       }}
       onMouseUp={() => setMouseDown(false)}
-      onMouseDown={() => setMouseDown(true)}>
+      onMouseDown={() => setMouseDown(true)}
+    >
       <animated.div
         className={cn(styles.cardContainer, props.containerClass)}
         style={{
@@ -77,7 +78,8 @@ const Card = (props: CardProps) => {
           transform: mouseDown ? '' : transform,
           backgroundBlendMode: 'multiply',
           background: `url(${props.image}) center/cover, ${props.backgroundGradient}`
-        }}>
+        }}
+      >
         <div className={cn(styles.cardContent)}>
           <div className={styles.cardTitle}>{props.title}</div>
           <div className={styles.cardDescription}>{props.description}</div>
@@ -116,7 +118,8 @@ const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
             style={{
               backgroundBlendMode: 'multiply',
               background: `url(${card.image}) center/cover, ${card.backgroundGradient}`
-            }}>
+            }}
+          >
             <div className={cn(styles.mobileCardBG)}>
               <div className={styles.cardTitle}>{card.title}</div>
               <div className={styles.cardDescription}>{card.description}</div>
@@ -138,7 +141,8 @@ const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
               transform: textStyles.x.interpolate(
                 (x) => `translate3d(0,${x}px,0)`
               )
-            }}>
+            }}
+          >
             <div className={styles.header}>
               <div className={styles.title}>{messages.title}</div>
               <div className={styles.subTitle}>{messages.subTitle}</div>

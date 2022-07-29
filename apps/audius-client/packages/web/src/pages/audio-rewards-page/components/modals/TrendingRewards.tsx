@@ -229,7 +229,8 @@ export const TrendingRewardsModal = () => {
       }
       allowScroll
       showTitleHeader
-      showDismissButton>
+      showDismissButton
+    >
       <TrendingRewardsBody dismissModal={() => setOpen(false)} />
     </ModalDrawer>
   )

@@ -25,7 +25,8 @@ export const NotificationModal = (props: NotificationModalProps) => {
       bodyClassName={styles.modalContainer}
       isOpen={!!isOpen}
       showDismissButton
-      onClose={onClose}>
+      onClose={onClose}
+    >
       <div className={styles.panelContainer}>
         <div className={styles.header}>
           <IconRemove className={styles.iconRemove} onClick={onClose} />

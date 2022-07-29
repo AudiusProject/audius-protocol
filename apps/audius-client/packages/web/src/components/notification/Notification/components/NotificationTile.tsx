@@ -46,7 +46,8 @@ export const NotificationTile = (props: NotificationTileProps) => {
       })}
       tabIndex={0}
       role='button'
-      onClick={handleClick}>
+      onClick={handleClick}
+    >
       {children}
     </div>
   )

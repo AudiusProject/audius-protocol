@@ -83,7 +83,8 @@ const AudioBreakdownBody = () => {
             text={messages.linkedWalletsTooltip}
             className={styles.tooltip}
             mouseEnterDelay={0.1}
-            mount='body'>
+            mount='body'
+          >
             <IconInfo className={wm(styles.iconInfo)} />
           </Tooltip>
         </div>
@@ -102,7 +103,8 @@ const AudioBreakdownModal = () => {
       isFullscreen={true}
       showTitleHeader
       showDismissButton
-      useGradientTitle={false}>
+      useGradientTitle={false}
+    >
       <AudioBreakdownBody />
     </ModalDrawer>
   )

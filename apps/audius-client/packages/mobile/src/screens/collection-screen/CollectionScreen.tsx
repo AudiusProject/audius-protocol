@@ -216,7 +216,8 @@ const CollectionScreenComponent = ({
     <Screen>
       <VirtualizedScrollView
         listKey={`playlist-${collection.playlist_id}`}
-        style={styles.root}>
+        style={styles.root}
+      >
         <CollectionScreenDetailsTile
           description={description ?? ''}
           extraDetails={extraDetails}

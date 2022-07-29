@@ -31,7 +31,8 @@ const PlayBarProvider = ({
     <div
       className={cn(styles.playBarWrapper, {
         [styles.isMobile]: isMobile
-      })}>
+      })}
+    >
       {isMobile ? (
         <NowPlayingDrawer
           isPlaying={!!playingUid || !!collectible}

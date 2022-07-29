@@ -60,7 +60,8 @@ class Dropdown extends Component {
               onClick={() => {
                 this.onClick(i, item.onClick)
               }}
-              className={cn(textClassName)}>
+              className={cn(textClassName)}
+            >
               {item.text}
             </div>
           </AntMenu.Item>
@@ -80,7 +81,8 @@ class Dropdown extends Component {
             disabled={disabled}
             onVisibleChange={this.onVisibleChange}
             // Mount the dropdown inside the dropdown div.
-            getPopupContainer={(trigger) => trigger.parentNode}>
+            getPopupContainer={(trigger) => trigger.parentNode}
+          >
             <div className={styles.selector}>
               <div className={cn(styles.selectorText, textClassName)}>
                 {selection}

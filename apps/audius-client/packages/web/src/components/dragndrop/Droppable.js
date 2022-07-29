@@ -81,7 +81,8 @@ const Droppable = (props) => {
       ref={droppableRef}
       className={cn(styles.droppable, props.className, {
         [props.hoverClassName]: hovered && canDrop
-      })}>
+      })}
+    >
       {props.children}
     </div>
   )

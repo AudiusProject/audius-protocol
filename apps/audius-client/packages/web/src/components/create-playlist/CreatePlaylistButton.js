@@ -9,7 +9,8 @@ const CreatePlaylistButton = (props) => {
   return (
     <button
       className={cn(props.className, styles.createPlaylistButton)}
-      onClick={props.onClick}>
+      onClick={props.onClick}
+    >
       <IconCreatePlaylist />
       <div>Create Playlist</div>
     </button>

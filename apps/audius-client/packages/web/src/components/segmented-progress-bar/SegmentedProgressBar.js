@@ -26,15 +26,18 @@ const SegmentedProgressBar = ({ numSteps, stepsComplete, isCompact }) => {
     <div
       className={cn(styles.container, {
         [styles.containerCompact]: isCompact
-      })}>
+      })}
+    >
       <div
         className={cn(styles.segmentContainerMask, {
           [styles.segmentContainerMaskCompact]: isCompact
-        })}>
+        })}
+      >
         <div
           className={cn(styles.segmentContainer, {
             [styles.segmentContainerCompact]: isCompact
-          })}>
+          })}
+        >
           {range(numSteps).map((_, i) => {
             const isVisible = i <= stepsComplete - 1
             return (

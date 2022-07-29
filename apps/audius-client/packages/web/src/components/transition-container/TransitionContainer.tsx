@@ -28,7 +28,8 @@ export function TransitionContainer<T>({
       from={fromStyles}
       enter={enterStyles}
       leave={leaveStyles}
-      config={config}>
+      config={config}
+    >
       {(item) => (style) =>
         (
           <animated.div style={{ ...style, ...additionalStyles }}>

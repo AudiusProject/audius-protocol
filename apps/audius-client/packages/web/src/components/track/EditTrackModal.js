@@ -104,7 +104,8 @@ const EditTrackModal = ({
       headerContainerClassName={styles.modalHeader}
       showDismissButton
       showTitleHeader
-      dismissOnClickOutside={!isArtworkPopupOpen}>
+      dismissOnClickOutside={!isArtworkPopupOpen}
+    >
       <div className={styles.editTrack}>
         <FormTile
           // Key the form tile by id so each id gets a different instance

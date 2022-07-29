@@ -66,7 +66,8 @@ class SelectPage extends Component {
           <div
             className={cn(styles.uploaded, {
               [styles.hide]: tracks.length === 0
-            })}>
+            })}
+          >
             {tracks.length > 0 ? (
               <div>
                 <TracksPreview
