@@ -22,6 +22,40 @@ commands:
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
+  slack/basic:
+    parameters:
+      branch_pattern:
+        description: branch_pattern arg for slack/notify
+        type: string
+        default: .+
+      channel:
+        description: Slack channel to send message to
+        type: string
+        default: C03EK0C69QD
+      text:
+        description: Markdown formatted Slack message
+        type: string
+        default: ""
+    steps:
+      - slack/notify:
+          channel: << pipeline.parameters.channel >>
+          branch_pattern: << pipeline.parameters.branch_pattern >>
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "<< pipeline.parameters.text >>",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+          event: always
   run-on-gcp:
     parameters:
       command:
@@ -113,43 +147,6 @@ parameters:
     default: false
 
 jobs:
-  slack/basic:
-    docker:
-      - image: 'cimg/base:stable'
-    parameters:
-      branch_pattern:
-        description: branch_pattern arg for slack/notify
-        type: string
-        default: .+
-      channel:
-        description: Slack channel to send message to
-        type: string
-        default: C03EK0C69QD
-      text:
-        description: Markdown formatted Slack message
-        type: string
-        default: ""
-    steps:
-      - slack/notify:
-          channel: << pipeline.parameters.channel >>
-          branch_pattern: << pipeline.parameters.branch_pattern >>
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "<< pipeline.parameters.text >>",
-                      "emoji": true
-                    }
-                  ]
-                }
-              ]
-            }
-          event: always
-
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
