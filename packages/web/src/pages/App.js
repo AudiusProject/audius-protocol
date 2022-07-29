@@ -5,7 +5,8 @@ import {
   Name,
   SmartCollectionVariant,
   Status,
-  Theme
+  Theme,
+  StringKeys
 } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -13,7 +14,6 @@ import { matchPath } from 'react-router'
 import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
-import { StringKeys } from 'common/services/remote-config'
 import {
   getHasAccount,
   getAccountStatus,

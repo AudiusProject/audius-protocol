@@ -1,4 +1,11 @@
-import { Name, DefaultSizes, SquareSizes, Kind, Status } from '@audius/common'
+import {
+  Name,
+  DefaultSizes,
+  SquareSizes,
+  Kind,
+  Status,
+  makeKindId
+} from '@audius/common'
 import {
   all,
   call,
@@ -21,7 +28,6 @@ import { getTrack } from 'common/store/cache/tracks/selectors'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
 import { squashNewLines, formatUrlName } from 'common/utils/formatUtil'
-import { makeKindId } from 'common/utils/uid'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'

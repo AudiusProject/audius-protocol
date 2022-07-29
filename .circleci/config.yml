@@ -69,8 +69,12 @@ jobs:
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
             - ./packages/stems/node_modules
-            - ./packages/stems/dist
             - ./packages/common/node_modules
+
+      - save_cache:
+          key: cache-{{ .Revision }}
+          paths:
+            - ./packages/stems/dist
             - ./packages/common/dist
 
   # Bump version and create release branch

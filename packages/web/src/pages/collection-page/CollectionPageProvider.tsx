@@ -14,7 +14,8 @@ import {
   SmartCollection,
   FavoriteType,
   Kind,
-  Status
+  Status,
+  Uid
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -68,7 +69,6 @@ import { setFavorite } from 'common/store/user-list/favorites/actions'
 import { setRepost } from 'common/store/user-list/reposts/actions'
 import { RepostType } from 'common/store/user-list/reposts/types'
 import { formatUrlName } from 'common/utils/formatUtil'
-import { Uid } from 'common/utils/uid'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'

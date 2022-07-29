@@ -3,11 +3,11 @@ import {
   TimeRange,
   Track,
   UserTrackMetadata,
-  Nullable
+  Nullable,
+  StringKeys
 } from '@audius/common'
 import { call, put, select } from 'redux-saga/effects'
 
-import { StringKeys } from 'common/services/remote-config'
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { setLastFetchedTrendingGenre } from 'common/store/pages/trending/actions'

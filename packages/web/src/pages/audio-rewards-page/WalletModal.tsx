@@ -5,7 +5,8 @@ import {
   BNWei,
   StringWei,
   WalletAddress,
-  Nullable
+  Nullable,
+  FeatureFlags
 } from '@audius/common'
 import { IconDiscord } from '@audius/stems'
 import cn from 'classnames'
@@ -13,7 +14,6 @@ import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
-import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   getHasAssociatedWallets,

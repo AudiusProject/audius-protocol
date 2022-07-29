@@ -5,7 +5,8 @@ import {
   PlaylistLibrary,
   PlaylistLibraryFolder,
   PlaylistLibraryIdentifier,
-  User
+  User,
+  makeKindId
 } from '@audius/common'
 import {
   all,
@@ -31,7 +32,6 @@ import {
   removePlaylistLibraryDuplicates,
   replaceTempWithResolvedPlaylists
 } from 'common/store/playlist-library/helpers'
-import { makeKindId } from 'common/utils/uid'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getResult } from 'store/confirmer/selectors'

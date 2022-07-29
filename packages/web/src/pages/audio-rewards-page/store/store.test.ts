@@ -2,7 +2,9 @@ import {
   ChallengeRewardID,
   FailureReason,
   UserChallenge,
-  StringAudio
+  StringAudio,
+  IntKeys,
+  StringKeys
 } from '@audius/common'
 import delayP from '@redux-saga/delay-p'
 import { expectSaga } from 'redux-saga-test-plan'
@@ -10,7 +12,6 @@ import { call, select } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { all, fork } from 'redux-saga/effects'
 
-import { IntKeys, StringKeys } from 'common/services/remote-config'
 import {
   getAccountUser,
   getUserHandle,

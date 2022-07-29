@@ -1,8 +1,7 @@
-import { Name, Chain, BNWei } from '@audius/common'
+import { Name, Chain, BNWei, FeatureFlags } from '@audius/common'
 import BN from 'bn.js'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga/macro'
 
-import { FeatureFlags } from 'common/services/remote-config'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
 import {

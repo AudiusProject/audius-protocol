@@ -1,4 +1,13 @@
-import { ID, UID, Collection, Kind, Status, Track, User } from '@audius/common'
+import {
+  ID,
+  UID,
+  Collection,
+  Kind,
+  Status,
+  Track,
+  User,
+  Uid
+} from '@audius/common'
 
 import { CommonState } from 'common/store'
 import { getAllEntries, getEntry } from 'common/store/cache/selectors'
@@ -7,7 +16,6 @@ import {
   getUser as getUserById,
   getUsers
 } from 'common/store/cache/users/selectors'
-import { Uid } from 'common/utils/uid'
 
 export const getCollection = (
   state: CommonState,

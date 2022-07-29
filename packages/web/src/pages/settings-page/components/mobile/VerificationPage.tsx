@@ -5,7 +5,8 @@ import {
   Name,
   ProfilePictureSizes,
   SquareSizes,
-  Status
+  Status,
+  BooleanKeys
 } from '@audius/common'
 import {
   Button,
@@ -16,7 +17,6 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import { BooleanKeys } from 'common/services/remote-config'
 import { InstagramProfile, TwitterProfile } from 'common/store/account/reducer'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

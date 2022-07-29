@@ -1,4 +1,4 @@
-import { Kind, ID, Name, Track, User } from '@audius/common'
+import { Kind, ID, Name, Track, User, makeKindId } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
 import * as accountActions from 'common/store/account/reducer'
@@ -10,7 +10,6 @@ import { getUser } from 'common/store/cache/users/selectors'
 import { updateOptimisticListenStreak } from 'common/store/pages/audio-rewards/slice'
 import * as socialActions from 'common/store/social/tracks/actions'
 import { formatShareText } from 'common/utils/formatUtil'
-import { makeKindId } from 'common/utils/uid'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import AudiusBackend from 'services/AudiusBackend'
 import TrackDownload from 'services/audius-backend/TrackDownload'

@@ -1,7 +1,7 @@
+import { StringKeys } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import { takeEvery } from 'redux-saga/effects'
 
-import { StringKeys } from 'common/services/remote-config'
 import {
   formatInstagramProfile,
   formatTwitterProfile

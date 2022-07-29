@@ -1,6 +1,6 @@
+import { remoteConfig } from '@audius/common'
 import * as optimizely from '@optimizely/react-sdk'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { remoteConfig } from 'audius-client/src/common/services/remote-config'
 import Config from 'react-native-config'
 
 export const FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY = 'featureFlagSessionId'

@@ -1,7 +1,15 @@
-import { Kind, ID, UID, Cache, Collection, Track, User } from '@audius/common'
+import {
+  Kind,
+  ID,
+  UID,
+  Cache,
+  Collection,
+  Track,
+  User,
+  Uid
+} from '@audius/common'
 
 import { CommonState } from 'common/store'
-import { Uid } from 'common/utils/uid'
 
 import { TracksCacheState } from './tracks/types'
 import { UsersCacheState } from './users/types'

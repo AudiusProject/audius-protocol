@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from '@audius/common'
+import { Name, FeatureFlags } from '@audius/common'
 import {
   Modal,
   SegmentedControl,
@@ -11,7 +11,6 @@ import {
   IconPlaylists
 } from '@audius/stems'
 
-import { FeatureFlags } from 'common/services/remote-config'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { make, useRecord } from 'store/analytics/actions'
 import zIndex from 'utils/zIndex'
