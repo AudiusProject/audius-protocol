@@ -86,7 +86,7 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   // Max millis to run a find-replica-set-updates job for before marking it as stalled
   FIND_REPLICA_SET_UPDATES: 5 /* min */ * 60 * 1000,
   // Max millis to run a fetch cNodeEndpoint->spId mapping job for before marking it as stalled
-  FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 1 /* min */ * 60 * 1000,
+  FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 5 /* min */ * 60 * 1000,
   // Max millis to run a manual sync job for before marking it as stalled
   MANUAL_SYNC: 1 /* min */ * 60 * 1000,
   // Max millis to run a recurring sync job for before marking it as stalled
