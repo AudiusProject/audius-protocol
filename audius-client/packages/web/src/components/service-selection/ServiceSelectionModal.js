@@ -196,12 +196,14 @@ const ServiceSelectionModal = ({
       showDismissButton
       showTitleHeader
       isOpen={show}
-      onClose={close}>
+      onClose={close}
+    >
       <Scrollbar className={styles.scrollable}>
         <DragDropContext
           onDragStart={onDragStart}
           onDragUpdate={onDragUpdate}
-          onDragEnd={onDragEnd}>
+          onDragEnd={onDragEnd}
+        >
           <div className={styles.subtitle}>
             Pick the servers that host your Audius content.
           </div>
@@ -214,14 +216,16 @@ const ServiceSelectionModal = ({
                       [styles.dragging]: dragging
                     })}
                     ref={provided.innerRef}
-                    {...provided.droppableProps}>
+                    {...provided.droppableProps}
+                  >
                     {/* Primary */}
                     <div className={styles.section}>
                       <div className={styles.header}>
                         Primary Server (Select One)
                       </div>
                       <div
-                        className={cn(styles.services, styles.primaryServices)}>
+                        className={cn(styles.services, styles.primaryServices)}
+                      >
                         <DraggableService
                           id={PRIMARY_SERVICE_ID}
                           className={cn(styles.service, styles.primary)}
@@ -291,7 +295,8 @@ const ServiceSelectionModal = ({
                   <div
                     className={cn(styles.section, styles.available)}
                     ref={provided.innerRef}
-                    {...provided.droppableProps}>
+                    {...provided.droppableProps}
+                  >
                     <SearchBar
                       className={styles.searchBar}
                       iconClassname={styles.searchIcon}
@@ -321,7 +326,8 @@ const ServiceSelectionModal = ({
                       {searchQuery !== '' && (
                         <div
                           className={styles.clearSearch}
-                          onClick={clearSearch}>
+                          onClick={clearSearch}
+                        >
                           <div>Clear Search</div>
                         </div>
                       )}

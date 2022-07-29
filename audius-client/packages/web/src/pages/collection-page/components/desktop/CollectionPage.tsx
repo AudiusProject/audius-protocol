@@ -242,7 +242,8 @@ const CollectionPage = ({
       description={pageDescription}
       canonicalUrl={canonicalUrl}
       containerClassName={styles.pageContainer}
-      scrollableSearch>
+      scrollableSearch
+    >
       <div className={styles.bodyWrapper}>
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (

@@ -355,7 +355,8 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         title={trendingTitle}
         description={trendingDescription}
         size='large'
-        header={header}>
+        header={header}
+      >
         {body}
       </Page>
       <GenreSelectionModal

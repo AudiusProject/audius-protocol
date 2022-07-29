@@ -268,7 +268,8 @@ const TrendingPageMobileContent = ({
     <MobilePageContainer
       title={trendingTitle}
       description={trendingDescription}
-      canonicalUrl={`${BASE_URL}${TRENDING_PAGE}`}>
+      canonicalUrl={`${BASE_URL}${TRENDING_PAGE}`}
+    >
       <div className={styles.tabsContainer}>
         <div className={styles.tabBodyHolder}>
           <PullToRefresh fetchContent={asyncRefresh[trendingTimeRange]}>

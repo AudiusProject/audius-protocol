@@ -24,7 +24,8 @@ const NavBanner = (props) => {
         <div
           className={cn(styles.navBanner, {
             overflowVisible: !props.shouldMaskContent
-          })}>
+          })}
+        >
           <div className={styles.tabs}>{props.tabs}</div>
 
           {props.isArtist && (

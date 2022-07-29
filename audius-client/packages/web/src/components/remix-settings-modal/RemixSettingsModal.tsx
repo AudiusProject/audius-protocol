@@ -129,7 +129,8 @@ const RemixSettingsModal = ({
       bodyClassName={styles.modalContainer}
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
-      subtitleClassName={styles.modalSubtitle}>
+      subtitleClassName={styles.modalSubtitle}
+    >
       <div className={styles.content}>
         <div className={styles.info}>{messages.remixOf}</div>
         <Input

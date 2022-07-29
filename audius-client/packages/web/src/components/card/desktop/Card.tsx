@@ -170,7 +170,8 @@ const Card = ({
     bottomActions = (
       <div
         className={sizeStyles.actionsContainer}
-        onClick={onBottomActionsClick}>
+        onClick={onBottomActionsClick}
+      >
         <ActionsTab
           handle={handle}
           standalone
@@ -190,7 +191,8 @@ const Card = ({
     bottomActions = (
       <div
         className={sizeStyles.actionsContainer}
-        onClick={onBottomActionsClick}>
+        onClick={onBottomActionsClick}
+      >
         <Menu menu={menu}>
           {(ref, triggerPopup) => (
             <div className={styles.iconContainer} onClick={triggerPopup}>
@@ -210,11 +212,13 @@ const Card = ({
   return (
     <div
       className={cn(className, styles.cardContainer, sizeStyles.cardContainer)}
-      onClick={onClick}>
+      onClick={onClick}
+    >
       <div
         className={cn(styles.coverArt, sizeStyles.coverArt, {
           [styles.userCardImage]: isUser
-        })}>
+        })}
+      >
         {isUser ? (
           <UserImage
             isLoading={isLoading}

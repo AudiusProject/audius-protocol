@@ -179,7 +179,8 @@ const TracksTableContainer = ({
     () => [
       <div
         key='listed'
-        className={cn(styles.sectionContainer, styles.tabBodyWrapper)}>
+        className={cn(styles.sectionContainer, styles.tabBodyWrapper)}
+      >
         <TracksTable
           dataSource={listedDataSource}
           limit={5}
@@ -193,7 +194,8 @@ const TracksTableContainer = ({
       </div>,
       <div
         key='unlisted'
-        className={cn(styles.sectionContainer, styles.tabBodyWrapper)}>
+        className={cn(styles.sectionContainer, styles.tabBodyWrapper)}
+      >
         <TracksTable
           dataSource={unlistedDataSource}
           limit={5}
@@ -380,7 +382,8 @@ export class ArtistDashboardPage extends Component<
         title='Dashboard'
         description='View important stats like plays, reposts, and more.'
         contentClassName={styles.pageContainer}
-        header={header}>
+        header={header}
+      >
         {!account || status === Status.LOADING ? (
           <LoadingSpinner className={styles.spinner} />
         ) : (

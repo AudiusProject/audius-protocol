@@ -33,7 +33,8 @@ const PrivacyPolicyPage = (props: PrivacyPolicyPageProps) => {
             <a
               href={privacyPolicyDocumentRoute}
               className={styles.downloadLink}
-              download>
+              download
+            >
               {messages.download}
             </a>
           </div>
@@ -41,7 +42,8 @@ const PrivacyPolicyPage = (props: PrivacyPolicyPageProps) => {
           <iframe
             title='Privacy Policy'
             src={privacyPolicyDocumentRoute}
-            className={styles.pdfIFrame}></iframe>
+            className={styles.pdfIFrame}
+          ></iframe>
         )}
       </div>
       <Footer

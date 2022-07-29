@@ -61,20 +61,23 @@ export const PlaylistNavLink = ({
         isInsideFolder
           ? ['library-playlist']
           : ['library-playlist', 'playlist-folder']
-      }>
+      }
+    >
       <Draggable
         id={playlistId}
         text={name}
         link={link}
         kind='library-playlist'
         onDrag={onDrag}
-        onDrop={onDrop}>
+        onDrop={onDrop}
+      >
         <NavLink
           {...navLinkProps}
           draggable={false}
           className={cn(className, styles.navLink, {
             [styles.dragging]: isDragging
-          })}>
+          })}
+        >
           {children}
         </NavLink>
       </Draggable>
@@ -122,7 +125,8 @@ export const PlaylistNavItem = ({
       hoverClassName={navColumnStyles.droppableHover}
       onDrop={addTrack}
       acceptedKinds={['track']}
-      disabled={!isOwner}>
+      disabled={!isOwner}
+    >
       <PlaylistNavLink
         isInsideFolder={isInsideFolder}
         droppableKey={id}
@@ -150,7 +154,8 @@ export const PlaylistNavItem = ({
         onMouseEnter={() => {
           setIsHovering(true)
         }}
-        onMouseLeave={() => setIsHovering(false)}>
+        onMouseLeave={() => setIsHovering(false)}
+      >
         <div className={styles.libraryLinkContentContainer}>
           {!hasUpdate ? null : (
             <div className={navColumnStyles.updateDotContainer}>
@@ -159,7 +164,8 @@ export const PlaylistNavItem = ({
                 shouldWrapContent={true}
                 shouldDismissOnClick={false}
                 mouseEnterDelay={0.1}
-                text={messages.recentlyUpdatedTooltip}>
+                text={messages.recentlyUpdatedTooltip}
+              >
                 <div>
                   <UpdateDot />
                 </div>

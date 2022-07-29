@@ -1,11 +1,25 @@
 # `eslint-config-audius`
 
-> TODO: description
+A neat setup for eslint & prettier by the Audius team <3
+
+## Install
+
+`npm i -D eslint-config-audius`
+
+Note: Be sure to install all of the peer dependencies
 
 ## Usage
 
 ```
-const eslintConfigAudius = require('eslint-config-audius');
+{
+  "extends": 'audius'
+}
+```
 
-// TODO: DEMONSTRATE API
+If using prettier formatter separately from eslint, be sure to add this to your `.prettierrc` file:
+
+```
+module.exports = {
+  ...require('eslint-config-audius/.prettierc')
+}
 ```

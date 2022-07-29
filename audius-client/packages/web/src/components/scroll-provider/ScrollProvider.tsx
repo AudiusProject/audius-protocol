@@ -60,7 +60,8 @@ export const ScrollProvider = memo((props: { children: JSX.Element }) => {
         value={{
           setScrollForRoute,
           getScrollForRoute
-        }}>
+        }}
+      >
         {props.children}
       </ScrollContext.Provider>
     )

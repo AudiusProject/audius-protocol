@@ -107,12 +107,14 @@ const TrackTile = memo(
         <Tooltip
           text={'Share'}
           disabled={isDisabled || hideShare}
-          placement={'bottom'}>
+          placement={'bottom'}
+        >
           <div
             className={cn(styles.iconButtonContainer, {
               [styles.isHidden]: hideShare
             })}
-            onClick={onStopPropagation}>
+            onClick={onStopPropagation}
+          >
             <ShareButton
               onClick={onClickShare}
               isDarkMode={!!isDarkMode}
@@ -143,7 +145,8 @@ const TrackTile = memo(
           // Standalone means that this tile is not w/ a playlist
           [styles.standalone]: !!standalone
         })}
-        onClick={isLoading || isDisabled ? undefined : onTogglePlay}>
+        onClick={isLoading || isDisabled ? undefined : onTogglePlay}
+      >
         {/* prefix ordering */}
         <RankAndIndexIndicator
           hasOrdering={hasOrdering}
@@ -155,7 +158,8 @@ const TrackTile = memo(
         <div
           className={cn(styles.imageContainer, {
             [styles.leftSpacing]: !hasOrdering
-          })}>
+          })}
+        >
           {artwork}
         </div>
         {isArtistPick && (
@@ -174,7 +178,8 @@ const TrackTile = memo(
           className={cn(styles.body, {
             // if track and not playlist/album
             [styles.withoutHeader]: true
-          })}>
+          })}
+        >
           <div className={cn(styles.topSection)}>
             <div className={cn(styles.headerRow)}>
               {!isLoading && header && <div>{header}</div>}
@@ -202,7 +207,8 @@ const TrackTile = memo(
             <div
               className={cn(styles.socialsRow, {
                 [styles.isHidden]: isUnlisted
-              })}>
+              })}
+            >
               {isLoading ? (
                 <Skeleton width='30%' className={styles.skeleton} />
               ) : (
@@ -231,7 +237,8 @@ const TrackTile = memo(
                 <div
                   className={cn(styles.plays, {
                     [styles.isHidden]: hidePlays
-                  })}>
+                  })}
+                >
                   {formatCount(listenCount)}
                   {messages.getPlays(listenCount)}
                 </div>
@@ -249,12 +256,14 @@ const TrackTile = memo(
                 <Tooltip
                   text={repostLabel}
                   disabled={isDisabled || isOwner}
-                  placement={'bottom'}>
+                  placement={'bottom'}
+                >
                   <div
                     className={cn(styles.iconButtonContainer, {
                       [styles.isDisabled]: isOwner,
                       [styles.isHidden]: isUnlisted
-                    })}>
+                    })}
+                  >
                     <RepostButton
                       aria-label={repostLabel}
                       onClick={onClickRepost}
@@ -269,12 +278,14 @@ const TrackTile = memo(
                 <Tooltip
                   text={isFavorited ? 'Unfavorite' : 'Favorite'}
                   disabled={isDisabled || isOwner}
-                  placement={'bottom'}>
+                  placement={'bottom'}
+                >
                   <div
                     className={cn(styles.iconButtonContainer, {
                       [styles.isDisabled]: isOwner,
                       [styles.isHidden]: isUnlisted
-                    })}>
+                    })}
+                  >
                     <FavoriteButton
                       onClick={onClickFavorite}
                       isActive={isFavorited}

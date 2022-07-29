@@ -64,7 +64,8 @@ export const SearchScreen = () => {
       }
       variant='white'
       title={null}
-      headerTitle={null}>
+      headerTitle={null}
+    >
       <Header text='Search' />
       {renderBody()}
     </Screen>

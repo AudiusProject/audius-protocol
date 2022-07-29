@@ -45,7 +45,8 @@ const UploadPage = (props) => {
       key={page}
       from={{ opacity: 0.2 }}
       to={{ opacity: 1 }}
-      config={{ duration: 200 }}>
+      config={{ duration: 200 }}
+    >
       {(animProps) => (
         <div className={styles.upload} style={animProps}>
           <div className={styles.pageContent}>{children}</div>
@@ -454,7 +455,8 @@ class Upload extends Component {
         title='Upload'
         description='Upload and publish audio content to the Audius platform'
         contentClassName={styles.upload}
-        header={header}>
+        header={header}
+      >
         <UploadPage page={page}>{currentPage}</UploadPage>
       </Page>
     )

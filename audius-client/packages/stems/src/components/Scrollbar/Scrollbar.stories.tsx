@@ -23,7 +23,8 @@ const Template: Story<ScrollbarProps> = ({
         <a
           href='https://www.npmjs.com/package/react-perfect-scrollbar'
           target='_blank'
-          rel='noreferrer'>
+          rel='noreferrer'
+        >
           react-perfect-scrollbar
         </a>{' '}
         under the hood. For advanced use cases, refer to the documentation.
@@ -41,7 +42,8 @@ const Template: Story<ScrollbarProps> = ({
         <a
           href='https://www.npmjs.com/package/react-perfect-scrollbar'
           target='_blank'
-          rel='noreferrer'>
+          rel='noreferrer'
+        >
           react-perfect-scrollbar
         </a>{' '}
         under the hood. For advanced use cases, refer to the documentation.

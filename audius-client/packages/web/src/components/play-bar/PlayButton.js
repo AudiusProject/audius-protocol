@@ -163,7 +163,8 @@ class PlayButton extends Component {
         className={cn(styles.button, styles.playButton)}
         onClick={this.onClick}
         disabled={isLoading}
-        aria-busy={isLoading}>
+        aria-busy={isLoading}
+      >
         {animation}
       </button>
     )

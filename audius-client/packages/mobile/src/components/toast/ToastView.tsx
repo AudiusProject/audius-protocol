@@ -116,7 +116,8 @@ const ToastView = ({ content, timeout, type = 'info' }: ToastViewProps) => {
               }
             ]
           }
-        ]}>
+        ]}
+      >
         <Text style={styles.content} weight={'demiBold'}>
           {content}
         </Text>

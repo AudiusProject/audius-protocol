@@ -45,7 +45,8 @@ export const ArtistRecommendationsPopup = ({
       zIndex={zIndex.FOLLOW_RECOMMENDATIONS_POPUP}
       onClose={onClose}
       className={styles.popup}
-      containerRef={mainContentRef}>
+      containerRef={mainContentRef}
+    >
       <ArtistRecommendations
         itemClassName={styles.popupItem}
         renderHeader={() => (

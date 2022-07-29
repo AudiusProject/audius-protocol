@@ -101,7 +101,8 @@ export const ProfileCompletionChecks = ({
               style={[
                 styles.checkText,
                 config[key] ? styles.checkTextDone : {}
-              ]}>
+              ]}
+            >
               {key}
             </Text>
           </View>

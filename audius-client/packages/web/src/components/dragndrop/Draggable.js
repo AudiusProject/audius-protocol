@@ -82,7 +82,8 @@ const Draggable = (props) => {
       draggable={!isDisabled}
       ref={refFunc}
       className={styles.draggable}
-      {...otherProps}>
+      {...otherProps}
+    >
       {children}
     </tr>
   ) : (
@@ -90,7 +91,8 @@ const Draggable = (props) => {
       draggable={!isDisabled}
       ref={refFunc}
       className={styles.draggable}
-      {...otherProps}>
+      {...otherProps}
+    >
       {children}
     </div>
   )

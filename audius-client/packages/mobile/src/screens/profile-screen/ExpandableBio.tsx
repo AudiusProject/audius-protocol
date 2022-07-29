@@ -92,13 +92,15 @@ export const ExpandableBio = () => {
           <View
             onLayout={handleBioLayout}
             pointerEvents='box-none'
-            style={styles.bioContainer}>
+            style={styles.bioContainer}
+          >
             {!isHeightCalculationDone || (shouldShowMore && !isExpanded) ? (
               <Text
                 style={[
                   styles.bioText,
                   { height: fullBioHeight ? 32 : 'auto' }
-                ]}>
+                ]}
+              >
                 {squashNewLines(bio)}
               </Text>
             ) : (

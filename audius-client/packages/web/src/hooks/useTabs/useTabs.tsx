@@ -55,7 +55,8 @@ const Tab = forwardRef(
         { [styles.tabDisabled]: disabled }
       )}
       onClick={() => !disabled && onClick()}
-      ref={ref}>
+      ref={ref}
+    >
       {icon && <div className={styles.icon}>{icon}</div>}
       <div className={styles.text}>{text}</div>
     </div>
@@ -220,7 +221,8 @@ const TabBar = memo(
           styles.tabBarContainer,
           { [styles.tabBarContainerMobile]: isMobile },
           { [styles.tabBarContainerDesktop]: !isMobile }
-        )}>
+        )}
+      >
         <TabAccent
           style={{
             top: top.interpolate(interpPx),
@@ -237,12 +239,14 @@ const TabBar = memo(
               text={disabledTabTooltipText}
               placement='bottom'
               disabled={!tooltipActive}
-              key={i}>
+              key={i}
+            >
               {/* Extra div inserted here because tooltip needs to pass a ref to it's child :( */}
               <div
                 className={cn(styles.tabWrapper, {
                   [styles.tabWrapperMobile]: isMobile
-                })}>
+                })}
+              >
                 <Tab
                   onClick={() => onClick(i)}
                   ref={refsArr.current[i]}
@@ -653,7 +657,8 @@ const GestureSupportingBodyContainer = memo(
           containerClassName
         )}
         ref={containerCallbackRef}
-        style={containerStyle as CSSProperties}>
+        style={containerStyle as CSSProperties}
+      >
         <animated.div
           className={styles.elementScrollContainer}
           {...bind()}
@@ -661,7 +666,8 @@ const GestureSupportingBodyContainer = memo(
             // @ts-ignore
             transform: scrollContainerProps.x.interpolate(interpX),
             width: containerWidth * elements.length
-          }}>
+          }}
+        >
           {(() => {
             let nextIndex = -1
             if (internalIndex !== activeIndex) {
@@ -698,7 +704,8 @@ const GestureSupportingBodyContainer = memo(
                   style={style}
                   className={cn(styles.elementWrapper, {
                     [styles.isDragging]: getGestureInProgress()
-                  })}>
+                  })}
+                >
                   {shouldRender && e}
                 </div>
               )
@@ -817,7 +824,8 @@ const BodyContainer = memo(
         style={{
           height: `${transitionContainerHeight}px`,
           ...(containerStyle as object)
-        }}>
+        }}
+      >
         {transitions.map(({ item, props, key }) => (
           <animated.div
             key={key}
@@ -827,7 +835,8 @@ const BodyContainer = memo(
               ...elementStyle
             }}
             ref={elementCallbackRef}
-            className={cn(styles.elementWrapper, elementClassName)}>
+            className={cn(styles.elementWrapper, elementClassName)}
+          >
             {elements[item]}
           </animated.div>
         ))}

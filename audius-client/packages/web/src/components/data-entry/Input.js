@@ -113,7 +113,8 @@ class Input extends Component {
             htmlFor={id}
             className={cn('placeholder', styles.placeholder, {
               focus: focused || value !== ''
-            })}>
+            })}
+          >
             {placeholder}
           </label>
         ) : null}

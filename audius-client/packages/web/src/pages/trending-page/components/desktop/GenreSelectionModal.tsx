@@ -34,7 +34,8 @@ const GenreSelectionModal = ({
       onClose={didClose}
       allowScroll={false}
       bodyClassName={styles.modalBody}
-      headerContainerClassName={styles.modalHeader}>
+      headerContainerClassName={styles.modalHeader}
+    >
       <Scrollbar className={styles.scrollbar}>
         <GenreSelectionList
           genres={genres}

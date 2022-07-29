@@ -74,14 +74,16 @@ export const BalanceTile = ({ className }: { className?: string }) => {
           <div
             className={cn(styles.balanceAmount, {
               [styles.hidden]: !totalBalance
-            })}>
+            })}
+          >
             {formatWei(totalBalance || (new BN(0) as BNWei), true, 0)}
           </div>
         </TokenHoverTooltip>
         <div
           className={cn(styles.balance, {
             [styles.hidden]: !totalBalance
-          })}>
+          })}
+        >
           {hasMultipleWallets ? (
             <div onClick={onClickOpen}>
               {messages.totalAudio}

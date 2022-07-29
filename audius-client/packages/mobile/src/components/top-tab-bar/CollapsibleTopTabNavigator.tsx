@@ -40,7 +40,8 @@ export const CollapsibleTabNavigatorContextProvider = ({
 }) => {
   return (
     <CollapsibleTabNavigatorContext.Provider
-      value={{ sceneName, refreshing, onRefresh, scrollY }}>
+      value={{ sceneName, refreshing, onRefresh, scrollY }}
+    >
       {children}
     </CollapsibleTabNavigatorContext.Provider>
   )
@@ -81,7 +82,8 @@ export const CollapsibleTabNavigator = ({
       tabBar={(props) => <TopTabBar {...props} />}
       screenOptions={{
         ...screenOptions
-      }}>
+      }}
+    >
       {children}
     </Tab.Navigator>
   )
@@ -123,13 +125,15 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
         tabBarLabel: label ?? name,
         tabBarIcon: ({ color }) => <Icon fill={color} />
       }}
-      initialParams={initialParams}>
+      initialParams={initialParams}
+    >
       {() => (
         <CollapsibleTabNavigatorContextProvider
           sceneName={name}
           refreshing={refreshing}
           onRefresh={onRefresh}
-          scrollY={scrollY}>
+          scrollY={scrollY}
+        >
           <Component />
         </CollapsibleTabNavigatorContextProvider>
       )}

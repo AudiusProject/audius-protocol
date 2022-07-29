@@ -67,7 +67,8 @@ export const TipSentScreen = () => {
   return (
     <TipScreen
       title={messages.title}
-      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleClose} />}>
+      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleClose} />}
+    >
       <TipHeader status='sent' />
       <ReceiverDetails />
       <DescriptionText>{messages.description}</DescriptionText>

@@ -77,7 +77,8 @@ export const UserProfilePictureList = ({
           <div
             className={cn(styles.profilePictureExtraRoot, {
               [styles.disabled]: disableProfileClick
-            })}>
+            })}
+          >
             <ProfilePicture
               disablePopover
               className={cn(

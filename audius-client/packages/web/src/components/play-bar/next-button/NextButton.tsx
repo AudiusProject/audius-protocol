@@ -16,7 +16,8 @@ const NextButton = ({ onClick, isMobile }: NextButtonProps) => {
         [styles.buttonFixedSize]: isMobile,
         [styles.previousNext]: isMobile
       })}
-      onClick={onClick}>
+      onClick={onClick}
+    >
       <IconNext className={styles.noAnimation} />
     </button>
   )

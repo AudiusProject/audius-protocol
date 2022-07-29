@@ -70,7 +70,8 @@ export const Artwork = ({ track }: ArtworkProps) => {
         offset={[0, 1]}
         radius={15}
         distance={10}
-        startColor={shadowColor}>
+        startColor={shadowColor}
+      >
         <View style={styles.image}>
           <DynamicImage uri={image} />
         </View>

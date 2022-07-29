@@ -116,7 +116,8 @@ const EditPlaylistModal = ({
         dismissOnClickOutside={!isArtworkPopupOpen}
         isOpen={isOpen}
         onClose={onClose}
-        zIndex={zIndex.EDIT_PLAYLIST_MODAL}>
+        zIndex={zIndex.EDIT_PLAYLIST_MODAL}
+      >
         <ModalHeader onClose={onClose}>
           <ModalTitle icon={<IconPlaylists />} title={editPlaylistModalTitle} />
         </ModalHeader>

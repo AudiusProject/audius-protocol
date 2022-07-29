@@ -27,7 +27,8 @@ const TextElement = ({
         [styles.secondary]: type === Type.SECONDARY,
         [styles.isEnabled]: isEnabled
       })}
-      onClick={isEnabled ? onClick : () => {}}>
+      onClick={isEnabled ? onClick : () => {}}
+    >
       {text}
     </div>
   )

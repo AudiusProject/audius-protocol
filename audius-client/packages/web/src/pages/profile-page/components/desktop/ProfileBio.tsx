@@ -240,7 +240,8 @@ export const ProfileBio = ({
           className={cn(styles.description, {
             [styles.truncated]: isCollapsed
           })}
-          ref={bioRef}>
+          ref={bioRef}
+        >
           {squashNewLines(bio)}
         </div>
       </Linkify>
@@ -249,7 +250,8 @@ export const ProfileBio = ({
           <OpacityTransition render={renderCollapsedContent} duration={300} />
           <div
             className={styles.truncateContainer}
-            onClick={handleToggleCollapse}>
+            onClick={handleToggleCollapse}
+          >
             <span>{messages.seeMore}</span>
             <IconCaretDownLine />
           </div>
@@ -260,7 +262,8 @@ export const ProfileBio = ({
           {isCollapsible ? (
             <div
               className={styles.truncateContainer}
-              onClick={handleToggleCollapse}>
+              onClick={handleToggleCollapse}
+            >
               <span>{messages.seeLess}</span>
               <IconCaretUpLine />
             </div>

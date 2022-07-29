@@ -464,7 +464,8 @@ export const OAuthLoginPage = () => {
             className={cn(
               styles.permissionContainer,
               styles.nonFirstPermissionContainer
-            )}>
+            )}
+          >
             <div>
               <IconValidationCheck width={16} height={16} />
             </div>
@@ -479,7 +480,8 @@ export const OAuthLoginPage = () => {
               className={cn(
                 styles.permissionContainer,
                 styles.nonFirstPermissionContainer
-              )}>
+              )}
+            >
               <div>
                 <IconAtSign
                   width={16}
@@ -492,7 +494,8 @@ export const OAuthLoginPage = () => {
                   className={cn(styles.permissionText, {
                     [styles.permissionTextLight]: Boolean(userEmail),
                     [styles.permissionTextExtraLight]: !userEmail
-                  })}>
+                  })}
+                >
                   {userEmail == null ? (
                     <>
                       <LoadingSpinner className={styles.loadingSpinner} /> Email
@@ -581,7 +584,8 @@ export const OAuthLoginPage = () => {
                 className={styles.linkButton}
                 href={SIGN_UP_PAGE}
                 target='_blank'
-                rel='noopener noreferrer'>
+                rel='noopener noreferrer'
+              >
                 {messages.signUp}
               </a>
             </div>

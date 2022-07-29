@@ -103,7 +103,8 @@ export const FollowPage = (props: FollowPageProps) => {
       <Scrollbar className={styles.cardSection}>
         <div
           className={styles.cardsHeader}
-          style={{ maxWidth: isFourWide ? FOUR_TILE_WIDTH : FIVE_TILE_WIDTH }}>
+          style={{ maxWidth: isFourWide ? FOUR_TILE_WIDTH : FIVE_TILE_WIDTH }}
+        >
           <div className={styles.pickForMe} onClick={onAutoSelect}>
             <IconWand className={styles.iconWand} />
             {messages.pickForMe}
@@ -114,7 +115,8 @@ export const FollowPage = (props: FollowPageProps) => {
             [styles.hide]: isTransitioning,
             [styles.show]: !isTransitioning
           })}
-          aria-label='profile selection'>
+          aria-label='profile selection'
+        >
           {users.map((user) => (
             <li key={user.user_id}>
               <UserCard

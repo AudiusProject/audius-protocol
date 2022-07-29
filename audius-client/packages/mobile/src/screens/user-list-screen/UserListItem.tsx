@@ -98,7 +98,8 @@ export const UserListItem = (props: UserListItemProps) => {
         style={styles.root}
         onPress={handlePress}
         onPressIn={handlePressIn}
-        onPressOut={handlePressOut}>
+        onPressOut={handlePressOut}
+      >
         <View style={styles.infoRoot}>
           <ProfilePicture profile={user} style={styles.photo} />
           <View style={styles.userInfo}>

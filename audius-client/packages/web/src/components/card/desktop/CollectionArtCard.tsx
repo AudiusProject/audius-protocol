@@ -143,10 +143,12 @@ const CollectionArtCard = g(
         <PerspectiveCard
           onClick={goToCollection}
           isDisabled={isPerspectiveDisabled}
-          className={styles.perspectiveCard}>
+          className={styles.perspectiveCard}
+        >
           <DynamicImage
             wrapperClassName={styles.coverArt}
-            image={isLoading ? '' : image}>
+            image={isLoading ? '' : image}
+          >
             <Menu menu={menu} onClose={() => setIsPerspectiveDisabled(false)}>
               {(ref, triggerPopup) => (
                 <div
@@ -155,7 +157,8 @@ const CollectionArtCard = g(
                     setIsPerspectiveDisabled(true)
                     triggerPopup()
                   }}
-                  className={styles.iconKebabHorizontalWrapper}>
+                  className={styles.iconKebabHorizontalWrapper}
+                >
                   <IconKebabHorizontal
                     className={styles.iconKebabHorizontal}
                     ref={ref}

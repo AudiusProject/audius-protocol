@@ -36,7 +36,8 @@ const CreatePlaylistForm = (props: FormikProps<PlaylistValues>) => {
       title={messages.title}
       onSubmit={handleSubmit}
       onReset={handleReset}
-      errors={errors}>
+      errors={errors}
+    >
       <PlaylistImageInput />
       <PlaylistNameInput />
       <PlaylistDescriptionInput />

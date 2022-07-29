@@ -488,7 +488,8 @@ const SavedPage = ({
     <MobilePageContainer
       title={title}
       description={description}
-      containerClassName={styles.mobilePageContainer}>
+      containerClassName={styles.mobilePageContainer}
+    >
       {tracks.status === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (

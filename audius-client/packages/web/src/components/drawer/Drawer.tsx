@@ -317,7 +317,8 @@ const DraggableDrawer = ({
         style={{
           // @ts-ignore
           transform: drawerSlideProps.y.interpolate(interpY)
-        }}>
+        }}
+      >
         <animated.div className={styles.playBar} style={contentFadeProps}>
           <div ref={contentRef}>{children}</div>
         </animated.div>
@@ -395,7 +396,8 @@ const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
                   // @ts-ignore
                   interpolateBorderRadius
                 )
-              }}>
+              }}
+            >
               <div className={styles.dismissContainer} onClick={onClose}>
                 <IconRemove />
               </div>

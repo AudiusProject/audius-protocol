@@ -79,7 +79,8 @@ export const SmartCollectionScreen = ({
     return (
       <LinearGradient
         colors={smartCollection.gradientColors}
-        angle={smartCollection.gradientAngle}>
+        angle={smartCollection.gradientAngle}
+      >
         {Icon ? (
           <View style={styles.imageIcon}>
             <Icon width='100%' height='100%' />
@@ -92,7 +93,8 @@ export const SmartCollectionScreen = ({
   return (
     <VirtualizedScrollView
       listKey={`${playlistName}_Playlist_Screen`}
-      style={styles.root}>
+      style={styles.root}
+    >
       <CollectionScreenDetailsTile
         description={description}
         hasSaved={isSaved}

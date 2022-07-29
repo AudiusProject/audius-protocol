@@ -79,7 +79,8 @@ export const SignOnScreen = () => {
   return (
     <Stack.Navigator
       initialRouteName='SignOn'
-      screenOptions={{ animationTypeForReplace: 'push' }}>
+      screenOptions={{ animationTypeForReplace: 'push' }}
+    >
       {signOnScreens.map(({ name, component }) => (
         <Stack.Screen
           key={name}

@@ -25,7 +25,8 @@ export const TabNavigator = ({
       tabBar={(props) => <TopTabBar {...props} />}
       screenOptions={{
         ...screenOptions
-      }}>
+      }}
+    >
       {children}
     </Tab.Navigator>
   )

@@ -48,7 +48,8 @@ export const AnnouncementNotification = (
     <NotificationTile
       notification={notification}
       onClick={handleClick}
-      disableClosePanel>
+      disableClosePanel
+    >
       <NotificationHeader icon={<IconAnnouncement />}>
         <NotificationTitle>
           <ReactMarkdown source={title} escapeHtml={false} />
@@ -59,7 +60,8 @@ export const AnnouncementNotification = (
         {longDescription ? (
           <button
             className={styles.readMore}
-            onClick={handleOpenNotificationModal}>
+            onClick={handleOpenNotificationModal}
+          >
             {messages.readMore}
           </button>
         ) : null}

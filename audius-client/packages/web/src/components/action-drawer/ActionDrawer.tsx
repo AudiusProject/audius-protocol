@@ -69,7 +69,8 @@ const ActionDrawer = ({
                     className,
                     { [styles.darkAction]: isDark },
                     { [styles.destructiveAction]: isDestructive }
-                  )}>
+                  )}
+                >
                   {icon ? (
                     <div className={styles.actionIcon}>{icon}</div>
                   ) : null}

@@ -11,7 +11,8 @@ export const MainContentContextProvider = memo(
       <MainContentContext.Provider
         value={{
           mainContentRef
-        }}>
+        }}
+      >
         {props.children}
       </MainContentContext.Provider>
     )

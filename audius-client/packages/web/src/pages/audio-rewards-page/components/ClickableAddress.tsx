@@ -38,14 +38,16 @@ const ClickableAddress = ({
     <Tooltip
       text={messages.copy}
       placement={ComponentPlacement.TOP}
-      mount={MountPlacement.PARENT}>
+      mount={MountPlacement.PARENT}
+    >
       <div className={cn(styles.toastContainer, { [className!]: !!className })}>
         <Toast
           text={messages.copied}
           delay={2000}
           overlayClassName={styles.toast}
           placement={ComponentPlacement.TOP}
-          mount={MountPlacement.PARENT}>
+          mount={MountPlacement.PARENT}
+        >
           <PurpleBox
             label={label ?? messages.yourAddr}
             className={styles.container}

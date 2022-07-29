@@ -262,7 +262,8 @@ const PlaylistLibrary = ({
         className={cn(navColumnStyles.link, {
           [navColumnStyles.disabledLink]:
             !account || (dragging && draggingKind !== 'library-playlist')
-        })}>
+        })}
+      >
         {name}
       </PlaylistNavLink>
     )
@@ -324,7 +325,8 @@ const PlaylistLibrary = ({
         onDropBelowFolder={(folderId, draggingKind, draggingId) =>
           onReorder(draggingId, folderId, draggingKind)
         }
-        onDropInFolder={handleDropInFolder}>
+        onDropInFolder={handleDropInFolder}
+      >
         {isEmpty(folder.contents) ? null : (
           <div className={styles.folderContentsContainer}>
             {/* This is the droppable area for reordering something in the first slot of the playlist folder. */}

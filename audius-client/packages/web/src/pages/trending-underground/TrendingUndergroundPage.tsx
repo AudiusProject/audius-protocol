@@ -49,7 +49,8 @@ const MobileTrendingUndergroundPage = ({
       title={messages.trendingUndergroundTitle}
       description={messages.description}
       canonicalUrl={`${BASE_URL}${TRENDING_UNDERGROUND_PAGE}`}
-      hasDefaultHeader>
+      hasDefaultHeader
+    >
       <div className={styles.mobileLineupContainer}>
         <div className={styles.mobileBannerContainer}>
           <RewardsBanner bannerType='underground' />
@@ -74,7 +75,8 @@ const DesktopTrendingUndergroundPage = ({
       title={messages.trendingUndergroundTitle}
       description={messages.description}
       size='large'
-      header={header}>
+      header={header}
+    >
       <div className={styles.bannerContainer}>
         <RewardsBanner bannerType='underground' />
       </div>

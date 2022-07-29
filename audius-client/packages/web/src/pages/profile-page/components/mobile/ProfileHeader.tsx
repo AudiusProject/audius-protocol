@@ -317,7 +317,8 @@ const ProfileHeader = ({
         imageStyle={coverPhotoStyle}
         wrapperClassName={cn(styles.coverPhoto, {
           [styles.isEditing]: isEditing
-        })}>
+        })}
+      >
         {isArtist && !isEditing && !isDeactivated ? (
           <BadgeArtist className={styles.badgeArtist} />
         ) : null}
@@ -328,7 +329,8 @@ const ProfileHeader = ({
         className={styles.profilePicture}
         wrapperClassName={cn(styles.profilePictureWrapper, {
           [styles.isEditing]: isEditing
-        })}>
+        })}
+      >
         {isEditing && <UploadStub onChange={onUpdateProfilePicture} />}
       </DynamicImage>
       {!isEditing && !isDeactivated && (
@@ -391,7 +393,8 @@ const ProfileHeader = ({
             </div>
             <div
               className={styles.artistMetric}
-              onClick={followerCount! > 0 ? onGoToFollowersPage : () => {}}>
+              onClick={followerCount! > 0 ? onGoToFollowersPage : () => {}}
+            >
               <div className={styles.artistMetricValue}>
                 {formatCount(followerCount)}
               </div>
@@ -401,7 +404,8 @@ const ProfileHeader = ({
             </div>
             <div
               className={styles.artistMetric}
-              onClick={followingCount! > 0 ? onGoToFollowingPage : () => {}}>
+              onClick={followingCount! > 0 ? onGoToFollowingPage : () => {}}
+            >
               <div className={styles.artistMetricValue}>
                 {formatCount(followingCount)}
               </div>
@@ -443,7 +447,8 @@ const ProfileHeader = ({
                 ref={bioRefCb}
                 className={cn(styles.bio, {
                   [styles.bioExpanded]: hasEllipsis && !isDescriptionMinimized
-                })}>
+                })}
+              >
                 {squashNewLines(bio)}
               </div>
             </Linkify>
@@ -468,7 +473,8 @@ const ProfileHeader = ({
                         // https://github.com/Soapbox/linkifyjs/issues/292
                         // @ts-ignore
                         attributes: { onClick: onDonationLinkClick }
-                      }}>
+                      }}
+                    >
                       {donation}
                     </Linkify>
                   </span>
@@ -479,9 +485,8 @@ const ProfileHeader = ({
           {hasEllipsis ? (
             <div
               className={styles.expandDescription}
-              onClick={() =>
-                setIsDescriptionMinimized(!isDescriptionMinimized)
-              }>
+              onClick={() => setIsDescriptionMinimized(!isDescriptionMinimized)}
+            >
               {isDescriptionMinimized ? messages.showMore : messages.showLess}
             </div>
           ) : null}

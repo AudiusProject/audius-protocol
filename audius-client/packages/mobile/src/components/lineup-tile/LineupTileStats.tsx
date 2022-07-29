@@ -133,7 +133,8 @@ export const LineupTileStats = ({
               !repostCount ? styles.disabledStatItem : {}
             ]}
             disabled={!repostCount}
-            onPress={handlePressReposts}>
+            onPress={handlePressReposts}
+          >
             <Text style={trackTileStyles.statText}>
               {formatCount(repostCount)}
             </Text>
@@ -150,7 +151,8 @@ export const LineupTileStats = ({
               !saveCount ? styles.disabledStatItem : {}
             ]}
             disabled={!saveCount}
-            onPress={handlePressFavorites}>
+            onPress={handlePressFavorites}
+          >
             <Text style={trackTileStyles.statText}>
               {formatCount(saveCount)}
             </Text>

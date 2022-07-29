@@ -282,7 +282,8 @@ const ImageSelectionPopup = ({
       showHeader={true}
       title={messages.popupTitle}
       zIndex={zIndex.IMAGE_SELECTION_POPUP}
-      containerRef={mainContentRef}>
+      containerRef={mainContentRef}
+    >
       <TabSlider
         className={styles.slider}
         options={tabSliderOptions}

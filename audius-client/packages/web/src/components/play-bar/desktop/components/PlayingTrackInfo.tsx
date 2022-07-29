@@ -93,25 +93,29 @@ const PlayingTrackInfo = ({
           isOwner={isOwner}
           kind='track'
           id={trackId}
-          link={fullTrackPage(trackPermalink)}>
+          link={fullTrackPage(trackPermalink)}
+        >
           <animated.div style={trackSpringProps}>
             <div
               className={cn(styles.trackTitle, {
                 [styles.textShadow]: hasShadow
               })}
-              onClick={onClickTrackTitle}>
+              onClick={onClickTrackTitle}
+            >
               {trackTitle}
             </div>
           </animated.div>
         </Draggable>
         <animated.div
           className={styles.artistNameWrapper}
-          style={artistSpringProps}>
+          style={artistSpringProps}
+        >
           <div
             className={cn(styles.artistName, {
               [styles.textShadow]: hasShadow
             })}
-            onClick={onClickArtistName}>
+            onClick={onClickArtistName}
+          >
             {artistName}
           </div>
           <UserBadges

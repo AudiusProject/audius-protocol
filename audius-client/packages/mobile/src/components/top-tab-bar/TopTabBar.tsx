@@ -127,10 +127,8 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
   return (
     <View style={styles.tabBarContainer}>
       <View
-        style={[
-          styles.tabsContainer,
-          { paddingHorizontal: horizontalPadding }
-        ]}>
+        style={[styles.tabsContainer, { paddingHorizontal: horizontalPadding }]}
+      >
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key]
           const label = options.tabBarLabel ?? options.title ?? route.name
@@ -152,7 +150,8 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
                 onLongPress={() => onLongPress(route, index)}
                 onPress={() => onPress(route, index)}
                 style={styles.tab}
-                testID={options.tabBarTestID}>
+                testID={options.tabBarTestID}
+              >
                 <Animated.View style={{ opacity }}>{icon}</Animated.View>
                 <Animated.Text style={[styles.tabText, { opacity }]}>
                   {label}

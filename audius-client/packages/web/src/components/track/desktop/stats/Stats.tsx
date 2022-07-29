@@ -83,7 +83,8 @@ const Stats = memo(
             [styles.show]: !showSkeleton,
             [styles.showNonEmpty]: !showSkeleton && count
           })}
-          onClick={onClickWrapper}>
+          onClick={onClickWrapper}
+        >
           {size === 'large' && flavor === Flavor.REPOST && !hideImage ? (
             <div className={styles.repostProfileImages}>{items}</div>
           ) : null}

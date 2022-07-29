@@ -222,13 +222,15 @@ const NavBar = ({
       <div
         className={cn(styles.leftElement, {
           [styles.isLoading]: isLoading
-        })}>
+        })}
+      >
         {left}
       </div>
       {centerElement === CenterPreset.LOGO && (
         <div
           className={cn(styles.logo, { [styles.matrixLogo]: matrix })}
-          onClick={logoClicked}>
+          onClick={logoClicked}
+        >
           {logoTransitions.map(
             ({ item, props, key }) =>
               item && (
@@ -246,7 +248,8 @@ const NavBar = ({
       <div
         className={cn(styles.rightElement, {
           [styles.isLoading]: isLoading
-        })}>
+        })}
+      >
         {rightElement === RightPreset.SEARCH ? (
           <SearchBar
             open={isSearching}

@@ -60,7 +60,8 @@ export const ShareDialog = ({
       headerContainerClassName={styles.headerContainer}
       isOpen={isOpen}
       onClose={onClose}
-      onClosed={onClosed}>
+      onClosed={onClosed}
+    >
       <ModalHeader onClose={onClose}>
         <ModalTitle
           icon={<IconShare className={styles.titleIcon} />}

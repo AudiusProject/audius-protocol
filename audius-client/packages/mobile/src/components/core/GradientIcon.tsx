@@ -20,7 +20,8 @@ export const GradientIcon = (props: GradientIconProps) => {
       <LinearGradient
         colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
         start={{ x: 1, y: 1 }}
-        end={{ x: 0, y: 0 }}>
+        end={{ x: 0, y: 0 }}
+      >
         <Icon {...other} fill='transparent' />
       </LinearGradient>
     </MaskedView>

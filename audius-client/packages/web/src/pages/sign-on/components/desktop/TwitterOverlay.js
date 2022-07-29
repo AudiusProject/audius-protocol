@@ -53,7 +53,8 @@ const TwitterOverlay = (props) => {
       from={{ opacity: props.initial ? 1 : 0 }}
       enter={{ opacity: 1 }}
       leave={{ opacity: 0 }}
-      config={{ duration: 100 }}>
+      config={{ duration: 100 }}
+    >
       {(show) =>
         show &&
         ((transitionProps) => (
@@ -66,7 +67,8 @@ const TwitterOverlay = (props) => {
               left: 0,
               width: '100%',
               height: '100%'
-            }}>
+            }}
+          >
             {props.isLoading || !props.showTwitterOverlay ? (
               <div className={styles.loadingContainer}>
                 <LoadingSpinner className={styles.loadingSpinner} />
@@ -75,7 +77,8 @@ const TwitterOverlay = (props) => {
               <div
                 className={cn(styles.twitterOverlayContainer, {
                   [styles.isMobile]: props.isMobile
-                })}>
+                })}
+              >
                 {displayInstagram && (
                   <InstagramButton
                     className={styles.instagramButton}
@@ -114,7 +117,8 @@ const TwitterOverlay = (props) => {
                 <div className={styles.divider}></div>
                 <button
                   className={styles.manualText}
-                  onClick={props.onToggleTwitterOverlay}>
+                  onClick={props.onToggleTwitterOverlay}
+                >
                   {messages.manual}
                 </button>
               </div>

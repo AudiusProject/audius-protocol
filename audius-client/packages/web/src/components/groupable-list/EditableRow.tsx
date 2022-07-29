@@ -52,11 +52,13 @@ const EditableRow = ({
     <div
       className={cn(styles.editableRow, {
         [styles.isDisabled]: isDisabled
-      })}>
+      })}
+    >
       <div
         className={cn(styles.left, {
           [styles.top]: !centerLeftElement
-        })}>
+        })}
+      >
         {label}
       </div>
       <div className={styles.right}>

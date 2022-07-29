@@ -37,13 +37,15 @@ const UserList = (props: UserListProps) => {
         useWindow={!props.getScrollParent}
         initialLoad={false}
         threshold={SCROLL_THRESHOLD}
-        getScrollParent={props.getScrollParent}>
+        getScrollParent={props.getScrollParent}
+      >
         {props.users.map((user, index) => (
           <div
             key={user.user_id}
             className={cn(styles.user, {
               [styles.notLastUser]: index !== props.users.length - 1
-            })}>
+            })}
+          >
             <ArtistChip
               user={user}
               onClickArtistName={() => {
@@ -74,7 +76,8 @@ const UserList = (props: UserListProps) => {
         <div
           className={cn(styles.loadingAnimation, {
             [styles.show]: props.loading
-          })}>
+          })}
+        >
           <Lottie
             options={{
               loop: true,

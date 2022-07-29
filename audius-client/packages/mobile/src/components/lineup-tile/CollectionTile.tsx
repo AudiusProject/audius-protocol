@@ -251,7 +251,8 @@ const CollectionTileComponent = ({
       onPressTitle={handlePressTitle}
       title={playlist_name}
       item={collection}
-      user={user}>
+      user={user}
+    >
       <CollectionTileTrackList tracks={tracks} onPress={handlePressTitle} />
     </LineupTile>
   )

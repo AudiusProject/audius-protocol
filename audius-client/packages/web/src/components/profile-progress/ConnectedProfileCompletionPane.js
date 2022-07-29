@@ -64,7 +64,8 @@ const ConnectedProfileCompletionPanel = ({
                 <ProfileCompletionTooltip
                   completionStages={completionStages}
                   isDisabled={isTooltipDisabled}
-                  shouldDismissOnClick={false}>
+                  shouldDismissOnClick={false}
+                >
                   <div>
                     <ProfileCompletionPanel
                       numSteps={completionStages.length}

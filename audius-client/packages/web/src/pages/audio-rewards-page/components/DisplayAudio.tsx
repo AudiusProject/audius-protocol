@@ -29,7 +29,8 @@ const DisplayAudio = ({
         <span
           className={cn(styles.amount, {
             [tokenClassName!]: !!tokenClassName
-          })}>
+          })}
+        >
           {formatWei(amount, true)}
         </span>
       </TokenHoverTooltip>

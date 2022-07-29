@@ -81,7 +81,8 @@ export const RepostNotification = (props: RepostNotificationProps) => {
     <NotificationTile
       notification={notification}
       onClick={handleClick}
-      disableClosePanel={otherUsersCount > 0}>
+      disableClosePanel={otherUsersCount > 0}
+    >
       <NotificationHeader icon={<IconRepost />}>
         <UserProfilePictureList
           users={users}

@@ -112,7 +112,8 @@ const FollowPage = ({
           className={cn(styles.cards, {
             [styles.hide]: isTransitioning,
             [styles.show]: !isTransitioning
-          })}>
+          })}
+        >
           {users.map((user, idx) => (
             <UserCard
               key={`${selectedCategory}-${idx}`}

@@ -183,7 +183,8 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
         fullWidth && styles.fullWidth,
         style,
         stylesProp?.root
-      ]}>
+      ]}
+    >
       {sliderElement}
       {options.map((option, index) => {
         const shouldHideSeparator =
@@ -202,13 +203,15 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
                 stylesProp?.tab,
                 fullWidth && styles.tabFullWidth
               ]}
-              onPress={() => handleSelectOption(option.key)}>
+              onPress={() => handleSelectOption(option.key)}
+            >
               <Text
                 style={[
                   styles.text,
                   stylesProp?.text,
                   selectedOption === option.key && stylesProp?.activeText
-                ]}>
+                ]}
+              >
                 {option.text}
               </Text>
             </Pressable>

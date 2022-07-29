@@ -100,7 +100,8 @@ const FeedPageMobileContent = ({
       title={feedTitle}
       description={feedDescription}
       canonicalUrl={`${BASE_URL}${FEED_PAGE}`}
-      hasDefaultHeader>
+      hasDefaultHeader
+    >
       {IS_NATIVE_MOBILE ? null : (
         <FeedFilterDrawer
           isOpen={modalIsOpen}
@@ -111,7 +112,8 @@ const FeedPageMobileContent = ({
       <div
         className={cn(styles.lineupContainer, {
           [styles.playing]: !!lineupProps.playingUid
-        })}>
+        })}
+      >
         <PullToRefresh fetchContent={asyncRefresh}>
           <Lineup {...lineupProps} />
         </PullToRefresh>

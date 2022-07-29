@@ -64,17 +64,20 @@ const ProfilePicture = ({
         [styles.hasChanged]: hasChanged,
         [styles.modalOpen]: modalOpen,
         [styles.isMobile]: isMobile
-      })}>
+      })}
+    >
       <div className={styles.profilePictureBackground}>
         <DynamicImage
           image={updatedProfilePicture || image}
           skeletonClassName={styles.profilePictureSkeleton}
-          wrapperClassName={styles.profilePicture}>
+          wrapperClassName={styles.profilePicture}
+        >
           {editMode && (
             <div
               className={cn(styles.overlay, {
                 [styles.processing]: processing
-              })}>
+              })}
+            >
               <Lottie
                 options={{
                   loop: true,

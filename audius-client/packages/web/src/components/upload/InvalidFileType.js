@@ -15,13 +15,15 @@ const InvalidFileType = (props) => {
       from={{ opacity: 0.6 }}
       to={{ opacity: 1 }}
       key={'invalid-file-type'}
-      config={{ duration: 200 }}>
+      config={{ duration: 200 }}
+    >
       {(animProps) => (
         <div
           style={animProps}
           className={cn(styles.invalidFileType, {
             [props.className]: !!props.className
-          })}>
+          })}
+        >
           {messages[props.reason]}
         </div>
       )}

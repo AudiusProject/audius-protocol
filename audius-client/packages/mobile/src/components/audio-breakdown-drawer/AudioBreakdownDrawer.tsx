@@ -205,7 +205,8 @@ export const AudioBreakdownDrawer = () => {
     <AppDrawer
       modalName={AUDIO_BREAKDOWN_MODAL_NAME}
       title={messages.modalTitle}
-      isFullscreen>
+      isFullscreen
+    >
       <View style={styles.drawer}>
         <GradientText style={styles.amount}>
           {formatWei(totalBalance, true)}
@@ -311,7 +312,8 @@ const Wallet = ({ chain, address, balance }: WalletProps) => {
         <TouchableWithoutFeedback
           onPress={handleCopy}
           onPressIn={handlePressIn}
-          onPressOut={handlePressOut}>
+          onPressOut={handlePressOut}
+        >
           <View style={styles.linkedWallet}>
             <View style={styles.chainIconContainer}>
               {chain === Chain.Eth ? (

@@ -106,7 +106,8 @@ const titlesMap = {
       ) as boolean
       return (
         <TitleWrapper
-          label={useSolSPLAudio ? messages.receiveSPL : messages.receive}>
+          label={useSolSPLAudio ? messages.receiveSPL : messages.receive}
+        >
           <IconReceive className={styles.receiveWrapper} />
         </TitleWrapper>
       )
@@ -383,11 +384,13 @@ const WalletModal = () => {
         showDismissButton={allowDismiss}
         dismissOnClickOutside={allowDismiss}
         contentHorizontalPadding={24}
-        useGradientTitle={false}>
+        useGradientTitle={false}
+      >
         <div
           className={wm(styles.modalContainer, {
             [styles.sendModalContainer]: modalState?.stage === 'SEND'
-          })}>
+          })}
+        >
           <ModalContent
             modalState={modalState}
             onInputSendData={onInputSendData}

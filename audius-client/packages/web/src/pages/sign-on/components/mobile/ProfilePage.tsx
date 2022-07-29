@@ -191,7 +191,8 @@ const ProfilePage = (props: ProfilePageProps) => {
       <div
         className={cn(styles.profileContentContainer, {
           [styles.authOverlay]: showTwitterOverlay
-        })}>
+        })}
+      >
         <TwitterOverlay
           header={messages.header}
           isMobile

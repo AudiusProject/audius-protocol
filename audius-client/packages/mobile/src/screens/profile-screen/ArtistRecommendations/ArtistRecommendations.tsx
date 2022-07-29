@@ -161,7 +161,8 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         {suggestedArtists.map((artist) => (
           <TouchableOpacity
             onPress={handlePressArtist(artist)}
-            key={artist.user_id}>
+            key={artist.user_id}
+          >
             <ProfilePicture
               profile={artist}
               style={styles.suggestedArtistPhoto}

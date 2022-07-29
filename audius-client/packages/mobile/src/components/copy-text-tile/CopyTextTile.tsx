@@ -83,7 +83,8 @@ export const CopyTextTile = ({ hint, text }: CopyTextTileProps) => {
       viewStyle={{ alignSelf: 'stretch' }}
       getChildRadius={true}
       distance={10}
-      startColor='rgba(100,17,166,0.05)'>
+      startColor='rgba(100,17,166,0.05)'
+    >
       <Animated.View style={[{ transform: [{ scale }] }]}>
         <Tile
           styles={{
@@ -95,7 +96,8 @@ export const CopyTextTile = ({ hint, text }: CopyTextTileProps) => {
           end={{ x: 0, y: 0 }}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          onPress={onCopyClicked}>
+          onPress={onCopyClicked}
+        >
           <Text style={styles.hint}>{hint}</Text>
           <View style={styles.copy}>
             <Text style={styles.text}>{text}</Text>

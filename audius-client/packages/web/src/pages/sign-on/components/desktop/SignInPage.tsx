@@ -115,7 +115,8 @@ export const SignInPage = ({
         [styles.isMobile]: isMobile,
         [styles.signInError]: signInError,
         [styles.metaMask]: hasMetaMask
-      })}>
+      })}
+    >
       <PreloadImage
         src={audiusLogoColored}
         className={styles.logo}
@@ -156,7 +157,8 @@ export const SignInPage = ({
         <Spring
           from={{ opacity: 0 }}
           to={{ opacity: 1 }}
-          config={{ duration: 1000 }}>
+          config={{ duration: 1000 }}
+        >
           {(animProps) => (
             <StatusMessage
               status='error'
@@ -198,7 +200,8 @@ export const SignInPage = ({
             onClick={() => {
               setShowForgotPassword(true)
             }}
-            className={styles.forgotPasswordText}>
+            className={styles.forgotPasswordText}
+          >
             {messages.forgotPasswordText}
           </span>
         </div>

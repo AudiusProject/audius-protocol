@@ -123,7 +123,8 @@ export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
     <div className={cn(styles.editRow, styles.editHidden)}>
       <Tooltip
         className={styles.showButton}
-        text={collectibleMessages.showCollectible}>
+        text={collectibleMessages.showCollectible}
+      >
         <IconShow onClick={onShowClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />

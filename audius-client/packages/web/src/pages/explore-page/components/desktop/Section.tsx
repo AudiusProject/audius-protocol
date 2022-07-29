@@ -49,7 +49,8 @@ const Section = ({
           layout === Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT,
         [styles.expandable]: expandable,
         [styles.expanded]: isExpanded
-      })}>
+      })}
+    >
       <div className={styles.title}>{title}</div>
       <div className={styles.subtitle}>{subtitle}</div>
       <div className={styles.children}>{children}</div>

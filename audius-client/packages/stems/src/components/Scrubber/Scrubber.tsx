@@ -74,7 +74,8 @@ export const Scrubber = ({
         [styles.isDisabled]: isDisabled,
         [styles.isMobile]: isMobile,
         className
-      })}>
+      })}
+    >
       {includeTimestamps && (
         <div className={styles.timestampStart}>
           {formatSeconds(timestampStart)}

@@ -60,7 +60,8 @@ export const CoinbasePayButton = ({
     <button
       className={cn(className, styles.payButton)}
       onClick={onClick}
-      disabled={isDisabled}>
+      disabled={isDisabled}
+    >
       <img
         className={cn({
           [styles.compact]: size === CoinbasePayButtonSize.COMPACT

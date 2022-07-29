@@ -137,7 +137,8 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
             })
           }
         }
-      }}>
+      }}
+    >
       {baseScreen(Stack)}
       <Stack.Screen
         name='Track'

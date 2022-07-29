@@ -116,7 +116,8 @@ export const TrackScreen = () => {
 
   const moreByArtistTitle = showMoreByArtistTitle ? (
     <Text
-      style={styles.lineupHeader}>{`${messages.moreBy} ${user?.name}`}</Text>
+      style={styles.lineupHeader}
+    >{`${messages.moreBy} ${user?.name}`}</Text>
   ) : null
 
   const originalTrackTitle = (

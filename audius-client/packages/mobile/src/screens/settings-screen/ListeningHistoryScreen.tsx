@@ -77,7 +77,8 @@ export const ListeningHistoryScreen = () => {
             styles={{
               root: styles.container,
               tile: styles.trackListContainer
-            }}>
+            }}
+          >
             <TrackList
               tracks={historyTracks.entries}
               showDivider

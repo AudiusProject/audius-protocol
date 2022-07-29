@@ -92,12 +92,14 @@ export const TextButton = (props: TextButtonProps) => {
     <TouchableOpacity
       style={[styles.root, stylesProp?.root, style]}
       disabled={disabled}
-      {...other}>
+      {...other}
+    >
       {iconPosition === 'left' ? icon : null}
       <Text
         color={variant}
         style={[stylesProp?.text, showDisabledColor && styles.disabled]}
-        {...TextProps}>
+        {...TextProps}
+      >
         {title}
       </Text>
       {iconPosition === 'right' ? icon : null}

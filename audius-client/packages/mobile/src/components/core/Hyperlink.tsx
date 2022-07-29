@@ -103,7 +103,8 @@ export const Hyperlink = (props: HyperlinkProps) => {
             linkRefs.current[index] = el
           }
         }}
-        style={styles.hiddenLink}>
+        style={styles.hiddenLink}
+      >
         <Text style={[styles.linkText, styles.hiddenLinkText]}>{text}</Text>
       </View>
     ),
@@ -114,7 +115,8 @@ export const Hyperlink = (props: HyperlinkProps) => {
     <>
       <View
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
-        ref={linkContainerRef}>
+        ref={linkContainerRef}
+      >
         <Autolink
           onPress={handlePress}
           linkStyle={[styles.linkText, styles.link, stylesProp?.link]}
@@ -142,7 +144,8 @@ export const Hyperlink = (props: HyperlinkProps) => {
                   left: linkLayout.x - linkContainerLayout.x
                 }
               ]}
-              onPress={() => handlePress(match.getAnchorHref())}>
+              onPress={() => handlePress(match.getAnchorHref())}
+            >
               {text}
             </Text>
           ) : null

@@ -167,7 +167,8 @@ const SignOnPage = ({
           position: 'absolute',
           top: 0,
           left: 0
-        }}>
+        }}
+      >
         <InitialPage
           hasAccount={hasAccount}
           isLoading={status === 'loading'}
@@ -194,7 +195,8 @@ const SignOnPage = ({
           position: 'absolute',
           top: 0,
           left: 0
-        }}>
+        }}
+      >
         <Header />
         <PasswordPage
           email={email}
@@ -216,7 +218,8 @@ const SignOnPage = ({
           position: 'absolute',
           top: 0,
           left: 0
-        }}>
+        }}
+      >
         <Header />
         <ProfilePage
           name={name}
@@ -245,7 +248,8 @@ const SignOnPage = ({
           position: 'absolute',
           top: 0,
           left: 0
-        }}>
+        }}
+      >
         <Header />
         <NotificationPermissionsPage
           onAllowNotifications={onAllowNotifications}
@@ -260,7 +264,8 @@ const SignOnPage = ({
         <animated.div
           style={style}
           className={styles.followPageWrapper}
-          key='follow'>
+          key='follow'
+        >
           <Header />
           <FollowPage
             users={suggestedFollowEntries}
@@ -297,14 +302,16 @@ const SignOnPage = ({
       backgroundClassName={styles.background}
       containerClassName={cn(styles.container, {
         [styles.followPage]: transitionPage === Pages.FOLLOW
-      })}>
+      })}
+    >
       <form
         className={styles.form}
         method='post'
         onSubmit={(e) => {
           e.preventDefault()
         }}
-        autoComplete='off'>
+        autoComplete='off'
+      >
         <div>
           <Transition
             items={transitionPage as any}
@@ -333,7 +340,8 @@ const SignOnPage = ({
               page !== Pages.SIGNIN && page !== Pages.EMAIL
                 ? { duration: 75 }
                 : { duration: 400 }
-            }>
+            }
+          >
             {(item: any) => (pages as any)[item]}
           </Transition>
         </div>

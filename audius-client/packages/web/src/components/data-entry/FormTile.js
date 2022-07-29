@@ -211,7 +211,8 @@ const BasicForm = (props) => {
           {isRemix && (
             <div
               className={styles.remixEdit}
-              onClick={() => setRemixSettingsModalVisible(true)}>
+              onClick={() => setRemixSettingsModalVisible(true)}
+            >
               {messages.editRemix}
             </div>
           )}
@@ -283,7 +284,8 @@ const BasicForm = (props) => {
         <div
           className={cn(styles.floatRight, {
             [styles.hasPreview]: props.showPreview
-          })}>
+          })}
+        >
           {renderRemixSwitch()}
           {renderDownloadButton()}
           {renderAdvancedButton()}
@@ -380,7 +382,8 @@ const AdvancedForm = (props) => {
         className={cn(styles.advanced, {
           [styles.show]: props.advancedShow,
           [styles.visible]: props.advancedVisible
-        })}>
+        })}
+      >
         <Divider label='' />
         <div className={styles.release}>
           {showUnlisted && (
@@ -679,12 +682,14 @@ class FormTile extends Component {
                         <Draggable
                           key={this.props.children[index].key}
                           draggableId={index.toString()}
-                          index={i}>
+                          index={i}
+                        >
                           {(provided, snapshot) => (
                             <div
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              ref={provided.innerRef}>
+                              ref={provided.innerRef}
+                            >
                               {this.props.children[i]}
                             </div>
                           )}

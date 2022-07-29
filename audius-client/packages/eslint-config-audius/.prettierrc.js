@@ -1,5 +1,5 @@
 module.exports = {
   ...require('prettier-config-standard'),
-  jsxBracketSameLine: false,
+  bracketSameLine: false,
   jsxSingleQuote: true
 }

@@ -96,7 +96,8 @@ export const Card = (props: CardProps) => {
   return (
     <Tile
       onPress={onPress}
-      styles={{ root: style, content: styles.cardContent }}>
+      styles={{ root: style, content: styles.cardContent }}
+    >
       <View style={styles.imgContainer}>
         <View style={[styles.cardImg, type === 'user' && styles.userImg]}>
           <CardImage imageSize={imageSize} type={type} id={id} />

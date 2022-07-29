@@ -59,7 +59,8 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
     <DynamicImage
       wrapperClassName={styles.artistCoverPhoto}
       image={darkenedCoverPhoto}
-      immediate>
+      immediate
+    >
       <div className={styles.coverPhotoContentContainer}>
         {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}
         <DynamicImage
@@ -84,7 +85,8 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
           <div className={styles.artistHandleWrapper}>
             <div
               className={styles.artistHandle}
-              onClick={handleClickUser}>{`@${handle}`}</div>
+              onClick={handleClickUser}
+            >{`@${handle}`}</div>
             {does_follow_current_user ? <FollowsYouBadge /> : null}
           </div>
         </div>

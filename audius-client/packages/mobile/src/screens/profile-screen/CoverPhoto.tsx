@@ -65,7 +65,8 @@ export const CoverPhoto = ({ scrollY }: { scrollY?: Animated.Value }) => {
         animatedValue={scrollY}
         uri={isDefaultImage ? `https://audius.co/${coverPhoto}` : coverPhoto}
         styles={{ root: styles.imageRoot, image: styles.image }}
-        resizeMode={isDefaultImage ? 'repeat' : undefined}>
+        resizeMode={isDefaultImage ? 'repeat' : undefined}
+      >
         {/*
           Disable blur on android because it causes a crash.
           See https://github.com/software-mansion/react-native-screens/pull/1406
@@ -97,7 +98,8 @@ export const CoverPhoto = ({ scrollY }: { scrollY?: Animated.Value }) => {
                   ]
                 }
               : undefined
-          ]}>
+          ]}
+        >
           <BadgeArtist />
         </Animated.View>
       ) : null}

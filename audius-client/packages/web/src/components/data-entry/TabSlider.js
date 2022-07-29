@@ -51,7 +51,8 @@ const TabSlider = (props) => {
       className={cn(styles.tabs, props.className, {
         [styles.containerFullWidth]: !!props.fullWidth,
         [styles.isMobile]: props.isMobile
-      })}>
+      })}
+    >
       <animated.div className={styles.tabBackground} style={animatedProps} />
       {props.options.map((option, idx) => {
         return (
@@ -61,7 +62,8 @@ const TabSlider = (props) => {
               className={cn(styles.tab, {
                 [styles.tabFullWidth]: !!props.fullWidth
               })}
-              onClick={() => onSetSelected(option.key)}>
+              onClick={() => onSetSelected(option.key)}
+            >
               {option.text}
             </div>
             <div

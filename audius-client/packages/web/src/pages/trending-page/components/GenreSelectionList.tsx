@@ -25,7 +25,8 @@ const GenreButton = ({
         { [styles.selected]: isSelected },
         { [styles.isMobile]: isMobile }
       )}
-      onClick={onClick}>
+      onClick={onClick}
+    >
       {title}
     </div>
   )

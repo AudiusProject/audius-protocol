@@ -85,7 +85,8 @@ export const CognitoDrawer = () => {
       modalName={MODAL_NAME}
       isFullscreen
       isGestureSupported={false}
-      onClose={handleClose}>
+      onClose={handleClose}
+    >
       {uriStatus === Status.SUCCESS && uri ? (
         <WebView key={key} source={{ uri }} javaScriptEnabled />
       ) : uriStatus === Status.LOADING ? (

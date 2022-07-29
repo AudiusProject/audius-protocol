@@ -87,7 +87,8 @@ export const FeatureFlagOverrideModal = () => {
       title={messages.title}
       onClose={closeModal}
       isOpen={isOpen}
-      zIndex={zIndex.FEATURE_FLAG_OVERRIDE_MODAL}>
+      zIndex={zIndex.FEATURE_FLAG_OVERRIDE_MODAL}
+    >
       <ModalHeader onClose={closeModal}>
         <ModalTitle title={messages.title} />
       </ModalHeader>

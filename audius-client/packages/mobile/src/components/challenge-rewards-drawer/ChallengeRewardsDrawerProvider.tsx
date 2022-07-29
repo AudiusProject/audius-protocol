@@ -186,7 +186,8 @@ export const ChallengeRewardsDrawerProvider = () => {
       isVerifiedChallenge={!!config.isVerifiedChallenge}
       showProgressBar={
         challenge.challenge_type !== 'aggregate' && challenge.max_steps > 1
-      }>
+      }
+    >
       {contents}
     </ChallengeRewardsDrawer>
   )

@@ -84,7 +84,8 @@ const PasswordResetModal = ({
       showTitleHeader
       bodyClassName={styles.modalBody}
       headerContainerClassName={styles.modalHeader}
-      titleClassName={styles.modalTitle}>
+      titleClassName={styles.modalTitle}
+    >
       <div className={styles.content}>
         <div className={styles.helpText}>{messages.helpText}</div>
         <EnterPassword

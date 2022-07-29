@@ -69,7 +69,8 @@ const ProfileForm = (props) => {
         [styles.isMobile]: props.isMobile,
         [styles.blur]: props.showTwitterOverlay,
         [styles.moveFormUp]: suggestTwitterLogin || suggestInstagramLogin
-      })}>
+      })}
+    >
       {props.isMobile ? (
         <div className={styles.header}>{props.header}</div>
       ) : null}
@@ -90,7 +91,8 @@ const ProfileForm = (props) => {
         className={cn(styles.inputContainer, {
           [styles.hide]: props.showTwitterOverlay,
           [styles.errorInput]: handle.error
-        })}>
+        })}
+      >
         <Input
           placeholder='Display Name'
           name='name'
@@ -136,7 +138,8 @@ const ProfileForm = (props) => {
           <span
             className={cn(styles.atHandle, {
               [styles.atHandleFocus]: focus || props.handle.value
-            })}>
+            })}
+          >
             {'@'}
           </span>
         </div>
@@ -145,7 +148,8 @@ const ProfileForm = (props) => {
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
             leave={{ opacity: 0 }}
-            config={{ duration: 200 }}>
+            config={{ duration: 200 }}
+          >
             {(animProps) => (
               <StatusMessage
                 status='error'
@@ -161,7 +165,8 @@ const ProfileForm = (props) => {
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
             leave={{ opacity: 0 }}
-            config={{ duration: 200 }}>
+            config={{ duration: 200 }}
+          >
             {(animProps) => (
               <div style={animProps} className={styles.suggestTwitter}>
                 <TwitterLogin
@@ -169,7 +174,8 @@ const ProfileForm = (props) => {
                   onSuccess={props.onTwitterLogin}
                   className={styles.hideTwitterButton}
                   requestTokenUrl={`${IDENTITY_SERVICE}/twitter`}
-                  loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}>
+                  loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}
+                >
                   {messages.completeWithTwitter}
                 </TwitterLogin>
               </div>
@@ -181,7 +187,8 @@ const ProfileForm = (props) => {
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
             leave={{ opacity: 0 }}
-            config={{ duration: 200 }}>
+            config={{ duration: 200 }}
+          >
             {(animProps) => (
               <div style={animProps} className={styles.suggestTwitter}>
                 <InstagramAuth
@@ -189,7 +196,8 @@ const ProfileForm = (props) => {
                   onSuccess={props.onInstagramLogin}
                   className={styles.hideTwitterButton}
                   setProfileUrl={`${IDENTITY_SERVICE}/instagram/profile`}
-                  getUserUrl={`${IDENTITY_SERVICE}/instagram`}>
+                  getUserUrl={`${IDENTITY_SERVICE}/instagram`}
+                >
                   {messages.completeWithInstagram}
                 </InstagramAuth>
               </div>

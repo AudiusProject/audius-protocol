@@ -73,7 +73,8 @@ const InstagramAuthButton = ({
       onSuccess={onSuccess || (() => {})}
       getUserUrl={`${IDENTITY_SERVICE}/instagram`}
       setProfileUrl={`${IDENTITY_SERVICE}/instagram/profile`}
-      requiresProfileMetadata={requiresProfileMetadata}>
+      requiresProfileMetadata={requiresProfileMetadata}
+    >
       <InstagramButton
         className={className}
         textClassName={textClassName}

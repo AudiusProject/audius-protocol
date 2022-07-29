@@ -115,7 +115,8 @@ const AnimatedButton = ({
           [disabledClassName]: isDisabled
         },
         { [styles.glow]: isActive && isMatrix }
-      )}>
+      )}
+    >
       <div className={cn(wrapperClassName)}>
         <Lottie
           // We construct a unique here with a suffix that changes each time

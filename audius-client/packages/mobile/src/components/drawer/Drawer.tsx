@@ -284,7 +284,8 @@ const DrawerHeader = ({
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onClose}
-          style={styles.dismissContainer}>
+          style={styles.dismissContainer}
+        >
           <IconRemove width={30} height={30} fill={closeColor} />
         </TouchableOpacity>
       )}
@@ -651,7 +652,8 @@ export const Drawer: DrawerComponent = ({
         <TouchableWithoutFeedback
           onPress={() => {
             onClose()
-          }}>
+          }}
+        >
           {renderBackgroundView()}
         </TouchableWithoutFeedback>
       )
@@ -683,7 +685,8 @@ export const Drawer: DrawerComponent = ({
             setDrawerHeight(height + androidNavigationBarHeight)
           }
         }}
-        {...edgeProps}>
+        {...edgeProps}
+      >
         <DrawerHeader
           onClose={onClose}
           title={title}
@@ -716,7 +719,8 @@ export const Drawer: DrawerComponent = ({
             borderTopRightRadius: interpolatedBorderRadius,
             borderTopLeftRadius: interpolatedBorderRadius
           }
-        ]}>
+        ]}
+      >
         {renderContent()}
         <View style={styles.skirt} />
       </Animated.View>

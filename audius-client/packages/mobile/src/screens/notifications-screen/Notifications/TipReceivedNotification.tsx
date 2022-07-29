@@ -109,7 +109,8 @@ export const TipReceivedNotification = (
           flexDirection: 'row',
           alignItems: 'center',
           marginBottom: 12
-        }}>
+        }}
+      >
         <ProfilePicture profile={user} />
         <NotificationText>
           <UserNameLink user={user} /> {messages.sent}{' '}

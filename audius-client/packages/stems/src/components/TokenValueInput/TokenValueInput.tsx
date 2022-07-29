@@ -86,7 +86,8 @@ export const TokenValueInput = ({
         <div
           className={cn(styles.label, {
             [labelClassName!]: !!labelClassName
-          })}>
+          })}
+        >
           {label}
         </div>
       )}
@@ -118,7 +119,8 @@ export const TokenValueInput = ({
           className={cn(styles.rightLabel, {
             [rightLabelClassName as string]: !!rightLabelClassName
           })}
-          ref={setLabelRef}>
+          ref={setLabelRef}
+        >
           {rightLabel}
         </div>
       )}

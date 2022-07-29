@@ -18,7 +18,8 @@ const Check = ({ size }: CheckProps) => {
         [styles.medium]: size === Size.MEDIUM,
         [styles.large]: size === Size.LARGE,
         [styles.xlarge]: size === Size.XLARGE
-      })}>
+      })}
+    >
       <IconCoSign className={styles.iconCoSign} />
     </div>
   )

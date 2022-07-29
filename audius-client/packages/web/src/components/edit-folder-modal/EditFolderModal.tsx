@@ -106,7 +106,8 @@ const EditFolderModal = () => {
         isOpen={isOpen}
         onClose={handleClose}
         zIndex={zIndex.EDIT_PLAYLIST_MODAL}
-        bodyClassName={styles.modalBody}>
+        bodyClassName={styles.modalBody}
+      >
         <ModalHeader onClose={handleClose}>
           <ModalTitle
             icon={<IconFolder />}

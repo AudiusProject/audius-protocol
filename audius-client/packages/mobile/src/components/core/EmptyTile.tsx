@@ -61,7 +61,8 @@ export const EmptyTile = (props: EmptyTileProps) => {
         root: styles.emptyTabRoot,
         tile: styles.emptyTab,
         content: styles.emptyTabContent
-      }}>
+      }}
+    >
       <View style={styles.emptyCardTextRoot}>
         <Text style={styles.emptyCardText}>
           {message}

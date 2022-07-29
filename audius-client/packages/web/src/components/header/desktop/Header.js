@@ -80,14 +80,17 @@ const Header = (props) => {
           variantStyle,
           { [containerStyles]: !!containerStyles },
           { [styles.containerWithBar]: !!bottomBar }
-        )}>
+        )}
+      >
         <div
           className={cn(styles.maxWidthWrapper, {
             [styles.maxWithWrapperWithBar]: !!bottomBar
-          })}>
+          })}
+        >
           <div
             className={styles.middleRow}
-            style={overrideWidth !== null ? { maxWidth: overrideWidth } : null}>
+            style={overrideWidth !== null ? { maxWidth: overrideWidth } : null}
+          >
             <div className={cn(styles.headerWrapper, wrapperClassName)}>
               {showBackButton ? (
                 <BackButton

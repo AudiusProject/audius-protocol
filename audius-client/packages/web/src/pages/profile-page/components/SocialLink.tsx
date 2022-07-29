@@ -123,7 +123,8 @@ const SocialLink = ({
         <Linkify
           // https://github.com/Soapbox/linkifyjs/issues/292
           // @ts-ignore
-          options={{ attributes: { onClick } }}>
+          options={{ attributes: { onClick } }}
+        >
           {text}
         </Linkify>
       )
@@ -136,7 +137,8 @@ const SocialLink = ({
         onClick={isSingleLink ? onIconClick : () => {}}
         className={cn(styles.wrapper, {
           [styles.singleLink]: isSingleLink
-        })}>
+        })}
+      >
         {icon}
         {!iconOnly && <div className={styles.text}>{text}</div>}
       </div>

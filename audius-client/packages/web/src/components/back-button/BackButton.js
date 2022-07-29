@@ -11,7 +11,8 @@ const BackButton = (props) => {
       className={cn(styles.backButton, props.className, {
         [styles.light]: props.light
       })}
-      onClick={props.onClickBack}>
+      onClick={props.onClickBack}
+    >
       <IconArrow />
     </div>
   )

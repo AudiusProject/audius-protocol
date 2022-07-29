@@ -81,12 +81,14 @@ const TrackItem = ({ track, active, index, showSkeleton }: TrackItemProps) => {
             </Text>
             <Text
               style={[styles.text, styles.title, active && styles.active]}
-              numberOfLines={1}>
+              numberOfLines={1}
+            >
               {track.title}
             </Text>
             <Text
               style={[styles.text, styles.artist, active && styles.active]}
-              numberOfLines={1}>
+              numberOfLines={1}
+            >
               {`by ${track.user.name}`}
             </Text>
           </>

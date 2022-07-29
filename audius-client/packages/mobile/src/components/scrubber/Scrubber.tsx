@@ -154,7 +154,8 @@ export const Scrubber = ({
       <Text
         style={[styles.timestamp, { textAlign: 'right' }]}
         weight='regular'
-        numberOfLines={1}>
+        numberOfLines={1}
+      >
         {dragSeconds || timestampStart}
       </Text>
       <Slider
