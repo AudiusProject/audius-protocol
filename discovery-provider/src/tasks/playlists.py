@@ -16,6 +16,7 @@ from src.utils.playlist_event_constants import (
 )
 
 logger = logging.getLogger(__name__)
+MAX_PLAYLIST_ID = 400000
 
 
 def playlist_state_update(
@@ -63,7 +64,7 @@ def playlist_state_update(
                         )
 
                     # parse playlist event to add metadata to record
-                    playlist_record = parse_playlist_event(
+                    playlist_record: Playlist = parse_playlist_event(
                         self,
                         update_task,
                         entry,
@@ -72,6 +73,9 @@ def playlist_state_update(
                         block_timestamp,
                         session,
                     )
+                    if playlist_record.playlist_id >= MIN_PLAYLIST_ID:
+                        logger.info(f"index.py | playlists.py | Playlist {playlist_record.playlist_id} is above the playlist ID offset {MIN_PLAYLIST_ID}. Skipping transaction.")
+                        continue
 
                     # process playlist record
                     if playlist_record is not None:
