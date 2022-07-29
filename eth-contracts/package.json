@@ -10,6 +10,7 @@
     "ganache-i": "docker ps",
     "ganache-q": "docker rm -f audius_ganache_cli_eth_contracts > /dev/null",
     "ganache-test-q": "docker rm -f audius_ganache_cli_eth_contracts_test > /dev/null",
+    "postinstall": "patch-package",
     "truffle-compile": "./node_modules/.bin/truffle compile",
     "truffle-migrate": "./node_modules/.bin/truffle migrate --reset --network development",
     "truffle-migrate-test": "./node_modules/.bin/truffle migrate --reset --network test_local",
@@ -48,8 +49,9 @@
     "@openzeppelin/truffle-upgrades": "^1.9.1",
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
-    "ganache": "^7.1.0",
     "bignumber.js": "8.0.1",
+    "ganache": "^7.1.0",
+    "patch-package": "^6.4.7",
     "solidity-coverage": "^0.7.4",
     "standard": "^12.0.1"
   },
