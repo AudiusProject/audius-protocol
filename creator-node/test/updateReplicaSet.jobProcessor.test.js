@@ -288,7 +288,7 @@ describe('test updateReplicaSet job processor', function () {
         enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
       })
     ).to.eventually.be.fulfilled.and.deep.equal({
-      errorMsg: '',
+      errorMsg: `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfUnhealthyReplicas=3 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`,
       issuedReconfig: false,
       newReplicaSet: {
         newPrimary: null,
