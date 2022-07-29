@@ -51,7 +51,7 @@ export class Utils {
     return Web3.utils.isBN(number)
   }
 
-  static toBN(number: number, base?: number) {
+  static toBN(number: number | string, base?: number) {
     return new Web3.utils.BN(number, base)
   }
 

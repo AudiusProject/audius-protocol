@@ -134,7 +134,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       logger,
       users,
       unhealthyPeers,
-      replicaToUserInfoMap: DEFAULT_REPLICA_TO_USER_INFO_MAP,
+      replicaToAllUserInfoMaps: DEFAULT_REPLICA_TO_USER_INFO_MAP,
       userSecondarySyncMetricsMap
     })
   }

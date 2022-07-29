@@ -249,9 +249,10 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   // If we already already checked this primary and it failed the health check, select the higher clock
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
   if (unhealthyReplicasSet.has(primary)) {
+    const secondary1Clock = replicaToUserInfoMap[secondary1]?.clock || -1
+    const secondary2Clock = replicaToUserInfoMap[secondary2]?.clock || -1
     const [newPrimary, currentHealthySecondary] =
-      replicaToUserInfoMap[secondary1].clock >=
-      replicaToUserInfoMap[secondary2].clock
+      secondary1Clock >= secondary2Clock
         ? [secondary1, secondary2]
         : [secondary2, secondary1]
     return {

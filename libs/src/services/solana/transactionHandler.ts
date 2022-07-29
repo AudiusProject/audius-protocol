@@ -1,4 +1,4 @@
-import SolanaUtils from './utils'
+import { SolanaUtils } from './SolanaUtils'
 import {
   Transaction,
   PublicKey,
@@ -7,8 +7,19 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 import type { IdentityService, RelayTransactionData } from '../identity'
+import type { Logger, Nullable } from '../../utils'
 
-type Logger = Pick<Console, 'warn' | 'log' | 'debug' | 'error' | 'info'>
+type HandleTransactionParams = {
+  instructions: TransactionInstruction[]
+  errorMapping?: Nullable<{ fromErrorCode: (errorCode: number) => string }>
+  recentBlockhash?: Nullable<string>
+  logger?: Logger
+  skipPreflight?: Nullable<boolean>
+  feePayerOverride?: Nullable<PublicKey>
+  sendBlockhash?: boolean
+  signatures?: Nullable<Array<{ publicKey: string; signature: Buffer }>>
+  retry?: boolean
+}
 
 /**
  * Handles sending Solana transactions, either directly via `sendAndConfirmTransaction`,
@@ -69,19 +80,9 @@ export class TransactionHandler {
     sendBlockhash = true,
     signatures = null,
     retry = true
-  }: {
-    instructions: TransactionInstruction[]
-    errorMapping?: { fromErrorCode: (errorCode: number) => string } | null
-    recentBlockhash?: string | null
-    logger?: Logger
-    skipPreflight?: boolean | null
-    feePayerOverride?: string | null
-    sendBlockhash?: boolean
-    signatures?: Array<{ publicKey: string; signature: Buffer }> | null
-    retry?: boolean
-  }) {
+  }: HandleTransactionParams) {
     let result: {
-      res: string | { transactionSignature: string } | null
+      res: string | null
       errorCode: string | number | null
       error: string | null
     } | null = null
@@ -116,7 +117,7 @@ export class TransactionHandler {
     instructions: TransactionInstruction[],
     recentBlockhash: string | null,
     skipPreflight: boolean | null,
-    feePayerOverride: string | null = null,
+    feePayerOverride: Nullable<PublicKey> = null,
     sendBlockhash: boolean,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null,
     retry: boolean
@@ -141,7 +142,7 @@ export class TransactionHandler {
     try {
       const response = await this.identityService?.solanaRelay(transactionData)
       return {
-        res: response ?? null,
+        res: response?.transactionSignature ?? null,
         error: null,
         errorCode: null
       }
@@ -160,7 +161,7 @@ export class TransactionHandler {
     recentBlockhash: string | null,
     logger: Logger,
     skipPreflight: boolean | null,
-    feePayerOverride: string | null = null,
+    feePayerOverride: Nullable<PublicKey> = null,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
     retry = true
   ) {
