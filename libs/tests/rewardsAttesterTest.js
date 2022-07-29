@@ -7,7 +7,7 @@ const {
 const {
   RewardsAttester,
   AttestationDelayCalculator
-} = require('../src/services/solanaWeb3Manager/rewardsAttester')
+} = require('../src/services/solana/rewardsAttester')
 const { Utils } = require('../src/utils')
 const { encodeHashId } = Utils
 
@@ -327,14 +327,11 @@ describe('Rewards Attester Tests', () => {
     })
 
     // Have it always return a retryable error
-    rewardsMock
-      .expects("submitAndEvaluate")
-      .exactly(5)
-      .returns({
-        success: false,
-        error: SubmitAndEvaluateError.CHALLENGE_INCOMPLETE,
-        phase: AttestationPhases.AGGREGATE_ATTESTATIONS
-      })
+    rewardsMock.expects('submitAndEvaluate').exactly(5).returns({
+      success: false,
+      error: SubmitAndEvaluateError.CHALLENGE_INCOMPLETE,
+      phase: AttestationPhases.AGGREGATE_ATTESTATIONS
+    })
 
     const { errors } = await attester.processChallenges([
       {

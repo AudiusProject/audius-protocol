@@ -21,8 +21,7 @@ const USER_PROPS = [
   'associated_sol_wallets',
   'collectibles',
   'playlist_library',
-  'events',
-  'is_creator'
+  'events'
 ]
 // User metadata fields that are required on the metadata object and only can have
 // non-null values
@@ -37,8 +36,7 @@ const USER_PROP_NAME_CONSTANTS = Object.freeze({
   LOCATION: 'location',
   PROFILE_PICTURE_SIZES: 'profile_picture_sizes',
   COVER_PHOTO_SIZES: 'cover_photo_sizes',
-  CREATOR_NODE_ENDPOINT: 'creator_node_endpoint',
-  IS_CREATOR: 'is_creator'
+  CREATOR_NODE_ENDPOINT: 'creator_node_endpoint'
 })
 
 class Users extends Base {
@@ -685,9 +683,6 @@ class Users extends Base {
             userId,
             Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]).digest
           ))
-        }
-        if (key === USER_PROP_NAME_CONSTANTS.IS_CREATOR) {
-          updateOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[USER_PROP_NAME_CONSTANTS.IS_CREATOR]))
         }
         if (key === USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES) {
           updateOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(

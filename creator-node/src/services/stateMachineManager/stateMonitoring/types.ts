@@ -54,7 +54,7 @@ export type MonitorStateJobReturnValue = {}
 export type FindSyncRequestsJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
-  replicaToUserInfoMap: ReplicaToAllUserInfoMaps
+  replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
   userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap
 }
 export type FindSyncRequestsJobReturnValue = {
@@ -71,7 +71,7 @@ export type OutcomeCountsMap = {
 export type FindReplicaSetUpdateJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
-  replicaToUserInfoMap: ReplicaToAllUserInfoMaps
+  replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
   userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap
 }
 export type FindReplicaSetUpdatesJobReturnValue = {

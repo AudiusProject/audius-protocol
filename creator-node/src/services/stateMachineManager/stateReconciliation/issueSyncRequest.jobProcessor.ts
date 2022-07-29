@@ -1,6 +1,10 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
-import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import type {
+  DecoratedJobParams,
+  DecoratedJobReturnValue,
+  JobsToEnqueue
+} from '../types'
 import type {
   IssueSyncRequestJobParams,
   IssueSyncRequestJobReturnValue,
@@ -36,6 +40,9 @@ const secondaryUserSyncDailyFailureCountThreshold = config.get(
 )
 const maxSyncMonitoringDurationInMs = config.get(
   'maxSyncMonitoringDurationInMs'
+)
+const maxManualSyncMonitoringDurationInMs = config.get(
+  'maxManualSyncMonitoringDurationInMs'
 )
 const mergePrimaryAndSecondaryEnabled = config.get(
   'mergePrimaryAndSecondaryEnabled'
@@ -78,7 +85,7 @@ module.exports = async function ({
 }: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
   DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
 > {
-  let jobsToEnqueue = {}
+  let jobsToEnqueue: JobsToEnqueue = {}
   let metricsToRecord = []
   let error: any = {}
 
@@ -313,7 +320,11 @@ const _additionalSyncIsRequired = async (
   const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
   const startTimeMs = Date.now()
-  const maxMonitoringTimeMs = startTimeMs + maxSyncMonitoringDurationInMs
+  const maxMonitoringTimeMs =
+    startTimeMs +
+    (syncType === SyncType.MANUAL
+      ? maxManualSyncMonitoringDurationInMs
+      : maxSyncMonitoringDurationInMs)
 
   /**
    * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
@@ -405,7 +416,7 @@ const _additionalSyncIsRequired = async (
   const response: AdditionalSyncIsRequiredResponse = { outcome }
   if (additionalSyncIsRequired) {
     response.syncReqToEnqueue = {
-      syncType: SyncType.Recurring,
+      syncType,
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
       syncRequestParameters,
       attemptNumber: attemptNumber + 1

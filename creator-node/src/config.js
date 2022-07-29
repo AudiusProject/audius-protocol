@@ -607,10 +607,16 @@ const config = convict({
     default: 20
   },
   maxSyncMonitoringDurationInMs: {
-    doc: 'Max duration that primary will monitor secondary for syncRequest completion',
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion for non-manual syncs',
     format: 'nat',
     env: 'maxSyncMonitoringDurationInMs',
     default: 300000 // 5min (prod default)
+  },
+  maxManualSyncMonitoringDurationInMs: {
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion for manual syncs',
+    format: 'nat',
+    env: 'maxManualSyncMonitoringDurationInMs',
+    default: 45000 // 45 sec (prod default)
   },
   syncRequestMaxUserFailureCountBeforeSkip: {
     doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',

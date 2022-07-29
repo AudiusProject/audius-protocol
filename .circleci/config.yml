@@ -105,6 +105,9 @@ commands:
 
 # global parameters
 parameters:
+  sdk_release_tag:
+    type: string
+    default: ""
   full_ci:
     type: boolean
     default: false
@@ -193,6 +196,11 @@ jobs:
     docker:
       - image: circleci/node:14.17.5
     resource_class: xlarge
+    parameters:
+      sdk_release_tag:
+        description: The git tag/commit to build and release
+        type: string
+        default: ""
     steps:
       - slack/basic:
           event: always
@@ -210,7 +218,7 @@ jobs:
           name: Bump and Publish Libs
           command: |
             export PROTOCOL_DIR=/home/circleci/project
-            libs/scripts/release.sh
+            libs/scripts/release.sh << pipeline.parameters.sdk_release_tag >>
       - slack/notify:
           event: fail
           branch_pattern: master
@@ -832,6 +840,10 @@ jobs:
 workflows:
   # test, build and push all commits
   test-build-and-push:
+    when:
+      and:
+         - not: << pipeline.parameters.full_ci >>
+         - not: << pipeline.parameters.sdk_release_tag >>
     jobs:
       - test-libs:
           name: test-libs
@@ -878,6 +890,22 @@ workflows:
             - GCP2
 
 
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. go to your branch of choice
+  # 3. click "Trigger Pipeline"
+  # 4. Add string paramter "sdk_release_tag" and set to a valid git tag/commit
+  sdk-release:
+    when: << pipeline.parameters.sdk_release_tag >>
+    jobs:
+      - publish-libs:
+          context: Audius Client
+          name: publish-libs (<< pipeline.parameters.sdk_release_tag >>)
+          sdk_release_tag: << pipeline.parameters.sdk_release_tag >>
+          filters:
+            branches:
+              only: /(^master$)/
+
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
   # 2. go to your branch of choice
@@ -911,19 +939,6 @@ workflows:
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
-      - hold-publish-libs:
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-      - publish-libs:
-          context: Audius Client
-          name: publish-libs
-          requires:
-            - hold-publish-libs
-          filters:
-            branches:
-              only: /(^master$)/
 
   # test master at midnight daily
   test-nightly:
