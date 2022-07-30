@@ -8,6 +8,45 @@ orbs:
   slack: circleci/slack@4.9.3
 
 commands:
+  slack-basic:
+    parameters:
+      event:
+        description: when this notification will fire. options are fail, pass, always.
+        type: string
+        default: always
+      branch_pattern:
+        description: branch_pattern arg for slack/notify
+        type: string
+        default: .+
+      channel:
+        description: Slack channel to send message to
+        type: string
+        default: $SLACK_DEFAULT_CHANNEL
+      text:
+        description: Markdown formatted Slack message
+        type: string
+        default: ""
+    steps:
+      - slack/notify:
+          channel: << parameters.channel >>
+          branch_pattern: << parameters.branch_pattern >>
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "<< parameters.text >>",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+          event: << parameters.event >>
+
   diff-if-necessary:
     parameters:
       service:
@@ -113,47 +152,6 @@ parameters:
     default: false
 
 jobs:
-  slack/basic:
-    docker:
-      - image: 'cimg/base:stable'
-    parameters:
-      event:
-        description: when this notification will fire. options are fail, pass, always.
-        type: string
-        default: always
-      branch_pattern:
-        description: branch_pattern arg for slack/notify
-        type: string
-        default: .+
-      channel:
-        description: Slack channel to send message to
-        type: string
-        default: C03EK0C69QD
-      text:
-        description: Markdown formatted Slack message
-        type: string
-        default: ""
-    steps:
-      - slack/notify:
-          channel: << pipeline.parameters.channel >>
-          branch_pattern: << pipeline.parameters.branch_pattern >>
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "<< pipeline.parameters.text >>",
-                      "emoji": true
-                    }
-                  ]
-                }
-              ]
-            }
-          event: << pipeline.parameters.event >>
-
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -206,10 +204,10 @@ jobs:
         type: string
         default: ""
     steps:
-      # - slack/basic:
-      #     event: always
-      #     branch_pattern: master
-      #     text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
+      - slack-basic:
+          event: always
+          branch_pattern: master
+          text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
       - checkout
       - setup_remote_docker
       - add_ssh_keys:
