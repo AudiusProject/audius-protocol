@@ -1,6 +1,6 @@
 {
   "name": "@audius/common",
-  "version": "1.1.13",
+  "version": "1.2.2",
   "description": "Common utilities and store for web and mobile.",
   "private": "true",
   "author": "Audius",
@@ -25,15 +25,15 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
+    "@optimizely/optimizely-sdk": "4.0.0",
     "bn.js": "4.11.6",
-    "react": "17.0.2",
-    "@optimizely/optimizely-sdk": "4.0.0"
+    "react": "17.0.2"
   },
   "devDependencies": {
     "@types/bn.js": "4.11.6",
     "@types/react": "17.0.2",
     "eslint": "8.19.0",
-    "eslint-config-audius": "1.1.13",
+    "eslint-config-audius": "1.2.2",
     "rollup": "2.76.0",
     "rollup-plugin-dts": "4.2.2",
     "rollup-plugin-typescript2": "0.32.1"
