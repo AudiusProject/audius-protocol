@@ -204,10 +204,6 @@ jobs:
         type: string
         default: ""
     steps:
-      - slack-basic:
-          event: always
-          branch_pattern: master
-          text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
       - checkout
       - setup_remote_docker
       - add_ssh_keys:
@@ -216,6 +212,10 @@ jobs:
       - run:
           name: npm Auth
           command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/.npmrc
+      - slack-basic:
+          event: always
+          branch_pattern: master
+          text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
       - run:
           name: Bump and Publish Libs
           command: |
