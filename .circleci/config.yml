@@ -21,7 +21,7 @@ commands:
       channel:
         description: Slack channel to send message to
         type: string
-        default: C03EK0C69QD
+        default: $SLACK_DEFAULT_CHANNEL
       text:
         description: Markdown formatted Slack message
         type: string
