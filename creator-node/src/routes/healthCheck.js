@@ -99,6 +99,14 @@ router.get(
       MONITORS.STORAGE_PATH_SIZE,
       MONITORS.STORAGE_PATH_USED
     ])
+
+    if (!Number.isInteger(parseInt(total)) || !Number.isInteger(parseInt(used)))
+      return errorResponseServerError({
+        total,
+        used,
+        msg: 'Invalid values for disk space'
+      })
+
     const available = total - used
 
     const usagePercent = Math.round((used * 100) / total)
