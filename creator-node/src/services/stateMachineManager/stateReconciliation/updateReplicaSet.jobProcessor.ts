@@ -1,5 +1,9 @@
 import type Logger from 'bunyan'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import {
+  getCachedHealthyNodes,
+  cacheHealthyNodes
+} from './stateReconciliationUtils'
 import type {
   IssueSyncRequestJobParams,
   NewReplicaSet,
@@ -60,19 +64,24 @@ module.exports = async function ({
    * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
    * There will be an explicit clock value check on the newly selected replica set nodes instead.
    */
-  const audiusLibs = await initAudiusLibs(true)
-  const { services: healthyServicesMap } =
-    await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-      performSyncCheck: false,
-      whitelist: reconfigNodeWhitelist,
-      log: true
-    })
-
-  const healthyNodes = Object.keys(healthyServicesMap || {})
-  if (healthyNodes.length === 0)
-    throw new Error(
-      'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
-    )
+  let audiusLibs = null
+  let healthyNodes = []
+  healthyNodes = await getCachedHealthyNodes()
+  if (healthyNodes.length === 0) {
+    audiusLibs = await initAudiusLibs(false, true)
+    const { services: healthyServicesMap } =
+      await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+        performSyncCheck: false,
+        whitelist: reconfigNodeWhitelist,
+        log: true
+      })
+    healthyNodes = Object.keys(healthyServicesMap || {})
+    if (healthyNodes.length === 0)
+      throw new Error(
+        'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
+      )
+    await cacheHealthyNodes(healthyNodes)
+  }
 
   let errorMsg = ''
   let issuedReconfig = false
@@ -479,6 +488,9 @@ const _issueUpdateReplicaSetOp = async (
     // Submit chain tx to update replica set
     const startTimeMs = Date.now()
     try {
+      if (!audiusLibs) {
+        audiusLibs = await initAudiusLibs(true)
+      }
       await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
         newReplicaSetSPIds[0], // primary

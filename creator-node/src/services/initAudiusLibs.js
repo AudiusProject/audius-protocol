@@ -8,7 +8,11 @@ const { logger: genericLogger } = require('../logging')
  *
  * Configures dataWeb3 to be internal to libs, logged in with delegatePrivateKey in order to write chain TX
  */
-module.exports = async (excludeDiscovery = false, logger = genericLogger) => {
+module.exports = async (
+  contractsOnly = false,
+  excludeDiscoveryNode = false,
+  logger = genericLogger
+) => {
   /**
    * Define all config variables
    */
@@ -51,12 +55,14 @@ module.exports = async (excludeDiscovery = false, logger = genericLogger) => {
    * Create AudiusLibs instance
    */
   const audiusLibs = new AudiusLibs({
-    ethWeb3Config: AudiusLibs.configEthWeb3(
-      ethTokenAddress,
-      ethRegistryAddress,
-      ethWeb3,
-      ethOwnerWallet
-    ),
+    ethWeb3Config: contractsOnly
+      ? null
+      : AudiusLibs.configEthWeb3(
+          ethTokenAddress,
+          ethRegistryAddress,
+          ethWeb3,
+          ethOwnerWallet
+        ),
     web3Config: AudiusLibs.configInternalWeb3(
       dataRegistryAddress,
       // pass as array
@@ -64,14 +70,17 @@ module.exports = async (excludeDiscovery = false, logger = genericLogger) => {
       // TODO - formatting this private key here is not ideal
       delegatePrivateKey.replace('0x', '')
     ),
-    discoveryProviderConfig: excludeDiscovery
-      ? null
-      : {
-          whitelist: discoveryProviderWhitelist,
-          unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
-        },
+    discoveryProviderConfig:
+      contractsOnly || excludeDiscoveryNode
+        ? null
+        : {
+            whitelist: discoveryProviderWhitelist,
+            unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
+          },
     // If an identity service config is present, set up libs with the connection, otherwise do nothing
-    identityServiceConfig: identityService
+    identityServiceConfig: contractsOnly
+      ? null
+      : identityService
       ? AudiusLibs.configIdentityService(identityService)
       : undefined,
     isDebug: creatorNodeIsDebug,

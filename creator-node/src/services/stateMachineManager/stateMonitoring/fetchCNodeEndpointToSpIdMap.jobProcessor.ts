@@ -21,7 +21,7 @@ module.exports = async function ({
 > {
   let errorMsg = ''
   try {
-    const audiusLibs = await initAudiusLibs(true)
+    const audiusLibs = await initAudiusLibs(false, true)
     await NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
       audiusLibs.ethContracts
     )
