@@ -57,12 +57,12 @@ function bump-npm () {
     git reset --hard ${GIT_TAG}
 
     # grab change log early, before the version bump
-    LAST_RELEASED_SHA=$(jq -r '.audius.releaseSha' package.json)
+    LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
     CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
 
     # Patch the version
     VERSION=$(npm version patch)
-    jq ". += {audius: {releaseSha: \"${GIT_TAG}\"}}" package.json \
+    jq ". += {audius: {releaseSHA: \"${GIT_TAG}\"}}" package.json \
         | sponge package.json
 
     # Build project
