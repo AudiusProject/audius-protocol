@@ -29,7 +29,7 @@ const commonConfig = {
       extensions,
       dynamicRequireTargets: [
         'src/data-contracts/ABIs/*.json',
-        'eth-contracts/ABIs/*.json'
+        'src/eth-contracts/ABIs/*.json'
       ]
     }),
     babel({ babelHelpers: 'bundled', extensions }),
