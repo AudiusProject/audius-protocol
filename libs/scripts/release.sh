@@ -73,15 +73,13 @@ function bump-npm () {
     # Publishing dry run, prior to pushing a branch
     npm publish . --access public --dry-run
 
-    # Commit to a new branch, and tag
+    # Commit to a new branch
     git checkout -b ${STUB}-${VERSION}
     git add .
     git commit -m "$(commit-message)"
-    git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
 
-    # Push branch and tags to remote
+    # Push branch to remote
     git push -u origin ${STUB}-${VERSION}
-    git push origin --tags
 }
 
 # Merge the created branch into master, then delete the branch
@@ -91,7 +89,13 @@ function merge-bump () {
     # pull in any additional commits that may have trickled in
     git pull
 
-    git merge ${STUB}-${VERSION} -m "$(commit-message)"
+    # squash branch commit
+    git merge --squash ${STUB}-${VERSION}
+    git commit -m "$(commit-message)"
+
+    # tag release
+    git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
+    git push origin --tags
 
     # if pushing fails, ensure we cleanup()
     git push -u origin master \
@@ -102,6 +106,14 @@ function merge-bump () {
 # publish to npm
 function publish () {
     npm publish . --access public
+}
+
+# informative links
+function info () {
+    echo "Released to:
+    * https://github.com/AudiusProject/audius-protocol/commits/master
+    * https://github.com/AudiusProject/audius-protocol/tags
+    * https://www.npmjs.com/package/@audius/sdk?activeTab=versions"
 }
 
 # cleanup when merging step fails
@@ -117,4 +129,4 @@ cd ${PROTOCOL_DIR}/libs
 
 # perform release
 bump-npm
-merge-bump && publish || cleanup
+merge-bump && publish && info || cleanup
