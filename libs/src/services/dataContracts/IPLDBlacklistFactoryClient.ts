@@ -1,5 +1,5 @@
 import { ContractClient } from '../contracts/ContractClient'
-import * as signatureSchemas from '../../data-contracts/signatureSchemas'
+import * as signatureSchemas from '../../signatureSchemas'
 import sigUtil, { EIP712TypedData } from 'eth-sig-util'
 import { Buffer as SafeBuffer } from 'safe-buffer'
 import type { Web3Manager } from '../web3Manager'
