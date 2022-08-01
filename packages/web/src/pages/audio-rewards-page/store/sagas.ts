@@ -211,7 +211,7 @@ function* claimChallengeRewardAsync(
   const currentUser = yield* select(getAccountUser)
   const feePayerOverride = yield* select(getFeePayer)
 
-  if (!currentUser) return
+  if (!currentUser || !currentUser.wallet) return
 
   // When endpoints is unset, `submitAndEvaluateAttestations` picks for us
   const endpoints =
@@ -224,7 +224,9 @@ function* claimChallengeRewardAsync(
     quorumSize &&
     quorumSize > 0 &&
     maxClaimRetries &&
-    !isNaN(maxClaimRetries)
+    !isNaN(maxClaimRetries) &&
+    endpoints &&
+    parallelization !== null
 
   if (!hasConfig) {
     console.error('Error claiming rewards: Config is missing')
@@ -235,6 +237,7 @@ function* claimChallengeRewardAsync(
       challenge_id: challengeId,
       specifier
     }))
+
     const response: { error?: string } = yield* call(
       AudiusBackend.submitAndEvaluateAttestations,
       {

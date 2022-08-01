@@ -15,8 +15,8 @@ import { waitForBackendSetup } from 'store/backend/sagas'
 
 export function* getTagSearchResults(tag, kind, limit, offset) {
   const results = yield call(AudiusBackend.searchTags, {
-    searchText: tag.toLowerCase(),
-    minTagThreshold: 1,
+    query: tag.toLowerCase(),
+    userTagCount: 1,
     kind,
     limit,
     offset

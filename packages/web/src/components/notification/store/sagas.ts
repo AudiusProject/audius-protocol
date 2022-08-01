@@ -133,7 +133,8 @@ export function* fetchNotifications(
     const timeOffset = lastNotification
       ? lastNotification.timestamp
       : moment().toISOString()
-    const withTips = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
+    const withTips = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED) ?? false
+
     const notificationsResponse: NotificationsResponse = yield* call(
       AudiusBackend.getNotifications,
       {
@@ -500,7 +501,7 @@ export function* getNotifications(isFirstFetch: boolean) {
       )
       if (!hasAccount) return
       const timeOffset = moment().toISOString()
-      const withTips = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
+      const withTips = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED) ?? false
 
       const notificationsResponse: NotificationsResponse | undefined =
         yield* call(AudiusBackend.getNotifications, {

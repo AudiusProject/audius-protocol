@@ -1,5 +1,5 @@
-import { ID, Name, Nullable } from '@audius/common'
-import { call, delay, put, select, takeEvery } from 'redux-saga/effects'
+import { Name } from '@audius/common'
+import { call, delay, put, select, takeEvery } from 'typed-redux-saga/macro'
 
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import AudiusBackend from 'services/AudiusBackend'
@@ -21,22 +21,23 @@ const DEACTIVATE_CONFIRMATION_UID = 'DEACTIVATE'
 
 function* handleDeactivateAccount() {
   try {
-    yield call(waitForBackendSetup)
-    const accountUserId: Nullable<ID> = yield select(getUserId)
-    const userMetadata: ReturnType<typeof getAccountUser> = yield select(
-      getAccountUser
-    )
-    yield put(
+    yield* call(waitForBackendSetup)
+    const accountUserId = yield* select(getUserId)
+    const userMetadata = yield* select(getAccountUser)
+    if (!accountUserId || !userMetadata) return
+    yield* put(
       requestConfirmation(
         DEACTIVATE_CONFIRMATION_UID,
         function* () {
-          yield put(make(Name.DEACTIVATE_ACCOUNT_REQUEST, {}))
-          const { blockHash, blockNumber } = yield call(
+          yield* put(make(Name.DEACTIVATE_ACCOUNT_REQUEST, {}))
+          const result = yield* call(
             AudiusBackend.updateCreator,
             { ...userMetadata, is_deactivated: true },
             accountUserId /* note: as of writing, unused parameter */
           )
-          const confirmed: boolean = yield call(
+          if (!result) return
+          const { blockHash, blockNumber } = result
+          const confirmed = yield* call(
             confirmTransaction,
             blockHash,
             blockNumber
@@ -49,20 +50,20 @@ function* handleDeactivateAccount() {
         },
         // @ts-ignore: confirmer is untyped
         function* () {
-          yield put(make(Name.DEACTIVATE_ACCOUNT_SUCCESS, {}))
+          yield* put(make(Name.DEACTIVATE_ACCOUNT_SUCCESS, {}))
           // Do the signout in another action so confirmer can clear
-          yield put(afterDeactivationSignOut())
+          yield* put(afterDeactivationSignOut())
         },
         function* () {
-          yield put(make(Name.DEACTIVATE_ACCOUNT_FAILURE, {}))
-          yield put(deactivateAccountFailed())
+          yield* put(make(Name.DEACTIVATE_ACCOUNT_FAILURE, {}))
+          yield* put(deactivateAccountFailed())
         }
       )
     )
   } catch (e) {
     console.error(e)
-    yield put(make(Name.DEACTIVATE_ACCOUNT_FAILURE, {}))
-    yield put(deactivateAccountFailed())
+    yield* put(make(Name.DEACTIVATE_ACCOUNT_FAILURE, {}))
+    yield* put(deactivateAccountFailed())
   }
 }
 

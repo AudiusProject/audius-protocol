@@ -6,9 +6,9 @@ import AudiusBackend from 'services/AudiusBackend'
 /**
  * Adds _cover_art_sizes to a track object if it does not have one set
  */
-const addTrackImages = <T extends TrackMetadata>(
-  track: T
-): T & { duration: number; _cover_art_sizes: CoverArtSizes } => {
+const addTrackImages = (
+  track: TrackMetadata
+): TrackMetadata & { duration: number; _cover_art_sizes: CoverArtSizes } => {
   return AudiusBackend.getTrackImages(track)
 }
 

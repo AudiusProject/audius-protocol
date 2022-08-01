@@ -56,7 +56,7 @@ class fLoader extends Hls.DefaultConfig.loader {
           this.getFallbacks(),
           /* cache */ false,
           /* asUrl */ true,
-          decodeHashId(this.getTrackId())
+          decodeHashId(this.getTrackId()) ?? undefined
         ).then((resolved) => {
           const updatedContext = { ...context, url: resolved }
           load(updatedContext, config, callbacks)

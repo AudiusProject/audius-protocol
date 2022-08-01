@@ -26,6 +26,7 @@ export function* getLuckyTracks(limit: number) {
   const ids = Array.from({ length: limit }, () =>
     Math.floor(Math.random() * latestTrackID)
   )
+
   const tracks: UserTrack[] = yield* call(AudiusBackend.getAllTracks, {
     offset: 0,
     limit,

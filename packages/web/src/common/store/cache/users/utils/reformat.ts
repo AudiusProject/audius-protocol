@@ -10,9 +10,9 @@ import AudiusBackend from 'services/AudiusBackend'
 /**
  * Adds profile picture and cover art to a user object if it does not have one set
  * */
-const addUserImages = <T extends UserMetadata>(
-  user: T
-): T & {
+const addUserImages = (
+  user: UserMetadata
+): UserMetadata & {
   _profile_picture_sizes: ProfilePictureSizes
   _cover_photo_sizes: CoverPhotoSizes
 } => {
@@ -36,7 +36,7 @@ const setDisplayNameToHandleIfUnset = <T extends UserMetadata>(user: T) => {
  * Reformats a user to be used internally within the client.
  * This method should *always* be called before a user is cached.
  */
-export const reformat = <T extends UserMetadata>(user: T): User => {
+export const reformat = (user: UserMetadata): User => {
   const withImages = addUserImages(user)
   const withNames = setDisplayNameToHandleIfUnset(withImages)
   return withNames
