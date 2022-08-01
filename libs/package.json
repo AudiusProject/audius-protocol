@@ -1,16 +1,14 @@
 {
   "name": "@audius/sdk",
-  "version": "0.0.21",
+  "version": "0.0.24",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
   "types": "dist/types.d.ts",
-  "browser": "dist/browser.js",
-  "sdkBrowserDistFile": "dist/sdk.js",
-  "sdkBrowserDistFileMini": "dist/sdk.min.js",
-  "legacy": "dist/legacy.js",
-  "legacyTypes": "dist/legacy.d.ts",
-  "core": "dist/core.js",
-  "coreTypes": "dist/core.d.ts",
+  "browser": {
+    "./dist/index.cjs.js": "./dist/index.browser.cjs.js",
+    "./dist/index.esm.js": "./dist/index.browser.esm.js"
+  },
   "scripts": {
     "init-local": "ts-node initScripts/local.js",
     "test": "./scripts/test.sh",

@@ -1,4 +1,4 @@
-import { SubmitAndEvaluateError } from '../../api/rewards'
+import { SubmitAndEvaluateError } from '../../api/Rewards'
 import type { ServiceWithEndpoint } from '../../utils'
 import { Utils } from '../../utils/utils'
 

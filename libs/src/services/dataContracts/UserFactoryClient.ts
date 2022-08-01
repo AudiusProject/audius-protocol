@@ -1,7 +1,7 @@
 import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
 import type { UserUpdateRequestFn } from '../../../data-contracts/signatureSchemas'
-import { Utils } from '../../utils'
+import { Nullable, Utils } from '../../utils'
 import sigUtil from 'eth-sig-util'
 import { Buffer as SafeBuffer } from 'safe-buffer'
 import type { Web3Manager } from '../web3Manager'
@@ -86,32 +86,6 @@ export class UserFactoryClient extends ContractClient {
     }
   }
 
-  async updateIsCreator(userId: number, isCreator: boolean) {
-    const [nonce, sig] = await this.getUpdateNonceAndSig(
-      signatureSchemas.generators.getUpdateUserCreatorRequestData,
-      userId,
-      isCreator
-    )
-    const method = await this.getMethod(
-      'updateIsCreator',
-      userId,
-      isCreator,
-      nonce,
-      sig
-    )
-    const contractAddress = await this.getAddress()
-
-    const tx = await this.web3Manager.sendTransaction(
-      method,
-      this.contractRegistryKey,
-      contractAddress
-    )
-    return {
-      txReceipt: tx,
-      isCreator: tx.events?.['UpdateIsCreator']?.returnValues._isCreator
-    }
-  }
-
   async updateName(userId: number, name: string) {
     Utils.checkStrLen(name, 32)
 
@@ -171,7 +145,7 @@ export class UserFactoryClient extends ContractClient {
     }
   }
 
-  async updateBio(userId: number, bio: string) {
+  async updateBio(userId: number, bio: Nullable<string>) {
     const [nonce, sig] = await this.getUpdateNonceAndSig(
       signatureSchemas.generators.getUpdateUserBioRequestData,
       userId,

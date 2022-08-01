@@ -33,13 +33,11 @@ RUN apk update && \
         python3-dev \
         redis \
         rsyslog \
-        wget \
         sudo \
         gcc \
         musl-dev
 
-RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
-    wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
+RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
     source /etc/os-release && \
     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
@@ -48,8 +46,7 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     apk add openresty=1.19.9.1-r0 openresty-opm && \
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
-    mkdir /usr/local/openresty/conf && \
-    mkdir /usr/local/openresty/logs
+    mkdir /usr/local/openresty/conf /usr/local/openresty/logs
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \

@@ -4,14 +4,18 @@ const { EthWeb3Manager } = require('./services/ethWeb3Manager')
 const { SolanaAudiusData } = require('./services/solanaAudiusData/index')
 const { Web3Manager } = require('./services/web3Manager')
 const { EthContracts } = require('./services/ethContracts')
-const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
+const {
+  SolanaWeb3Manager,
+  SolanaUtils,
+  RewardsAttester
+} = require('./services/solana')
 const { AudiusContracts } = require('./services/dataContracts')
 const { IdentityService } = require('./services/identity')
 const { Comstock } = require('./services/comstock')
 const { Hedgehog } = require('./services/hedgehog')
 const { CreatorNode } = require('./services/creatorNode')
 const { DiscoveryProvider } = require('./services/discoveryProvider')
-const Wormhole = require('./services/wormhole')
+const { Wormhole } = require('./services/wormhole')
 const { AudiusABIDecoder } = require('./services/ABIDecoder')
 const { SchemaValidator } = require('./services/schemaValidator')
 const { UserStateManager } = require('./userStateManager')
@@ -19,21 +23,17 @@ const SanityChecks = require('./sanityChecks')
 const { Utils, Captcha } = require('./utils')
 const { ServiceProvider } = require('./api/ServiceProvider')
 
-const Account = require('./api/account')
-const User = require('./api/user')
-const Track = require('./api/track')
-const Playlist = require('./api/playlist')
-const File = require('./api/file')
-const Rewards = require('./api/rewards')
+const { Account } = require('./api/Account')
+const { Users } = require('./api/Users')
+const { Track } = require('./api/Track')
+const { Playlists } = require('./api/Playlist')
+const { File } = require('./api/File')
+const { Rewards } = require('./api/Rewards')
+const { Reactions } = require('./api/Reactions')
 const Web3 = require('./web3')
-const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')
 const { PublicKey } = require('@solana/web3.js')
-const {
-  RewardsAttester
-} = require('./services/solanaWeb3Manager/rewardsAttester')
-const { Reactions } = require('./api/reactions')
 const { getPlatformLocalStorage } = require('./utils/localStorage')
 
 class AudiusLibs {
@@ -560,7 +560,7 @@ class AudiusLibs {
       this.logger
     ]
     this.ServiceProvider = new ServiceProvider(...services)
-    this.User = new User(
+    this.User = new Users(
       this.ServiceProvider,
       this.preferHigherPatchForPrimary,
       this.preferHigherPatchForSecondaries,
@@ -568,7 +568,7 @@ class AudiusLibs {
     )
     this.Account = new Account(this.User, ...services)
     this.Track = new Track(...services)
-    this.Playlist = new Playlist(...services)
+    this.Playlist = new Playlists(...services)
     this.File = new File(this.User, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
     this.Reactions = new Reactions(...services)
