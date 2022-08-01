@@ -16,12 +16,9 @@ fi
 
 set -ex
 
-# Finds the lastest commit that looks like a version commit,
-# and gets the list of commits after that
+# Generate change log between last released sha and HEAD
 function git-changelog () {
-    # Find the latest release commit by using the last time the first `version` key changed
-    version_line_number=$(grep -m 1 -n version package.json | cut -d: -f 1)
-    release_commit=$(git blame -L ${version_line_number},+1 --porcelain -- package.json | awk 'NR==1{ print $1 }')
+    release_commit=${1}
 
     # Print the log as "- <commmiter short date> [<commit short hash>] <commit message> <author name>"
     git log --pretty=format:"- %cd [%h] %s [%an]" --date=short $release_commit..HEAD
@@ -60,10 +57,13 @@ function bump-npm () {
     git reset --hard ${GIT_TAG}
 
     # grab change log early, before the version bump
-    CHANGE_LOG=$(git-changelog)
+    LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
+    CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
 
     # Patch the version
     VERSION=$(npm version patch)
+    jq ". += {audius: {releaseSHA: \"${GIT_TAG}\"}}" package.json \
+        | sponge package.json
 
     # Build project
     npm i
