@@ -49,9 +49,9 @@ class StateReconciliationManager {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await manualSyncQueue.clean({ force: true })
-    await recurringSyncQueue.clean({ force: true })
-    await updateReplicaSetQueue.clean({ force: true })
+    await manualSyncQueue.obliterate({ force: true })
+    await recurringSyncQueue.obliterate({ force: true })
+    await updateReplicaSetQueue.obliterate({ force: true })
 
     this.registerQueueEventHandlersAndJobProcessors({
       manualSyncQueue,
