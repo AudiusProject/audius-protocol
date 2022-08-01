@@ -5,5 +5,4 @@ export type ContractABI = {
   contractName: string
 }
 
-export const importDataContractABIs: (pathStr: string) => ContractABI
 export const importEthContractABIs: (pathStr: string) => ContractABI

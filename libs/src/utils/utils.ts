@@ -4,10 +4,7 @@ import axios, { AxiosResponse } from 'axios'
 import Hashids from 'hashids'
 import { MultiProvider } from './multiProvider'
 import { uuid } from './uuid'
-import {
-  importDataContractABIs,
-  importEthContractABIs
-} from './importContractABI'
+import { importEthContractABIs } from './importContractABI'
 import { fileHasher } from './fileHasher'
 import type { ImageHasher, NonImageHasher, HashedImage } from './fileHasher'
 
@@ -23,10 +20,6 @@ export type { ImageHasher, NonImageHasher, HashedImage }
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- this should just be esm
 export class Utils {
-  static importDataContractABI(pathStr: string) {
-    return importDataContractABIs(pathStr)
-  }
-
   static importEthContractABI(pathStr: string) {
     return importEthContractABIs(pathStr)
   }

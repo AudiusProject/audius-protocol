@@ -1,24 +1,33 @@
 import abiDecoder from 'abi-decoder'
-import { Utils } from '../../utils'
 import type { AbiItem, AbiInput } from 'web3-utils'
 import type { Log } from 'web3-core'
 
+import RegistryABI from '../../data-contracts/ABIs/Registry.json'
+import UserFactoryABI from '../../data-contracts/ABIs/UserFactory.json'
+import TrackFactoryABI from '../../data-contracts/ABIs/TrackFactory.json'
+import DiscoverProviderFactoryABI from '../../data-contracts/ABIs/DiscoveryProviderFactory.json'
+import SocialFeatureFactoryABI from '../../data-contracts/ABIs/SocialFeatureFactory.json'
+import PlaylistFactoryABI from '../../data-contracts/ABIs/PlaylistFactory.json'
+import UserLibraryFactoryABI from '../../data-contracts/ABIs/UserLibraryFactory.json'
+import UserReplicaSetManagerABI from '../../data-contracts/ABIs/UserReplicaSetManager.json'
+
 const abiMap: Record<string, AbiItem[]> = {}
 
-function loadABI(abiFile: string) {
-  const contract = Utils.importDataContractABI(abiFile)
-  abiDecoder.addABI(contract.abi)
-  abiMap[contract.contractName] = contract.abi
-}
-
-loadABI('Registry.json')
-loadABI('UserFactory.json')
-loadABI('TrackFactory.json')
-loadABI('DiscoveryProviderFactory.json')
-loadABI('SocialFeatureFactory.json')
-loadABI('PlaylistFactory.json')
-loadABI('UserLibraryFactory.json')
-loadABI('UserReplicaSetManager.json')
+;[
+  RegistryABI,
+  UserFactoryABI,
+  TrackFactoryABI,
+  DiscoverProviderFactoryABI,
+  SocialFeatureFactoryABI,
+  PlaylistFactoryABI,
+  UserLibraryFactoryABI,
+  UserReplicaSetManagerABI
+].forEach(({ contractName, abi }) => {
+  // @ts-ignore
+  abiDecoder.addABI(abi)
+  // @ts-ignore
+  abiMap[contractName] = abi
+})
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- should just use esm
 export class AudiusABIDecoder {
