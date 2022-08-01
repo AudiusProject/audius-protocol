@@ -8,7 +8,7 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
-const CNodeToSpIdMapManager = require('../services/stateMachineManager/CNodeToSpIdMapManager')
+const CNodeToSpIdMapManager = require('../../services/stateMachineManager/CNodeToSpIdMapManager')
 
 /**
  * Checks to see if the host requesting the sync is the primary of the observed user
