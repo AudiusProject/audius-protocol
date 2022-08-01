@@ -98,7 +98,7 @@ export class PrometheusRegistry {
     )
   }
 
-  public startQueueMetrics(queue: Queue, useGlobal: boolean) {
+  public startQueueMetrics(queue: Queue, useGlobal = false) {
     // @ts-ignore
     const keyPrefix = queue.keyPrefix.replace(/.*\{|\}/gi, '')
 
