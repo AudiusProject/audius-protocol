@@ -1,9 +1,17 @@
 const _ = require('lodash')
 const axios = require('axios')
+
+const redisClient = require('../../../redis')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
-const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
+const {
+  SyncType,
+  SYNC_MODES,
+  HEALTHY_SERVICES_TTL_SEC
+} = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+
+const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
 /**
  * Returns a job can be enqueued to add a sync request for the given user to the given secondary,
@@ -156,7 +164,23 @@ const issueSyncRequestsUntilSynced = async (
   )
 }
 
+const getCachedHealthyNodes = async () => {
+  const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)
+  return healthyNodes
+}
+
+const cacheHealthyNodes = async (healthyNodes) => {
+  const pipeline = redisClient.pipeline()
+  await pipeline
+    .del(HEALTHY_NODES_CACHE_KEY)
+    .rpush(HEALTHY_NODES_CACHE_KEY, ...(healthyNodes || []))
+    .expire(HEALTHY_NODES_CACHE_KEY, HEALTHY_SERVICES_TTL_SEC)
+    .exec()
+}
+
 module.exports = {
   getNewOrExistingSyncReq,
-  issueSyncRequestsUntilSynced
+  issueSyncRequestsUntilSynced,
+  getCachedHealthyNodes,
+  cacheHealthyNodes
 }
