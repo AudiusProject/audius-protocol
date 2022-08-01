@@ -4,13 +4,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Set, Tuple
 
-from sqlalchemy.orm.session import Session, make_transient
+from sqlalchemy.orm.session import Session
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.users.user import User
-from src.tasks.playlists import invalidate_old_playlist
 from src.utils import helpers
-from src.utils.user_event_constants import audius_data_event_types_arr
 from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
@@ -32,6 +30,9 @@ class EntityType(str, Enum):
         return str.__str__(self)
 
 
+MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
+
+
 def audius_data_state_update(
     self,
     update_task: DatabaseTask,
@@ -40,7 +41,7 @@ def audius_data_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    ipfs_metadata
+    ipfs_metadata,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     try:
         num_total_changes = 0
@@ -71,38 +72,35 @@ def audius_data_state_update(
         # process in tx order and populate playlists_to_save
         for tx_receipt in audius_data_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            for event_type in audius_data_event_types_arr:
-                audius_data_event_tx = get_audius_data_events_tx(
-                    update_task, event_type, tx_receipt
+            audius_data_event_tx = get_audius_data_events_tx(update_task, tx_receipt)
+            for event in audius_data_event_tx:
+                params = ManagePlaylistParameters(
+                    event,
+                    playlists_to_save,  # actions below populate these records
+                    existing_playlist_id_to_playlist,
+                    existing_user_id_to_user,
+                    ipfs_metadata,
+                    block_timestamp,
+                    block_number,
+                    event_blockhash,
+                    txhash,
                 )
-                for event in audius_data_event_tx:
-                    params = ManagePlaylistParameters(
-                        event,
-                        playlists_to_save,  # actions below populate these records
-                        existing_playlist_id_to_playlist,
-                        existing_user_id_to_user,
-                        ipfs_metadata,
-                        block_timestamp,
-                        block_number,
-                        event_blockhash,
-                        txhash,
-                    )
-                    if (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.PLAYLIST
-                    ):
-                        create_playlist(params)
-                    elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.PLAYLIST
-                    ):
-                        update_playlist(params)
+                if (
+                    params.action == Action.CREATE
+                    and params.entity_type == EntityType.PLAYLIST
+                ):
+                    create_playlist(params)
+                elif (
+                    params.action == Action.UPDATE
+                    and params.entity_type == EntityType.PLAYLIST
+                ):
+                    update_playlist(params)
 
-                    elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.PLAYLIST
-                    ):
-                        delete_playlist(params)
+                elif (
+                    params.action == Action.DELETE
+                    and params.entity_type == EntityType.PLAYLIST
+                ):
+                    delete_playlist(params)
 
         # compile records_to_save
         records_to_save = []
@@ -117,6 +115,7 @@ def audius_data_state_update(
 
     except Exception as e:
         logger.error(f"Exception occurred {e}", exc_info=True)
+        raise e
     return num_total_changes, changed_entity_ids
 
 
@@ -152,13 +151,40 @@ class ManagePlaylistParameters:
         self.playlists_to_save = playlists_to_save
 
 
+def is_valid_playlist_owner(params: ManagePlaylistParameters):
+    if params.user_id not in params.existing_user_id_to_user:
+        # user does not exist
+        return False
+
+    wallet = params.existing_user_id_to_user[params.user_id].wallet
+    if wallet and wallet.lower() != params.signer.lower():
+        # user does not match signer
+        return False
+    if params.action == Action.CREATE:
+        if params.entity_id in params.existing_playlist_id_to_playlist:
+            # playlist already exists
+            return False
+    else:
+        if params.entity_id not in params.existing_playlist_id_to_playlist:
+            # playlist does not exist
+            return False
+        existing_playlist: Playlist = params.existing_playlist_id_to_playlist[
+            params.entity_id
+        ]
+        if existing_playlist.playlist_owner_id != params.user_id:
+            # existing playlist does not match user
+            return False
+
+    return True
+
+
 def create_playlist(params: ManagePlaylistParameters):
-    metadata = params.ipfs_metadata[params.metadata_cid]
-    # check if playlist already exists
-    if params.entity_id in params.existing_playlist_id_to_playlist:
+    if not is_valid_playlist_owner(params):
         return
 
-    track_ids = metadata.get("playlist_contents", [])
+    metadata = params.ipfs_metadata[params.metadata_cid]
+
+    track_ids = metadata["playlist_contents"]
     playlist_contents = []
     for track_id in track_ids:
         playlist_contents.append({"track": track_id, "time": params.block_integer_time})
@@ -182,16 +208,15 @@ def create_playlist(params: ManagePlaylistParameters):
     )
 
     params.playlists_to_save[params.entity_id].append(create_playlist_record)
+    params.existing_playlist_id_to_playlist[params.entity_id] = create_playlist_record
 
 
 def update_playlist(params: ManagePlaylistParameters):
-    metadata = params.ipfs_metadata[params.metadata_cid]
-    # check user owns playlist
-    if (
-        params.signer.lower()
-        != params.existing_user_id_to_user[params.user_id].wallet.lower()
-    ):
+    if not is_valid_playlist_owner(params):
         return
+    # TODO ignore updates on deleted playlists?
+
+    metadata = params.ipfs_metadata[params.metadata_cid]
     existing_playlist = params.existing_playlist_id_to_playlist[params.entity_id]
     existing_playlist.is_current = False  # invalidate
     if (
@@ -212,12 +237,10 @@ def update_playlist(params: ManagePlaylistParameters):
 
 
 def delete_playlist(params: ManagePlaylistParameters):
-    # check user owns playlist
-    if (
-        params.signer.lower()
-        != params.existing_user_id_to_user[params.user_id].wallet.lower()
-    ):
+
+    if not is_valid_playlist_owner(params):
         return
+
     existing_playlist = params.existing_playlist_id_to_playlist[params.entity_id]
     existing_playlist.is_current = False  # invalidate old playlist
     if params.entity_id in params.playlists_to_save:
@@ -239,17 +262,14 @@ def collect_entities_to_fetch(
     users_to_fetch: Set[int],
 ):
     for tx_receipt in audius_data_txs:
-        for event_type in audius_data_event_types_arr:
-            audius_data_event_tx = get_audius_data_events_tx(
-                update_task, event_type, tx_receipt
-            )
-            for event in audius_data_event_tx:
-                entity_id = helpers.get_tx_arg(event, "_entityId")
-                entity_type = helpers.get_tx_arg(event, "_entityType")
-                user_id = helpers.get_tx_arg(event, "_userId")
+        audius_data_event_tx = get_audius_data_events_tx(update_task, tx_receipt)
+        for event in audius_data_event_tx:
+            entity_id = helpers.get_tx_arg(event, "_entityId")
+            entity_type = helpers.get_tx_arg(event, "_entityType")
+            user_id = helpers.get_tx_arg(event, "_userId")
 
-                entities_to_fetch[entity_type].add(entity_id)
-                users_to_fetch.add(user_id)
+            entities_to_fetch[entity_type].add(entity_id)
+            users_to_fetch.add(user_id)
 
 
 def fetch_existing_entities(
@@ -308,9 +328,9 @@ def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
     return new_playlist
 
 
-def get_audius_data_events_tx(update_task, event_type, tx_receipt):
+def get_audius_data_events_tx(update_task, tx_receipt):
     return getattr(
-        update_task.audius_data_contract.events, event_type
+        update_task.audius_data_contract.events, MANAGE_ENTITY_EVENT_TYPE
     )().processReceipt(tx_receipt)
 
 
