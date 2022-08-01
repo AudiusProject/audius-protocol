@@ -99,10 +99,6 @@ export class PrometheusRegistry {
   }
 
   public startQueueMetrics(queue: Queue, useGlobal = false) {
-    const labels = {
-      queue_name: queue.name
-    }
-
     if (useGlobal) {
       queue.on('global:completed', async (jobId: number) => {
         const job = await queue.getJob(jobId)
