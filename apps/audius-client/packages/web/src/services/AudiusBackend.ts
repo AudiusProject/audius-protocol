@@ -1,13 +1,28 @@
-/* globals web3 */
 import {
-  Name,
-  FailureReason,
-  FeedFilter,
-  DefaultSizes,
-  IntKeys,
-  StringKeys,
+  BNWei,
   BooleanKeys,
+  ChallengeRewardID,
+  CID,
+  Collection,
+  CollectionMetadata,
+  CoverArtSizes,
+  CoverPhotoSizes,
+  DefaultSizes,
+  FailureReason,
   FeatureFlags,
+  FeedFilter,
+  ID,
+  IntKeys,
+  Name,
+  Nullable,
+  PlaylistTrackId,
+  ProfilePictureSizes,
+  StringKeys,
+  Track,
+  TrackMetadata,
+  User,
+  UserMetadata,
+  UserTrack,
   uuid
 } from '@audius/common'
 import { IdentityAPI, DiscoveryAPI } from '@audius/sdk/dist/core'
@@ -28,6 +43,10 @@ import placeholderCoverArt from 'assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
 import CIDCache from 'common/store/cache/CIDCache'
+import {
+  BrowserNotificationSetting,
+  PushNotificationSetting
+} from 'common/store/pages/settings/types'
 import * as schemas from 'schemas'
 import { ClientRewardsReporter } from 'services/audius-backend/Rewards'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
@@ -35,6 +54,7 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { IS_MOBILE_USER_KEY } from 'store/account/mobileSagas'
 import { track } from 'store/analytics/providers/amplitude'
 import { isElectron } from 'utils/clientUtil'
+import { getErrorMessage } from 'utils/error'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { Timer } from 'utils/performance'
 import { encodeHashId } from 'utils/route/hashIds'
@@ -45,6 +65,14 @@ import {
   LIBS_INITTED_EVENT
 } from './audius-backend/eagerLoadUtils'
 import { monitoringCallbacks } from './serviceMonitoring'
+
+declare global {
+  interface Window {
+    web3Loaded: boolean
+    phantom: any
+  }
+}
+
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
@@ -112,9 +140,23 @@ export const AuthHeaders = Object.freeze({
   Signature: 'Encoded-Data-Signature'
 })
 
+type SnakeToCamel<S extends string> = S extends `${infer T}_${infer U}`
+  ? `${T}${Capitalize<SnakeToCamel<U>>}`
+  : S
+
+type SnakeKeysToCamel<T> = {
+  [K in keyof T as SnakeToCamel<Extract<K, string>>]: T[K]
+}
+
+type DiscoveryEndpoint = (...args: any) => { queryParams: Record<string, any> }
+type DiscoveryAPIParams<Endpoint extends DiscoveryEndpoint> = SnakeKeysToCamel<
+  ReturnType<Endpoint>['queryParams']
+>
+
+// TODO: allow this to be configured
 export const waitForWeb3 = async () => {
   if (!window.web3Loaded) {
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       const onLoad = () => {
         window.removeEventListener('WEB3_LOADED', onLoad)
         resolve()
@@ -124,22 +166,23 @@ export const waitForWeb3 = async () => {
   }
 }
 
-let AudiusLibs = null
-export let Utils = null
-let SanityChecks = null
-let SolanaUtils = null
+// TODO: type these once libs types are improved
+let AudiusLibs: any = null
+export let Utils: any = null
+let SanityChecks: any = null
+let SolanaUtils: any = null
 
-let audiusLibs = null
+let audiusLibs: any = null
 const unauthenticatedUuid = uuid()
 /**
  * Combines two lists by concatting `maxSaved` results from the `savedList` onto the head of `normalList`,
  * ensuring that no item is duplicated in the resulting list (deduped by `uniqueKey`). The final list length is capped
  * at `maxTotal` items.
  */
-const combineLists = (
-  savedList,
-  normalList,
-  uniqueKey,
+const combineLists = <Entity extends Track | User>(
+  savedList: Entity[],
+  normalList: Entity[],
+  uniqueKey: keyof Entity,
   maxSaved = SEARCH_MAX_SAVED_RESULTS,
   maxTotal = SEARCH_MAX_TOTAL_RESULTS
 ) => {
@@ -153,7 +196,9 @@ const combineLists = (
   return combinedLists.slice(0, Math.min(maxTotal, combinedLists.length))
 }
 
-const notDeleted = (e) => !e.is_delete
+const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
+
+type TransactionReceipt = { blockHash: string; blockNumber: number }
 
 /**
  *
@@ -165,11 +210,11 @@ const notDeleted = (e) => !e.is_delete
  * @returns {Promise<string>}
  */
 export const fetchCID = async (
-  cid,
+  cid: CID,
   creatorNodeGateways = [],
   cache = true,
   asUrl = true,
-  trackId = null
+  trackId: Nullable<ID> = null
 ) => {
   await waitForLibsInit()
   try {
@@ -189,22 +234,23 @@ export const fetchCID = async (
     }
     return res?.data ?? null
   } catch (e) {
-    if (e?.message === 'Unauthorized') {
-      return e.message
+    const message = getErrorMessage(e)
+    if (message === 'Unauthorized') {
+      return message
     }
     console.error(e)
     return asUrl ? '' : null
   }
 }
 
-let preloadImageTimer
-const avoidGC = []
+let preloadImageTimer: Timer
+const avoidGC: HTMLImageElement[] = []
 
-const preloadImage = async (url) => {
+const preloadImage = async (url: string) => {
   if (!preloadImageTimer) {
-    const batchSize = getRemoteVar(
-      IntKeys.IMAGE_QUICK_FETCH_PERFORMANCE_BATCH_SIZE
-    )
+    const batchSize =
+      getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_PERFORMANCE_BATCH_SIZE) ??
+      undefined
 
     preloadImageTimer = new Timer({
       name: 'image_preload',
@@ -213,10 +259,11 @@ const preloadImage = async (url) => {
     })
   }
 
-  return new Promise((resolve) => {
+  return new Promise<string | false>((resolve) => {
     const start = preloadImageTimer.start()
 
-    const timeoutMs = getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS)
+    const timeoutMs =
+      getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS) ?? undefined
     const timeout = setTimeout(() => {
       preloadImageTimer.end(start)
       resolve(false)
@@ -242,7 +289,11 @@ const preloadImage = async (url) => {
   })
 }
 
-const fetchImageCID = async (cid, creatorNodeGateways = [], cache = true) => {
+const fetchImageCID = async (
+  cid: CID,
+  creatorNodeGateways: string[] = [],
+  cache = true
+) => {
   if (CIDCache.has(cid)) {
     return CIDCache.get(cid)
   }
@@ -281,18 +332,37 @@ const fetchImageCID = async (cid, creatorNodeGateways = [], cache = true) => {
   }
 }
 
-class AudiusBackend {
-  static currentDiscoveryProvider = null
-  static didSelectDiscoveryProviderListeners = []
+/**
+ * Gets a blockList set from remote config
+ */
+const getBlockList = (remoteVarKey: StringKeys) => {
+  const list = getRemoteVar(remoteVarKey)
+  if (list) {
+    try {
+      return new Set(list.split(','))
+    } catch (e) {
+      console.error(e)
+      return null
+    }
+  }
+}
 
-  static addDiscoveryProviderSelectionListener(listener) {
+type DiscoveryProviderListener = (endpoint: Nullable<string>) => void
+
+class AudiusBackend {
+  static currentDiscoveryProvider: Nullable<string> = null
+  static didSelectDiscoveryProviderListeners: DiscoveryProviderListener[] = []
+
+  static addDiscoveryProviderSelectionListener(
+    listener: DiscoveryProviderListener
+  ) {
     AudiusBackend.didSelectDiscoveryProviderListeners.push(listener)
     if (AudiusBackend.currentDiscoveryProvider !== null) {
       listener(AudiusBackend.currentDiscoveryProvider)
     }
   }
 
-  static async getImageUrl(cid, size, gateways) {
+  static async getImageUrl(cid: CID, size: string, gateways: string[]) {
     if (!cid) return ''
     try {
       return size
@@ -304,8 +374,8 @@ class AudiusBackend {
     }
   }
 
-  static getTrackImages(track) {
-    const coverArtSizes = {}
+  static getTrackImages(track: TrackMetadata) {
+    const coverArtSizes: CoverArtSizes = {}
     if (!track.cover_art_sizes && !track.cover_art) {
       coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt
     }
@@ -321,8 +391,8 @@ class AudiusBackend {
     }
   }
 
-  static getCollectionImages(collection) {
-    const coverArtSizes = {}
+  static getCollectionImages(collection: CollectionMetadata) {
+    const coverArtSizes: CoverArtSizes = {}
 
     if (
       collection.playlist_image_sizes_multihash &&
@@ -344,9 +414,9 @@ class AudiusBackend {
     }
   }
 
-  static getUserImages(user) {
-    const profilePictureSizes = {}
-    const coverPhotoSizes = {}
+  static getUserImages(user: UserMetadata) {
+    const profilePictureSizes: ProfilePictureSizes = {}
+    const coverPhotoSizes: CoverPhotoSizes = {}
 
     // Images are fetched on demand async w/ the `useUserProfilePicture`/`useUserCoverPhoto` and
     // transitioned in w/ the dynamicImageComponent
@@ -366,7 +436,10 @@ class AudiusBackend {
   }
 
   // Record the endpoint and reason for selecting the endpoint
-  static discoveryProviderSelectionCallback(endpoint, decisionTree) {
+  static discoveryProviderSelectionCallback(
+    endpoint: string,
+    decisionTree: { stage: string }[]
+  ) {
     track(Name.DISCOVERY_PROVIDER_SELECTION, {
       endpoint,
       reason: decisionTree.map((reason) => reason.stage).join(' -> ')
@@ -376,7 +449,11 @@ class AudiusBackend {
     )
   }
 
-  static creatorNodeSelectionCallback(primary, secondaries, reason) {
+  static creatorNodeSelectionCallback(
+    primary: string,
+    secondaries: string[],
+    reason: string
+  ) {
     track(Name.CREATOR_NODE_SELECTION, {
       endpoint: primary,
       selectedAs: 'primary',
@@ -391,7 +468,7 @@ class AudiusBackend {
     })
   }
 
-  static async sanityChecks(audiusLibs) {
+  static async sanityChecks(audiusLibs: any) {
     try {
       const sanityCheckOptions = {
         skipRollover: getRemoteVar(BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK)
@@ -418,32 +495,18 @@ class AudiusBackend {
 
     // initialize libs
     let libsError = null
-    const { web3Error, web3Config } = await AudiusBackend.getWeb3Config()
+    const { web3Config } = await AudiusBackend.getWeb3Config()
     const { ethWeb3Config } = AudiusBackend.getEthWeb3Config()
     const { solanaWeb3Config } = AudiusBackend.getSolanaWeb3Config()
     const { solanaAudiusDataConfig } = AudiusBackend.getSolanaAudiusDataConfig()
     const { wormholeConfig } = AudiusBackend.getWormholeConfig()
 
-    let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
-    if (contentNodeBlockList) {
-      try {
-        contentNodeBlockList = new Set(contentNodeBlockList.split(','))
-      } catch (e) {
-        console.error(e)
-        contentNodeBlockList = null
-      }
-    }
-    let discoveryNodeBlockList = getRemoteVar(
+    const contentNodeBlockList = getBlockList(
+      StringKeys.CONTENT_NODE_BLOCK_LIST
+    )
+    const discoveryNodeBlockList = getBlockList(
       StringKeys.DISCOVERY_NODE_BLOCK_LIST
     )
-    if (discoveryNodeBlockList) {
-      try {
-        discoveryNodeBlockList = new Set(discoveryNodeBlockList.split(','))
-      } catch (e) {
-        console.error(e)
-        discoveryNodeBlockList = null
-      }
-    }
 
     try {
       audiusLibs = new AudiusLibs({
@@ -506,12 +569,10 @@ class AudiusBackend {
       AudiusBackend.sanityChecks(audiusLibs)
     } catch (err) {
       console.log(err)
-      libsError = err.message
+      libsError = getErrorMessage(err)
     }
 
-    // Web3Error allows for metamask to be improperly configured
-    // but reads to still work in app. libsError should be treated as fatal.
-    return { web3Error, libsError }
+    return { libsError }
   }
 
   static getEthWeb3Config() {
@@ -541,7 +602,7 @@ class AudiusBackend {
           error: false,
           web3Config: await AudiusLibs.configExternalWeb3(
             REGISTRY_ADDRESS,
-            web3.currentProvider,
+            window.web3.currentProvider,
             WEB3_NETWORK_ID
           )
         }
@@ -640,11 +701,11 @@ class AudiusBackend {
     }
   }
 
-  static async setCreatorNodeEndpoint(endpoint) {
+  static async setCreatorNodeEndpoint(endpoint: string) {
     return audiusLibs.creatorNode.setEndpoint(endpoint)
   }
 
-  static async isCreatorNodeSyncing(endpoint) {
+  static async isCreatorNodeSyncing(endpoint: string) {
     try {
       const { isBehind, isConfigured } =
         await audiusLibs.creatorNode.getSyncStatus(endpoint)
@@ -663,15 +724,9 @@ class AudiusBackend {
   }
 
   static async getSelectableCreatorNodes() {
-    let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
-    if (contentNodeBlockList) {
-      try {
-        contentNodeBlockList = new Set(contentNodeBlockList.split(','))
-      } catch (e) {
-        console.error(e)
-        contentNodeBlockList = null
-      }
-    }
+    const contentNodeBlockList = getBlockList(
+      StringKeys.CONTENT_NODE_BLOCK_LIST
+    )
     return audiusLibs.ServiceProvider.getSelectableCreatorNodes(
       /* whitelist */ null,
       /* blacklist */ contentNodeBlockList
@@ -726,6 +781,12 @@ class AudiusBackend {
     idsArray,
     withUsers = true,
     filterDeletes = false
+  }: {
+    offset: number
+    limit: number
+    idsArray: ID[]
+    withUsers?: boolean
+    filterDeletes?: boolean
   }) {
     try {
       const tracks = await withEagerOption(
@@ -762,7 +823,10 @@ class AudiusBackend {
    * @param {getTracksIdentifier[]} identifiers
    * @returns {(Array)} track
    */
-  static async getTracksIncludingUnlisted(identifiers, withUsers = true) {
+  static async getTracksIncludingUnlisted(
+    identifiers: { id: ID }[],
+    withUsers = true
+  ) {
     try {
       const tracks = await withEagerOption(
         {
@@ -787,6 +851,12 @@ class AudiusBackend {
     sort = null,
     filterDeleted = null,
     withUsers = true
+  }: Omit<
+    DiscoveryAPIParams<typeof DiscoveryAPI.getTracks>,
+    'sort' | 'filterDeleted'
+  > & {
+    sort: Nullable<boolean>
+    filterDeleted: Nullable<boolean>
   }) {
     try {
       const tracks = await withEagerOption(
@@ -816,14 +886,14 @@ class AudiusBackend {
     limit,
     withUsers = true,
     tracksOnly = false
-  }) {
+  }: DiscoveryAPIParams<typeof DiscoveryAPI.getSocialFeed>) {
     const filterMap = {
       [FeedFilter.ALL]: 'all',
       [FeedFilter.ORIGINAL]: 'original',
       [FeedFilter.REPOST]: 'repost'
     }
 
-    let feedItems = []
+    let feedItems: Array<Collection | UserTrack> = []
     try {
       feedItems = await withEagerOption(
         {
@@ -831,7 +901,7 @@ class AudiusBackend {
           eager: DiscoveryAPI.getSocialFeed,
           requiresUser: true
         },
-        filterMap[filter],
+        filterMap[filter as FeedFilter],
         limit,
         offset,
         withUsers,
@@ -844,12 +914,21 @@ class AudiusBackend {
       console.error(err)
     }
     return feedItems.map((item) => {
-      if (item.playlist_id) return AudiusBackend.getCollectionImages(item)
+      if ('playlist_id' in item) {
+        return AudiusBackend.getCollectionImages(item)
+      }
       return item
     })
   }
 
-  static async getUserFeed({ offset, limit, userId, withUsers = true }) {
+  static async getUserFeed({
+    offset,
+    limit,
+    userId,
+    withUsers = true
+  }: DiscoveryAPIParams<typeof DiscoveryAPI.getUserRepostFeed> & {
+    userId: string
+  }) {
     try {
       const tracks = await withEagerOption(
         {
@@ -869,20 +948,20 @@ class AudiusBackend {
   }
 
   static async searchTags({
-    searchText,
-    minTagThreshold,
+    query,
+    userTagCount,
     kind,
     offset,
     limit
-  }) {
+  }: DiscoveryAPIParams<typeof DiscoveryAPI.searchTags>) {
     try {
       const searchTags = await withEagerOption(
         {
           normal: (libs) => libs.Account.searchTags,
           eager: DiscoveryAPI.searchTags
         },
-        searchText,
-        minTagThreshold,
+        query,
+        userTagCount,
         kind,
         limit,
         offset
@@ -896,7 +975,7 @@ class AudiusBackend {
       } = searchTags
 
       const combinedTracks = await Promise.all(
-        combineLists(
+        combineLists<Track>(
           savedTracks.filter(notDeleted),
           tracks.filter(notDeleted),
           'track_id'
@@ -904,7 +983,7 @@ class AudiusBackend {
       )
 
       const combinedUsers = await Promise.all(
-        combineLists(followedUsers, users, 'user_id').map(async (user) =>
+        combineLists<User>(followedUsers, users, 'user_id').map(async (user) =>
           AudiusBackend.getUserImages(user)
         )
       )
@@ -922,8 +1001,12 @@ class AudiusBackend {
     }
   }
 
-  static async getTrackListens(trackIds, start, end, period) {
-    if (trackIds.length === 0) return []
+  // trackIds, start, end, period
+  static async getTrackListens(
+    ...args: Parameters<typeof IdentityAPI.getTrackListens>
+  ) {
+    const [period, trackIds, start, end] = args
+    if (trackIds?.length === 0) return []
     try {
       return withEagerOption(
         {
@@ -935,15 +1018,15 @@ class AudiusBackend {
         trackIds,
         start,
         end,
-        trackIds.length
+        trackIds?.length
       )
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
       return []
     }
   }
 
-  static async recordTrackListen(trackId) {
+  static async recordTrackListen(trackId: ID) {
     try {
       const listen = await audiusLibs.Track.logTrackListen(
         trackId,
@@ -952,42 +1035,42 @@ class AudiusBackend {
       )
       return listen
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
     }
   }
 
-  static async repostTrack(trackId) {
+  static async repostTrack(trackId: ID) {
     try {
       return audiusLibs.Track.addTrackRepost(trackId)
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
       throw err
     }
   }
 
-  static async undoRepostTrack(trackId) {
+  static async undoRepostTrack(trackId: ID) {
     try {
       return audiusLibs.Track.deleteTrackRepost(trackId)
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
       throw err
     }
   }
 
-  static async repostCollection(playlistId) {
+  static async repostCollection(playlistId: ID) {
     try {
       return audiusLibs.Playlist.addPlaylistRepost(playlistId)
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
       throw err
     }
   }
 
-  static async undoRepostCollection(playlistId) {
+  static async undoRepostCollection(playlistId: ID) {
     try {
       return audiusLibs.Playlist.deletePlaylistRepost(playlistId)
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
       throw err
     }
   }
@@ -996,13 +1079,18 @@ class AudiusBackend {
    * Upgrades a user to a creator
    * @param {string} newCreatorNodeEndpoint will follow the structure 'cn1,cn2,cn3'
    */
-  static async upgradeToCreator(newCreatorNodeEndpoint) {
+  static async upgradeToCreator(newCreatorNodeEndpoint: string) {
     return audiusLibs.User.upgradeToCreator(USER_NODE, newCreatorNodeEndpoint)
   }
 
   // Uploads a single track
   // Returns { trackId, error, phase }
-  static async uploadTrack(trackFile, coverArtFile, metadata, onProgress) {
+  static async uploadTrack(
+    trackFile: File,
+    coverArtFile: File,
+    metadata: TrackMetadata,
+    onProgress: (loaded: number, total: number) => void
+  ) {
     return await audiusLibs.Track.uploadTrack(
       trackFile,
       coverArtFile,
@@ -1014,10 +1102,10 @@ class AudiusBackend {
   // Used to upload multiple tracks as part of an album/playlist
   // Returns { metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID }
   static async uploadTrackToCreatorNode(
-    trackFile,
-    coverArtFile,
-    metadata,
-    onProgress
+    trackFile: File,
+    coverArtFile: File,
+    metadata: TrackMetadata,
+    onProgress: (loaded: number, total: number) => void
   ) {
     return audiusLibs.Track.uploadTrackContentToCreatorNode(
       trackFile,
@@ -1038,15 +1126,20 @@ class AudiusBackend {
    * Adds tracks to chain for this user
    * Associates tracks with user on creatorNode
    */
-  static async registerUploadedTracks(uploadedTracks) {
+  static async registerUploadedTracks(
+    uploadedTracks: { metadataMultihash: string; metadataFileUUID: string }[]
+  ) {
     return audiusLibs.Track.addTracksToChainAndCnode(uploadedTracks)
   }
 
-  static async uploadImage(file) {
+  static async uploadImage(file: File) {
     return audiusLibs.File.uploadImage(file)
   }
 
-  static async updateTrack(trackId, metadata) {
+  static async updateTrack(
+    trackId: ID,
+    metadata: TrackMetadata & { artwork: { file: File } }
+  ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
 
     if (metadata.artwork) {
@@ -1056,10 +1149,10 @@ class AudiusBackend {
     return await audiusLibs.Track.updateTrack(cleanedMetadata)
   }
 
-  static async getCreators(ids) {
+  static async getCreators(ids: ID[]) {
     try {
       if (ids.length === 0) return []
-      const creators = await withEagerOption(
+      const creators: User[] = await withEagerOption(
         {
           normal: (libs) => libs.User.getUsers,
           eager: DiscoveryAPI.getUsers
@@ -1073,15 +1166,17 @@ class AudiusBackend {
       }
 
       return Promise.all(
-        creators.map(async (creator) => AudiusBackend.getUserImages(creator))
+        creators.map(async (creator: User) =>
+          AudiusBackend.getUserImages(creator)
+        )
       )
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
       return []
     }
   }
 
-  static async getCreatorSocialHandle(handle) {
+  static async getCreatorSocialHandle(handle: string) {
     try {
       const res = await fetch(
         `${IDENTITY_SERVICE}/social_handles?handle=${handle}`
@@ -1095,10 +1190,10 @@ class AudiusBackend {
 
   /**
    * Retrieves the user's eth associated wallets from IPFS using the user's metadata CID and creator node endpoints
-   * @param {User} user The user metadata which contains the CID for the metadata multihash
+   * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
-  static async fetchUserAssociatedEthWallets(user) {
+  static async fetchUserAssociatedEthWallets(user: User) {
     const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
     const cid = user?.metadata_multihash ?? null
     if (cid) {
@@ -1117,10 +1212,10 @@ class AudiusBackend {
 
   /**
    * Retrieves the user's solana associated wallets from IPFS using the user's metadata CID and creator node endpoints
-   * @param {User} user The user metadata which contains the CID for the metadata multihash
+   * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
-  static async fetchUserAssociatedSolWallets(user) {
+  static async fetchUserAssociatedSolWallets(user: User) {
     const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
     const cid = user?.metadata_multihash ?? null
     if (cid) {
@@ -1139,10 +1234,10 @@ class AudiusBackend {
 
   /**
    * Retrieves both the user's ETH and SOL associated wallets from the user's metadata CID
-   * @param {User} user The user metadata which contains the CID for the metadata multihash
+   * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
-  static async fetchUserAssociatedWallets(user) {
+  static async fetchUserAssociatedWallets(user: User) {
     const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
     const cid = user?.metadata_multihash ?? null
     if (cid) {
@@ -1160,7 +1255,7 @@ class AudiusBackend {
     return null
   }
 
-  static async updateCreator(metadata, id) {
+  static async updateCreator(metadata: User, id: ID) {
     let newMetadata = { ...metadata }
     const associatedWallets = await AudiusBackend.fetchUserAssociatedWallets(
       metadata
@@ -1218,12 +1313,12 @@ class AudiusBackend {
         await audiusLibs.User.updateCreator(newMetadata.user_id, newMetadata)
       return { blockHash, blockNumber, userId }
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
       return false
     }
   }
 
-  static async updateUser(metadata, id) {
+  static async updateUser(metadata: User, id: ID) {
     let newMetadata = { ...metadata }
     try {
       if (newMetadata.updatedProfilePicture) {
@@ -1270,40 +1365,40 @@ class AudiusBackend {
       )
       return { blockHash, blockNumber }
     } catch (err) {
-      console.error(err.message)
+      console.error(getErrorMessage(err))
       throw err
     }
   }
 
-  static async updateIsVerified(userId, verified) {
+  static async updateIsVerified(userId: ID, verified: boolean) {
     try {
       await audiusLibs.User.updateIsVerified(userId, verified)
       return true
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return false
     }
   }
 
-  static async followUser(followeeUserId) {
+  static async followUser(followeeUserId: ID) {
     try {
       return await audiusLibs.User.addUserFollow(followeeUserId)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       throw err
     }
   }
 
-  static async unfollowUser(followeeUserId) {
+  static async unfollowUser(followeeUserId: ID) {
     try {
       return await audiusLibs.User.deleteUserFollow(followeeUserId)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       throw err
     }
   }
 
-  static async getFolloweeFollows(userId, limit = 100, offset = 0) {
+  static async getFolloweeFollows(userId: ID, limit = 100, offset = 0) {
     let followers = []
     try {
       followers = await audiusLibs.User.getMutualFollowers(
@@ -1314,17 +1409,19 @@ class AudiusBackend {
 
       if (followers.length) {
         return Promise.all(
-          followers.map((follower) => AudiusBackend.getUserImages(follower))
+          followers.map((follower: User) =>
+            AudiusBackend.getUserImages(follower)
+          )
         )
       }
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
     }
 
     return followers
   }
 
-  static async getPlaylists(userId, playlistIds) {
+  static async getPlaylists(userId: Nullable<ID>, playlistIds: ID[]) {
     try {
       const playlists = await withEagerOption(
         {
@@ -1339,14 +1436,14 @@ class AudiusBackend {
       )
       return (playlists || []).map(AudiusBackend.getCollectionImages)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return []
     }
   }
 
   static async createPlaylist(
-    userId,
-    metadata,
+    userId: ID,
+    metadata: Collection,
     isAlbum = false,
     trackIds = [],
     isPrivate = true
@@ -1397,7 +1494,7 @@ class AudiusBackend {
       if (updatePromises.length > 0) {
         const latestReceipt = AudiusBackend.getLatestTxReceipt(
           await Promise.all(updatePromises)
-        )
+        ) as TransactionReceipt
         blockHash = latestReceipt.blockHash
         blockNumber = latestReceipt.blockNumber
       }
@@ -1406,14 +1503,14 @@ class AudiusBackend {
     } catch (err) {
       // This code path should never execute
       console.debug('Reached client createPlaylist catch block')
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return { playlistId: null, error: true }
     }
   }
 
-  static async updatePlaylist(playlistId, metadata) {
+  static async updatePlaylist(playlistId: ID, metadata: Collection) {
     const playlistName = metadata.playlist_name
-    const coverPhoto = metadata.artwork.file
+    const coverPhoto = metadata.artwork?.file
     const description = metadata.description
 
     try {
@@ -1442,19 +1539,23 @@ class AudiusBackend {
       if (promises.length > 0) {
         const latestReceipt = AudiusBackend.getLatestTxReceipt(
           await Promise.all(promises)
-        )
+        ) as TransactionReceipt
         blockHash = latestReceipt.blockHash
         blockNumber = latestReceipt.blockNumber
       }
 
       return { blockHash, blockNumber }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
 
-  static async orderPlaylist(playlistId, trackIds, retries) {
+  static async orderPlaylist(
+    playlistId: ID,
+    trackIds: PlaylistTrackId[],
+    retries: number
+  ) {
     try {
       const { blockHash, blockNumber } =
         await audiusLibs.Playlist.orderPlaylistTracks(
@@ -1464,34 +1565,39 @@ class AudiusBackend {
         )
       return { blockHash, blockNumber }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
 
-  static async publishPlaylist(playlistId) {
+  static async publishPlaylist(playlistId: ID) {
     try {
       const { blockHash, blockNumber } =
         await audiusLibs.Playlist.updatePlaylistPrivacy(playlistId, false)
       return { blockHash, blockNumber }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
 
-  static async addPlaylistTrack(playlistId, trackId) {
+  static async addPlaylistTrack(playlistId: ID, trackId: ID) {
     try {
       const { blockHash, blockNumber } =
         await audiusLibs.Playlist.addPlaylistTrack(playlistId, trackId)
       return { blockHash, blockNumber }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
 
-  static async deletePlaylistTrack(playlistId, trackId, timestamp, retries) {
+  static async deletePlaylistTrack(
+    playlistId: ID,
+    trackId: ID,
+    timestamp: string,
+    retries: number
+  ) {
     try {
       const { blockHash, blockNumber } =
         await audiusLibs.Playlist.deletePlaylistTrack(
@@ -1502,18 +1608,18 @@ class AudiusBackend {
         )
       return { blockHash, blockNumber }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
 
-  static async validateTracksInPlaylist(playlistId) {
+  static async validateTracksInPlaylist(playlistId: ID) {
     try {
       const { isValid, invalidTrackIds } =
         await audiusLibs.Playlist.validateTracksInPlaylist(playlistId)
       return { error: false, isValid, invalidTrackIds }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
@@ -1521,7 +1627,10 @@ class AudiusBackend {
   // NOTE: This is called to explicitly set a playlist track ids w/out running validation checks.
   // This should NOT be used to set the playlist order
   // It's added for the purpose of manually fixing broken playlists
-  static async dangerouslySetPlaylistOrder(playlistId, trackIds) {
+  static async dangerouslySetPlaylistOrder(
+    playlistId: ID,
+    trackIds: PlaylistTrackId[]
+  ) {
     try {
       await audiusLibs.contracts.PlaylistFactoryClient.orderPlaylistTracks(
         playlistId,
@@ -1529,12 +1638,12 @@ class AudiusBackend {
       )
       return { error: false }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
 
-  static async deletePlaylist(playlistId) {
+  static async deletePlaylist(playlistId: ID) {
     try {
       const { txReceipt } = await audiusLibs.Playlist.deletePlaylist(playlistId)
       return {
@@ -1542,12 +1651,12 @@ class AudiusBackend {
         blockNumber: txReceipt.blockNumber
       }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
 
-  static async deleteAlbum(playlistId, trackIds) {
+  static async deleteAlbum(playlistId: ID, trackIds: PlaylistTrackId[]) {
     try {
       console.debug(
         `Deleting Album ${playlistId}, tracks: ${JSON.stringify(
@@ -1567,10 +1676,10 @@ class AudiusBackend {
 
       const { blockHash, blockNumber } = AudiusBackend.getLatestTxReceipt(
         deleteTrackReceipts.concat(deletePlaylistReceipt)
-      )
+      ) as TransactionReceipt
       return { blockHash, blockNumber }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { error }
     }
   }
@@ -1585,9 +1694,9 @@ class AudiusBackend {
         limit,
         offset
       )
-      return saves.map((save) => save.save_item_id)
+      return saves.map((save: { save_item_id: ID }) => save.save_item_id)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return []
     }
   }
@@ -1602,9 +1711,9 @@ class AudiusBackend {
         limit,
         offset
       )
-      return saves.map((save) => save.save_item_id)
+      return saves.map((save: { save_item_id: ID }) => save.save_item_id)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return []
     }
   }
@@ -1620,22 +1729,22 @@ class AudiusBackend {
         offset
       )
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return []
     }
   }
 
   // Favoriting a track
-  static async saveTrack(trackId) {
+  static async saveTrack(trackId: ID) {
     try {
       return await audiusLibs.Track.addTrackSave(trackId)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       throw err
     }
   }
 
-  static async deleteTrack(trackId) {
+  static async deleteTrack(trackId: ID) {
     try {
       const { txReceipt } = await audiusLibs.Track.deleteTrack(trackId)
       return {
@@ -1643,37 +1752,37 @@ class AudiusBackend {
         blockNumber: txReceipt.blockNumber
       }
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       throw err
     }
   }
 
   // Favorite a playlist
-  static async saveCollection(playlistId) {
+  static async saveCollection(playlistId: ID) {
     try {
       return await audiusLibs.Playlist.addPlaylistSave(playlistId)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       throw err
     }
   }
 
   // Unfavoriting a track
-  static async unsaveTrack(trackId) {
+  static async unsaveTrack(trackId: ID) {
     try {
       return await audiusLibs.Track.deleteTrackSave(trackId)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       throw err
     }
   }
 
   // Unfavorite a playlist
-  static async unsaveCollection(playlistId) {
+  static async unsaveCollection(playlistId: ID) {
     try {
       return await audiusLibs.Playlist.deletePlaylistSave(playlistId)
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       throw err
     }
   }
@@ -1682,7 +1791,7 @@ class AudiusBackend {
    * Sets the artist pick for a user
    * @param {number?} trackId if null, unsets the artist pick
    */
-  static async setArtistPick(trackId = null) {
+  static async setArtistPick(trackId: Nullable<ID> = null) {
     await waitForLibsInit()
     try {
       const { data, signature } = await AudiusBackend.signData()
@@ -1698,12 +1807,12 @@ class AudiusBackend {
         })
       })
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return false
     }
   }
 
-  static async signIn(email, password) {
+  static async signIn(email: string, password: string) {
     await waitForLibsInit()
     return audiusLibs.Account.login(email, password)
   }
@@ -1727,6 +1836,20 @@ class AudiusBackend {
     hasWallet = false,
     referrer = null,
     feePayerOverride = null
+  }: {
+    email: string
+    password: string
+    formFields: {
+      name?: string
+      handle?: string
+      isVerified?: boolean
+      location?: string
+      profilePicture: File
+      coverPhoto: File
+    }
+    hasWallet: boolean
+    referrer: Nullable<ID>
+    feePayerOverride: Nullable<string>
   }) {
     await waitForLibsInit()
     const metadata = schemas.newUserMetadata()
@@ -1774,17 +1897,21 @@ class AudiusBackend {
     )
   }
 
-  static async resetPassword(email, password) {
+  static async resetPassword(email: string, password: string) {
     await waitForLibsInit()
     return audiusLibs.Account.resetPassword(email, password)
   }
 
-  static async changePassword(email, password, oldpassword) {
+  static async changePassword(
+    email: string,
+    password: string,
+    oldpassword: string
+  ) {
     await waitForLibsInit()
     return audiusLibs.Account.changePassword(email, password, oldpassword)
   }
 
-  static async confirmCredentials(email, password) {
+  static async confirmCredentials(email: string, password: string) {
     await waitForLibsInit()
     return audiusLibs.Account.confirmCredentials(email, password)
   }
@@ -1801,30 +1928,30 @@ class AudiusBackend {
       : window.location.origin
   }
 
-  static async associateAudiusUserForAuth(email, handle) {
+  static async associateAudiusUserForAuth(email: string, handle: string) {
     await waitForLibsInit()
     try {
       await audiusLibs.Account.associateAudiusUserForAuth(email, handle)
       return { success: true }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { success: false, error }
     }
   }
 
-  static async emailInUse(email) {
+  static async emailInUse(email: string) {
     await waitForLibsInit()
     try {
       const { exists: emailExists } =
         await audiusLibs.Account.checkIfEmailRegistered(email)
       return emailExists
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return true
     }
   }
 
-  static async handleInUse(handle) {
+  static async handleInUse(handle: string) {
     await waitForLibsInit()
     try {
       const handleIsValid = await audiusLibs.Account.handleIsValid(handle)
@@ -1834,7 +1961,7 @@ class AudiusBackend {
     }
   }
 
-  static async twitterHandle(handle) {
+  static async twitterHandle(handle: string) {
     await waitForLibsInit()
     try {
       const user = await audiusLibs.Account.lookupTwitterHandle(handle)
@@ -1844,18 +1971,26 @@ class AudiusBackend {
     }
   }
 
-  static async associateTwitterAccount(twitterId, userId, handle) {
+  static async associateTwitterAccount(
+    twitterId: string,
+    userId: ID,
+    handle: string
+  ) {
     await waitForLibsInit()
     try {
       await audiusLibs.Account.associateTwitterUser(twitterId, userId, handle)
       return { success: true }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { success: false, error }
     }
   }
 
-  static async associateInstagramAccount(instagramId, userId, handle) {
+  static async associateInstagramAccount(
+    instagramId: string,
+    userId: ID,
+    handle: string
+  ) {
     await waitForLibsInit()
     try {
       await audiusLibs.Account.associateInstagramUser(
@@ -1865,12 +2000,20 @@ class AudiusBackend {
       )
       return { success: true }
     } catch (error) {
-      console.error(error.message)
+      console.error(getErrorMessage(error))
       return { success: false, error }
     }
   }
 
-  static async getNotifications({ limit, timeOffset, withTips }) {
+  static async getNotifications({
+    limit,
+    timeOffset,
+    withTips
+  }: {
+    limit: number
+    timeOffset: string
+    withTips: boolean
+  }) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -1968,7 +2111,7 @@ class AudiusBackend {
     }
   }
 
-  static async updateEmailNotificationSettings(emailFrequency) {
+  static async updateEmailNotificationSettings(emailFrequency: string) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -1989,7 +2132,9 @@ class AudiusBackend {
     }
   }
 
-  static async updateNotificationSettings(settings) {
+  static async updateNotificationSettings(
+    settings: Partial<Record<BrowserNotificationSetting, boolean>>
+  ) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2009,7 +2154,9 @@ class AudiusBackend {
     }
   }
 
-  static async updatePushNotificationSettings(settings) {
+  static async updatePushNotificationSettings(
+    settings: Partial<Record<PushNotificationSetting, boolean>>
+  ) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2036,7 +2183,7 @@ class AudiusBackend {
     return { data, signature }
   }
 
-  static async signDiscoveryNodeRequest(input) {
+  static async signDiscoveryNodeRequest(input?: any) {
     await waitForLibsInit()
     let data
     if (input) {
@@ -2069,7 +2216,7 @@ class AudiusBackend {
     }
   }
 
-  static async getBrowserPushSubscription(pushEndpoint) {
+  static async getBrowserPushSubscription(pushEndpoint: string) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2093,7 +2240,7 @@ class AudiusBackend {
     }
   }
 
-  static async getSafariBrowserPushEnabled(deviceToken) {
+  static async getSafariBrowserPushEnabled(deviceToken: string) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2116,7 +2263,13 @@ class AudiusBackend {
     }
   }
 
-  static async updateBrowserNotifications({ enabled = true, subscription }) {
+  static async updateBrowserNotifications({
+    enabled = true,
+    subscription
+  }: {
+    enabled: boolean
+    subscription: PushSubscription
+  }) {
     await waitForLibsInit()
     const { data, signature } = await AudiusBackend.signData()
     return fetch(`${IDENTITY_SERVICE}/push_notifications/browser/register`, {
@@ -2130,7 +2283,11 @@ class AudiusBackend {
     }).then((res) => res.json())
   }
 
-  static async disableBrowserNotifications({ subscription }) {
+  static async disableBrowserNotifications({
+    subscription
+  }: {
+    subscription: PushSubscription
+  }) {
     await waitForLibsInit()
     const { data, signature } = await AudiusBackend.signData()
     return fetch(`${IDENTITY_SERVICE}/push_notifications/browser/deregister`, {
@@ -2163,7 +2320,7 @@ class AudiusBackend {
     }
   }
 
-  static async registerDeviceToken(deviceToken, deviceType) {
+  static async registerDeviceToken(deviceToken: string, deviceType: string) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2186,7 +2343,7 @@ class AudiusBackend {
     }
   }
 
-  static async deregisterDeviceToken(deviceToken) {
+  static async deregisterDeviceToken(deviceToken: string) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2211,7 +2368,7 @@ class AudiusBackend {
     }
   }
 
-  static async getUserSubscribed(userId) {
+  static async getUserSubscribed(userId: ID) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2237,7 +2394,7 @@ class AudiusBackend {
     }
   }
 
-  static async getUserSubscriptions(userIds) {
+  static async getUserSubscriptions(userIds: ID[]) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2261,7 +2418,7 @@ class AudiusBackend {
     }
   }
 
-  static async updateUserSubscription(userId, isSubscribed) {
+  static async updateUserSubscription(userId: ID, isSubscribed: boolean) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2306,7 +2463,7 @@ class AudiusBackend {
     }
   }
 
-  static async sendWelcomeEmail({ name }) {
+  static async sendWelcomeEmail({ name }: { name: string }) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2326,7 +2483,11 @@ class AudiusBackend {
     }
   }
 
-  static async updateUserEvent({ hasSignedInNativeMobile }) {
+  static async updateUserEvent({
+    hasSignedInNativeMobile
+  }: {
+    hasSignedInNativeMobile: boolean
+  }) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
@@ -2351,7 +2512,7 @@ class AudiusBackend {
    * Sets the playlist as viewed to reset the playlist updates notifications timer
    * @param {playlistId} playlistId playlist id or folder id
    */
-  static async updatePlaylistLastViewedAt(playlistId) {
+  static async updatePlaylistLastViewedAt(playlistId: ID) {
     if (!getFeatureEnabled(FeatureFlags.PLAYLIST_UPDATES_ENABLED)) return
 
     await waitForLibsInit()
@@ -2372,12 +2533,12 @@ class AudiusBackend {
         }
       )
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return false
     }
   }
 
-  static async updateHCaptchaScore(token) {
+  static async updateHCaptchaScore(token: string) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return { error: true }
@@ -2394,7 +2555,7 @@ class AudiusBackend {
         body: JSON.stringify({ token })
       }).then((res) => res.json())
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return { error: true }
     }
   }
@@ -2407,7 +2568,7 @@ class AudiusBackend {
       audiusLibs.solanaWeb3Manager.feePayerKey = new PublicKey(feePayer)
       return { feePayer }
     } catch (err) {
-      console.error(err.message)
+      console.log(getErrorMessage(err))
       return { error: true }
     }
   }
@@ -2515,7 +2676,10 @@ class AudiusBackend {
    * @params {bool} bustCache
    * @returns {Promise<BN>} balance
    */
-  static async getAddressTotalStakedBalance(address, bustCache = false) {
+  static async getAddressTotalStakedBalance(
+    address: string,
+    bustCache = false
+  ) {
     await waitForLibsInit()
     if (!address) return
 
@@ -2547,7 +2711,7 @@ class AudiusBackend {
   /**
    * Make a request to send
    */
-  static async sendTokens(address, amount) {
+  static async sendTokens(address: string, amount: BNWei) {
     await waitForLibsInit()
     const receipt = await audiusLibs.Account.permitAndSendTokens(
       address,
@@ -2559,7 +2723,7 @@ class AudiusBackend {
   /**
    * Make a request to send solana wrapped audio
    */
-  static async sendWAudioTokens(address, amount) {
+  static async sendWAudioTokens(address: string, amount: BNWei) {
     await waitForLibsInit()
 
     // Check when sending waudio if the user has a user bank acccount
@@ -2590,7 +2754,7 @@ class AudiusBackend {
           await window.solana.connect()
         }
 
-        const phantomWallet = window.solana.publicKey.toString()
+        const phantomWallet = window.solana.publicKey?.toString()
         const tx = await getCreateAssociatedTokenAccountTransaction({
           feePayerKey: SolanaUtils.newPublicKeyNullable(phantomWallet),
           solanaWalletKey: SolanaUtils.newPublicKeyNullable(address),
@@ -2607,7 +2771,7 @@ class AudiusBackend {
     return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
   }
 
-  static async getSignature(data) {
+  static async getSignature(data: any) {
     await waitForLibsInit()
     return audiusLibs.web3Manager.sign(data)
   }
@@ -2616,8 +2780,7 @@ class AudiusBackend {
    * Get latest transaction receipt based on block number
    * Used by confirmer
    */
-
-  static getLatestTxReceipt(receipts) {
+  static getLatestTxReceipt(receipts: TransactionReceipt[]) {
     if (!receipts.length) return {}
     return receipts.sort((receipt1, receipt2) =>
       receipt1.blockNumber < receipt2.blockNumber ? 1 : -1
@@ -2634,7 +2797,7 @@ class AudiusBackend {
    *   logs: Array<string>
    * }
    */
-  static async transferAudioToWAudio(balance) {
+  static async transferAudioToWAudio(balance: number) {
     await waitForLibsInit()
     const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
     return audiusLibs.Account.proxySendTokensFromEthToSol(
@@ -2648,7 +2811,7 @@ class AudiusBackend {
    * @param {string} The solana wallet address
    * @returns {Promise<BN>}
    */
-  static async getAddressWAudioBalance(address) {
+  static async getAddressWAudioBalance(address: string) {
     await waitForLibsInit()
     const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
       address
@@ -2676,6 +2839,19 @@ class AudiusBackend {
     parallelization,
     feePayerOverride,
     isFinalAttempt
+  }: {
+    challenges: { challenge_id: ChallengeRewardID; specifier: string }[]
+    userId: ID
+    handle: string
+    recipientEthAddress: string
+    oracleEthAddress: string
+    amount: number
+    quorumSize: number
+    endpoints: string[]
+    AAOEndpoint: string
+    parallelization: number
+    feePayerOverride: Nullable<string>
+    isFinalAttempt: boolean
   }) {
     await waitForLibsInit()
     try {
@@ -2711,7 +2887,7 @@ class AudiusBackend {
           `Got errors in processChallenges: ${JSON.stringify(res.errors)}`
         )
         const hcaptchaOrCognito = res.errors.find(
-          ({ error }) =>
+          ({ error }: { error: FailureReason }) =>
             error === FailureReason.HCAPTCHA ||
             error === FailureReason.COGNITO_FLOW
         )
@@ -2743,6 +2919,10 @@ async function findAssociatedTokenAddress({
   solanaWalletKey,
   mintKey,
   solanaTokenProgramKey
+}: {
+  solanaWalletKey: PublicKey
+  mintKey: PublicKey
+  solanaTokenProgramKey: PublicKey
 }) {
   const addresses = await PublicKey.findProgramAddress(
     [
@@ -2770,6 +2950,12 @@ async function getCreateAssociatedTokenAccountTransaction({
   mintKey,
   solanaTokenProgramKey,
   connection
+}: {
+  feePayerKey: PublicKey
+  solanaWalletKey: PublicKey
+  mintKey: PublicKey
+  solanaTokenProgramKey: PublicKey
+  connection: typeof AudiusLibs.IdentityService
 }) {
   const associatedTokenAddress = await findAssociatedTokenAddress({
     solanaWalletKey,

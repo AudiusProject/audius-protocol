@@ -14,8 +14,10 @@ export enum Variant {
   SMART = 'smart'
 }
 
+export type PlaylistTrackId = { time: number; track: ID }
+
 type PlaylistContents = {
-  track_ids: Array<{ time: number; track: ID } | { track: string }>
+  track_ids: Array<PlaylistTrackId | { track: string }>
 }
 
 export type CollectionMetadata = {
@@ -44,6 +46,8 @@ export type CollectionMetadata = {
   upc?: string | null
   updated_at: string
   activity_timestamp?: string
+  playlist_image_multihash?: string
+  playlist_image_sizes_multihash?: string
 }
 
 export type ComputedCollectionProperties = {
@@ -52,6 +56,7 @@ export type ComputedCollectionProperties = {
   _cover_art_sizes: CoverArtSizes
   _moved?: UID
   _temp?: boolean
+  artwork?: { file?: File; url?: string }
 }
 
 export type Collection = CollectionMetadata & ComputedCollectionProperties

@@ -1,4 +1,4 @@
-import { ID, Collection, FeedFilter, Track, UserTrack } from '@audius/common'
+import { ID, Collection, FeedFilter, UserTrack } from '@audius/common'
 
 import AudiusBackend, {
   IDENTITY_SERVICE,
@@ -80,20 +80,23 @@ class Explore {
 
   static async getFeedNotListenedTo(limit = 25) {
     try {
-      const tracks: UserTrack[] = await AudiusBackend.getSocialFeed({
+      const lineupItems = await AudiusBackend.getSocialFeed({
         filter: FeedFilter.ORIGINAL,
         offset: 0,
         limit: 100,
         withUsers: true,
         tracksOnly: true
       })
-      const trackIds = tracks
-        .map((track: Track) => track.track_id)
-        .filter(Boolean)
+
+      const tracks = lineupItems.filter(
+        (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem
+      )
+      const trackIds = tracks.map((track) => track.track_id)
+
       const listens: any = await Explore.getUserListens(trackIds)
 
       const notListenedToTracks = tracks.filter(
-        (track: Track) => !listens[track.track_id]
+        (track) => !listens[track.track_id]
       )
       return notListenedToTracks.slice(0, limit)
     } catch (e) {

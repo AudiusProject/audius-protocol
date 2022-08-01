@@ -65,10 +65,10 @@ const formatMonth = (date) => moment.utc(date).format('MMM').toUpperCase()
 function* fetchDashboardListenDataAsync(action) {
   const listenData = yield call(
     AudiusBackend.getTrackListens,
+    action.period,
     action.trackIds,
     action.start,
-    action.end,
-    action.period
+    action.end
   )
 
   const labels = []
