@@ -1,8 +1,8 @@
 const Web3 = require('../src/web3')
 
 const { libs: AudiusLibs } = require('../dist/index')
-const dataContractsConfig = require('../data-contracts/config.json')
-const ethContractsConfig = require('../eth-contracts/config.json')
+const dataContractsConfig = require('../src/data-contracts/config.json')
+const ethContractsConfig = require('../src/eth-contracts/config.json')
 
 const creatorNodeEndpoint = 'http://localhost:4000'
 const identityServiceEndpoint = 'http://localhost:7000'

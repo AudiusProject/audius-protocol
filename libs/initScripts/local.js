@@ -2,7 +2,7 @@ const fs = require('fs')
 const readline = require('readline')
 
 const initAudiusLibs = require('../examples/initAudiusLibs')
-const dataContractsConfig = require('../data-contracts/config.json')
+const dataContractsConfig = require('../src/data-contracts/config.json')
 const { distributeTokens } = require('./helpers/distributeTokens')
 const { setServiceVersion, addServiceType } = require('./helpers/version')
 const {
@@ -70,14 +70,23 @@ if (args.length < 3) {
 }
 
 const getEnvConfigPathsForContentNode = async ({ workspace, serviceCount }) => {
-  const { envPath, writePath, templatePath } = getEnvConfigPathsForService({ workspace, serviceCount })
+  const { envPath, writePath, templatePath } = getEnvConfigPathsForService({
+    workspace,
+    serviceCount
+  })
   fs.writeFileSync(writePath, '')
 
   return { envPath, templatePath, writePath }
 }
 
-const getEnvConfigPathsForDiscoveryNode = async ({ workspace, serviceCount }) => {
-  const { envPath, writePath, templatePath } = getEnvConfigPathsForService({ workspace, serviceCount })
+const getEnvConfigPathsForDiscoveryNode = async ({
+  workspace,
+  serviceCount
+}) => {
+  const { envPath, writePath, templatePath } = getEnvConfigPathsForService({
+    workspace,
+    serviceCount
+  })
   fs.copyFileSync(envPath, writePath)
 
   return { templatePath, writePath }
@@ -134,28 +143,46 @@ const run = async () => {
 
       case 'configure-discprov-wallet': {
         const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error('configure-discprov-wallet requires a service # as the second arg')
+        if (serviceCount === undefined)
+          throw new Error(
+            'configure-discprov-wallet requires a service # as the second arg'
+          )
         const workspace = '../discovery-provider/compose/env'
-        const { templatePath, writePath } = await getEnvConfigPathsForDiscoveryNode({ workspace, serviceCount })
-        await _configureDiscProv(ethAccounts, parseInt(serviceCount), templatePath, writePath)
+        const { templatePath, writePath } =
+          await getEnvConfigPathsForDiscoveryNode({ workspace, serviceCount })
+        await _configureDiscProv(
+          ethAccounts,
+          parseInt(serviceCount),
+          templatePath,
+          writePath
+        )
         break
       }
 
       case 'register-discovery-node':
         const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error('register-discovery-node requires a service # as the second arg')
+        if (serviceCount === undefined)
+          throw new Error(
+            'register-discovery-node requires a service # as the second arg'
+          )
         await _registerDiscProv(ethAccounts, parseInt(serviceCount))
         break
 
       case 'register-cnode': {
         const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error('register-cnode requires a service # as the second arg')
+        if (serviceCount === undefined)
+          throw new Error(
+            'register-cnode requires a service # as the second arg'
+          )
         await _registerCnode(ethAccounts, parseInt(serviceCount))
         break
       }
       case 'deregister-cnode': {
         const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error('deregister-cnode requires a service # as the second arg')
+        if (serviceCount === undefined)
+          throw new Error(
+            'deregister-cnode requires a service # as the second arg'
+          )
         await _deregisterCnode(ethAccounts, parseInt(serviceCount))
         break
       }
@@ -168,8 +195,14 @@ const run = async () => {
 
       case 'update-cnode-delegate-wallet': {
         const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error('register-cnode requires a service # as the second arg')
-        await _updateCNodeDelegateOwnerWallet(ethAccounts, parseInt(serviceCount))
+        if (serviceCount === undefined)
+          throw new Error(
+            'register-cnode requires a service # as the second arg'
+          )
+        await _updateCNodeDelegateOwnerWallet(
+          ethAccounts,
+          parseInt(serviceCount)
+        )
         break
       }
 
@@ -188,15 +221,27 @@ const run = async () => {
       case 'update-cnode-config': {
         // Update arbitrary cnode
         const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error('update-delegate-wallet requires a service # as the second arg')
+        if (serviceCount === undefined)
+          throw new Error(
+            'update-delegate-wallet requires a service # as the second arg'
+          )
         const workspace = '../creator-node/compose/env'
-        const { envPath, templatePath, writePath } = await getEnvConfigPathsForContentNode({ workspace, serviceCount })
+        const { envPath, templatePath, writePath } =
+          await getEnvConfigPathsForContentNode({ workspace, serviceCount })
         // Local dev, delegate and owner wallet are equal
         const ownerWallet = ethAccounts[parseInt(serviceCount)]
         const delegateWallet = ownerWallet
         const endpoint = makeCreatorNodeEndpoint(serviceCount)
 
-        await _updateCreatorNodeConfig({ ownerWallet, templatePath, writePath, endpoint, isShell: true, delegateWallet, envPath })
+        await _updateCreatorNodeConfig({
+          ownerWallet,
+          templatePath,
+          writePath,
+          endpoint,
+          isShell: true,
+          delegateWallet,
+          envPath
+        })
         break
       }
 
@@ -209,44 +254,55 @@ const run = async () => {
         break
 
       case 'update-user-replica-set':
-        console.log('Usage: node local.js update-user-replica-set userId=1 primary=2 secondaries=3,1')
+        console.log(
+          'Usage: node local.js update-user-replica-set userId=1 primary=2 secondaries=3,1'
+        )
         const userIdStr = args[3]
         const primaryReplicaIdStr = args[4]
         const secondaryReplicaIdStr = args[5]
         const userId = parseInt(userIdStr.split('=')[1])
         const primaryReplicaId = parseInt(primaryReplicaIdStr.split('=')[1])
-        let secondaryReplicaIds = (secondaryReplicaIdStr.split('=')[1])
-        secondaryReplicaIds = secondaryReplicaIds.split(',').map(x => parseInt(x))
+        let secondaryReplicaIds = secondaryReplicaIdStr.split('=')[1]
+        secondaryReplicaIds = secondaryReplicaIds
+          .split(',')
+          .map((x) => parseInt(x))
         console.log(`Received userId: ${userId}`)
         console.log(`Received primaryReplicaId: ${primaryReplicaId}`)
         console.log(`Received secondaryReplicaIds: ${secondaryReplicaIds}`)
-        await updateUserReplicaSet(audiusLibs, userId, primaryReplicaId, secondaryReplicaIds)
+        await updateUserReplicaSet(
+          audiusLibs,
+          userId,
+          primaryReplicaId,
+          secondaryReplicaIds
+        )
         break
 
       case 'query-user-replica-set':
         console.log('Usage: node local.js query-user-replica-set userId=1')
         userReplicaBootstrapAddressLibs = await getUrsmLibs(audiusLibs, 9)
-        const userReplicaSet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
-          parseInt(
-            args[3].split('=')[1]
+        const userReplicaSet =
+          await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+            parseInt(args[3].split('=')[1])
           )
-        )
         console.log(userReplicaSet)
         break
 
       case 'query-ursm-content-node-wallet':
-        console.log('Usage: node local.js query-ursm-content-node-wallet spId=1')
-        userReplicaBootstrapAddressLibs = await getUrsmLibs(audiusLibs, 9)
-        const contentNodeWallet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(
-          parseInt(
-            args[3].split('=')[1]
-          )
+        console.log(
+          'Usage: node local.js query-ursm-content-node-wallet spId=1'
         )
+        userReplicaBootstrapAddressLibs = await getUrsmLibs(audiusLibs, 9)
+        const contentNodeWallet =
+          await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(
+            parseInt(args[3].split('=')[1])
+          )
         console.log(contentNodeWallet)
         break
 
       case 'add-l2-content-node':
-        console.log('Usage: node local.js add-l2-content-node spId=4 delegateWallet=0x95b6A2Be3423dF7D5774...')
+        console.log(
+          'Usage: node local.js add-l2-content-node spId=4 delegateWallet=0x95b6A2Be3423dF7D5774...'
+        )
         const spIdStr = args[3]
         const spID = parseInt(spIdStr.split('=')[1])
         const delegateWalletStr = args[4]
@@ -260,7 +316,8 @@ const run = async () => {
           ethAccounts,
           spID,
           delegateWallet,
-          ownerWallet)
+          ownerWallet
+        )
         break
 
       case 'register-trusted-notifier':
@@ -278,7 +335,10 @@ const run = async () => {
       case 'query-trusted-notifier':
         const id = args[3]
         if (!id) throw new Error('Please pass in a valid ID')
-        const resp = await audiusLibs.ethContracts.TrustedNotifierManagerClient.getNotifierForID(id)
+        const resp =
+          await audiusLibs.ethContracts.TrustedNotifierManagerClient.getNotifierForID(
+            id
+          )
         console.log(resp)
         break
 
@@ -306,11 +366,17 @@ const addL2ContentNode = async (
   newCnodeOwnerWallet
 ) => {
   const incomingWallets = [newCnodeDelegateWallet, newCnodeOwnerWallet]
-  const existingWalletInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(newCnodeId)
+  const existingWalletInfo =
+    await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(
+      newCnodeId
+    )
   const existingWalletToCnodeIdL2 = existingWalletInfo.delegateOwnerWallet
-  const spIdToWalletPresent = (existingWalletToCnodeIdL2 === newCnodeDelegateWallet)
+  const spIdToWalletPresent =
+    existingWalletToCnodeIdL2 === newCnodeDelegateWallet
   if (spIdToWalletPresent) {
-    console.log(`No update required! Found ${existingWalletToCnodeIdL2} for spId=${newCnodeId}, expected ${newCnodeDelegateWallet}`)
+    console.log(
+      `No update required! Found ${existingWalletToCnodeIdL2} for spId=${newCnodeId}, expected ${newCnodeDelegateWallet}`
+    )
     // return
   }
   console.log(`addL2ContentNode: ${newCnodeId}, ${newCnodeDelegateWallet}`)
@@ -328,11 +394,14 @@ const addL2ContentNode = async (
   const proposer3SpId = 3
   // Retrieve the wallet associated with each index
   const proposer1Wallet = ethAccounts[parseInt(proposer1WalletIndex)]
-  const proposer1PKey = ganacheEthAccounts.private_keys[proposer1Wallet.toLowerCase()]
+  const proposer1PKey =
+    ganacheEthAccounts.private_keys[proposer1Wallet.toLowerCase()]
   const proposer2Wallet = ethAccounts[parseInt(proposer2WalletIndex)]
-  const proposer2PKey = ganacheEthAccounts.private_keys[proposer2Wallet.toLowerCase()]
+  const proposer2PKey =
+    ganacheEthAccounts.private_keys[proposer2Wallet.toLowerCase()]
   const proposer3Wallet = ethAccounts[parseInt(proposer3WalletIndex)]
-  const proposer3PKey = ganacheEthAccounts.private_keys[proposer3Wallet.toLowerCase()]
+  const proposer3PKey =
+    ganacheEthAccounts.private_keys[proposer3Wallet.toLowerCase()]
 
   console.log(`proposer1Wallet: ${proposer1Wallet}`)
   console.log(`proposer1WalletPkey: ${proposer1PKey}`)
@@ -351,13 +420,16 @@ const addL2ContentNode = async (
     proposer1PKey
   )
   const proposer1EthAddress = proposer1Libs.ethWeb3Manager.getWalletAddress()
-  console.log(`Initialized proposer1 libs, proposer1EthAddress: ${proposer1EthAddress}`)
-  const proposer1SignatureInfo = await proposer1Libs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
-    newCnodeId,
-    newCnodeDelegateWallet,
-    newCnodeOwnerWallet,
-    proposer1SpId
+  console.log(
+    `Initialized proposer1 libs, proposer1EthAddress: ${proposer1EthAddress}`
   )
+  const proposer1SignatureInfo =
+    await proposer1Libs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
+      newCnodeId,
+      newCnodeDelegateWallet,
+      newCnodeOwnerWallet,
+      proposer1SpId
+    )
   console.dir(proposer1SignatureInfo, { depth: 5 })
   const proposer2Libs = await initAudiusLibs(
     false,
@@ -366,13 +438,16 @@ const addL2ContentNode = async (
     proposer2PKey
   )
   const proposer2EthAddress = proposer2Libs.ethWeb3Manager.getWalletAddress()
-  console.log(`Initialized proposer2 libs, proposer2EthAddress: ${proposer2EthAddress}`)
-  const proposer2SignatureInfo = await proposer2Libs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
-    newCnodeId,
-    newCnodeDelegateWallet,
-    newCnodeOwnerWallet,
-    proposer2SpId
+  console.log(
+    `Initialized proposer2 libs, proposer2EthAddress: ${proposer2EthAddress}`
   )
+  const proposer2SignatureInfo =
+    await proposer2Libs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
+      newCnodeId,
+      newCnodeDelegateWallet,
+      newCnodeOwnerWallet,
+      proposer2SpId
+    )
   console.dir(proposer2SignatureInfo, { depth: 5 })
   const proposer3Libs = await initAudiusLibs(
     false,
@@ -381,13 +456,16 @@ const addL2ContentNode = async (
     proposer3PKey
   )
   const proposer3EthAddress = proposer3Libs.ethWeb3Manager.getWalletAddress()
-  console.log(`Initialized proposer3 libs, proposer3EthAddress: ${proposer3EthAddress}`)
-  const proposer3SignatureInfo = await proposer3Libs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
-    newCnodeId,
-    newCnodeDelegateWallet,
-    newCnodeOwnerWallet,
-    proposer3SpId
+  console.log(
+    `Initialized proposer3 libs, proposer3EthAddress: ${proposer3EthAddress}`
   )
+  const proposer3SignatureInfo =
+    await proposer3Libs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
+      newCnodeId,
+      newCnodeDelegateWallet,
+      newCnodeOwnerWallet,
+      proposer3SpId
+    )
   console.dir(proposer3SignatureInfo, { depth: 5 })
   // Generate arguments for proposal
   const proposerSpIds = [proposer1SpId, proposer2SpId, proposer3SpId]
@@ -428,33 +506,68 @@ const updateUserReplicaSet = async (
   secondaryIds
 ) => {
   // UserReplicaBootstrapLibs, logged in as the known bootstrap address
-  const userReplicaBootstrapAddressLibs = await getUrsmLibs(defaultAudiusLibs, 9)
-  const sp1Id = primaryId
-  const sp1ContentNodeWallets = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(sp1Id)
-  const sp1DelWal = sp1ContentNodeWallets.delegateOwnerWallet
-  console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp1Id} - ${sp1DelWal}`)
-  const sp2Id = secondaryIds[0]
-  const sp2ContentNodeWallets = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(sp2Id)
-  const sp2DelWal = sp2ContentNodeWallets.delegateOwnerWallet
-  console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp2Id} - ${sp2DelWal}`)
-  const sp3Id = secondaryIds[1]
-  const sp3ContentNodeWallets = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(sp3Id)
-  const sp3DelWal = sp3ContentNodeWallets.delegateOwnerWallet
-  console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp3Id} - ${sp3DelWal}`)
-  const user1ReplicaSet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
-  console.log(`User ${userId} replica set prior to update: ${JSON.stringify(user1ReplicaSet)}`)
-  console.log(`User ${userId} replica set updating to primary=${primaryId}, secondaries=${secondaryIds}`)
-  // Uncomment to perform update operation
-  const tx1 = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
-    userId,
-    primaryId,
-    secondaryIds,
-    user1ReplicaSet.primary,
-    user1ReplicaSet.secondaries
+  const userReplicaBootstrapAddressLibs = await getUrsmLibs(
+    defaultAudiusLibs,
+    9
   )
+  const sp1Id = primaryId
+  const sp1ContentNodeWallets =
+    await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(
+      sp1Id
+    )
+  const sp1DelWal = sp1ContentNodeWallets.delegateOwnerWallet
+  console.log(
+    `spId <-> delegateWallet from UserReplicaSetManager: ${sp1Id} - ${sp1DelWal}`
+  )
+  const sp2Id = secondaryIds[0]
+  const sp2ContentNodeWallets =
+    await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(
+      sp2Id
+    )
+  const sp2DelWal = sp2ContentNodeWallets.delegateOwnerWallet
+  console.log(
+    `spId <-> delegateWallet from UserReplicaSetManager: ${sp2Id} - ${sp2DelWal}`
+  )
+  const sp3Id = secondaryIds[1]
+  const sp3ContentNodeWallets =
+    await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(
+      sp3Id
+    )
+  const sp3DelWal = sp3ContentNodeWallets.delegateOwnerWallet
+  console.log(
+    `spId <-> delegateWallet from UserReplicaSetManager: ${sp3Id} - ${sp3DelWal}`
+  )
+  const user1ReplicaSet =
+    await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+      userId
+    )
+  console.log(
+    `User ${userId} replica set prior to update: ${JSON.stringify(
+      user1ReplicaSet
+    )}`
+  )
+  console.log(
+    `User ${userId} replica set updating to primary=${primaryId}, secondaries=${secondaryIds}`
+  )
+  // Uncomment to perform update operation
+  const tx1 =
+    await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      primaryId,
+      secondaryIds,
+      user1ReplicaSet.primary,
+      user1ReplicaSet.secondaries
+    )
   console.dir(tx1, { depth: 5 })
-  const user1ReplicaSetAfterUpdate = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
-  console.log(`User ${userId} replica set after to update: ${JSON.stringify(user1ReplicaSetAfterUpdate)}`)
+  const user1ReplicaSetAfterUpdate =
+    await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+      userId
+    )
+  console.log(
+    `User ${userId} replica set after to update: ${JSON.stringify(
+      user1ReplicaSetAfterUpdate
+    )}`
+  )
 }
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
@@ -464,25 +577,51 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await queryLocalServices(audiusLibs, serviceTypesList)
 }
 
-const makeDiscoveryProviderEndpoint = (serviceNumber) => `http://dn${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) - 1}`
+const makeDiscoveryProviderEndpoint = (serviceNumber) =>
+  `http://dn${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) - 1}`
 
 const _registerDiscProv = async (ethAccounts, serviceNumber) => {
-  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber])
+  const audiusLibs = await initAudiusLibs(
+    true,
+    null,
+    ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber]
+  )
   const endpoint = makeDiscoveryProviderEndpoint(serviceNumber)
-  await registerLocalService(audiusLibs, discoveryNodeType, endpoint, amountOfAuds)
+  await registerLocalService(
+    audiusLibs,
+    discoveryNodeType,
+    endpoint,
+    amountOfAuds
+  )
 }
 
-const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + parseInt(serviceNumber) - 1}`
+const makeCreatorNodeEndpoint = (serviceNumber) =>
+  `http://cn${serviceNumber}_creator-node_1:${
+    4000 + parseInt(serviceNumber) - 1
+  }`
 
 // Templated cnode to allow for dynamic number of services
 const _registerCnode = async (ethAccounts, serviceNumber) => {
-  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
+  const audiusLibs = await initAudiusLibs(
+    true,
+    null,
+    ethAccounts[serviceNumber]
+  )
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
-  await registerLocalService(audiusLibs, contentNodeType, endpoint, amountOfAuds)
+  await registerLocalService(
+    audiusLibs,
+    contentNodeType,
+    endpoint,
+    amountOfAuds
+  )
 }
 
 const _deregisterCnode = async (ethAccounts, serviceNumber) => {
-  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
+  const audiusLibs = await initAudiusLibs(
+    true,
+    null,
+    ethAccounts[serviceNumber]
+  )
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
   await deregisterLocalService(audiusLibs, contentNodeType, endpoint)
 }
@@ -503,12 +642,29 @@ const _printEthContractAccounts = async (ethAccounts, numAccounts = 20) => {
 
 // NOTE - newly selected wallet is the ethAccount with index 10 + current service number
 const _updateCNodeDelegateOwnerWallet = async (ethAccounts, serviceNumber) => {
-  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
+  const audiusLibs = await initAudiusLibs(
+    true,
+    null,
+    ethAccounts[serviceNumber]
+  )
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
-  await updateServiceDelegateOwnerWallet(audiusLibs, contentNodeType, endpoint, ethAccounts[serviceNumber + 10])
+  await updateServiceDelegateOwnerWallet(
+    audiusLibs,
+    contentNodeType,
+    endpoint,
+    ethAccounts[serviceNumber + 10]
+  )
 }
 
-const _updateCreatorNodeConfig = async ({ ownerWallet, templatePath, writePath, endpoint = null, isShell = false, delegateWallet, envPath = null }) => {
+const _updateCreatorNodeConfig = async ({
+  ownerWallet,
+  templatePath,
+  writePath,
+  endpoint = null,
+  isShell = false,
+  delegateWallet,
+  envPath = null
+}) => {
   delegateWallet = (delegateWallet || ownerWallet).toLowerCase()
   ownerWallet = ownerWallet.toLowerCase()
 
@@ -516,43 +672,101 @@ const _updateCreatorNodeConfig = async ({ ownerWallet, templatePath, writePath, 
 
   // PKey is now recovered
   const ownerWalletPrivKey = ganacheEthAccounts.private_keys[`${ownerWallet}`]
-  const delegateWalletPrivKey = ganacheEthAccounts.private_keys[`${delegateWallet}`]
+  const delegateWalletPrivKey =
+    ganacheEthAccounts.private_keys[`${delegateWallet}`]
 
-  await _updateCreatorNodeConfigFile({ templatePath, writePath, ownerWallet, ownerWalletPrivKey, delegateWallet, delegateWalletPrivKey, endpoint, isShell, envPath })
+  await _updateCreatorNodeConfigFile({
+    templatePath,
+    writePath,
+    ownerWallet,
+    ownerWalletPrivKey,
+    delegateWallet,
+    delegateWalletPrivKey,
+    endpoint,
+    isShell,
+    envPath
+  })
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
   const audiusLibs1 = audiusLibs
-  await deregisterLocalService(audiusLibs1, discoveryNodeType, discProvEndpoint1)
+  await deregisterLocalService(
+    audiusLibs1,
+    discoveryNodeType,
+    discProvEndpoint1
+  )
   const audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
-  await deregisterLocalService(audiusLibs2, discoveryNodeType, discProvEndpoint2)
+  await deregisterLocalService(
+    audiusLibs2,
+    discoveryNodeType,
+    discProvEndpoint2
+  )
 
   const audiusLibs3 = await initAudiusLibs(true, null, ethAccounts[1])
-  await deregisterLocalService(audiusLibs3, contentNodeType, creatorNodeEndpoint1)
+  await deregisterLocalService(
+    audiusLibs3,
+    contentNodeType,
+    creatorNodeEndpoint1
+  )
   const audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[2])
-  await deregisterLocalService(audiusLibs4, contentNodeType, creatorNodeEndpoint2)
+  await deregisterLocalService(
+    audiusLibs4,
+    contentNodeType,
+    creatorNodeEndpoint2
+  )
   const audiusLibs5 = await initAudiusLibs(true, null, ethAccounts[4])
-  await deregisterLocalService(audiusLibs5, contentNodeType, creatorNodeEndpoint3)
+  await deregisterLocalService(
+    audiusLibs5,
+    contentNodeType,
+    creatorNodeEndpoint3
+  )
   const audiusLibs6 = await initAudiusLibs(true, null, ethAccounts[5])
-  await deregisterLocalService(audiusLibs6, contentNodeType, creatorNodeEndpoint4)
+  await deregisterLocalService(
+    audiusLibs6,
+    contentNodeType,
+    creatorNodeEndpoint4
+  )
 }
 
 const _initAllVersions = async (audiusLibs) => {
   for (const serviceType of serviceTypesList) {
-    await setServiceVersion(audiusLibs, serviceType, serviceVersions[serviceType])
+    await setServiceVersion(
+      audiusLibs,
+      serviceType,
+      serviceVersions[serviceType]
+    )
   }
 }
 
 const _initEthContractTypes = async (libs) => {
-  console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
+  console.log(
+    `Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`
+  )
   // Add content-node serviceType
-  await addServiceType(libs, contentNodeType, contentNodeTypeMin, contentNodeTypeMax)
-  console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
+  await addServiceType(
+    libs,
+    contentNodeType,
+    contentNodeTypeMin,
+    contentNodeTypeMax
+  )
+  console.log(
+    `Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`
+  )
   // Add discovery-node serviceType
-  await addServiceType(libs, discoveryNodeType, discoveryNodeTypeMin, discoveryNodeTypeMax)
+  await addServiceType(
+    libs,
+    discoveryNodeType,
+    discoveryNodeTypeMin,
+    discoveryNodeTypeMax
+  )
 }
 
-const writeEnvConfigFromTemplate = async ({ templatePath, writePath, replaceMap, envPath }) => {
+const writeEnvConfigFromTemplate = async ({
+  templatePath,
+  writePath,
+  replaceMap,
+  envPath
+}) => {
   let template = fs.readFileSync(templatePath, 'utf8')
   const progressReport = []
   Object.entries(replaceMap).forEach(([toReplace, replacement]) => {
@@ -566,10 +780,17 @@ const writeEnvConfigFromTemplate = async ({ templatePath, writePath, replaceMap,
   console.log(`Updated ${writePath}:\n${progressReport.join('\n')}`)
 }
 
-const _configureDiscProv = async (ethAccounts, serviceNumber, templatePath, writePath) => {
+const _configureDiscProv = async (
+  ethAccounts,
+  serviceNumber,
+  templatePath,
+  writePath
+) => {
   const ganacheEthAccounts = await getEthContractAccounts()
-  const discProvAccountPubkey = ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber].toLowerCase()
-  const delegateWalletPrivKey = ganacheEthAccounts.private_keys[`${discProvAccountPubkey}`]
+  const discProvAccountPubkey =
+    ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber].toLowerCase()
+  const delegateWalletPrivKey =
+    ganacheEthAccounts.private_keys[`${discProvAccountPubkey}`]
   const replaceMap = {
     AUDIUS_DELEGATE_OWNER_WALLET: discProvAccountPubkey,
     AUDIUS_DELEGATE_PRIVATE_KEY: delegateWalletPrivKey
@@ -578,7 +799,17 @@ const _configureDiscProv = async (ethAccounts, serviceNumber, templatePath, writ
 }
 
 // Write an update to shell env file for creator nodes or docker env file
-const _updateCreatorNodeConfigFile = async ({ templatePath, writePath, ownerWallet, ownerWalletPkey, delegateWallet, delegateWalletPrivKey, endpoint, isShell, envPath }) => {
+const _updateCreatorNodeConfigFile = async ({
+  templatePath,
+  writePath,
+  ownerWallet,
+  ownerWalletPkey,
+  delegateWallet,
+  delegateWalletPrivKey,
+  endpoint,
+  isShell,
+  envPath
+}) => {
   const replaceMap = {
     DELEGATE_OWNER_WALLET: delegateWallet,
     DELEGATE_PRIVATE_KEY: delegateWalletPrivKey,
@@ -604,8 +835,12 @@ const _updateUserReplicaSetManagerBootstrapConfig = async (ethAccounts) => {
   const bootstrapSPDelegateWalletsString = `    bootstrapSPDelegateWallets: ['${bootstrapSPDelegateWallets[0]}', '${bootstrapSPDelegateWallets[1]}', '${bootstrapSPDelegateWallets[2]}'],`
   const bootstrapSPOwnerWalletString = `    bootstrapSPOwnerWallets: ['${bootstrapSPOwnerWallets[0]}', '${bootstrapSPOwnerWallets[1]}', '${bootstrapSPDelegateWallets[2]}'],`
   const bootstrapRegistryAddressString = `    registryAddress: '${dataContractsConfig.registryAddress}'`
-  console.log('Initializing UserReplicaSetManager configuration from known delegateWallets within system...')
-  console.log(`Bootstrapping with ${bootstrapSPIds}, ${bootstrapSPDelegateWallets}, ${bootstrapSPOwnerWalletString}`)
+  console.log(
+    'Initializing UserReplicaSetManager configuration from known delegateWallets within system...'
+  )
+  console.log(
+    `Bootstrapping with ${bootstrapSPIds}, ${bootstrapSPDelegateWallets}, ${bootstrapSPOwnerWalletString}`
+  )
 
   let traversingDevelopmentConfigBlock = false
   const output = []
@@ -616,18 +851,32 @@ const _updateUserReplicaSetManagerBootstrapConfig = async (ethAccounts) => {
     } else if (line.includes('test_local')) {
       traversingDevelopmentConfigBlock = false
       output.push(line)
-    } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPIds')) {
+    } else if (
+      traversingDevelopmentConfigBlock &&
+      line.includes('bootstrapSPIds')
+    ) {
       output.push(bootstrapSPIdsString)
-    } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPDelegateWallets')) {
+    } else if (
+      traversingDevelopmentConfigBlock &&
+      line.includes('bootstrapSPDelegateWallets')
+    ) {
       output.push(bootstrapSPDelegateWalletsString)
-    } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPOwnerWallets')) {
+    } else if (
+      traversingDevelopmentConfigBlock &&
+      line.includes('bootstrapSPOwnerWallets')
+    ) {
       output.push(bootstrapSPOwnerWalletString)
-    } else if (traversingDevelopmentConfigBlock && line.includes('registryAddress')) {
+    } else if (
+      traversingDevelopmentConfigBlock &&
+      line.includes('registryAddress')
+    ) {
       output.push(bootstrapRegistryAddressString)
     } else {
       output.push(line)
     }
   }
   fs.writeFileSync(dataContractConfigPath, output.join('\n'))
-  console.log(`Updated ${dataContractConfigPath} with \nbootstrapSPIds=${bootstrapSPIds}\nbootstrapSPDelegateWallets=${bootstrapSPDelegateWallets}\nbootstrapSPOwnerWallets:${bootstrapSPOwnerWallets}`)
+  console.log(
+    `Updated ${dataContractConfigPath} with \nbootstrapSPIds=${bootstrapSPIds}\nbootstrapSPDelegateWallets=${bootstrapSPDelegateWallets}\nbootstrapSPOwnerWallets:${bootstrapSPOwnerWallets}`
+  )
 }
