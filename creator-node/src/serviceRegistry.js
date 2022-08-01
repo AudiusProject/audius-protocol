@@ -50,8 +50,8 @@ class ServiceRegistry {
     // Queues
     this.monitoringQueue = new MonitoringQueue() // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
-    this.imageProcessingQueue = ImageProcessingQueue // Resizes all images on Audius
-    this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
+    this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
+    this.transcodingQueue = new TranscodingQueue() // Transcodes and segments all tracks
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
@@ -192,9 +192,9 @@ class ServiceRegistry {
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
         new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
+        new BullAdapter(this.imageProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
-        new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(transcodingQueue, { readOnlyMode: true }),
         new BullAdapter(monitoringQueue, { readOnlyMode: true }),
         new BullAdapter(sessionExpirationQueue, { readOnlyMode: true }),

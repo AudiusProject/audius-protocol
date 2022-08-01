@@ -265,7 +265,7 @@ const makeQueue = ({
     limiter
   })
 
-  if (prometheusRegistry !== null || prometheusRegistry !== undefined) {
+  if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
     prometheusRegistry.startQueueMetrics(queue)
   }
 
