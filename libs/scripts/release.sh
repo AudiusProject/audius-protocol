@@ -108,6 +108,14 @@ function publish () {
     npm publish . --access public
 }
 
+# informative links
+function info () {
+    echo "Released to:
+    * https://github.com/AudiusProject/audius-protocol/commits/master
+    * https://github.com/AudiusProject/audius-protocol/tags
+    * https://www.npmjs.com/package/@audius/sdk?activeTab=versions"
+}
+
 # cleanup when merging step fails
 function cleanup () {
     git push origin :${STUB}-${VERSION} || true
@@ -121,4 +129,4 @@ cd ${PROTOCOL_DIR}/libs
 
 # perform release
 bump-npm
-merge-bump && publish || cleanup
+merge-bump && publish && info || cleanup
