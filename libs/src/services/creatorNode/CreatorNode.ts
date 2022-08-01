@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import retry from 'async-retry'
-import { Utils, uuid } from '../../utils'
+import { TrackMetadata, Utils, uuid } from '../../utils'
 import {
   userSchemaType,
   trackSchemaType,
@@ -51,7 +51,7 @@ type ClockValueRequestConfig = {
 }
 
 type FileUploadResponse = {
-  data: { uuid: string }
+  data: { uuid: string; dirCID: string }
   error: Error
 }
 
@@ -276,7 +276,7 @@ export class CreatorNode {
    * Uploads creator content to a creator node
    * @param metadata the creator metadata
    */
-  async uploadCreatorContent(metadata: Metadata, blockNumber = null) {
+  async uploadCreatorContent(metadata: TrackMetadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -331,8 +331,8 @@ export class CreatorNode {
   async uploadTrackContent(
     trackFile: File,
     coverArtFile: File,
-    metadata: Metadata,
-    onProgress: ProgressCB = () => {}
+    metadata: TrackMetadata,
+    onProgress: ProgressCB = () => { }
   ) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
@@ -395,7 +395,7 @@ export class CreatorNode {
    * @param metadata
    * @param sourceFile
    */
-  async uploadTrackMetadata(metadata: Metadata, sourceFile: string) {
+  async uploadTrackMetadata(metadata: TrackMetadata, sourceFile?: string) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -481,7 +481,7 @@ export class CreatorNode {
     audiusTrackId: number,
     metadataFileUUID: string,
     blockNumber: number,
-    transcodedTrackUUID: string
+    transcodedTrackUUID?: string
   ) {
     this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
@@ -506,7 +506,7 @@ export class CreatorNode {
   async uploadImage(
     file: File,
     square = true,
-    onProgress: ProgressCB,
+    onProgress?: ProgressCB,
     timeoutMs: number | null = null
   ) {
     const { data: body } = await this._uploadFile(
@@ -617,7 +617,7 @@ export class CreatorNode {
         // Whether or not the endpoint is behind in syncing
         isBehind:
           status.latestBlockNumber <
-          Math.max(user.blocknumber, user.track_blocknumber),
+          Math.max(user.blocknumber!, user.track_blocknumber!),
         isConfigured: status.latestBlockNumber !== -1
       }
     }
@@ -641,10 +641,10 @@ export class CreatorNode {
     if (!user) return
 
     if (!primary) {
-      primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+      primary = CreatorNode.getPrimary(user.creator_node_endpoint!)
     }
     const secondaries = new Set(
-      CreatorNode.getSecondaries(user.creator_node_endpoint)
+      CreatorNode.getSecondaries(user.creator_node_endpoint!)
     )
     if (primary && secondary && (!validate || secondaries.has(secondary))) {
       const req: AxiosRequestConfig = {
@@ -790,13 +790,13 @@ export class CreatorNode {
     endpoint,
     timeout = 1000
   }: ClockValueRequestConfig) {
-    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    const primary = CreatorNode.getPrimary(user.creator_node_endpoint!)
     const type = primary === endpoint ? 'primary' : 'secondary'
 
     try {
       const clockValue = await CreatorNode.getClockValue(
         endpoint,
-        user.wallet,
+        user.wallet!,
         timeout
       )
       return {
@@ -959,7 +959,7 @@ export class CreatorNode {
     if (user?.wallet && user.user_id) {
       // TODO change to X-User-Wallet-Address and X-User-Id per convention
       headers['User-Wallet-Addr'] = user.wallet
-      headers['User-Id'] = user.user_id
+      headers['User-Id'] = user.user_id as unknown as string
     }
 
     return { headers, formData }
@@ -977,7 +977,7 @@ export class CreatorNode {
   async _uploadFile(
     file: File,
     route: string,
-    onProgress: ProgressCB = () => {},
+    onProgress: ProgressCB = () => { },
     extraFormDataOptions: Record<string, unknown> = {},
     retries = 2,
     timeoutMs: number | null = null
@@ -1087,9 +1087,8 @@ export class CreatorNode {
     if ('response' in e && e.response?.data?.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
-      const errMessage = `Server returned error: [${e.response.status.toString()}] [${
-        e.response.data.error
-      }] for request: [${cnRequestID}, ${requestId}]`
+      const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error
+        }] for request: [${cnRequestID}, ${requestId}]`
 
       console.error(errMessage)
       throw new Error(errMessage)

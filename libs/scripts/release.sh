@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 
-# ONLY TO BE RUN ON MASTER
-# master is assumed when using -f and --hard git parameters
+if [[ -z ${1} ]]; then
+    echo "A git tag must be supplied as the first parameter."
+    exit 1
+else
+    GIT_TAG=${1}
+fi
+
+if [[ $(whoami) != "circleci" ]]; then
+    echo "This script is intended to be run through CI."
+    echo "Please see:"
+    echo "    .circleci/bin/deploy-sdk.sh -h"
+    exit 1
+fi
 
 set -ex
 
@@ -25,7 +36,7 @@ function commit-message () {
 ${CHANGE_LOG}"
 }
 
-# Make a new branch off the master branch, bumps npm,
+# Make a new branch off GIT_TAG, bumps npm,
 # commits with the relevant changelog, and pushes
 function bump-npm () {
     # Configure git client
@@ -36,8 +47,17 @@ function bump-npm () {
     git checkout master -f
     git pull
 
+    # only allow tags/commits found on master, release branches, or tags to be deployed
+    git branch -a --contains ${GIT_TAG} \
+        | tee /dev/tty \
+        | grep -Eq 'remotes/origin/master|remotes/origin/release' \
+        || (
+            echo "tag not found on master nor release branches"
+            exit 1
+        )
+
     # Ensure working directory clean
-    git reset --hard origin/master
+    git reset --hard ${GIT_TAG}
 
     # grab change log early, before the version bump
     CHANGE_LOG=$(git-changelog)
@@ -66,17 +86,28 @@ function bump-npm () {
 # Merge the created branch into master, then delete the branch
 function merge-bump () {
     git checkout master -f
+
+    # pull in any additional commits that may have trickled in
+    git pull
+
     git merge ${STUB}-${VERSION} -m "$(commit-message)"
 
-    git push -u origin master
-
-    # clean up release branches
-    git push origin :${STUB}-${VERSION}
+    # if pushing fails, ensure we cleanup()
+    git push -u origin master \
+    && git push origin :${STUB}-${VERSION} \
+    || $(exit 1)
 }
 
 # publish to npm
 function publish () {
     npm publish . --access public
+}
+
+# cleanup when merging step fails
+function cleanup () {
+    git push origin :${STUB}-${VERSION} || true
+    git push --delete origin @audius/${STUB}@${VERSION} || true
+    exit 1
 }
 
 # configuration
@@ -85,5 +116,4 @@ cd ${PROTOCOL_DIR}/libs
 
 # perform release
 bump-npm
-merge-bump
-publish
+merge-bump && publish || cleanup

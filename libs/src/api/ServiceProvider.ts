@@ -126,19 +126,16 @@ export class ServiceProvider extends Base {
    * Returns a list of discovery nodes of size `quorumSize` that belong to
    * unique service operators.
    * Throws if unable to find a large enough list.
-   * @param {number} quorumSize
-   * @param {any[]} discoveryNodes the verbose list of discovery nodes to select from
-   * @param {(node: { delegateOwnerWallet: string }) => boolean} filter an optional filter step to remove certain nodes
    */
   async getUniquelyOwnedDiscoveryNodes({
     quorumSize,
     discoveryNodes = [],
-    filter = (_) => true,
+    filter = async (_) => true,
     useWhitelist = true
   }: {
     quorumSize: number
     discoveryNodes?: ServiceWithEndpoint[]
-    filter: (node: ServiceWithEndpoint) => boolean
+    filter?: (node: ServiceWithEndpoint) => Promise<boolean>
     useWhitelist?: boolean
   }) {
     if (!discoveryNodes || discoveryNodes.length === 0) {

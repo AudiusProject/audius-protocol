@@ -1,10 +1,10 @@
 const moment = require('moment')
 const axios = require('axios')
 const models = require('../models')
-const NotificationType = require('../routes/notifications').NotificationType
+const { notificationTypes: NotificationType } = require('../notifications/constants')
 const Entity = require('../routes/notifications').Entity
 const mergeAudiusAnnoucements = require('../routes/notifications').mergeAudiusAnnoucements
-const { formatNotificationProps } = require('./formatNotificationMetadata')
+const { formatEmailNotificationProps } = require('./formatNotificationMetadata')
 
 const config = require('../config.js')
 const { logger } = require('../logging')
@@ -27,6 +27,8 @@ const USER_FETCH_LIMIT = 10
  *
  * @return {Promise<Object>}
  */
+
+const EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES = [NotificationType.TipSend]
 
 const getLastWeek = () => moment().subtract(7, 'days')
 async function getEmailNotifications (audius, userId, announcements = [], fromTime = getLastWeek(), limit = 5) {
@@ -67,6 +69,9 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
         isHidden: false,
         createdAt: {
           [models.Sequelize.Op.gt]: fromTime.toDate()
+        },
+        type: {
+          [models.Sequelize.Op.notIn]: EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES
         }
       },
       order: [
@@ -76,7 +81,6 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       ],
       include: [{
         model: models.SolanaNotificationAction,
-        required: true,
         as: 'actions'
       }],
       limit
@@ -105,9 +109,12 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
         isHidden: false,
         createdAt: {
           [models.Sequelize.Op.gt]: fromTime.toDate()
+        },
+        type: {
+          [models.Sequelize.Op.notIn]: EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES
         }
       },
-      include: [{ model: models.SolanaNotificationAction, as: 'actions', required: true, attributes: [] }],
+      include: [{ model: models.SolanaNotificationAction, as: 'actions', attributes: [] }],
       attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
       group: ['SolanaNotification.id']
     })
@@ -144,17 +151,25 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     const finalUserNotifications = userNotifications.slice(0, limit)
 
     const fethNotificationsTime = Date.now()
-    const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
+    const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true, true)
     const fetchDataDuration = (Date.now() - fethNotificationsTime) / 1000
-    logger.info({ job: 'fetchNotificationMetdata', durationn: fetchDataDuration }, `fetchNotificationMetdata | get metadata ${fetchDataDuration} sec`)
-    const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
+    logger.info({ job: 'fetchNotificationMetadata', duration: fetchDataDuration }, `fetchNotificationMetadata | get metadata ${fetchDataDuration} sec`)
+    const notificationsEmailProps = formatEmailNotificationProps(finalUserNotifications, metadata)
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
     logger.error(err)
   }
 }
 
-async function fetchNotificationMetadata (audius, userIds = [], notifications, fetchThumbnails = false) {
+async function fetchNotificationMetadata (
+  audius,
+  userIds = [],
+  notifications,
+  fetchThumbnails = false,
+  // the structure of the notification data from the database will be different
+  // in the email flow compared to that which is fetched from the discovery node
+  isEmailNotif = false
+) {
   let userIdsToFetch = [...userIds]
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
@@ -171,8 +186,8 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         )
         break
       }
-      case NotificationType.FavoriteTrack:
-      case NotificationType.RepostTrack: {
+      case NotificationType.Favorite.track:
+      case NotificationType.Repost.track: {
         userIdsToFetch.push(
           ...notification.actions
             .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
@@ -180,16 +195,16 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         trackIdsToFetch.push(notification.entityId)
         break
       }
-      case NotificationType.FavoritePlaylist:
-      case NotificationType.FavoriteAlbum:
-      case NotificationType.RepostPlaylist:
-      case NotificationType.RepostAlbum: {
+      case NotificationType.Favorite.playlist:
+      case NotificationType.Favorite.album:
+      case NotificationType.Repost.playlist:
+      case NotificationType.Repost.album: {
         userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT))
         collectionIdsToFetch.push(notification.entityId)
         break
       }
-      case NotificationType.CreateAlbum:
-      case NotificationType.CreatePlaylist: {
+      case NotificationType.Create.album:
+      case NotificationType.Create.playlist: {
         collectionIdsToFetch.push(notification.entityId)
         break
       }
@@ -203,7 +218,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         }
         break
       }
-      case NotificationType.CreateTrack: {
+      case NotificationType.Create.track: {
         trackIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
         break
       }
@@ -242,21 +257,37 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
       }
       case NotificationType.Reaction: {
         userIdsToFetch.push(notification.initiator)
+        if (isEmailNotif) {
+          userIdsToFetch.push(notification.userId)
+          userIdsToFetch.push(notification.entityId)
+        }
         break
       }
       case NotificationType.SupporterRankUp: {
         // Tip sender needed for SupporterRankUp
         userIdsToFetch.push(notification.metadata.entity_id)
+        if (isEmailNotif) {
+          userIdsToFetch.push(notification.userId)
+          userIdsToFetch.push(notification.metadata.supportingUserId)
+        }
         break
       }
       case NotificationType.SupportingRankUp: {
         // Tip recipient needed for SupportingRankUp
         userIdsToFetch.push(notification.initiator)
+        if (isEmailNotif) {
+          userIdsToFetch.push(notification.userId)
+          userIdsToFetch.push(notification.metadata.supportedUserId)
+        }
         break
       }
       case NotificationType.TipReceive: {
         // Fetch the sender of the tip
         userIdsToFetch.push(notification.metadata.entity_id)
+        if (isEmailNotif) {
+          userIdsToFetch.push(notification.userId)
+          userIdsToFetch.push(notification.entityId)
+        }
         break
       }
     }

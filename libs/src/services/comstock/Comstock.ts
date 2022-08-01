@@ -7,7 +7,7 @@ export class Comstock {
     this.comstockEndpoint = comstockEndpoint
   }
 
-  async getComstock(obj: AxiosRequestConfig) {
+  async getComstock(obj: { wallet: string }) {
     const result = await this._makeRequest({
       url: '/wallet_lookup',
       method: 'get',

@@ -5,6 +5,7 @@ import type {
   FindSyncRequestsJobParams,
   MonitorStateJobParams,
   MonitorStateJobReturnValue,
+  ReplicaToAllUserInfoMaps,
   StateMonitoringUser,
   UserSecondarySyncMetricsMap
 } from './types'
@@ -66,7 +67,7 @@ module.exports = async function ({
 
   let users: StateMonitoringUser[] = []
   let unhealthyPeers = new Set<string>()
-  let replicaToUserInfoMap = {}
+  let replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps = {}
   let userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap = {}
   try {
     try {
@@ -140,7 +141,7 @@ module.exports = async function ({
       const retrieveUserInfoResp = await retrieveUserInfoFromReplicaSet(
         replicaSetNodesToUserWalletsMap
       )
-      replicaToUserInfoMap = retrieveUserInfoResp.replicaToUserInfoMap
+      replicaToAllUserInfoMaps = retrieveUserInfoResp.replicaToAllUserInfoMaps
 
       // Mark peers as unhealthy if they were healthy before but failed to return a clock value
       unhealthyPeers = new Set([
@@ -208,13 +209,13 @@ module.exports = async function ({
   const findSyncRequestsJob: FindSyncRequestsJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
-    replicaToUserInfoMap,
+    replicaToAllUserInfoMaps,
     userSecondarySyncMetricsMap
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
-    replicaToUserInfoMap,
+    replicaToAllUserInfoMaps,
     userSecondarySyncMetricsMap
   }
   const monitorStateJob: MonitorStateJobParams = {

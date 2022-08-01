@@ -113,7 +113,7 @@ class SeedSession {
       })
       this.cache.addWalletDetails({
         entropy: hedgehogEntropyKey,
-        privKey: this.libs.hedgehog.wallet._privKey.toString('hex')
+        privKey: this.libs.hedgehog.getWallet().privateKey.toString('hex')
       })
       this.cache.setActiveUser(userAlias)
       console.log(
