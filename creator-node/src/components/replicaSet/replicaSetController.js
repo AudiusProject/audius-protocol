@@ -51,8 +51,23 @@ const respondToURSMRequestForProposalController = async (req) => {
   }
 }
 
-// See if requesting content node is the wallet's primary
-const shouldForceResync = async ({ requester, libs, wallet, forceResync }) => {
+/**
+ * Checks to see if the host requesting the sync is the primary of the observed user
+ * @param {Object} param
+ * @param {string} param.requester the endpoint of the host requesting the sync
+ * @param {Object} param.libs the libs instance
+ * @param {string} param.wallet the observed user's wallet
+ * @param {boolean} param.forceResync flag from the request to force resync (starting off on clear slate) or not
+ * @param {Object} param.logger
+ * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
+ */
+const shouldForceResync = async ({
+  requester,
+  libs,
+  wallet,
+  forceResync,
+  logger
+}) => {
   if (!forceResync || forceResync === 'false' || forceResync === false) {
     return false
   }
@@ -62,9 +77,16 @@ const shouldForceResync = async ({ requester, libs, wallet, forceResync }) => {
   if (!spID) return false
 
   const userMetadata = await libs.User.getUsers(1, 0, null, wallet)
-  const userPrimarySpId = userMetadata[0].primary_id
+  let userPrimarySpId
+  try {
+    userPrimarySpId = userMetadata[0].primary_id
+  } catch (e) {
+    logger.error(
+      `Could not fetch user id given wallet=${wallet}: ${e.toString()}`
+    )
+    return false
+  }
 
-  // Check that spID is in user's primary_id md
   return userPrimarySpId === spID
 }
 
@@ -109,7 +131,8 @@ const syncRouteController = async (req, res) => {
     requester: `${req.protocol}://${req.headers.host}`,
     libs: req.app.get('audiusLibs'),
     wallet: walletPublicKeys[0],
-    forceResync: req.body.forceResync
+    forceResync: req.body.forceResync,
+    logger: req.logger
   })
 
   // If sync_type body param provided, log it (param is currently only used for logging)
