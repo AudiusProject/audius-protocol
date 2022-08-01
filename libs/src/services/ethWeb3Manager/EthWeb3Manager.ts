@@ -17,6 +17,10 @@ const MAX_GAS_LIMIT = 5000000 // We've seen prod tx's take up to 4M. Set to the 
 export type EthWeb3Config = {
   ownerWallet: Wallet | string
   providers: string[]
+  tokenAddress: string
+  registryAddress: string
+  claimDistributionContractAddress: string
+  wormholeContractAddress: string
 }
 
 type EthWeb3ManagerConfig = {

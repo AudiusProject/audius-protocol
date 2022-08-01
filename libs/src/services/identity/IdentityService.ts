@@ -64,14 +64,14 @@ type Reaction = {
 // Only probabilistically capture 50% of relay captchas
 const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
 
-type IdentityServiceConfig = {
+export type IdentityServiceConfig = {
   identityServiceEndpoint: string
-  captcha?: Captcha
+  captcha?: Nullable<Captcha>
 }
 
 export class IdentityService {
   identityServiceEndpoint: string
-  captcha: Captcha | undefined
+  captcha?: Nullable<Captcha>
   web3Manager: Web3Manager | null
 
   constructor({ identityServiceEndpoint, captcha }: IdentityServiceConfig) {

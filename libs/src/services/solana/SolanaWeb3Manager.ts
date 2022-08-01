@@ -65,20 +65,35 @@ const SOL_PER_LAMPORT = 0.000000001
 const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
 
 export type SolanaWeb3Config = {
+  //  the RPC endpoint to make requests against
   solanaClusterEndpoint: string
+  // wAudio mint address
   mintAddress: string
+  // native solana token program
   solanaTokenAddress: string
+  // the generated program derived address we use so our bank program can take ownership of accounts
   claimableTokenPDA: string
+  // address for the fee payer for transactions
   feePayerAddress: string
+  // address of the audius user bank program
   claimableTokenProgramAddress: string
+  // address for the Rewards Manager program
   rewardsManagerProgramId: string
+  // Rewards Manager PDA
   rewardsManagerProgramPDA: string
+  // The PDA of the rewards manager funds holder account
   rewardsManagerTokenPDA: string
+  // Whether to use identity as a relay or submit transactions locally
   useRelay: boolean
+  // fee payer secret keys, if client wants to switch between different fee payers during relay
   feePayerKeypairs: Keypair[]
+  // solana web3 connection confirmationTimeout in ms
   confirmationTimeout: number
+  // admin storage PK for audius-data program
   audiusDataProgramId: PublicKey
+  // program ID for the audius-data Anchor program
   audiusDataAdminStorageKeypairPublicKey: PublicKey
+  // IDL for the audius-data Anchor program.
   audiusDataIdl: Idl
 }
 

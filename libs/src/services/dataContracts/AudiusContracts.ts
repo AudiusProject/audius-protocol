@@ -63,7 +63,7 @@ export class AudiusContracts {
     web3Manager: Web3Manager,
     registryAddress: string,
     isServer: boolean,
-    logger = console
+    logger: Logger = console
   ) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress

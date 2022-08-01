@@ -34,6 +34,27 @@ type FileUploadResponse = {
   error: Error
 }
 
+export type CreatorNodeConfig = {
+  web3Manager: Web3Manager
+  // fallback creator node endpoint (to be deprecated)
+  creatorNodeEndpoint: string
+  isServer: boolean
+  // singleton UserStateManager instance
+  userStateManager: UserStateManager
+  // whether or not to lazy connect (sign in) on load
+  lazyConnect: boolean
+  schemas: Schemas
+  // whether or not to include only specified nodes (default null)
+  passList: Set<string> | null
+  // whether or not to exclude any nodes (default null)
+  blockList: Set<string> | null
+  // callbacks to be invoked with metrics from requests sent to a service
+  monitoringCallbacks: MonitoringCallbacks
+  // whether or not to enforce waiting for replication to 2/3 nodes when writing data
+  writeQuorumEnabled: boolean
+  fallbackUrl: string
+}
+
 // Currently only supports a single logged-in audius user
 export class CreatorNode {
   /* Static Utils */
@@ -147,16 +168,6 @@ export class CreatorNode {
 
   /**
    * Constructs a service class for a creator node
-   * @param web3Manager
-   * @param creatorNodeEndpoint fallback creator node endpoint (to be deprecated)
-   * @param isServer
-   * @param userStateManager  singleton UserStateManager instance
-   * @param lazyConnect whether or not to lazy connect (sign in) on load
-   * @param schemas
-   * @param passList whether or not to include only specified nodes (default null)
-   * @param blockList whether or not to exclude any nodes (default null)
-   * @param monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   * @param writeQuorumEnabled whether or not to enforce waiting for replication to 2/3 nodes when writing data
    */
   constructor(
     web3Manager: Web3Manager,
@@ -568,10 +579,10 @@ export class CreatorNode {
     if (!user) return
 
     if (!primary) {
-      primary = CreatorNode.getPrimary(user.creator_node_endpoint!)
+      primary = CreatorNode.getPrimary(user.creator_node_endpoint)
     }
     const secondaries = new Set(
-      CreatorNode.getSecondaries(user.creator_node_endpoint!)
+      CreatorNode.getSecondaries(user.creator_node_endpoint)
     )
     if (primary && secondary && (!validate || secondaries.has(secondary))) {
       const req: AxiosRequestConfig = {
@@ -717,7 +728,7 @@ export class CreatorNode {
     endpoint,
     timeout = 1000
   }: ClockValueRequestConfig) {
-    const primary = CreatorNode.getPrimary(user.creator_node_endpoint!)
+    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
     const type = primary === endpoint ? 'primary' : 'secondary'
 
     try {
