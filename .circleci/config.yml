@@ -25,6 +25,10 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
+        default: "Job started. :crossed_fingers:"
+      slack_mentions_user:
+        description: Used for CircleCI @mentions
+        type: string
         default: ""
     steps:
       - slack/notify:
@@ -34,12 +38,58 @@ commands:
             {
               "blocks": [
                 {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "<< parameters.text >>",
+                    "emoji": true
+                  }
+                },
+                {
                   "type": "section",
                   "fields": [
                     {
-                      "type": "plain_text",
-                      "text": "<< parameters.text >>",
-                      "emoji": true
+                      "type": "mrkdwn",
+                      "text": "*Job*: ${CIRCLE_JOB}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch*: $CIRCLE_BRANCH"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author*: $CIRCLE_USERNAME"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Mentions*: @<< parameters.slack_mentions_user >>"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Job"
+                      },
+                      "url": "${CIRCLE_BUILD_URL}"
                     }
                   ]
                 }
@@ -147,6 +197,9 @@ parameters:
   sdk_release_tag:
     type: string
     default: ""
+  slack_mentions_user:
+    type: string
+    default: ""
   full_ci:
     type: boolean
     default: false
@@ -203,6 +256,10 @@ jobs:
         description: The git tag/commit to build and release
         type: string
         default: ""
+      slack_mentions_user:
+        description: Used for CircleCI @mentions
+        type: string
+        default: ""
     steps:
       - checkout
       - setup_remote_docker
@@ -215,12 +272,12 @@ jobs:
       - slack-basic:
           event: always
           branch_pattern: master
-          text: "$CIRCLE_USERNAME is publishing SDK@<< pipeline.parameters.sdk_release_tag >>."
+          slack_mentions_user: << parameters.slack_mentions_user >>
       - run:
           name: Bump and Publish Libs
           command: |
             export PROTOCOL_DIR=/home/circleci/project
-            libs/scripts/release.sh << pipeline.parameters.sdk_release_tag >>
+            libs/scripts/release.sh << parameters.sdk_release_tag >>
       - slack/notify:
           event: fail
           branch_pattern: master
@@ -906,6 +963,7 @@ workflows:
             - slack-secrets
           name: publish-libs (<< pipeline.parameters.sdk_release_tag >>)
           sdk_release_tag: << pipeline.parameters.sdk_release_tag >>
+          slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
           filters:
             branches:
               only: /(^master$)/
