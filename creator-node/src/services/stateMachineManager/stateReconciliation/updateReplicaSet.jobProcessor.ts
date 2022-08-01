@@ -68,7 +68,13 @@ module.exports = async function ({
   let healthyNodes = []
   healthyNodes = await getCachedHealthyNodes()
   if (healthyNodes.length === 0) {
-    audiusLibs = await initAudiusLibs(false, true)
+    audiusLibs = await initAudiusLibs({
+      enableEthContracts: true,
+      enableContracts: true,
+      enableDiscovery: false,
+      enableIdentity: true,
+      logger
+    })
     const { services: healthyServicesMap } =
       await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
         performSyncCheck: false,
@@ -489,7 +495,13 @@ const _issueUpdateReplicaSetOp = async (
     const startTimeMs = Date.now()
     try {
       if (!audiusLibs) {
-        audiusLibs = await initAudiusLibs(true)
+        audiusLibs = await initAudiusLibs({
+          enableEthContracts: false,
+          enableContracts: true,
+          enableDiscovery: false,
+          enableIdentity: true,
+          logger
+        })
       }
       await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
