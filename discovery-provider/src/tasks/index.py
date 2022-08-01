@@ -30,8 +30,8 @@ from src.queries.get_skipped_transactions import (
     set_indexing_error,
 )
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
-from src.tasks.audius_data import audius_data_state_update
 from src.tasks.celery_app import celery
+from src.tasks.entity_manager import entity_manager_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.sort_block_transactions import sort_block_transactions
@@ -67,7 +67,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
-from src.utils.user_event_constants import audius_data_event_types_arr
+from src.utils.user_event_constants import entity_manager_event_types_arr
 
 USER_FACTORY = CONTRACT_TYPES.USER_FACTORY.value
 TRACK_FACTORY = CONTRACT_TYPES.TRACK_FACTORY.value
@@ -75,7 +75,7 @@ SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY.value
 PLAYLIST_FACTORY = CONTRACT_TYPES.PLAYLIST_FACTORY.value
 USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
 USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
-AUDIUS_DATA = CONTRACT_TYPES.AUDIUS_DATA.value
+ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
 USER_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.USER_FACTORY]
 TRACK_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.TRACK_FACTORY]
@@ -91,7 +91,7 @@ USER_LIBRARY_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
 USER_REPLICA_SET_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
     CONTRACT_TYPES.USER_REPLICA_SET_MANAGER
 ]
-AUDIUS_DATA_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.AUDIUS_DATA]
+ENTITY_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.ENTITY_MANAGER]
 
 TX_TYPE_TO_HANDLER_MAP = {
     USER_FACTORY: user_state_update,
@@ -100,7 +100,7 @@ TX_TYPE_TO_HANDLER_MAP = {
     PLAYLIST_FACTORY: playlist_state_update,
     USER_LIBRARY_FACTORY: user_library_state_update,
     USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
-    AUDIUS_DATA: audius_data_state_update,
+    ENTITY_MANAGER: entity_manager_update,
 }
 
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
@@ -267,11 +267,11 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, audius_data_txs):
+def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_txs):
     start_time = datetime.now()
     user_contract = update_task.user_contract
     track_contract = update_task.track_contract
-    audius_data_contract = update_task.audius_data_contract
+    entity_manager_contract = update_task.entity_manager_contract
 
     cids_txhash_set: Tuple[str, Any] = set()
     cid_type: Dict[str, str] = {}  # cid -> entity type track / user
@@ -317,13 +317,13 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, audius_data_txs)
                     cid_type[cid] = "track"
                     cid_to_user_id[cid] = track_owner_id
 
-        for tx_receipt in audius_data_txs:
+        for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            for event_type in audius_data_event_types_arr:
-                audius_data_events_tx = getattr(
-                    audius_data_contract.events, event_type
+            for event_type in entity_manager_event_types_arr:
+                entity_manager_events_tx = getattr(
+                    entity_manager_contract.events, event_type
                 )().processReceipt(tx_receipt)
-                for entry in audius_data_events_tx:
+                for entry in entity_manager_events_tx:
                     event_args = entry["args"]
                     user_id = event_args._userId
                     entity_type = event_args._entityType
@@ -614,7 +614,7 @@ def index_blocks(self, db, blocks_list):
                     PLAYLIST_FACTORY: [],
                     USER_LIBRARY_FACTORY: [],
                     USER_REPLICA_SET_MANAGER: [],
-                    AUDIUS_DATA: [],
+                    ENTITY_MANAGER: [],
                 }
                 try:
                     """
@@ -680,7 +680,7 @@ def index_blocks(self, db, blocks_list):
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
-                        txs_grouped_by_type[AUDIUS_DATA],
+                        txs_grouped_by_type[ENTITY_MANAGER],
                     )
                     logger.info(
                         f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
@@ -1138,9 +1138,12 @@ def update_task(self):
         abi=user_replica_set_manager_abi,
     )
 
-    audius_data_contract_abi = update_task.abi_values[AUDIUS_DATA_CONTRACT_NAME]["abi"]
-    audius_data_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[AUDIUS_DATA], abi=audius_data_contract_abi
+    entity_manager_contract_abi = update_task.abi_values[ENTITY_MANAGER_CONTRACT_NAME][
+        "abi"
+    ]
+    entity_manager_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[ENTITY_MANAGER],
+        abi=entity_manager_contract_abi,
     )
 
     update_task.track_contract = track_contract
@@ -1149,7 +1152,7 @@ def update_task(self):
     update_task.social_feature_contract = social_feature_contract
     update_task.user_library_contract = user_library_contract
     update_task.user_replica_set_manager_contract = user_replica_set_manager_contract
-    update_task.audius_data_contract = audius_data_contract
+    update_task.entity_manager_contract = entity_manager_contract
 
     # Update redis cache for health check queries
     update_latest_block_redis()

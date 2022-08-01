@@ -3,7 +3,7 @@ from typing import List
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.models.playlists.playlist import Playlist
-from src.tasks.audius_data import audius_data_state_update
+from src.tasks.entity_manager import PLAYLIST_ID_OFFSET, entity_manager_update
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -23,7 +23,7 @@ def test_index_valid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 1,
+                        "_entityId": PLAYLIST_ID_OFFSET,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
@@ -37,7 +37,7 @@ def test_index_valid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 1,
+                        "_entityId": PLAYLIST_ID_OFFSET,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Update",
@@ -51,7 +51,7 @@ def test_index_valid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 1,
+                        "_entityId": PLAYLIST_ID_OFFSET,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Delete",
@@ -65,7 +65,7 @@ def test_index_valid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 2,
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
@@ -77,7 +77,7 @@ def test_index_valid_playlists(app, mocker):
         ],
     }
 
-    audius_data_txs = [
+    entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
@@ -86,7 +86,7 @@ def test_index_valid_playlists(app, mocker):
         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
     mocker.patch(
-        "src.tasks.audius_data.get_audius_data_events_tx",
+        "src.tasks.entity_manager.get_entity_manager_events_tx",
         side_effect=get_events_side_effect,
         autospec=True,
     )
@@ -120,11 +120,11 @@ def test_index_valid_playlists(app, mocker):
 
     with db.scoped_session() as session:
         # index transactions
-        audius_data_state_update(
+        entity_manager_update(
             None,
             update_task,
             session,
-            audius_data_txs,
+            entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
@@ -137,7 +137,9 @@ def test_index_valid_playlists(app, mocker):
 
         playlist_1: Playlist = (
             session.query(Playlist)
-            .filter(Playlist.is_current == True, Playlist.playlist_id == 1)
+            .filter(
+                Playlist.is_current == True, Playlist.playlist_id == PLAYLIST_ID_OFFSET
+            )
             .first()
         )
         assert playlist_1.playlist_name == "playlist 1 updated"
@@ -145,7 +147,10 @@ def test_index_valid_playlists(app, mocker):
 
         playlist_2: Playlist = (
             session.query(Playlist)
-            .filter(Playlist.is_current == True, Playlist.playlist_id == 2)
+            .filter(
+                Playlist.is_current == True,
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET + 1,
+            )
             .first()
         )
         assert playlist_2.playlist_name == "playlist 2"
@@ -163,11 +168,25 @@ def test_index_invalid_playlists(app, mocker):
 
     tx_receipts = {
         # invalid create
+        "CreatePlaylistBelowOffset": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         "CreatePlaylistUserDoesNotExist": [
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 2,
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
                         "_entityType": "Playlist",
                         "_userId": 2,
                         "_action": "Create",
@@ -181,7 +200,7 @@ def test_index_invalid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 2,
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
@@ -195,7 +214,7 @@ def test_index_invalid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 1,
+                        "_entityId": PLAYLIST_ID_OFFSET,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
@@ -206,11 +225,11 @@ def test_index_invalid_playlists(app, mocker):
             },
         ],
         # invalid updates
-        "UpdatePlaylistInvalidOwnership": [
+        "UpdatePlaylistInvalidSigner": [
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 1,
+                        "_entityId": PLAYLIST_ID_OFFSET,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Update",
@@ -220,11 +239,11 @@ def test_index_invalid_playlists(app, mocker):
                 )
             },
         ],
-        "UpdatePlaylistDoesNotMatchPlaylistOwner": [
+        "UpdatePlaylistInvalidOwner": [
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 1,
+                        "_entityId": PLAYLIST_ID_OFFSET,
                         "_entityType": "Playlist",
                         "_userId": 2,
                         "_action": "Update",
@@ -235,11 +254,11 @@ def test_index_invalid_playlists(app, mocker):
             },
         ],
         # invalid deletes
-        "DeletePlaylistInvalidOwnership": [
+        "DeletePlaylistInvalidSigner": [
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 1,
+                        "_entityId": PLAYLIST_ID_OFFSET,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Delete",
@@ -253,7 +272,7 @@ def test_index_invalid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 2,
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Update",
@@ -263,11 +282,11 @@ def test_index_invalid_playlists(app, mocker):
                 )
             },
         ],
-        "DeletePlaylistDoesNotMatchPlaylistOwner": [
+        "DeletePlaylistInvalidOwner": [
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": 1,
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
                         "_entityType": "Playlist",
                         "_userId": 2,
                         "_action": "Update",
@@ -279,7 +298,7 @@ def test_index_invalid_playlists(app, mocker):
         ],
     }
 
-    audius_data_txs = [
+    entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
@@ -288,7 +307,7 @@ def test_index_invalid_playlists(app, mocker):
         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
     mocker.patch(
-        "src.tasks.audius_data.get_audius_data_events_tx",
+        "src.tasks.entity_manager.get_entity_manager_events_tx",
         side_effect=get_events_side_effect,
         autospec=True,
     )
@@ -299,18 +318,18 @@ def test_index_invalid_playlists(app, mocker):
             {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
         ],
         "playlists": [
-            {"playlist_id": 1, "playlist_owner_id": 1},
+            {"playlist_id": PLAYLIST_ID_OFFSET, "playlist_owner_id": 1},
         ],
     }
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         # index transactions
-        audius_data_state_update(
+        entity_manager_update(
             None,
             update_task,
             session,
-            audius_data_txs,
+            entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,

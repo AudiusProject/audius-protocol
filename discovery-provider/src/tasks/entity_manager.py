@@ -35,11 +35,11 @@ class EntityType(str, Enum):
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
 
 
-def audius_data_state_update(
-    self,
+def entity_manager_update(
+    _,
     update_task: DatabaseTask,
     session: Session,
-    audius_data_txs,
+    entity_manager_txs,
     block_number,
     block_timestamp,
     block_hash,
@@ -51,7 +51,7 @@ def audius_data_state_update(
 
         changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
 
-        if not audius_data_txs:
+        if not entity_manager_txs:
             return num_total_changes, changed_entity_ids
 
         entities_to_fetch: Dict[EntityType, Set[int]] = defaultdict(set)
@@ -59,7 +59,7 @@ def audius_data_state_update(
 
         # collect events by entity type and action
         collect_entities_to_fetch(
-            update_task, audius_data_txs, entities_to_fetch, users_to_fetch
+            update_task, entity_manager_txs, entities_to_fetch, users_to_fetch
         )
 
         # fetch existing playlists
@@ -72,10 +72,12 @@ def audius_data_state_update(
 
         playlists_to_save: Dict[int, List[Playlist]] = defaultdict(list)
         # process in tx order and populate playlists_to_save
-        for tx_receipt in audius_data_txs:
+        for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            audius_data_event_tx = get_audius_data_events_tx(update_task, tx_receipt)
-            for event in audius_data_event_tx:
+            entity_manager_event_tx = get_entity_manager_events_tx(
+                update_task, tx_receipt
+            )
+            for event in entity_manager_event_tx:
                 params = ManagePlaylistParameters(
                     event,
                     playlists_to_save,  # actions below populate these records
@@ -261,13 +263,13 @@ def delete_playlist(params: ManagePlaylistParameters):
 
 def collect_entities_to_fetch(
     update_task,
-    audius_data_txs,
+    entity_manager_txs,
     entities_to_fetch: Dict[EntityType, Set[int]],
     users_to_fetch: Set[int],
 ):
-    for tx_receipt in audius_data_txs:
-        audius_data_event_tx = get_audius_data_events_tx(update_task, tx_receipt)
-        for event in audius_data_event_tx:
+    for tx_receipt in entity_manager_txs:
+        entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
+        for event in entity_manager_event_tx:
             entity_id = helpers.get_tx_arg(event, "_entityId")
             entity_type = helpers.get_tx_arg(event, "_entityType")
             user_id = helpers.get_tx_arg(event, "_userId")
@@ -332,9 +334,9 @@ def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
     return new_playlist
 
 
-def get_audius_data_events_tx(update_task, tx_receipt):
+def get_entity_manager_events_tx(update_task, tx_receipt):
     return getattr(
-        update_task.audius_data_contract.events, MANAGE_ENTITY_EVENT_TYPE
+        update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
     )().processReceipt(tx_receipt)
 
 
