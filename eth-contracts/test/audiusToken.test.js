@@ -3,7 +3,7 @@ import * as _signatures from '../utils/signatures.js'
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
-contract('AudiusToken', async (accounts) => {
+contract.only('AudiusToken', async (accounts) => {
   let registry, token, governance
 
   // expected initial token values
@@ -96,7 +96,7 @@ contract('AudiusToken', async (accounts) => {
     assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY - amount)
     assert.equal(await token.balanceOf(account), amount)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY)
-    
+
     // Decrease total supply by burning from account
     await token.approve(tokenOwnerAddress, amount, { from: account })
     await token.burnFrom(account, amount, { from: tokenOwnerAddress })
@@ -229,6 +229,18 @@ contract('AudiusToken', async (accounts) => {
       token.pause({ from: newPauser }),
       "PauserRole: caller does not have the Pauser role"
     )
+  })
+
+  it.only('Confirm token reinitialization', async () => {
+    console.log('Verifying reinitialization')
+    const fakeGovernance = accounts[12]
+    const tokenInitData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address'],
+      [proxyDeployerAddress, fakeGovernance]
+    )
+    await token.initialize(proxyDeployerAddress, fakeGovernance)
+    // await token.initialize(proxyDeployerAddress, fakeGovernance)
   })
 
   describe('EIP-2612', async function () {
