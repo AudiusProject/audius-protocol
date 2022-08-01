@@ -39,7 +39,7 @@ class StateReconciliationManager {
       name: QUEUE_NAMES.RECURRING_SYNC,
       removeOnComplete: QUEUE_HISTORY.RECURRING_SYNC,
       removeOnFail: QUEUE_HISTORY.RECURRING_SYNC,
-      lockDuration: MAX_QUEUE_RUNTIMES.RECURRING_SYNC
+      lockDuration: MAX_QUEUE_RUNTIMES.RECURRING_SYNC,
       prometheusRegistry
     })
 
