@@ -13,6 +13,8 @@ from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
+PLAYLIST_ID_OFFSET = 400000
+
 
 class Action(str, Enum):
     CREATE = "Create"
@@ -151,7 +153,7 @@ class ManagePlaylistParameters:
         self.playlists_to_save = playlists_to_save
 
 
-def is_valid_playlist_owner(params: ManagePlaylistParameters):
+def is_valid_playlist_tx(params: ManagePlaylistParameters):
     if params.user_id not in params.existing_user_id_to_user:
         # user does not exist
         return False
@@ -164,7 +166,10 @@ def is_valid_playlist_owner(params: ManagePlaylistParameters):
         if params.entity_id in params.existing_playlist_id_to_playlist:
             # playlist already exists
             return False
+        if params.entity_id < PLAYLIST_ID_OFFSET:
+            return False
     else:
+        # update / delete specific validations
         if params.entity_id not in params.existing_playlist_id_to_playlist:
             # playlist does not exist
             return False
@@ -179,7 +184,7 @@ def is_valid_playlist_owner(params: ManagePlaylistParameters):
 
 
 def create_playlist(params: ManagePlaylistParameters):
-    if not is_valid_playlist_owner(params):
+    if not is_valid_playlist_tx(params):
         return
 
     metadata = params.ipfs_metadata[params.metadata_cid]
@@ -212,7 +217,7 @@ def create_playlist(params: ManagePlaylistParameters):
 
 
 def update_playlist(params: ManagePlaylistParameters):
-    if not is_valid_playlist_owner(params):
+    if not is_valid_playlist_tx(params):
         return
     # TODO ignore updates on deleted playlists?
 
@@ -227,7 +232,7 @@ def update_playlist(params: ManagePlaylistParameters):
     updated_playlist = copy_record(
         existing_playlist, params.block_number, params.event_blockhash, params.txhash
     )
-    parse_playlist_create_data_event(
+    parse_playlist_data_event(
         updated_playlist,
         metadata,
         params.block_integer_time,
@@ -237,8 +242,7 @@ def update_playlist(params: ManagePlaylistParameters):
 
 
 def delete_playlist(params: ManagePlaylistParameters):
-
-    if not is_valid_playlist_owner(params):
+    if not is_valid_playlist_tx(params):
         return
 
     existing_playlist = params.existing_playlist_id_to_playlist[params.entity_id]
@@ -334,8 +338,7 @@ def get_audius_data_events_tx(update_task, tx_receipt):
     )().processReceipt(tx_receipt)
 
 
-# Create playlist specific
-def parse_playlist_create_data_event(
+def parse_playlist_data_event(
     playlist_record: Playlist,
     playlist_metadata,
     block_integer_time,

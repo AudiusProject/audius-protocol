@@ -7,6 +7,7 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
+from src.tasks.audius_data import PLAYLIST_ID_OFFSET
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -63,7 +64,7 @@ def playlist_state_update(
                         )
 
                     # parse playlist event to add metadata to record
-                    playlist_record = parse_playlist_event(
+                    playlist_record: Playlist = parse_playlist_event(
                         self,
                         update_task,
                         entry,
@@ -72,6 +73,11 @@ def playlist_state_update(
                         block_timestamp,
                         session,
                     )
+                    if playlist_record.playlist_id >= PLAYLIST_ID_OFFSET:
+                        logger.info(
+                            f"index.py | playlists.py | Playlist {playlist_record.playlist_id} is above the playlist ID offset {PLAYLIST_ID_OFFSET}. Skipping transaction."
+                        )
+                        continue
 
                     # process playlist record
                     if playlist_record is not None:
