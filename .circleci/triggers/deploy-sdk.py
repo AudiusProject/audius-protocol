@@ -25,7 +25,7 @@ from triggers import ensure_tag_on_master
     "-u",
     "--slack-mentions-user",
     help="Used for CircleCI @mentions",
-    envvar="SLACK_MENTIONS_USER",
+    envvar="CIRCLE_SLACK_MENTIONS_USER",
     required=True,
 )
 def cli(git_tag, circle_api_key, slack_mentions_user):
