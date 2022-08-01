@@ -27,6 +27,18 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+kill_running_queries_sql = """
+    BEGIN;
+        SELECT
+            pg_cancel_backend(pid)
+            pid, state, age(clock_timestamp(), query_start), substring(trim(regexp_replace(query, '\s+', ' ', 'g')) from 1 for 200)
+        FROM pg_stat_activity
+        WHERE state != 'idle' AND query NOT ILIKE '%%pg_stat_activity%%'
+        AND query ILIKE '%%lexeme%%'
+        ORDER BY query_start DESC;
+    COMMIT;
+"""
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -71,6 +83,7 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
+        connection.execute(kill_running_queries_sql)
         context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
