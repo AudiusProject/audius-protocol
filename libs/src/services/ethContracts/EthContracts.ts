@@ -11,34 +11,24 @@ import { ClaimDistributionClient } from './ClaimDistributionClient'
 import { WormholeClient } from './WormholeClient'
 import { EthRewardsManagerClient } from './EthRewardsManagerClient'
 import { TrustedNotifierManagerClient } from './TrustedNotifierManagerClient'
-import { Logger, Utils } from '../../utils'
+import type { Logger } from '../../utils'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { ContractClient } from '../contracts/ContractClient'
 
-const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
-const RegistryABI = Utils.importEthContractABI('Registry.json').abi
-const GovernanceABI = Utils.importEthContractABI('Governance.json').abi
-const ServiceTypeManagerABI = Utils.importEthContractABI(
-  'ServiceTypeManager.json'
-).abi
-const ServiceProviderFactoryABI = Utils.importEthContractABI(
-  'ServiceProviderFactory.json'
-).abi
-const StakingABI = Utils.importEthContractABI('Staking.json').abi
-const DelegateManagerABI = Utils.importEthContractABI(
-  'DelegateManagerV2.json'
-).abi
-const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
-const ClaimDistributionABI = Utils.importEthContractABI(
-  'AudiusClaimDistributor.json'
-).abi
-const WormholeClientABI = Utils.importEthContractABI('WormholeClient.json').abi
-const EthRewardsManagerABI = Utils.importEthContractABI(
-  'EthRewardsManager.json'
-).abi
-const TrustedNotifierManagerABI = Utils.importEthContractABI(
-  'TrustedNotifierManager.json'
-).abi
+import { abi as AudiusTokenABI } from '../../eth-contracts/ABIs/AudiusToken.json'
+import { abi as RegistryABI } from '../../eth-contracts/ABIs/Registry.json'
+import { abi as GovernanceABI } from '../../eth-contracts/ABIs/Governance.json'
+import { abi as ServiceTypeManagerABI } from '../../eth-contracts/ABIs/ServiceTypeManager.json'
+import { abi as ServiceProviderFactoryABI } from '../../eth-contracts/ABIs/ServiceProviderFactory.json'
+import { abi as StakingABI } from '../../eth-contracts/ABIs/Staking.json'
+import { abi as DelegateManagerABI } from '../../eth-contracts/ABIs/DelegateManagerV2.json'
+import { abi as ClaimsManagerABI } from '../../eth-contracts/ABIs/ClaimsManager.json'
+import { abi as ClaimDistributionABI } from '../../eth-contracts/ABIs/AudiusClaimDistributor.json'
+import { abi as WormholeClientABI } from '../../eth-contracts/ABIs/WormholeClient.json'
+import { abi as EthRewardsManagerABI } from '../../eth-contracts/ABIs/EthRewardsManager.json'
+import { abi as TrustedNotifierManagerABI } from '../../eth-contracts/ABIs/TrustedNotifierManager.json'
+
+console.log('AudiusTokenABI!', AudiusTokenABI)
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
@@ -118,11 +108,13 @@ export class EthContracts {
 
     this.AudiusTokenClient = new AudiusTokenClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       AudiusTokenABI,
       this.tokenContractAddress
     )
     this.RegistryClient = new RegistryClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       RegistryABI,
       this.registryAddress
     )
@@ -131,6 +123,7 @@ export class EthContracts {
 
     this.StakingProxyClient = new StakingProxyClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       StakingABI,
       StakingProxyKey,
       this.getRegistryAddressForContract,
@@ -140,6 +133,7 @@ export class EthContracts {
 
     this.GovernanceClient = new GovernanceClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       GovernanceABI,
       GovernanceRegistryKey,
       this.getRegistryAddressForContract,
@@ -150,6 +144,7 @@ export class EthContracts {
 
     this.ClaimsManagerClient = new ClaimsManagerClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       ClaimsManagerABI,
       ClaimsManagerProxyKey,
       this.getRegistryAddressForContract,
@@ -158,6 +153,7 @@ export class EthContracts {
 
     this.EthRewardsManagerClient = new EthRewardsManagerClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       EthRewardsManagerABI,
       EthRewardsManagerProxyKey,
       this.getRegistryAddressForContract,
@@ -166,6 +162,7 @@ export class EthContracts {
 
     this.ServiceTypeManagerClient = new ServiceTypeManagerClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       ServiceTypeManagerABI,
       ServiceTypeManagerProxyKey,
       this.getRegistryAddressForContract,
@@ -175,6 +172,7 @@ export class EthContracts {
 
     this.ServiceProviderFactoryClient = new ServiceProviderFactoryClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       ServiceProviderFactoryABI,
       ServiceProviderFactoryRegistryKey,
       this.getRegistryAddressForContract,
@@ -187,6 +185,7 @@ export class EthContracts {
 
     this.DelegateManagerClient = new DelegateManagerClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       DelegateManagerABI,
       DelegateManagerRegistryKey,
       this.getRegistryAddressForContract,
@@ -199,6 +198,7 @@ export class EthContracts {
     if (this.claimDistributionContractAddress) {
       this.ClaimDistributionClient = new ClaimDistributionClient(
         this.ethWeb3Manager,
+        // @ts-ignore
         ClaimDistributionABI,
         ClaimDistributionRegistryKey,
         this.getRegistryAddressForContract,
@@ -209,6 +209,7 @@ export class EthContracts {
 
     this.WormholeClient = new WormholeClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       WormholeClientABI,
       this.wormholeContractAddress,
       this.AudiusTokenClient
@@ -216,6 +217,7 @@ export class EthContracts {
 
     this.TrustedNotifierManagerClient = new TrustedNotifierManagerClient(
       this.ethWeb3Manager,
+      // @ts-ignore
       TrustedNotifierManagerABI,
       TrustedNotifierManagerProxyKey,
       this.getRegistryAddressForContract,

@@ -4,9 +4,9 @@ import axios, { AxiosResponse } from 'axios'
 import Hashids from 'hashids'
 import { MultiProvider } from './multiProvider'
 import { uuid } from './uuid'
-import { importEthContractABIs } from './importContractABI'
 import { fileHasher } from './fileHasher'
 import type { ImageHasher, NonImageHasher, HashedImage } from './fileHasher'
+import type { AbiItem } from 'web3-utils'
 
 // Hashids
 
@@ -18,12 +18,13 @@ const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
 export type { ImageHasher, NonImageHasher, HashedImage }
 
+export type ContractABI = {
+  abi: AbiItem[]
+  contractName: string
+}
+
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- this should just be esm
 export class Utils {
-  static importEthContractABI(pathStr: string) {
-    return importEthContractABIs(pathStr)
-  }
-
   static utf8ToHex(utf8Str: string) {
     return Web3.utils.utf8ToHex(utf8Str)
   }

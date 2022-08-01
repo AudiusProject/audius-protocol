@@ -32,10 +32,7 @@ const commonConfig = {
   plugins: [
     resolve({ extensions, preferBuiltins: true }),
     pluginTypescript,
-    commonjs({
-      extensions,
-      dynamicRequireTargets: ['src/eth-contracts/ABIs/*.json']
-    }),
+    commonjs({ extensions }),
     babel({ babelHelpers: 'bundled', extensions }),
     json()
   ],
@@ -64,8 +61,7 @@ const browserConfig = {
     pluginTypescript,
     commonjs({
       extensions,
-      transformMixedEsModules: true,
-      dynamicRequireTargets: ['src/eth-contracts/ABIs/*.json']
+      transformMixedEsModules: true
     }),
     alias({
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
@@ -84,8 +80,7 @@ const browserDistFileConfig = {
     pluginTypescript,
     commonjs({
       extensions,
-      transformMixedEsModules: true,
-      dynamicRequireTargets: ['src/eth-contracts/ABIs/*.json']
+      transformMixedEsModules: true
     }),
     alias({
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
@@ -106,10 +101,7 @@ const browserLegacyConfig = {
     ignore(['web3', 'graceful-fs', 'node-localstorage']),
     resolve({ extensions, preferBuiltins: true }),
     pluginTypescript,
-    commonjs({
-      extensions,
-      dynamicRequireTargets: ['src/eth-contracts/ABIs/*.json']
-    }),
+    commonjs({ extensions }),
     alias({
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
     }),

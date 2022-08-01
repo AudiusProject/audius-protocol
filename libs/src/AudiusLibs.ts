@@ -468,11 +468,13 @@ export class AudiusLibs {
 
     /** Captcha */
     if (this.captchaConfig) {
+      console.log('captch')
       this.captcha = new Captcha(this.captchaConfig)
     }
 
     /** Identity Service */
     if (this.identityServiceConfig) {
+      console.log('id serve')
       this.identityService = new IdentityService({
         identityServiceEndpoint: this.identityServiceConfig.url,
         captcha: this.captcha
@@ -491,6 +493,7 @@ export class AudiusLibs {
 
     /** Web3 Managers */
     if (this.ethWeb3Config && this.identityService && this.hedgehog) {
+      console.log('eth web3 man')
       this.ethWeb3Manager = new EthWeb3Manager({
         web3Config: this.ethWeb3Config,
         identityService: this.identityService,
@@ -498,6 +501,7 @@ export class AudiusLibs {
       })
     }
     if (this.web3Config && this.identityService && this.hedgehog) {
+      console.log('web 3 man')
       this.web3Manager = new Web3Manager({
         web3Config: this.web3Config,
         identityService: this.identityService,
@@ -506,10 +510,12 @@ export class AudiusLibs {
       })
       await this.web3Manager.init()
       if (this.identityService) {
+        console.log('web 3 man id serv')
         this.identityService.setWeb3Manager(this.web3Manager)
       }
     }
     if (this.solanaWeb3Config && this.identityService && this.web3Manager) {
+      console.log('sol web3 man')
       this.solanaWeb3Manager = new SolanaWeb3Manager(
         this.solanaWeb3Config,
         this.identityService,
@@ -522,6 +528,7 @@ export class AudiusLibs {
       this.solanaAudiusDataConfig &&
       this.web3Manager
     ) {
+      console.log('aud data')
       this.solanaAudiusData = new SolanaAudiusData(
         this.solanaAudiusDataConfig,
         this.solanaWeb3Manager,
@@ -540,6 +547,8 @@ export class AudiusLibs {
         wormholeContractAddress
       } = this.ethWeb3Config
 
+      console.log('eth cons')
+
       this.ethContracts = new EthContracts({
         ethWeb3Manager: this.ethWeb3Manager,
         tokenContractAddress: tokenAddress,
@@ -554,6 +563,7 @@ export class AudiusLibs {
       contractsToInit.push(this.ethContracts.init())
     }
     if (this.web3Manager && this.web3Config) {
+      console.log('contractions')
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config.registryAddress,
@@ -571,6 +581,7 @@ export class AudiusLibs {
       this.identityService &&
       this.solanaWeb3Manager
     ) {
+      console.log('wormy!')
       this.wormholeClient = new Wormhole(
         this.hedgehog,
         this.ethWeb3Manager,
@@ -588,6 +599,7 @@ export class AudiusLibs {
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig && this.ethContracts && this.web3Manager) {
+      console.log('discprov')
       this.discoveryProvider = new DiscoveryProvider({
         userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
@@ -606,6 +618,7 @@ export class AudiusLibs {
           this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 
+      console.log('creator node')
       this.creatorNode = new CreatorNode(
         this.web3Manager,
         creatorNodeEndpoint,
@@ -623,6 +636,7 @@ export class AudiusLibs {
 
     /** Comstock */
     if (this.comstockConfig) {
+      console.log('comstock!')
       this.comstock = new Comstock(this.comstockConfig.url)
     }
 
@@ -643,6 +657,7 @@ export class AudiusLibs {
       this.comstock &&
       this.captcha
     ) {
+      console.log('getting into services!')
       // Initialize apis
       const services = [
         this.userStateManager,
