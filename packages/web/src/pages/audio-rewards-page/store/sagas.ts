@@ -217,7 +217,7 @@ function* claimChallengeRewardAsync(
   const endpoints =
     rewardsAttestationEndpoints && rewardsAttestationEndpoints !== ''
       ? rewardsAttestationEndpoints.split(',')
-      : null
+      : []
   const hasConfig =
     oracleEthAddress &&
     AAOEndpoint &&
@@ -225,7 +225,6 @@ function* claimChallengeRewardAsync(
     quorumSize > 0 &&
     maxClaimRetries &&
     !isNaN(maxClaimRetries) &&
-    endpoints &&
     parallelization !== null
 
   if (!hasConfig) {
