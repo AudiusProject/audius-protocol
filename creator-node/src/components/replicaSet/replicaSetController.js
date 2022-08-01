@@ -14,6 +14,7 @@ const {
 const { ensureStorageMiddleware } = require('../../middlewares')
 const { enqueueSync } = require('./syncQueueComponentService')
 const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
+const CNodeToSpIdMapManager = require('../../services/stateMachineManager/CNodeToSpIdMapManager')
 
 const router = express.Router()
 
@@ -50,6 +51,23 @@ const respondToURSMRequestForProposalController = async (req) => {
   }
 }
 
+// See if requesting content node is the wallet's primary
+const shouldForceResync = async ({ requester, libs, wallet, forceResync }) => {
+  if (!forceResync || forceResync === 'false' || forceResync === false) {
+    return false
+  }
+
+  const spID = CNodeToSpIdMapManager.getSpIdFromCNodeEndpoint(requester)
+
+  if (!spID) return false
+
+  const userMetadata = await libs.User.getUsers(1, 0, null, wallet)
+  const userPrimarySpId = userMetadata[0].primary_id
+
+  // Check that spID is in user's primary_id md
+  return userPrimarySpId === spID
+}
+
 /**
  * Given walletPublicKeys array and target creatorNodeEndpoint, will request export
  * of all user data, update DB state accordingly, fetch all files and make them available.
@@ -74,11 +92,9 @@ const syncRouteController = async (req, res) => {
   const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
-  const creatorNodeEndpoint = req.body.creator_node_endpoint // string
+  const primaryEndpoint = req.body.creator_node_endpoint // string
   const immediate = req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
   const blockNumber = req.body.blockNumber // integer
-  const forceResync =
-    req.body.forceResync === true || req.body.forceResync === 'true' // boolean - default false
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -89,11 +105,18 @@ const syncRouteController = async (req, res) => {
     )
   }
 
+  const forceResync = await shouldForceResync({
+    requester: `${req.protocol}://${req.headers.host}`,
+    libs: req.app.get('audiusLibs'),
+    wallet: walletPublicKeys[0],
+    forceResync: req.body.forceResync
+  })
+
   // If sync_type body param provided, log it (param is currently only used for logging)
   const syncType = req.body.sync_type
   if (syncType) {
     req.logger.info(
-      `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`
+      `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${primaryEndpoint}`
     )
   }
 
@@ -106,7 +129,7 @@ const syncRouteController = async (req, res) => {
       await secondarySyncFromPrimary(
         serviceRegistry,
         walletPublicKeys,
-        creatorNodeEndpoint,
+        primaryEndpoint,
         blockNumber,
         forceResync
       )
@@ -127,7 +150,7 @@ const syncRouteController = async (req, res) => {
         await enqueueSync({
           serviceRegistry,
           walletPublicKeys: [wallet],
-          creatorNodeEndpoint,
+          creatorNodeEndpoint: primaryEndpoint,
           blockNumber,
           forceResync
         })

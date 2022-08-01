@@ -14,6 +14,10 @@ class CNodeToSpIdMapManager {
     return this.cNodeEndpointToSpIdMap
   }
 
+  getSpIdFromCNodeEndpoint(endpoint) {
+    return this.cNodeEndpointToSpIdMap[endpoint]
+  }
+
   /**
    * Updates `this.cNodeEndpointToSpIdMap` to the mapping of <endpoint : spId>. If the fetch fails, rely on the previous
    * `this.cNodeEndpointToSpIdMap` value. If the existing map is empty, throw error as we need this map to issue reconfigs.
