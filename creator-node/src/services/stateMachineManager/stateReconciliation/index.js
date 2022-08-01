@@ -38,7 +38,7 @@ class StateReconciliationManager {
       name: QUEUE_NAMES.RECURRING_SYNC,
       removeOnComplete: QUEUE_HISTORY.RECURRING_SYNC,
       removeOnFail: QUEUE_HISTORY.RECURRING_SYNC,
-      lockDuration: MAX_QUEUE_RUNTIMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
+      lockDuration: MAX_QUEUE_RUNTIMES.RECURRING_SYNC
     })
 
     const updateReplicaSetQueue = makeQueue({
