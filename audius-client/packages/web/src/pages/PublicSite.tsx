@@ -92,13 +92,13 @@ const PublicSite = ({
           <a href={UPLOAD_PAGE}>Upload</a>
         </h2>
       </div>
-      {isMobileOrNarrow && (
-        <NavScreen
-          closeNavScreen={closeNavScreen}
-          isOpen={isNavScreenOpen}
-          setRenderPublicSite={setRenderPublicSite}
-        />
-      )}
+
+      <NavScreen
+        closeNavScreen={closeNavScreen}
+        isOpen={isNavScreenOpen}
+        setRenderPublicSite={setRenderPublicSite}
+      />
+
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <Router basename={BASENAME}>
           <Route
