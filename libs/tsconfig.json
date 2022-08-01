@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/node16-strictest/tsconfig.json",
   "compilerOptions": {
-    "lib": ["es2022", "dom"],
+    "lib": ["ES2020", "dom"],
     "checkJs": false,
     "resolveJsonModule": true,
     "typeRoots": ["./types", "./node_modules/@types"],

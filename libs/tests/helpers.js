@@ -1,6 +1,6 @@
 const nock = require('nock')
 
-const Web3 = require('../src/web3')
+const Web3 = require('../src/LibsWeb3')
 const AudiusLibs = require('../src/libs')
 const dataContractsConfig = require('../src/data-contracts/config.json')
 const ethContractsConfig = require('../src/eth-contracts/config.json')
