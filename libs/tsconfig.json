@@ -2,14 +2,12 @@
   "extends": "@tsconfig/node16-strictest/tsconfig.json",
   "compilerOptions": {
     "lib": ["es2022", "dom"],
-    "module": "ESNext",
-    "moduleResolution": "node",
     "checkJs": false,
     "resolveJsonModule": true,
     "typeRoots": ["./types", "./node_modules/@types"],
     "exactOptionalPropertyTypes": false,
     "declaration": true,
   },
-  "exclude": ["**/*+(test).ts", "dist", "dist-types"],
+  "exclude": ["dist"],
   "include": ["src/**/*",]
 }
