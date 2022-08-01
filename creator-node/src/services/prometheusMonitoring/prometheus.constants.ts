@@ -191,7 +191,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_COMPLETED_TOTAL_GAUGE,
       help: 'Number of completed jobs',
-      labelNames: ['queue_name', 'queue_prefix', 'job_name']
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_FAILED_TOTAL_GAUGE]: {
@@ -199,7 +199,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_FAILED_TOTAL_GAUGE,
       help: 'Number of failed jobs',
-      labelNames: ['queue_name', 'queue_prefix', 'job_name']
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_DELAYED_TOTAL_GAUGE]: {
@@ -207,7 +207,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_DELAYED_TOTAL_GAUGE,
       help: 'Number of delayed jobs',
-      labelNames: ['queue_name', 'queue_prefix', 'job_name']
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_ACTIVE_TOTAL_GAUGE]: {
@@ -215,7 +215,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_ACTIVE_TOTAL_GAUGE,
       help: 'Number of active jobs',
-      labelNames: ['queue_name', 'queue_prefix', 'job_name']
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_WAITING_TOTAL_GAUGE]: {
@@ -223,7 +223,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_WAITING_TOTAL_GAUGE,
       help: 'Number of waiting jobs',
-      labelNames: ['queue_name', 'queue_prefix', 'job_name']
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_DURATION_MILLISECONDS_HISTOGRAM]: {
@@ -231,7 +231,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_DURATION_MILLISECONDS_HISTOGRAM,
       help: 'Time to complete jobs',
-      labelNames: ['queue_name', 'queue_prefix', 'job_name', 'status'],
+      labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 milliseconds to max to 10 minutes
       buckets: exponentialBucketsRange(1, 600_000, 10)
     }
@@ -241,7 +241,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_HISTOGRAM,
       help: 'Time spent waiting for jobs to run',
-      labelNames: ['queue_name', 'queue_prefix', 'job_name', 'status'],
+      labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 milliseconds to max to 10 minutes
       buckets: exponentialBucketsRange(1, 600_000, 10)
     }
@@ -251,7 +251,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_ATTEMPTS_HISTOGRAM,
       help: 'Job attempts made',
-      labelNames: ['queue_name', 'queue_prefix', 'job_name', 'status'],
+      labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 milliseconds to max to 10 minutes
       buckets: exponentialBucketsRange(1, 600_000, 10)
     }

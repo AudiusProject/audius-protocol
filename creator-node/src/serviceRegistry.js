@@ -51,7 +51,7 @@ class ServiceRegistry {
     this.monitoringQueue = new MonitoringQueue() // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
-    this.transcodingQueue = new TranscodingQueue() // Transcodes and segments all tracks
+    this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
@@ -138,7 +138,7 @@ class ServiceRegistry {
     const { queue: syncProcessingQueue } = this.syncQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
     const { queue: imageProcessingQueue } = this.imageProcessingQueue
-    const { queue: transcodingQueue } = this.transcodingQueue
+    const { queue: transcodingQueue } = TranscodingQueue
     const { queue: monitoringQueue } = this.monitoringQueue
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue

@@ -243,4 +243,4 @@ class TranscodingQueue {
   }
 }
 
-module.exports = TranscodingQueue
+module.exports = new TranscodingQueue()

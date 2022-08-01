@@ -99,12 +99,8 @@ export class PrometheusRegistry {
   }
 
   public startQueueMetrics(queue: Queue, useGlobal = false) {
-    // @ts-ignore
-    const keyPrefix = queue.keyPrefix.replace(/.*\{|\}/gi, '')
-
     const labels = {
-      queue_name: queue.name,
-      queue_prefix: keyPrefix
+      queue_name: queue.name
     }
 
     if (useGlobal) {
@@ -112,7 +108,7 @@ export class PrometheusRegistry {
         const job = await queue.getJob(jobId)
         const job_name = job?.data?.task || job?.name || ''
         this.recordJobMetrics(
-          { job_name, ...labels },
+          { job_name, queue_name: queue.name },
           JOB_STATUS.COMPLETED,
           job!
         )
@@ -120,20 +116,28 @@ export class PrometheusRegistry {
       queue.on('global:failed', async (jobId: number) => {
         const job = await queue.getJob(jobId)
         const job_name = job?.data?.task || job?.name || ''
-        this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.FAILED, job!)
+        this.recordJobMetrics(
+          { job_name, queue_name: queue.name },
+          JOB_STATUS.FAILED,
+          job!
+        )
       })
     } else {
       queue.on('completed', (job: Job) => {
         const job_name = job?.data?.task || job.name
         this.recordJobMetrics(
-          { job_name, ...labels },
+          { job_name, queue_name: queue.name },
           JOB_STATUS.COMPLETED,
           job
         )
       })
       queue.on('failed', (job: Job) => {
         const job_name = job?.data?.task || job.name
-        this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.FAILED, job)
+        this.recordJobMetrics(
+          { job_name, queue_name: queue.name },
+          JOB_STATUS.FAILED,
+          job
+        )
       })
     }
 
