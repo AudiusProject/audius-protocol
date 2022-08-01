@@ -125,6 +125,35 @@ commands:
           channel: << parameters.channel >>
           text: << parameters.text >>
           slack_mentions_user: << parameters.slack_mentions_user >>
+  slack-success:
+    parameters:
+      event:
+        description: when this notification will fire. options are fail, pass, always.
+        type: string
+        default: pass
+      branch_pattern:
+        description: branch_pattern arg for slack/notify
+        type: string
+        default: .+
+      channel:
+        description: Slack channel to send message to
+        type: string
+        default: $SLACK_DEFAULT_CHANNEL
+      text:
+        description: Markdown formatted Slack message
+        type: string
+        default: "Deployment Successful! :tada:"
+      slack_mentions_user:
+        description: Used for CircleCI @mentions
+        type: string
+        default: ""
+    steps:
+      - slack-basic:
+          event: << parameters.event >>
+          branch_pattern: << parameters.branch_pattern >>
+          channel: << parameters.channel >>
+          text: << parameters.text >>
+          slack_mentions_user: << parameters.slack_mentions_user >>
 
   diff-if-necessary:
     parameters:
@@ -309,10 +338,8 @@ jobs:
             libs/scripts/release.sh << parameters.sdk_release_tag >>
       - slack-fail:
           branch_pattern: master
-      # - slack/notify:
-      #     event: pass
-      #     branch_pattern: master
-      #     template: success_tagged_deploy_1
+      - slack-success:
+          branch_pattern: master
 
   test-mad-dog-e2e:
     parameters:
