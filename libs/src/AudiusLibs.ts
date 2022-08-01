@@ -3,7 +3,7 @@ import type { Merge } from 'type-fest'
 
 import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
 
-import packageJSON from '../package.json'
+import { version } from './version'
 import {
   AnchorAudiusDataConfig,
   SolanaAudiusData
@@ -43,7 +43,7 @@ import { Playlists } from './api/Playlist'
 import { File } from './api/File'
 import { Rewards } from './api/Rewards'
 import { Reactions } from './api/Reactions'
-import Web3 from './web3'
+import Web3 from './LibsWeb3'
 
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
@@ -402,7 +402,7 @@ export class AudiusLibs {
   }: AudiusLibsConfig) {
     // set version
 
-    this.version = packageJSON.version
+    this.version = version
 
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config

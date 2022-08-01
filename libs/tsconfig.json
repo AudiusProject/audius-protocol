@@ -9,8 +9,7 @@
     "typeRoots": ["./types", "./node_modules/@types"],
     "exactOptionalPropertyTypes": false,
     "declaration": true,
-    "declarationDir": "dist-types"
   },
   "exclude": ["**/*+(test).ts", "dist", "dist-types"],
-  "include": ["src/**/*", "data-contracts", "types/**/*"]
+  "include": ["src/**/*",]
 }

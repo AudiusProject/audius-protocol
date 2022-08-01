@@ -1,4 +1,4 @@
-import Web3 from '../../web3'
+import Web3 from '../../LibsWeb3'
 import sigUtil from 'eth-sig-util'
 import retry from 'async-retry'
 import { ContractMethod, estimateGas } from '../../utils'

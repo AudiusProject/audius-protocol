@@ -28,7 +28,7 @@ const commonConfig = {
     commonjs({
       extensions,
       dynamicRequireTargets: [
-        'data-contracts/ABIs/*.json',
+        'src/data-contracts/ABIs/*.json',
         'eth-contracts/ABIs/*.json'
       ]
     }),

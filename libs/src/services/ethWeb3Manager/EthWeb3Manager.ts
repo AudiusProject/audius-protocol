@@ -1,4 +1,4 @@
-import Web3 from '../../web3'
+import Web3 from '../../LibsWeb3'
 import type Web3Type from 'web3'
 import { MultiProvider, estimateGas, ContractMethod, Maybe } from '../../utils'
 import { Transaction as EthereumTx } from 'ethereumjs-tx'
