@@ -68,19 +68,15 @@ class SyncQueue {
     })
   }
 
-  async enqueueSync({
-    wallet,
-    creatorNodeEndpoint,
-    blockNumber,
-    forceResyncConfig
-  }) {
-    const jobProps = {
+  async enqueueSync(params) {
+    const { wallet, creatorNodeEndpoint, blockNumber, forceResyncConfig } =
+      params
+    const job = await this.queue.add({
       wallet,
       creatorNodeEndpoint,
       blockNumber,
       forceResyncConfig
-    }
-    const job = await this.queue.add(jobProps)
+    })
     return job
   }
 }

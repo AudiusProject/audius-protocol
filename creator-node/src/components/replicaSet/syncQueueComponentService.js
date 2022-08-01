@@ -1,19 +1,9 @@
 /**
  * Enqueues sync operation into syncQueue for provided walletPublicKeys against provided creatorNodeEndpoint
  */
-const enqueueSync = async ({
-  serviceRegistry,
-  wallet,
-  creatorNodeEndpoint,
-  blockNumber,
-  forceResyncConfig
-}) => {
-  await serviceRegistry.syncQueue.enqueueSync({
-    wallet,
-    creatorNodeEndpoint,
-    blockNumber,
-    forceResyncConfig
-  })
+const enqueueSync = async (params) => {
+  const { serviceRegistry } = params
+  await serviceRegistry.syncQueue.enqueueSync(params)
 }
 
 module.exports = {

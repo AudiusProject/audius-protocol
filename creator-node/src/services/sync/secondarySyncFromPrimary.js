@@ -57,7 +57,7 @@ const shouldForceResync = async ({
 const handleSyncFromPrimary = async ({
   serviceRegistry,
   wallet,
-  primaryEndpoint,
+  creatorNodeEndpoint,
   forceResyncConfig,
   blockNumber = null
 }) => {
@@ -130,7 +130,7 @@ const handleSyncFromPrimary = async ({
 
     const resp = await axios({
       method: 'get',
-      baseURL: primaryEndpoint,
+      baseURL: creatorNodeEndpoint,
       url: '/export',
       params: exportQueryParams,
       responseType: 'json',
@@ -141,7 +141,7 @@ const handleSyncFromPrimary = async ({
     if (resp.status !== 200) {
       genericLogger.error(
         logPrefix,
-        `Failed to retrieve export from ${primaryEndpoint} for wallet`,
+        `Failed to retrieve export from ${creatorNodeEndpoint} for wallet`,
         wallet
       )
       return {
@@ -156,7 +156,7 @@ const handleSyncFromPrimary = async ({
         resp.data = JSON.parse(resp.request.responseText)
       } else {
         return {
-          error: new Error(`Malformed response from ${primaryEndpoint}.`),
+          error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
           result: 'failure_malformed_export'
         }
       }
@@ -165,14 +165,14 @@ const handleSyncFromPrimary = async ({
     const { data: body } = resp
     if (!body.data.hasOwnProperty('cnodeUsers')) {
       return {
-        error: new Error(`Malformed response from ${primaryEndpoint}.`),
+        error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
         result: 'failure_malformed_export'
       }
     }
 
     genericLogger.info(
       logPrefix,
-      `Successful export from ${primaryEndpoint} for wallet ${wallet} and requested min clock ${
+      `Successful export from ${creatorNodeEndpoint} for wallet ${wallet} and requested min clock ${
         localMaxClockVal + 1
       }`
     )
@@ -187,7 +187,7 @@ const handleSyncFromPrimary = async ({
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
         return {
           error: new Error(
-            `Malformed response received from ${primaryEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
+            `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
           ),
           result: 'failure_malformed_export'
         }
@@ -226,7 +226,7 @@ const handleSyncFromPrimary = async ({
       if (wallet !== fetchedWalletPublicKey) {
         return {
           error: new Error(
-            `Malformed response from ${primaryEndpoint}. Returned data for walletPublicKey that was not requested.`
+            `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
           ),
           result: 'failure_malformed_export'
         }
@@ -618,7 +618,7 @@ const handleSyncFromPrimary = async ({
         e.message
       }. Duration sync: ${
         Date.now() - start
-      }. From endpoint ${primaryEndpoint}.`
+      }. From endpoint ${creatorNodeEndpoint}.`
     )
 
     return {
@@ -640,7 +640,7 @@ const handleSyncFromPrimary = async ({
     logPrefix,
     `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
       Date.now() - start
-    }. From endpoint ${primaryEndpoint}.`
+    }. From endpoint ${creatorNodeEndpoint}.`
   )
 
   return { result: 'success' }
@@ -661,7 +661,7 @@ const handleSyncFromPrimary = async ({
 module.exports = async function ({
   serviceRegistry,
   wallet,
-  primaryEndpoint,
+  creatorNodeEndpoint,
   forceResyncConfig,
   blockNumber = null
 }) {
@@ -675,7 +675,7 @@ module.exports = async function ({
   const { error, ...labels } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
-    primaryEndpoint,
+    creatorNodeEndpoint,
     blockNumber,
     forceResyncConfig
   })

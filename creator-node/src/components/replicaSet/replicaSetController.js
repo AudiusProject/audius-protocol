@@ -63,7 +63,7 @@ const syncRouteController = async (req, res) => {
   const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
-  const creatorNodeEndpoint = req.body.creator_node_endpoint // string
+  const primaryEndpoint = req.body.creator_node_endpoint // string
   const immediate = req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
   const blockNumber = req.body.blockNumber // integer
   const forceResync =
@@ -84,7 +84,7 @@ const syncRouteController = async (req, res) => {
   const syncType = req.body.sync_type
   if (syncType) {
     req.logger.info(
-      `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`
+      `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${primaryEndpoint}`
     )
   }
 
@@ -98,9 +98,9 @@ const syncRouteController = async (req, res) => {
       await secondarySyncFromPrimary({
         serviceRegistry,
         wallet,
-        creatorNodeEndpoint,
+        creatorNodeEndpoint: primaryEndpoint,
         blockNumber,
-        forceResync: {
+        forceResyncConfig: {
           forceResync: req.body.forceResync,
           requesterEndpoint,
           libs: req.app.get('audiusLibs'),
@@ -124,7 +124,7 @@ const syncRouteController = async (req, res) => {
       await enqueueSync({
         serviceRegistry,
         wallet,
-        creatorNodeEndpoint,
+        creatorNodeEndpoint: primaryEndpoint,
         blockNumber,
         forceResyncConfig: {
           forceResync,
