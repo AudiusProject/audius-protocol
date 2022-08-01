@@ -34,7 +34,6 @@ kill_running_queries_sql = """
             pid, state, age(clock_timestamp(), query_start), substring(trim(regexp_replace(query, '\s+', ' ', 'g')) from 1 for 200)
         FROM pg_stat_activity
         WHERE state != 'idle' AND query NOT ILIKE '%%pg_stat_activity%%'
-        AND query ILIKE '%%lexeme%%'
         ORDER BY query_start DESC;
     COMMIT;
 """
