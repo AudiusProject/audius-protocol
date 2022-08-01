@@ -44,6 +44,7 @@ class StateMonitoringManager {
       removeOnComplete: QUEUE_HISTORY.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
       removeOnFail: QUEUE_HISTORY.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
       lockDuration: MAX_QUEUE_RUNTIMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
+      prometheusRegistry,
       limiter: {
         max: 1,
         duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
@@ -60,6 +61,7 @@ class StateMonitoringManager {
       removeOnComplete: QUEUE_HISTORY.MONITOR_STATE,
       removeOnFail: QUEUE_HISTORY.MONITOR_STATE,
       lockDuration: MAX_QUEUE_RUNTIMES.MONITOR_STATE,
+      prometheusRegistry,
       limiter: {
         // Bull doesn't allow either of these to be set to 0
         max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
@@ -72,7 +74,8 @@ class StateMonitoringManager {
       name: QUEUE_NAMES.FIND_SYNC_REQUESTS,
       removeOnComplete: QUEUE_HISTORY.FIND_SYNC_REQUESTS,
       removeOnFail: QUEUE_HISTORY.FIND_SYNC_REQUESTS,
-      lockDuration: MAX_QUEUE_RUNTIMES.FIND_SYNC_REQUESTS
+      lockDuration: MAX_QUEUE_RUNTIMES.FIND_SYNC_REQUESTS,
+      prometheusRegistry
     })
 
     // Create queue to find replica set updates
@@ -80,7 +83,8 @@ class StateMonitoringManager {
       name: QUEUE_NAMES.FIND_REPLICA_SET_UPDATES,
       removeOnComplete: QUEUE_HISTORY.FIND_REPLICA_SET_UPDATES,
       removeOnFail: QUEUE_HISTORY.FIND_REPLICA_SET_UPDATES,
-      lockDuration: MAX_QUEUE_RUNTIMES.FIND_REPLICA_SET_UPDATES
+      lockDuration: MAX_QUEUE_RUNTIMES.FIND_REPLICA_SET_UPDATES,
+      prometheusRegistry
     })
 
     this.registerMonitoringQueueEventHandlersAndJobProcessors({
