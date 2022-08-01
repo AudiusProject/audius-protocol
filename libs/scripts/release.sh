@@ -62,8 +62,9 @@ function bump-npm () {
 
     # Patch the version
     VERSION=$(npm version patch)
-    jq ". += {audius: {releaseSHA: \"${GIT_TAG}\"}}" package.json \
-        | sponge package.json
+    tmp=$(mktemp)
+    jq ". += {audius: {releaseSHA: \"${GIT_TAG}\"}}" package.json > "$tmp" \
+        && mv "$tmp" package.json
 
     # Build project
     npm i
