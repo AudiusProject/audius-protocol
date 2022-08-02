@@ -96,15 +96,15 @@ function merge-bump () {
         git pull
 
         # squash branch commit
-        git merge --squash ${STUB}-${VERSION}
-        git commit -m "$(commit-message)"
+        git merge --squash ${STUB}-${VERSION} || exit 1
+        git commit -m "$(commit-message)" || exit 1
 
         # tag release
-        git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
-        git push origin --tags
+        git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)" || exit 1
+        git push origin --tags || exit 1
 
         # if pushing fails, ensure we cleanup()
-        git push -u origin master
+        git push -u origin master || exit 1
         git push origin :${STUB}-${VERSION}
     )
 }
