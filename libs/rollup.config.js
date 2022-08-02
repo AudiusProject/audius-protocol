@@ -2,7 +2,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import babel from '@rollup/plugin-babel'
 import json from '@rollup/plugin-json'
 import resolve from '@rollup/plugin-node-resolve'
-import typescript from 'rollup-plugin-typescript2'
+import typescript from '@rollup/plugin-typescript'
 import { terser } from 'rollup-plugin-terser'
 import nodePolyfills from 'rollup-plugin-polyfill-node'
 import alias from '@rollup/plugin-alias'
@@ -20,21 +20,15 @@ const external = [
   'hashids/cjs'
 ]
 
-const pluginTypescript = typescript({
-  tsconfigOverride: {
-    compilerOptions: {
-      module: 'ESNext'
-    }
-  }
-})
+const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
 
 const commonConfig = {
   plugins: [
     resolve({ extensions, preferBuiltins: true }),
-    pluginTypescript,
     commonjs({ extensions }),
     babel({ babelHelpers: 'bundled', extensions }),
-    json()
+    json(),
+    pluginTypescript
   ],
   external
 }
@@ -58,7 +52,6 @@ const browserConfig = {
   plugins: [
     ignore(['web3', 'graceful-fs', 'node-localstorage']),
     resolve({ extensions, preferBuiltins: false }),
-    pluginTypescript,
     commonjs({
       extensions,
       transformMixedEsModules: true
@@ -68,7 +61,8 @@ const browserConfig = {
     }),
     nodePolyfills(),
     babel({ babelHelpers: 'bundled', extensions }),
-    json()
+    json(),
+    pluginTypescript
   ],
   external: external.filter((dep) => !browserInternal.includes(dep))
 }
@@ -77,7 +71,6 @@ const browserDistFileConfig = {
   plugins: [
     ignore(['web3', 'graceful-fs', 'node-localstorage']),
     resolve({ extensions, preferBuiltins: false, browser: true }),
-    pluginTypescript,
     commonjs({
       extensions,
       transformMixedEsModules: true
@@ -91,7 +84,8 @@ const browserDistFileConfig = {
       extensions,
       plugins: ['@babel/plugin-transform-runtime']
     }),
-    json()
+    json(),
+    pluginTypescript
   ],
   external: ['web3']
 }
@@ -100,13 +94,13 @@ const browserLegacyConfig = {
   plugins: [
     ignore(['web3', 'graceful-fs', 'node-localstorage']),
     resolve({ extensions, preferBuiltins: true }),
-    pluginTypescript,
     commonjs({ extensions }),
     alias({
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
     }),
     babel({ babelHelpers: 'bundled', extensions }),
-    json()
+    json(),
+    pluginTypescript
   ],
   external
 }

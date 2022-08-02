@@ -7,6 +7,8 @@
     "typeRoots": ["./types", "./node_modules/@types"],
     "exactOptionalPropertyTypes": false,
     "declaration": true,
+    "outDir": "dist",
+    "declarationDir": "./"
   },
   "exclude": ["dist"],
   "include": ["src/**/*",]
