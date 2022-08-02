@@ -3,7 +3,7 @@ import * as _signatures from '../utils/signatures.js'
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
-contract.only('AudiusToken', async (accounts) => {
+contract('AudiusToken', async (accounts) => {
   let registry, token, governance
 
   // expected initial token values
@@ -231,16 +231,11 @@ contract.only('AudiusToken', async (accounts) => {
     )
   })
 
-  it.only('Confirm token reinitialization', async () => {
-    console.log('Verifying reinitialization')
-    const fakeGovernance = accounts[12]
-    const tokenInitData = _lib.encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [proxyDeployerAddress, fakeGovernance]
+  it('Confirm token reinitialization fails', async () => {
+    await _lib.assertRevert(
+      token.initialize(proxyDeployerAddress, accounts[13]),
+      'Contract instance has already been initialized'
     )
-    await token.initialize(proxyDeployerAddress, fakeGovernance)
-    // await token.initialize(proxyDeployerAddress, fakeGovernance)
   })
 
   describe('EIP-2612', async function () {

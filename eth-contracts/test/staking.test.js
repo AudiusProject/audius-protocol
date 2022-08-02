@@ -110,6 +110,13 @@ contract('Staking test', async (accounts) => {
     stakingAddress = staking.address
   })
 
+  it.only('Confirm staking fails reinitialization', async () => {
+    await _lib.assertRevert(
+      staking.initialize(token.address, accounts[14]),
+      'Contract instance has already been initialized'
+    )
+  })
+
   it('has correct initial state', async () => {
     assert.equal(await staking.token({ from: accounts[13]}), token.address, 'Token is wrong')
     assert.equal((await staking.totalStaked()).valueOf(), 0, 'Initial total staked amount should be zero')
