@@ -51,9 +51,8 @@ const metricNames: Record<string, string> = {
   JOBS_COMPLETED_TOTAL_GAUGE: 'jobs_completed_total',
   JOBS_FAILED_TOTAL_GAUGE: 'jobs_failed_total',
   JOBS_DELAYED_TOTAL_GAUGE: 'jobs_delayed_total',
-  JOBS_DURATION_MILLISECONDS_HISTOGRAM: 'jobs_duration_milliseconds',
-  JOBS_WAITING_DURATION_MILLISECONDS_HISTOGRAM:
-    'jobs_waiting_duration_milliseconds',
+  JOBS_DURATION_SECONDS_HISTOGRAM: 'jobs_duration_seconds',
+  JOBS_WAITING_DURATION_SECONDS_HISTOGRAM: 'jobs_waiting_duration_seconds',
   JOBS_ATTEMPTS_HISTOGRAM: 'jobs_attempts'
 }
 // Add a histogram for each job in the state machine queues.
@@ -226,24 +225,24 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       labelNames: ['queue_name', 'job_name']
     }
   },
-  [METRIC_NAMES.JOBS_DURATION_MILLISECONDS_HISTOGRAM]: {
+  [METRIC_NAMES.JOBS_DURATION_SECONDS_HISTOGRAM]: {
     metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: METRIC_NAMES.JOBS_DURATION_MILLISECONDS_HISTOGRAM,
+      name: METRIC_NAMES.JOBS_DURATION_SECONDS_HISTOGRAM,
       help: 'Time to complete jobs',
       labelNames: ['queue_name', 'job_name', 'status'],
-      // 10 buckets in the range of 1 milliseconds to max to 10 minutes
-      buckets: exponentialBucketsRange(1, 600_000, 10)
+      // 10 buckets in the range of 1 seconds to max to 10 minutes
+      buckets: exponentialBucketsRange(1, 600, 10)
     }
   },
-  [METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_HISTROGRAM]: {
+  [METRIC_NAMES.JOBS_WAITING_DURATION_SECONDS_HISTROGRAM]: {
     metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: METRIC_NAMES.JOBS_WAITING_DURATION_MILLISECONDS_HISTOGRAM,
+      name: METRIC_NAMES.JOBS_WAITING_DURATION_SECONDS_HISTOGRAM,
       help: 'Time spent waiting for jobs to run',
       labelNames: ['queue_name', 'job_name', 'status'],
-      // 10 buckets in the range of 1 milliseconds to max to 10 minutes
-      buckets: exponentialBucketsRange(1, 600_000, 10)
+      // 10 buckets in the range of 1 seconds to max to 10 minutes
+      buckets: exponentialBucketsRange(1, 600, 10)
     }
   },
   [METRIC_NAMES.JOBS_ATTEMPTS_HISTOGRAM]: {
@@ -252,8 +251,8 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       name: METRIC_NAMES.JOBS_ATTEMPTS_HISTOGRAM,
       help: 'Job attempts made',
       labelNames: ['queue_name', 'job_name', 'status'],
-      // 10 buckets in the range of 1 milliseconds to max to 10 minutes
-      buckets: exponentialBucketsRange(1, 600_000, 10)
+      // 10 buckets in the range of 1 seconds to max to 10 minutes
+      buckets: exponentialBucketsRange(1, 600, 10)
     }
   },
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
