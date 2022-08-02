@@ -316,7 +316,7 @@ class ServiceRegistry {
     this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
     this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
     this.manualSyncQueue = manualSyncQueue
-    this.recurringSyncQueue = null
+    this.recurringSyncQueue = recurringSyncQueue
     this.updateReplicaSetQueue = updateReplicaSetQueue
 
     // SyncQueue construction (requires L1 identity)
