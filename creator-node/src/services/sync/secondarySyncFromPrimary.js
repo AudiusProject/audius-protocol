@@ -21,16 +21,20 @@ const { recoverWallet } = require('../../../src/apiSigning')
  * @param {Object} param.logger
  * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
  */
-const shouldForceResync = async ({
-  apiSigning: { data, signature, timestamp },
-  wallet,
-  forceResync,
-  libs,
-  logContext, // for when jobs are added to the queue
-  logger = genericLogger
-}) => {
+const shouldForceResync = async (forceResyncConfig = null) => {
+  let {
+    apiSigning: { data, signature, timestamp },
+    wallet,
+    forceResync,
+    libs,
+    logContext, // for when jobs are added to the queue
+    logger
+  } = forceResyncConfig
+
   if (logContext) {
     logger = genericLogger.child(logContext)
+  } else if (!logger) {
+    logger = genericLogger
   }
 
   logger.debug(
@@ -38,6 +42,7 @@ const shouldForceResync = async ({
   )
 
   if (
+    !forceResyncConfig ||
     !forceResync ||
     forceResync === 'false' ||
     forceResync === false ||
