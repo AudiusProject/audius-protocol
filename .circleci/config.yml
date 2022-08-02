@@ -204,6 +204,8 @@ commands:
             }
             trap cleanup EXIT
 
+            set -x
+
             # authenticate into gcloud
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
