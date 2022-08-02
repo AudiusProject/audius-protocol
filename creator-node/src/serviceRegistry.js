@@ -76,7 +76,7 @@ class ServiceRegistry {
   async initServices() {
     const start = getStartTime()
 
-    this.libs = await initAudiusLibs()
+    this.libs = await initAudiusLibs({})
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(

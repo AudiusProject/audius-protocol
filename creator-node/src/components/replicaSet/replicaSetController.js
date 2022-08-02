@@ -60,6 +60,9 @@ const respondToURSMRequestForProposalController = async (req) => {
  */
 const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
+  if (_.isEmpty(serviceRegistry?.syncQueue)) {
+    return errorResponseServerError('Sync Queue is not up and running yet')
+  }
   const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
