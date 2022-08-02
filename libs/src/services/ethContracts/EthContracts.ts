@@ -28,7 +28,7 @@ import { abi as WormholeClientABI } from '../../eth-contracts/ABIs/WormholeClien
 import { abi as EthRewardsManagerABI } from '../../eth-contracts/ABIs/EthRewardsManager.json'
 import { abi as TrustedNotifierManagerABI } from '../../eth-contracts/ABIs/TrustedNotifierManager.json'
 
-console.log('AudiusTokenABI!', AudiusTokenABI)
+import type { AbiItem } from 'web3-utils'
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
@@ -108,14 +108,12 @@ export class EthContracts {
 
     this.AudiusTokenClient = new AudiusTokenClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      AudiusTokenABI,
+      AudiusTokenABI as AbiItem[],
       this.tokenContractAddress
     )
     this.RegistryClient = new RegistryClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      RegistryABI,
+      RegistryABI as AbiItem[],
       this.registryAddress
     )
     this.getRegistryAddressForContract =
@@ -123,8 +121,7 @@ export class EthContracts {
 
     this.StakingProxyClient = new StakingProxyClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      StakingABI,
+      StakingABI as AbiItem[],
       StakingProxyKey,
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
@@ -133,8 +130,7 @@ export class EthContracts {
 
     this.GovernanceClient = new GovernanceClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      GovernanceABI,
+      GovernanceABI as AbiItem[],
       GovernanceRegistryKey,
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
@@ -144,8 +140,7 @@ export class EthContracts {
 
     this.ClaimsManagerClient = new ClaimsManagerClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      ClaimsManagerABI,
+      ClaimsManagerABI as AbiItem[],
       ClaimsManagerProxyKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -153,8 +148,7 @@ export class EthContracts {
 
     this.EthRewardsManagerClient = new EthRewardsManagerClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      EthRewardsManagerABI,
+      EthRewardsManagerABI as AbiItem[],
       EthRewardsManagerProxyKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -162,8 +156,7 @@ export class EthContracts {
 
     this.ServiceTypeManagerClient = new ServiceTypeManagerClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      ServiceTypeManagerABI,
+      ServiceTypeManagerABI as AbiItem[],
       ServiceTypeManagerProxyKey,
       this.getRegistryAddressForContract,
       this.GovernanceClient,
@@ -172,8 +165,7 @@ export class EthContracts {
 
     this.ServiceProviderFactoryClient = new ServiceProviderFactoryClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      ServiceProviderFactoryABI,
+      ServiceProviderFactoryABI as AbiItem[],
       ServiceProviderFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
@@ -185,8 +177,7 @@ export class EthContracts {
 
     this.DelegateManagerClient = new DelegateManagerClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      DelegateManagerABI,
+      DelegateManagerABI as AbiItem[],
       DelegateManagerRegistryKey,
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
@@ -198,8 +189,7 @@ export class EthContracts {
     if (this.claimDistributionContractAddress) {
       this.ClaimDistributionClient = new ClaimDistributionClient(
         this.ethWeb3Manager,
-        // @ts-ignore
-        ClaimDistributionABI,
+        ClaimDistributionABI as AbiItem[],
         ClaimDistributionRegistryKey,
         this.getRegistryAddressForContract,
         this.logger,
@@ -209,16 +199,14 @@ export class EthContracts {
 
     this.WormholeClient = new WormholeClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      WormholeClientABI,
+      WormholeClientABI as AbiItem[],
       this.wormholeContractAddress,
       this.AudiusTokenClient
     )
 
     this.TrustedNotifierManagerClient = new TrustedNotifierManagerClient(
       this.ethWeb3Manager,
-      // @ts-ignore
-      TrustedNotifierManagerABI,
+      TrustedNotifierManagerABI as AbiItem[],
       TrustedNotifierManagerProxyKey,
       this.getRegistryAddressForContract,
       this.GovernanceClient,

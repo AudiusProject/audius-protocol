@@ -1,3 +1,4 @@
+import type { AbiItem } from 'web3-utils'
 import { Utils, Logger } from '../../utils'
 
 // load classes wrapping contracts
@@ -59,8 +60,7 @@ export class AudiusContracts {
 
     this.RegistryClient = new RegistryClient(
       this.web3Manager,
-      // @ts-ignore
-      RegistryABI,
+      RegistryABI as AbiItem[],
       this.registryAddress
     )
     this.getRegistryAddressForContract =
@@ -68,8 +68,7 @@ export class AudiusContracts {
 
     this.UserFactoryClient = new UserFactoryClient(
       this.web3Manager,
-      // @ts-ignore
-      UserFactoryABI,
+      UserFactoryABI as AbiItem[],
       UserFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -77,8 +76,7 @@ export class AudiusContracts {
 
     this.TrackFactoryClient = new TrackFactoryClient(
       this.web3Manager,
-      // @ts-ignore
-      TrackFactoryABI,
+      TrackFactoryABI as AbiItem[],
       TrackFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -86,8 +84,7 @@ export class AudiusContracts {
 
     this.SocialFeatureFactoryClient = new SocialFeatureFactoryClient(
       this.web3Manager,
-      // @ts-ignore
-      SocialFeatureFactoryABI,
+      SocialFeatureFactoryABI as AbiItem[],
       SocialFeatureFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -95,8 +92,7 @@ export class AudiusContracts {
 
     this.PlaylistFactoryClient = new PlaylistFactoryClient(
       this.web3Manager,
-      // @ts-ignore
-      PlaylistFactoryABI,
+      PlaylistFactoryABI as AbiItem[],
       PlaylistFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -104,8 +100,7 @@ export class AudiusContracts {
 
     this.UserLibraryFactoryClient = new UserLibraryFactoryClient(
       this.web3Manager,
-      // @ts-ignore
-      UserLibraryFactoryABI,
+      UserLibraryFactoryABI as AbiItem[],
       UserLibraryFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -113,8 +108,7 @@ export class AudiusContracts {
 
     this.IPLDBlacklistFactoryClient = new IPLDBlacklistFactoryClient(
       this.web3Manager,
-      // @ts-ignore
-      IPLDBlacklistFactoryABI,
+      IPLDBlacklistFactoryABI as AbiItem[],
       IPLDBlacklistFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -154,8 +148,7 @@ export class AudiusContracts {
 
       this.UserReplicaSetManagerClient = new UserReplicaSetManagerClient(
         this.web3Manager,
-        // @ts-ignore
-        UserReplicaSetManagerABI,
+        UserReplicaSetManagerABI as AbiItem[],
         UserReplicaSetManagerRegistryKey,
         this.getRegistryAddressForContract,
         this.logger

@@ -557,7 +557,7 @@ export class AudiusLibs {
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        this.web3Config.registryAddress ?? null,
+        this.web3Config.registryAddress,
         this.isServer,
         this.logger
       )
@@ -578,6 +578,7 @@ export class AudiusLibs {
         this.ethContracts,
         this.identityService,
         this.solanaWeb3Manager,
+        // @ts-expect-error -- broken for some reason
         this.wormholeConfig.rpcHosts,
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,

@@ -23,10 +23,8 @@ const abiMap: Record<string, AbiItem[]> = {}
   UserLibraryFactoryABI,
   UserReplicaSetManagerABI
 ].forEach(({ contractName, abi }) => {
-  // @ts-ignore
-  abiDecoder.addABI(abi)
-  // @ts-ignore
-  abiMap[contractName] = abi
+  abiDecoder.addABI(abi as AbiItem[])
+  abiMap[contractName] = abi as AbiItem[]
 })
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- should just use esm
