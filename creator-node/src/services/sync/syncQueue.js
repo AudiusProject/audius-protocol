@@ -50,7 +50,7 @@ class SyncQueue {
         await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
           wallet,
-          primaryEndpoint: creatorNodeEndpoint,
+          creatorNodeEndpoint,
           blockNumber,
           forceResyncConfig: {
             ...forceResyncConfig,
