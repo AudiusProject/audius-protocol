@@ -53,6 +53,9 @@ const audiusLibsConfig = {
 
 async function initializeLibConfig(ownerWallet) {
   return {
+    identityServiceConfig: {
+      url: identityServiceEndpoint
+    },
     web3Config: AudiusLibs.configExternalWeb3(
       dataContractsConfig.registryAddress,
       dataWeb3

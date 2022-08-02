@@ -491,21 +491,17 @@ export class AudiusLibs {
     }
 
     /** Web3 Managers */
-    if (this.ethWeb3Config) {
+    if (this.ethWeb3Config && this.identityService && this.hedgehog) {
       this.ethWeb3Manager = new EthWeb3Manager({
         web3Config: this.ethWeb3Config,
-        // @ts-ignore
         identityService: this.identityService,
-        // @ts-ignore
         hedgehog: this.hedgehog
       })
     }
-    if (this.web3Config) {
+    if (this.web3Config && this.identityService && this.hedgehog) {
       this.web3Manager = new Web3Manager({
         web3Config: this.web3Config,
-        // @ts-ignore
         identityService: this.identityService,
-        // @ts-ignore
         hedgehog: this.hedgehog,
         isServer: this.isServer
       })
@@ -537,26 +533,20 @@ export class AudiusLibs {
 
     /** Contracts - Eth and Data Contracts */
     const contractsToInit = []
-    if (this.ethWeb3Manager) {
+    if (this.ethWeb3Manager && this.ethWeb3Config) {
+      const {
+        tokenAddress,
+        registryAddress,
+        claimDistributionContractAddress,
+        wormholeContractAddress
+      } = this.ethWeb3Config
+
       this.ethContracts = new EthContracts({
         ethWeb3Manager: this.ethWeb3Manager,
-        // @ts-ignore
-        tokenContractAddress: this.ethWeb3Config
-          ? this.ethWeb3Config.tokenAddress
-          : null,
-        // @ts-ignore
-        registryAddress: this.ethWeb3Config
-          ? this.ethWeb3Config.registryAddress
-          : null,
-        // @ts-ignore
-        claimDistributionContractAddress:
-          (this.ethWeb3Config &&
-            this.ethWeb3Config.claimDistributionContractAddress) ||
-          null,
-        // @ts-ignore
-        wormholeContractAddress:
-          (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) ||
-          null,
+        tokenContractAddress: tokenAddress,
+        registryAddress,
+        claimDistributionContractAddress,
+        wormholeContractAddress,
         isServer: this.isServer,
         logger: this.logger,
         isDebug: this.isDebug
@@ -592,9 +582,7 @@ export class AudiusLibs {
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
-        this.wormholeConfig.ethTokenBridgeAddress,
-        // @ts-ignore
-        this.isServer
+        this.wormholeConfig.ethTokenBridgeAddress
       )
     }
 
