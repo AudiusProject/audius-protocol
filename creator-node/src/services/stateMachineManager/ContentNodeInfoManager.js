@@ -33,33 +33,47 @@ class ContentNodeInfoManager {
     const cNodeEndpointToSpIdMap = {}
     const contentNodeSpIdToChainInfo = {}
 
-    let contentNodes
     try {
-      contentNodes = await ethContracts.getServiceProviderList('content-node')
+      const contentNodes = await ethContracts.getServiceProviderList(
+        'content-node'
+      )
+      contentNodes.forEach((cn) => {
+        cNodeEndpointToSpIdMap[cn.endpoint] = cn.spID
+        contentNodeSpIdToChainInfo[cn.spID] = cn
+      })
     } catch (e) {
-      throw new Error(
+      genericLogger.error(
         `ContentNodeInfoManager - Could not fetch content nodes: ${e.message}`
       )
     }
 
-    if (_.isEmpty(contentNodes)) {
-      throw new Error(
-        'ContentNodeInfoManager - Empty Content Node info from chain'
-      )
+    if (Object.keys(cNodeEndpointToSpIdMap).length > 0) {
+      this.cNodeEndpointToSpIdMap = cNodeEndpointToSpIdMap
+      this.contentNodeSpIdToChainInfo = contentNodeSpIdToChainInfo
     }
 
-    contentNodes.forEach((cn) => {
-      cNodeEndpointToSpIdMap[cn.endpoint] = cn.spID
-      contentNodeSpIdToChainInfo[cn.spID] = cn
-    })
+    const numOfcNodeEndpointToSpIdMapKeys = Object.keys(
+      this.cNodeEndpointToSpIdMap
+    ).length
+    if (numOfcNodeEndpointToSpIdMapKeys === 0) {
+      const errorMessage =
+        'ContentNodeInfoManager - Unable to initialize cNodeEndpointToSpIdMap'
+      genericLogger.error(errorMessage)
+      throw new Error(errorMessage)
+    }
 
-    this.cNodeEndpointToSpIdMap = cNodeEndpointToSpIdMap
-    this.contentNodeSpIdToChainInfo = contentNodeSpIdToChainInfo
+    const numOfContentNodeSpIdToChainInfoKeys = Object.keys(
+      this.contentNodeSpIdToChainInfo
+    ).length
+    if (numOfContentNodeSpIdToChainInfoKeys === 0) {
+      const errorMessage =
+        'ContentNodeInfoManager - Unable to initialize contentNodeSpIdToChainInfo'
+      genericLogger.error(errorMessage)
+      throw new Error(errorMessage)
+    }
 
     genericLogger.info(
-      `ContentNodeInfoManager - updateContentNodeChainInfo Success. Size: ${
-        Object.keys(cNodeEndpointToSpIdMap).length
-      }`
+      `ContentNodeInfoManager - updateContentNodeChainInfo Success. cNodeEndpointToSpIdMap size: ${numOfcNodeEndpointToSpIdMapKeys} contentNodeSpIdToChainInfo size: ${numOfContentNodeSpIdToChainInfoKeys}`
     )
   }
 }
