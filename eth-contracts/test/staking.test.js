@@ -110,7 +110,7 @@ contract('Staking test', async (accounts) => {
     stakingAddress = staking.address
   })
 
-  it.only('Confirm staking fails reinitialization', async () => {
+  it('Confirm staking fails reinitialization', async () => {
     await _lib.assertRevert(
       staking.initialize(token.address, accounts[14]),
       'Contract instance has already been initialized'
