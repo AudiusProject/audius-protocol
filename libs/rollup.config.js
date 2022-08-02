@@ -123,7 +123,7 @@ export default [
    * Does not include libs but does include polyfills
    */
   {
-    input: 'src/index.ts',
+    input: 'src/sdk/index.ts',
     output: [
       { file: 'dist/index.browser.cjs.js', format: 'es', sourcemap: true },
       { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
@@ -157,7 +157,7 @@ export default [
    * Includes libs but does not include polyfills
    */
   {
-    input: 'src/legacy.ts',
+    input: 'src/index.ts',
     output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
     ...browserLegacyConfig
   },
