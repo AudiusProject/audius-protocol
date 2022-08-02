@@ -8,7 +8,8 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
-const CNodeToSpIdMapManager = require('../../services/stateMachineManager/CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
+const { recoverWallet } = require('../../../src/apiSigning')
 
 /**
  * Checks to see if the host requesting the sync is the primary of the observed user
@@ -21,10 +22,10 @@ const CNodeToSpIdMapManager = require('../../services/stateMachineManager/CNodeT
  * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
  */
 const shouldForceResync = async ({
-  requesterEndpoint,
-  libs,
+  apiSigning: { data, signature, timestamp },
   wallet,
   forceResync,
+  libs,
   logContext, // for when jobs are added to the queue
   logger = genericLogger
 }) => {
@@ -32,26 +33,45 @@ const shouldForceResync = async ({
     logger = genericLogger.child(logContext)
   }
 
-  if (!forceResync || forceResync === 'false' || forceResync === false) {
+  logger.debug(
+    `Checking shouldForceResync: wallet=${wallet} forceResync=${forceResync}`
+  )
+
+  if (
+    !forceResync ||
+    forceResync === 'false' ||
+    forceResync === false ||
+    !data ||
+    !timestamp ||
+    !signature
+  ) {
     return false
   }
 
-  const spID = CNodeToSpIdMapManager.getSpIdFromCNodeEndpoint(requesterEndpoint)
+  // Recover public key from signature + timestamp
+  const recoveredPrimaryWallet = recoverWallet(
+    { ...data, timestamp },
+    signature
+  )
 
-  if (!spID) return false
-
-  const userMetadata = await libs.User.getUsers(1, 0, null, wallet)
-  let userPrimarySpId
+  // Get the primary wallet
   try {
-    userPrimarySpId = userMetadata[0].primary_id
-  } catch (e) {
-    logger.error(
-      `Could not fetch user id given wallet=${wallet}: ${e.toString()}`
+    const userPrimaryId = (await libs.User.getUsers(1, 0, null, wallet))[0]
+      .primary_id
+    const { delegateOwnerWallet: actualPrimaryWallet } =
+      ContentNodeInfoManager.getContentNodeInfoFromSpId(userPrimaryId)
+
+    logger.debug(
+      `actual: ${actualPrimaryWallet} recovered: ${recoveredPrimaryWallet}`
     )
-    return false
+
+    // Check that the receovered public key = primary wallet on chain
+    return recoveredPrimaryWallet === actualPrimaryWallet
+  } catch (e) {
+    logger.error(`Could not verify primary delegate owner key: ${e.message}`)
   }
 
-  return userPrimarySpId === spID
+  return false
 }
 
 const handleSyncFromPrimary = async ({

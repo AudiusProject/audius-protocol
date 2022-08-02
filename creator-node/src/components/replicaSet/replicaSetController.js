@@ -92,7 +92,10 @@ const syncRouteController = async (req, res) => {
    * If immediate sync requested, enqueue immediately and return response
    * Else, debounce + add sync to queue
    */
-  const requesterEndpoint = `${req.protocol}://${req.headers.host}`
+  const dataForSignatureRecovery = { ...req.body }
+  delete dataForSignatureRecovery.timestamp
+  delete dataForSignatureRecovery.signature
+
   if (immediate) {
     try {
       await secondarySyncFromPrimary({
@@ -102,7 +105,11 @@ const syncRouteController = async (req, res) => {
         blockNumber,
         forceResyncConfig: {
           forceResync: req.body.forceResync,
-          requesterEndpoint,
+          apiSigning: {
+            timestamp: req.body.timestamp,
+            signature: req.body.signature,
+            data: dataForSignatureRecovery
+          },
           libs: req.app.get('audiusLibs'),
           logger: req.logger,
           wallet
@@ -128,7 +135,11 @@ const syncRouteController = async (req, res) => {
         blockNumber,
         forceResyncConfig: {
           forceResync,
-          requesterEndpoint,
+          apiSigning: {
+            timestamp: req.body.timestamp,
+            signature: req.body.signature,
+            data: dataForSignatureRecovery
+          },
           wallet,
           logContext: req.logContext
         }

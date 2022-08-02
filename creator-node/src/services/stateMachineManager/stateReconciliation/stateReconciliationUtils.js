@@ -1,6 +1,9 @@
 const _ = require('lodash')
 const axios = require('axios')
-const { logger } = require('../../../logging')
+
+const config = require('../../../config')
+const { logger: genericLogger } = require('../../../logging')
+const { generateTimestampAndSignature } = require('../../../../src/apiSigning')
 const Utils = require('../../../utils')
 const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
@@ -42,7 +45,7 @@ const getNewOrExistingSyncReq = ({
     secondaryEndpoint
   )
   if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
-    logger.info(
+    genericLogger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
 
@@ -50,6 +53,20 @@ const getNewOrExistingSyncReq = ({
       duplicateSyncReq: duplicateSyncJobInfo
     }
   }
+
+  const data = {
+    wallet: [userWallet],
+    creator_node_endpoint: primaryEndpoint,
+    // Note - `sync_type` param is only used for logging by nodeSync.js
+    sync_type: syncType,
+    // immediate = true will ensure secondary skips debounce and evaluates sync immediately
+    immediate
+  }
+
+  const { signature, timestamp } = generateTimestampAndSignature(
+    data,
+    config.get('delegatePrivateKey')
+  )
 
   // Define axios params for sync request to secondary
   const syncRequestParameters = {
@@ -62,7 +79,9 @@ const getNewOrExistingSyncReq = ({
       // Note - `sync_type` param is only used for logging by nodeSync.js
       sync_type: syncType,
       // immediate = true will ensure secondary skips debounce and evaluates sync immediately
-      immediate
+      immediate,
+      signature,
+      timestamp
     }
   }
 
@@ -109,7 +128,9 @@ const issueSyncRequestsUntilSynced = async (
   })
   if (!_.isEmpty(duplicateSyncReq)) {
     // Log duplicate and return
-    logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
+    genericLogger.warn(
+      `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
+    )
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
     await queue.add({
@@ -118,7 +139,7 @@ const issueSyncRequestsUntilSynced = async (
     })
   } else {
     // Log error that the sync request couldn't be created and return
-    logger.error(`Failed to create manual sync request`)
+    genericLogger.error(`Failed to create manual sync request`)
     return
   }
 
