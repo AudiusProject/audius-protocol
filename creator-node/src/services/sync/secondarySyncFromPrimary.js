@@ -8,7 +8,7 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
-const { shouldForceResync } = require('./secondarySyncFromPrimaryHelper')
+const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 
 const handleSyncFromPrimary = async ({
   serviceRegistry,

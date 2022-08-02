@@ -468,7 +468,7 @@ describe('test issueSyncRequest job processor', function () {
       })
 
       // Make the axios request succeed
-      const syncReqData = { ...data, forceResync: true }
+      const syncReqData = { ...data }
       nock(secondary).post('/sync', syncReqData).reply(200)
 
       // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)

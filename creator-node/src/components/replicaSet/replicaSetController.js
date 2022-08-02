@@ -69,8 +69,6 @@ const syncRouteController = async (req, res) => {
   const primaryEndpoint = req.body.creator_node_endpoint // string
   const immediate = req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
   const blockNumber = req.body.blockNumber // integer
-  const forceResync =
-    req.body.forceResync === true || req.body.forceResync === 'true' // boolean - default false
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -137,7 +135,7 @@ const syncRouteController = async (req, res) => {
         creatorNodeEndpoint: primaryEndpoint,
         blockNumber,
         forceResyncConfig: {
-          forceResync,
+          forceResync: req.body.forceResync,
           apiSigning: {
             timestamp: req.body.timestamp,
             signature: req.body.signature,

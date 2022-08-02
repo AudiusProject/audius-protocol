@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
+import { signSyncData } from '../../../services/sync/secondarySyncFromPrimaryUtils'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -231,11 +232,17 @@ async function _handleIssueSyncRequest({
    */
   try {
     if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-      const syncRequestParametersForceResync = {
+      const { timestamp, signature } = signSyncData(syncRequestParameters.data)
+
+      await axios({
         ...syncRequestParameters,
-        data: { ...syncRequestParameters.data, forceResync: true }
-      }
-      await axios(syncRequestParametersForceResync)
+        data: {
+          ...syncRequestParameters.data,
+          forceResync: true,
+          timestamp,
+          signature
+        }
+      })
     } else {
       await axios(syncRequestParameters)
     }

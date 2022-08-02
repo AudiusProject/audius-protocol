@@ -1,8 +1,35 @@
+import type {
+  SyncRequestAxiosData,
+  ForceResyncAuthParams,
+  ForceResyncConfig
+} from '../stateMachineManager/stateReconciliation/types'
+
 const _ = require('lodash')
 
 const { logger: genericLogger } = require('../../logging')
+const config = require('../../config')
 const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
-const { recoverWallet } = require('../../../src/apiSigning')
+const {
+  recoverWallet,
+  generateTimestampAndSignature
+} = require('../../apiSigning')
+
+// Function to sign sync data. This is used to determine whether or not to `forceResync`
+const signSyncData = (syncData: SyncRequestAxiosData) => {
+  return generateTimestampAndSignature(
+    syncData,
+    config.get('delegatePrivateKey')
+  )
+}
+
+// Derive the Content Node delegate wallet from the data, signature, and timestamp
+const recoverWalletFromSyncData = ({
+  data,
+  timestamp,
+  signature
+}: ForceResyncAuthParams) => {
+  return recoverWallet({ ...data, timestamp }, signature)
+}
 
 /**
  * Checks to see if the host requesting the sync is the primary of the observed user
@@ -15,7 +42,7 @@ const { recoverWallet } = require('../../../src/apiSigning')
  * @param {Object} param.logContext object of log context. used when this sync job is enqueued
  * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
  */
-const shouldForceResync = async (forceResyncConfig = null) => {
+const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
   if (!forceResyncConfig) return false
 
   let {
@@ -37,21 +64,16 @@ const shouldForceResync = async (forceResyncConfig = null) => {
     `Checking shouldForceResync: wallet=${wallet} forceResync=${forceResync}`
   )
 
-  if (
-    !forceResync ||
-    forceResync === 'false' ||
-    forceResync === false ||
-    !data ||
-    !timestamp ||
-    !signature
-  ) {
+  if (!forceResync || !data || !timestamp || !signature) {
     return false
   }
+
   // Derive the Content Node delegate wallet from the data, signature, and timestamp
-  const recoveredPrimaryWallet = recoverWallet(
-    { ...data, timestamp },
+  const recoveredPrimaryWallet = recoverWalletFromSyncData({
+    data,
+    timestamp,
     signature
-  )
+  })
 
   try {
     // Get the delegate wallet from the primary of the observed user
@@ -66,13 +88,11 @@ const shouldForceResync = async (forceResyncConfig = null) => {
 
     // Check that the receovered public key = primary wallet on chain
     return recoveredPrimaryWallet === actualPrimaryWallet
-  } catch (e) {
+  } catch (e: any) {
     logger.error(`Could not verify primary delegate owner key: ${e.message}`)
   }
 
   return false
 }
 
-module.exports = {
-  shouldForceResync
-}
+export { shouldForceResync, signSyncData }

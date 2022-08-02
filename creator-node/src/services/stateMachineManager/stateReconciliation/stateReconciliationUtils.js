@@ -13,6 +13,8 @@ const {
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
+const { signSyncData } = require('../../sync/secondarySyncFromPrimaryUtils')
+
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
 /**
@@ -71,10 +73,7 @@ const getNewOrExistingSyncReq = ({
     immediate
   }
 
-  const { signature, timestamp } = generateTimestampAndSignature(
-    data,
-    config.get('delegatePrivateKey')
-  )
+  const { signature, timestamp } = signSyncData(data)
 
   // Define axios params for sync request to secondary
   const syncRequestParameters = {
@@ -82,12 +81,7 @@ const getNewOrExistingSyncReq = ({
     url: '/sync',
     method: 'post',
     data: {
-      wallet: [userWallet],
-      creator_node_endpoint: primaryEndpoint,
-      // Note - `sync_type` param is only used for logging by nodeSync.js
-      sync_type: syncType,
-      // immediate = true will ensure secondary skips debounce and evaluates sync immediately
-      immediate,
+      ...data,
       signature,
       timestamp
     }
