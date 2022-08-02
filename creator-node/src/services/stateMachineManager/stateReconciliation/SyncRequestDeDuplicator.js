@@ -12,28 +12,54 @@ class SyncRequestDeDuplicator {
   }
 
   /** Stringify properties to enable storage with a flat map */
-  _getSyncKey(syncType, userWallet, secondaryEndpoint) {
-    return `${syncType}::${userWallet}::${secondaryEndpoint}`
+  _getSyncKey(syncType, userWallet, secondaryEndpoint, immediate = false) {
+    return `${syncType}::${userWallet}::${secondaryEndpoint}::${immediate}`
   }
 
   /** Return job info of sync with given properties if present else null */
-  getDuplicateSyncJobInfo(syncType, userWallet, secondaryEndpoint) {
-    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
+  getDuplicateSyncJobInfo(
+    syncType,
+    userWallet,
+    secondaryEndpoint,
+    immediate = false
+  ) {
+    const syncKey = this._getSyncKey(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate
+    )
 
     const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
     return duplicateSyncJobInfo || null
   }
 
   /** Record job info for sync with given properties */
-  recordSync(syncType, userWallet, secondaryEndpoint, jobProps) {
-    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
+  recordSync(
+    syncType,
+    userWallet,
+    secondaryEndpoint,
+    immediate = false,
+    jobProps
+  ) {
+    const syncKey = this._getSyncKey(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate
+    )
 
     this.waitingSyncsByUserWalletMap[syncKey] = jobProps
   }
 
   /** Remove sync with given properties */
-  removeSync(syncType, userWallet, secondaryEndpoint) {
-    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
+  removeSync(syncType, userWallet, secondaryEndpoint, immediate = false) {
+    const syncKey = this._getSyncKey(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate
+    )
 
     delete this.waitingSyncsByUserWalletMap[syncKey]
   }

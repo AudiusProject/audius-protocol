@@ -204,13 +204,14 @@ commands:
             }
             trap cleanup EXIT
 
+            set -x
+
             # authenticate into gcloud
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
 
             GCLOUD_VM_NAME=<< parameters.instance-name >>-$(date +%s)
-            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
             git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
@@ -225,7 +226,7 @@ commands:
 
             # run A setup on remote dev box to clone protocol and install the prerequisites for A
             # A setup ... || true is necessary because exit code returns 141 by default
-            [ <<parameters.fast>> ] && A_SETUP_ARGS="--fast" || A_SETUP_ARGS=""
+            <<parameters.fast>> && A_SETUP_ARGS="--fast" || A_SETUP_ARGS=""
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME $A_SETUP_ARGS --spot-instance || true
 
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
@@ -286,6 +287,8 @@ jobs:
             git checkout -f;
           post-gcp-command: |
             BAKE_IMAGE_NAME=ci-image-bake-latest
+
+            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
