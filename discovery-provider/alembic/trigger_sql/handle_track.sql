@@ -21,7 +21,7 @@ begin
     delta := -1;
   end if;
 
-  if old_row is null and new.is_delete = false and new.is_unlisted = false and new.stem_of is null then
+  if old_row is null and new.is_delete = false is null then
     delta := 1;
   end if;
 
