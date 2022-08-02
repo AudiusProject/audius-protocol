@@ -104,7 +104,7 @@ describe('test findReplicaSetUpdates job processor', function () {
         '../CNodeHealthManager': {
           isPrimaryHealthy: isPrimaryHealthyStub
         },
-        '../CNodeToSpIdMapManager': {
+        '../ContentNodeInfoManager': {
           getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
         }
       }
