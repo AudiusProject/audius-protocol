@@ -24,7 +24,7 @@ const PROCESS_NAMES = Object.freeze({
 const TRANSCODING_QUEUE_HISTORY = 500
 
 class TranscodingQueue {
-  constructor(prometheusRegistry = null) {
+  constructor() {
     this.queue = new Bull('transcoding-queue', {
       redis: {
         port: config.get('redisPort'),
@@ -35,9 +35,6 @@ class TranscodingQueue {
         removeOnFail: TRANSCODING_QUEUE_HISTORY
       }
     })
-    if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
-      prometheusRegistry.startQueueMetrics(this.queue)
-    }
     this.logStatus('Initialized TranscodingQueue')
 
     // NOTE: Specifying max concurrency here dictates the max concurrency for
