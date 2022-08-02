@@ -491,17 +491,21 @@ export class AudiusLibs {
     }
 
     /** Web3 Managers */
-    if (this.ethWeb3Config && this.identityService && this.hedgehog) {
+    if (this.ethWeb3Config) {
       this.ethWeb3Manager = new EthWeb3Manager({
         web3Config: this.ethWeb3Config,
+        // @ts-ignore
         identityService: this.identityService,
+        // @ts-ignore
         hedgehog: this.hedgehog
       })
     }
-    if (this.web3Config && this.identityService && this.hedgehog) {
+    if (this.web3Config) {
       this.web3Manager = new Web3Manager({
         web3Config: this.web3Config,
+        // @ts-ignore
         identityService: this.identityService,
+        // @ts-ignore
         hedgehog: this.hedgehog,
         isServer: this.isServer
       })
