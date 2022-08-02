@@ -22,6 +22,8 @@ const { recoverWallet } = require('../../../src/apiSigning')
  * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
  */
 const shouldForceResync = async (forceResyncConfig = null) => {
+  if (!forceResyncConfig) return false
+
   let {
     apiSigning: { data, signature, timestamp },
     wallet,
@@ -42,7 +44,6 @@ const shouldForceResync = async (forceResyncConfig = null) => {
   )
 
   if (
-    !forceResyncConfig ||
     !forceResync ||
     forceResync === 'false' ||
     forceResync === false ||
