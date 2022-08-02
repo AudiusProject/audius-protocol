@@ -60,17 +60,9 @@ const respondToURSMRequestForProposalController = async (req) => {
  */
 const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
-  req.logger.debug(`/sync serviceRegistry empty: ${_.isEmpty(serviceRegistry)}`)
-  req.logger.debug(
-    `/sync serviceRegistry?.nodeConfig empty: ${_.isEmpty(
-      serviceRegistry?.nodeConfig
-    )}`
-  )
-  req.logger.debug(
-    `/sync serviceRegistry?.syncQueue empty: ${_.isEmpty(
-      serviceRegistry?.syncQueue
-    )}`
-  )
+  if (_.isEmpty(serviceRegistry?.syncQueue)) {
+    return errorResponseServerError('Sync Queue is not up and running yet')
+  }
   const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
