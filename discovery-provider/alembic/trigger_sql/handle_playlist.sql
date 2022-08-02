@@ -13,7 +13,7 @@ begin
   select * into old_row from playlists where is_current = false and playlist_id = new.playlist_id order by blocknumber desc limit 1;
 
   -- should decrement
-  if old_row.is_delete != new.is_delete or old_row.is_private != new.is_private then
+  if old_row.is_delete != new.is_delete then
     delta := -1;
   end if;
 
