@@ -192,7 +192,7 @@ class ServiceRegistry {
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
         new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
-        new BullAdapter(this.imageProcessingQueue, { readOnlyMode: true }),
+        new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(transcodingQueue, { readOnlyMode: true }),
