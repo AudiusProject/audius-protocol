@@ -491,21 +491,17 @@ export class AudiusLibs {
     }
 
     /** Web3 Managers */
-    if (this.ethWeb3Config) {
+    if (this.ethWeb3Config && this.identityService && this.hedgehog) {
       this.ethWeb3Manager = new EthWeb3Manager({
         web3Config: this.ethWeb3Config,
-        // @ts-ignore
         identityService: this.identityService,
-        // @ts-ignore
         hedgehog: this.hedgehog
       })
     }
-    if (this.web3Config) {
+    if (this.web3Config && this.identityService && this.hedgehog) {
       this.web3Manager = new Web3Manager({
         web3Config: this.web3Config,
-        // @ts-ignore
         identityService: this.identityService,
-        // @ts-ignore
         hedgehog: this.hedgehog,
         isServer: this.isServer
       })
@@ -514,20 +510,22 @@ export class AudiusLibs {
         this.identityService.setWeb3Manager(this.web3Manager)
       }
     }
-    if (this.solanaWeb3Config) {
+    if (this.solanaWeb3Config && this.identityService && this.web3Manager) {
       this.solanaWeb3Manager = new SolanaWeb3Manager(
         this.solanaWeb3Config,
-        // @ts-ignore
         this.identityService,
         this.web3Manager
       )
       await this.solanaWeb3Manager.init()
     }
-    if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
+    if (
+      this.solanaWeb3Manager &&
+      this.solanaAudiusDataConfig &&
+      this.web3Manager
+    ) {
       this.solanaAudiusData = new SolanaAudiusData(
         this.solanaAudiusDataConfig,
         this.solanaWeb3Manager,
-        // @ts-ignore
         this.web3Manager
       )
       await this.solanaAudiusData.init()
@@ -565,8 +563,7 @@ export class AudiusLibs {
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        // @ts-ignore
-        this.web3Config ? this.web3Config.registryAddress : null,
+        this.web3Config.registryAddress ?? null,
         this.isServer,
         this.logger
       )
@@ -587,7 +584,6 @@ export class AudiusLibs {
         this.ethContracts,
         this.identityService,
         this.solanaWeb3Manager,
-        // @ts-expect-error -- typescript is weirdly incorrect here
         this.wormholeConfig.rpcHosts,
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
@@ -599,12 +595,10 @@ export class AudiusLibs {
     }
 
     /** Discovery Provider */
-    if (this.discoveryProviderConfig) {
+    if (this.discoveryProviderConfig && this.ethContracts && this.web3Manager) {
       this.discoveryProvider = new DiscoveryProvider({
         userStateManager: this.userStateManager,
-        // @ts-ignore
         ethContracts: this.ethContracts,
-        // @ts-ignore
         web3Manager: this.web3Manager,
         localStorage: this.localStorage,
         ...this.discoveryProviderConfig
@@ -613,7 +607,7 @@ export class AudiusLibs {
     }
 
     /** Creator Node */
-    if (this.creatorNodeConfig) {
+    if (this.creatorNodeConfig && this.web3Manager && this.schemas) {
       const currentUser = this.userStateManager.getCurrentUser()
       const creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ??
@@ -621,7 +615,6 @@ export class AudiusLibs {
         : this.creatorNodeConfig.fallbackUrl
 
       this.creatorNode = new CreatorNode(
-        // @ts-ignore
         this.web3Manager,
         creatorNodeEndpoint,
         this.isServer,
