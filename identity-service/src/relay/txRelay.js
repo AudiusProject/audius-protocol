@@ -1,5 +1,5 @@
 const EthereumWallet = require('ethereumjs-wallet')
-const EthereumTx = require('ethereumjs-tx')
+const { Transaction } = require('ethereumjs-tx')
 
 const models = require('../models')
 const config = require('../config')
@@ -20,13 +20,13 @@ const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 
-async function delay (ms) {
+async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 const generateWalletLockKey = (publicKey) => `POA_RELAYER_WALLET:${publicKey}`
 
-async function getGasPrice (logger, web3) {
+async function getGasPrice(logger, web3) {
   let gasPrice = parseInt(await web3.eth.getGasPrice())
   if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
     logger.info('txRelay - gas price was not defined or was greater than HIGH_GAS_PRICE', gasPrice)
@@ -222,7 +222,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
     txParams = { ...txParams, data }
   }
 
-  const tx = new EthereumTx(txParams)
+  const tx = new Transaction(txParams)
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   console.log(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
