@@ -15,7 +15,7 @@ const ethRelayerWallets = config.get('ethRelayerWallets') // { publicKey, privat
 
 const generateETHWalletLockKey = (publicKey) => `ETH_RELAYER_WALLET:${publicKey}`
 
-async function delay(ms) {
+async function delay (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 

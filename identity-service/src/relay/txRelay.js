@@ -20,13 +20,13 @@ const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 
-async function delay(ms) {
+async function delay (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 const generateWalletLockKey = (publicKey) => `POA_RELAYER_WALLET:${publicKey}`
 
-async function getGasPrice(logger, web3) {
+async function getGasPrice (logger, web3) {
   let gasPrice = parseInt(await web3.eth.getGasPrice())
   if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
     logger.info('txRelay - gas price was not defined or was greater than HIGH_GAS_PRICE', gasPrice)
