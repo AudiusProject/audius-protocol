@@ -1,7 +1,7 @@
 const Bull = require('bull')
 
 const { logger } = require('../../logging')
-const { secondarySyncFromPrimary } = require('./secondarySyncFromPrimary')
+const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
 

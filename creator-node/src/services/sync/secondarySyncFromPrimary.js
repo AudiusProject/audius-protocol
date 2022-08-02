@@ -8,77 +8,7 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
-const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
-const { recoverWallet } = require('../../../src/apiSigning')
-
-/**
- * Checks to see if the host requesting the sync is the primary of the observed user
- * @param {Object} param
- * @param {string} param.requesterEndpoint the endpoint of the host requesting the sync
- * @param {Object} param.libs the libs instance
- * @param {string} param.wallet the observed user's wallet
- * @param {boolean} param.forceResync flag from the request to force resync (starting off on clear slate) or not
- * @param {Object} param.logger
- * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
- */
-const shouldForceResync = async (forceResyncConfig = null) => {
-  if (!forceResyncConfig) return false
-
-  let {
-    apiSigning: { data, signature, timestamp },
-    wallet,
-    forceResync,
-    libs,
-    logContext, // for when jobs are added to the queue
-    logger
-  } = forceResyncConfig
-
-  if (logContext) {
-    logger = genericLogger.child(logContext)
-  } else if (!logger) {
-    logger = genericLogger
-  }
-
-  logger.debug(
-    `Checking shouldForceResync: wallet=${wallet} forceResync=${forceResync}`
-  )
-
-  if (
-    !forceResync ||
-    forceResync === 'false' ||
-    forceResync === false ||
-    !data ||
-    !timestamp ||
-    !signature
-  ) {
-    return false
-  }
-
-  // Recover public key from signature + timestamp
-  const recoveredPrimaryWallet = recoverWallet(
-    { ...data, timestamp },
-    signature
-  )
-
-  // Get the primary wallet
-  try {
-    const userPrimaryId = (await libs.User.getUsers(1, 0, null, wallet))[0]
-      .primary_id
-    const { delegateOwnerWallet: actualPrimaryWallet } =
-      ContentNodeInfoManager.getContentNodeInfoFromSpId(userPrimaryId)
-
-    logger.debug(
-      `actual: ${actualPrimaryWallet} recovered: ${recoveredPrimaryWallet}`
-    )
-
-    // Check that the receovered public key = primary wallet on chain
-    return recoveredPrimaryWallet === actualPrimaryWallet
-  } catch (e) {
-    logger.error(`Could not verify primary delegate owner key: ${e.message}`)
-  }
-
-  return false
-}
+const { shouldForceResync } = require('./secondarySyncFromPrimaryHelper')
 
 const handleSyncFromPrimary = async ({
   serviceRegistry,
@@ -672,6 +602,18 @@ const handleSyncFromPrimary = async ({
   return { result: 'success' }
 }
 
+/**
+ * This function is only run on secondaries, to export and sync data from a user's primary.
+ *
+ * @notice - By design, will reject any syncs with non-contiguous clock values. For now,
+ *    any data corruption from primary needs to be handled separately and should not be replicated.
+ *
+ * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
+ *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
+ *    with progressively increasing clock values until secondaries have completely synced up.
+ *    Secondaries have no knowledge of the current data state on primary, they simply replicate
+ *    what they receive in each export.
+ */
 async function secondarySyncFromPrimary({
   serviceRegistry,
   wallet,
@@ -702,19 +644,4 @@ async function secondarySyncFromPrimary({
   return labels
 }
 
-/**
- * This function is only run on secondaries, to export and sync data from a user's primary.
- *
- * @notice - By design, will reject any syncs with non-contiguous clock values. For now,
- *    any data corruption from primary needs to be handled separately and should not be replicated.
- *
- * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
- *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
- *    with progressively increasing clock values until secondaries have completely synced up.
- *    Secondaries have no knowledge of the current data state on primary, they simply replicate
- *    what they receive in each export.
- */
-module.exports = {
-  secondarySyncFromPrimary,
-  shouldForceResync
-}
+module.exports = secondarySyncFromPrimary

@@ -21,13 +21,14 @@ const {
 const { uploadTrack } = require('./lib/helpers')
 const BlacklistManager = require('../src/blacklistManager')
 const sessionManager = require('../src/sessionManager')
-const exportComponentService = require('../src/components/replicaSet/exportComponentService')
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
+const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
 const {
-  secondarySyncFromPrimary
-} = require('../src/services/sync/secondarySyncFromPrimary')
+  handleSyncFromPrimary,
+  shouldForceResync
+} = require('../src/services/sync/secondarySyncFromPrimaryHelper')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -1109,17 +1110,23 @@ describe('test nodesync', async function () {
       })
       assert.strictEqual(localCNodeUserCount, 1)
 
-      // TODO: fix this
       // Call secondarySyncFromPrimary with `forceResync` = true
+      const secondarySyncFromPrimary = proxyquire(
+        '../src/services/sync/secondarySyncFromPrimary',
+        {
+          './secondarySyncFromPrimaryHelper': {
+            shouldForceResync: async () => {
+              return true
+            }
+          }
+        }
+      )
+
       const result = await secondarySyncFromPrimary({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
         creatorNodeEndpoint: TEST_ENDPOINT,
-        blockNumber: null,
-        forceResyncConfig: {
-          forceResync: true,
-          apiSigning: {}
-        }
+        blockNumber: null
       })
 
       assert.deepStrictEqual(result, {
