@@ -85,11 +85,6 @@ function bump-npm () {
 # Merge the created branch into master, then delete the branch
 function merge-bump () {
     (
-        # exit the function/subshell early on error
-        # https://stackoverflow.com/a/58964551
-        # http://mywiki.wooledge.org/BashFAQ/105
-        set -e
-
         git checkout master -f
 
         # pull in any additional commits that may have trickled in
