@@ -663,11 +663,6 @@ export class AudiusLibs {
   }
 }
 
-// This is needed to ensure default and named exports are handled correctly by rollup
-// https://github.com/rollup/plugins/tree/master/packages/commonjs#defaultismoduleexports
-// exports.__esModule = true
-
 export { AudiusABIDecoder, Utils, SolanaUtils, CreatorNode }
 
-// export { SanityChecks } from './sanityChecks'
 export { RewardsAttester } from './services/solana'
