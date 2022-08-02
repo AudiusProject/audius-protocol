@@ -163,6 +163,38 @@ services:
     deploy:
       mode: global
 
+  # audius-cmd
+
+  audius-cmd:
+    build: dev-tools/commands
+    environment:
+      ETH_TOKEN_ADDRESS: "${ETH_TOKEN_ADDRESS}"
+      ETH_REGISTRY_ADDRESS: "${ETH_REGISTRY_ADDRESS}"
+      ETH_PROVIDER_URL: "http://eth-ganache:8545"
+      ETH_OWNER_WALLET: "${ETH_OWNER_WALLET}"
+
+      POA_REGISTRY_ADDRESS: "${POA_REGISTRY_ADDRESS}"
+      POA_PROVIDER_URL: "http://poa-ganache:8545"
+
+      SOLANA_ENDPOINT: "http://solana-test-validator:8899"
+      SOLANA_MINT_PUBLIC_KEY: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
+      SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
+
+      IDENTITY_SERVICE_URL: "http://identity-service:7000"
+      FALLBACK_CREATOR_NODE_URL: "http://creator-node:4000" # this should choose a random cn everytime this is run
+    volumes:
+      - audius-libs:/usr/src/app/node_modules/@audius/sdk
+      - ./dev-tools/commands/src:/usr/src/app/src
+    depends_on:
+      build-audius-libs:
+        condition: service_started
+    logging: *default-logging
+    profiles:
+      - audius-cmd
+
   # identity-service
 
   identity-service-db:
