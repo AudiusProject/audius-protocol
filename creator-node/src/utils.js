@@ -248,9 +248,9 @@ async function getAllRegisteredCNodes(libs, logger) {
 /**
  * Get all Discovery Nodes registered on chain
  * Fetches from Redis if available, else fetches from chain and updates Redis value
- * @returns {Object[]} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
+ * @returns {Promise<Object[]>} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
  */
- async function getAllRegisteredDNodes(libs, logger) {
+async function getAllRegisteredDNodes({ libs, logger, redis }) {
   const cacheKey = 'all_registered_dnodes'
 
   let DNodes
@@ -262,7 +262,7 @@ async function getAllRegisteredCNodes(libs, logger) {
     }
 
     // Else, fetch from chain
-    let discoveryNodes =
+    const discoveryNodes =
       await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
         'discovery-node'
       )

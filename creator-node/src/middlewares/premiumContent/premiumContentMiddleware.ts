@@ -1,15 +1,25 @@
-import { sendResponse, errorResponseServerError, errorResponseForbidden, errorResponseBadRequest } from '../../apiHelpers'
+import {
+  sendResponse,
+  errorResponseServerError,
+  errorResponseForbidden,
+  errorResponseBadRequest
+} from '../../apiHelpers'
 import { recoverWallet } from '../../apiSigning'
 import { NextFunction, Request, Response } from 'express'
 import { isPremiumContentMatch } from '../../premiumContent/helpers'
-import { PremiumContentType } from 'premiumContent/types'
-import { getAllRegisteredDNodes } from 'utils'
+import { PremiumContentType } from '../../premiumContent/types'
+import { getAllRegisteredDNodes } from '../../utils'
 import type Logger from 'bunyan'
+import { Redis } from 'ioredis'
 
 /**
  * Middleware to validate requests to get premium content.
  */
-export const premiumContentMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const premiumContentMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const {
       signedDataFromDiscoveryNode,
@@ -18,7 +28,12 @@ export const premiumContentMiddleware = (req: Request, res: Response, next: Next
       signatureFromUser
     } = req.headers
 
-    if (!signedDataFromDiscoveryNode || !signatureFromDiscoveryNode || !signedDataFromUser || !signatureFromUser) {
+    if (
+      !signedDataFromDiscoveryNode ||
+      !signatureFromDiscoveryNode ||
+      !signedDataFromUser ||
+      !signatureFromUser
+    ) {
       return sendResponse(
         req,
         res,
@@ -26,28 +41,42 @@ export const premiumContentMiddleware = (req: Request, res: Response, next: Next
       )
     }
 
-    const { premiumContentId, premiumContentType } = req.params
+    const logger = (req as any).logger as Logger
 
-    const discoveryNodeWallet = recoverWallet(signedDataFromDiscoveryNode, signatureFromDiscoveryNode)
-    if (!isRegisteredDiscoveryNode({
+    const discoveryNodeWallet = recoverWallet(
+      signedDataFromDiscoveryNode,
+      signatureFromDiscoveryNode
+    )
+    const isRegisteredDN = await isRegisteredDiscoveryNode({
       wallet: discoveryNodeWallet,
       libs: req.app.get('audiusLibs'),
-      logger: (req as any).logger as Logger
-    })) {
+      logger,
+      redis: req.app.get('redisClient')
+    })
+    if (!isRegisteredDN) {
       return sendResponse(
         req,
         res,
-        errorResponseForbidden('Failed discovery node signature validation for premium content.')
+        errorResponseForbidden(
+          'Failed discovery node signature validation for premium content.'
+        )
       )
     }
 
+    const { premiumContentId, premiumContentType } = req.params
+
     const userWallet = recoverWallet(signedDataFromUser, signatureFromUser)
-    if (!isPremiumContentMatch({
-      signedDataFromDiscoveryNode: JSON.parse(signedDataFromDiscoveryNode as string),
-      userWallet,
-      premiumContentId: parseInt(premiumContentId),
-      premiumContentType: premiumContentType as PremiumContentType
-    })) {
+    if (
+      !isPremiumContentMatch({
+        signedDataFromDiscoveryNode: JSON.parse(
+          signedDataFromDiscoveryNode as string
+        ),
+        userWallet,
+        premiumContentId: parseInt(premiumContentId),
+        premiumContentType: premiumContentType as PremiumContentType,
+        logger
+      })
+    ) {
       return sendResponse(
         req,
         res,
@@ -57,34 +86,40 @@ export const premiumContentMiddleware = (req: Request, res: Response, next: Next
 
     next()
   } catch (e) {
-    const error = `Could not validate premium content access: ${(e as Error).message}`
+    const error = `Could not validate premium content access: ${
+      (e as Error).message
+    }`
     console.error(`${error}.\nError: ${JSON.stringify(e, null, 2)}`)
-    return sendResponse(
-      req,
-      res,
-      errorResponseServerError(error)
-    )
+    return sendResponse(req, res, errorResponseServerError(error))
   }
 }
 
 type Service = {
-  owner: string,
-  endpoint: string,
-  spID: number,
-  type: 'discovery-node' | 'content-node',
-  blockNumber: number,
+  owner: string
+  endpoint: string
+  spID: number
+  type: 'discovery-node' | 'content-node'
+  blockNumber: number
   delegateOwnerWallet: string
 }
 
-function isRegisteredDiscoveryNode({
+async function isRegisteredDiscoveryNode({
   wallet,
   libs,
-  logger
+  logger,
+  redis
 }: {
-  wallet: string,
-  libs: any,
+  wallet: string
+  libs: any
   logger: Logger
+  redis: Redis
 }) {
-  const allRegisteredDiscoveryNodes = getAllRegisteredDNodes(libs, logger)
-  return (allRegisteredDiscoveryNodes as Service[]).some((node: Service) => node.delegateOwnerWallet === wallet)
+  const allRegisteredDiscoveryNodes = await getAllRegisteredDNodes({
+    libs,
+    logger,
+    redis
+  })
+  return (allRegisteredDiscoveryNodes as Service[]).some(
+    (node: Service) => node.delegateOwnerWallet === wallet
+  )
 }

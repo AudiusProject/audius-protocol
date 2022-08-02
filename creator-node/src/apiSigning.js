@@ -25,6 +25,15 @@ const generateTimestampAndSignature = (data, privateKey) => {
   return { timestamp, signature: signedResponse.signature }
 }
 
+const generateSignature = (data, privateKey) => {
+  // JSON stringify automatically removes white space given 1 param
+  const toSignStr = JSON.stringify(sortKeys(data))
+  const toSignHash = web3.utils.keccak256(toSignStr)
+  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+
+  return { signature: signedResponse.signature }
+}
+
 // Keeps track of a cached listen signature
 // Two field object: { timestamp, signature }
 let cachedListenSignature = null
@@ -202,6 +211,7 @@ function validateSPId(spID) {
 
 module.exports = {
   generateTimestampAndSignature,
+  generateSignature,
   generateListenTimestampAndSignature,
   generateTimestampAndSignatureForSPVerification,
   recoverWallet,
