@@ -666,19 +666,7 @@ const handleSyncFromPrimary = async ({
   return { result: 'success' }
 }
 
-/**
- * This function is only run on secondaries, to export and sync data from a user's primary.
- *
- * @notice - By design, will reject any syncs with non-contiguous clock values. For now,
- *    any data corruption from primary needs to be handled separately and should not be replicated.
- *
- * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
- *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
- *    with progressively increasing clock values until secondaries have completely synced up.
- *    Secondaries have no knowledge of the current data state on primary, they simply replicate
- *    what they receive in each export.
- */
-module.exports = async function ({
+async function secondarySyncFromPrimary({
   serviceRegistry,
   wallet,
   creatorNodeEndpoint,
@@ -686,7 +674,7 @@ module.exports = async function ({
   blockNumber = null
 }) {
   const { prometheusRegistry } = serviceRegistry
-  const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
+  const { secondarySyncFromPrimary }Metric = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames
       .SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM
   )
@@ -706,4 +694,21 @@ module.exports = async function ({
   }
 
   return labels
+}
+
+/**
+ * This function is only run on secondaries, to export and sync data from a user's primary.
+ *
+ * @notice - By design, will reject any syncs with non-contiguous clock values. For now,
+ *    any data corruption from primary needs to be handled separately and should not be replicated.
+ *
+ * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
+ *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
+ *    with progressively increasing clock values until secondaries have completely synced up.
+ *    Secondaries have no knowledge of the current data state on primary, they simply replicate
+ *    what they receive in each export.
+ */
+module.exports = {
+  secondarySyncFromPrimary,
+  shouldForceResync
 }
