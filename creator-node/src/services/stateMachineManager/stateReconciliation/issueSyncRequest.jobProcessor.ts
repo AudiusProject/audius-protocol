@@ -163,6 +163,7 @@ async function _handleIssueSyncRequest({
 
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryEndpoint = syncRequestParameters.baseURL
+  const immediate = syncRequestParameters.data.immediate
 
   const logMsgString = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
 
@@ -173,7 +174,7 @@ async function _handleIssueSyncRequest({
    */
   if (syncType === SyncType.Recurring) {
     const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-    SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
+    SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint, immediate)
   }
 
   /**
