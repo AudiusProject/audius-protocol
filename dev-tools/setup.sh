@@ -20,7 +20,7 @@ debian | ubuntu)
     sudo apt-get install -y git python3 python3-pip docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
     # Add user to docker group
-    sudo usermod -aG docker $USER
+    sudo usermod -aG docker "$USER"
     ;;
 *)
     if ! command -v docker &>/dev/null; then
@@ -46,18 +46,18 @@ debian | ubuntu)
 esac
 
 if [[ "${BASH_SOURCE[0]}" == "" ]]; then
-    git clone https://github.com/AudiusProject/audius-protocol.git ~/audius-protocol
-    export PROTOCOL_DIR="$HOME/audius-protocol"
+    export PROTOCOL_DIR="${PROTOCOL_DIR:-$HOME/audius-protocol}"
+    git clone https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
 else
     export PROTOCOL_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 fi
 
-python3 -m pip install -r $PROTOCOL_DIR/dev-tools/requirements.txt
+python3 -m pip install -r "$PROTOCOL_DIR/dev-tools/requirements.txt"
 
 mkdir -p "$HOME/.local/bin"
 
 ln -sf "$PROTOCOL_DIR/dev-tools/audius-compose" "$HOME/.local/bin/audius-compose"
-# ln -sf "$PROTOCOL_DIR/dev-tools/audius-cloud" "$HOME/.local/bin/audius-cloud"
+ln -sf "$PROTOCOL_DIR/dev-tools/audius-cloud" "$HOME/.local/bin/audius-cloud"
 
-echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.bashrc
-echo "export PATH=$HOME/.local/bin:$PATH" >>~/.bashrc
+echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
+echo "export PATH=$HOME/.local/bin:$PATH" >>~/.profile
