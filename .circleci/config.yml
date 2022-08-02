@@ -303,7 +303,7 @@ jobs:
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
 
-  publish-libs:
+  publish-sdk:
     docker:
       - image: circleci/node:14.17.5
     resource_class: xlarge
@@ -1011,11 +1011,11 @@ workflows:
   sdk-release:
     when: << pipeline.parameters.sdk_release_tag >>
     jobs:
-      - publish-libs:
+      - publish-sdk:
           context:
             - Audius Client
             - slack-secrets
-          name: publish-libs (<< pipeline.parameters.sdk_release_tag >>)
+          name: publish-sdk (<< pipeline.parameters.sdk_release_tag >>)
           sdk_release_tag: << pipeline.parameters.sdk_release_tag >>
           slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
           filters:
