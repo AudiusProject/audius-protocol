@@ -1002,11 +1002,6 @@ workflows:
           context:
             - GCP2
 
-      - bake-gcp-dev-image:
-          context:
-            - GCP2
-          name: bake-gcp-dev-image
-
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
