@@ -47,6 +47,7 @@ import Web3 from './LibsWeb3'
 
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
+import type { BaseConstructorArgs } from './api/base'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -60,7 +61,7 @@ type LibsHedgehogConfig = Omit<
 
 type LibsSolanaWeb3Config = SolanaWeb3Config & {
   // fee payer secret keys, if client wants to switch between different fee payers during relay
-  feePayerSecretKeys: Uint8Array[]
+  feePayerSecretKeys?: Uint8Array[]
 }
 
 type LibsWormholeConfig = Merge<WormholeConfig, { rpcHosts: string | string[] }>
@@ -297,7 +298,7 @@ export class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypairs: feePayerSecretKeys.map((key) =>
+      feePayerKeypairs: feePayerSecretKeys?.map((key) =>
         Keypair.fromSecretKey(key)
       ),
       confirmationTimeout,
@@ -468,13 +469,11 @@ export class AudiusLibs {
 
     /** Captcha */
     if (this.captchaConfig) {
-      console.log('captch')
       this.captcha = new Captcha(this.captchaConfig)
     }
 
     /** Identity Service */
     if (this.identityServiceConfig) {
-      console.log('id serve')
       this.identityService = new IdentityService({
         identityServiceEndpoint: this.identityServiceConfig.url,
         captcha: this.captcha
@@ -493,7 +492,6 @@ export class AudiusLibs {
 
     /** Web3 Managers */
     if (this.ethWeb3Config && this.identityService && this.hedgehog) {
-      console.log('eth web3 man')
       this.ethWeb3Manager = new EthWeb3Manager({
         web3Config: this.ethWeb3Config,
         identityService: this.identityService,
@@ -501,7 +499,6 @@ export class AudiusLibs {
       })
     }
     if (this.web3Config && this.identityService && this.hedgehog) {
-      console.log('web 3 man')
       this.web3Manager = new Web3Manager({
         web3Config: this.web3Config,
         identityService: this.identityService,
@@ -510,12 +507,10 @@ export class AudiusLibs {
       })
       await this.web3Manager.init()
       if (this.identityService) {
-        console.log('web 3 man id serv')
         this.identityService.setWeb3Manager(this.web3Manager)
       }
     }
     if (this.solanaWeb3Config && this.identityService && this.web3Manager) {
-      console.log('sol web3 man')
       this.solanaWeb3Manager = new SolanaWeb3Manager(
         this.solanaWeb3Config,
         this.identityService,
@@ -528,7 +523,6 @@ export class AudiusLibs {
       this.solanaAudiusDataConfig &&
       this.web3Manager
     ) {
-      console.log('aud data')
       this.solanaAudiusData = new SolanaAudiusData(
         this.solanaAudiusDataConfig,
         this.solanaWeb3Manager,
@@ -547,8 +541,6 @@ export class AudiusLibs {
         wormholeContractAddress
       } = this.ethWeb3Config
 
-      console.log('eth cons')
-
       this.ethContracts = new EthContracts({
         ethWeb3Manager: this.ethWeb3Manager,
         tokenContractAddress: tokenAddress,
@@ -563,7 +555,6 @@ export class AudiusLibs {
       contractsToInit.push(this.ethContracts.init())
     }
     if (this.web3Manager && this.web3Config) {
-      console.log('contractions')
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config.registryAddress,
@@ -581,7 +572,6 @@ export class AudiusLibs {
       this.identityService &&
       this.solanaWeb3Manager
     ) {
-      console.log('wormy!')
       this.wormholeClient = new Wormhole(
         this.hedgehog,
         this.ethWeb3Manager,
@@ -599,7 +589,6 @@ export class AudiusLibs {
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig && this.ethContracts && this.web3Manager) {
-      console.log('discprov')
       this.discoveryProvider = new DiscoveryProvider({
         userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
@@ -618,7 +607,6 @@ export class AudiusLibs {
           this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 
-      console.log('creator node')
       this.creatorNode = new CreatorNode(
         this.web3Manager,
         creatorNodeEndpoint,
@@ -636,62 +624,42 @@ export class AudiusLibs {
 
     /** Comstock */
     if (this.comstockConfig) {
-      console.log('comstock!')
       this.comstock = new Comstock(this.comstockConfig.url)
     }
 
-    if (
-      this.userStateManager &&
-      this.identityService &&
-      this.hedgehog &&
-      this.discoveryProvider &&
-      this.discoveryProvider &&
-      this.web3Manager &&
-      this.contracts &&
-      this.ethWeb3Manager &&
-      this.ethContracts &&
-      this.solanaWeb3Manager &&
-      this.solanaAudiusData &&
-      this.wormholeClient &&
-      this.creatorNode &&
-      this.comstock &&
-      this.captcha
-    ) {
-      console.log('getting into services!')
-      // Initialize apis
-      const services = [
-        this.userStateManager,
-        this.identityService,
-        this.hedgehog,
-        this.discoveryProvider,
-        this.web3Manager,
-        this.contracts,
-        this.ethWeb3Manager,
-        this.ethContracts,
-        this.solanaWeb3Manager,
-        this.solanaAudiusData,
-        this.wormholeClient,
-        this.creatorNode,
-        this.comstock,
-        this.captcha,
-        this.isServer,
-        this.logger
-      ] as const
+    // Initialize apis
+    const services = [
+      this.userStateManager,
+      this.identityService,
+      this.hedgehog,
+      this.discoveryProvider,
+      this.web3Manager,
+      this.contracts,
+      this.ethWeb3Manager,
+      this.ethContracts,
+      this.solanaWeb3Manager,
+      this.solanaAudiusData,
+      this.wormholeClient,
+      this.creatorNode,
+      this.comstock,
+      this.captcha,
+      this.isServer,
+      this.logger
+    ] as BaseConstructorArgs
 
-      this.ServiceProvider = new ServiceProvider(...services)
-      this.User = new Users(
-        this.ServiceProvider,
-        this.preferHigherPatchForPrimary,
-        this.preferHigherPatchForSecondaries,
-        ...services
-      )
-      this.Account = new Account(this.User, ...services)
-      this.Track = new Track(...services)
-      this.Playlist = new Playlists(...services)
-      this.File = new File(this.User, ...services)
-      this.Rewards = new Rewards(this.ServiceProvider, ...services)
-      this.Reactions = new Reactions(...services)
-    }
+    this.ServiceProvider = new ServiceProvider(...services)
+    this.User = new Users(
+      this.ServiceProvider,
+      this.preferHigherPatchForPrimary,
+      this.preferHigherPatchForSecondaries,
+      ...services
+    )
+    this.Account = new Account(this.User, ...services)
+    this.Track = new Track(...services)
+    this.Playlist = new Playlists(...services)
+    this.File = new File(this.User, ...services)
+    this.Rewards = new Rewards(this.ServiceProvider, ...services)
+    this.Reactions = new Reactions(...services)
   }
 }
 

@@ -86,7 +86,7 @@ export type SolanaWeb3Config = {
   // Whether to use identity as a relay or submit transactions locally
   useRelay: boolean
   // fee payer secret keys, if client wants to switch between different fee payers during relay
-  feePayerKeypairs: Keypair[]
+  feePayerKeypairs?: Keypair[]
   // solana web3 connection confirmationTimeout in ms
   confirmationTimeout: number
   // admin storage PK for audius-data program
