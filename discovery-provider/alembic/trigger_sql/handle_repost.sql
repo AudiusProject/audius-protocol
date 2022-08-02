@@ -24,7 +24,8 @@ begin
     where r.is_current IS TRUE
       AND r.is_delete IS FALSE
       AND r.user_id = new.user_id
-  );
+  )
+  where user_id = new.user_id;
 
   -- update agg track or playlist
   if new.repost_type = 'track' then

@@ -35,7 +35,14 @@ begin
 
     -- update agg user
     update aggregate_user 
-    set track_save_count = track_save_count + delta
+    set track_save_count = (
+      select count(*)
+      from saves r
+      where r.is_current IS TRUE
+        AND r.is_delete IS FALSE
+        AND r.user_id = new.user_id
+        AND r.save_type = new.save_type
+    )
     where user_id = new.user_id;
 
   else
