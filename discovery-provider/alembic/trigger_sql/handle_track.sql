@@ -17,7 +17,7 @@ begin
   select * into old_row from tracks where is_current = false and track_id = new.track_id order by blocknumber desc limit 1;
 
   -- track becomes invisible (one way change)
-  if old_row.is_delete != new.is_delete or old_row.is_unlisted != new.is_unlisted then
+  if old_row.is_delete != new.is_delete then
     delta := -1;
   end if;
 
