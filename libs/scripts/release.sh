@@ -117,9 +117,9 @@ function publish () {
 # informative links
 function info () {
     echo "Released to:
-    * https://github.com/AudiusProject/audius-protocol/commits/master
-    * https://github.com/AudiusProject/audius-protocol/tags
-    * https://www.npmjs.com/package/@audius/sdk?activeTab=versions"
+      https://github.com/AudiusProject/audius-protocol/commits/master
+      https://github.com/AudiusProject/audius-protocol/tags
+      https://www.npmjs.com/package/@audius/sdk?activeTab=versions"
 }
 
 # cleanup when merging step fails
