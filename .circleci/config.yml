@@ -287,6 +287,8 @@ jobs:
           post-gcp-command: |
             BAKE_IMAGE_NAME=ci-image-bake-latest
 
+            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
+
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
 
@@ -955,49 +957,10 @@ workflows:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_tag >>
     jobs:
-      - test-libs:
-          name: test-libs
-      - docker-build-and-push:
-          name: build-libs
-          repo: libs
-
-      - test-contracts:
-          name: test-contracts
-
-      - test-eth-contracts:
-          name: test-eth-contracts
-
-      - test-creator-node:
-          name: test-creator-node
-      - docker-build-and-push:
-          name: build-creator-node
-          repo: creator-node
-
-      - test-discovery-provider:
-          name: test-discovery-provider
-      - docker-build-and-push-updated:
-          name: build-discovery-provider
-          repo: discovery-provider
-
-      - test-identity-service:
-          name: test-identity-service
-      - docker-build-and-push:
-          name: build-identity-service
-          repo: identity-service
-
-      - test-solana-programs:
-          name: test-solana-programs
-      - test-solana-programs-anchor:
-          name: test-solana-programs-anchor
-
-      - test-mad-dog-e2e:
+      - bake-gcp-dev-image:
           context:
             - GCP2
-          mad-dog-type: test
-
-      - test-sdk:
-          context:
-            - GCP2
+          name: bake-gcp-dev-image
 
 
   # in order to trigger this job
