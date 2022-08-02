@@ -249,7 +249,7 @@ async function _handleIssueSyncRequest({
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
         syncRequestParameters,
-        attemptNumber
+        attemptNumber: attemptNumber + 1
       }
     }
   }
