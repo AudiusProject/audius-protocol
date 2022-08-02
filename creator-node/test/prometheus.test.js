@@ -106,4 +106,17 @@ describe('test Prometheus metrics', async function () {
 
     assert.ok(!resp.text.includes('/content/:CID'))
   })
+
+  it('Checks that GET /prometheus_metrics exposes bull queue metrics', async function () {
+    await request(app).get('/health_check')
+
+    const resp = await request(app).get('/prometheus_metrics').expect(200)
+    assert.ok(
+      resp.text.includes(NAMESPACE_PREFIX + '_default_' + '_jobs_completed')
+    )
+    assert.ok(resp.text.includes(NAMESPACE_PREFIX + '_jobs_waiting'))
+    assert.ok(resp.text.includes(NAMESPACE_PREFIX + '_jobs_failed'))
+    assert.ok(resp.text.includes(NAMESPACE_PREFIX + '_jobs_active'))
+    assert.ok(resp.text.includes(NAMESPACE_PREFIX + '_jobs_delayed'))
+  })
 })
