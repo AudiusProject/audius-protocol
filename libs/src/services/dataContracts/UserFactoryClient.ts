@@ -1,6 +1,6 @@
 import { ContractClient } from '../contracts/ContractClient'
-import * as signatureSchemas from '../../signatureSchemas'
-import type { UserUpdateRequestFn } from '../../signatureSchemas'
+import * as signatureSchemas from '../../data-contracts/signatureSchemas'
+import type { UserUpdateRequestFn } from '../../data-contracts/signatureSchemas'
 import { Nullable, Utils } from '../../utils'
 import sigUtil from 'eth-sig-util'
 import { Buffer as SafeBuffer } from 'safe-buffer'
