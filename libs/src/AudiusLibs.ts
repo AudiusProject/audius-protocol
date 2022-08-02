@@ -491,17 +491,21 @@ export class AudiusLibs {
     }
 
     /** Web3 Managers */
-    if (this.ethWeb3Config && this.identityService && this.hedgehog) {
+    if (this.ethWeb3Config) {
       this.ethWeb3Manager = new EthWeb3Manager({
         web3Config: this.ethWeb3Config,
+        // @ts-ignore
         identityService: this.identityService,
+        // @ts-ignore
         hedgehog: this.hedgehog
       })
     }
-    if (this.web3Config && this.identityService && this.hedgehog) {
+    if (this.web3Config) {
       this.web3Manager = new Web3Manager({
         web3Config: this.web3Config,
+        // @ts-ignore
         identityService: this.identityService,
+        // @ts-ignore
         hedgehog: this.hedgehog,
         isServer: this.isServer
       })
@@ -510,22 +514,20 @@ export class AudiusLibs {
         this.identityService.setWeb3Manager(this.web3Manager)
       }
     }
-    if (this.solanaWeb3Config && this.identityService && this.web3Manager) {
+    if (this.solanaWeb3Config) {
       this.solanaWeb3Manager = new SolanaWeb3Manager(
         this.solanaWeb3Config,
+        // @ts-ignore
         this.identityService,
         this.web3Manager
       )
       await this.solanaWeb3Manager.init()
     }
-    if (
-      this.solanaWeb3Manager &&
-      this.solanaAudiusDataConfig &&
-      this.web3Manager
-    ) {
+    if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
       this.solanaAudiusData = new SolanaAudiusData(
         this.solanaAudiusDataConfig,
         this.solanaWeb3Manager,
+        // @ts-ignore
         this.web3Manager
       )
       await this.solanaAudiusData.init()
@@ -533,20 +535,26 @@ export class AudiusLibs {
 
     /** Contracts - Eth and Data Contracts */
     const contractsToInit = []
-    if (this.ethWeb3Manager && this.ethWeb3Config) {
-      const {
-        tokenAddress,
-        registryAddress,
-        claimDistributionContractAddress,
-        wormholeContractAddress
-      } = this.ethWeb3Config
-
+    if (this.ethWeb3Manager) {
       this.ethContracts = new EthContracts({
         ethWeb3Manager: this.ethWeb3Manager,
-        tokenContractAddress: tokenAddress,
-        registryAddress,
-        claimDistributionContractAddress,
-        wormholeContractAddress,
+        // @ts-ignore
+        tokenContractAddress: this.ethWeb3Config
+          ? this.ethWeb3Config.tokenAddress
+          : null,
+        // @ts-ignore
+        registryAddress: this.ethWeb3Config
+          ? this.ethWeb3Config.registryAddress
+          : null,
+        // @ts-ignore
+        claimDistributionContractAddress:
+          (this.ethWeb3Config &&
+            this.ethWeb3Config.claimDistributionContractAddress) ||
+          null,
+        // @ts-ignore
+        wormholeContractAddress:
+          (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) ||
+          null,
         isServer: this.isServer,
         logger: this.logger,
         isDebug: this.isDebug
@@ -557,7 +565,8 @@ export class AudiusLibs {
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        this.web3Config?.registryAddress,
+        // @ts-ignore
+        this.web3Config ? this.web3Config.registryAddress : null,
         this.isServer,
         this.logger
       )
@@ -583,15 +592,19 @@ export class AudiusLibs {
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
-        this.wormholeConfig.ethTokenBridgeAddress
+        this.wormholeConfig.ethTokenBridgeAddress,
+        // @ts-ignore
+        this.isServer
       )
     }
 
     /** Discovery Provider */
-    if (this.discoveryProviderConfig && this.ethContracts && this.web3Manager) {
+    if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider({
         userStateManager: this.userStateManager,
+        // @ts-ignore
         ethContracts: this.ethContracts,
+        // @ts-ignore
         web3Manager: this.web3Manager,
         localStorage: this.localStorage,
         ...this.discoveryProviderConfig
@@ -600,7 +613,7 @@ export class AudiusLibs {
     }
 
     /** Creator Node */
-    if (this.creatorNodeConfig && this.web3Manager && this.schemas) {
+    if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
       const creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ??
@@ -608,6 +621,7 @@ export class AudiusLibs {
         : this.creatorNodeConfig.fallbackUrl
 
       this.creatorNode = new CreatorNode(
+        // @ts-ignore
         this.web3Manager,
         creatorNodeEndpoint,
         this.isServer,
