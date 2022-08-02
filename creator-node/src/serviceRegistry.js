@@ -138,7 +138,7 @@ class ServiceRegistry {
     const { queue: syncProcessingQueue } = this.syncQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
     const { queue: imageProcessingQueue } = this.imageProcessingQueue
-    const { queue: transcodingQueue } = this.ranscodingQueue
+    const { queue: transcodingQueue } = this.transcodingQueue
     const { queue: monitoringQueue } = this.monitoringQueue
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
