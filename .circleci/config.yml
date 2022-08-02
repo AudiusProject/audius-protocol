@@ -959,10 +959,14 @@ workflows:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_tag >>
     jobs:
-      - bake-gcp-dev-image:
+      # - bake-gcp-dev-image:
+      #     context:
+      #       - GCP2
+      #     name: bake-gcp-dev-image
+      - test-mad-dog-e2e:
           context:
             - GCP2
-          name: bake-gcp-dev-image
+          name: test-mad-dog-e2e
 
 
   # in order to trigger this job
