@@ -172,7 +172,12 @@ async function _handleIssueSyncRequest({
    * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
    */
   const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-  SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint, immediate)
+  SyncRequestDeDuplicator.removeSync(
+    syncType,
+    userWallet,
+    secondaryEndpoint,
+    immediate
+  )
 
   /**
    * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
