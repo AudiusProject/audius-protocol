@@ -34,6 +34,7 @@ const {
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
+const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
@@ -171,7 +172,6 @@ async function _handleIssueSyncRequest({
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
    * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
    */
-  const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
   SyncRequestDeDuplicator.removeSync(
     syncType,
     userWallet,
