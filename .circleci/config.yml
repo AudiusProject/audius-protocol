@@ -68,12 +68,7 @@ commands:
                     {
                       "type": "mrkdwn",
                       "text": "*Author*: $CIRCLE_USERNAME"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "fields": [
+                    },
                     {
                       "type": "mrkdwn",
                       "text": "*Mentions*: << parameters.slack_mentions_user >>"
