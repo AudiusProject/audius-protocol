@@ -144,7 +144,7 @@ describe('Test Playlists', function () {
       .expect(200)
   })
 
-  it('successfully completes Audius playlist creation with imageDirCID', async function () {
+  it.only('successfully completes Audius playlist creation with imageDirCID', async function () {
     const testPicture = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
     const file = fs.readFileSync(testPicture)
     // Upload test cover image
