@@ -38,6 +38,9 @@ const ethWeb3 = new Web3(
 )
 
 const audiusLibsConfig = {
+  identityServiceConfig: {
+    url: identityServiceEndpoint
+  },
   web3Config: AudiusLibs.configExternalWeb3(
     dataContractsConfig.registryAddress,
     dataWeb3
