@@ -47,9 +47,10 @@ const getNewOrExistingSyncReq = ({
   const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
     syncType,
     userWallet,
-    secondaryEndpoint
+    secondaryEndpoint,
+    immediate
   )
-  if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
+  if (duplicateSyncJobInfo) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
@@ -81,15 +82,13 @@ const getNewOrExistingSyncReq = ({
     syncRequestParameters
   }
 
-  // Record sync in syncDeDuplicator for recurring syncs only
-  if (syncType === SyncType.Recurring) {
-    SyncRequestDeDuplicator.recordSync(
-      syncType,
-      userWallet,
-      secondaryEndpoint,
-      syncReqToEnqueue
-    )
-  }
+  SyncRequestDeDuplicator.recordSync(
+    syncType,
+    userWallet,
+    secondaryEndpoint,
+    syncReqToEnqueue,
+    immediate
+  )
 
   return { syncReqToEnqueue }
 }
