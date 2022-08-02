@@ -674,7 +674,7 @@ async function secondarySyncFromPrimary({
   blockNumber = null
 }) {
   const { prometheusRegistry } = serviceRegistry
-  const { secondarySyncFromPrimary }Metric = prometheusRegistry.getMetric(
+  const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames
       .SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM
   )
