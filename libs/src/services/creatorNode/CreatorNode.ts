@@ -28,7 +28,7 @@ type Metadata = {
 }
 
 export type PlaylistMetadata = {
-  playlist_contents: Nullable<number[]>
+  playlist_contents: any
   playlist_id: number
   playlist_name: string
   playlist_image_sizes_multihash: string

@@ -34,6 +34,7 @@ const Web3 = require('./web3')
 
 const { Keypair } = require('@solana/web3.js')
 const { PublicKey } = require('@solana/web3.js')
+const { EntityManager } = require('./api/entityManager')
 const { getPlatformLocalStorage } = require('./utils/localStorage')
 
 class AudiusLibs {

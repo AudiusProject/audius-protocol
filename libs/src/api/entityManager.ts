@@ -1,6 +1,7 @@
 import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
 import type { Nullable } from '../utils'
+import web3 from '../web3'
 
 export enum Action {
   CREATE = 'Create',
@@ -123,10 +124,14 @@ export class EntityManager extends Base {
         coverArt,
         true // square
       )
+      const web3 = this.ethWeb3Manager.getWeb3()
+      const currentBlockNumber = await web3.eth.getBlockNumber()
+      const currentBlock = await web3.eth.getBlock(currentBlockNumber)
+      const tracks = trackIds.map(trackId => ({ track: trackId, time: currentBlock.timestamp }))
       const dirCID = updatedPlaylistImage.dirCID
       const metadata: PlaylistMetadata = {
         playlist_id: entityId,
-        playlist_contents: trackIds,
+        playlist_contents: { track_ids: tracks },
         playlist_name: playlistName,
         playlist_image_sizes_multihash: dirCID,
         description,
@@ -199,7 +204,7 @@ export class EntityManager extends Base {
   async updatePlaylist({
     playlistId,
     playlistName,
-    trackIds,
+    playlistContents,
     description,
     isAlbum,
     isPrivate,
@@ -207,8 +212,8 @@ export class EntityManager extends Base {
     logger = console
   }: {
     playlistId: number
+    playlistContents: any
     playlistName: Nullable<string>
-    trackIds: Nullable<number[]>
     description: Nullable<string>
     isAlbum: Nullable<boolean>
     isPrivate: Nullable<boolean>
@@ -217,7 +222,9 @@ export class EntityManager extends Base {
   }): Promise<PlaylistOperationResponse> {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
+
     try {
+
       const currentUserId: string | null =
         this.userStateManager.getCurrentUserId()
       if (!playlistId || playlistId === undefined) {
@@ -245,9 +252,13 @@ export class EntityManager extends Base {
         await this.discoveryProvider.getPlaylists(1, 0, [playlistId], userId)
       )[0]
 
+      if (playlistContents) {
+        playlistContents.track_ids = playlistContents.track_ids.map((track_obj: { track: any; time: any }) => ({ track: track_obj.track, time: track_obj.time }))
+      }
+
       const metadata: PlaylistMetadata = {
         playlist_id: playlistId,
-        playlist_contents: trackIds,
+        playlist_contents: playlistContents ?? playlist.playlist_contents,
         playlist_name: playlistName ?? playlist.playlist_name,
         playlist_image_sizes_multihash:
           dirCID || playlist.playlist_image_sizes_multihash,
@@ -257,7 +268,6 @@ export class EntityManager extends Base {
       }
       const { metadataMultihash } =
         await this.creatorNode.uploadPlaylistMetadata(metadata)
-
       const resp = await this.manageEntity({
         userId,
         entityType,
@@ -276,7 +286,7 @@ export class EntityManager extends Base {
       return responseValues
     }
   }
-
+  
   /**
    * Manage an entity with the updated data contract flow
    * Leveraged to manipulate User/Track/Playlist/+ other entities

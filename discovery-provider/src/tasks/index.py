@@ -720,7 +720,6 @@ def index_blocks(self, db, blocks_list):
                     Add state changes in block to db (users, tracks, etc.)
                     """
                     process_state_changes_start_time = time.time()
-                    logger.info(f"index.py | processing {txs_grouped_by_type}")
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit

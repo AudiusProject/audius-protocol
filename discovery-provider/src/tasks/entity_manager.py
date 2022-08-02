@@ -190,13 +190,19 @@ def create_playlist(params: ManagePlaylistParameters):
         return
 
     metadata = params.ipfs_metadata[params.metadata_cid]
-
-    track_ids = metadata["playlist_contents"]
-    playlist_contents = []
-    for track_id in track_ids:
-        playlist_contents.append({"track": track_id, "time": params.block_integer_time})
+    tracks = metadata["playlist_contents"].get("track_ids", [])
+    tracks_with_index_time = []
+    for track in tracks:
+        tracks_with_index_time.append(
+            {
+                "track": track["track"],
+                "metadata_time": track["time"],
+                "time": params.block_integer_time,
+            }
+        )
     create_playlist_record = Playlist(
         playlist_id=params.entity_id,
+        metadata_multihash=params.metadata_cid,
         playlist_owner_id=params.user_id,
         is_album=metadata.get("is_album", False),
         description=metadata["description"],
@@ -204,7 +210,7 @@ def create_playlist(params: ManagePlaylistParameters):
         playlist_image_sizes_multihash=metadata["playlist_image_sizes_multihash"],
         playlist_name=metadata["playlist_name"],
         is_private=metadata.get("is_private", False),
-        playlist_contents={"track_ids": playlist_contents},
+        playlist_contents={"track_ids": tracks_with_index_time},
         created_at=params.block_datetime,
         updated_at=params.block_datetime,
         blocknumber=params.block_number,
@@ -234,13 +240,15 @@ def update_playlist(params: ManagePlaylistParameters):
     updated_playlist = copy_record(
         existing_playlist, params.block_number, params.event_blockhash, params.txhash
     )
-    parse_playlist_data_event(
+    process_playlist_data_event(
         updated_playlist,
         metadata,
         params.block_integer_time,
         params.block_datetime,
+        params.metadata_cid,
     )
     params.playlists_to_save[params.entity_id].append(updated_playlist)
+    params.existing_playlist_id_to_playlist[params.entity_id] = updated_playlist
 
 
 def delete_playlist(params: ManagePlaylistParameters):
@@ -340,11 +348,44 @@ def get_entity_manager_events_tx(update_task, tx_receipt):
     )().processReceipt(tx_receipt)
 
 
-def parse_playlist_data_event(
+def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):
+    # mapping of track's metadata time to index time
+    metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
+    for track in playlist_record.playlist_contents["track_ids"]:
+        track_id = track["track"]
+        metadata_time = track["metadata_time"]
+
+        metadata_index_time_dict[track_id][metadata_time] = track["time"]
+
+    updated_tracks = []
+    for track in playlist_metadata["playlist_contents"]["track_ids"]:
+        track_id = track["track"]
+        metadata_time = track["time"]
+        index_time = block_integer_time  # default to current block for new tracks
+
+        if (
+            track_id in metadata_index_time_dict
+            and metadata_time in metadata_index_time_dict[track_id]
+        ):
+            # track exists in prev record (reorder / delete)
+            index_time = metadata_index_time_dict[track_id][metadata_time]
+
+        updated_tracks.append(
+            {
+                "track": track_id,
+                "time": index_time,
+                "metadata_time": metadata_time,
+            }
+        )
+    return {"track_ids": updated_tracks}
+
+
+def process_playlist_data_event(
     playlist_record: Playlist,
     playlist_metadata,
     block_integer_time,
     block_datetime,
+    metadata_cid,
 ):
     playlist_record.is_album = (
         playlist_metadata["is_album"] if "is_album" in playlist_metadata else False
@@ -360,17 +401,11 @@ def parse_playlist_data_event(
     playlist_record.is_private = (
         playlist_metadata["is_private"] if "is_private" in playlist_metadata else False
     )
-    playlist_content_array = []
-    track_ids = playlist_metadata["playlist_contents"]
-    if track_ids:
-        for track_id in track_ids:
-            playlist_content_array.append(
-                {"track": track_id, "time": block_integer_time}
-            )
-    playlist_record.playlist_contents = {"track_ids": playlist_content_array}
+    playlist_record.playlist_contents = process_playlist_contents(
+        playlist_record, playlist_metadata, block_integer_time
+    )
     playlist_record.created_at = block_datetime
     playlist_record.updated_at = block_datetime
+    playlist_record.metadata_multihash = metadata_cid
 
-    logger.info(f"index.py | AudiusData | Created playlist record {playlist_record}")
-    # TODO: All required fields validation
-    return playlist_record
+    logger.info(f"index.py | AudiusData | Updated playlist record {playlist_record}")
