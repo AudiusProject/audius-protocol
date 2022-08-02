@@ -84,23 +84,29 @@ function bump-npm () {
 
 # Merge the created branch into master, then delete the branch
 function merge-bump () {
-    git checkout master -f
+    (
+        # exit the function/subshell early on error
+        # https://stackoverflow.com/a/58964551
+        # http://mywiki.wooledge.org/BashFAQ/105
+        set -e
 
-    # pull in any additional commits that may have trickled in
-    git pull
+        git checkout master -f
 
-    # squash branch commit
-    git merge --squash ${STUB}-${VERSION}
-    git commit -m "$(commit-message)"
+        # pull in any additional commits that may have trickled in
+        git pull
 
-    # tag release
-    git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
-    git push origin --tags
+        # squash branch commit
+        git merge --squash ${STUB}-${VERSION} || exit 1
+        git commit -m "$(commit-message)" || exit 1
 
-    # if pushing fails, ensure we cleanup()
-    git push -u origin master \
-    && git push origin :${STUB}-${VERSION} \
-    || $(exit 1)
+        # tag release
+        git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)" || exit 1
+        git push origin --tags || exit 1
+
+        # if pushing fails, ensure we cleanup()
+        git push -u origin master || exit 1
+        git push origin :${STUB}-${VERSION}
+    )
 }
 
 # publish to npm
