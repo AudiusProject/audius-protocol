@@ -45,14 +45,8 @@ const recoverWalletFromSyncData = ({
 const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
   if (!forceResyncConfig) return false
 
-  let {
-    apiSigning: { data, signature, timestamp },
-    wallet,
-    forceResync,
-    libs,
-    logContext,
-    logger
-  } = forceResyncConfig
+  let { apiSigning, wallet, forceResync, libs, logContext, logger } =
+    forceResyncConfig
 
   if (logContext) {
     logger = genericLogger.child(logContext)
@@ -64,7 +58,12 @@ const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
     `Checking shouldForceResync: wallet=${wallet} forceResync=${forceResync}`
   )
 
-  if (!forceResync || !data || !timestamp || !signature) {
+  if (!forceResync || !apiSigning) {
+    return false
+  }
+
+  const { data, timestamp, signature } = apiSigning
+  if (!data || !timestamp || !signature) {
     return false
   }
 

@@ -1,6 +1,5 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
-import { signSyncData } from '../../../services/sync/secondarySyncFromPrimaryUtils'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -36,6 +35,7 @@ const {
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+const { signSyncData } = require('../../sync/secondarySyncFromPrimaryUtils')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'

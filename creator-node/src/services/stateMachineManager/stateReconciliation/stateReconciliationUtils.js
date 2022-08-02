@@ -1,9 +1,7 @@
 const _ = require('lodash')
 const axios = require('axios')
 
-const config = require('../../../config')
 const { logger: genericLogger } = require('../../../logging')
-const { generateTimestampAndSignature } = require('../../../../src/apiSigning')
 const redisClient = require('../../../redis')
 const Utils = require('../../../utils')
 const {
