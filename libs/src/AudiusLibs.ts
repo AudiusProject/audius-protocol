@@ -554,10 +554,10 @@ export class AudiusLibs {
 
       contractsToInit.push(this.ethContracts.init())
     }
-    if (this.web3Manager && this.web3Config) {
+    if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        this.web3Config.registryAddress,
+        this.web3Config?.registryAddress,
         this.isServer,
         this.logger
       )
