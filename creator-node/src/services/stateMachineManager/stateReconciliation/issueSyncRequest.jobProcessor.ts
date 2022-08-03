@@ -35,7 +35,10 @@ const {
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-const { signSyncData } = require('../../sync/secondarySyncFromPrimaryUtils')
+const {
+  generateDataForSignatureRecovery,
+  signSyncData
+} = require('../../sync/secondarySyncFromPrimaryUtils')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
@@ -232,7 +235,8 @@ async function _handleIssueSyncRequest({
    */
   try {
     if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-      const { timestamp, signature } = signSyncData(syncRequestParameters.data)
+      const data = generateDataForSignatureRecovery(syncRequestParameters.data)
+      const { timestamp, signature } = signSyncData(data)
 
       await axios({
         ...syncRequestParameters,
