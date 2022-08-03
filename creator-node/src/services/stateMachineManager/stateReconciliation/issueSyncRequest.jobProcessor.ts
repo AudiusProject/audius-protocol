@@ -111,19 +111,21 @@ module.exports = async function ({
     syncReqToEnqueue?.syncType === SyncType.Manual
       ? MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS
       : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-  if (!_.isEmpty(syncReqToEnqueue) && attemptNumber < maxRetries) {
-    logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
-    const queueName =
-      syncReqToEnqueue?.syncType === SyncType.Manual
-        ? QUEUE_NAMES.MANUAL_SYNC
-        : QUEUE_NAMES.RECURRING_SYNC
-    jobsToEnqueue = {
-      [queueName]: [{ ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }]
+  if (!_.isEmpty(syncReqToEnqueue)) {
+    if (attemptNumber < maxRetries) {
+      logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
+      const queueName =
+        syncReqToEnqueue?.syncType === SyncType.Manual
+          ? QUEUE_NAMES.MANUAL_SYNC
+          : QUEUE_NAMES.RECURRING_SYNC
+      jobsToEnqueue = {
+        [queueName]: [{ ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }]
+      }
+    } else {
+      logger.info(
+        `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
+      )
     }
-  } else {
-    logger.info(
-      `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
-    )
   }
 
   // Make metrics to record
