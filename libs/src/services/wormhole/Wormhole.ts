@@ -21,7 +21,7 @@ import type {
 import type { GetSignedVAAResponse } from '@certusone/wormhole-sdk/lib/cjs/proto/publicrpc/v1/publicrpc'
 
 export type WormholeConfig = {
-  rpcHosts: string | string[]
+  rpcHosts: string[]
   solBridgeAddress: string
   solTokenBridgeAddress: string
   ethBridgeAddress: string

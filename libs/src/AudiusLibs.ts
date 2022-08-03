@@ -578,7 +578,6 @@ export class AudiusLibs {
         this.ethContracts,
         this.identityService,
         this.solanaWeb3Manager,
-        // @ts-expect-error -- broken for some reason
         this.wormholeConfig.rpcHosts,
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
