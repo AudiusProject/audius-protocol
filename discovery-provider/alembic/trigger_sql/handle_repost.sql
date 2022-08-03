@@ -5,16 +5,6 @@ declare
   milestone_name text;
   milestone integer;
 begin
-  -- ensure agg rows present
-  -- this can be removed if we do this elsewhere
-  -- but is here now for safety
-  insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
-  if new.repost_type = 'track' then
-    insert into aggregate_track (track_id) values (new.repost_item_id) on conflict do nothing;
-  else
-    insert into aggregate_playlist (playlist_id) values (new.repost_item_id) on conflict do nothing;
-  end if;
-
 
   -- update agg user
   update aggregate_user 

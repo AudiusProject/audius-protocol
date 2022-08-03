@@ -3,10 +3,6 @@ begin
 
   insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
-  -- for extra safety ensure agg_user
-  -- this should just happen in handle_user
-  insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
-
   if new.is_album then
     update aggregate_user 
     set album_count = (
