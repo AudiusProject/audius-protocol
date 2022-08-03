@@ -10,7 +10,7 @@ describe('test txRelay: selectWallet()', async () => {
   beforeEach(async () => {
     // reload the module each time for fresh state
     delete require.cache[require.resolve('../src/relay/txRelay')]
-    delete require.cache[require.resolve('../src/LibsWeb3')]
+    delete require.cache[require.resolve('../src/web3')]
 
     relayerWallets = [
       {
