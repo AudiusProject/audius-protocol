@@ -1,8 +1,9 @@
 from sqlalchemy import Column, DateTime, Float, Index, Integer, text
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class RelatedArtist(Base):
+class RelatedArtist(Base, RepresentableMixin):
     __tablename__ = "related_artists"
     __table_args__ = (
         Index(
