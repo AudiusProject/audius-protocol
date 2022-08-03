@@ -63,7 +63,7 @@ const respondToURSMRequestForProposalController = async (req) => {
  */
 const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
-  if (_.isEmpty(serviceRegistry?.syncQueue)) {
+  if (_.isEmpty(serviceRegistry?.syncQueue) || _.isEmpty(serviceRegistry?.syncImmediateQueue)) {
     return errorResponseServerError('Sync Queue is not up and running yet')
   }
   const nodeConfig = serviceRegistry.nodeConfig
