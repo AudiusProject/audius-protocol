@@ -40,7 +40,7 @@ class SyncImmediateQueue {
     const jobProcessorConcurrency = this.nodeConfig.get(
       'syncQueueMaxConcurrency'
     )
-    this.queue.process(jobProcessorConcurrency, async (job, done) => {
+    this.queue.process(jobProcessorConcurrency, async (job) => {
       const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
 
       try {
@@ -57,8 +57,6 @@ class SyncImmediateQueue {
           e.message
         )
       }
-
-      done()
     })
   }
 
