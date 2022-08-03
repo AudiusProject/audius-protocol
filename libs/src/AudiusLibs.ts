@@ -13,8 +13,7 @@ import { EthContracts } from './services/ethContracts'
 import {
   SolanaWeb3Manager,
   SolanaUtils,
-  SolanaWeb3Config,
-  RewardsAttester
+  SolanaWeb3Config
 } from './services/solana'
 import { AudiusContracts } from './services/dataContracts'
 import { IdentityService } from './services/identity'
@@ -49,7 +48,6 @@ import Web3 from './LibsWeb3'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import type { BaseConstructorArgs } from './api/base'
-import { SanityChecks } from './sanityChecks'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -340,13 +338,8 @@ export class AudiusLibs {
   isDebug: boolean
   logger: Logger
 
-  // Legacy fields to maintain backwards compatibility
-  AudiusABIDecoder = AudiusABIDecoder
-  Utils = Utils
-  SolanaUtils = SolanaUtils
-  SanityChecks = SanityChecks
-  RewardsAttester = RewardsAttester
-  CreatorNode = CreatorNode
+  AudiusABIDecoder: AudiusABIDecoder
+  Utils: Utils
 
   // Services to initialize. Initialized in .init().
   userStateManager: Nullable<UserStateManager>
@@ -426,6 +419,9 @@ export class AudiusLibs {
     this.isServer = isServer
     this.isDebug = isDebug
     this.logger = logger
+
+    this.AudiusABIDecoder = AudiusABIDecoder
+    this.Utils = Utils
 
     // Services to initialize. Initialized in .init().
     this.userStateManager = null
