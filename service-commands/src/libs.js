@@ -2,8 +2,7 @@ const fs = require('fs')
 const untildify = require('untildify')
 const Web3 = require('web3')
 const axios = require('axios')
-const { libs: AudiusLibs } = require('@audius/sdk')
-const { CreatorNode, Utils } = AudiusLibs
+const { libs: AudiusLibs, CreatorNode, Utils } = require('@audius/sdk')
 const config = require('../config/config')
 
 const DISCOVERY_NODE_ENDPOINT = 'http://dn1_web-server_1:5000'
@@ -76,15 +75,15 @@ function LibsWrapper(walletIndex = 0) {
       USER_NODE,
       IDENTITY_SERVICE
     ] = [
-        config.get('registry_address'),
-        config.get('web3_provider_urls'),
-        config.get('eth_token_address'),
-        config.get('eth_registry_address'),
-        config.get('eth_provider_url'),
-        config.get('eth_owner_wallet'),
-        config.get('user_node'),
-        config.get('identity_service')
-      ]
+      config.get('registry_address'),
+      config.get('web3_provider_urls'),
+      config.get('eth_token_address'),
+      config.get('eth_registry_address'),
+      config.get('eth_provider_url'),
+      config.get('eth_owner_wallet'),
+      config.get('user_node'),
+      config.get('identity_service')
+    ]
 
     const dataWeb3 = new Web3(
       new Web3.providers.HttpProvider(WEB3_PROVIDER_URLS)
@@ -218,7 +217,7 @@ function LibsWrapper(walletIndex = 0) {
       trackFile,
       null /* image */,
       trackMetadata,
-      () => { } /* on progress */
+      () => {} /* on progress */
     )
     if (error) throw error
     return trackId

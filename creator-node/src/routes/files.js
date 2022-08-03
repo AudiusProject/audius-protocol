@@ -38,8 +38,7 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { libs } = require('@audius/sdk')
-const Utils = libs.Utils
+const { Utils } = require('@audius/sdk')
 
 const { promisify } = require('util')
 

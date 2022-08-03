@@ -12,8 +12,7 @@ const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { libs } = require('@audius/sdk')
-const LibsUtils = libs.Utils
+const { libs, Utils: LibsUtils } = require('@audius/sdk')
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 

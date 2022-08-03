@@ -8,8 +8,7 @@ const {
 const { getSegmentsDuration } = require('../../segmentDuration')
 
 const models = require('../../models')
-const { libs } = require('@audius/sdk')
-const Utils = libs.Utils
+const { Utils } = require('@audius/sdk')
 const DBManager = require('../../dbManager')
 const TranscodingQueue = require('../../TranscodingQueue')
 const FileManager = require('../../fileManager')

@@ -1,5 +1,4 @@
-const { libs } = require('@audius/sdk')
-const LibsUtils = libs.Utils
+const { libs, Utils: LibsUtils } = require('@audius/sdk')
 const Web3 = require('web3')
 const web3 = new Web3()
 
