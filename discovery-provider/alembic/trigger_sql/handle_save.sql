@@ -5,16 +5,13 @@ declare
   milestone_name text;
   milestone integer;
 begin
-  -- ensure agg rows present
-  -- this can be removed if we do this elsewhere
-  -- but is here now for safety
+
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
   if new.save_type = 'track' then
     insert into aggregate_track (track_id) values (new.save_item_id) on conflict do nothing;
   else
-    insert into aggregate_playlist (playlist_id) values (new.save_item_id) on conflict do nothing;
+    insert into aggregate_playlist (playlist_id, is_album) values (new.save_item_id, new.save_type = 'album') on conflict do nothing;
   end if;
-
 
   -- update agg track or playlist
   if new.save_type = 'track' then

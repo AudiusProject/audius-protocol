@@ -1,11 +1,6 @@
 create or replace function handle_track() returns trigger as $$
 begin
-  -- ensure agg_track
-  -- this could be the only place we do this one:
   insert into aggregate_track (track_id) values (new.track_id) on conflict do nothing;
-
-  -- for extra safety ensure agg_user
-  -- this should just happen in handle_user
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
   update aggregate_user 
