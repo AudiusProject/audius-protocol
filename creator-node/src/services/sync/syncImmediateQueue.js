@@ -52,7 +52,7 @@ class SyncImmediateQueue {
           forceResync
         )
       } catch (e) {
-        const msg = `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
+        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
         logger.error(msg)
         throw e
       }
