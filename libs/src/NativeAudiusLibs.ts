@@ -363,14 +363,14 @@ export class AudiusLibs {
     }
 
     /** Web3 Managers */
-    if (this.ethWeb3Config && this.identityService && this.hedgehog) {
+    if (this.ethWeb3Config) {
       this.ethWeb3Manager = new EthWeb3Manager({
         web3Config: this.ethWeb3Config,
         identityService: this.identityService,
         hedgehog: this.hedgehog
       })
     }
-    if (this.web3Config && this.identityService && this.hedgehog) {
+    if (this.web3Config) {
       this.web3Manager = new Web3Manager({
         web3Config: this.web3Config,
         identityService: this.identityService,
@@ -385,7 +385,7 @@ export class AudiusLibs {
 
     /** Contracts - Eth and Data Contracts */
     const contractsToInit = []
-    if (this.ethWeb3Manager && this.ethWeb3Config) {
+    if (this.ethWeb3Manager) {
       const {
         tokenAddress,
         registryAddress,
@@ -418,7 +418,7 @@ export class AudiusLibs {
     await Promise.all(contractsToInit)
 
     /** Discovery Provider */
-    if (this.discoveryProviderConfig && this.ethContracts && this.web3Manager) {
+    if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider({
         userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
@@ -430,7 +430,7 @@ export class AudiusLibs {
     }
 
     /** Creator Node */
-    if (this.creatorNodeConfig && this.web3Manager && this.schemas) {
+    if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
       const creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ??
