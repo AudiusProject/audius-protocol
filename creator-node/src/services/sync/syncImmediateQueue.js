@@ -4,13 +4,15 @@ const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
-const LOCK_DURATION = 1000 * 60 * 30 // 30 minutes
+const LOCK_DURATION = 1000 * 60 * 5 // 5 minutes
 
 /**
- * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
+ * SyncImmediateQueue - handles enqueuing and processing of immediate manual Sync jobs on secondary
  * sync job = this node (secondary) will sync data for a user from their primary
+ * this queue is only for manual immediate syncs which are awaited until they're finished, for regular
+ * syncs look at SyncQueue
  */
-class SyncQueue {
+class SyncImmediateQueue {
   /**
    * Construct bull queue and define job processor
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
@@ -21,7 +23,7 @@ class SyncQueue {
     this.redis = redis
     this.serviceRegistry = serviceRegistry
 
-    this.queue = new Bull('sync-processing-queue', {
+    this.queue = new Bull('sync-immediate-processing-queue', {
       redis: {
         host: this.nodeConfig.get('redisHost'),
         port: this.nodeConfig.get('redisPort')
@@ -35,18 +37,10 @@ class SyncQueue {
       }
     })
 
-    /**
-     * Queue will process tasks concurrently if provided a concurrency number, and will process all on
-     *    main thread if provided an in-line job processor function; it will distribute across child processes
-     *    if provided an absolute path to separate file containing job processor function.
-     *    https://github.com/OptimalBits/bull/tree/013c51942e559517c57a117c27a550a0fb583aa8#separate-processes
-     *
-     * @dev TODO - consider recording failures in redis
-     */
     const jobProcessorConcurrency = this.nodeConfig.get(
       'syncQueueMaxConcurrency'
     )
-    this.queue.process(jobProcessorConcurrency, async (job, done) => {
+    this.queue.process(jobProcessorConcurrency, async (job) => {
       const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
 
       try {
@@ -63,16 +57,19 @@ class SyncQueue {
           e.message
         )
       }
-
-      done()
     })
   }
 
-  async enqueueSync({ walletPublicKeys, creatorNodeEndpoint, forceResync }) {
+  async processImmediateSync({
+    walletPublicKeys,
+    creatorNodeEndpoint,
+    forceResync
+  }) {
     const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
     const job = await this.queue.add(jobProps)
-    return job
+    const result = await job.finished()
+    return result
   }
 }
 
-module.exports = SyncQueue
+module.exports = SyncImmediateQueue
