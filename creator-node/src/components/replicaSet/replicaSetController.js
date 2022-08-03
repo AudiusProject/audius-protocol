@@ -16,7 +16,6 @@ const {
   enqueueSync,
   processImmediateSync
 } = require('./syncQueueComponentService')
-const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
 
 const router = express.Router()
 
@@ -98,13 +97,12 @@ const syncRouteController = async (req, res) => {
    */
   if (immediate) {
     try {
-      await processImmediateSync(
+      await processImmediateSync({
         serviceRegistry,
         walletPublicKeys,
         creatorNodeEndpoint,
-        blockNumber,
         forceResync
-      )
+    })
     } catch (e) {
       return errorResponseServerError(e)
     }
@@ -123,7 +121,6 @@ const syncRouteController = async (req, res) => {
           serviceRegistry,
           walletPublicKeys: [wallet],
           creatorNodeEndpoint,
-          blockNumber,
           forceResync
         })
         delete syncDebounceQueue[wallet]
