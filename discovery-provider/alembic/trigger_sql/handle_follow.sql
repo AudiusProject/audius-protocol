@@ -3,6 +3,8 @@ declare
   new_follower_count int;
   milestone integer;
 begin
+  insert into aggregate_user (user_id) values (new.followee_user_id) on conflict do nothing;
+  insert into aggregate_user (user_id) values (new.follower_user_id) on conflict do nothing;
 
   update aggregate_user 
   set following_count = (

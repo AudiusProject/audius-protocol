@@ -6,6 +6,13 @@ declare
   milestone integer;
 begin
 
+  insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
+  if new.save_type = 'track' then
+    insert into aggregate_track (track_id) values (new.save_item_id) on conflict do nothing;
+  else
+    insert into aggregate_playlist (playlist_id, is_album) values (new.save_item_id, new.save_type = 'album') on conflict do nothing;
+  end if;
+
   -- update agg track or playlist
   if new.save_type = 'track' then
     milestone_name := 'TRACK_SAVE_COUNT';

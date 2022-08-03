@@ -1,6 +1,7 @@
 create or replace function handle_playlist() returns trigger as $$
 begin
 
+  insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
   insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
   if new.is_album then
