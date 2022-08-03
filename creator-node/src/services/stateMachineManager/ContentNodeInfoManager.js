@@ -4,7 +4,6 @@ const _ = require('lodash')
 /**
  * Queries to periodically keep the mapping of (Content Node endpoint -> SP ID)
  * up to date.
- * TODO: Make updateContentNodeChainInfo into a cron or its own queue after deciding on a reasonable interval.
  */
 class ContentNodeInfoManager {
   constructor() {

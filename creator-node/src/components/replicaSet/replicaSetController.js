@@ -14,6 +14,9 @@ const {
 const { ensureStorageMiddleware } = require('../../middlewares')
 const { enqueueSync } = require('./syncQueueComponentService')
 const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
+const {
+  generateDataForSignatureRecovery
+} = require('services/sync/secondarySyncFromPrimaryUtils')
 
 const router = express.Router()
 
@@ -85,7 +88,7 @@ const syncRouteController = async (req, res) => {
   const syncType = req.body.sync_type
   if (syncType) {
     req.logger.info(
-      `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${primaryEndpoint}`
+      `SyncRouteController - sync of type: ${syncType} initiated for ${wallet} from ${primaryEndpoint}`
     )
   }
 
@@ -93,9 +96,7 @@ const syncRouteController = async (req, res) => {
    * If immediate sync requested, enqueue immediately and return response
    * Else, debounce + add sync to queue
    */
-  const dataForSignatureRecovery = { ...req.body }
-  delete dataForSignatureRecovery.timestamp
-  delete dataForSignatureRecovery.signature
+  const data = generateDataForSignatureRecovery(req.body)
 
   if (immediate) {
     try {
@@ -109,7 +110,7 @@ const syncRouteController = async (req, res) => {
           apiSigning: {
             timestamp: req.body.timestamp,
             signature: req.body.signature,
-            data: dataForSignatureRecovery
+            data
           },
           libs: req.app.get('audiusLibs'),
           logger: req.logger,
@@ -139,7 +140,7 @@ const syncRouteController = async (req, res) => {
           apiSigning: {
             timestamp: req.body.timestamp,
             signature: req.body.signature,
-            data: dataForSignatureRecovery
+            data
           },
           wallet,
           logContext: req.logContext

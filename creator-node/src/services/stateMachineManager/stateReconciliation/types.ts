@@ -1,5 +1,3 @@
-// Issue sync request job
-
 export type SyncRequestAxiosData = {
   wallet: string[]
   creator_node_endpoint?: string
@@ -17,8 +15,16 @@ export type SyncRequestAxiosParams = {
   data: SyncRequestAxiosData
 }
 
+// Issue sync request job
+export type ForceResyncSigningData = {
+  wallet: string[]
+  creator_node_endpoint?: string
+  sync_type?: string
+  immediate?: boolean
+}
+
 export type ForceResyncAuthParams = {
-  data: SyncRequestAxiosParams
+  data: ForceResyncSigningData
   timestamp: string
   signature: string
 }

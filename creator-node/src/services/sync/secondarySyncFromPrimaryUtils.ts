@@ -1,7 +1,8 @@
 import type {
-  SyncRequestAxiosData,
   ForceResyncAuthParams,
-  ForceResyncConfig
+  ForceResyncConfig,
+  ForceResyncSigningData,
+  SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
 
 const _ = require('lodash')
@@ -14,8 +15,18 @@ const {
   generateTimestampAndSignature
 } = require('../../apiSigning')
 
+const generateDataForSignatureRecovery = (body: SyncRequestAxiosData) => {
+  const { wallet, creator_node_endpoint, sync_type, immediate } = body
+  return {
+    wallet,
+    creator_node_endpoint,
+    sync_type,
+    immediate
+  }
+}
+
 // Function to sign sync data. This is used to determine whether or not to `forceResync`
-const signSyncData = (syncData: SyncRequestAxiosData) => {
+const signSyncData = (syncData: ForceResyncSigningData) => {
   return generateTimestampAndSignature(
     syncData,
     config.get('delegatePrivateKey')
@@ -85,7 +96,7 @@ const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
       `actual: ${actualPrimaryWallet} recovered: ${recoveredPrimaryWallet}`
     )
 
-    // Check that the receovered public key = primary wallet on chain
+    // Check that the recovered public key = primary wallet on chain
     return recoveredPrimaryWallet === actualPrimaryWallet
   } catch (e: any) {
     logger.error(`Could not verify primary delegate owner key: ${e.message}`)
@@ -94,4 +105,4 @@ const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
   return false
 }
 
-export { shouldForceResync, signSyncData }
+export { shouldForceResync, signSyncData, generateDataForSignatureRecovery }
