@@ -16,7 +16,7 @@ const { enqueueSync } = require('./syncQueueComponentService')
 const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
 const {
   generateDataForSignatureRecovery
-} = require('services/sync/secondarySyncFromPrimaryUtils')
+} = require('../../services/sync/secondarySyncFromPrimaryUtils')
 
 const router = express.Router()
 

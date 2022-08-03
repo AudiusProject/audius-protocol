@@ -97,7 +97,9 @@ const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
     )
 
     // Check that the recovered public key = primary wallet on chain
-    return recoveredPrimaryWallet === actualPrimaryWallet
+    return (
+      recoveredPrimaryWallet.toLowerCase() === actualPrimaryWallet.toLowerCase()
+    )
   } catch (e: any) {
     logger.error(`Could not verify primary delegate owner key: ${e.message}`)
   }
