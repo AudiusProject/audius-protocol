@@ -126,7 +126,7 @@ export class IdentityService {
   }
 
   async getUserEvents(walletAddress: string) {
-    return await this._makeRequest({
+    return await this._makeRequest<{ needsRecoveryEmail: boolean }>({
       url: '/userEvents',
       method: 'get',
       params: { walletAddress }

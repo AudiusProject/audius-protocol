@@ -87,7 +87,8 @@ export class Utils {
   // Function to check if the endpont/health_check returns JSON object [ {'healthy':true} ]
   static async isHealthy(url: string) {
     try {
-      const { data: body } = await axios.get(url + '/health_check')
+      const { data: body }: AxiosResponse<{ data: { healthy: boolean } }> =
+        await axios.get(url + '/health_check')
       return body.data.healthy
     } catch (error) {
       return false
