@@ -16,12 +16,9 @@ fi
 
 set -ex
 
-# Finds the lastest commit that looks like a version commit,
-# and gets the list of commits after that
+# Generate change log between last released sha and HEAD
 function git-changelog () {
-    # Find the latest release commit by using the last time the first `version` key changed
-    version_line_number=$(grep -m 1 -n version package.json | cut -d: -f 1)
-    release_commit=$(git blame -L ${version_line_number},+1 --porcelain -- package.json | awk 'NR==1{ print $1 }')
+    release_commit=${1}
 
     # Print the log as "- <commmiter short date> [<commit short hash>] <commit message> <author name>"
     git log --pretty=format:"- %cd [%h] %s [%an]" --date=short $release_commit..HEAD
@@ -60,10 +57,14 @@ function bump-npm () {
     git reset --hard ${GIT_TAG}
 
     # grab change log early, before the version bump
-    CHANGE_LOG=$(git-changelog)
+    LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
+    CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
 
     # Patch the version
     VERSION=$(npm version patch)
+    tmp=$(mktemp)
+    jq ". += {audius: {releaseSHA: \"${GIT_TAG}\"}}" package.json > "$tmp" \
+        && mv "$tmp" package.json
 
     # Build project
     npm i
@@ -72,31 +73,48 @@ function bump-npm () {
     # Publishing dry run, prior to pushing a branch
     npm publish . --access public --dry-run
 
-    # Commit to a new branch, and tag
+    # Commit to a new branch
     git checkout -b ${STUB}-${VERSION}
     git add .
     git commit -m "$(commit-message)"
-    git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)"
 
-    # Push branch and tags to remote
+    # Push branch to remote
     git push -u origin ${STUB}-${VERSION}
-    git push origin --tags
 }
 
 # Merge the created branch into master, then delete the branch
 function merge-bump () {
-    git checkout master -f
-    git merge ${STUB}-${VERSION} -m "$(commit-message)"
+    (
+        git checkout master -f
 
-    git push -u origin master
+        # pull in any additional commits that may have trickled in
+        git pull
 
-    # clean up release branches
-    git push origin :${STUB}-${VERSION}
+        # squash branch commit
+        git merge --squash ${STUB}-${VERSION} || exit 1
+        git commit -m "$(commit-message)" || exit 1
+
+        # tag release
+        git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)" || exit 1
+        git push origin --tags || exit 1
+
+        # if pushing fails, ensure we cleanup()
+        git push -u origin master || exit 1
+        git push origin :${STUB}-${VERSION}
+    )
 }
 
 # publish to npm
 function publish () {
     npm publish . --access public
+}
+
+# informative links
+function info () {
+    echo "Released to:
+      https://github.com/AudiusProject/audius-protocol/commits/master
+      https://github.com/AudiusProject/audius-protocol/tags
+      https://www.npmjs.com/package/@audius/sdk?activeTab=versions"
 }
 
 # cleanup when merging step fails
@@ -112,4 +130,4 @@ cd ${PROTOCOL_DIR}/libs
 
 # perform release
 bump-npm
-merge-bump && publish || cleanup
+merge-bump && publish && info || cleanup

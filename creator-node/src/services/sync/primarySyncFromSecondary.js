@@ -42,7 +42,7 @@ module.exports = async function primarySyncFromSecondary({
   try {
     let libs
     try {
-      libs = await initAudiusLibs()
+      libs = await initAudiusLibs({})
     } catch (e) {
       throw new Error(`InitAudiusLibs Error - ${e.message}`)
     }

@@ -1,6 +1,9 @@
 {
   "name": "@audius/sdk",
-  "version": "0.0.22",
+  "version": "0.0.29",
+  "audius": {
+    "releaseSHA": "619487795d2047604bef2dc6d1318b1c0809aa12"
+  },
   "description": "",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",

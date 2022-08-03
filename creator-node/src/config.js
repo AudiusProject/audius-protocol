@@ -494,7 +494,7 @@ const config = convict({
     doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
     format: 'nat',
     env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
-    default: 60000 // 60000ms = 1m (prod default)
+    default: 45000 // 45 seconds (prod default)
   },
   enforceWriteQuorum: {
     doc: 'Boolean flag indicating whether or not primary should reject write until 2/3 replication across replica set',
@@ -536,7 +536,7 @@ const config = convict({
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 15
+    default: 3
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',

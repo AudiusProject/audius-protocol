@@ -1,6 +1,6 @@
 const Web3 = require('../src/LibsWeb3')
 
-const { libs: AudiusLibs } = require('../dist/index.cjs')
+const { libs: AudiusLibs } = require('../dist/index.cjs.js')
 const dataContractsConfig = require('../src/data-contracts/config.json')
 const ethContractsConfig = require('../src/eth-contracts/config.json')
 
