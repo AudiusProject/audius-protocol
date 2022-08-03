@@ -488,7 +488,7 @@ const config = convict({
     doc: 'Max concurrency of SyncQueue',
     format: 'nat',
     env: 'syncQueueMaxConcurrency',
-    default: 50
+    default: 30
   },
   issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
     doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
