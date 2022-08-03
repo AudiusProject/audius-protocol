@@ -62,7 +62,11 @@ class SyncImmediateQueue {
     })
   }
 
-  async processImmediateSync({ walletPublicKeys, creatorNodeEndpoint, forceResync }) {
+  async processImmediateSync({
+    walletPublicKeys,
+    creatorNodeEndpoint,
+    forceResync
+  }) {
     const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
     const job = await this.queue.add(jobProps)
     const result = await job.finished()
