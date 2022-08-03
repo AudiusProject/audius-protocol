@@ -5,7 +5,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const proxyquire = require('proxyquire')
 
-const { Utils } = require('@audius/sdk')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
 const { logger: genericLogger } = require('../src/logging')
 const {
   removeTrackFolder,

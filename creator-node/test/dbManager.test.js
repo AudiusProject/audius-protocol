@@ -12,7 +12,8 @@ const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
 const DiskManager = require('../src/diskManager')
-const { Utils } = require('@audius/sdk')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -705,13 +706,15 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
         '../src/components/tracks/tracksComponentService.js',
         {
           '@audius/sdk': {
-            Utils: {
-              fileHasher: {
-                generateNonImageCid: sinon.stub().returns(
-                  new Promise((resolve) => {
-                    return resolve(mockCid)
-                  })
-                )
+            libs: {
+              Utils: {
+                fileHasher: {
+                  generateNonImageCid: sinon.stub().returns(
+                    new Promise((resolve) => {
+                      return resolve(mockCid)
+                    })
+                  )
+                }
               }
             },
             '@global': true
@@ -850,7 +853,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
   let cnodeUser, cnodeUserUUID, server
 
   /** Init server to run DB migrations */
-  before(async function () {
+  before(async function() {
     const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
@@ -979,9 +982,8 @@ describe('Test fetchFilesHashFromDB()', async function () {
     assert.strictEqual(actualFilesHash, expectedFilesHash)
 
     /** clockMin and clockMax */
-    expectedFilesHash = computeFilesHash(
-      multihashes.slice(clockMin - 1, clockMax - 1)
-    )
+    expectedFilesHash = computeFilesHash(multihashes
+      .slice(clockMin - 1, clockMax - 1))
     actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
       clockMin,
@@ -1043,28 +1045,19 @@ describe('Test fetchFilesHashFromDB()', async function () {
     assert.strictEqual(cnodeUser3.clock, ClockZero)
 
     // Correctly handles user with no files
-    actualResp = await DBManager.fetchFilesHashesFromDB({
-      cnodeUserUUIDs: [cnodeUserUUID3]
-    })
+    actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs: [cnodeUserUUID3] })
     expectedResp = { [cnodeUserUUID3]: null }
     assert.deepEqual(actualResp, expectedResp)
 
     // Correctly handles non-existent user
     const cnodeUserUUID4 = getUuid()
-    actualResp = await DBManager.fetchFilesHashesFromDB({
-      cnodeUserUUIDs: [cnodeUserUUID4]
-    })
+    actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs: [cnodeUserUUID4] })
     expectedResp = { [cnodeUserUUID4]: null }
     assert.deepEqual(actualResp, expectedResp)
 
     // Correctly handles request with valid user, invalid user, and user with no files
     actualResp = await DBManager.fetchFilesHashesFromDB({
-      cnodeUserUUIDs: [
-        cnodeUserUUID,
-        cnodeUserUUID2,
-        cnodeUserUUID3,
-        cnodeUserUUID4
-      ]
+      cnodeUserUUIDs: [cnodeUserUUID, cnodeUserUUID2, cnodeUserUUID3, cnodeUserUUID4]
     })
     expectedResp = {
       [cnodeUserUUID]: expectedFilesHashCNU1,

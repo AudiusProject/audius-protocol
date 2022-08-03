@@ -1,28 +1,23 @@
-const models = require("../models");
-const config = require("../config");
-const { SolanaUtils } = require("@audius/sdk");
+const models = require('../models')
+const config = require('../config')
+const { libs } = require('@audius/sdk')
+const SolanaUtils = libs.SolanaUtils
 
-const solanaRewardsManagerProgramId = config.get(
-  "solanaRewardsManagerProgramId"
-);
-const solanaRewardsManager = config.get("solanaRewardsManagerProgramPDA");
+const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
+const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')
 
-const solanaClaimableTokenProgramAddress = config.get(
-  "solanaClaimableTokenProgramAddress"
-);
-const solanaMintAddress = config.get("solanaMintAddress");
-const solanaAudiusAnchorDataProgramId = config.get(
-  "solanaAudiusAnchorDataProgramId"
-);
+const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
+const solanaMintAddress = config.get('solanaMintAddress')
+const solanaAudiusAnchorDataProgramId = config.get('solanaAudiusAnchorDataProgramId')
 
 const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
   solanaRewardsManagerProgramId,
-  /* secp */ "KeccakSecp256k11111111111111111111111111111",
-]);
+  /* secp */ 'KeccakSecp256k11111111111111111111111111111'
+])
 
 if (solanaAudiusAnchorDataProgramId) {
-  allowedProgramIds.add(solanaAudiusAnchorDataProgramId);
+  allowedProgramIds.add(solanaAudiusAnchorDataProgramId)
 }
 
 /**
@@ -47,8 +42,8 @@ const rewardManagerBaseAccountIndices = {
   4: 0, // CreateSenderPublic
   5: 0, // DeleteSenderPublic
   6: 1, // SubmitAttestations
-  7: 1, // EvaluateAttestations
-};
+  7: 1 // EvaluateAttestations
+}
 
 /**
  * Maps the instruction enum to the index of the claimable token authority account (derived from the base token account and the program id)
@@ -58,40 +53,34 @@ const rewardManagerBaseAccountIndices = {
  */
 const claimableTokenAuthorityIndices = {
   0: 2, // CreateTokenAccount
-  1: 4, // Transfer
-};
+  1: 4 // Transfer
+}
 
-const isRelayAllowedProgram = (instructions) => {
+const isRelayAllowedProgram = instructions => {
   for (const instruction of instructions) {
     if (!allowedProgramIds.has(instruction.programId)) {
-      return false;
+      return false
     }
   }
-  return true;
-};
+  return true
+}
 
-const isSendInstruction = (instr) =>
-  instr.length &&
-  instr[1] &&
-  instr[1].programId === solanaClaimableTokenProgramAddress &&
+const isSendInstruction = instr => instr.length &&
+  instr[1] && instr[1].programId === solanaClaimableTokenProgramAddress &&
   instr[1].data &&
   instr[1].data.data &&
-  instr[1].data.data[0] === 1;
+  instr[1].data.data[0] === 1
 
-async function doesUserHaveSocialProof(userInstance) {
-  const { blockchainUserId } = userInstance;
-  const twitterUser = await models.TwitterUser.findOne({
-    where: {
-      blockchainUserId,
-    },
-  });
+async function doesUserHaveSocialProof (userInstance) {
+  const { blockchainUserId } = userInstance
+  const twitterUser = await models.TwitterUser.findOne({ where: {
+    blockchainUserId
+  } })
 
-  const instagramUser = await models.InstagramUser.findOne({
-    where: {
-      blockchainUserId,
-    },
-  });
-  return !!twitterUser || !!instagramUser;
+  const instagramUser = await models.InstagramUser.findOne({ where: {
+    blockchainUserId
+  } })
+  return !!twitterUser || !!instagramUser
 }
 
 const deriveClaimableTokenAuthority = async () => {
@@ -100,20 +89,20 @@ const deriveClaimableTokenAuthority = async () => {
       SolanaUtils.newPublicKeyNullable(solanaClaimableTokenProgramAddress),
       SolanaUtils.newPublicKeyNullable(solanaMintAddress)
     )
-  )[0].toString();
-};
+  )[0].toString()
+}
 
-let claimableTokenAuthority = null;
+let claimableTokenAuthority = null
 /**
  * Gets the authority account for the ClaimableToken program, using a cached value if possible
  * @returns {Promise<string>} the claimable token authority account as a string
  */
 const getClaimableTokenAuthority = async () => {
   if (!claimableTokenAuthority) {
-    claimableTokenAuthority = await deriveClaimableTokenAuthority();
+    claimableTokenAuthority = await deriveClaimableTokenAuthority()
   }
-  return claimableTokenAuthority;
-};
+  return claimableTokenAuthority
+}
 
 /**
  * Gets the enum identifier of the instruction as determined by the first element of the data buffer
@@ -126,10 +115,10 @@ const getInstructionEnum = (instruction) => {
     instruction.data.data &&
     instruction.data.data.length > 0
   ) {
-    return instruction.data.data[0];
+    return instruction.data.data[0]
   }
-  return null;
-};
+  return null
+}
 
 /**
  * Returns the index of the requested account by mapping the instruction enum to the index via enum map
@@ -138,16 +127,16 @@ const getInstructionEnum = (instruction) => {
  * @returns {number | null} the index of the account of interest for that instruction type, or null
  */
 const getAccountIndex = (instruction, enumMap) => {
-  const instructionEnum = getInstructionEnum(instruction);
+  const instructionEnum = getInstructionEnum(instruction)
   if (
     instructionEnum !== null &&
     instructionEnum >= 0 &&
     instructionEnum < Object.keys(enumMap).length
   ) {
-    return enumMap[instructionEnum];
+    return enumMap[instructionEnum]
   }
-  return null;
-};
+  return null
+}
 
 /**
  * Checks that the instruction's account at the accountIndex matches the expected account
@@ -160,21 +149,19 @@ const getAccountIndex = (instruction, enumMap) => {
  */
 const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
   if (accountIndex == null) {
-    console.log("null");
-    return true;
+    console.log('null')
+    return true
   } else if (
     instruction.keys &&
     accountIndex >= 0 &&
     accountIndex < instruction.keys.length
   ) {
-    console.log(
-      `${instruction.keys[accountIndex].pubkey} === ${expectedAccount}`
-    );
-    return instruction.keys[accountIndex].pubkey === expectedAccount;
+    console.log(`${instruction.keys[accountIndex].pubkey} === ${expectedAccount}`)
+    return instruction.keys[accountIndex].pubkey === expectedAccount
   }
-  console.log("false");
-  return false;
-};
+  console.log('false')
+  return false
+}
 
 /**
  * Checks the authority being used for the relayed instruction, if applicable
@@ -192,23 +179,23 @@ const isRelayAllowedInstruction = async (instruction) => {
       instruction,
       getAccountIndex(instruction, rewardManagerBaseAccountIndices),
       solanaRewardsManager
-    );
+    )
   } else if (instruction.programId === solanaClaimableTokenProgramAddress) {
-    const claimableTokenAuthority = await getClaimableTokenAuthority();
+    const claimableTokenAuthority = await getClaimableTokenAuthority()
     // Claimable token does not include the base account for the Transfer instruction
     // but does include the authority.
     return checkAccountKey(
       instruction,
       getAccountIndex(instruction, claimableTokenAuthorityIndices),
       claimableTokenAuthority
-    );
+    )
   } else if (isRelayAllowedProgram([instruction])) {
     // Authority check not necessary
-    return null;
+    return null
   }
   // Not allowed program
-  return false;
-};
+  return false
+}
 
 /**
  * Checks that all the given instructions have an allowed authority or base account (if applicable)
@@ -218,17 +205,17 @@ const isRelayAllowedInstruction = async (instruction) => {
 const areRelayAllowedInstructions = async (instructions) => {
   const results = await Promise.all(
     instructions.map((instruction) => isRelayAllowedInstruction(instruction))
-  );
+  )
   // Explicitly check for false - null means N/A and should be passing
   if (results.some((result) => result === false)) {
-    return false;
+    return false
   }
-  return true;
-};
+  return true
+}
 
 module.exports = {
   isSendInstruction,
   doesUserHaveSocialProof,
   areRelayAllowedInstructions,
-  isRelayAllowedProgram,
-};
+  isRelayAllowedProgram
+}

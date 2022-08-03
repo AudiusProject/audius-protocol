@@ -4,7 +4,8 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const { logger: genericLogger } = require('./logging')
-const { libs, Utils } = require('@audius/sdk')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
 const DiskManager = require('./diskManager')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.

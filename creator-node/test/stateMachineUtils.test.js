@@ -30,15 +30,15 @@ describe('test retrieveUserInfoFromReplicaSet()', function () {
     }
     const expectedreplicaToAllUserInfoMaps = {
       [healthyCn1]: {
-        wallet1: { clock: 1, filesHash: '0x1' },
-        wallet2: { clock: 2, filesHash: '0x2' },
-        wallet3: { clock: 3, filesHash: '0x3' },
-        wallet4: { clock: 4, filesHash: '0x4' },
-        wallet5: { clock: 5, filesHash: '0x5' }
+        wallet1: { clock: 1, filesHash: '0x1'},
+        wallet2: { clock: 2, filesHash: '0x2'},
+        wallet3: { clock: 3, filesHash: '0x3'},
+        wallet4: { clock: 4, filesHash: '0x4'},
+        wallet5: { clock: 5, filesHash: '0x5'}
       },
       [healthyCn2]: {
-        wallet1: { clock: 1, filesHash: '0x1' },
-        wallet2: { clock: 2, filesHash: '0x2' }
+        wallet1: { clock: 1, filesHash: '0x1'},
+        wallet2: { clock: 2, filesHash: '0x2'}
       },
       [unhealthyCn]: {}
     }
@@ -46,10 +46,7 @@ describe('test retrieveUserInfoFromReplicaSet()', function () {
     // Mock the axios requests for healthy Content Nodes to return clock values
     nock(healthyCn1)
       .post('/users/batch_clock_status')
-      .query(
-        (queryObj) =>
-          'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true'
-      )
+      .query(queryObj => 'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true')
       .times(3) // 3 times because there are 5 wallets and the batch size is 2 wallets per request
       .reply(200, function (uri, requestBody) {
         const { walletPublicKeys } = requestBody
@@ -66,10 +63,7 @@ describe('test retrieveUserInfoFromReplicaSet()', function () {
       })
     nock(healthyCn2)
       .post('/users/batch_clock_status')
-      .query(
-        (queryObj) =>
-          'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true'
-      )
+      .query(queryObj => 'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true')
       .reply(200, function (uri, requestBody) {
         const { walletPublicKeys } = requestBody
         return {
@@ -87,10 +81,7 @@ describe('test retrieveUserInfoFromReplicaSet()', function () {
     // Mock the axios request to the unhealthy Content Node to return an error
     nock(unhealthyCn)
       .post('/users/batch_clock_status')
-      .query(
-        (queryObj) =>
-          'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true'
-      )
+      .query(queryObj => 'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true')
       .times(2) // It retries the failure once
       .reply(500)
 
@@ -144,8 +135,10 @@ describe('test retrieveClockValueForUserFromReplica()', function () {
       '../src/services/stateMachineManager/stateMachineUtils.js',
       {
         '@audius/sdk': {
-          CreatorNode: {
-            getClockValue: getClockValueStub
+          libs: {
+            CreatorNode: {
+              getClockValue: getClockValueStub
+            }
           }
         }
       }
@@ -168,8 +161,10 @@ describe('test retrieveClockValueForUserFromReplica()', function () {
       '../src/services/stateMachineManager/stateMachineUtils.js',
       {
         '@audius/sdk': {
-          CreatorNode: {
-            getClockValue: getClockValueStub
+          libs: {
+            CreatorNode: {
+              getClockValue: getClockValueStub
+            }
           }
         }
       }

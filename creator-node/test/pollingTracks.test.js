@@ -9,7 +9,8 @@ const _ = require('lodash')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-const { Utils } = require('@audius/sdk')
+const { libs } = require('@audius/sdk')
+const Utils = libs
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -69,7 +70,10 @@ function _getTestSegmentFilePathAtIndex(index) {
 }
 
 describe('test Polling Tracks with mocked IPFS', function () {
-  let app, server, libsMock, handleTrackContentRoute
+  let app,
+    server,
+    libsMock,
+    handleTrackContentRoute
   let session, userId, userWallet
 
   const spId = 1
@@ -94,13 +98,15 @@ describe('test Polling Tracks with mocked IPFS', function () {
       '../src/components/tracks/tracksComponentService.js',
       {
         '@audius/sdk': {
-          Utils: {
-            fileHasher: {
-              generateNonImageCid: sinon.stub().returns(
-                new Promise((resolve) => {
-                  return resolve(mockCid)
-                })
-              )
+          libs: {
+            Utils: {
+              fileHasher: {
+                generateNonImageCid: sinon.stub().returns(
+                  new Promise((resolve) => {
+                    return resolve(mockCid)
+                  })
+                )
+              }
             }
           },
           '@global': true
@@ -296,9 +302,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const clockMax = 8
 
     /** clockMin */
-    const expectedFilesHashClockMin = computeFilesHash(
-      multihashesSorted.slice(clockMin - 1)
-    )
+    const expectedFilesHashClockMin = computeFilesHash(multihashesSorted
+      .slice(clockMin - 1))
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}`
@@ -312,9 +317,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
     })
 
     /** clockMax */
-    const expectedFilesHashClockMax = computeFilesHash(
-      multihashesSorted.slice(0, clockMax - 1)
-    )
+    const expectedFilesHashClockMax = computeFilesHash(multihashesSorted
+      .slice(0, clockMax - 1))
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMax}`
@@ -328,9 +332,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
     })
 
     /** clockMin and clockMax */
-    let expectedFilesHashClockRange = computeFilesHash(
-      multihashesSorted.slice(clockMin - 1, clockMax - 1)
-    )
+    let expectedFilesHashClockRange = computeFilesHash(multihashesSorted
+      .slice(clockMin - 1, clockMax - 1))
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMax}`

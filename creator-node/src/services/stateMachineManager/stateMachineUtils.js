@@ -1,6 +1,7 @@
 const BullQueue = require('bull')
 
-const { CreatorNode } = require('@audius/sdk')
+const { libs } = require('@audius/sdk')
+const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
 

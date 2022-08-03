@@ -1,6 +1,7 @@
 const axios = require('axios')
 const _ = require('lodash')
-const { Utils: LibsUtils } = require('@audius/sdk')
+const { libs } = require('@audius/sdk')
+const LibsUtils = libs.Utils
 
 const { logger } = require('../logging')
 const { generateTimestampAndSignature } = require('../apiSigning')
