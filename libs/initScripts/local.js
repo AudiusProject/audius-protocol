@@ -2,7 +2,7 @@ const fs = require('fs')
 const readline = require('readline')
 
 const initAudiusLibs = require('../examples/initAudiusLibs')
-const dataContractsConfig = require('../data-contracts/config.json')
+const dataContractsConfig = require('../src/data-contracts/config.json')
 const { distributeTokens } = require('./helpers/distributeTokens')
 const { setServiceVersion, addServiceType } = require('./helpers/version')
 const {

@@ -1,8 +1,8 @@
-const Web3 = require('../src/web3')
+const Web3 = require('../src/LibsWeb3')
 
 const { libs: AudiusLibs } = require('../dist/index.cjs.js')
-const dataContractsConfig = require('../data-contracts/config.json')
-const ethContractsConfig = require('../eth-contracts/config.json')
+const dataContractsConfig = require('../src/data-contracts/config.json')
+const ethContractsConfig = require('../src/eth-contracts/config.json')
 
 const creatorNodeEndpoint = 'http://localhost:4000'
 const identityServiceEndpoint = 'http://localhost:7000'
@@ -46,6 +46,9 @@ async function initAudiusLibs(
       discoveryProviderConfig: {
         whitelist: new Set(['http://docker.for.mac.localhost:5000'])
       },
+      identityServiceConfig: AudiusLibs.configIdentityService(
+        identityServiceEndpoint
+      ),
       isServer,
       isDebug
     }

@@ -468,11 +468,11 @@ export class Users extends Base {
     // Ensure libs is connected to correct CN
     if (
       this.creatorNode.getEndpoint() !==
-      CreatorNode.getPrimary(newMetadata.creator_node_endpoint!)
+      CreatorNode.getPrimary(newMetadata.creator_node_endpoint)
     ) {
       throw new Error(
         `Not connected to correct content node. Expected ${CreatorNode.getPrimary(
-          newMetadata.creator_node_endpoint!
+          newMetadata.creator_node_endpoint
         )}, got ${this.creatorNode.getEndpoint()}`
       )
     }
@@ -490,7 +490,7 @@ export class Users extends Base {
       const { txReceipt: updateEndpointTxReceipt, replicaSetSPIDs } =
         await this._updateReplicaSetOnChain(
           userId,
-          newMetadata.creator_node_endpoint!
+          newMetadata.creator_node_endpoint
         )
       updateEndpointTxBlockNumber = updateEndpointTxReceipt?.blockNumber
       console.log(
@@ -642,7 +642,7 @@ export class Users extends Base {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
         const { replicaSetSPIDs } = await this._updateReplicaSetOnChain(
           userId,
-          newMetadata.creator_node_endpoint!
+          newMetadata.creator_node_endpoint
         )
         console.log(
           `${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${
