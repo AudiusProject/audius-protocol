@@ -46,6 +46,9 @@ async function initAudiusLibs(
       discoveryProviderConfig: {
         whitelist: new Set(['http://docker.for.mac.localhost:5000'])
       },
+      identityServiceConfig: AudiusLibs.configIdentityService(
+        identityServiceEndpoint
+      ),
       isServer,
       isDebug
     }
