@@ -35,6 +35,7 @@ import {
   WORMHOLE_ADDRESS
 } from './constants'
 import { getPlatformLocalStorage, LocalStorage } from '../utils/localStorage'
+import type { SetOptional } from 'type-fest'
 
 type Web3Config = {
   providers: string[]
@@ -56,7 +57,7 @@ type SdkConfig = {
   /**
    * Configuration for the Ethereum Web3 client
    */
-  ethWeb3Config?: EthWeb3Config
+  ethWeb3Config: SetOptional<EthWeb3Config, 'ownerWallet'>
   /**
    * Configuration for the IdentityService client
    */

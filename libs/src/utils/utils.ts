@@ -1,15 +1,12 @@
 import bs58 from 'bs58'
-import Web3 from '../web3'
+import Web3 from '../LibsWeb3'
 import axios, { AxiosResponse } from 'axios'
 import Hashids from 'hashids'
 import { MultiProvider } from './multiProvider'
 import { uuid } from './uuid'
-import {
-  importDataContractABIs,
-  importEthContractABIs
-} from './importContractABI'
 import { fileHasher } from './fileHasher'
 import type { ImageHasher, NonImageHasher, HashedImage } from './fileHasher'
+import type { AbiItem } from 'web3-utils'
 
 // Hashids
 
@@ -21,16 +18,13 @@ const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
 export type { ImageHasher, NonImageHasher, HashedImage }
 
+export type ContractABI = {
+  abi: AbiItem[]
+  contractName: string
+}
+
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- this should just be esm
 export class Utils {
-  static importDataContractABI(pathStr: string) {
-    return importDataContractABIs(pathStr)
-  }
-
-  static importEthContractABI(pathStr: string) {
-    return importEthContractABIs(pathStr)
-  }
-
   static utf8ToHex(utf8Str: string) {
     return Web3.utils.utf8ToHex(utf8Str)
   }
@@ -51,7 +45,7 @@ export class Utils {
     return Web3.utils.isBN(number)
   }
 
-  static toBN(number: number, base?: number) {
+  static toBN(number: number | string, base?: number) {
     return new Web3.utils.BN(number, base)
   }
 
@@ -93,7 +87,8 @@ export class Utils {
   // Function to check if the endpont/health_check returns JSON object [ {'healthy':true} ]
   static async isHealthy(url: string) {
     try {
-      const { data: body } = await axios.get(url + '/health_check')
+      const { data: body }: AxiosResponse<{ data: { healthy: boolean } }> =
+        await axios.get(url + '/health_check')
       return body.data.healthy
     } catch (error) {
       return false

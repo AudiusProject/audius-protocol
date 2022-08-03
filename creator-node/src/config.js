@@ -488,13 +488,13 @@ const config = convict({
     doc: 'Max concurrency of SyncQueue',
     format: 'nat',
     env: 'syncQueueMaxConcurrency',
-    default: 50
+    default: 30
   },
   issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
     doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
     format: 'nat',
     env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
-    default: 60000 // 60000ms = 1m (prod default)
+    default: 45000 // 45 seconds (prod default)
   },
   enforceWriteQuorum: {
     doc: 'Boolean flag indicating whether or not primary should reject write until 2/3 replication across replica set',
@@ -536,7 +536,7 @@ const config = convict({
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 15
+    default: 3
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
@@ -607,10 +607,16 @@ const config = convict({
     default: 20
   },
   maxSyncMonitoringDurationInMs: {
-    doc: 'Max duration that primary will monitor secondary for syncRequest completion',
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion for non-manual syncs',
     format: 'nat',
     env: 'maxSyncMonitoringDurationInMs',
     default: 300000 // 5min (prod default)
+  },
+  maxManualSyncMonitoringDurationInMs: {
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion for manual syncs',
+    format: 'nat',
+    env: 'maxManualSyncMonitoringDurationInMs',
+    default: 45000 // 45 sec (prod default)
   },
   syncRequestMaxUserFailureCountBeforeSkip: {
     doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',

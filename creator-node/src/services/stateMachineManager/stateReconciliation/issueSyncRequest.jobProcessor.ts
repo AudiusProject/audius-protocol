@@ -1,6 +1,10 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
-import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import type {
+  DecoratedJobParams,
+  DecoratedJobReturnValue,
+  JobsToEnqueue
+} from '../types'
 import type {
   IssueSyncRequestJobParams,
   IssueSyncRequestJobReturnValue,
@@ -30,12 +34,16 @@ const {
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
+const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
 )
 const maxSyncMonitoringDurationInMs = config.get(
   'maxSyncMonitoringDurationInMs'
+)
+const maxManualSyncMonitoringDurationInMs = config.get(
+  'maxManualSyncMonitoringDurationInMs'
 )
 const mergePrimaryAndSecondaryEnabled = config.get(
   'mergePrimaryAndSecondaryEnabled'
@@ -46,7 +54,6 @@ type HandleIssueSyncReqParams = {
   syncMode: string
   syncRequestParameters: SyncRequestAxiosParams
   logger: Logger
-  attemptNumber: number
 }
 type HandleIssueSyncReqResult = {
   result: string
@@ -78,7 +85,7 @@ module.exports = async function ({
 }: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
   DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
 > {
-  let jobsToEnqueue = {}
+  let jobsToEnqueue: JobsToEnqueue = {}
   let metricsToRecord = []
   let error: any = {}
 
@@ -92,8 +99,7 @@ module.exports = async function ({
     syncType,
     syncMode,
     syncRequestParameters,
-    logger,
-    attemptNumber
+    logger
   })
   if (errorResp) {
     error = errorResp
@@ -105,19 +111,21 @@ module.exports = async function ({
     syncReqToEnqueue?.syncType === SyncType.Manual
       ? MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS
       : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-  if (!_.isEmpty(syncReqToEnqueue) && attemptNumber < maxRetries) {
-    logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
-    const queueName =
-      syncReqToEnqueue?.syncType === SyncType.Manual
-        ? QUEUE_NAMES.MANUAL_SYNC
-        : QUEUE_NAMES.RECURRING_SYNC
-    jobsToEnqueue = {
-      [queueName]: [{ attemptNumber: attemptNumber + 1, ...syncReqToEnqueue }]
+  if (!_.isEmpty(syncReqToEnqueue)) {
+    if (attemptNumber < maxRetries) {
+      logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
+      const queueName =
+        syncReqToEnqueue?.syncType === SyncType.Manual
+          ? QUEUE_NAMES.MANUAL_SYNC
+          : QUEUE_NAMES.RECURRING_SYNC
+      jobsToEnqueue = {
+        [queueName]: [{ ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }]
+      }
+    } else {
+      logger.info(
+        `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
+      )
     }
-  } else {
-    logger.info(
-      `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
-    )
   }
 
   // Make metrics to record
@@ -144,8 +152,7 @@ async function _handleIssueSyncRequest({
   syncType,
   syncMode,
   syncRequestParameters,
-  logger,
-  attemptNumber
+  logger
 }: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
   if (!syncRequestParameters?.data?.wallet?.length) {
     return { result: 'failure_missing_wallet' }
@@ -156,18 +163,20 @@ async function _handleIssueSyncRequest({
 
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryEndpoint = syncRequestParameters.baseURL
+  const immediate = syncRequestParameters.data.immediate
 
   const logMsgString = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
 
   /**
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
    * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
-   * We don't dedupe manual syncs.
    */
-  if (syncType === SyncType.Recurring) {
-    const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-    SyncRequestDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
-  }
+  SyncRequestDeDuplicator.removeSync(
+    syncType,
+    userWallet,
+    secondaryEndpoint,
+    immediate
+  )
 
   /**
    * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
@@ -238,8 +247,7 @@ async function _handleIssueSyncRequest({
       syncReqToEnqueue: {
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-        syncRequestParameters,
-        attemptNumber
+        syncRequestParameters
       }
     }
   }
@@ -255,8 +263,7 @@ async function _handleIssueSyncRequest({
     syncType,
     syncMode,
     syncRequestParameters,
-    logger,
-    attemptNumber
+    logger
   )
 
   return {
@@ -305,15 +312,18 @@ const _additionalSyncIsRequired = async (
   syncType: string,
   syncMode: string,
   syncRequestParameters: SyncRequestAxiosParams,
-  logger: any,
-  attemptNumber: number
+  logger: any
 ): Promise<AdditionalSyncIsRequiredResponse> => {
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryUrl = syncRequestParameters.baseURL
   const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
   const startTimeMs = Date.now()
-  const maxMonitoringTimeMs = startTimeMs + maxSyncMonitoringDurationInMs
+  const maxMonitoringTimeMs =
+    startTimeMs +
+    (syncType === SyncType.MANUAL
+      ? maxManualSyncMonitoringDurationInMs
+      : maxSyncMonitoringDurationInMs)
 
   /**
    * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
@@ -405,10 +415,9 @@ const _additionalSyncIsRequired = async (
   const response: AdditionalSyncIsRequiredResponse = { outcome }
   if (additionalSyncIsRequired) {
     response.syncReqToEnqueue = {
-      syncType: SyncType.Recurring,
+      syncType,
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-      syncRequestParameters,
-      attemptNumber: attemptNumber + 1
+      syncRequestParameters
     }
   }
 

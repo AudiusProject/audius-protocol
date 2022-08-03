@@ -1,5 +1,5 @@
 import { ContractClient } from '../contracts/ContractClient'
-import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
+import * as signatureSchemas from '../../data-contracts/signatureSchemas'
 import type { Web3Manager } from '../web3Manager'
 
 const MAX_PLAYLIST_LENGTH = 199
@@ -134,7 +134,7 @@ export class PlaylistFactoryClient extends ContractClient {
     playlistId: number,
     deletedTrackId: number,
     deletedPlaylistTimestamp: number,
-    retries: number
+    retries?: number
   ) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
@@ -170,7 +170,7 @@ export class PlaylistFactoryClient extends ContractClient {
   async orderPlaylistTracks(
     playlistId: number,
     trackIds: number[],
-    retries: number
+    retries?: number
   ) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
@@ -208,7 +208,7 @@ export class PlaylistFactoryClient extends ContractClient {
 
   async updatePlaylistPrivacy(
     playlistId: number,
-    updatedPlaylistPrivacy: string
+    updatedPlaylistPrivacy: boolean
   ) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()

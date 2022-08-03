@@ -45,12 +45,14 @@ class StateMachineManager {
       [QUEUE_NAMES.RECURRING_SYNC]: recurringSyncQueue,
       [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetQueue
     }
-    for (const queue of Object.values(queueNameToQueueMap)) {
+    for (const [queueName, queue] of Object.entries(queueNameToQueueMap)) {
       queue.on(
         'global:completed',
-        makeOnCompleteCallback(queueNameToQueueMap, prometheusRegistry).bind(
-          this
-        )
+        makeOnCompleteCallback(
+          queueName,
+          queueNameToQueueMap,
+          prometheusRegistry
+        ).bind(this)
       )
     }
 

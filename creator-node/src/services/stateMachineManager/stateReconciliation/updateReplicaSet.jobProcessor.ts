@@ -1,5 +1,9 @@
 import type Logger from 'bunyan'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import {
+  getCachedHealthyNodes,
+  cacheHealthyNodes
+} from './stateReconciliationUtils'
 import type {
   IssueSyncRequestJobParams,
   NewReplicaSet,
@@ -60,19 +64,30 @@ module.exports = async function ({
    * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
    * There will be an explicit clock value check on the newly selected replica set nodes instead.
    */
-  const audiusLibs = await initAudiusLibs(true)
-  const { services: healthyServicesMap } =
-    await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-      performSyncCheck: false,
-      whitelist: reconfigNodeWhitelist,
-      log: true
+  let audiusLibs = null
+  let healthyNodes = []
+  healthyNodes = await getCachedHealthyNodes()
+  if (healthyNodes.length === 0) {
+    audiusLibs = await initAudiusLibs({
+      enableEthContracts: true,
+      enableContracts: true,
+      enableDiscovery: false,
+      enableIdentity: true,
+      logger
     })
-
-  const healthyNodes = Object.keys(healthyServicesMap || {})
-  if (healthyNodes.length === 0)
-    throw new Error(
-      'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
-    )
+    const { services: healthyServicesMap } =
+      await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+        performSyncCheck: false,
+        whitelist: reconfigNodeWhitelist,
+        log: true
+      })
+    healthyNodes = Object.keys(healthyServicesMap || {})
+    if (healthyNodes.length === 0)
+      throw new Error(
+        'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
+      )
+    await cacheHealthyNodes(healthyNodes)
+  }
 
   let errorMsg = ''
   let issuedReconfig = false
@@ -190,7 +205,7 @@ const _determineNewReplicaSet = async ({
   )
   const newReplicaNodes = await _selectRandomReplicaSetNodes(
     healthyReplicaSet,
-    unhealthyReplicasSet.size,
+    unhealthyReplicasSet,
     healthyNodes,
     wallet,
     logger
@@ -249,9 +264,10 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   // If we already already checked this primary and it failed the health check, select the higher clock
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
   if (unhealthyReplicasSet.has(primary)) {
+    const secondary1Clock = replicaToUserInfoMap[secondary1]?.clock || -1
+    const secondary2Clock = replicaToUserInfoMap[secondary2]?.clock || -1
     const [newPrimary, currentHealthySecondary] =
-      replicaToUserInfoMap[secondary1].clock >=
-      replicaToUserInfoMap[secondary2].clock
+      secondary1Clock >= secondary2Clock
         ? [secondary1, secondary2]
         : [secondary2, secondary1]
     return {
@@ -329,13 +345,11 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
 }
 
 /**
- * Select a random node that is not from the current replica set. Make sure the random node does not have any
- * existing user data for the current user. If there is pre-existing data in the randomly selected node, keep
- * searching for a node that has no state.
+ * Select a random healthy node that is not from the current replica set and not in the unhealthy replica set.
  *
  * If an insufficient amount of new replica set nodes are chosen, this method will throw an error.
  * @param {Set<string>} healthyReplicaSet a set of the healthy replica set endpoints
- * @param {number} numberOfUnhealthyReplicas the number of unhealthy replica set endpoints
+ * @param {Set<string>} unhealthyReplicasSet a set of the unhealthy replica set endpoints
  * @param {string[]} healthyNodes an array of all the healthy nodes available on the network
  * @param {string} wallet the wallet of the current user
  * @param {Object} logger a logger that can be filtered on jobName and jobId
@@ -343,11 +357,12 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
  */
 const _selectRandomReplicaSetNodes = async (
   healthyReplicaSet: Set<string>,
-  numberOfUnhealthyReplicas: number,
+  unhealthyReplicasSet: Set<string>,
   healthyNodes: string[],
   wallet: string,
   logger: Logger
 ): Promise<string[]> => {
+  const numberOfUnhealthyReplicas = unhealthyReplicasSet.size
   const logStr = `[_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
     ...healthyReplicaSet
   ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} healthyNodes=${[
@@ -362,12 +377,20 @@ const _selectRandomReplicaSetNodes = async (
   ) {
     const randomHealthyNode = _.sample(healthyNodes)
 
-    // If node is already present in new replica set or is part of the exiting replica set, keep finding a unique healthy node
+    // If node is already present in new replica set or is part of the existing replica set, keep finding a unique healthy node
     if (
       newReplicaNodesSet.has(randomHealthyNode) ||
       healthyReplicaSet.has(randomHealthyNode)
     )
       continue
+
+    // If the node was marked as healthy before, keep finding a unique healthy node
+    if (unhealthyReplicasSet.has(randomHealthyNode)) {
+      logger.warn(
+        `Selected node ${randomHealthyNode} that is marked as healthy now but was previously marked as unhealthy. Unselecting it and finding another healthy node...`
+      )
+      continue
+    }
 
     // Check to make sure that the newly selected secondary does not have existing user state
     try {
@@ -375,12 +398,10 @@ const _selectRandomReplicaSetNodes = async (
         randomHealthyNode,
         wallet
       )
-      if (clockValue === -1) {
-        newReplicaNodesSet.add(randomHealthyNode)
-      } else if (clockValue === 0) {
-        newReplicaNodesSet.add(randomHealthyNode)
+      newReplicaNodesSet.add(randomHealthyNode)
+      if (clockValue !== -1) {
         logger.warn(
-          `${logStr} Found a node with clock value of 0, selecting anyway`
+          `${logStr} Found a node with previous state (clock value of ${clockValue}), selecting anyway`
         )
       }
     } catch (e: any) {
@@ -452,13 +473,7 @@ const _issueUpdateReplicaSetOp = async (
       )}`
     )
 
-    // If snapback is not enabled, Log reconfig op without issuing.
-    if (!issueReconfig) {
-      logger.info(
-        `[_issueUpdateReplicaSetOp] Reconfig [DISABLED]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
-      )
-      return response
-    }
+    if (!issueReconfig) return response
 
     // Create new array of replica set spIds and write to URSM
     for (const endpt of newReplicaSetEndpoints) {
@@ -479,6 +494,15 @@ const _issueUpdateReplicaSetOp = async (
     // Submit chain tx to update replica set
     const startTimeMs = Date.now()
     try {
+      if (!audiusLibs) {
+        audiusLibs = await initAudiusLibs({
+          enableEthContracts: false,
+          enableContracts: true,
+          enableDiscovery: false,
+          enableIdentity: true,
+          logger
+        })
+      }
       await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
         newReplicaSetSPIds[0], // primary
@@ -534,10 +558,10 @@ const _issueUpdateReplicaSetOp = async (
     }
 
     logger.info(
-      `[_issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
+      `[_issueUpdateReplicaSetOp] Reconfig SUCCESS: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
   } catch (e: any) {
-    response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
+    response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
     return response
   }

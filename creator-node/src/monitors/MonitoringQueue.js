@@ -37,6 +37,8 @@ class MonitoringQueue {
     // Clean up anything that might be still stuck in the queue on restart
     this.queue.empty()
 
+    this.seedInitialValues()
+
     this.queue.process(
       PROCESS_NAMES.monitor,
       /* concurrency */ 1,
@@ -61,6 +63,16 @@ class MonitoringQueue {
         }
       }
     )
+  }
+
+  /**
+   * These values are used in the ensureStorageMiddleware. There could be a small chance of a timing race
+   * where the values are undefined after init and we need to wait for them to be populated, so populate
+   * them on init
+   */
+  async seedInitialValues() {
+    await this.refresh(MONITORS.STORAGE_PATH_SIZE)
+    await this.refresh(MONITORS.STORAGE_PATH_USED)
   }
 
   async refresh(monitor) {

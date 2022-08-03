@@ -4,6 +4,7 @@ const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
+const LOCK_DURATION = 1000 * 60 * 30 // 30 minutes
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
@@ -28,6 +29,9 @@ class SyncQueue {
       defaultJobOptions: {
         removeOnComplete: SYNC_QUEUE_HISTORY,
         removeOnFail: SYNC_QUEUE_HISTORY
+      },
+      settings: {
+        lockDuration: LOCK_DURATION
       }
     })
 

@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import retry from 'async-retry'
-import { Utils, uuid } from '../../utils'
+import { Nullable, TrackMetadata, Utils, uuid } from '../../utils'
 import {
   userSchemaType,
   trackSchemaType,
@@ -15,15 +15,6 @@ const { wait } = Utils
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const POLL_STATUS_INTERVAL = 3000 // 3s
 const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
-
-type Metadata = {
-  track_segments: unknown
-  download?: {
-    is_downloadable: boolean
-    cid: string
-  }
-  cover_art_sizes: string
-}
 
 type ProgressCB = (loaded: number, total: number) => void
 
@@ -39,8 +30,29 @@ type ClockValueRequestConfig = {
 }
 
 type FileUploadResponse = {
-  data: { uuid: string }
+  data: { uuid: string; dirCID: string }
   error: Error
+}
+
+export type CreatorNodeConfig = {
+  web3Manager: Web3Manager
+  // fallback creator node endpoint (to be deprecated)
+  creatorNodeEndpoint: string
+  isServer: boolean
+  // singleton UserStateManager instance
+  userStateManager: UserStateManager
+  // whether or not to lazy connect (sign in) on load
+  lazyConnect: boolean
+  schemas: Schemas
+  // whether or not to include only specified nodes (default null)
+  passList: Set<string> | null
+  // whether or not to exclude any nodes (default null)
+  blockList: Set<string> | null
+  // callbacks to be invoked with metrics from requests sent to a service
+  monitoringCallbacks: MonitoringCallbacks
+  // whether or not to enforce waiting for replication to 2/3 nodes when writing data
+  writeQuorumEnabled: boolean
+  fallbackUrl: string
 }
 
 // Currently only supports a single logged-in audius user
@@ -139,12 +151,12 @@ export class CreatorNode {
 
   /* -------------- */
 
-  web3Manager: Web3Manager
+  web3Manager: Nullable<Web3Manager>
   creatorNodeEndpoint: string
   isServer: boolean
   userStateManager: UserStateManager
   lazyConnect: boolean
-  schemas: Schemas
+  schemas: Schemas | undefined
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
@@ -156,24 +168,14 @@ export class CreatorNode {
 
   /**
    * Constructs a service class for a creator node
-   * @param web3Manager
-   * @param creatorNodeEndpoint fallback creator node endpoint (to be deprecated)
-   * @param isServer
-   * @param userStateManager  singleton UserStateManager instance
-   * @param lazyConnect whether or not to lazy connect (sign in) on load
-   * @param schemas
-   * @param passList whether or not to include only specified nodes (default null)
-   * @param blockList whether or not to exclude any nodes (default null)
-   * @param monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   * @param writeQuorumEnabled whether or not to enforce waiting for replication to 2/3 nodes when writing data
    */
   constructor(
-    web3Manager: Web3Manager,
+    web3Manager: Nullable<Web3Manager>,
     creatorNodeEndpoint: string,
     isServer: boolean,
     userStateManager: UserStateManager,
     lazyConnect: boolean,
-    schemas: Schemas,
+    schemas: Schemas | undefined,
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
     monitoringCallbacks: MonitoringCallbacks = {},
@@ -208,7 +210,7 @@ export class CreatorNode {
   /** Establishes a connection to a content node endpoint */
   async connect() {
     this.connecting = true
-    await this._signupNodeUser(this.web3Manager.getWalletAddress())
+    await this._signupNodeUser(this.web3Manager?.getWalletAddress())
     await this._loginNodeUser()
     this.connected = true
     this.connecting = false
@@ -264,11 +266,11 @@ export class CreatorNode {
    * Uploads creator content to a creator node
    * @param metadata the creator metadata
    */
-  async uploadCreatorContent(metadata: Metadata, blockNumber = null) {
+  async uploadCreatorContent(metadata: TrackMetadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas[userSchemaType].validate?.(metadata)
+      this.schemas?.[userSchemaType].validate?.(metadata)
 
       const requestObj: AxiosRequestConfig = {
         url: '/audius_users/metadata',
@@ -319,7 +321,7 @@ export class CreatorNode {
   async uploadTrackContent(
     trackFile: File,
     coverArtFile: File,
-    metadata: Metadata,
+    metadata: TrackMetadata,
     onProgress: ProgressCB = () => {}
   ) {
     let loadedImageBytes = 0
@@ -383,11 +385,11 @@ export class CreatorNode {
    * @param metadata
    * @param sourceFile
    */
-  async uploadTrackMetadata(metadata: Metadata, sourceFile: string) {
+  async uploadTrackMetadata(metadata: TrackMetadata, sourceFile?: string) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas[trackSchemaType].validate?.(metadata)
+      this.schemas?.[trackSchemaType].validate?.(metadata)
     } catch (e) {
       console.error('Error validating track metadata', e)
     }
@@ -417,7 +419,7 @@ export class CreatorNode {
     audiusTrackId: number,
     metadataFileUUID: string,
     blockNumber: number,
-    transcodedTrackUUID: string
+    transcodedTrackUUID?: string
   ) {
     this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
@@ -442,7 +444,7 @@ export class CreatorNode {
   async uploadImage(
     file: File,
     square = true,
-    onProgress: ProgressCB,
+    onProgress?: ProgressCB,
     timeoutMs: number | null = null
   ) {
     const { data: body } = await this._uploadFile(
@@ -553,7 +555,7 @@ export class CreatorNode {
         // Whether or not the endpoint is behind in syncing
         isBehind:
           status.latestBlockNumber <
-          Math.max(user.blocknumber, user.track_blocknumber),
+          Math.max(user.blocknumber!, user.track_blocknumber!),
         isConfigured: status.latestBlockNumber !== -1
       }
     }
@@ -625,7 +627,7 @@ export class CreatorNode {
       return
     }
 
-    const walletPublicKey = this.web3Manager.getWalletAddress()
+    const walletPublicKey = this.web3Manager?.getWalletAddress()
     let clientChallengeKey
     let url: string | undefined
 
@@ -648,7 +650,7 @@ export class CreatorNode {
       await this._handleErrorHelper(e as Error, requestUrl)
     }
 
-    const signature = await this.web3Manager.sign(clientChallengeKey)
+    const signature = await this.web3Manager?.sign(clientChallengeKey)
 
     if (url) {
       const resp = await this._makeRequest(
@@ -732,7 +734,7 @@ export class CreatorNode {
     try {
       const clockValue = await CreatorNode.getClockValue(
         endpoint,
-        user.wallet,
+        user.wallet!,
         timeout
       )
       return {
@@ -834,7 +836,7 @@ export class CreatorNode {
         }
 
         // if the content node returns an invalid auth token error, clear connection and reconnect
-        if (resp?.data?.error?.includes('Invalid authentication token')) {
+        if (resp?.data?.error?.includes?.('Invalid authentication token')) {
           this.clearConnection()
           try {
             await this.ensureConnected()
@@ -895,7 +897,7 @@ export class CreatorNode {
     if (user?.wallet && user.user_id) {
       // TODO change to X-User-Wallet-Address and X-User-Id per convention
       headers['User-Wallet-Addr'] = user.wallet
-      headers['User-Id'] = user.user_id
+      headers['User-Id'] = user.user_id as unknown as string
     }
 
     return { headers, formData }
@@ -1000,7 +1002,7 @@ export class CreatorNode {
           retries - 1
         )
       } else if (
-        error.response?.data?.error?.includes('Invalid authentication token')
+        error.response?.data?.error?.includes?.('Invalid authentication token')
       ) {
         // if the content node returns an invalid auth token error, clear connection and reconnect
         this.clearConnection()

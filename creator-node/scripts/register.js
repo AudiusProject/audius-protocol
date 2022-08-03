@@ -1,4 +1,4 @@
-const AudiusLibs = require("@audius/libs");
+const { libs: AudiusLibs } = require("@audius/sdk");
 const config = require("../src/config");
 const axios = require("axios");
 const BN = require("bn.js");

@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 
+import type { Nullable } from '../../utils'
+
 export const getUsers = (
   limit = 100,
   offset = 0,
-  idsArray?: string[],
-  walletAddress?: string,
-  handle?: string,
-  minBlockNumber?: number
+  idsArray: Nullable<number[]>,
+  walletAddress?: Nullable<string>,
+  handle?: Nullable<string>,
+  minBlockNumber?: Nullable<number>
 ) => {
   type QueryParams = {
     limit: number
@@ -31,7 +33,7 @@ export const getUsers = (
     if (!Array.isArray(idsArray)) {
       throw new Error('Expected integer array of user ids')
     }
-    queryParams.id = idsArray
+    queryParams.id = idsArray as unknown as string[]
   }
 
   const req = { endpoint: 'users', queryParams }
@@ -42,11 +44,11 @@ export const getUsers = (
 export const getTracks = (
   limit = 100,
   offset = 0,
-  idsArray?: string[],
-  targetUserId?: string,
-  sort?: boolean,
-  minBlockNumber?: number,
-  filterDeleted?: boolean,
+  idsArray: Nullable<string[]>,
+  targetUserId: Nullable<string>,
+  sort: Nullable<boolean>,
+  minBlockNumber: Nullable<number>,
+  filterDeleted: Nullable<boolean>,
   withUsers = false
 ) => {
   type QueryParams = {
@@ -218,8 +220,8 @@ export const getTrendingTracks = (
 export const getPlaylists = (
   limit = 100,
   offset = 0,
-  idsArray = null,
-  targetUserId = null,
+  idsArray: Nullable<number[]> = null,
+  targetUserId: Nullable<number> = null,
   withUsers = false
 ) => {
   if (idsArray != null) {
@@ -318,7 +320,7 @@ export const getPlaylistRepostIntersectionUsers = (
 export const getFollowersForUser = (
   limit = 100,
   offset = 0,
-  followeeUserId: number
+  followeeUserId: string
 ) => {
   return {
     endpoint: 'users',
@@ -330,7 +332,7 @@ export const getFollowersForUser = (
 export const getFolloweesForUser = (
   limit = 100,
   offset = 0,
-  followerUserId: number
+  followerUserId: string
 ) => {
   return {
     endpoint: 'users',

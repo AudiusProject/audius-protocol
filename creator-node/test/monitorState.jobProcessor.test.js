@@ -64,7 +64,7 @@ describe('test monitorState job processor', function () {
   }
   const RETRIEVE_USER_INFO_EXTRA_UNHEALTHY_PEERS = new Set()
   const RETRIEVE_USER_INFO_FROM_REPLICA_SET_RESP = {
-    replicaToUserInfoMap: REPLICA_TO_USER_INFO_MAP,
+    replicaToAllUserInfoMaps: REPLICA_TO_USER_INFO_MAP,
     unhealthyPeers: RETRIEVE_USER_INFO_EXTRA_UNHEALTHY_PEERS
   }
   const USER_SECONDARY_SYNC_SUCCESS_RATES_MAP = { dummyMap: 'dummyMap' }
@@ -158,7 +158,7 @@ describe('test monitorState job processor', function () {
     lastProcessedUserId,
     users = USERS,
     unhealthyPeers = UNHEALTHY_PEERS,
-    replicaToUserInfoMap = REPLICA_TO_USER_INFO_MAP,
+    replicaToAllUserInfoMaps = REPLICA_TO_USER_INFO_MAP,
     userSecondarySyncMetricsMap = USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
   }) {
     const monitorJobs = jobResult.jobsToEnqueue[QUEUE_NAMES.MONITOR_STATE]
@@ -178,7 +178,7 @@ describe('test monitorState job processor', function () {
     expect(findSyncRequestsJobs).to.deep.include({
       users,
       unhealthyPeers: Array.from(unhealthyPeers),
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap
     })
     // Verify jobResult enqueues the correct findReplicaSetUpdates job
@@ -186,7 +186,7 @@ describe('test monitorState job processor', function () {
     expect(findReplicaSetUpdatesJobs).to.deep.include({
       users,
       unhealthyPeers: Array.from(unhealthyPeers),
-      replicaToUserInfoMap,
+      replicaToAllUserInfoMaps,
       userSecondarySyncMetricsMap
     })
   }
@@ -328,7 +328,7 @@ describe('test monitorState job processor', function () {
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
-      replicaToUserInfoMap: {},
+      replicaToAllUserInfoMaps: {},
       userSecondarySyncMetricsMap: {}
     })
   })
@@ -356,7 +356,7 @@ describe('test monitorState job processor', function () {
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
-      replicaToUserInfoMap: {},
+      replicaToAllUserInfoMaps: {},
       userSecondarySyncMetricsMap: {}
     })
   })
@@ -381,7 +381,7 @@ describe('test monitorState job processor', function () {
       jobResult,
       lastProcessedUserId: USER_ID,
       unhealthyPeers: new Set(),
-      replicaToUserInfoMap: {},
+      replicaToAllUserInfoMaps: {},
       userSecondarySyncMetricsMap: {}
     })
   })
@@ -418,7 +418,7 @@ describe('test monitorState job processor', function () {
         }
       ],
       unhealthyPeers: new Set(),
-      replicaToUserInfoMap: {},
+      replicaToAllUserInfoMaps: {},
       userSecondarySyncMetricsMap: {}
     })
   })

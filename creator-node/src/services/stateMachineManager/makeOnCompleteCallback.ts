@@ -37,6 +37,7 @@ const {
  * @dev MUST be bound to a class containing an `enabledReconfigModes` property.
  *      See usage in index.js (in same directory) for example of how it's bound to StateMachineManager.
  *
+ * @param {string} nameOfQueueWithCompletedJob the name of the queue that this onComplete callback is for
  * @param {Object} queueNameToQueueMap mapping of queue name (string) to queue object (BullQueue)
  * @param {Object} prometheusRegistry the registry of prometheus metrics
  * @returns a function that:
@@ -47,6 +48,7 @@ const {
  * - records metrics from result.metricsToRecord
  */
 module.exports = function (
+  nameOfQueueWithCompletedJob: TQUEUE_NAMES,
   queueNameToQueueMap: QueueNameToQueueMap,
   prometheusRegistry: any
 ) {
@@ -107,7 +109,14 @@ module.exports = function (
         }
       }
 
-      await enqueueJobs(jobs, queue, queueName, jobId, logger)
+      await enqueueJobs(
+        jobs,
+        queue,
+        queueName,
+        nameOfQueueWithCompletedJob,
+        jobId,
+        logger
+      )
     }
 
     recordMetrics(prometheusRegistry, logger, metricsToRecord)
@@ -116,30 +125,34 @@ module.exports = function (
 
 const enqueueJobs = async (
   jobs: AnyJobParams[],
-  queue: Queue,
-  queueName: string,
+  queueToAddTo: Queue,
+  queueNameToAddTo: TQUEUE_NAMES,
+  triggeredByQueueName: TQUEUE_NAMES,
   triggeredByJobId: string,
   logger: Logger
 ) => {
   logger.info(
-    `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueName}`
+    `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueNameToAddTo}`
   )
 
   // Add 'enqueuedBy' field for tracking
   try {
-    const bulkAddResult = await queue.addBulk(
+    const bulkAddResult = await queueToAddTo.addBulk(
       jobs.map((job) => {
         return {
-          data: { enqueuedBy: `${queueName}#${triggeredByJobId}`, ...job }
+          data: {
+            enqueuedBy: `${triggeredByQueueName}#${triggeredByJobId}`,
+            ...job
+          }
         }
       })
     )
     logger.info(
-      `Added ${bulkAddResult.length} jobs to ${queueName} in bulk after successful completion`
+      `Added ${bulkAddResult.length} jobs to ${queueNameToAddTo} in bulk after successful completion`
     )
-  } catch (e) {
+  } catch (e: any) {
     logger.error(
-      `Failed to bulk-add jobs to ${queueName} after successful completion: ${e}`
+      `Failed to bulk-add jobs to ${queueNameToAddTo} after successful completion: ${e}`
     )
   }
 }

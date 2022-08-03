@@ -4,7 +4,6 @@ import json from '@rollup/plugin-json'
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 import { terser } from 'rollup-plugin-terser'
-import dts from 'rollup-plugin-dts'
 import nodePolyfills from 'rollup-plugin-polyfill-node'
 import alias from '@rollup/plugin-alias'
 import ignore from 'rollup-plugin-ignore'
@@ -21,19 +20,15 @@ const external = [
   'hashids/cjs'
 ]
 
+const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
+
 const commonConfig = {
   plugins: [
-    commonjs({
-      extensions,
-      dynamicRequireTargets: [
-        'data-contracts/ABIs/*.json',
-        'eth-contracts/ABIs/*.json'
-      ]
-    }),
+    resolve({ extensions, preferBuiltins: true }),
+    commonjs({ extensions }),
     babel({ babelHelpers: 'bundled', extensions }),
     json(),
-    resolve({ extensions, preferBuiltins: true }),
-    typescript()
+    pluginTypescript
   ],
   external
 }
@@ -59,11 +54,7 @@ const browserConfig = {
     resolve({ extensions, preferBuiltins: false }),
     commonjs({
       extensions,
-      transformMixedEsModules: true,
-      dynamicRequireTargets: [
-        'data-contracts/ABIs/*.json',
-        'eth-contracts/ABIs/*.json'
-      ]
+      transformMixedEsModules: true
     }),
     alias({
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
@@ -71,7 +62,7 @@ const browserConfig = {
     nodePolyfills(),
     babel({ babelHelpers: 'bundled', extensions }),
     json(),
-    typescript()
+    pluginTypescript
   ],
   external: external.filter((dep) => !browserInternal.includes(dep))
 }
@@ -82,11 +73,7 @@ const browserDistFileConfig = {
     resolve({ extensions, preferBuiltins: false, browser: true }),
     commonjs({
       extensions,
-      transformMixedEsModules: true,
-      dynamicRequireTargets: [
-        'data-contracts/ABIs/*.json',
-        'eth-contracts/ABIs/*.json'
-      ]
+      transformMixedEsModules: true
     }),
     alias({
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
@@ -98,7 +85,7 @@ const browserDistFileConfig = {
       plugins: ['@babel/plugin-transform-runtime']
     }),
     json(),
-    typescript()
+    pluginTypescript
   ],
   external: ['web3']
 }
@@ -107,25 +94,15 @@ const browserLegacyConfig = {
   plugins: [
     ignore(['web3', 'graceful-fs', 'node-localstorage']),
     resolve({ extensions, preferBuiltins: true }),
-    commonjs({
-      extensions,
-      dynamicRequireTargets: [
-        'data-contracts/ABIs/*.json',
-        'eth-contracts/ABIs/*.json'
-      ]
-    }),
+    commonjs({ extensions }),
     alias({
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
     }),
     babel({ babelHelpers: 'bundled', extensions }),
     json(),
-    typescript()
+    pluginTypescript
   ],
   external
-}
-
-const commonTypeConfig = {
-  plugins: [dts()]
 }
 
 export default [
@@ -133,17 +110,12 @@ export default [
    * SDK
    */
   {
-    input: 'src/index.js',
+    input: 'src/index.ts',
     output: [
-      { file: pkg.main, format: 'cjs', exports: 'auto', sourcemap: true }
+      { file: pkg.main, format: 'cjs', sourcemap: true },
+      { file: pkg.module, format: 'es', sourcemap: true }
     ],
     ...commonConfig
-  },
-
-  {
-    input: './src/types.ts',
-    output: [{ file: pkg.types, format: 'cjs' }],
-    ...commonTypeConfig
   },
 
   /**
@@ -153,7 +125,8 @@ export default [
   {
     input: 'src/sdk/index.ts',
     output: [
-      { file: pkg.browser, format: 'cjs', exports: 'auto', sourcemap: true }
+      { file: 'dist/index.browser.cjs.js', format: 'es', sourcemap: true },
+      { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
     ],
     ...browserConfig
   },
@@ -166,7 +139,7 @@ export default [
     input: 'src/sdk/sdkBrowserDist.ts',
     output: [
       {
-        file: pkg.sdkBrowserDistFile,
+        file: 'dist/sdk.js',
         globals: {
           web3: 'window.Web3'
         },
@@ -184,17 +157,9 @@ export default [
    * Includes libs but does not include polyfills
    */
   {
-    input: 'src/index.js',
-    output: [
-      { file: pkg.legacy, format: 'cjs', exports: 'auto', sourcemap: true }
-    ],
+    input: 'src/index.ts',
+    output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
     ...browserLegacyConfig
-  },
-
-  {
-    input: './src/types.ts',
-    output: [{ file: pkg.legacyTypes, format: 'cjs' }],
-    ...commonTypeConfig
   },
 
   /**
@@ -203,13 +168,9 @@ export default [
   {
     input: 'src/core.ts',
     output: [
-      { file: pkg.core, format: 'cjs', exports: 'auto', sourcemap: true }
+      { file: 'dist/core.cjs.js', format: 'cjs', sourcemap: true },
+      { file: 'dist/core.esm.js', format: 'es', sourcemap: true }
     ],
     ...commonConfig
-  },
-  {
-    input: './src/core.ts',
-    output: [{ file: pkg.coreTypes, format: 'cjs' }],
-    ...commonTypeConfig
   }
 ]
