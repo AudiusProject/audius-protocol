@@ -93,7 +93,7 @@ const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
       ContentNodeInfoManager.getContentNodeInfoFromSpId(userPrimaryId)
 
     logger.debug(
-      `actual: ${actualPrimaryWallet} recovered: ${recoveredPrimaryWallet}`
+      `shouldForceResync wallets actual: ${actualPrimaryWallet} recovered: ${recoveredPrimaryWallet}`
     )
 
     // Check that the recovered public key = primary wallet on chain
@@ -101,7 +101,9 @@ const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
       recoveredPrimaryWallet.toLowerCase() === actualPrimaryWallet.toLowerCase()
     )
   } catch (e: any) {
-    logger.error(`Could not verify primary delegate owner key: ${e.message}`)
+    logger.error(
+      `shouldForceResync Could not verify primary delegate owner key: ${e.message}`
+    )
   }
 
   return false
