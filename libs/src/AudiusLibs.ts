@@ -491,14 +491,14 @@ export class AudiusLibs {
     }
 
     /** Web3 Managers */
-    if (this.ethWeb3Config && this.identityService && this.hedgehog) {
+    if (this.ethWeb3Config) {
       this.ethWeb3Manager = new EthWeb3Manager({
         web3Config: this.ethWeb3Config,
         identityService: this.identityService,
         hedgehog: this.hedgehog
       })
     }
-    if (this.web3Config && this.identityService && this.hedgehog) {
+    if (this.web3Config) {
       this.web3Manager = new Web3Manager({
         web3Config: this.web3Config,
         identityService: this.identityService,
@@ -510,7 +510,7 @@ export class AudiusLibs {
         this.identityService.setWeb3Manager(this.web3Manager)
       }
     }
-    if (this.solanaWeb3Config && this.identityService && this.web3Manager) {
+    if (this.solanaWeb3Config) {
       this.solanaWeb3Manager = new SolanaWeb3Manager(
         this.solanaWeb3Config,
         this.identityService,
@@ -518,11 +518,7 @@ export class AudiusLibs {
       )
       await this.solanaWeb3Manager.init()
     }
-    if (
-      this.solanaWeb3Manager &&
-      this.solanaAudiusDataConfig &&
-      this.web3Manager
-    ) {
+    if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
       this.solanaAudiusData = new SolanaAudiusData(
         this.solanaAudiusDataConfig,
         this.solanaWeb3Manager,
@@ -533,20 +529,20 @@ export class AudiusLibs {
 
     /** Contracts - Eth and Data Contracts */
     const contractsToInit = []
-    if (this.ethWeb3Manager && this.ethWeb3Config) {
+    if (this.ethWeb3Manager) {
       const {
-        tokenAddress,
-        registryAddress,
-        claimDistributionContractAddress,
-        wormholeContractAddress
-      } = this.ethWeb3Config
+        tokenAddress = null,
+        registryAddress = null,
+        claimDistributionContractAddress = null,
+        wormholeContractAddress = null
+      } = this.ethWeb3Config ?? {}
 
       this.ethContracts = new EthContracts({
         ethWeb3Manager: this.ethWeb3Manager,
-        tokenContractAddress: tokenAddress,
-        registryAddress,
-        claimDistributionContractAddress,
-        wormholeContractAddress,
+        tokenContractAddress: tokenAddress!,
+        registryAddress: registryAddress!,
+        claimDistributionContractAddress: claimDistributionContractAddress!,
+        wormholeContractAddress: wormholeContractAddress!,
         isServer: this.isServer,
         logger: this.logger,
         isDebug: this.isDebug
@@ -587,7 +583,7 @@ export class AudiusLibs {
     }
 
     /** Discovery Provider */
-    if (this.discoveryProviderConfig && this.ethContracts && this.web3Manager) {
+    if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider({
         userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
@@ -599,7 +595,7 @@ export class AudiusLibs {
     }
 
     /** Creator Node */
-    if (this.creatorNodeConfig && this.web3Manager && this.schemas) {
+    if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
       const creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ??

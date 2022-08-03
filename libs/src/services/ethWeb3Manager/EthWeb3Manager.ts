@@ -1,6 +1,12 @@
 import Web3 from '../../LibsWeb3'
 import type Web3Type from 'web3'
-import { MultiProvider, estimateGas, ContractMethod, Maybe } from '../../utils'
+import {
+  MultiProvider,
+  estimateGas,
+  ContractMethod,
+  Maybe,
+  Nullable
+} from '../../utils'
 import { Transaction as EthereumTx } from 'ethereumjs-tx'
 import retry from 'async-retry'
 import type { IdentityService, RelayTransaction } from '../identity'
@@ -25,16 +31,16 @@ export type EthWeb3Config = {
 
 type EthWeb3ManagerConfig = {
   web3Config: EthWeb3Config
-  identityService: IdentityService
-  hedgehog?: Hedgehog
+  identityService: Nullable<IdentityService>
+  hedgehog?: Nullable<Hedgehog>
 }
 
 /** Singleton state-manager for Audius Eth Contracts */
 export class EthWeb3Manager {
   web3Config: EthWeb3Config
   web3: Web3Type
-  identityService: IdentityService
-  hedgehog?: Hedgehog
+  identityService: Nullable<IdentityService>
+  hedgehog?: Nullable<Hedgehog>
   ownerWallet: Maybe<Wallet | string>
 
   constructor({ web3Config, identityService, hedgehog }: EthWeb3ManagerConfig) {
@@ -183,6 +189,9 @@ export class EthWeb3Manager {
     const response = await retry<Maybe<RelayTransaction>>(
       async (bail) => {
         try {
+          if (!this.identityService) {
+            return
+          }
           const attempt = await this.identityService.ethRelay(
             contractAddress,
             ownerWallet,

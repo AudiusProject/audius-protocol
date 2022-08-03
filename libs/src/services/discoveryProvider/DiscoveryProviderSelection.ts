@@ -54,7 +54,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
 
   constructor(
     config: DiscoveryProviderSelectionConfig,
-    ethContracts: EthContracts
+    ethContracts: Nullable<EthContracts>
   ) {
     super({
       /**
@@ -62,7 +62,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
        * the list of registered providers from chain
        */
       getServices: async ({ verbose = false } = {}) => {
-        this.currentVersion = await ethContracts.getCurrentVersion(
+        this.currentVersion = await ethContracts!.getCurrentVersion(
           DISCOVERY_SERVICE_NAME
         )
         const services = await this.ethContracts.getServiceProviderList(
@@ -72,7 +72,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
       },
       ...config
     })
-    this.ethContracts = ethContracts
+    this.ethContracts = ethContracts!
     this.currentVersion = ''
     this.reselectTimeout = config.reselectTimeout
     this.selectionCallback = config.selectionCallback

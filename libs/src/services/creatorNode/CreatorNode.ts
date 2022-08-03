@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import retry from 'async-retry'
-import { TrackMetadata, Utils, uuid } from '../../utils'
+import { Nullable, TrackMetadata, Utils, uuid } from '../../utils'
 import {
   userSchemaType,
   trackSchemaType,
@@ -151,12 +151,12 @@ export class CreatorNode {
 
   /* -------------- */
 
-  web3Manager: Web3Manager
+  web3Manager: Nullable<Web3Manager>
   creatorNodeEndpoint: string
   isServer: boolean
   userStateManager: UserStateManager
   lazyConnect: boolean
-  schemas: Schemas
+  schemas: Schemas | undefined
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
@@ -170,12 +170,12 @@ export class CreatorNode {
    * Constructs a service class for a creator node
    */
   constructor(
-    web3Manager: Web3Manager,
+    web3Manager: Nullable<Web3Manager>,
     creatorNodeEndpoint: string,
     isServer: boolean,
     userStateManager: UserStateManager,
     lazyConnect: boolean,
-    schemas: Schemas,
+    schemas: Schemas | undefined,
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
     monitoringCallbacks: MonitoringCallbacks = {},
@@ -210,7 +210,7 @@ export class CreatorNode {
   /** Establishes a connection to a content node endpoint */
   async connect() {
     this.connecting = true
-    await this._signupNodeUser(this.web3Manager.getWalletAddress())
+    await this._signupNodeUser(this.web3Manager?.getWalletAddress())
     await this._loginNodeUser()
     this.connected = true
     this.connecting = false
@@ -270,7 +270,7 @@ export class CreatorNode {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas[userSchemaType].validate?.(metadata)
+      this.schemas?.[userSchemaType].validate?.(metadata)
 
       const requestObj: AxiosRequestConfig = {
         url: '/audius_users/metadata',
@@ -389,7 +389,7 @@ export class CreatorNode {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas[trackSchemaType].validate?.(metadata)
+      this.schemas?.[trackSchemaType].validate?.(metadata)
     } catch (e) {
       console.error('Error validating track metadata', e)
     }
@@ -627,7 +627,7 @@ export class CreatorNode {
       return
     }
 
-    const walletPublicKey = this.web3Manager.getWalletAddress()
+    const walletPublicKey = this.web3Manager?.getWalletAddress()
     let clientChallengeKey
     let url: string | undefined
 
@@ -650,7 +650,7 @@ export class CreatorNode {
       await this._handleErrorHelper(e as Error, requestUrl)
     }
 
-    const signature = await this.web3Manager.sign(clientChallengeKey)
+    const signature = await this.web3Manager?.sign(clientChallengeKey)
 
     if (url) {
       const resp = await this._makeRequest(

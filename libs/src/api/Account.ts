@@ -625,7 +625,7 @@ export class Account extends Base {
       nonce,
       deadline
     )
-    const result = sign(digest, myPrivateKey)
+    const result = sign(digest, myPrivateKey!)
     return {
       result,
       deadline

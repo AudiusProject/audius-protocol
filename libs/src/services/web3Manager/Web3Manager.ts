@@ -1,7 +1,7 @@
 import Web3 from '../../LibsWeb3'
 import sigUtil from 'eth-sig-util'
 import retry from 'async-retry'
-import { ContractMethod, estimateGas } from '../../utils'
+import { ContractMethod, estimateGas, Nullable } from '../../utils'
 import { AudiusABIDecoder } from '../ABIDecoder'
 import EthereumWallet from 'ethereumjs-wallet'
 import { XMLHttpRequest } from './XMLHttpRequest'
@@ -17,8 +17,8 @@ const DEFAULT_GAS_LIMIT = 2000000
 
 export type Web3ManagerConfig = {
   web3Config: Web3Config
-  identityService: IdentityService
-  hedgehog: Hedgehog
+  identityService: Nullable<IdentityService>
+  hedgehog: Nullable<Hedgehog>
   isServer?: boolean
 }
 
@@ -26,13 +26,12 @@ export type Web3ManagerConfig = {
 export class Web3Manager {
   web3Config: Web3Config
   isServer: boolean
-  identityService: IdentityService
-  hedgehog: Hedgehog
+  identityService: Nullable<IdentityService>
+  hedgehog: Nullable<Hedgehog>
   AudiusABIDecoder: typeof AudiusABIDecoder
   web3: Web3Type | undefined
   useExternalWeb3: boolean | undefined
-  // @ts-expect-error an error is thrown if it's not provided
-  ownerWallet: EthereumWallet
+  ownerWallet?: EthereumWallet
 
   constructor({
     web3Config,
@@ -87,14 +86,14 @@ export class Web3Manager {
       }
 
       // create private key pair here if it doesn't already exist
-      const storedWallet = this.hedgehog.getWallet()
+      const storedWallet = this.hedgehog?.getWallet()
       if (storedWallet) {
         this.ownerWallet = storedWallet
       } else {
         const passwordEntropy = `audius-dummy-pkey-${Math.floor(
           Math.random() * 1000000
         )}`
-        this.ownerWallet = await this.hedgehog.createWalletObj(passwordEntropy)
+        this.ownerWallet = await this.hedgehog?.createWalletObj(passwordEntropy)
       }
     } else {
       throw new Error("web3ProviderEndpoint isn't passed into constructor")
@@ -116,7 +115,7 @@ export class Web3Manager {
       // @ts-expect-error Wallet type doesn't have `toLowerCase` method?
       return this.ownerWallet.toLowerCase()
     } else {
-      return this.ownerWallet.getAddressString()
+      return this.ownerWallet?.getAddressString()
     }
   }
 
@@ -132,7 +131,7 @@ export class Web3Manager {
     if (this.useExternalWeb3) {
       throw new Error("Can't get owner wallet private key for external web3")
     } else {
-      return this.ownerWallet.getPrivateKey()
+      return this.ownerWallet?.getPrivateKey()
     }
   }
 
@@ -157,7 +156,7 @@ export class Web3Manager {
       }
     }
 
-    return sigUtil.personalSign(this.getOwnerWalletPrivateKey(), { data })
+    return sigUtil.personalSign(this.getOwnerWalletPrivateKey()!, { data })
   }
 
   /**
@@ -188,7 +187,7 @@ export class Web3Manager {
           signatureData.message[key] = Buffer.from(message)
         }
       })
-      return sigUtil.signTypedData(this.ownerWallet.getPrivateKey(), {
+      return sigUtil.signTypedData(this.ownerWallet!.getPrivateKey(), {
         data: signatureData
       })
     }
@@ -217,10 +216,10 @@ export class Web3Manager {
 
       const response = await retry(
         async () => {
-          return await this.identityService.relay(
+          return await this.identityService?.relay(
             contractRegistryKey,
             contractAddress,
-            this.ownerWallet.getAddressString(),
+            this.ownerWallet!.getAddressString(),
             encodedABI,
             gasLimit
           )
@@ -243,7 +242,7 @@ export class Web3Manager {
         }
       )
 
-      const receipt = response.receipt
+      const receipt = response!.receipt
 
       // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
       // above) parses the event log into an 'events' key on the transaction receipt and
@@ -270,7 +269,7 @@ export class Web3Manager {
         })
         receipt.events = events
       }
-      return response.receipt
+      return response!.receipt
     }
   }
 

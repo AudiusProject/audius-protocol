@@ -6,6 +6,7 @@ import {
   Keypair,
   Connection
 } from '@solana/web3.js'
+import type { Nullable } from '../../utils'
 import type { IdentityService } from '../identity'
 
 type FindAssociatedTokenAddressConfig = {
@@ -65,7 +66,7 @@ type CreateAssociatedTokenAccountParams = {
   mintKey: PublicKey
   solanaTokenProgramKey: PublicKey
   connection: Connection
-  identityService: IdentityService
+  identityService: Nullable<IdentityService>
 }
 
 /**
@@ -149,6 +150,6 @@ export async function createAssociatedTokenAccount({
     ]
   }
 
-  const response = await identityService.solanaRelay(transactionData)
+  const response = await identityService?.solanaRelay(transactionData)
   return response
 }

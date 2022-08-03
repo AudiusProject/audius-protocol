@@ -109,8 +109,8 @@ export type SolanaWeb3Config = {
 
 export class SolanaWeb3Manager {
   solanaWeb3Config: SolanaWeb3Config
-  identityService: IdentityService
-  web3Manager: Web3Manager
+  identityService: Nullable<IdentityService>
+  web3Manager: Nullable<Web3Manager>
   solanaWeb3: typeof solanaWeb3
   splToken: typeof splToken
   solanaClusterEndpoint!: string
@@ -135,8 +135,8 @@ export class SolanaWeb3Manager {
 
   constructor(
     solanaWeb3Config: SolanaWeb3Config,
-    identityService: IdentityService,
-    web3Manager: Web3Manager
+    identityService: Nullable<IdentityService>,
+    web3Manager: Nullable<Web3Manager>
   ) {
     this.solanaWeb3Config = solanaWeb3Config
     this.identityService = identityService
@@ -549,7 +549,7 @@ export class SolanaWeb3Manager {
   }
 
   async getRandomFeePayer() {
-    return await this.identityService.getRandomFeePayer()
+    return await this.identityService?.getRandomFeePayer()
   }
 
   /**

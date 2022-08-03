@@ -6,6 +6,7 @@ import type { Web3Manager } from '../web3Manager'
 import { PublicKey, Keypair, SystemProgram, Transaction } from '@solana/web3.js'
 import { SolanaUtils } from '../solana'
 import { audiusDataErrorMapping } from './errors'
+import type { Nullable } from '../../utils'
 
 export type AnchorAudiusDataConfig = {
   // Program ID of the audius data program
@@ -35,14 +36,14 @@ export class SolanaAudiusData {
   programId!: PublicKey
   adminAccount!: PublicKey
   provider!: anchor.Provider
-  web3Manager: Web3Manager
+  web3Manager: Nullable<Web3Manager>
   // Exposes all other methods from @audius/anchor-audius-data for ad hoc use
   AudiusData: any
 
   constructor(
     anchorAudiusDataConfig: AnchorAudiusDataConfig,
     solanaWeb3Manager: SolanaWeb3Manager,
-    web3Manager: Web3Manager
+    web3Manager: Nullable<Web3Manager>
   ) {
     this.anchorAudiusDataConfig = anchorAudiusDataConfig
     this.solanaWeb3Manager = solanaWeb3Manager
@@ -116,7 +117,7 @@ export class SolanaAudiusData {
    */
   getUserKeyPair(): anchor.web3.Keypair {
     return anchor.web3.Keypair.fromSeed(
-      this.web3Manager.ownerWallet.getPrivateKey()
+      this.web3Manager!.ownerWallet!.getPrivateKey()
     )
   }
 
@@ -254,7 +255,7 @@ export class SolanaAudiusData {
     const { userAccount } = await this.getUserIdSeed(params.userId)
     const tx = AudiusData.initUserSolPubkey({
       program: this.program,
-      ethPrivateKey: this.web3Manager.ownerWallet.getPrivateKeyString(),
+      ethPrivateKey: this.web3Manager!.ownerWallet!.getPrivateKeyString(),
       message: userSolKeypair.publicKey.toBytes(),
       userAccount,
       userAuthorityPublicKey: userSolKeypair.publicKey
@@ -359,8 +360,8 @@ export class SolanaAudiusData {
     if (!this.didInit()) return
 
     const ethAccount = {
-      privateKey: this.web3Manager.ownerWallet.getPrivateKeyString(),
-      address: this.web3Manager.ownerWallet.getAddressString()
+      privateKey: this.web3Manager?.ownerWallet?.getPrivateKeyString(),
+      address: this.web3Manager?.ownerWallet?.getAddressString()
     }
 
     const userSolKeypair = this.getUserKeyPair()
