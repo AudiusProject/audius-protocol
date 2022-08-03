@@ -13,7 +13,7 @@ declare global {
 const VERIFY_ENDPOINT = 'https://www.google.com/recaptcha/api/siteverify'
 const IS_BROWSER = typeof window !== 'undefined' && window !== null
 
-interface CaptchaConfig {
+export type CaptchaConfig = {
   siteKey: string
   serviceKey: string
 }

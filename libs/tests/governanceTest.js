@@ -5,7 +5,7 @@ const nock = require('nock')
 const { Vote } = require('../src/services/ethContracts/GovernanceClient')
 const time = require('@openzeppelin/test-helpers/src/time')
 const { initializeLibConfig } = require('./helpers')
-const AudiusLibs = require('../src/libs')
+const { AudiusLibs } = require('../src/AudiusLibs')
 
 const { audiusInstance: audius0, getRandomLocalhost } = helpers
 

@@ -1,11 +1,16 @@
-const { Utils } = require('../utils')
-const { CreatorNode } = require('../services/creatorNode')
+import { Nullable, Utils } from '../utils'
+import { CreatorNode } from '../services/creatorNode'
+import type { AudiusLibs } from '../AudiusLibs'
 
 const THREE_SECONDS = 3000
 const MAX_TRIES = 3
 
 /** Check if the user's primary creator node is healthy */
-const checkPrimaryHealthy = async (libs, primary, tries) => {
+const checkPrimaryHealthy = async (
+  libs: AudiusLibs,
+  primary: string,
+  tries: number
+): Promise<boolean> => {
   const healthy = await Utils.isHealthy(primary)
   if (healthy) return healthy
   else {
@@ -13,28 +18,33 @@ const checkPrimaryHealthy = async (libs, primary, tries) => {
       return false
     }
     await Utils.wait(THREE_SECONDS)
-    return checkPrimaryHealthy(libs, primary, tries - 1)
+    return await checkPrimaryHealthy(libs, primary, tries - 1)
   }
 }
 
 /** Gets new endpoints from a user's secondaries */
-const getNewPrimary = async (libs, secondaries) => {
+const getNewPrimary = async (libs: AudiusLibs, secondaries: string[]) => {
   for (const secondary of secondaries) {
-    const { isBehind } = await libs.creatorNode.getSyncStatus(secondary)
-    if (!isBehind) {
+    const syncStatus = await libs.creatorNode?.getSyncStatus(secondary)
+    if (!syncStatus) continue
+    if (!syncStatus.isBehind) {
       return secondary
     }
   }
   throw new Error(`Could not find valid secondaries for user ${secondaries}`)
 }
 
-const rolloverNodes = async (libs, creatorNodeWhitelist) => {
+export const rolloverNodes = async (
+  libs: AudiusLibs,
+  creatorNodeWhitelist: Nullable<Set<string>>
+) => {
   console.debug('Sanity Check - rolloverNodes')
-  const user = libs.userStateManager.getCurrentUser()
+  const user = libs.userStateManager?.getCurrentUser()
 
   if (!user) return
 
   const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+  if (!primary) return
   const healthy = await checkPrimaryHealthy(libs, primary, MAX_TRIES)
   if (healthy) return
 
@@ -47,28 +57,34 @@ const rolloverNodes = async (libs, creatorNodeWhitelist) => {
     // Get new secondaries and backfill up to 2
     let newSecondaries = [...secondaries]
     newSecondaries.splice(index, 1)
-    const autoselect = await libs.ServiceProvider.autoSelectCreatorNodes({
+    const autoselect = await libs.ServiceProvider?.autoSelectCreatorNodes({
       numberOfNodes: 2 - newSecondaries.length,
       whitelist: creatorNodeWhitelist,
       // Exclude ones we currently have
       blacklist: new Set([newPrimary, ...newSecondaries]),
-      preferHigherPatchForPrimary: libs.User.preferHigherPatchForPrimary,
-      preferHigherPatchForSecondaries: libs.User.preferHigherPatchForSecondaries
+      preferHigherPatchForPrimary: libs.User?.preferHigherPatchForPrimary,
+      preferHigherPatchForSecondaries:
+        libs.User?.preferHigherPatchForSecondaries
     })
-    newSecondaries = newSecondaries.concat([autoselect.primary, ...autoselect.secondaries])
+    if (autoselect) {
+      newSecondaries = newSecondaries.concat([
+        autoselect.primary,
+        ...autoselect.secondaries
+      ])
+    }
 
     // Set the new endpoint and connect to it
     const newEndpoints = [newPrimary, ...newSecondaries]
-    await libs.creatorNode.setEndpoint(newEndpoints[0])
+    await libs.creatorNode?.setEndpoint(newEndpoints[0]!)
 
     // Update the user
     const newMetadata = { ...user }
     newMetadata.creator_node_endpoint = newEndpoints.join(',')
-    console.debug(`Sanity Check - rolloverNodes - new nodes ${newMetadata.creator_node_endpoint}`)
-    await libs.User.updateCreator(user.user_id, newMetadata)
+    console.debug(
+      `Sanity Check - rolloverNodes - new nodes ${newMetadata.creator_node_endpoint}`
+    )
+    await libs.User?.updateCreator(user.user_id, newMetadata)
   } catch (e) {
     console.error(e)
   }
 }
-
-module.exports = rolloverNodes
