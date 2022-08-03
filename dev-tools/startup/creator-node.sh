@@ -11,7 +11,7 @@ cd ../audius-libs
 npm link
 
 cd ../app
-npm link @audius/libs
+npm link @audius/sdk
 
 # Run register script in background as it waits for the node to be healthy
 node scripts/register.js &

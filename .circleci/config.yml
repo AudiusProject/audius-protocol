@@ -68,12 +68,7 @@ commands:
                     {
                       "type": "mrkdwn",
                       "text": "*Author*: $CIRCLE_USERNAME"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "fields": [
+                    },
                     {
                       "type": "mrkdwn",
                       "text": "*Mentions*: << parameters.slack_mentions_user >>"
@@ -209,13 +204,14 @@ commands:
             }
             trap cleanup EXIT
 
+            set -x
+
             # authenticate into gcloud
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
 
             GCLOUD_VM_NAME=<< parameters.instance-name >>-$(date +%s)
-            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
             git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
@@ -230,7 +226,7 @@ commands:
 
             # run A setup on remote dev box to clone protocol and install the prerequisites for A
             # A setup ... || true is necessary because exit code returns 141 by default
-            [ <<parameters.fast>> ] && A_SETUP_ARGS="--fast" || A_SETUP_ARGS=""
+            <<parameters.fast>> && A_SETUP_ARGS="--fast" || A_SETUP_ARGS=""
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME $A_SETUP_ARGS --spot-instance || true
 
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
@@ -292,6 +288,8 @@ jobs:
           post-gcp-command: |
             BAKE_IMAGE_NAME=ci-image-bake-latest
 
+            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
+
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
 
@@ -305,7 +303,7 @@ jobs:
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
 
-  publish-libs:
+  publish-sdk:
     docker:
       - image: circleci/node:14.17.5
     resource_class: xlarge
@@ -1013,11 +1011,11 @@ workflows:
   sdk-release:
     when: << pipeline.parameters.sdk_release_tag >>
     jobs:
-      - publish-libs:
+      - publish-sdk:
           context:
             - Audius Client
             - slack-secrets
-          name: publish-libs (<< pipeline.parameters.sdk_release_tag >>)
+          name: publish-sdk (<< pipeline.parameters.sdk_release_tag >>)
           sdk_release_tag: << pipeline.parameters.sdk_release_tag >>
           slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
           filters:
