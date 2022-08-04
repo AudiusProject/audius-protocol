@@ -50,11 +50,12 @@ module.exports = (async () => {
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
       sourceExts: [...sourceExts, 'svg', 'cjs'],
-      nodeModulesPaths: [path.resolve(__dirname, 'node_modules')],
+      nodeModulesPaths: [path.resolve(clientPath, 'node_modules')],
       extraNodeModules: {
         ...require('node-libs-react-native'),
         // Alias for 'src' to allow for absolute paths
         app: path.resolve(__dirname, 'src'),
+        'react-native': resolveModule('react-native'),
         // Aliases for 'audius-client' to allow for absolute paths
         ...getClientAliases(),
 

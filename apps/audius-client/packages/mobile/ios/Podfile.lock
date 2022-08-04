@@ -431,8 +431,6 @@ PODS:
     - react-native-video/Video (= 5.1.0-alpha2)
   - react-native-video/Video (5.1.0-alpha2):
     - React
-  - react-native-wasm (0.1.3):
-    - React
   - react-native-webview (11.13.1):
     - React-Core
   - React-perflogger (0.66.3)
@@ -609,7 +607,6 @@ DEPENDENCIES:
   - react-native-static-server (from `../node_modules/react-native-static-server`)
   - react-native-version-number (from `../node_modules/react-native-version-number`)
   - react-native-video (from `../node_modules/react-native-video`)
-  - react-native-wasm (from `../node_modules/react-native-wasm`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -747,8 +744,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-version-number"
   react-native-video:
     :path: "../node_modules/react-native-video"
-  react-native-wasm:
-    :path: "../node_modules/react-native-wasm"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-perflogger:
@@ -878,7 +873,6 @@ SPEC CHECKSUMS:
   react-native-static-server: 201b2a945a35096be3ae7f43e367c65bcbd61343
   react-native-version-number: 15563dc4145a94aabfc1faab2a9af10174a4204e
   react-native-video: 5673415bcb2e77e232decb11775c2a7fef60a615
-  react-native-wasm: 29847946c13a8dd4736fe639407ff3e68f80e6d4
   react-native-webview: cea67b82dd5fbdf0f5c821b4ca0ca0b01e954c0b
   React-perflogger: 73732888d37d4f5065198727b167846743232882
   React-RCTActionSheet: 96c6d774fa89b1f7c59fc460adc3245ba2d7fd79
