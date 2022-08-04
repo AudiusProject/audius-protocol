@@ -21,7 +21,6 @@ const {
 const { uploadTrack } = require('./lib/helpers')
 const BlacklistManager = require('../src/blacklistManager')
 const sessionManager = require('../src/sessionManager')
-const exportComponentService = require('../src/components/replicaSet/exportComponentService')
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
