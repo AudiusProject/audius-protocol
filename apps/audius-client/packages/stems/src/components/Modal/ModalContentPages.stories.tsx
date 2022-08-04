@@ -79,7 +79,8 @@ const Template: Story<ModalProps> = ({
               gap: '8px',
               padding: '8px',
               justifyContent: 'space-between'
-            }}>
+            }}
+          >
             <Button
               type={Type.COMMON_ALT}
               leftIcon={<IconArrowWhite style={{ transform: 'scaleX(-1)' }} />}
