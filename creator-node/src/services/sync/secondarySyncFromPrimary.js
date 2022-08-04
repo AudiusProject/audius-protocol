@@ -277,13 +277,13 @@ const handleSyncFromPrimary = async (
         if (cnodeUserRecord) {
           logger.info(
             logPrefix,
-            `cNodeUserRecord was non-empty -- updating CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedCNodeUser?.clock}`
+            `cNodeUserRecord was non-empty -- updating CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}. Clock value: ${fetchedLatestClockVal}`
           )
           const [numRowsUpdated, respObj] = await models.CNodeUser.update(
             {
               lastLogin: fetchedCNodeUser.lastLogin,
               latestBlockNumber: fetchedLatestBlockNumber,
-              clock: fetchedCNodeUser.clock,
+              clock: fetchedLatestClockVal,
               createdAt: fetchedCNodeUser.createdAt
             },
             {
@@ -313,7 +313,7 @@ const handleSyncFromPrimary = async (
         } else {
           logger.info(
             logPrefix,
-            `cNodeUserRecord was empty -- inserting CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedCNodeUser?.clock}`
+            `cNodeUserRecord was empty -- inserting CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}. Clock value: ${fetchedLatestClockVal}`
           )
           // Will throw error if creation fails
           cnodeUser = await models.CNodeUser.create(
@@ -321,7 +321,7 @@ const handleSyncFromPrimary = async (
               walletPublicKey: fetchedWalletPublicKey,
               lastLogin: fetchedCNodeUser.lastLogin,
               latestBlockNumber: fetchedLatestBlockNumber,
-              clock: fetchedCNodeUser.clock,
+              clock: fetchedLatestClockVal,
               createdAt: fetchedCNodeUser.createdAt
             },
             {
@@ -334,7 +334,7 @@ const handleSyncFromPrimary = async (
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         logger.info(
           logPrefix,
-          `Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedCNodeUser?.clock}`
+          `Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedLatestClockVal}`
         )
 
         /**
