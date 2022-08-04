@@ -1,4 +1,4 @@
-import { User } from '@audius/common'
+import { Nullable, User } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { takeEvery, put, call } from 'redux-saga/effects'
 
@@ -33,13 +33,13 @@ function* watchAccountRecovery() {
   yield takeEvery(
     MessageType.ACCOUNT_RECOVERY,
     function* ({ login, warning, email }: any) {
-      let entropy = null
+      let entropy: Nullable<string> = null
       let isSameAccount = false
 
       if (login) {
         entropy = atob(login)
         const oldEntropy = window.localStorage.getItem(ENTROPY_KEY)
-        window.localStorage.setItem(ENTROPY_KEY, entropy)
+        window.localStorage.setItem(ENTROPY_KEY, entropy ?? '')
         isSameAccount = oldEntropy === entropy
       }
 

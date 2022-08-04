@@ -59,7 +59,7 @@ import {
   fetchSolanaCollectiblesForWallets
 } from 'pages/profile-page/sagas'
 import { newUserMetadata } from 'schemas'
-import AudiusBackend from 'services/AudiusBackend'
+import AudiusBackend, { PhantomProvider } from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
@@ -67,8 +67,7 @@ import {
   loadWalletLink,
   loadBitski,
   loadWalletConnect,
-  createSession,
-  PhantomProvider
+  createSession
 } from 'services/web3-modal'
 import { requestConfirmation } from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'

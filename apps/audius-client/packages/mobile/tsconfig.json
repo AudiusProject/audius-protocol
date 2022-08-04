@@ -18,6 +18,7 @@
       "hooks/*": ["./node_modules/audius-client/src/hooks/*"],
       "pages/*": ["./node_modules/audius-client/src/pages/*"],
       "models/*": ["./node_modules/audius-client/src/models/*"],
+      "schemas": ["./node_modules/audius-client/src/schemas"],
       "services/*": ["./node_modules/audius-client/src/services/*"],
       "store/*": ["./node_modules/audius-client/src/store/*"],
       "utils/*": ["./node_modules/audius-client/src/utils/*"]
