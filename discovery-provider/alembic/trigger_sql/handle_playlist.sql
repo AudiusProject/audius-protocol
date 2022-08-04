@@ -43,21 +43,22 @@ begin
         if track_owner_id != new.playlist_owner_id then
           raise notice 'inserting';
           insert into notification
-            (blocknumber, user_ids, timestamp, type, specifier, metadata)
+            (blocknumber, user_ids, timestamp, type, specifier, data)
             values
             (
               new.blocknumber,
               ARRAY [track_owner_id],
               new.updated_at,
-              'trackAddedToPlaylist',
-              'trackAddedToPlaylist:playlistId:' || new.playlist_id || ':trackId:' || (track_item->>'track')::int || ':blocknumber:' || new.blocknumber,
-              ('{ "track_id": ' || (track_item->>'track')::int || ',  "playlist_id": ' || new.playlist_id ||  '}')::json
-            );
+              'track_added_to_playlist',
+              'track_added_to_playlist:playlist_id:' || new.playlist_id || ':track_id:' || (track_item->>'track')::int || ':blocknumber:' || new.blocknumber,
+			        json_build_object('track_id', (track_item->>'track')::int, 'playlist_id', new.playlist_id)
+            )
+          on conflict do nothing;
         end if;
       end if;
     end loop;
    exception
-     when others then raise notice 'broke';
+     when others then null;
    end;
 
   return null;

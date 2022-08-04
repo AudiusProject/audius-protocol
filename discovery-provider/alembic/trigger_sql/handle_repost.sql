@@ -42,7 +42,7 @@ begin
     where track_id = new.repost_item_id
     returning repost_count into new_val;
   	if delta = 1 then
-		  select user_id into owner_user_id from tracks where is_current and track_id = new.repost_item_id;
+		  select owner_id into owner_user_id from tracks where is_current and track_id = new.repost_item_id;
 	  end if;
   else
     milestone_name := 'PLAYLIST_REPOST_COUNT';
@@ -66,18 +66,25 @@ begin
   -- create a milestone if applicable
   select new_val into milestone where new_val in (10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000);
   if new.is_delete = false and milestone is not null then
-    insert into milestones 
-      (id, name, threshold, blocknumber, slot, timestamp)
-    values
-      (new.repost_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
-    on conflict do nothing;
+    insert into notification
+      (user_ids, type, specifier, blocknumber, timestamp, data)
+      values
+      (
+        ARRAY [new.followee_user_id],
+        'milestone',
+        'milestone:' || milestone_name  || ':id:' || new.repost_item_id || ':threshold:' || milestone,
+        new.blocknumber,
+        new.created_at,
+        json_build_object('type', milestone_name, 'threshold', milestone)
+      )
+      on conflict do nothing;
   end if;
 
   begin
     -- create a notification for the reposted content's owner
     if new.is_delete is false then
     insert into notification
-      (blocknumber, user_ids, timestamp, type, specifier, metadata)
+      (blocknumber, user_ids, timestamp, type, specifier, data)
       values
       (
         new.blocknumber,
@@ -85,12 +92,12 @@ begin
         new.created_at,
         'repost',
         'repost:' || new.repost_item_id || ':type:'|| new.repost_type,
-        ('{ "repost_item_id": ' || new.repost_item_id || ',  "user_id": ' || new.user_id || ',  "type": "' || new.repost_type ||  '"}')::json
-      );
+        json_build_object('repost_item_id', new.repost_item_id, 'user_id', new.user_id, 'type', new.repost_type)
+      )
+      on conflict do nothing;
     end if;
 	exception
-		when others then
-		raise notice 'Error creating repost notification';
+		when others then null;
 	end;
 
   return null;

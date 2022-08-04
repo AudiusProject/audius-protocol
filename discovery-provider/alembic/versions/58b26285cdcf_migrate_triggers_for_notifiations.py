@@ -36,6 +36,8 @@ up_files = [
     "handle_reaction.sql",
     "handle_user_tip.sql",
     # Updates to old triggers
+    "handle_reaction.sql",
+    "handle_play.sql",
     "handle_repost.sql",
     "handle_save.sql",
     "handle_track.sql",
