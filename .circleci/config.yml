@@ -276,7 +276,6 @@ jobs:
       - restore_cache:
           keys:
             - eth-contracts-{{ checksum "eth-contracts/package.json" }}
-            - eth-contracts-
       - run:
           name: eth-contracts repo init
           command: |
