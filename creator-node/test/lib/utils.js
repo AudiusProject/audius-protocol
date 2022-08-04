@@ -1,3 +1,6 @@
+const assert = require('assert')
+const _ = require('lodash')
+
 const Utils = require('../../src/utils')
 
 const stringifiedDateFields = (obj) => {
@@ -45,9 +48,87 @@ const generateRandomCID = (numRandomDigits = 5, maxRandomNumber = 10000) => {
   )
 }
 
+const fetchDBStateForWallet = async (walletPublicKey, models) => {
+  const response = {
+    cnodeUser: null,
+    audiusUsers: null,
+    tracks: null,
+    files: null,
+    clockRecords: null
+  }
+
+  const cnodeUser = stringifiedDateFields(
+    await models.CNodeUser.findOne({
+      where: {
+        walletPublicKey
+      },
+      raw: true
+    })
+  )
+
+  if (!cnodeUser || Object.keys(cnodeUser).length === 0) {
+    return response
+  } else {
+    response.cnodeUser = cnodeUser
+  }
+
+  const cnodeUserUUID = cnodeUser.cnodeUserUUID
+
+  const audiusUsers = (
+    await models.AudiusUser.findAll({
+      where: { cnodeUserUUID },
+      raw: true
+    })
+  ).map(stringifiedDateFields)
+  response.audiusUsers = audiusUsers
+
+  const tracks = (
+    await models.Track.findAll({
+      where: { cnodeUserUUID },
+      raw: true
+    })
+  ).map(stringifiedDateFields)
+  response.tracks = tracks
+
+  const files = (
+    await models.File.findAll({
+      where: { cnodeUserUUID },
+      raw: true
+    })
+  ).map(stringifiedDateFields)
+  response.files = files
+
+  const clockRecords = (
+    await models.ClockRecord.findAll({
+      where: { cnodeUserUUID },
+      raw: true
+    })
+  ).map(stringifiedDateFields)
+  response.clockRecords = clockRecords
+
+  return response
+}
+
+const assertTableEquality = (tableA, tableB, comparisonOmittedFields = []) => {
+  assert.deepStrictEqual(
+    _.orderBy(
+      tableA.map((entry) => _.omit(entry, comparisonOmittedFields)),
+      ['clock'],
+      ['asc']
+    ),
+    _.orderBy(
+      tableB.map((entry) => _.omit(entry, comparisonOmittedFields)),
+      ['clock'],
+      ['asc']
+    )
+  )
+}
+
 module.exports = {
   wait,
   stringifiedDateFields,
   functionThatThrowsWithMessage,
-  generateRandomCID
+  generateRandomCID,
+  fetchDBStateForWallet,
+  assertTableEquality
 }

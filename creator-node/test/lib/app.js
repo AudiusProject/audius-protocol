@@ -13,7 +13,7 @@ async function getApp(
   libsClient,
   blacklistManager = BlacklistManager,
   setMockFn = null,
-  spId = null
+  spId = 1
 ) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
