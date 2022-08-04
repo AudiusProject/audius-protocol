@@ -4,6 +4,33 @@ const { getDefaultConfig } = require('metro-config')
 
 const clientPath = path.resolve(__dirname, '../web')
 const commonPath = path.resolve(__dirname, '../common')
+const emptyPolyfill = path.resolve(__dirname, 'src/mocks/empty.ts')
+
+const resolveModule = (module) =>
+  path.resolve(__dirname, 'node_modules', module)
+
+const getClientAliases = () => {
+  const clientAbsolutePaths = [
+    'assets',
+    'audio',
+    'common',
+    'pages',
+    'models',
+    'schemas',
+    'services',
+    'store',
+    'utils',
+    'workers'
+  ]
+
+  return clientAbsolutePaths.reduce(
+    (clientPaths, currentPath) => ({
+      [currentPath]: path.resolve(clientPath, 'src', currentPath),
+      ...clientPaths
+    }),
+    {}
+  )
+}
 
 module.exports = (async () => {
   const {
@@ -23,41 +50,19 @@ module.exports = (async () => {
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
       sourceExts: [...sourceExts, 'svg', 'cjs'],
-      nodeModulesPaths: [path.resolve(clientPath, 'node_modules')],
+      nodeModulesPaths: [path.resolve(__dirname, 'node_modules')],
       extraNodeModules: {
+        ...require('node-libs-react-native'),
         // Alias for 'src' to allow for absolute paths
         app: path.resolve(__dirname, 'src'),
-        // This is used to resolve the absolute paths found in audius-client.
-        // Eventually all shared state logic will live in @audius/client-common
-        // and this can be removed
-        ...[
-          'assets',
-          'audio',
-          'common',
-          'pages',
-          'models',
-          'schemas',
-          'services',
-          'store',
-          'utils',
-          'workers'
-        ].reduce(
-          (result, current) => ({
-            ...result,
-            [current]: path.resolve(clientPath, 'src', current)
-          }),
-          {}
-        ),
+        // Aliases for 'audius-client' to allow for absolute paths
+        ...getClientAliases(),
 
-        // Some modules import native node modules without necessarily using them.
-        // This mocks them out so the app can build
-        'react-native': path.resolve(__dirname, 'node_modules/react-native'),
-        crypto: path.resolve(__dirname, 'node_modules/expo-crypto'),
-        fs: path.resolve(__dirname, 'node_modules/react-native-fs'),
-        child_process: path.resolve(__dirname, 'src/mocks/empty.ts'),
-        http: path.resolve(__dirname, 'src/mocks/empty.ts'),
-        https: path.resolve(__dirname, 'src/mocks/empty.ts'),
-        stream: path.resolve(__dirname, 'src/mocks/empty.t')
+        // Various polyfills to enable @audius/sdk to run in react-native
+        child_process: emptyPolyfill,
+        fs: resolveModule('react-native-fs'),
+        net: emptyPolyfill,
+        tls: resolveModule('tls-browserify')
       }
     },
     maxWorkers: 2

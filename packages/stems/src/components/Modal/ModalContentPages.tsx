@@ -53,14 +53,16 @@ export const ModalContentPages = ({
       style={{
         width: width ? `${width}px` : '100%',
         height: height ? `${height}px` : '100%'
-      }}>
+      }}
+    >
       <Transition
         items={currentPage}
         initial={transitions.initial}
         from={transitions.from}
         enter={transitions.enter}
         leave={transitions.leave}
-        unique={true}>
+        unique={true}
+      >
         {(item) => (style) =>
           (
             <animated.div style={{ ...style }} className={styles.pageContainer}>
