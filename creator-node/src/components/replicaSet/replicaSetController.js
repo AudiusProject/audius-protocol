@@ -14,7 +14,7 @@ const {
 const { ensureStorageMiddleware } = require('../../middlewares')
 const {
   enqueueSync,
-  processImmediateSync
+  processManualImmediateSync
 } = require('./syncQueueComponentService')
 
 const router = express.Router()
@@ -100,7 +100,7 @@ const syncRouteController = async (req, res) => {
    */
   if (immediate) {
     try {
-      await processImmediateSync({
+      await processManualImmediateSync({
         serviceRegistry,
         walletPublicKeys,
         creatorNodeEndpoint,
