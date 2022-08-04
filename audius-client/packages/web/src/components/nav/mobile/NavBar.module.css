@@ -216,3 +216,14 @@
 .crownButton svg path {
   fill: var(--accent-orange);
 }
+
+.earlyAccess {
+  font-size: 10px;
+  position: absolute;
+  font-weight: var(--font-bold);
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  left: 30px;
+  top: 18px;
+  width: 72px;
+}

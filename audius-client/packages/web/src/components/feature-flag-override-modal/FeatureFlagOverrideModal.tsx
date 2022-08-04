@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import {
+  FeatureFlags,
+  FEATURE_FLAG_OVERRIDE_KEY,
+  OverrideSetting
+} from '@audius/common'
 import {
   Modal,
   ModalContent,
@@ -9,10 +13,6 @@ import {
   SegmentedControl
 } from '@audius/stems'
 
-import {
-  FEATURE_FLAG_OVERRIDE_KEY,
-  OverrideSetting
-} from 'common/hooks/useFeatureFlag'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useDevModeHotkey } from 'hooks/useHotkey'

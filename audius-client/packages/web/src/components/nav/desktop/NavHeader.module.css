@@ -122,3 +122,13 @@ svg.logo.matrixLogo path {
   text-transform: uppercase;
   padding: 0px 6px;
 }
+
+.earlyAccess {
+  font-size: 10px;
+  position: absolute;
+  font-weight: var(--font-bold);
+  top: 34px;
+  color: var(--primary);
+  left: 58px;
+  letter-spacing: 0.5px;
+}
