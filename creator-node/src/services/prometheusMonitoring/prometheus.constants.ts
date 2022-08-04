@@ -71,10 +71,6 @@ export const METRIC_NAMES = Object.freeze(
 
 export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
-    sync_type: Object.values(SyncType as Record<string, string>).map(snakeCase),
-    sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
-      snakeCase
-    ),
     result: [
       'success',
       'failure_sync_secondary_from_primary',
