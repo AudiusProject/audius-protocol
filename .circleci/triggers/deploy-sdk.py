@@ -24,7 +24,7 @@ from triggers import ensure_tag_on_master
 @click.option(
     "-u",
     "--slack-mentions-user",
-    help="Used for CircleCI @mentions",
+    help="Used when $CIRCLE_SLACK_MENTIONS_USER is not set, for CircleCI @mentions",
     envvar="CIRCLE_SLACK_MENTIONS_USER",
     required=True,
 )

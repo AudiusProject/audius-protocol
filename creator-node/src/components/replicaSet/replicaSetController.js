@@ -12,7 +12,10 @@ const {
   respondToURSMRequestForSignature
 } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
-const { enqueueSync } = require('./syncQueueComponentService')
+const {
+  enqueueSync,
+  processImmediateSync
+} = require('./syncQueueComponentService')
 const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
 const {
   generateDataForSignatureRecovery
@@ -63,7 +66,10 @@ const respondToURSMRequestForProposalController = async (req) => {
  */
 const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
-  if (_.isEmpty(serviceRegistry?.syncQueue)) {
+  if (
+    _.isEmpty(serviceRegistry?.syncQueue) ||
+    _.isEmpty(serviceRegistry?.syncImmediateQueue)
+  ) {
     return errorResponseServerError('Sync Queue is not up and running yet')
   }
   const nodeConfig = serviceRegistry.nodeConfig
@@ -100,11 +106,10 @@ const syncRouteController = async (req, res) => {
 
   if (immediate) {
     try {
-      await secondarySyncFromPrimary({
+      await processImmediateSync({
         serviceRegistry,
         wallet,
         creatorNodeEndpoint: primaryEndpoint,
-        blockNumber,
         forceResyncConfig: {
           forceResync: req.body.forceResync,
           apiSigning: {

@@ -6,6 +6,17 @@ const enqueueSync = async (params) => {
   await serviceRegistry.syncQueue.enqueueSync(params)
 }
 
+const processImmediateSync = async (params) => {
+  const { serviceRegistry, wallet, creatorNodeEndpoint, forceResyncConfig } =
+    params
+  await serviceRegistry.syncImmediateQueue.processImmediateSync({
+    wallet,
+    creatorNodeEndpoint,
+    forceResyncConfig
+  })
+}
+
 module.exports = {
-  enqueueSync
+  enqueueSync,
+  processImmediateSync
 }

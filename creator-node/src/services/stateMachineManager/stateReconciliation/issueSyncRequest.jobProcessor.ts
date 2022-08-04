@@ -58,7 +58,6 @@ type HandleIssueSyncReqParams = {
   syncMode: string
   syncRequestParameters: SyncRequestAxiosParams
   logger: Logger
-  attemptNumber: number
 }
 type HandleIssueSyncReqResult = {
   result: string
@@ -104,8 +103,7 @@ module.exports = async function ({
     syncType,
     syncMode,
     syncRequestParameters,
-    logger,
-    attemptNumber
+    logger
   })
   if (errorResp) {
     error = errorResp
@@ -117,19 +115,21 @@ module.exports = async function ({
     syncReqToEnqueue?.syncType === SyncType.Manual
       ? MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS
       : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-  if (!_.isEmpty(syncReqToEnqueue) && attemptNumber < maxRetries) {
-    logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
-    const queueName =
-      syncReqToEnqueue?.syncType === SyncType.Manual
-        ? QUEUE_NAMES.MANUAL_SYNC
-        : QUEUE_NAMES.RECURRING_SYNC
-    jobsToEnqueue = {
-      [queueName]: [{ attemptNumber: attemptNumber + 1, ...syncReqToEnqueue }]
+  if (!_.isEmpty(syncReqToEnqueue)) {
+    if (attemptNumber < maxRetries) {
+      logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
+      const queueName =
+        syncReqToEnqueue?.syncType === SyncType.Manual
+          ? QUEUE_NAMES.MANUAL_SYNC
+          : QUEUE_NAMES.RECURRING_SYNC
+      jobsToEnqueue = {
+        [queueName]: [{ ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }]
+      }
+    } else {
+      logger.info(
+        `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
+      )
     }
-  } else {
-    logger.info(
-      `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
-    )
   }
 
   // Make metrics to record
@@ -156,8 +156,7 @@ async function _handleIssueSyncRequest({
   syncType,
   syncMode,
   syncRequestParameters,
-  logger,
-  attemptNumber
+  logger
 }: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
   if (!syncRequestParameters?.data?.wallet?.length) {
     return { result: 'failure_missing_wallet' }
@@ -259,8 +258,7 @@ async function _handleIssueSyncRequest({
       syncReqToEnqueue: {
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-        syncRequestParameters,
-        attemptNumber
+        syncRequestParameters
       }
     }
   }
@@ -276,8 +274,7 @@ async function _handleIssueSyncRequest({
     syncType,
     syncMode,
     syncRequestParameters,
-    logger,
-    attemptNumber
+    logger
   )
 
   return {
@@ -326,8 +323,7 @@ const _additionalSyncIsRequired = async (
   syncType: string,
   syncMode: string,
   syncRequestParameters: SyncRequestAxiosParams,
-  logger: any,
-  attemptNumber: number
+  logger: any
 ): Promise<AdditionalSyncIsRequiredResponse> => {
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryUrl = syncRequestParameters.baseURL
@@ -432,8 +428,7 @@ const _additionalSyncIsRequired = async (
     response.syncReqToEnqueue = {
       syncType,
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-      syncRequestParameters,
-      attemptNumber: attemptNumber + 1
+      syncRequestParameters
     }
   }
 

@@ -609,7 +609,7 @@ const handleSyncFromPrimary = async ({
  *    any data corruption from primary needs to be handled separately and should not be replicated.
  *
  * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
- *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
+ *    only replicate partial data state. This is by design, and state machine will trigger repeated syncs
  *    with progressively increasing clock values until secondaries have completely synced up.
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
@@ -628,20 +628,20 @@ async function secondarySyncFromPrimary({
   )
   const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
 
-  const { error, ...labels } = await handleSyncFromPrimary({
+  const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
     creatorNodeEndpoint,
     blockNumber,
     forceResyncConfig
   })
-  metricEndTimerFn(labels)
+  metricEndTimerFn({ result })
 
   if (error) {
     throw new Error(error)
   }
 
-  return labels
+  return { result }
 }
 
 module.exports = secondarySyncFromPrimary

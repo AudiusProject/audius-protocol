@@ -7,6 +7,7 @@ const SyncQueue = require('../../src/services/sync/syncQueue')
 const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
 const BlacklistManager = require('../../src/blacklistManager')
+const ImageProcessingQueue = require('../../src/ImageProcessingQueue.js')
 
 async function getApp(
   libsClient,
@@ -33,6 +34,7 @@ async function getApp(
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
     asyncProcessingQueue: apq,
+    imageProcessingQueue: new ImageProcessingQueue(),
     nodeConfig,
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),

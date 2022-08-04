@@ -36,50 +36,55 @@ ${CHANGE_LOG}"
 # Make a new branch off GIT_TAG, bumps npm,
 # commits with the relevant changelog, and pushes
 function bump-npm () {
-    # Configure git client
-    git config --global user.email "audius-infra@audius.co"
-    git config --global user.name "audius-infra"
+    (
+        # Configure git client
+        git config --global user.email "audius-infra@audius.co"
+        git config --global user.name "audius-infra"
 
-    # Make sure master is up to date
-    git checkout master -f
-    git pull
+        # Make sure master is up to date
+        git checkout master -f
+        git pull
 
-    # only allow tags/commits found on master, release branches, or tags to be deployed
-    git branch -a --contains ${GIT_TAG} \
-        | tee /dev/tty \
-        | grep -Eq 'remotes/origin/master|remotes/origin/release' \
-        || (
-            echo "tag not found on master nor release branches"
+        if [[ "${GIT_TAG}" == "master" ]]; then
+            echo "Commit cannot be 'master'."
             exit 1
-        )
+        fi
 
-    # Ensure working directory clean
-    git reset --hard ${GIT_TAG}
+        # only allow tags/commits found on master, release branches, or tags to be deployed
+        git branch -a --contains ${GIT_TAG} \
+            | tee /dev/tty \
+            | grep -Eq 'remotes/origin/master|remotes/origin/release' \
+            || echo "tag not found on master nor release branches" \
+                && exit 1
 
-    # grab change log early, before the version bump
-    LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
-    CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
+        # Ensure working directory clean
+        git reset --hard ${GIT_TAG}
 
-    # Patch the version
-    VERSION=$(npm version patch)
-    tmp=$(mktemp)
-    jq ". += {audius: {releaseSHA: \"${GIT_TAG}\"}}" package.json > "$tmp" \
-        && mv "$tmp" package.json
+        # grab change log early, before the version bump
+        LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
+        CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
 
-    # Build project
-    npm i
-    npm run build
+        # Patch the version
+        VERSION=$(npm version patch)
+        tmp=$(mktemp)
+        jq ". += {audius: {releaseSHA: \"${GIT_TAG}\"}}" package.json > "$tmp" \
+            && mv "$tmp" package.json
 
-    # Publishing dry run, prior to pushing a branch
-    npm publish . --access public --dry-run
+        # Build project
+        npm i
+        npm run build
 
-    # Commit to a new branch
-    git checkout -b ${STUB}-${VERSION}
-    git add .
-    git commit -m "$(commit-message)"
+        # Publishing dry run, prior to pushing a branch
+        npm publish . --access public --dry-run
 
-    # Push branch to remote
-    git push -u origin ${STUB}-${VERSION}
+        # Commit to a new branch
+        git checkout -b ${STUB}-${VERSION}
+        git add .
+        git commit -m "$(commit-message)"
+
+        # Push branch to remote
+        git push -u origin ${STUB}-${VERSION}
+    )
 }
 
 # Merge the created branch into master, then delete the branch
