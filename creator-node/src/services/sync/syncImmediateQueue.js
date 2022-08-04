@@ -33,7 +33,9 @@ class SyncImmediateQueue {
         removeOnFail: SYNC_QUEUE_HISTORY
       },
       settings: {
-        lockDuration: LOCK_DURATION
+        lockDuration: LOCK_DURATION,
+        // We never want to re-process stalled jobs
+        maxStalledCount: 0
       }
     })
 

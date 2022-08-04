@@ -31,7 +31,9 @@ class SyncQueue {
         removeOnFail: SYNC_QUEUE_HISTORY
       },
       settings: {
-        lockDuration: LOCK_DURATION
+        lockDuration: LOCK_DURATION,
+        // We never want to re-process stalled jobs
+        maxStalledCount: 0
       }
     })
 
@@ -49,8 +51,9 @@ class SyncQueue {
     this.queue.process(jobProcessorConcurrency, async (job) => {
       const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
 
+      let result = {}
       try {
-        await secondarySyncFromPrimary(
+        result = await secondarySyncFromPrimary(
           this.serviceRegistry,
           walletPublicKeys,
           creatorNodeEndpoint,
@@ -62,7 +65,10 @@ class SyncQueue {
           `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
           e.message
         )
+        result = { error: e.message }
       }
+
+      return result
     })
   }
 
