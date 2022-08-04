@@ -10,7 +10,6 @@ x-logging:
 services:
   alchemy:
     build: .
-    # command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - ./main.js:/app/main.js
     ports:
