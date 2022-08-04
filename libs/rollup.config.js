@@ -163,6 +163,16 @@ export default [
   },
 
   /**
+   * ReactNative bundle used for our mobile app
+   * Includes a modified version of AudiusLibs with solana dependencies removed
+   */
+  {
+    input: 'src/native-libs.ts',
+    output: [{ file: 'dist/native-libs.js', format: 'esm', sourcemap: true }],
+    ...browserLegacyConfig
+  },
+
+  /**
    * core (used for eager requests)
    */
   {
