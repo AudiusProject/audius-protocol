@@ -9,19 +9,6 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
 
-const releaseRedisLocks = async (wallets, redis, logPrefix) => {
-  for (const wallet of wallets) {
-    try {
-      await redis.WalletWriteLock.release(wallet)
-    } catch (e) {
-      logger.warn(
-        logPrefix,
-        `Failure to release write lock for ${wallet} with error ${e.message}`
-      )
-    }
-  }
-}
-
 const handleSyncFromPrimary = async (
   serviceRegistry,
   walletPublicKeys,
@@ -61,8 +48,6 @@ const handleSyncFromPrimary = async (
         ),
         result: 'failure_sync_in_progress'
       }
-    } finally {
-      await releaseRedisLocks(walletPublicKeys, redis, logPrefix)
     }
   }
 
@@ -624,7 +609,17 @@ const handleSyncFromPrimary = async (
         }
       : returnValue
   } finally {
-    await releaseRedisLocks(walletPublicKeys, redis, logPrefix)
+    // Release all redis locks
+    for (const wallet of walletPublicKeys) {
+      try {
+        await redis.WalletWriteLock.release(wallet)
+      } catch (e) {
+        logger.warn(
+          logPrefix,
+          `Failure to release write lock for ${wallet} with error ${e.message}`
+        )
+      }
+    }
   }
 
   logger.info(
