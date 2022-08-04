@@ -21,7 +21,7 @@ const MAX_CONCURRENCY =
 const IMAGE_PROCESSING_QUEUE_HISTORY = 500
 
 class ImageProcessingQueue {
-  constructor() {
+  constructor(prometheusRegistry = null) {
     this.queue = new Bull('image-processing-queue', {
       redis: {
         port: config.get('redisPort'),
@@ -32,6 +32,10 @@ class ImageProcessingQueue {
         removeOnFail: IMAGE_PROCESSING_QUEUE_HISTORY
       }
     })
+
+    if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
+      prometheusRegistry.startQueueMetrics(this.queue)
+    }
 
     /**
      * Queue will process tasks concurrently if provided a concurrency number and a
@@ -97,4 +101,4 @@ class ImageProcessingQueue {
   }
 }
 
-module.exports = new ImageProcessingQueue()
+module.exports = ImageProcessingQueue
