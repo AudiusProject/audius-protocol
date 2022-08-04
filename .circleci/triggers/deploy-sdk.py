@@ -11,9 +11,7 @@ from triggers import ensure_commit_on_master
 
 @click.command()
 @click.help_option("-h", "--help")
-@click.option(
-    "-t", "--git-commit", help="Git commit to deploy from.", required=True
-)
+@click.option("-t", "--git-commit", help="Git commit to deploy from.", required=True)
 @click.option(
     "-k",
     "--circle-api-key",
