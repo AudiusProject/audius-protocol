@@ -1,7 +1,7 @@
 import { remoteConfig } from '@audius/common'
 import optimizely from '@optimizely/optimizely-sdk'
 
-export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId'
+export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
 export const remoteConfigInstance = remoteConfig({
   createOptimizelyClient: async () => {
@@ -21,10 +21,17 @@ export const remoteConfigInstance = remoteConfig({
       datafile: window.optimizelyDatafile
     })
   },
-  getFeatureFlagSessionId: async () =>
-    window.localStorage.getItem(FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY),
-  setFeatureFlagSessionId: async (id: string) =>
-    window.localStorage?.setItem(FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY, id),
+  getFeatureFlagSessionId: async () => {
+    const item = window.localStorage.getItem(
+      FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY
+    )
+    return item ? parseInt(item) : null
+  },
+  setFeatureFlagSessionId: async (id: number) =>
+    window.localStorage?.setItem(
+      FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY,
+      id.toString()
+    ),
   setLogLevel: () => optimizely.setLogLevel('warn')
 })
 

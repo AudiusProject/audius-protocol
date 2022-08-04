@@ -3,7 +3,7 @@ import * as optimizely from '@optimizely/react-sdk'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Config from 'react-native-config'
 
-export const FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY = 'featureFlagSessionId'
+export const FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
 export const remoteConfigInstance = remoteConfig({
   createOptimizelyClient: async () => {
@@ -11,10 +11,14 @@ export const remoteConfigInstance = remoteConfig({
       sdkKey: Config.OPTIMIZELY_KEY
     })
   },
-  getFeatureFlagSessionId: async () =>
-    AsyncStorage.getItem(FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY),
+  getFeatureFlagSessionId: async () => {
+    const sessionId = await AsyncStorage.getItem(
+      FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY
+    )
+    return sessionId ? parseInt(sessionId) : null
+  },
   setFeatureFlagSessionId: async (id) =>
-    AsyncStorage.setItem(FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY, id),
+    AsyncStorage.setItem(FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY, id.toString()),
   setLogLevel: () => optimizely.setLogLevel('warn')
 })
 

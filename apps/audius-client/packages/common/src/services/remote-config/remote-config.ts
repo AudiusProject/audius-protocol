@@ -1,6 +1,8 @@
+import { EventEmitter } from 'events'
+
 import optimizely from '@optimizely/optimizely-sdk'
 
-import { ID } from 'models/Identifiers'
+import { ID } from 'models'
 import {
   remoteConfigIntDefaults,
   remoteConfigStringDefaults,
@@ -9,9 +11,7 @@ import {
 } from 'services/remote-config/defaults'
 import {
   FeatureFlags,
-  flagDefaults,
-  flagCohortType,
-  FeatureFlagCohortType
+  flagDefaults
 } from 'services/remote-config/feature-flags'
 import {
   IntKeys,
@@ -20,8 +20,7 @@ import {
   BooleanKeys,
   AllRemoteConfigKeys
 } from 'services/remote-config/types'
-import { Nullable } from 'utils/typeUtils'
-import { uuid } from 'utils/uid'
+import { Nullable } from 'utils'
 
 export const USER_ID_AVAILABLE_EVENT = 'USER_ID_AVAILABLE_EVENT'
 
@@ -32,15 +31,14 @@ const REMOTE_CONFIG_FEATURE_KEY = 'remote_config'
 // Internal State
 type State = {
   didInitialize: boolean
-  userId: Nullable<string>
-  sessionId: Nullable<string>
+  id: Nullable<number>
   initializationCallbacks: (() => void)[]
 }
 
-type RemoteConfigOptions<Client> = {
+export type RemoteConfigOptions<Client> = {
   createOptimizelyClient: () => Promise<Client>
-  getFeatureFlagSessionId: () => Promise<string | null>
-  setFeatureFlagSessionId: (id: string) => Promise<void>
+  getFeatureFlagSessionId: () => Promise<Nullable<number>>
+  setFeatureFlagSessionId: (id: number) => Promise<void>
   setLogLevel: () => void
 }
 
@@ -60,13 +58,9 @@ export const remoteConfig = <
   setFeatureFlagSessionId,
   setLogLevel
 }: RemoteConfigOptions<Client>) => {
-  // Uncomment to time remote config
-  // console.time('remote-config')
-
   const state: State = {
     didInitialize: false,
-    userId: null,
-    sessionId: null,
+    id: null,
     initializationCallbacks: []
   }
 
@@ -79,11 +73,11 @@ export const remoteConfig = <
     // Set sessionId for feature flag bucketing
     const savedSessionId = await getFeatureFlagSessionId()
     if (!savedSessionId) {
-      const newSessionId = uuid()
+      const newSessionId = generateSessionId()
       setFeatureFlagSessionId(newSessionId)
-      state.sessionId = newSessionId
+      state.id = newSessionId
     } else {
-      state.sessionId = savedSessionId
+      state.id = savedSessionId
     }
 
     client = await createOptimizelyClient()
@@ -94,8 +88,6 @@ export const remoteConfig = <
       // Call initializationCallbacks
       state.initializationCallbacks.forEach((cb) => cb())
       state.initializationCallbacks = []
-
-      // console.timeEnd('remote-config')
     })
   }
 
@@ -113,13 +105,31 @@ export const remoteConfig = <
     }
   }
 
+  // Use event emission to track setUser events
+  const emitter = new EventEmitter()
+
   /**
    * Set the userId for calls to Optimizely.
    * Prior to calling, uses the ANONYMOUS_USER_ID constant.
    * @param userId
    */
   function setUserId(userId: ID) {
-    state.userId = userId.toString()
+    state.id = userId
+    emitter.emit('setUserId')
+  }
+
+  /**
+   * API for listening to setUser events
+   */
+  function listenForUserId(cb: () => void | Promise<void>) {
+    emitter.addListener('setUserId', cb)
+  }
+
+  /**
+   * API to unlisten to setUser events
+   */
+  function unlistenForUserId(cb: () => void | Promise<void>) {
+    emitter.removeListener('setUserId', cb)
   }
 
   /**
@@ -137,10 +147,9 @@ export const remoteConfig = <
     key: AllRemoteConfigKeys
   ): number | string | boolean | null {
     // If the client is not ready yet, return early with `null`
-    if (!client) return null
+    if (!client || !state.id) return null
 
-    // If userId is null, set to string default. This will effectively capture all users as intended for remote config
-    const id = state.userId || 'ANONYMOUS_USER'
+    const id = state.id
 
     if (isIntKey(key)) {
       return getValue(
@@ -151,12 +160,10 @@ export const remoteConfig = <
       )
     }
 
-    // TODO: We can take out the keyof typeof garbage
-    // once all the enums have keys.
     if (isStringKey(key)) {
       return getValue(
         remoteConfigStringDefaults,
-        key as unknown as string,
+        key,
         id,
         client.getFeatureVariableString.bind(client)
       )
@@ -165,7 +172,7 @@ export const remoteConfig = <
     if (isDoubleKey(key)) {
       return getValue(
         remoteConfigDoubleDefaults,
-        key as unknown as string,
+        key,
         id,
         client.getFeatureVariableDouble.bind(client)
       )
@@ -173,7 +180,7 @@ export const remoteConfig = <
 
     return getValue(
       remoteConfigBooleanDefaults,
-      key as unknown as string,
+      key,
       id,
       client.getFeatureVariableBoolean.bind(client)
     )
@@ -185,30 +192,16 @@ export const remoteConfig = <
    */
   function getFeatureEnabled(flag: FeatureFlags) {
     // If the client is not ready yet, return early with `null`
-    if (!client) return null
+    if (!client || !state.id) return null
 
     const defaultVal = flagDefaults[flag]
 
-    // Set the unique identifier as the userId or sessionId
-    // depending on the feature flag
-    let id: string
-    const cohortType = flagCohortType[flag]
-    switch (cohortType) {
-      case FeatureFlagCohortType.USER_ID: {
-        // If the id is anonymous, do not enable feature
-        if (!state.userId) return false
-        id = state.userId
-        break
-      }
-      case FeatureFlagCohortType.SESSION_ID: {
-        id = state.sessionId!
-        break
-      }
-    }
+    const id = state.id
 
     try {
       const enabled = state.didInitialize
-        ? client.isFeatureEnabled(flag as unknown as string, id) ?? defaultVal
+        ? client.isFeatureEnabled(flag, id.toString(), { userId: id }) ??
+          defaultVal
         : defaultVal
       return enabled
     } catch (err) {
@@ -228,12 +221,12 @@ export const remoteConfig = <
    * that is enabled and supposed to return true.
    */
   const waitForUserRemoteConfig = async () => {
-    if (state.userId) {
+    if (state.id && state.id > 0) {
       await new Promise<void>((resolve) => onClientReady(resolve))
       return
     }
     await new Promise<void>((resolve) => {
-      if (state.userId) {
+      if (state.id && state.id > 0) {
         onClientReady(resolve)
       } else {
         window.addEventListener(USER_ID_AVAILABLE_EVENT, () =>
@@ -259,12 +252,21 @@ export const remoteConfig = <
   function getValue<T>(
     defaults: { [id: string]: T },
     varKey: string,
-    userId: string,
-    getFn: (featureKey: string, variableKey: string, userId: string) => T | null
+    userId: number,
+    getFn: (
+      featureKey: string,
+      variableKey: string,
+      userId: string,
+      attributes?: { [key: string]: string | number | boolean }
+    ) => T | null
   ): T {
     const defaultVal = defaults[varKey]
     if (!state.didInitialize) return defaultVal
-    return getFn(REMOTE_CONFIG_FEATURE_KEY, varKey, userId) ?? defaultVal
+    return (
+      getFn(REMOTE_CONFIG_FEATURE_KEY, varKey, userId.toString(), {
+        userId
+      }) ?? defaultVal
+    )
   }
 
   return {
@@ -274,7 +276,14 @@ export const remoteConfig = <
     onClientReady,
     setUserId,
     waitForRemoteConfig,
-    waitForUserRemoteConfig
+    waitForUserRemoteConfig,
+    listenForUserId,
+    unlistenForUserId
+  }
+
+  // Generate negative ints for session IDs
+  function generateSessionId() {
+    return Math.floor(Math.random() * Number.MIN_SAFE_INTEGER)
   }
 }
 
