@@ -27,8 +27,14 @@ type Metadata = {
   cover_art_sizes: string
 }
 
+type PlaylistTrackId = { time: number; track: number; }
+
+type PlaylistContents = {
+  track_ids: Array<PlaylistTrackId>
+}
+
 export type PlaylistMetadata = {
-  playlist_contents: any
+  playlist_contents: PlaylistContents
   playlist_id: number
   playlist_name: string
   playlist_image_sizes_multihash: string

@@ -70,7 +70,7 @@ def entity_manager_update(
         # fetch users
         existing_user_id_to_user: Dict[int, User] = fetch_users(session, users_to_fetch)
 
-        playlists_to_save: Dict[int, List[Playlist]] = defaultdict(list)
+        new_playlist_records: Dict[int, List[Playlist]] = defaultdict(list)
         # process in tx order and populate playlists_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -80,7 +80,7 @@ def entity_manager_update(
             for event in entity_manager_event_tx:
                 params = ManagePlaylistParameters(
                     event,
-                    playlists_to_save,  # actions below populate these records
+                    new_playlist_records,  # actions below populate these records
                     existing_playlist_id_to_playlist,
                     existing_user_id_to_user,
                     ipfs_metadata,
@@ -107,15 +107,15 @@ def entity_manager_update(
                     delete_playlist(params)
 
         # compile records_to_save
-        records_to_save = []
-        for _, playlist_records in playlists_to_save.items():
+        new_records = []
+        for playlist_records in new_playlist_records.values():
             # flip is_current to true for the last tx in each playlist
             playlist_records[-1].is_current = True
-            records_to_save.extend(playlist_records)
+            new_records.extend(playlist_records)
 
         # insert/update all playlist records in this block
-        session.bulk_save_objects(records_to_save)
-        num_total_changes += len(records_to_save)
+        session.bulk_save_objects(new_records)
+        num_total_changes += len(new_records)
 
     except Exception as e:
         logger.error(f"Exception occurred {e}", exc_info=True)
@@ -164,6 +164,10 @@ def is_valid_playlist_tx(params: ManagePlaylistParameters):
     if wallet and wallet.lower() != params.signer.lower():
         # user does not match signer
         return False
+
+    if params.entity_type != EntityType.PLAYLIST:
+        return False
+
     if params.action == Action.CREATE:
         if params.entity_id in params.existing_playlist_id_to_playlist:
             # playlist already exists
@@ -404,7 +408,6 @@ def process_playlist_data_event(
     playlist_record.playlist_contents = process_playlist_contents(
         playlist_record, playlist_metadata, block_integer_time
     )
-    playlist_record.created_at = block_datetime
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
 

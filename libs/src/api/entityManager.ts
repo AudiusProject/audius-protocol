@@ -37,6 +37,12 @@ const MIN_PLAYLIST_ID = 400000
 // Maximum playlist ID, reflects postgres max integer value
 const MAX_PLAYLIST_ID = 2147483647
 
+type PlaylistTrackId = { time: number; track: number; metadata_time?: number }
+
+type PlaylistContents = {
+  track_ids: Array<PlaylistTrackId>
+}
+
 /*
   API surface for updated data contract interactions.
   Provides simplified entity management in a generic fashion
@@ -212,7 +218,7 @@ export class EntityManager extends Base {
     logger = console
   }: {
     playlistId: number
-    playlistContents: any
+    playlistContents: Nullable<PlaylistContents>
     playlistName: Nullable<string>
     description: Nullable<string>
     isAlbum: Nullable<boolean>

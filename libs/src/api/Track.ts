@@ -380,7 +380,6 @@ export class Track extends Base {
       phase = phases.UPLOADING_TRACK_CONTENT
 
       // Upload metadata
-      console.log('asdf uploadTrackContent to CN', metadata)
       const {
         metadataMultihash,
         metadataFileUUID,
@@ -409,8 +408,6 @@ export class Track extends Base {
           }
         }
       )
-      console.log('asdf uploadTrackContent to CN metadataMultihash', metadataMultihash)
-
       phase = phases.ADDING_TRACK
 
       // Write metadata to chain
