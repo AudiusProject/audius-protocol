@@ -28,8 +28,6 @@ const verifyDBConnection = async () => {
 
 const runDBMigrations = async () => {
   try {
-    logger.info('Clearing running db queries...')
-    clearRunningQueries()
     logger.info('Executing database migrations...')
     await runMigrations()
     logger.info('Migrations completed successfully')
@@ -40,6 +38,7 @@ const runDBMigrations = async () => {
 
 const connectToDBAndRunMigrations = async () => {
   await verifyDBConnection()
+  await clearRunningQueries()
   await runDBMigrations()
 }
 

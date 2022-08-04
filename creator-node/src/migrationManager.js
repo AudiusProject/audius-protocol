@@ -28,6 +28,7 @@ async function clearDatabase() {
 }
 
 async function clearRunningQueries() {
+  logger.info(`Clearing running db queries...`)
   try {
     await sequelize.query(`
     BEGIN;
@@ -43,7 +44,7 @@ async function clearRunningQueries() {
     COMMIT;
   `)
   } catch (e) {
-    logger.info(
+    logger.error(
       `Error running clearRunningQueries: ${e.message}. Continuing with content node setup`
     )
   }
