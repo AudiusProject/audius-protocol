@@ -137,6 +137,6 @@ cd ${PROTOCOL_DIR}/libs
 bump-npm
 
 # grab VERSION again since we escaped the bump-npm subshell
-VERSION=$(jq -r '.version' package.json)
+VERSION=v$(jq -r '.version' package.json)
 
 merge-bump && publish && info || cleanup
