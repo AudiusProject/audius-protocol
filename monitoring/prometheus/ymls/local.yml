@@ -19,6 +19,17 @@
           component: 'monitoring'
           job: 'census'
 
+  - job_name: 'alchemy'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:2000']
+        labels:
+          host: 'host.docker.internal'
+          environment: 'prod'
+          service: 'audius'
+          component: 'monitoring'
+          job: 'alchemy'
+
   ###################################################
   # monitor local (remote-dev) setups that use docker
   ###################################################

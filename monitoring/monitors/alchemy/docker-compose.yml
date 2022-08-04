@@ -1,0 +1,23 @@
+version: "3.9"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: "50m"
+    max-file: "3"
+  driver: json-file
+
+services:
+  alchemy:
+    build: .
+    # command: bash /tmp/dev-tools/startup/poa-ganache.sh
+    volumes:
+      - ./main.js:/app/main.js
+    ports:
+      - "2000:3000"
+    environment:
+      - API_KEY
+      - HTTPS
+      - WEBSOCKETS
+      - ADDRESS
+    logging: *default-logging
