@@ -12,7 +12,6 @@ const models = require('../src/models')
 const config = require('../src/config')
 const stateMachineConstants = require('../src/services/stateMachineManager/stateMachineConstants')
 const { SyncType, QUEUE_NAMES, SYNC_MODES } = stateMachineConstants
-const issueSyncRequestJobProcessor = require('../src/services/stateMachineManager/stateReconciliation/issueSyncRequest.jobProcessor')
 const {
   METRIC_NAMES
 } = require('../src/services/prometheusMonitoring/prometheus.constants')

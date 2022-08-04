@@ -568,7 +568,20 @@ const handleSyncFromPrimary = async (
 
         await transaction.rollback()
 
-        await DBManager.fixInconsistentUser(fetchedCNodeUser.cnodeUserUUID)
+        try {
+          const numRowsUpdated = await DBManager.fixInconsistentUser(
+            fetchedCNodeUser.cnodeUserUUID
+          )
+          logger.warn(
+            logPrefix,
+            `fixInconsistentUser() executed for ${fetchedCNodeUser.cnodeUserUUID} - numRowsUpdated:${numRowsUpdated}`
+          )
+        } catch (e) {
+          logger.error(
+            logPrefix,
+            `fixInconsistentUser() error for ${fetchedCNodeUser.cnodeUserUUID} - ${e.message}`
+          )
+        }
 
         return {
           error: new Error(e),
