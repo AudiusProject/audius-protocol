@@ -1,7 +1,5 @@
 create or replace function handle_playlist() returns trigger as $$
 declare
-  old_row playlists%rowtype;
-  delta int := 0;
   track_owner_id int := 0;
   track_item json;
 begin
@@ -41,7 +39,6 @@ begin
       if (track_item->>'time')::double precision::int >= extract(epoch from new.updated_at)::int then
         select owner_id into track_owner_id from tracks where is_current and track_id=(track_item->>'track')::int;
         if track_owner_id != new.playlist_owner_id then
-          raise notice 'inserting';
           insert into notification
             (blocknumber, user_ids, timestamp, type, specifier, data)
             values

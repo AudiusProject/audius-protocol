@@ -9,6 +9,7 @@ from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 
+
 # ========================================== Start Tests ==========================================
 def test_supporter_rank_up_notification(app):
     with app.app_context():
@@ -58,7 +59,7 @@ def test_supporter_rank_up_notification(app):
         assert supporter_notifications[0].data == {
             "rank": 3,
             "sender_user_id": 1,
-            "receiver_user_id": 2,
+            "receiver_user_id": 3,
         }
         assert supporter_notifications[0].user_ids == [1]
 
@@ -70,6 +71,6 @@ def test_supporter_rank_up_notification(app):
         assert supporting_notifications[0].data == {
             "rank": 3,
             "sender_user_id": 1,
-            "receiver_user_id": 2,
+            "receiver_user_id": 3,
         }
-        assert supporting_notifications[0].user_ids == [2]
+        assert supporting_notifications[0].user_ids == [3]

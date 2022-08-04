@@ -4,10 +4,10 @@ from typing import List
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import desc
 from src.models.notifications.notification import Notification
-from src.models.social.save import SaveType
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
+
 
 # ========================================== Start Tests ==========================================
 def test_play_milsetone_notification(app):

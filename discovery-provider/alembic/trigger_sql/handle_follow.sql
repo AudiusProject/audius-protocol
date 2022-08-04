@@ -30,6 +30,11 @@ begin
   -- create a milestone if applicable
   select new_follower_count into milestone where new_follower_count in (10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000);
   if milestone is not null and new.is_delete is false then
+      insert into milestones 
+        (id, name, threshold, blocknumber, slot, timestamp)
+      values
+        (new.followee_user_id, 'FOLLOWER_COUNT', milestone, new.blocknumber, new.slot, new.created_at)
+      on conflict do nothing;
       insert into notification
         (user_ids, type, specifier, blocknumber, timestamp, data)
         values

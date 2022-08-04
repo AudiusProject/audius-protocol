@@ -8,6 +8,7 @@ from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 
+
 # ========================================== Start Tests ==========================================
 def test_challenge_disbursement_notification(app):
     """Tests that a save notification is created on save correctly"""

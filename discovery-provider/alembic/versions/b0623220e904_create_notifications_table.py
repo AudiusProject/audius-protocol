@@ -1,7 +1,7 @@
 """create notifications table
 
 Revision ID: b0623220e904
-Revises: ab56e2d974a6
+Revises: d0dfb103535b
 Create Date: 2022-06-27 17:04:24.686274
 
 """
@@ -11,9 +11,16 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "b0623220e904"
-down_revision = "ab56e2d974a6"
+down_revision = "d0dfb103535b"
 branch_labels = None
 depends_on = None
+
+
+def foreign_key_exists(table_name, foreign_key):
+    bind = op.get_context().bind
+    insp = sa.inspect(bind)
+    foreign_keys = insp.get_foreign_keys(table_name)
+    return any(fk["name"] == foreign_key for fk in foreign_keys)
 
 
 def upgrade():
@@ -49,15 +56,17 @@ def upgrade():
         ),
         info={"if_not_exists": True},
     )
-
-    op.create_foreign_key(
-        "fk_notification_group_notification",
-        "notification_group",
-        "notification",
-        ["notification_id"],
-        ["id"],
-        info={"if_not_exists": True},
-    )
+    if not foreign_key_exists(
+        "notification_group", "fk_notification_group_notification"
+    ):
+        op.create_foreign_key(
+            "fk_notification_group_notification",
+            "notification_group",
+            "notification",
+            ["notification_id"],
+            ["id"],
+            info={"if_not_exists": True},
+        )
 
     op.create_index(
         op.f("ix_notification"),
@@ -81,6 +90,12 @@ def downgrade():
     op.drop_index(
         op.f("ix_notification"),
         table_name="notification",
+        info={"if_exists": True},
+    )
+    op.drop_constraint(
+        "fk_notification_group_notification",
+        "notification_group",
+        "foreignkey",
         info={"if_exists": True},
     )
     op.drop_table("notification", info={"if_exists": True})

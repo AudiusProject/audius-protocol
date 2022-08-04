@@ -8,6 +8,7 @@ from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 
+
 # ========================================== Start Tests ==========================================
 def test_supporter_rank_up_notification(app):
     with app.app_context():

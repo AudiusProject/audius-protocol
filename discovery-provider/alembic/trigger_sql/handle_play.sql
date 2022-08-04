@@ -17,6 +17,11 @@ begin
         where new_listen_count in (10,25,50,100,250,500,1000,5000,10000,20000,50000,100000,1000000);
 
     if milestone is not null then
+        insert into milestones
+            (id, name, threshold, slot, timestamp)
+        values
+            (new.play_item_id, 'LISTEN_COUNT', milestone, new.slot, new.created_at)
+        on conflict do nothing;
 		select tracks.owner_id into owner_user_id from tracks where is_current and track_id = new.play_item_id;
         insert into notification
             (user_ids, specifier, type, slot, timestamp, data)
