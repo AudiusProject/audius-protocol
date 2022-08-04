@@ -6,11 +6,11 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { encodeHashId } from 'common/utils/hashIds'
 import TabSlider from 'components/data-entry/TabSlider'
 import { useRecord, make } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import { BASE_GA_URL } from 'utils/route'
-import { encodeHashId } from 'utils/route/hashIds'
 
 import styles from './EmbedModal.module.css'
 import EmbedCopy from './components/EmbedCopy'

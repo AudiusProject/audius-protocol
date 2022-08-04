@@ -5,7 +5,7 @@ import { takeEvery, put, call } from 'redux-saga/effects'
 import * as accountActions from 'common/store/account/reducer'
 import { setNeedsAccountRecovery } from 'common/store/account/reducer'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { FetchAccountFailed } from 'services/native-mobile-interface/lifecycle'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { MessageType } from 'services/native-mobile-interface/types'
@@ -65,7 +65,7 @@ export function* setHasSignedInOnMobile(account: User) {
     try {
       // Legacy method to update whether a user has signed in on
       // native mobile. Used in identity service for notification indexing
-      yield call(AudiusBackend.updateUserEvent, {
+      yield call(audiusBackendInstance.updateUserEvent, {
         hasSignedInNativeMobile: true
       })
       // Updates the user metadata with an event `is_mobile_user` set to true

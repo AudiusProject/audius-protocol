@@ -13,7 +13,7 @@ import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
-import placeholderArt from 'assets/img/imageBlank2x.png'
+import placeholderArt from 'common/assets/img/imageBlank2x.png'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { getCanonicalName } from 'common/utils/genres'

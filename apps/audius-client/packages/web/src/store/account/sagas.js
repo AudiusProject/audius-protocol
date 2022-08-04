@@ -21,7 +21,6 @@ import {
 } from 'common/store/pages/settings/actions'
 import { getFeePayer } from 'common/store/solana/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
-import AudiusBackend from 'services/AudiusBackend'
 import {
   getAudiusAccount,
   getAudiusAccountUser,
@@ -32,6 +31,7 @@ import {
   clearAudiusAccountUser
 } from 'services/LocalStorage'
 import { recordIP } from 'services/audius-backend/RecordIP'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
 import fingerprintClient from 'services/fingerprint/FingerprintClient'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
@@ -97,7 +97,7 @@ function* onFetchAccount(account) {
     yield put(accountActions.showPushNotificationConfirmation())
   }
 
-  yield fork(AudiusBackend.updateUserLocationTimezone)
+  yield fork(audiusBackendInstance.updateUserLocationTimezone)
   if (NATIVE_MOBILE) {
     yield fork(setHasSignedInOnMobile, account)
     new SignedIn(account).send()
@@ -145,7 +145,7 @@ export function* fetchAccountAsync(action) {
     }
   }
 
-  const account = yield call(AudiusBackend.getAccount, fromSource)
+  const account = yield call(audiusBackendInstance.getAccount, fromSource)
   if (!account || account.is_deactivated) {
     yield put(
       accountActions.fetchAccountFailed({
@@ -166,7 +166,9 @@ export function* fetchAccountAsync(action) {
       isPushManagerAvailable
     ) {
       const subscription = yield call(getPushManagerBrowserSubscription)
-      yield call(AudiusBackend.disableBrowserNotifications, { subscription })
+      yield call(audiusBackendInstance.disableBrowserNotifications, {
+        subscription
+      })
     } else if (
       browserPushSubscriptionStatus === Permission.GRANTED &&
       isSafariPushAvailable
@@ -174,7 +176,7 @@ export function* fetchAccountAsync(action) {
       const safariSubscription = yield call(getSafariPushBrowser)
       if (safariSubscription.permission === Permission.GRANTED) {
         yield call(
-          AudiusBackend.deregisterDeviceToken,
+          audiusBackendInstance.deregisterDeviceToken,
           safariSubscription.deviceToken
         )
       }
@@ -248,7 +250,7 @@ export function* showPushNotificationConfirmation() {
     if (isPushManagerAvailable) {
       const subscription = yield call(getPushManagerBrowserSubscription)
       const enabled = yield call(
-        AudiusBackend.getBrowserPushSubscription,
+        audiusBackendInstance.getBrowserPushSubscription,
         subscription.endpoint
       )
       if (!enabled) {
@@ -258,7 +260,7 @@ export function* showPushNotificationConfirmation() {
       try {
         const safariPushBrowser = yield call(getSafariPushBrowser)
         const enabled = yield call(
-          AudiusBackend.getBrowserPushSubscription,
+          audiusBackendInstance.getBrowserPushSubscription,
           safariPushBrowser.deviceToken
         )
         if (!enabled) {
@@ -290,7 +292,7 @@ export function* subscribeBrowserPushNotifcations() {
     if (pushManagerSubscription) {
       yield put(setBrowserNotificationPermission(Permission.GRANTED))
       yield put(setBrowserNotificationEnabled(true, false))
-      yield call(AudiusBackend.updateBrowserNotifications, {
+      yield call(audiusBackendInstance.updateBrowserNotifications, {
         subscription: pushManagerSubscription
       })
       yield put(setBrowserNotificationSettingsOn())
@@ -303,7 +305,9 @@ export function* subscribeBrowserPushNotifcations() {
       if (enabled) {
         yield put(setBrowserNotificationPermission(Permission.GRANTED))
         yield put(setBrowserNotificationEnabled(true, false))
-        yield call(AudiusBackend.updateBrowserNotifications, { subscription })
+        yield call(audiusBackendInstance.updateBrowserNotifications, {
+          subscription
+        })
       } else {
         yield put(setBrowserNotificationPermission(Permission.DENIED))
       }
@@ -315,7 +319,7 @@ export function* subscribeBrowserPushNotifcations() {
     const safariSubscription = yield call(getSafariPushBrowser)
     if (safariSubscription.permission === Permission.GRANTED) {
       yield call(
-        AudiusBackend.registerDeviceToken,
+        audiusBackendInstance.registerDeviceToken,
         safariSubscription.deviceToken,
         'safari'
       )
@@ -329,7 +333,7 @@ export function* unsubscribeBrowserPushNotifcations() {
   if (isPushManagerAvailable) {
     const pushManagerSubscription = yield call(unsubscribePushManagerBrowser)
     if (pushManagerSubscription) {
-      yield call(AudiusBackend.disableBrowserNotifications, {
+      yield call(audiusBackendInstance.disableBrowserNotifications, {
         subscription: pushManagerSubscription
       })
     }
@@ -337,7 +341,9 @@ export function* unsubscribeBrowserPushNotifcations() {
     const safariSubscription = yield call(getSafariPushBrowser)
     if (safariSubscription.premission === Permission.GRANTED) {
       yield call(
-        AudiusBackend.deregisterDeviceToken(safariSubscription.deviceToken)
+        audiusBackendInstance.deregisterDeviceToken(
+          safariSubscription.deviceToken
+        )
       )
     }
   }
@@ -348,7 +354,12 @@ function* associateTwitterAccount(action) {
   try {
     const userId = yield select(getUserId)
     const handle = yield select(getUserHandle)
-    yield call(AudiusBackend.associateTwitterAccount, uuid, userId, handle)
+    yield call(
+      audiusBackendInstance.associateTwitterAccount,
+      uuid,
+      userId,
+      handle
+    )
 
     const account = yield select(getAccountUser)
     const { verified } = profile
@@ -369,7 +380,12 @@ function* associateInstagramAccount(action) {
   try {
     const userId = yield select(getUserId)
     const handle = yield select(getUserHandle)
-    yield call(AudiusBackend.associateInstagramAccount, uuid, userId, handle)
+    yield call(
+      audiusBackendInstance.associateInstagramAccount,
+      uuid,
+      userId,
+      handle
+    )
 
     const account = yield select(getAccountUser)
     const { is_verified: verified } = profile

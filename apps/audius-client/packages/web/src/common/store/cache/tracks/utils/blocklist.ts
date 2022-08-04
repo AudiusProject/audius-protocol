@@ -1,6 +1,6 @@
 import { TrackMetadata } from '@audius/common'
 
-import { waitForWeb3 } from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 declare global {
   interface Window {
@@ -36,7 +36,7 @@ const setBlocked = async <T extends TrackMetadata>(track: T) => {
     blockList = window.bItems
   }
   if (IS_WEB_HOSTNAME) {
-    await waitForWeb3()
+    await audiusBackendInstance.waitForWeb3()
     const shaId = window.Web3.utils.sha3(track.track_id.toString())
     if (blockList.has(shaId)) {
       return {

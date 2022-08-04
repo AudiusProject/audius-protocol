@@ -9,14 +9,15 @@ import {
 } from '@audius/common'
 
 import { SearchKind } from 'common/store/pages/search-results/types'
-import AudiusBackend, { AuthHeaders } from 'services/AudiusBackend'
+import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
+import { AuthHeaders } from 'services/AudiusBackend'
 import { SupporterResponse } from 'services/audius-backend/Tipping'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   getEagerDiscprov,
   waitForLibsInit
 } from 'services/audius-backend/eagerLoadUtils'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
@@ -916,7 +917,8 @@ class AudiusAPIClient {
 
     let headers = {}
     if (encodedCurrentUserId && getUnlisted) {
-      const { data, signature } = await AudiusBackend.signDiscoveryNodeRequest()
+      const { data, signature } =
+        await audiusBackendInstance.signDiscoveryNodeRequest()
       headers = {
         [AuthHeaders.Message]: data,
         [AuthHeaders.Signature]: signature
@@ -1408,7 +1410,7 @@ class AudiusAPIClient {
     }
 
     // Listen for libs on chain selection
-    AudiusBackend.addDiscoveryProviderSelectionListener(
+    audiusBackendInstance.addDiscoveryProviderSelectionListener(
       (endpoint: string | null) => {
         if (endpoint) {
           console.debug(`APIClient: Setting to libs discprov: ${endpoint}`)

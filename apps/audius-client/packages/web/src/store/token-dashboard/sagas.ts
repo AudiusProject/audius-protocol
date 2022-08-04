@@ -16,6 +16,7 @@ import {
 } from 'typed-redux-saga/macro'
 import { WalletLinkProvider } from 'walletlink'
 
+import { newUserMetadata } from 'common/schemas'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
@@ -52,15 +53,15 @@ import {
   getBalance,
   sendFailed
 } from 'common/store/wallet/slice'
+import { getErrorMessage } from 'common/utils/error'
 import { weiToString } from 'common/utils/wallet'
 import { fetchServices } from 'components/service-selection/store/slice'
 import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
 } from 'pages/profile-page/sagas'
-import { newUserMetadata } from 'schemas'
-import AudiusBackend, { PhantomProvider } from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
 import {
@@ -71,7 +72,6 @@ import {
 } from 'services/web3-modal'
 import { requestConfirmation } from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
-import { getErrorMessage } from 'utils/error'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 
@@ -209,7 +209,7 @@ function* fetchAccountAssociatedWallets() {
 function* getAccountMetadataCID(): Generator<any, Nullable<string>, any> {
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return null
-  const users = yield* call(AudiusBackend.getCreators, [accountUserId])
+  const users = yield* call(audiusBackendInstance.getCreators, [accountUserId])
   if (users.length !== 1) return null
   return users[0].metadata_multihash
 }
@@ -422,7 +422,7 @@ function* connectSPLWallet(
     }
 
     const currentWalletSignatures = yield* call(
-      AudiusBackend.fetchUserAssociatedSolWallets,
+      audiusBackendInstance.fetchUserAssociatedSolWallets,
       updatedMetadata
     )
     updatedMetadata.associated_sol_wallets = {
@@ -439,7 +439,7 @@ function* connectSPLWallet(
         CONNECT_WALLET_CONFIRMATION_UID,
         function* () {
           const result = yield* call(
-            AudiusBackend.updateCreator,
+            audiusBackendInstance.updateCreator,
             updatedMetadata,
             accountUserId
           )
@@ -597,7 +597,7 @@ function* connectEthWallet(web3Instance: any) {
     }
 
     const currentWalletSignatures = yield* call(
-      AudiusBackend.fetchUserAssociatedEthWallets,
+      audiusBackendInstance.fetchUserAssociatedEthWallets,
       updatedMetadata
     )
     updatedMetadata.associated_wallets = {
@@ -614,7 +614,7 @@ function* connectEthWallet(web3Instance: any) {
         CONNECT_WALLET_CONFIRMATION_UID,
         function* () {
           const result = yield* call(
-            AudiusBackend.updateCreator,
+            audiusBackendInstance.updateCreator,
             updatedMetadata,
             accountUserId
           )
@@ -700,7 +700,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
 
     if (removeChain === Chain.Eth) {
       const currentAssociatedWallets = yield* call(
-        AudiusBackend.fetchUserAssociatedEthWallets,
+        audiusBackendInstance.fetchUserAssociatedEthWallets,
         updatedMetadata
       )
       if (
@@ -721,7 +721,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
       delete updatedMetadata.associated_wallets[removeWallet]
     } else if (removeChain === Chain.Sol) {
       const currentAssociatedWallets = yield* call(
-        AudiusBackend.fetchUserAssociatedSolWallets,
+        audiusBackendInstance.fetchUserAssociatedSolWallets,
         updatedMetadata
       )
       if (
@@ -750,7 +750,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
         CONNECT_WALLET_CONFIRMATION_UID,
         function* () {
           const result = yield* call(
-            AudiusBackend.updateCreator,
+            audiusBackendInstance.updateCreator,
             updatedMetadata,
             accountUserId
           )
@@ -808,7 +808,7 @@ const getSignableData = () => {
 function* watchForDiscordCode() {
   yield* take(fetchAccountSucceeded.type)
   const data = getSignableData()
-  const signature = yield* call(AudiusBackend.getSignature, data)
+  const signature = yield* call(audiusBackendInstance.getSignature, data)
   const appended = `${signature}:${data}`
   yield* put(setDiscordCode({ code: appended }))
 }

@@ -24,7 +24,7 @@ import { removeFromPlaylistLibrary } from 'common/store/playlist-library/helpers
 import * as socialActions from 'common/store/social/collections/actions'
 import { formatShareText } from 'common/utils/formatUtil'
 import * as signOnActions from 'pages/sign-on/store/actions'
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
@@ -104,7 +104,7 @@ export function* confirmRepostCollection(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.repostCollection,
+          audiusBackendInstance.repostCollection,
           collectionId
         )
         const confirmed = yield* call(
@@ -206,7 +206,7 @@ export function* confirmUndoRepostCollection(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.undoRepostCollection,
+          audiusBackendInstance.undoRepostCollection,
           collectionId
         )
         const confirmed = yield* call(
@@ -372,7 +372,7 @@ export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.saveCollection,
+          audiusBackendInstance.saveCollection,
           collectionId
         )
         const confirmed = yield* call(
@@ -485,7 +485,7 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.unsaveCollection,
+          audiusBackendInstance.unsaveCollection,
           collectionId
         )
         const confirmed = yield* call(

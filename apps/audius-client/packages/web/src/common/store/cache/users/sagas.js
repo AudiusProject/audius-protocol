@@ -19,13 +19,12 @@ import {
   getStatus
 } from 'components/service-selection/store/selectors'
 import { fetchServicesFailed } from 'components/service-selection/store/slice'
-import AudiusBackend from 'services/AudiusBackend'
 import {
   getAudiusAccountUser,
   setAudiusAccountUser
 } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { pruneBlobValues, reformat } from './utils'
@@ -61,7 +60,7 @@ export function* upgradeToCreator() {
     // Try to upgrade to creator, early return if failure
     try {
       console.debug(`Attempting to upgrade user ${user.user_id} to creator`)
-      yield call(AudiusBackend.upgradeToCreator, newEndpoint)
+      yield call(audiusBackendInstance.upgradeToCreator, newEndpoint)
     } catch (err) {
       console.error(`Upgrade to creator failed with error: ${err}`)
       return false
@@ -98,7 +97,7 @@ export function* fetchUsers(
     getEntriesTimestamp: function* (ids) {
       return yield select(getUserTimestamps, { ids })
     },
-    retrieveFromSource: AudiusBackend.getCreators,
+    retrieveFromSource: audiusBackendInstance.getCreators,
     kind: Kind.USERS,
     idField: 'user_id',
     requiredFields,
@@ -152,7 +151,7 @@ export function* fetchUserByHandle(
  */
 export function* fetchUserCollections(userId) {
   // Get playlists.
-  const playlists = yield call(AudiusBackend.getPlaylists, userId)
+  const playlists = yield call(audiusBackendInstance.getPlaylists, userId)
   const playlistIds = playlists.map((p) => p.playlist_id)
 
   if (!playlistIds.length) return
@@ -254,10 +253,12 @@ function* watchFetchProfilePicture() {
         const user = yield select(getUser, { id: userId })
         if (!user || (!user.profile_picture_sizes && !user.profile_picture))
           return
-        const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
+        const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
+          user.creator_node_endpoint
+        )
         if (user.profile_picture_sizes) {
           const url = yield call(
-            AudiusBackend.getImageUrl,
+            audiusBackendInstance.getImageUrl,
             user.profile_picture_sizes,
             size,
             gateways
@@ -280,7 +281,7 @@ function* watchFetchProfilePicture() {
           }
         } else if (user.profile_picture) {
           const url = yield call(
-            AudiusBackend.getImageUrl,
+            audiusBackendInstance.getImageUrl,
             user.profile_picture,
             null,
             gateways
@@ -324,10 +325,12 @@ function* watchFetchCoverPhoto() {
         return
       }
 
-      const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
+      const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
+        user.creator_node_endpoint
+      )
       if (user.cover_photo_sizes) {
         const url = yield call(
-          AudiusBackend.getImageUrl,
+          audiusBackendInstance.getImageUrl,
           user.cover_photo_sizes,
           size,
           gateways
@@ -345,7 +348,7 @@ function* watchFetchCoverPhoto() {
         }
       } else if (user.cover_photo) {
         const url = yield call(
-          AudiusBackend.getImageUrl,
+          audiusBackendInstance.getImageUrl,
           user.cover_photo,
           null,
           gateways
@@ -371,7 +374,10 @@ function* watchFetchCoverPhoto() {
 
 export function* fetchUserSocials({ handle }) {
   const user = yield call(waitForValue, getUser, { handle })
-  const socials = yield call(AudiusBackend.getCreatorSocialHandle, user.handle)
+  const socials = yield call(
+    audiusBackendInstance.getCreatorSocialHandle,
+    user.handle
+  )
   yield put(
     cacheActions.update(Kind.USERS, [
       {

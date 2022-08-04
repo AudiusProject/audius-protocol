@@ -6,14 +6,14 @@ import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
 import TwitterLogin from 'react-twitter-auth'
 
-import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
+import profilePicEmpty from 'common/assets/img/imageProfilePicEmpty2X.png'
 import Input from 'components/data-entry/Input'
 import InstagramAuth from 'components/instagram-auth/InstagramAuth'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import StatusMessage from 'components/status-message/StatusMessage'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
-import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import {
@@ -173,8 +173,8 @@ const ProfileForm = (props) => {
                   onFailure={(...args) => console.log(args)}
                   onSuccess={props.onTwitterLogin}
                   className={styles.hideTwitterButton}
-                  requestTokenUrl={`${IDENTITY_SERVICE}/twitter`}
-                  loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}
+                  requestTokenUrl={`${audiusBackendInstance.identityServiceUrl}/twitter`}
+                  loginUrl={`${audiusBackendInstance.identityServiceUrl}/twitter/callback`}
                 >
                   {messages.completeWithTwitter}
                 </TwitterLogin>
@@ -195,8 +195,8 @@ const ProfileForm = (props) => {
                   onFailure={(...args) => console.log(args)}
                   onSuccess={props.onInstagramLogin}
                   className={styles.hideTwitterButton}
-                  setProfileUrl={`${IDENTITY_SERVICE}/instagram/profile`}
-                  getUserUrl={`${IDENTITY_SERVICE}/instagram`}
+                  setProfileUrl={`${audiusBackendInstance.identityServiceUrl}/instagram/profile`}
+                  getUserUrl={`${audiusBackendInstance.identityServiceUrl}/instagram`}
                 >
                   {messages.completeWithInstagram}
                 </InstagramAuth>

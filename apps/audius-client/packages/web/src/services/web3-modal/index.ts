@@ -2,7 +2,7 @@ import Web3Modal, { IProviderOptions } from 'web3modal'
 
 import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
 import walletLinkSvg from 'assets/img/wallet-link.svg'
-import { getErrorMessage } from 'utils/error'
+import { getErrorMessage } from 'common/utils/error'
 
 const CHAIN_ID = process.env.REACT_APP_ETH_NETWORK_ID
 const BITSKI_CLIENT_ID = process.env.REACT_APP_BITSKI_CLIENT_ID

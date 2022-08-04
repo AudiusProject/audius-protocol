@@ -21,12 +21,12 @@ import {
   sendFailed,
   decreaseBalance
 } from 'common/store/wallet/slice'
+import { getErrorMessage } from 'common/utils/error'
 import { stringWeiToBN, weiToString } from 'common/utils/wallet'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
-import { getErrorMessage } from 'utils/error'
 
 // TODO: handle errors
 const errors = {

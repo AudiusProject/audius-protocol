@@ -12,8 +12,8 @@ import {
 import * as accountActions from 'common/store/account/reducer'
 import * as reachabilityActions from 'common/store/reachability/actions'
 import { getIsReachable } from 'common/store/reachability/selectors'
-import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import fingerprintClient from 'services/fingerprint/FingerprintClient'
 import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecycle'
 import * as backendActions from 'store/backend/actions'
@@ -28,7 +28,7 @@ const REACHABILITY_TIMEOUT_MS = 8 * 1000
  * For example:
  * function * saga () {
  *  yield call(waitForBackendSetup) // Blocks until the backend lib is ready to receive requests.
- *  yield call(AudiusBackend.doSomething, param)
+ *  yield call(audiusBackendInstance.doSomething, param)
  * }
  */
 export function* waitForBackendSetup() {
@@ -79,7 +79,7 @@ export function* setupBackend() {
   // Fire-and-forget init fp
   fingerprintClient.init()
   yield put(accountActions.fetchAccount())
-  const { web3Error, libsError } = yield call(AudiusBackend.setup)
+  const { web3Error, libsError } = yield call(audiusBackendInstance.setup)
   if (libsError) {
     yield put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
     yield put(backendActions.setupBackendFailed())

@@ -2,21 +2,31 @@ import { Name } from '@audius/common'
 
 import { Level } from 'common/store/errors/level'
 import { reportToSentry } from 'common/store/errors/reportToSentry'
-import { track } from 'store/analytics/providers'
-import { isMobile, isElectron } from 'utils/clientUtil'
 
 /**
  * Reports Rewards claim outcome to Identity, Amplitude, Sentry
  * with a fire-and-forget approach
  */
 
-export class ClientRewardsReporter {
-  source: 'mobile' | 'electron' | 'web'
+type ClientRewardsReporterParams = {
   libs: any
+  source: 'mobile' | 'electron' | 'web'
+  recordAnalytics: (
+    event: string,
+    properties?: Record<string, any>,
+    callback?: () => void
+  ) => void
+}
 
-  constructor(libs: any) {
-    this.source = isMobile() ? 'mobile' : isElectron() ? 'electron' : 'web'
+export class ClientRewardsReporter {
+  libs: ClientRewardsReporterParams['libs']
+  source: ClientRewardsReporterParams['source']
+  recordAnalytics: ClientRewardsReporterParams['recordAnalytics']
+
+  constructor({ libs, recordAnalytics, source }: ClientRewardsReporterParams) {
+    this.source = source
     this.libs = libs
+    this.recordAnalytics = recordAnalytics
   }
 
   reportSuccess({
@@ -32,7 +42,7 @@ export class ClientRewardsReporter {
   }) {
     ;(async () => {
       try {
-        await track(Name.REWARDS_CLAIM_SUCCESS, {
+        await this.recordAnalytics(Name.REWARDS_CLAIM_SUCCESS, {
           userId,
           challengeId,
           amount,
@@ -70,7 +80,7 @@ export class ClientRewardsReporter {
   }) {
     ;(async () => {
       try {
-        await track(Name.REWARDS_CLAIM_RETRY, {
+        await this.recordAnalytics(Name.REWARDS_CLAIM_RETRY, {
           userId,
           challengeId,
           amount,
@@ -112,7 +122,7 @@ export class ClientRewardsReporter {
   }) {
     ;(async () => {
       try {
-        await track(Name.REWARDS_CLAIM_FAILURE, {
+        await this.recordAnalytics(Name.REWARDS_CLAIM_FAILURE, {
           userId,
           challengeId,
           amount,
@@ -179,7 +189,7 @@ export class ClientRewardsReporter {
       const event = map[reason]
 
       try {
-        await track(event, {
+        await this.recordAnalytics(event, {
           userId,
           challengeId,
           amount,

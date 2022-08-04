@@ -12,13 +12,13 @@ import {
   getUserList,
   getUserIds
 } from 'common/store/user-list/top-supporters/selectors'
+import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
 import { createUserListProvider } from 'components/user-list/utils'
 import * as adapter from 'services/audius-api-client/ResponseAdapter'
 import {
   fetchSupporters,
   SupporterResponse
 } from 'services/audius-backend/Tipping'
-import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
 
 export const USER_LIST_TAG = 'TOP SUPPORTERS'
 

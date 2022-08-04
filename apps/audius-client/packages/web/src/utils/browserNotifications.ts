@@ -1,4 +1,4 @@
-import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { isElectron } from 'utils/clientUtil'
 
 export enum Permission {
@@ -39,7 +39,7 @@ const basename = process.env.PUBLIC_URL
 
 const fcmWebPushPublicKey = process.env.REACT_APP_FCM_PUSH_PUBLIC_KEY as string
 const safariWebPushID = process.env.REACT_APP_SAFARI_WEB_PUSH_ID
-const webServiceUrl = `${IDENTITY_SERVICE}/push_notifications/safari`
+const webServiceUrl = `${audiusBackendInstance.identityServiceUrl}/push_notifications/safari`
 const applicationServerPublicKey = fcmWebPushPublicKey
 export const isPushManagerAvailable =
   !isElectron() &&

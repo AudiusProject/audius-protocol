@@ -14,8 +14,7 @@ import { fetchExploreContent } from 'common/store/pages/explore/sagas'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
-import AudiusBackend from 'services/AudiusBackend'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { playlistPage } from 'utils/route'
 
 import styles from './FeaturedContent.module.css'
@@ -132,7 +131,8 @@ const getImageUrl = (
   { cover_art, cover_art_sizes }: UserCollectionMetadata,
   creatorNodeEndpoint: string | null
 ) => {
-  const gateways = getCreatorNodeIPFSGateways(creatorNodeEndpoint)
+  const gateways =
+    audiusBackendInstance.getCreatorNodeIPFSGateways(creatorNodeEndpoint)
   const cNode = gateways[0]
   if (cover_art_sizes) {
     return `${cNode}${cover_art_sizes}/${
@@ -150,7 +150,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
     useAsyncFn(async () => {
       const featuredContent = await fetchExploreContent()
       const ids = featuredContent.featuredPlaylists
-      const playlists = AudiusBackend.getPlaylists(
+      const playlists = audiusBackendInstance.getPlaylists(
         null,
         ids
       ) as any as UserCollectionMetadata[]

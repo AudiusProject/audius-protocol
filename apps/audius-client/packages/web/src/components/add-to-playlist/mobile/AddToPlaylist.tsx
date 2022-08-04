@@ -5,6 +5,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { newCollectionMetadata } from 'common/schemas'
 import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
 import {
   addTrackToPlaylist,
@@ -23,7 +24,6 @@ import { useTemporaryNavContext } from 'components/nav/store/context'
 import { ToastContext } from 'components/toast/ToastContext'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import NewPlaylistButton from 'pages/saved-page/components/mobile/NewPlaylistButton'
-import { newCollectionMetadata } from 'schemas'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'

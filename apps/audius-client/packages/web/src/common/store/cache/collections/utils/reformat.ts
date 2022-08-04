@@ -6,13 +6,13 @@ import {
 } from '@audius/common'
 import { omit } from 'lodash'
 
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 /**
  * Adds cover_art_url to a collection object if it does not have one set
  */
 const addCollectionImages = (collection: CollectionMetadata): Collection => {
-  return AudiusBackend.getCollectionImages(collection)
+  return audiusBackendInstance.getCollectionImages(collection)
 }
 
 /**

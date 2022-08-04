@@ -13,7 +13,7 @@ import {
   removeNullable
 } from '@audius/common'
 
-import { decodeHashId } from 'utils/route/hashIds'
+import { decodeHashId } from 'common/utils/hashIds'
 
 import {
   APIActivity,

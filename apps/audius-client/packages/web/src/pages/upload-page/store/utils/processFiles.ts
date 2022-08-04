@@ -1,6 +1,6 @@
 import jsmediatags from 'jsmediatags'
 
-import * as schemas from 'schemas'
+import * as schemas from 'common/schemas'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 const ALLOWED_MAX_AUDIO_SIZE_BYTES = 250 * 1000 * 1000
