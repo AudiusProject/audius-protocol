@@ -275,6 +275,10 @@ const handleSyncFromPrimary = async (
          * Every subsequent sync will enter the if case and update the existing local cnodeUserRecord.
          */
         if (cnodeUserRecord) {
+          logger.info(
+            logPrefix,
+            `cNodeUserRecord was non-empty -- updating CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedCNodeUser?.clock}`
+          )
           const [numRowsUpdated, respObj] = await models.CNodeUser.update(
             {
               lastLogin: fetchedCNodeUser.lastLogin,
@@ -307,6 +311,10 @@ const handleSyncFromPrimary = async (
           }
           cnodeUser = respObj[0]
         } else {
+          logger.info(
+            logPrefix,
+            `cNodeUserRecord was empty -- inserting CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedCNodeUser?.clock}`
+          )
           // Will throw error if creation fails
           cnodeUser = await models.CNodeUser.create(
             {
@@ -326,7 +334,7 @@ const handleSyncFromPrimary = async (
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         logger.info(
           logPrefix,
-          `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`
+          `Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedCNodeUser?.clock}`
         )
 
         /**
