@@ -51,6 +51,10 @@ target 'AudiusReactNative' do
   use_native_modules!
   use_flipper!({ "Flipper-DoubleConversion" => "1.1.7" })
 
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+
+  pod 'react-native-randombytes', :path => '../node_modules/react-native-randombytes'
+
   post_install do |installer|
     flipper_post_install(installer)
     react_native_post_install(installer)
