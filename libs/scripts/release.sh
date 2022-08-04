@@ -63,7 +63,7 @@ function git-reset () {
 
 # Make a new branch off GIT_COMMIT, bumps npm,
 # commits with the relevant changelog, and pushes
-function bump-npm () {
+function bump-version () {
     (
         # Patch the version
         VERSION=$(npm version patch)
@@ -142,9 +142,9 @@ LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
 CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
 
 # perform version bump and perform publishing dry-run
-bump-npm
+bump-version
 
-# grab VERSION again since we escaped the bump-npm subshell
+# grab VERSION again since we escaped the bump-version subshell
 VERSION=v$(jq -r '.version' package.json)
 
 merge-bump && publish && info || cleanup
