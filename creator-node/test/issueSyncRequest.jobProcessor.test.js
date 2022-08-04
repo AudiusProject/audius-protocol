@@ -467,9 +467,8 @@ describe('test issueSyncRequest job processor', function () {
         primarySyncFromSecondaryStub
       })
 
-      // Make the axios request succeed
-      const syncReqData = { ...data }
-      nock(secondary).post('/sync', syncReqData).reply(200)
+      // Make the sync request succeed regardless
+      nock(secondary).post('/sync').reply(200)
 
       // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
       const result = await issueSyncRequestJobProcessor({

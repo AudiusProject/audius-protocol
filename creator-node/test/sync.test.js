@@ -77,7 +77,9 @@ describe('test nodesync', async function () {
    * Wipe DB, server, and redis state
    */
   afterEach(async function () {
-    sandbox.restore()
+    if (sandbox) {
+      sandbox.restore()
+    }
     await sinon.restore()
     await server.close()
   })
