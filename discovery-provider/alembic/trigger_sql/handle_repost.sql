@@ -40,7 +40,7 @@ begin
     )
     where track_id = new.repost_item_id
     returning repost_count into new_val;
-  	if r.is_delete IS FALSE then
+  	if new.is_delete IS FALSE then
 		  select owner_id into owner_user_id from tracks where is_current and track_id = new.repost_item_id;
 	  end if;
   else
@@ -57,7 +57,7 @@ begin
     )
     where playlist_id = new.repost_item_id
     returning repost_count into new_val;
-  	if r.is_delete IS FALSE then
+  	if new.is_delete IS FALSE then
 		  select playlist_owner_id into owner_user_id from playlists where is_current and playlist_id = new.repost_item_id;
 	  end if;
   end if;
@@ -68,7 +68,7 @@ begin
     insert into milestones 
       (id, name, threshold, blocknumber, slot, timestamp)
     values
-      (new.followee_user_id, 'FOLLOWER_COUNT', milestone, new.blocknumber, new.slot, new.created_at)
+      (new.repost_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
     on conflict do nothing;
     insert into notification
       (user_ids, type, specifier, blocknumber, timestamp, data)
