@@ -2,6 +2,7 @@ const Umzug = require('umzug')
 const path = require('path')
 
 const { sequelize } = require('./models')
+const { logger } = require('./logging')
 
 async function runMigrations() {
   const umzug = new Umzug({
@@ -26,4 +27,26 @@ async function clearDatabase() {
   await sequelize.query('CREATE SCHEMA public')
 }
 
-module.exports = { runMigrations, clearDatabase }
+async function clearRunningQueries() {
+  try {
+    await sequelize.query(`
+    BEGIN;
+        SELECT
+            pg_cancel_backend(pid),
+            pid,
+            state,
+            age(clock_timestamp(), query_start),
+            substring(trim(regexp_replace(query, '\\s+', ' ', 'g')) from 1 for 200)
+        FROM pg_stat_activity
+        WHERE state != 'idle' AND query NOT ILIKE '%pg_stat_activity%'
+        ORDER BY query_start DESC;
+    COMMIT;
+  `)
+  } catch (e) {
+    logger.info(
+      `Error running clearRunningQueries: ${e.message}. Continuing with content node setup`
+    )
+  }
+}
+
+module.exports = { runMigrations, clearDatabase, clearRunningQueries }
