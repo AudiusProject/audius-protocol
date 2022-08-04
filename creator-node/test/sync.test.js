@@ -1110,7 +1110,7 @@ describe('test nodesync', async function () {
       const secondarySyncFromPrimary = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
-          './secondarySyncFromPrimaryHelper': {
+          './secondarySyncFromPrimaryUtils': {
             shouldForceResync: async () => {
               return true
             }
