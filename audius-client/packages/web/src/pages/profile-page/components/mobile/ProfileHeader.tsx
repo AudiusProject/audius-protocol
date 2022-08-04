@@ -22,7 +22,7 @@ import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
-import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
+import imageCoverPhotoBlank from 'common/assets/img/imageCoverPhotoBlank.jpg'
 import { formatCount, squashNewLines } from 'common/utils/formatUtil'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

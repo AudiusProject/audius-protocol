@@ -5,7 +5,7 @@ import {
   UserMetadata
 } from '@audius/common'
 
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 /**
  * Adds profile picture and cover art to a user object if it does not have one set
@@ -16,7 +16,7 @@ const addUserImages = (
   _profile_picture_sizes: ProfilePictureSizes
   _cover_photo_sizes: CoverPhotoSizes
 } => {
-  return AudiusBackend.getUserImages(user)
+  return audiusBackendInstance.getUserImages(user)
 }
 
 /**

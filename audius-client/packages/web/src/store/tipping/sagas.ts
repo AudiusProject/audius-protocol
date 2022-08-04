@@ -53,6 +53,7 @@ import {
 } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { decreaseBalance } from 'common/store/wallet/slice'
+import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
 import {
   parseAudioInputToWei,
   stringWeiToBN,
@@ -78,7 +79,6 @@ import {
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
   MAX_PROFILE_TOP_SUPPORTERS
 } from 'utils/constants'
-import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
 
 import { updateTipsStorage } from './storageUtils'
 

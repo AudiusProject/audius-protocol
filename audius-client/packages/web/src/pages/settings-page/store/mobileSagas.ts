@@ -8,13 +8,13 @@ import {
   PushNotifications,
   PushNotificationSetting
 } from 'common/store/pages/settings/types'
-import AudiusBackend from 'services/AudiusBackend'
+import { getErrorMessage } from 'common/utils/error'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   EnablePushNotificationsMessage,
   DisablePushNotificationsMessage
 } from 'services/native-mobile-interface/notifications'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { getErrorMessage } from 'utils/error'
 import { waitForValue } from 'utils/sagaHelpers'
 
 function* watchGetPushNotificationSettings() {
@@ -22,7 +22,7 @@ function* watchGetPushNotificationSettings() {
     yield* call(waitForBackendSetup)
     try {
       const settings = (yield* call(
-        AudiusBackend.getPushNotificationSettings
+        audiusBackendInstance.getPushNotificationSettings
       )) as PushNotifications
       const pushNotificationSettings = {
         ...settings,
@@ -43,7 +43,7 @@ export async function disablePushNotifications() {
   message.send()
   const { token } = await message.receive()
   if (token) {
-    await AudiusBackend.deregisterDeviceToken(token)
+    await audiusBackendInstance.deregisterDeviceToken(token)
   }
 }
 
@@ -69,10 +69,10 @@ function* watchUpdatePushNotificationSettings() {
             // @ts-ignore: remove this ignore when waitForValue is typed
             yield* call(waitForValue, getAccountUser)
             yield* call(
-              AudiusBackend.updatePushNotificationSettings,
+              audiusBackendInstance.updatePushNotificationSettings,
               newSettings
             )
-            yield* call(AudiusBackend.registerDeviceToken, token, os)
+            yield* call(audiusBackendInstance.registerDeviceToken, token, os)
           } else {
             yield* call(disablePushNotifications)
           }
@@ -83,7 +83,7 @@ function* watchUpdatePushNotificationSettings() {
             )
             isOn = !pushNotificationSettings[action.notificationType]
           }
-          yield* call(AudiusBackend.updatePushNotificationSettings, {
+          yield* call(audiusBackendInstance.updatePushNotificationSettings, {
             [action.notificationType]: isOn
           })
         }

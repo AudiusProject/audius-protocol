@@ -27,7 +27,7 @@ import Page from 'components/page/Page'
 import { SelectedServices } from 'components/service-selection'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import DownloadApp from 'services/download-app/DownloadApp'
 import { isMobile, isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
@@ -138,7 +138,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
 
   showEmailToast = async () => {
     try {
-      await AudiusBackend.sendRecoveryEmail()
+      await audiusBackendInstance.sendRecoveryEmail()
       this.setState({ emailToastText: messages.emailSent })
       this.props.recordAccountRecovery()
     } catch (e) {

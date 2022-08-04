@@ -12,7 +12,7 @@ import {
 import { USER_LIST_TAG } from 'common/store/user-list/mutuals/types'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 type FetchMutualsConfig = {
   limit: number
@@ -26,7 +26,11 @@ const fetchAllUsersForEntity = async ({
   offset,
   entityId: userId
 }: FetchMutualsConfig) => {
-  const mutuals = await AudiusBackend.getFolloweeFollows(userId, limit, offset)
+  const mutuals = await audiusBackendInstance.getFolloweeFollows(
+    userId,
+    limit,
+    offset
+  )
   return { users: mutuals }
 }
 

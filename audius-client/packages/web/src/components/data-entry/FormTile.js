@@ -5,6 +5,7 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
+import { createRemixOfMetadata } from 'common/schemas'
 import {
   GENRES,
   ELECTRONIC_PREFIX,
@@ -24,7 +25,6 @@ import Switch from 'components/switch/Switch'
 import UnlistedTrackModal from 'components/unlisted-track-modal/UnlistedTrackModal'
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
-import { createRemixOfMetadata } from 'pages/upload-page/store/utils/remixes'
 import {
   ALL_RIGHTS_RESERVED_TYPE,
   computeLicense,

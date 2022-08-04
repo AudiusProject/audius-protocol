@@ -1,9 +1,9 @@
 import { TrackSegment } from '@audius/common'
 import Hls from 'hls.js'
 
+import { decodeHashId } from 'common/utils/hashIds'
 import { fetchCID } from 'services/AudiusBackend'
 import { generateM3U8, generateM3U8Variants } from 'utils/hlsUtil'
-import { decodeHashId } from 'utils/route/hashIds'
 
 declare global {
   interface Window {

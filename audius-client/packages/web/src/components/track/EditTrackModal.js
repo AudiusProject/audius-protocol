@@ -5,9 +5,9 @@ import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { mapValues } from 'lodash'
 import PropTypes from 'prop-types'
 
+import * as schemas from 'common/schemas'
 import FormTile from 'components/data-entry/FormTile'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import * as schemas from 'schemas'
 import zIndex from 'utils/zIndex'
 
 import styles from './EditTrackModal.module.css'

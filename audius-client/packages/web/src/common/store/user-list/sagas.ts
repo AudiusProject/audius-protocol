@@ -1,7 +1,7 @@
 import { call, put, takeLatest, select, all } from 'redux-saga/effects'
 
+import { toErrorWithMessage } from 'common/utils/error'
 import { AppState } from 'store/types'
-import { toErrorWithMessage } from 'utils/error'
 
 import * as userListActions from './actions'
 import { FetchUserIdsSaga, UserListStoreState } from './types'

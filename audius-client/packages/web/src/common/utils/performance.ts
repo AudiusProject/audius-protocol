@@ -1,20 +1,8 @@
-import { Name } from '@audius/common'
-
-import { track } from 'store/analytics/providers'
-
 const DEFAULT_BATCH_SIZE = 10
 
-type Recording = {
+export type Recording = {
   name: string
   duration: number
-}
-
-const sendToAnalytics = ({ name, duration }: Recording) => {
-  console.info(`Recorded event ${name} with duration ${duration}`)
-  track(Name.PERFORMANCE, {
-    metric: name,
-    value: duration
-  })
 }
 
 type TimerConfig = {
@@ -61,7 +49,7 @@ export class Timer {
 
   constructor(
     config: TimerConfig,
-    record: ({ name, duration }: Recording) => void = sendToAnalytics
+    record: ({ name, duration }: Recording) => void
   ) {
     this.config = config
     this.record = record

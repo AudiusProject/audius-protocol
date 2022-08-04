@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 
-import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import TwitterButton from '../twitter-button/TwitterButton'
 
@@ -14,8 +14,8 @@ const TwitterAuthButton = (props) => {
       disabled={props.disabled}
       onFailure={props.onFailure}
       onSuccess={props.onSuccess}
-      requestTokenUrl={`${IDENTITY_SERVICE}/twitter`}
-      loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}
+      requestTokenUrl={`${audiusBackendInstance.identityServiceUrl}/twitter`}
+      loginUrl={`${audiusBackendInstance.identityServiceUrl}/twitter/callback`}
     >
       <TwitterButton {...props} />
     </TwitterAuth>

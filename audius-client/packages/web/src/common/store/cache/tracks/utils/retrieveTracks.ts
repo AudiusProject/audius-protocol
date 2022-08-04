@@ -14,8 +14,8 @@ import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import * as trackActions from 'common/store/cache/tracks/actions'
 import { getTracks as getTracksSelector } from 'common/store/cache/tracks/selectors'
-import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import { setTracksIsBlocked } from './blocklist'
 import {
@@ -219,7 +219,7 @@ export function* retrieveTracks({
         // bulk track fetches in the API.
         if (ids.length > 1) {
           fetched = yield* call(
-            AudiusBackend.getTracksIncludingUnlisted,
+            audiusBackendInstance.getTracksIncludingUnlisted,
             trackIds as UnlistedTrackRequest[]
           )
         } else {
@@ -235,7 +235,7 @@ export function* retrieveTracks({
       } else {
         const ids = trackIds as number[]
         if (ids.length > 1) {
-          fetched = yield* call(AudiusBackend.getAllTracks, {
+          fetched = yield* call(audiusBackendInstance.getAllTracks, {
             offset: 0,
             limit: ids.length,
             idsArray: ids as ID[]

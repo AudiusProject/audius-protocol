@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser'
 
-import { getErrorMessage } from 'utils/error'
+import { getErrorMessage } from 'common/utils/error'
 
 import { Level } from './level'
 

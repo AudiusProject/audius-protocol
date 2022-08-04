@@ -2,8 +2,8 @@ import { ID, BNWei, StringWei, WalletAddress } from '@audius/common'
 import BN from 'bn.js'
 
 import { stringWeiToBN } from 'common/utils/wallet'
-import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 // 0.001 Audio
 export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
@@ -17,7 +17,7 @@ class WalletClient {
 
   async getCurrentBalance(bustCache = false): Promise<BNWei> {
     try {
-      const balance = await AudiusBackend.getBalance(bustCache)
+      const balance = await audiusBackendInstance.getBalance(bustCache)
       return balance as BNWei
     } catch (err) {
       console.error(err)
@@ -27,7 +27,7 @@ class WalletClient {
 
   async getCurrentWAudioBalance(): Promise<BNWei> {
     try {
-      const balance = await AudiusBackend.getWAudioBalance()
+      const balance = await audiusBackendInstance.getWAudioBalance()
       return balance as BNWei
     } catch (err) {
       console.error(err)
@@ -36,9 +36,9 @@ class WalletClient {
   }
 
   async transferTokensFromEthToSol(): Promise<void> {
-    const balance = await AudiusBackend.getBalance(true)
+    const balance = await audiusBackendInstance.getBalance(true)
     if (balance.gt(new BN('0'))) {
-      await AudiusBackend.transferAudioToWAudio(balance)
+      await audiusBackendInstance.transferAudioToWAudio(balance)
     }
   }
 
@@ -54,10 +54,10 @@ class WalletClient {
       if (associatedWallets === null) throw new Error('Unable to fetch wallets')
       const balances = await Promise.all([
         ...associatedWallets.wallets.map((wallet) =>
-          AudiusBackend.getAddressTotalStakedBalance(wallet, bustCache)
+          audiusBackendInstance.getAddressTotalStakedBalance(wallet, bustCache)
         ),
         ...associatedWallets.sol_wallets.map((wallet) =>
-          AudiusBackend.getAddressWAudioBalance(wallet)
+          audiusBackendInstance.getAddressWAudioBalance(wallet)
         )
       ])
 
@@ -79,10 +79,11 @@ class WalletClient {
     try {
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
-          const balance = await AudiusBackend.getAddressTotalStakedBalance(
-            wallet,
-            bustCache
-          )
+          const balance =
+            await audiusBackendInstance.getAddressTotalStakedBalance(
+              wallet,
+              bustCache
+            )
           return { address: wallet, balance: balance as BNWei }
         })
       )
@@ -99,7 +100,9 @@ class WalletClient {
     try {
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
-          const balance = await AudiusBackend.getAddressWAudioBalance(wallet)
+          const balance = await audiusBackendInstance.getAddressWAudioBalance(
+            wallet
+          )
           return { address: wallet, balance: balance as BNWei }
         })
       )
@@ -112,7 +115,7 @@ class WalletClient {
 
   async claim(): Promise<void> {
     try {
-      await AudiusBackend.makeDistributionClaim()
+      await audiusBackendInstance.makeDistributionClaim()
     } catch (err) {
       console.error(err)
       throw err
@@ -124,7 +127,7 @@ class WalletClient {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
-      await AudiusBackend.sendTokens(address, amount)
+      await audiusBackendInstance.sendTokens(address, amount)
     } catch (err) {
       console.error(err)
       throw err
@@ -136,10 +139,8 @@ class WalletClient {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
-      const { res, error, errorCode } = await AudiusBackend.sendWAudioTokens(
-        address,
-        amount
-      )
+      const { res, error, errorCode } =
+        await audiusBackendInstance.sendWAudioTokens(address, amount)
       if (error) {
         if (error === 'Missing social proof') {
           throw new Error(error)
