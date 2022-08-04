@@ -17,9 +17,7 @@ const ExplorePage = ({ isMobile }: ExplorePageContentProps) => {
   // Do not render content until remote config is loaded so
   // that tiling layout does not change.
   // TODO: Remove this when Remixables feature flag is removed
-  const remoteConfigLoaded = useSelector((state: AppState) =>
-    isRemoteConfigLoaded<AppState>(state)
-  )
+  const remoteConfigLoaded = useSelector(isRemoteConfigLoaded)
   if (!remoteConfigLoaded) return null
 
   return <ExplorePageProvider>{content}</ExplorePageProvider>

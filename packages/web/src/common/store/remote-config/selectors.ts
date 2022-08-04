@@ -1,5 +1,4 @@
-export const isRemoteConfigLoaded = <
-  State extends { remoteConfig: { remoteConfigLoaded: boolean } }
->(
-  state: State
-) => state.remoteConfig.remoteConfigLoaded
+type StateWithRemoteConfig = { remoteConfig: { remoteConfigLoaded: boolean } }
+
+export const isRemoteConfigLoaded = (state: StateWithRemoteConfig) =>
+  state.remoteConfig.remoteConfigLoaded
