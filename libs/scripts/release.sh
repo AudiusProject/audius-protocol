@@ -33,9 +33,8 @@ function commit-message () {
 ${CHANGE_LOG}"
 }
 
-# Make a new branch off GIT_COMMIT, bumps npm,
-# commits with the relevant changelog, and pushes
-function bump-npm () {
+# Pull in master, ensure commit is on master, ensure clean build environment
+function git-reset () {
     (
         # Configure git client
         git config --global user.email "audius-infra@audius.co"
@@ -59,11 +58,13 @@ function bump-npm () {
 
         # Ensure working directory clean
         git reset --hard ${GIT_COMMIT}
+    )
+}
 
-        # grab change log early, before the version bump
-        LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
-        CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
-
+# Make a new branch off GIT_COMMIT, bumps npm,
+# commits with the relevant changelog, and pushes
+function bump-version () {
+    (
         # Patch the version
         VERSION=$(npm version patch)
         tmp=$(mktemp)
@@ -133,10 +134,17 @@ function cleanup () {
 STUB=sdk
 cd ${PROTOCOL_DIR}/libs
 
-# perform release
-bump-npm
+# pull in master
+git-reset
 
-# grab VERSION again since we escaped the bump-npm subshell
+# grab change log early, before the version bump
+LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
+CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
+
+# perform version bump and perform publishing dry-run
+bump-version
+
+# grab VERSION again since we escaped the bump-version subshell
 VERSION=v$(jq -r '.version' package.json)
 
 merge-bump && publish && info || cleanup
