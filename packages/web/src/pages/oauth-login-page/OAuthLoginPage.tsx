@@ -17,14 +17,13 @@ import { useHistory, useLocation } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
 import { getAccountUser } from 'common/store/account/selectors'
+import { encodeHashId } from 'common/utils/hashIds'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ProfileInfo } from 'components/profile-info/ProfileInfo'
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make, useRecord } from 'store/analytics/actions'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { ERROR_PAGE, SIGN_UP_PAGE } from 'utils/route'
-import { encodeHashId } from 'utils/route/hashIds'
 import { signOut } from 'utils/signOut'
 
 import styles from '../styles/OAuthLoginPage.module.css'
@@ -121,7 +120,7 @@ export const OAuthLoginPage = () => {
     const getAndSetEmail = async () => {
       let email: string
       try {
-        email = await AudiusBackend.getUserEmail()
+        email = await audiusBackendInstance.getUserEmail()
       } catch {
         setUserEmail(null)
         history.push(ERROR_PAGE)
@@ -262,7 +261,7 @@ export const OAuthLoginPage = () => {
     let email: string
     if (!userEmail) {
       try {
-        email = await AudiusBackend.getUserEmail()
+        email = await audiusBackendInstance.getUserEmail()
       } catch {
         history.push(ERROR_PAGE)
         return
@@ -271,7 +270,9 @@ export const OAuthLoginPage = () => {
       email = userEmail
     }
 
-    const gateways = getCreatorNodeIPFSGateways(account.creator_node_endpoint)
+    const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
+      account.creator_node_endpoint
+    )
     const cNode = gateways[0]
     let profilePicture:
       | { '150x150': string; '480x480': string; '1000x1000': string }
@@ -311,7 +312,7 @@ export const OAuthLoginPage = () => {
     const message = `${header}.${payload}`
     let signedData: { data: string; signature: string }
     try {
-      signedData = await AudiusBackend.signDiscoveryNodeRequest(message)
+      signedData = await audiusBackendInstance.signDiscoveryNodeRequest(message)
     } catch {
       return
     }
@@ -367,7 +368,10 @@ export const OAuthLoginPage = () => {
     setIsSubmitting(true)
     let signInResponse: any
     try {
-      signInResponse = await AudiusBackend.signIn(emailInput, passwordInput)
+      signInResponse = await audiusBackendInstance.signIn(
+        emailInput,
+        passwordInput
+      )
     } catch (err) {
       setIsSubmitting(false)
       setAndLogGeneralSubmitError(false, messages.miscError)

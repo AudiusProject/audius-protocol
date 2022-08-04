@@ -2,7 +2,7 @@ import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconInstagram } from 'assets/img/iconInstagram.svg'
-import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import InstagramAuth from '../instagram-auth/InstagramAuth'
 
@@ -71,8 +71,8 @@ const InstagramAuthButton = ({
       disabled={disabled}
       onFailure={onFailure || (() => {})}
       onSuccess={onSuccess || (() => {})}
-      getUserUrl={`${IDENTITY_SERVICE}/instagram`}
-      setProfileUrl={`${IDENTITY_SERVICE}/instagram/profile`}
+      getUserUrl={`${audiusBackendInstance.identityServiceUrl}/instagram`}
+      setProfileUrl={`${audiusBackendInstance.identityServiceUrl}/instagram/profile`}
       requiresProfileMetadata={requiresProfileMetadata}
     >
       <InstagramButton

@@ -1,7 +1,5 @@
-import AudiusBackend, {
-  AuthHeaders,
-  IDENTITY_SERVICE
-} from 'services/AudiusBackend'
+import { AuthHeaders } from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 // @ts-ignore
@@ -33,13 +31,16 @@ async function _makeRequest<ResponseModel>({
     if (!account) {
       throw new Error('Cognito Identity Request Failed: Missing current user')
     }
-    const { data, signature } = await AudiusBackend.signData()
+    const { data, signature } = await audiusBackendInstance.signData()
     options.headers = {
       [AuthHeaders.Message]: data,
       [AuthHeaders.Signature]: signature
     }
   }
-  const response = await fetch(`${IDENTITY_SERVICE}${path}`, options)
+  const response = await fetch(
+    `${audiusBackendInstance.identityServiceUrl}${path}`,
+    options
+  )
   if (response.status >= 400 && response.status < 600) {
     throw new Error(`Cognito Identity Request Failed: ${response.statusText}`)
   }

@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselectAdd.svg'
 import { useModalState } from 'common/hooks/useModalState'
+import { newCollectionMetadata } from 'common/schemas'
 import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
 import {
   addTrackToPlaylist,
@@ -22,7 +23,6 @@ import SearchBar from 'components/search-bar/SearchBar'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { newCollectionMetadata } from 'schemas'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
 

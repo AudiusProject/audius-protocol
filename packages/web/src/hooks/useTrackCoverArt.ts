@@ -1,7 +1,7 @@
 import { CoverArtSizes, SquareSizes } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import imageEmpty from 'assets/img/imageBlank2x.png'
+import imageEmpty from 'common/assets/img/imageBlank2x.png'
 import { useImageSize } from 'common/hooks/useImageSize'
 import { fetchCoverArt } from 'common/store/cache/tracks/actions'
 

@@ -19,12 +19,12 @@ import {
   upload
 } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { Status } from 'common/store/ui/share-sound-to-tiktok-modal/types'
+import { getErrorMessage } from 'common/utils/error'
+import { encodeHashId } from 'common/utils/hashIds'
 import { show as showConfetti } from 'components/music-confetti/store/slice'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { make } from 'store/analytics/actions'
 import { AppState } from 'store/types'
-import { getErrorMessage } from 'utils/error'
-import { encodeHashId } from 'utils/route/hashIds'
 
 const TIKTOK_SHARE_SOUND_ENDPOINT =
   'https://open-api.tiktok.com/share/sound/upload/'

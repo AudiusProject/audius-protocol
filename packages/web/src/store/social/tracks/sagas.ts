@@ -11,8 +11,8 @@ import { updateOptimisticListenStreak } from 'common/store/pages/audio-rewards/s
 import * as socialActions from 'common/store/social/tracks/actions'
 import { formatShareText } from 'common/utils/formatUtil'
 import * as signOnActions from 'pages/sign-on/store/actions'
-import AudiusBackend from 'services/AudiusBackend'
 import TrackDownload from 'services/audius-backend/TrackDownload'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
@@ -144,7 +144,7 @@ export function* confirmRepostTrack(trackId: ID, user: User) {
       makeKindId(Kind.TRACKS, trackId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.repostTrack,
+          audiusBackendInstance.repostTrack,
           trackId
         )
         const confirmed = yield* call(
@@ -255,7 +255,7 @@ export function* confirmUndoRepostTrack(trackId: ID, user: User) {
       makeKindId(Kind.TRACKS, trackId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.undoRepostTrack,
+          audiusBackendInstance.undoRepostTrack,
           trackId
         )
         const confirmed = yield* call(
@@ -388,7 +388,7 @@ export function* confirmSaveTrack(trackId: ID) {
       makeKindId(Kind.TRACKS, trackId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.saveTrack,
+          audiusBackendInstance.saveTrack,
           trackId
         )
         const confirmed = yield* call(
@@ -487,7 +487,7 @@ export function* confirmUnsaveTrack(trackId: ID) {
       makeKindId(Kind.TRACKS, trackId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.unsaveTrack,
+          audiusBackendInstance.unsaveTrack,
           trackId
         )
         const confirmed = yield* call(
@@ -529,7 +529,7 @@ export function* watchSetArtistPick() {
           }
         ])
       )
-      yield* call(AudiusBackend.setArtistPick, action.trackId)
+      yield* call(audiusBackendInstance.setArtistPick, action.trackId)
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
       yield* put(event)
@@ -548,7 +548,7 @@ export function* watchUnsetArtistPick() {
         }
       ])
     )
-    yield* call(AudiusBackend.setArtistPick)
+    yield* call(audiusBackendInstance.setArtistPick)
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
     yield* put(event)
@@ -569,7 +569,7 @@ export function* watchRecordListen() {
       if (!userId || !track) return
 
       if (userId !== track.owner_id || track.play_count < 10) {
-        yield* call(AudiusBackend.recordTrackListen, action.trackId)
+        yield* call(audiusBackendInstance.recordTrackListen, action.trackId)
       }
 
       // Record track listen analytics event

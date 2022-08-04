@@ -4,11 +4,10 @@ import { Kind } from '@audius/common'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import placeholderArt from 'assets/img/imageBlank2x.png'
+import placeholderArt from 'common/assets/img/imageBlank2x.png'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import AudiusBackend from 'services/AudiusBackend'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import searchBarStyles from './SearchBar.module.css'
 import styles from './SearchBarResult.module.css'
@@ -21,8 +20,10 @@ const Image = memo((props) => {
     let isCanceled = false
     const getImage = async () => {
       try {
-        const gateways = getCreatorNodeIPFSGateways(props.creatorNodeEndpoint)
-        const url = await AudiusBackend.getImageUrl(
+        const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
+          props.creatorNodeEndpoint
+        )
+        const url = await audiusBackendInstance.getImageUrl(
           imageMultihash,
           size,
           gateways

@@ -9,12 +9,12 @@ import * as searchPageActions from 'common/store/pages/search-results/actions'
 import { tracksActions as tracksLineupActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import { trimToAlphaNumeric } from 'common/utils/formatUtil'
 import tracksSagas from 'pages/search-page/store/lineups/tracks/sagas'
-import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForBackendSetup } from 'store/backend/sagas'
 
 export function* getTagSearchResults(tag, kind, limit, offset) {
-  const results = yield call(AudiusBackend.searchTags, {
+  const results = yield call(audiusBackendInstance.searchTags, {
     query: tag.toLowerCase(),
     userTagCount: 1,
     kind,

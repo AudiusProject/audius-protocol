@@ -15,8 +15,8 @@ import { getCollections } from 'common/store/cache/collections/selectors'
 import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
@@ -146,7 +146,7 @@ export function* retrieveCollections(
         metadatas = yield call(retrieveCollection, ids[0])
       } else {
         // TODO: Remove this branch when we have batched endpoints in new V1 api.
-        metadatas = yield call(AudiusBackend.getPlaylists, userId, ids)
+        metadatas = yield call(audiusBackendInstance.getPlaylists, userId, ids)
       }
 
       // Process any local deletions on the client

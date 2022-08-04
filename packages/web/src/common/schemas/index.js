@@ -1,7 +1,5 @@
 import { pick } from 'lodash'
 
-import { createRemixOfMetadata } from 'pages/upload-page/store/utils/remixes'
-
 const trackMetadataSchema = {
   owner_id: null,
   title: null,
@@ -121,5 +119,15 @@ export const newUserMetadata = (fields, validate = false) => {
   return {
     ...userMetadataSchema,
     ...validFields
+  }
+}
+
+export const createRemixOfMetadata = ({ parentTrackId }) => {
+  return {
+    tracks: [
+      {
+        parent_track_id: parentTrackId
+      }
+    ]
   }
 }

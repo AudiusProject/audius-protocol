@@ -1,4 +1,4 @@
-import * as schemas from 'schemas'
+import * as schemas from 'common/schemas'
 import { DownloadTrackMessage } from 'services/native-mobile-interface/downloadTrack'
 
 import { waitForLibsInit } from './eagerLoadUtils'

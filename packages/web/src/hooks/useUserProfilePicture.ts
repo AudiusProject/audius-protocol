@@ -1,7 +1,7 @@
 import { ProfilePictureSizes, SquareSizes } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
+import profilePicEmpty from 'common/assets/img/imageProfilePicEmpty2X.png'
 import { useImageSize } from 'common/hooks/useImageSize'
 import { fetchProfilePicture } from 'common/store/cache/users/actions'
 

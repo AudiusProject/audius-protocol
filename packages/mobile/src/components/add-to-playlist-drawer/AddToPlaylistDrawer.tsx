@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react'
 
 import { CreatePlaylistSource } from '@audius/common'
+import { newCollectionMetadata } from 'audius-client/src/common/schemas'
 import { getAccountWithOwnPlaylists } from 'audius-client/src/common/store/account/selectors'
 import {
   addTrackToPlaylist,
@@ -10,7 +11,6 @@ import {
   getTrackId,
   getTrackTitle
 } from 'audius-client/src/common/store/ui/add-to-playlist/selectors'
-import { newCollectionMetadata } from 'audius-client/src/schemas'
 import { FEED_PAGE, playlistPage } from 'audius-client/src/utils/route'
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { View } from 'react-native'

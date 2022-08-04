@@ -3,9 +3,8 @@ import { call } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-
-import AudiusBackend from '../../services/AudiusBackend'
-import Explore from '../../services/audius-backend/Explore'
+import Explore from 'services/audius-backend/Explore'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 export function* getRecommendedTracks(
   genre: string,
@@ -27,7 +26,7 @@ export function* getLuckyTracks(limit: number) {
     Math.floor(Math.random() * latestTrackID)
   )
 
-  const tracks: UserTrack[] = yield* call(AudiusBackend.getAllTracks, {
+  const tracks: UserTrack[] = yield* call(audiusBackendInstance.getAllTracks, {
     offset: 0,
     limit,
     idsArray: ids,

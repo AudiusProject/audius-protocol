@@ -2,7 +2,7 @@ import { Name } from '@audius/common'
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga/macro'
 
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { requestConfirmation } from 'store/confirmer/actions'
@@ -31,7 +31,7 @@ function* handleDeactivateAccount() {
         function* () {
           yield* put(make(Name.DEACTIVATE_ACCOUNT_REQUEST, {}))
           const result = yield* call(
-            AudiusBackend.updateCreator,
+            audiusBackendInstance.updateCreator,
             { ...userMetadata, is_deactivated: true },
             accountUserId /* note: as of writing, unused parameter */
           )

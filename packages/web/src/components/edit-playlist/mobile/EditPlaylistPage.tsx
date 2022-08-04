@@ -13,7 +13,8 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
-import placeholderCoverArt from 'assets/img/imageBlank2x.png'
+import placeholderCoverArt from 'common/assets/img/imageBlank2x.png'
+import * as schemas from 'common/schemas'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   createPlaylist,
@@ -38,7 +39,6 @@ import TrackList from 'components/track/mobile/TrackList'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
-import * as schemas from 'schemas'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { playlistPage } from 'utils/route'

@@ -7,7 +7,7 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import { getUsers, getUser } from 'common/store/cache/users/selectors'
 import * as socialActions from 'common/store/social/users/actions'
 import * as signOnActions from 'pages/sign-on/store/actions'
-import AudiusBackend from 'services/AudiusBackend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
@@ -73,7 +73,7 @@ export function* confirmFollowUser(userId: ID, accountId: ID) {
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.followUser,
+          audiusBackendInstance.followUser,
           userId
         )
         const confirmed = yield* call(
@@ -180,7 +180,7 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          AudiusBackend.unfollowUser,
+          audiusBackendInstance.unfollowUser,
           userId
         )
         const confirmed = yield* call(
