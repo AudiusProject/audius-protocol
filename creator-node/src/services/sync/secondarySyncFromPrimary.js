@@ -644,11 +644,11 @@ module.exports = async function (
     blockNumber,
     forceResync
   )
-  metricEndTimerFn(result)
+  metricEndTimerFn({ result })
 
   if (error) {
     throw new Error(error)
   }
 
-  return result
+  return { result }
 }
