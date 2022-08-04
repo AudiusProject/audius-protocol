@@ -14,9 +14,8 @@ const {
 const { ensureStorageMiddleware } = require('../../middlewares')
 const {
   enqueueSync,
-  processImmediateSync
+  processSyncOfTypeImmediate
 } = require('./syncQueueComponentService')
-const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
 const {
   generateDataForSignatureRecovery
 } = require('../../services/sync/secondarySyncFromPrimaryUtils')
@@ -106,7 +105,7 @@ const syncRouteController = async (req, res) => {
 
   if (immediate) {
     try {
-      await processImmediateSync({
+      await processSyncOfTypeImmediate({
         serviceRegistry,
         wallet,
         creatorNodeEndpoint: primaryEndpoint,
@@ -117,9 +116,8 @@ const syncRouteController = async (req, res) => {
             signature: req.body.signature,
             data
           },
-          libs: req.app.get('audiusLibs'),
-          logger: req.logger,
-          wallet
+          wallet,
+          logContext: req.logContext
         }
       })
     } catch (e) {
