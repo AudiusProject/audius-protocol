@@ -3,7 +3,7 @@ import { shouldForceResync } from '../src/services/sync/secondarySyncFromPrimary
 import assert from 'assert'
 import proxyquire from 'proxyquire'
 
-describe.only('test secondarySyncFromPrimaryUtils', function () {
+describe('test secondarySyncFromPrimaryUtils', function () {
   it('if force resync configs are not passed it, will not force resync', async function () {
     assert.deepStrictEqual(await shouldForceResync(), false)
     assert.deepStrictEqual(await shouldForceResync(null), false)
