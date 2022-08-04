@@ -338,7 +338,7 @@ jobs:
     # uses medium (2vcpu/4gb) by default
     resource_class: medium
     docker:
-      - image: circleci/node:16
+      - image: circleci/node:14.17.5
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
