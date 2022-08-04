@@ -23,6 +23,12 @@ const balanceGauge = new client.Gauge({
     labelNames: ['address_name'],
 });
 
+const alchemyFailureGauge = new client.Gauge({
+    name: `${prefix}api_failure`,
+    help: 'Count when alchemy calls fail.',
+});
+alchemyFailureGauge.set(0);
+
 const main = async () => {
     // Wallet address
     const addresses = {
@@ -92,7 +98,8 @@ const runMain = async () => {
     }
     catch (error) {
         console.log(error);
-        process.exit(1);
+        // process.exit(1);
+        alchemyFailureGauge.inc();
     }
 };
 
