@@ -1,8 +1,9 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import Integer, String, text
+from sqlalchemy import Integer, String, or_, text
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.models.users.user_listening_history import UserListeningHistory
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
@@ -89,23 +90,32 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
         .alias()
     )
 
-    track_results = (
+    base_query = (
         session.query(Track)
         .join(order, order.c.id == Track.track_id)
-        .filter(Track.track_id.in_(track_ids))
+        .filter(Track.is_current == True)
     )
 
     if query is not None:
-        track_results = track_results.filter(Track.title.ilike(f"%{query.lower()}%"))
+        base_query = base_query.join(Track.user, aliased=True).filter(
+            or_(
+                Track.title.ilike(f"%{query.lower()}%"),
+                User.name.ilike(f"%{query.lower()}%"),
+            )
+        )
 
-    track_results = track_results.order_by(order.c.ord)
+    base_query = base_query.order_by(order.c.ord)
 
     # Add pagination
-    track_results = add_query_pagination(track_results, limit, offset)
-    track_results = track_results.all()
+    base_query = add_query_pagination(base_query, limit, offset)
+    base_query = base_query.all()
+    import logging
+
+    logger = logging.getLogger(__name__)
+    logger.info(f"raymont {base_query}")
     track_ids = track_ids[offset : offset + limit]
 
-    tracks = helpers.query_result_to_list(track_results)
+    tracks = helpers.query_result_to_list(base_query)
 
     # bundle peripheral info into track results
     tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)

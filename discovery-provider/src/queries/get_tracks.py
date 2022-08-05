@@ -102,7 +102,12 @@ def _get_tracks(session, args):
 
     if "query" in args:
         query = args.get("query")
-        base_query = base_query.filter(Track.title.ilike(f"%{query.lower()}%"))
+        base_query = base_query.join(Track.user, aliased=True).filter(
+            or_(
+                Track.title.ilike(f"%{query.lower()}%"),
+                User.name.ilike(f"%{query.lower()}%"),
+            )
+        )
 
     if "sort" in args:
         if args["sort"] == "date":

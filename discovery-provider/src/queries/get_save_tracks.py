@@ -1,5 +1,7 @@
+from sqlalchemy import or_
 from src.models.social.save import Save, SaveType
 from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     add_query_pagination,
@@ -37,7 +39,12 @@ def get_save_tracks(args):
             base_query = base_query.filter(Track.is_delete == False)
 
         if query:
-            base_query = base_query.filter(Track.title.ilike(f"%{query.lower()}%"))
+            base_query = base_query.join(Track.user, aliased=True).filter(
+                or_(
+                    Track.title.ilike(f"%{query.lower()}%"),
+                    User.name.ilike(f"%{query.lower()}%"),
+                )
+            )
 
         base_query = base_query.order_by(Save.created_at.desc(), Track.track_id.desc())
 
