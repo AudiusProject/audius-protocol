@@ -148,7 +148,7 @@ const monitorTransfers = async () => {
       balance = balance / Math.pow(10, AUDIUS_DECIMALS)
       balance = balance.toFixed(2)
       console.log(balance)
-      METRICS[metricNames.TOKEN_TRANSFER].observe(balance)
+      METRICS[metricNames.TOKEN_TRANSFER].observe(parseFloat(balance))
     } catch (error) {
       console.log(error)
       METRICS[metricNames.API_FAILURE].inc()
