@@ -74,6 +74,10 @@ export interface GetFavoritesRequest {
      * The user ID of the user making the request
      */
     userId?: string;
+    /**
+     * The filter query
+     */
+    query?: string;
 }
 
 export interface GetFollowersRequest {
@@ -286,6 +290,10 @@ export interface GetTracksByUserRequest {
      * Field to sort by
      */
     sort?: GetTracksByUserSortEnum;
+    /**
+     * The filter query
+     */
+    query?: string;
 }
 
 export interface GetTracksByUserHandleRequest {
@@ -309,6 +317,10 @@ export interface GetTracksByUserHandleRequest {
      * Field to sort by
      */
     sort?: GetTracksByUserHandleSortEnum;
+    /**
+     * The filter query
+     */
+    query?: string;
 }
 
 export interface GetUserRequest {
@@ -350,6 +362,10 @@ export interface GetUsersTrackHistoryRequest {
      * The user ID of the user making the request
      */
     userId?: string;
+    /**
+     * The filter query
+     */
+    query?: string;
 }
 
 /**
@@ -377,6 +393,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.userId !== undefined) {
             queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -747,6 +767,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort'] = requestParameters.sort;
         }
 
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         return this.request({
@@ -781,6 +805,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.sort !== undefined) {
             queryParameters['sort'] = requestParameters.sort;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -861,6 +889,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.userId !== undefined) {
             queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

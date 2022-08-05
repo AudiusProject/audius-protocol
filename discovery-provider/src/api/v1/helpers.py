@@ -4,6 +4,7 @@ from typing import Dict, cast
 
 from flask_restx import reqparse
 from src import api_helpers
+from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
@@ -12,8 +13,6 @@ from src.queries.reactions import ReactionResponse
 from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.spl_audio import to_wei_string
-
-from .models.common import full_response
 
 logger = logging.getLogger(__name__)
 
@@ -487,6 +486,29 @@ pagination_with_current_user_parser.add_argument(
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 search_parser.add_argument("query", required=True, description="The search query")
 
+track_history_parser = pagination_with_current_user_parser.copy()
+track_history_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+
+user_favorited_tracks_parser = pagination_with_current_user_parser.copy()
+user_favorited_tracks_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+
+user_tracks_route_parser = pagination_with_current_user_parser.copy()
+user_tracks_route_parser.add_argument(
+    "sort",
+    required=False,
+    type=str,
+    default="date",
+    choices=("date", "plays"),
+    description="Field to sort by",
+)
+user_tracks_route_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+
 full_search_parser = pagination_with_current_user_parser.copy()
 full_search_parser.add_argument("query", required=True, description="The search query")
 full_search_parser.add_argument(
@@ -550,6 +572,10 @@ def format_offset(args, max_offset=MAX_LIMIT):
     if offset is None:
         return DEFAULT_OFFSET
     return max(min(int(offset), max_offset), MIN_OFFSET)
+
+
+def format_query(args):
+    return args.get("query", None)
 
 
 def get_default_max(value, default, max=None):
