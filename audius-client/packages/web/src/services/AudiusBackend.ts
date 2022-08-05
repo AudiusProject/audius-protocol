@@ -2104,7 +2104,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(`${identityServiceUrl}/notifications/all`, {
+      return await fetch(`${identityServiceUrl}/notifications/all`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2124,7 +2124,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(`${identityServiceUrl}/notifications/clear_badges`, {
+      return await fetch(`${identityServiceUrl}/notifications/clear_badges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2186,7 +2186,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(
+      return await fetch(
         `${identityServiceUrl}/push_notifications/browser/settings`,
         {
           method: 'POST',
@@ -2211,7 +2211,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(`${identityServiceUrl}/push_notifications/settings`, {
+      return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2251,7 +2251,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(
+      return await fetch(
         `${identityServiceUrl}/push_notifications/browser/settings`,
         {
           headers: {
@@ -2275,7 +2275,7 @@ export const audiusBackend = ({
     try {
       const { data, signature } = await signData()
       const endpiont = encodeURIComponent(pushEndpoint)
-      return fetch(
+      return await fetch(
         `${identityServiceUrl}/push_notifications/browser/enabled?endpoint=${endpiont}`,
         {
           headers: {
@@ -2298,7 +2298,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(
+      return await fetch(
         `${identityServiceUrl}/push_notifications/device_token/enabled?deviceToken=${deviceToken}&deviceType=safari`,
         {
           headers: {
@@ -2324,15 +2324,18 @@ export const audiusBackend = ({
   }) {
     await waitForLibsInit()
     const { data, signature } = await signData()
-    return fetch(`${identityServiceUrl}/push_notifications/browser/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        [AuthHeaders.Message]: data,
-        [AuthHeaders.Signature]: signature
-      },
-      body: JSON.stringify({ enabled, subscription })
-    }).then((res) => res.json())
+    return await fetch(
+      `${identityServiceUrl}/push_notifications/browser/register`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [AuthHeaders.Message]: data,
+          [AuthHeaders.Signature]: signature
+        },
+        body: JSON.stringify({ enabled, subscription })
+      }
+    ).then((res) => res.json())
   }
 
   async function disableBrowserNotifications({
@@ -2342,7 +2345,7 @@ export const audiusBackend = ({
   }) {
     await waitForLibsInit()
     const { data, signature } = await signData()
-    return fetch(
+    return await fetch(
       `${identityServiceUrl}/push_notifications/browser/deregister`,
       {
         method: 'POST',
@@ -2362,7 +2365,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(`${identityServiceUrl}/push_notifications/settings`, {
+      return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
         headers: {
           [AuthHeaders.Message]: data,
           [AuthHeaders.Signature]: signature
@@ -2381,18 +2384,21 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(`${identityServiceUrl}/push_notifications/device_token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({
-          deviceToken,
-          deviceType
-        })
-      }).then((res) => res.json())
+      return await fetch(
+        `${identityServiceUrl}/push_notifications/device_token`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [AuthHeaders.Message]: data,
+            [AuthHeaders.Signature]: signature
+          },
+          body: JSON.stringify({
+            deviceToken,
+            deviceType
+          })
+        }
+      ).then((res) => res.json())
     } catch (e) {
       console.error(e)
     }
@@ -2404,7 +2410,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(
+      return await fetch(
         `${identityServiceUrl}/push_notifications/device_token/deregister`,
         {
           method: 'POST',
@@ -2429,7 +2435,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(
+      return await fetch(
         `${identityServiceUrl}/notifications/subscription?userId=${userId}`,
         {
           headers: {
@@ -2455,7 +2461,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(
+      return await fetch(
         `${identityServiceUrl}/notifications/subscription?${userIds
           .map((id) => `userId=${id}`)
           .join('&')}`,
@@ -2479,7 +2485,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(`${identityServiceUrl}/notifications/subscription`, {
+      return await fetch(`${identityServiceUrl}/notifications/subscription`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2524,7 +2530,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      return fetch(`${identityServiceUrl}/email/welcome`, {
+      return await fetch(`${identityServiceUrl}/email/welcome`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
