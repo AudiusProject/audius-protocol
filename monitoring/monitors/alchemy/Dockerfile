@@ -6,6 +6,7 @@ WORKDIR ${WORKDIR}
 RUN npm init -y \
     && npm install --save \
         @alch/alchemy-web3 \
+        alchemy-sdk \
         console-stamp \
         prom-client \
     && npm install -g \
