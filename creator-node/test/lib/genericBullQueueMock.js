@@ -19,7 +19,7 @@ class GenericBullQueue {
     const prometheusRegistry = new PrometheusRegistry()
     prometheusRegistry.startQueueMetrics(this.queue)
 
-    this.queue.process(1, async (job, done) => {
+    this.queue.process(1, async (job) => {
       console.log(this.params)
 
       const { timeout } = job.data
@@ -27,8 +27,6 @@ class GenericBullQueue {
         console.log(`waiting ${timeout}`)
         setTimeout(() => console.log(`done ${timeout}`), timeout)
       }
-
-      done()
     })
   }
 
