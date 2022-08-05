@@ -1,7 +1,9 @@
+import { trace, context } from '@opentelemetry/api'
 const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
+const { getTracer } = require('./tracer')
 
 // Processing fns
 const {
@@ -66,9 +68,16 @@ class AsyncProcessingQueue {
   }
 
   async processTask(job, done) {
-    const { logContext, task } = job.data
+    const { logContext, parentSpan, task } = job.data
 
     const func = this.getFn(task)
+
+    const ctx = trace.setSpan(context.active(), parentSpan)
+    const span = getTracer().startSpan(
+      `processTask on AsyncProcessingQueue`,
+      undefined,
+      ctx
+    )
 
     if (task === PROCESS_NAMES.transcodeHandOff) {
       const { transcodeFilePath, segmentFileNames, sp } =
@@ -107,6 +116,7 @@ class AsyncProcessingQueue {
         done(e.toString())
       }
     }
+    span.end()
   }
 
   async logStatus(message, logContext = {}) {

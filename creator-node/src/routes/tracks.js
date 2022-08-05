@@ -37,6 +37,7 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
+const { getTracer } = require('../tracer')
 
 const readFile = promisify(fs.readFile)
 
@@ -67,26 +68,34 @@ router.post(
     })
 
     if (selfTranscode) {
-      await AsyncProcessingQueue.addTrackContentUploadTask({
-        logContext: req.logContext,
-        req: {
-          fileName: req.fileName,
-          fileDir: req.fileDir,
-          fileDestination: req.file.destination,
-          cnodeUserUUID: req.session.cnodeUserUUID
-        }
+      getTracer().startActiveSpan('transcode', async (span) => {
+        await AsyncProcessingQueue.addTrackContentUploadTask({
+          logContext: req.logContext,
+          parentSpan: span,
+          req: {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            fileDestination: req.file.destination,
+            cnodeUserUUID: req.session.cnodeUserUUID
+          }
+        })
+        span.end()
       })
     } else {
-      await AsyncProcessingQueue.addTranscodeHandOffTask({
-        logContext: req.logContext,
-        req: {
-          fileName: req.fileName,
-          fileDir: req.fileDir,
-          fileNameNoExtension: req.fileNameNoExtension,
-          fileDestination: req.file.destination,
-          cnodeUserUUID: req.session.cnodeUserUUID,
-          headers: req.headers
-        }
+      getTracer.startActiveSpan('transcode', async (span) => {
+        await AsyncProcessingQueue.addTranscodeHandOffTask({
+          logContext: req.logContext,
+          parentSpan: span,
+          req: {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            fileNameNoExtension: req.fileNameNoExtension,
+            fileDestination: req.file.destination,
+            cnodeUserUUID: req.session.cnodeUserUUID,
+            headers: req.headers
+          }
+        })
+        span.end()
       })
     }
 

@@ -7,8 +7,6 @@ import {
 
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
-import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
-import { ConsoleSpanExporter } from '@opentelemetry/tracing'
 import { Resource } from '@opentelemetry/resources'
 import {
   // SemanticAttributes,
@@ -23,10 +21,12 @@ import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
 // Not functionally required but gives some insight what happens behind the scenes
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
 
-export const setupTracing = (serviceName: string) => {
+const SERVICE_NAME = 'content-node'
+
+export const setupTracing = () => {
   const provider = new NodeTracerProvider({
     resource: new Resource({
-      [ResourceAttributesSC.SERVICE_NAME]: serviceName
+      [ResourceAttributesSC.SERVICE_NAME]: SERVICE_NAME
     })
   })
   registerInstrumentations({
@@ -50,7 +50,11 @@ export const setupTracing = (serviceName: string) => {
   // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
   provider.register()
 
-  return trace.getTracer(serviceName)
+  trace.setGlobalTracerProvider(provider)
+}
+
+export const getTracer = () => {
+  return trace.getTracer(SERVICE_NAME)
 }
 
 module.exports = { setupTracing }

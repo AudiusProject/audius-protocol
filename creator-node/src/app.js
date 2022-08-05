@@ -1,5 +1,5 @@
 const { setupTracing } = require('./tracer')
-setupTracing('content-node-server')
+setupTracing('content-node')
 
 const express = require('express')
 const bodyParser = require('body-parser')
