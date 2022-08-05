@@ -53,8 +53,8 @@ class AsyncProcessingQueue {
 
     this.libs = libs
 
-    this.queue.process(MAX_CONCURRENCY, async (job, done) => {
-      await this.processTask(job, done)
+    this.queue.process(MAX_CONCURRENCY, async (job) => {
+      await this.processTask(job)
     })
 
     this.PROCESS_NAMES = PROCESS_NAMES
@@ -65,7 +65,7 @@ class AsyncProcessingQueue {
     this.constructProcessKey = this.constructAsyncProcessingKey.bind(this)
   }
 
-  async processTask(job, done) {
+  async processTask(job) {
     const { logContext, task } = job.data
 
     const func = this.getFn(task)
@@ -82,7 +82,7 @@ class AsyncProcessingQueue {
           logContext,
           req: job.data.req
         })
-        done(null, {})
+        return {}
       } else {
         this.logStatus(
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
@@ -91,21 +91,21 @@ class AsyncProcessingQueue {
           logContext,
           req: { ...job.data.req, transcodeFilePath, segmentFileNames }
         })
-        done(null, { response: { transcodeFilePath, segmentFileNames } })
+        return { response: { transcodeFilePath, segmentFileNames } }
       }
     } else {
+      let response
       try {
-        const response = await this.monitorProgress(task, func, job.data)
-        done(null, { response })
+        response = await this.monitorProgress(task, func, job.data)
       } catch (e) {
-        this.logError(
-          `Could not process taskType=${task} uuid=${
-            logContext.requestID
-          }: ${e.toString()}`,
-          logContext
-        )
-        done(e.toString())
+        const errorMsg = `Could not process taskType=${task} uuid=${
+          logContext.requestID
+        }: ${e.toString()}`
+        this.logError(errorMsg, logContext)
+        throw new Error(errorMsg)
       }
+
+      return { response }
     }
   }
 
