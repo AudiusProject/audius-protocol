@@ -2,6 +2,8 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const HIBP_URL = 'https://api.pwnedpasswords.com/range/'
 
+const API_MIN_MATCH_COUNT = 20
+
 export const commonPasswordCheck = async (
   password: string
 ): Promise<boolean> => {
@@ -23,8 +25,18 @@ export const commonPasswordCheck = async (
   if (result) {
     // @ts-ignore
     const text = (await result?.text()) as string
-    const map = text.split(/\s+/g).map((s) => s.slice(0, s.indexOf(':')))
-    return map.includes(hash.slice(5))
+    const hashArr = text.split(/\s+/g).map((s) => s.slice(0, s.indexOf(':')))
+
+    // If there is no match, return false
+    if (!hashArr.includes(hash.slice(5))) {
+      return false
+    }
+
+    const valString = text.slice(text.indexOf(hash.slice(5))).split(/\s+/g)[0]
+    const count = Number(valString.split(':')[1])
+
+    // Return true if match count if above min threshold
+    return count >= API_MIN_MATCH_COUNT
   }
 
   // Fallback to the common password list if the api does not respond in time
