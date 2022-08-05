@@ -4,6 +4,7 @@ declare
   new_val int;
   milestone_name text;
   milestone integer;
+  owner_user_id int;
 begin
 
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
@@ -39,6 +40,9 @@ begin
     )
     where track_id = new.repost_item_id
     returning repost_count into new_val;
+  	if new.is_delete IS FALSE then
+		  select owner_id into owner_user_id from tracks where is_current and track_id = new.repost_item_id;
+	  end if;
   else
     milestone_name := 'PLAYLIST_REPOST_COUNT';
     update aggregate_playlist
@@ -53,6 +57,9 @@ begin
     )
     where playlist_id = new.repost_item_id
     returning repost_count into new_val;
+  	if new.is_delete IS FALSE then
+		  select playlist_owner_id into owner_user_id from playlists where is_current and playlist_id = new.repost_item_id;
+	  end if;
   end if;
 
   -- create a milestone if applicable
@@ -63,12 +70,43 @@ begin
     values
       (new.repost_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
     on conflict do nothing;
+    insert into notification
+      (user_ids, type, specifier, blocknumber, timestamp, data)
+      values
+      (
+        ARRAY [owner_user_id],
+        'milestone',
+        'milestone:' || milestone_name  || ':id:' || new.repost_item_id || ':threshold:' || milestone,
+        new.blocknumber,
+        new.created_at,
+        json_build_object('type', milestone_name, 'threshold', milestone)
+      )
+      on conflict do nothing;
   end if;
 
-  return null;
-end; 
-$$ language plpgsql;
+  begin
+    -- create a notification for the reposted content's owner
+    if new.is_delete is false then
+    insert into notification
+      (blocknumber, user_ids, timestamp, type, specifier, data)
+      values
+      (
+        new.blocknumber,
+        ARRAY [owner_user_id],
+        new.created_at,
+        'repost',
+        'repost:' || new.repost_item_id || ':type:'|| new.repost_type,
+        json_build_object('repost_item_id', new.repost_item_id, 'user_id', new.user_id, 'type', new.repost_type)
+      )
+      on conflict do nothing;
+    end if;
+	exception
+		when others then null;
+	end;
 
+  return null;
+end;
+$$ language plpgsql;
 
 
 do $$ begin
@@ -78,4 +116,3 @@ do $$ begin
 exception
   when others then null;
 end $$;
-

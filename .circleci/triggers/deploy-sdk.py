@@ -6,14 +6,12 @@ from pprint import pprint
 
 import click
 import requests
-from triggers import ensure_tag_on_master
+from triggers import ensure_commit_on_master
 
 
 @click.command()
 @click.help_option("-h", "--help")
-@click.option(
-    "-t", "--git-tag", help="Git tag or commit to deploy from.", required=True
-)
+@click.option("-t", "--git-commit", help="Git commit to deploy from.", required=True)
 @click.option(
     "-k",
     "--circle-api-key",
@@ -28,16 +26,16 @@ from triggers import ensure_tag_on_master
     envvar="CIRCLE_SLACK_MENTIONS_USER",
     required=True,
 )
-def cli(git_tag, circle_api_key, slack_mentions_user):
-    # only allow merged git_tags to be deployed
-    ensure_tag_on_master(git_tag)
+def cli(git_commit, circle_api_key, slack_mentions_user):
+    # only allow merged commits to be deployed
+    ensure_commit_on_master(git_commit)
 
     # trigger a circleci job
     project = "audius-protocol"
     data = {
         "branch": "master",
         "parameters": {
-            "sdk_release_tag": git_tag,
+            "sdk_release_commit": git_commit,
             "slack_mentions_user": slack_mentions_user,
         },
     }

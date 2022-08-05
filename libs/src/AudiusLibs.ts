@@ -13,37 +13,88 @@ import { EthContracts } from './services/ethContracts'
 import {
   SolanaWeb3Manager,
   SolanaUtils,
-  RewardsAttester
-} = require('./services/solana')
-const { AudiusContracts } = require('./services/dataContracts')
-const { IdentityService } = require('./services/identity')
-const { Comstock } = require('./services/comstock')
-const { Hedgehog } = require('./services/hedgehog')
-const { CreatorNode } = require('./services/creatorNode')
-const { DiscoveryProvider } = require('./services/discoveryProvider')
-const { Wormhole } = require('./services/wormhole')
-const { AudiusABIDecoder } = require('./services/ABIDecoder')
-const { SchemaValidator } = require('./services/schemaValidator')
-const { UserStateManager } = require('./userStateManager')
-const SanityChecks = require('./sanityChecks')
-const { Utils, Captcha } = require('./utils')
-const { ServiceProvider } = require('./api/ServiceProvider')
+  SolanaWeb3Config
+} from './services/solana'
+import { AudiusContracts } from './services/dataContracts'
+import { IdentityService } from './services/identity'
+import { Comstock } from './services/comstock'
+import { Hedgehog, HedgehogConfig } from './services/hedgehog'
+import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
+import { CreatorNode, CreatorNodeConfig } from './services/creatorNode'
+import {
+  DiscoveryProvider,
+  DiscoveryProviderConfig
+} from './services/discoveryProvider'
+import { Wormhole, WormholeConfig } from './services/wormhole'
+import { AudiusABIDecoder } from './services/ABIDecoder'
+import { Schemas, SchemaValidator } from './services/schemaValidator'
+import { UserStateManager } from './userStateManager'
+import { Utils, Captcha, Nullable, Logger, CaptchaConfig } from './utils'
+import { ServiceProvider } from './api/ServiceProvider'
 
-const { Account } = require('./api/Account')
-const { Users } = require('./api/Users')
-const { Track } = require('./api/Track')
-const { Playlists } = require('./api/Playlist')
-const { File } = require('./api/File')
-const { Rewards } = require('./api/Rewards')
-const { Reactions } = require('./api/Reactions')
-const Web3 = require('./web3')
+import { Account } from './api/Account'
+import { Users } from './api/Users'
+import { Track } from './api/Track'
+import { Playlists } from './api/Playlist'
+import { File } from './api/File'
+import { Rewards } from './api/Rewards'
+import { Reactions } from './api/Reactions'
+import Web3 from './LibsWeb3'
 
-const { Keypair } = require('@solana/web3.js')
-const { PublicKey } = require('@solana/web3.js')
-const { EntityManager } = require('./api/entityManager')
-const { getPlatformLocalStorage } = require('./utils/localStorage')
+import { Keypair, PublicKey } from '@solana/web3.js'
+import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
+import type { BaseConstructorArgs } from './api/base'
+import type { MonitoringCallbacks } from './services/types'
+import type { EntityManager } from './api/entityManager'
 
-class AudiusLibs {
+
+type LibsIdentityServiceConfig = {
+  url: string
+  useHedgehogLocalStorage: boolean
+}
+
+type LibsHedgehogConfig = Omit<
+  HedgehogConfig,
+  'identityService' | 'localStorage'
+>
+
+type LibsSolanaWeb3Config = SolanaWeb3Config & {
+  // fee payer secret keys, if client wants to switch between different fee payers during relay
+  feePayerSecretKeys?: Uint8Array[]
+}
+
+type LibsWormholeConfig = Merge<WormholeConfig, { rpcHosts: string | string[] }>
+
+type LibsDiscoveryProviderConfig = Omit<
+  DiscoveryProviderConfig,
+  'userStateManager' | 'ethContracts' | 'web3Manager'
+>
+
+type LibsComstockConfig = {
+  url: string
+}
+
+type AudiusLibsConfig = {
+  web3Config: Web3Config
+  ethWeb3Config: EthWeb3Config
+  solanaWeb3Config: SolanaWeb3Config
+  solanaAudiusDataConfig: AnchorAudiusDataConfig
+  identityServiceConfig: LibsIdentityServiceConfig
+  discoveryProviderConfig: LibsDiscoveryProviderConfig
+  creatorNodeConfig: CreatorNodeConfig
+  comstockConfig: LibsComstockConfig
+  wormholeConfig: WormholeConfig
+  captchaConfig: CaptchaConfig
+  hedgehogConfig: LibsHedgehogConfig
+  isServer: boolean
+  logger: Logger
+  isDebug: boolean
+  preferHigherPatchForPrimary: boolean
+  preferHigherPatchForSecondaries: boolean
+  localStorage: LocalStorage
+}
+
+export class AudiusLibs {
   /**
    * Configures an identity service wrapper
    */

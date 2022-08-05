@@ -11,6 +11,7 @@ import {
 import type { Nullable } from '../../utils'
 import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
+import type { MonitoringCallbacks } from '../types'
 
 const { wait } = Utils
 
@@ -44,11 +45,6 @@ export type PlaylistMetadata = {
 }
 
 type ProgressCB = (loaded: number, total: number) => void
-
-export type MonitoringCallbacks = {
-  request?: Function
-  healthCheck?: Function
-}
 
 type ClockValueRequestConfig = {
   user: CurrentUser

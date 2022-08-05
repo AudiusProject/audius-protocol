@@ -1,5 +1,5 @@
 const EthereumWallet = require('ethereumjs-wallet')
-const EthereumTx = require('ethereumjs-tx')
+const { Transaction } = require('ethereumjs-tx')
 const axios = require('axios')
 const config = require('../config')
 const { ethWeb3 } = require('../web3')
@@ -128,7 +128,7 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
   if (data) {
     txParams = { ...txParams, data }
   }
-  const tx = new EthereumTx(txParams)
+  const tx = new Transaction(txParams)
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   logger.info(`L1 txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
