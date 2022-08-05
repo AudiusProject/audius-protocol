@@ -84,14 +84,15 @@ export class PrometheusRegistry {
 
     // job duration in seconds
     const jobDuration = (job.finishedOn - job.processedOn!) * 1000
-    this.getMetric(
-      this.metricNames.JOBS_DURATION_MILLISECONDS_HISTOGRAM
-    ).observe(jobLabels, jobDuration)
+    this.getMetric(this.metricNames.JOBS_DURATION_SECONDS_HISTOGRAM).observe(
+      jobLabels,
+      jobDuration
+    )
 
     // job duration in seconds
     const waitingDuration = (job.processedOn! - job.timestamp) * 1000
     this.getMetric(
-      this.metricNames.JOBS_WAITING_DURATION_MILLISECONDS_HISTOGRAM
+      this.metricNames.JOBS_WAITING_DURATION_SECONDS_HISTOGRAM
     ).observe(jobLabels, waitingDuration)
 
     this.getMetric(this.metricNames.JOBS_ATTEMPTS_HISTOGRAM).observe(
