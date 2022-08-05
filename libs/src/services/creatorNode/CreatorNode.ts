@@ -9,6 +9,7 @@ import {
 } from '../schemaValidator/SchemaValidator'
 import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
+import type { MonitoringCallbacks } from '../types'
 
 const { wait } = Utils
 
@@ -17,11 +18,6 @@ const POLL_STATUS_INTERVAL = 3000 // 3s
 const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
 
 type ProgressCB = (loaded: number, total: number) => void
-
-export type MonitoringCallbacks = {
-  request?: Function
-  healthCheck?: Function
-}
 
 type ClockValueRequestConfig = {
   user: CurrentUser

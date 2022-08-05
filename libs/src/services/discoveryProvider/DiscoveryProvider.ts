@@ -900,7 +900,7 @@ export class DiscoveryProvider {
       // Fire monitoring callbacks for request success case
       if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
-          this.monitoringCallbacks.request({
+          this.monitoringCallbacks.request?.({
             endpoint: url.origin,
             pathname: url.pathname,
             queryString: url.search,
@@ -924,7 +924,7 @@ export class DiscoveryProvider {
       // Fire monitoring callbacks for request failure case
       if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
-          this.monitoringCallbacks.request({
+          this.monitoringCallbacks.request?.({
             endpoint: url.origin,
             pathname: url.pathname,
             queryString: url.search,

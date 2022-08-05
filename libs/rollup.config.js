@@ -157,7 +157,7 @@ export default [
    * Includes libs but does not include polyfills
    */
   {
-    input: 'src/index.ts',
+    input: 'src/legacy.ts',
     output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
     ...browserLegacyConfig
   },
