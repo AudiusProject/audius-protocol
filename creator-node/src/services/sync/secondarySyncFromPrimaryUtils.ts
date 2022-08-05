@@ -53,27 +53,25 @@ const recoverWalletFromSyncData = ({
  * @param {Object} param.logContext object of log context. used when this sync job is enqueued
  * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
  */
-const shouldForceResync = async (forceResyncConfig: ForceResyncConfig) => {
+const shouldForceResync = async (
+  { libs, logContext }: any,
+  forceResyncConfig: ForceResyncConfig
+) => {
   if (!forceResyncConfig) return false
 
-  let { apiSigning, wallet, forceResync, libs, logContext, logger } =
-    forceResyncConfig
+  const { signatureData, wallet, forceResync } = forceResyncConfig
 
-  if (logContext) {
-    logger = genericLogger.child(logContext)
-  } else if (!logger) {
-    logger = genericLogger
-  }
+  const logger = logContext ? genericLogger.child(logContext) : genericLogger
 
   logger.debug(
     `Checking shouldForceResync: wallet=${wallet} forceResync=${forceResync}`
   )
 
-  if (!forceResync || !apiSigning) {
+  if (!forceResync || !signatureData) {
     return false
   }
 
-  const { data, timestamp, signature } = apiSigning
+  const { data, timestamp, signature } = signatureData
   if (!data || !timestamp || !signature) {
     return false
   }

@@ -43,14 +43,16 @@ class SyncImmediateQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { wallet, creatorNodeEndpoint, forceResyncConfig } = job.data
+      const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
+        job.data
 
       try {
         await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
           wallet,
           creatorNodeEndpoint,
-          forceResyncConfig
+          forceResyncConfig,
+          logContext
         })
       } catch (e) {
         const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}: ${e.message}`
@@ -60,12 +62,17 @@ class SyncImmediateQueue {
     })
   }
 
-  async processSyncOfTypeImmediate(jobParams) {
-    const { wallet, creatorNodeEndpoint, forceResyncConfig } = jobParams
+  async processSyncOfTypeImmediate({
+    wallet,
+    creatorNodeEndpoint,
+    forceResyncConfig,
+    logContext
+  }) {
     const job = await this.queue.add({
       wallet,
       creatorNodeEndpoint,
-      forceResyncConfig
+      forceResyncConfig,
+      logContext
     })
     const result = await job.finished()
     return result

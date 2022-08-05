@@ -49,8 +49,13 @@ class SyncQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { wallet, creatorNodeEndpoint, forceResyncConfig, blockNumber } =
-        job.data
+      const {
+        wallet,
+        creatorNodeEndpoint,
+        forceResyncConfig,
+        blockNumber,
+        logContext
+      } = job.data
 
       let result = {}
       try {
@@ -59,10 +64,8 @@ class SyncQueue {
           wallet,
           creatorNodeEndpoint,
           blockNumber,
-          forceResyncConfig: {
-            ...forceResyncConfig,
-            libs: serviceRegistry.libs
-          }
+          forceResyncConfig,
+          logContext
         })
       } catch (e) {
         logger.error(
@@ -76,14 +79,19 @@ class SyncQueue {
     })
   }
 
-  async enqueueSync(params) {
-    const { wallet, creatorNodeEndpoint, blockNumber, forceResyncConfig } =
-      params
+  async enqueueSync({
+    wallet,
+    creatorNodeEndpoint,
+    blockNumber,
+    forceResyncConfig,
+    logContext
+  }) {
     const job = await this.queue.add({
       wallet,
       creatorNodeEndpoint,
       blockNumber,
-      forceResyncConfig
+      forceResyncConfig,
+      logContext
     })
     return job
   }

@@ -111,14 +111,14 @@ const syncRouteController = async (req, res) => {
         creatorNodeEndpoint: primaryEndpoint,
         forceResyncConfig: {
           forceResync: req.body.forceResync,
-          apiSigning: {
+          signatureData: {
             timestamp: req.body.timestamp,
             signature: req.body.signature,
             data
           },
-          wallet,
-          logContext: req.logContext
-        }
+          wallet
+        },
+        logContext: req.logContext
       })
     } catch (e) {
       return errorResponseServerError(e)
@@ -145,9 +145,9 @@ const syncRouteController = async (req, res) => {
             signature: req.body.signature,
             data
           },
-          wallet,
-          logContext: req.logContext
-        }
+          wallet
+        },
+        logContext: req.logContext
       })
       delete syncDebounceQueue[wallet]
     }, debounceTime)

@@ -30,7 +30,7 @@ export type ForceResyncAuthParams = {
 }
 
 export type ForceResyncConfig = {
-  apiSigning: ForceResyncAuthParams
+  signatureData: ForceResyncAuthParams
   wallet: string
   forceResync?: boolean
   libs: any

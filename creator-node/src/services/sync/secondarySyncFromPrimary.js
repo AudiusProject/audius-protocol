@@ -15,6 +15,7 @@ const handleSyncFromPrimary = async ({
   wallet,
   creatorNodeEndpoint,
   forceResyncConfig,
+  logContext,
   blockNumber = null
 }) => {
   const { nodeConfig, redis, libs } = serviceRegistry
@@ -48,7 +49,10 @@ const handleSyncFromPrimary = async ({
   /**
    * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
    */
-  const forceResync = await shouldForceResync(forceResyncConfig)
+  const forceResync = await shouldForceResync(
+    { libs, logContext },
+    forceResyncConfig
+  )
 
   try {
     let localMaxClockVal
@@ -651,6 +655,7 @@ async function secondarySyncFromPrimary({
   wallet,
   creatorNodeEndpoint,
   forceResyncConfig,
+  logContext,
   blockNumber = null
 }) {
   const { prometheusRegistry } = serviceRegistry
@@ -665,7 +670,8 @@ async function secondarySyncFromPrimary({
     wallet,
     creatorNodeEndpoint,
     blockNumber,
-    forceResyncConfig
+    forceResyncConfig,
+    logContext
   })
   metricEndTimerFn({ result })
 
