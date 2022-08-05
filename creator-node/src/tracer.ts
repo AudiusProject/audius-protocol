@@ -23,10 +23,6 @@ import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
 // Not functionally required but gives some insight what happens behind the scenes
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
 
-// const Exporter = (process.env.EXPORTER || '').toLowerCase().startsWith('z')
-//   ? ZipkinExporter
-//   : JaegerExporter
-
 export const setupTracing = (serviceName: string) => {
   const provider = new NodeTracerProvider({
     resource: new Resource({
@@ -50,10 +46,6 @@ export const setupTracing = (serviceName: string) => {
       })
     ]
   })
-
-  // const exporter = new ConsoleSpanExporter()
-
-  // provider.addSpanProcessor(new SimpleSpanProcessor(exporter))
 
   // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
   provider.register()

@@ -1,4 +1,4 @@
-import { setupTracing } from './tracer'
+const { setupTracing } = require('./tracer')
 setupTracing('content-node-server')
 
 const express = require('express')
