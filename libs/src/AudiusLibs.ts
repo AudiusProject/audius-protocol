@@ -1,10 +1,16 @@
-const packageJSON = require('../package.json')
+import type { provider } from 'web3-core'
+import type { Merge } from 'type-fest'
 
-const { EthWeb3Manager } = require('./services/ethWeb3Manager')
-const { SolanaAudiusData } = require('./services/solanaAudiusData/index')
-const { Web3Manager } = require('./services/web3Manager')
-const { EthContracts } = require('./services/ethContracts')
-const {
+import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
+
+import { version } from './version'
+import {
+  AnchorAudiusDataConfig,
+  SolanaAudiusData
+} from './services/solanaAudiusData'
+import { Web3Config, Web3Manager } from './services/web3Manager'
+import { EthContracts } from './services/ethContracts'
+import {
   SolanaWeb3Manager,
   SolanaUtils,
   RewardsAttester
@@ -40,39 +46,34 @@ const { getPlatformLocalStorage } = require('./utils/localStorage')
 class AudiusLibs {
   /**
    * Configures an identity service wrapper
-   * @param {string} url
-   * @param {boolean?} useHedgehogLocalStorage whether or not to read hedgehog entropy in local storage
    */
-  static configIdentityService(url, useHedgehogLocalStorage = true) {
+  static configIdentityService(
+    url: string,
+    // whether or not to read hedgehog entropy in local storage
+    useHedgehogLocalStorage = true
+  ) {
     return { url, useHedgehogLocalStorage }
   }
 
   /**
    * Configures an identity service wrapper
-   * @param {string} url
    */
-  static configComstock(url) {
+  static configComstock(url: string) {
     return { url }
   }
 
-  /**
-   * Configures a creator node wrapper
-   * @param {string} fallbackUrl creator node endpoint to fall back to on requests
-   * @param {boolean} lazyConnect whether to delay connection to the node until the first
-   * request that requires a connection is made.
-   * @param {Set<string>?} passList whether or not to include only specified nodes (default null)
-   * @param {Set<string>?} blockList whether or not to exclude any nodes (default null)
-   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   * @param {function} monitoringCallbacks.request
-   * @param {function} monitoringCallbacks.healthCheck
-   * @param {boolean} writeQuorumEnabled whether or not to enforce waiting for replication to 2/3 nodes when writing data
-   */
   static configCreatorNode(
-    fallbackUrl,
+    // creator node endpoint to fall back to on requests
+    fallbackUrl: string,
+    // whether to delay connection to the node until the first request that requires a connection is made.
     lazyConnect = false,
-    passList = null,
-    blockList = null,
-    monitoringCallbacks = {},
+    // whether or not to include only specified nodes (default null)
+    passList: Nullable<Set<string>> = null,
+    // whether or not to exclude any nodes (default null)
+    blockList: Nullable<Set<string>> = null,
+    // callbacks to be invoked with metrics from requests sent to a service
+    monitoringCallbacks: Nullable<MonitoringCallbacks> = {},
+    // whether or not to enforce waiting for replication to 2/3 nodes when writing data
     writeQuorumEnabled = false
   ) {
     return {
@@ -87,18 +88,17 @@ class AudiusLibs {
 
   /**
    * Configures an external web3 to use with Audius Libs (e.g. MetaMask)
-   * @param {string} registryAddress
-   * @param {Object} web3Provider equal to web.currentProvider
-   * @param {?number} networkId network chain id
-   * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
-   * @param {?number} walletIndex if using a wallet returned from web3, pick the wallet at this index
    */
   static async configExternalWeb3(
-    registryAddress,
-    web3Provider,
-    networkId,
-    walletOverride = null,
-    entityManagerAddress = null
+    registryAddress: string,
+    // equal to web.currentProvider
+    web3Provider: string,
+    // network chain id
+    networkId: string,
+    // wallet address to force use instead of the first wallet on the provided web3
+    walletOverride: Nullable<string> = null
+    // entity manager address
+    entityManagerAddress: Nullable<string> = null
   ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
@@ -111,17 +111,20 @@ class AudiusLibs {
       useExternalWeb3: true,
       externalWeb3Config: {
         web3: web3Instance,
-        ownerWallet: walletOverride || wallets[0]
+        ownerWallet: walletOverride ?? wallets[0]
       }
     }
   }
 
   /**
    * Configures an internal web3 to use (via Hedgehog)
-   * @param {string} registryAddress
-   * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
-  static configInternalWeb3(registryAddress, providers, privateKey, entityManagerAddress = null) {
+  static configInternalWeb3(
+    registryAddress: string,
+    providers: provider,
+    privateKey: string,
+    entityManagerAddress?: string
+  ) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -148,14 +151,8 @@ class AudiusLibs {
 
   /**
    * Configures an eth web3
-   * @param {string} tokenAddress
-   * @param {string} registryAddress
-   * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
-   * @param {string?} ownerWallet optional owner wallet to establish who we are sending transactions on behalf of
-   * @param {string?} claimDistributionContractAddress
-   * @param {string?} wormholeContractAddress
    */
-  static configEthWeb3(
+  static configEthWeb3 (
     tokenAddress,
     registryAddress,
     providers,
@@ -188,12 +185,6 @@ class AudiusLibs {
 
   /**
    * Configures wormhole
-   * @param {Object} config
-   * @param {string | Array<string>} config.rpcHosts
-   * @param {string} config.solBridgeAddress
-   * @param {string} config.solTokenBridgeAddress
-   * @param {string} config.ethBridgeAddress
-   * @param {string} config.ethTokenBridgeAddress
    */
   static configWormhole({
     rpcHosts,
@@ -201,7 +192,7 @@ class AudiusLibs {
     solTokenBridgeAddress,
     ethBridgeAddress,
     ethTokenBridgeAddress
-  }) {
+  }: LibsWormholeConfig): WormholeConfig {
     let rpcHostList
     if (typeof rpcHosts === 'string') {
       rpcHostList = rpcHosts.split(',')
@@ -221,23 +212,6 @@ class AudiusLibs {
 
   /**
    * Configures a solana web3
-   * @param {Object} config
-   * @param {string} config.solanaClusterEndpoint the RPC endpoint to make requests against
-   * @param {string} config.mintAddress wAudio mint address
-   * @param {string} solanaTokenAddress native solana token program
-   * @param {string} claimableTokenPDA the generated program derived address we use so our
-   *  bank program can take ownership of accounts
-   * @param {string} feePayerAddress address for the fee payer for transactions
-   * @param {string} claimableTokenProgramAddress address of the audius user bank program
-   * @param {string} rewardsManagerProgramId address for the Rewards Manager program
-   * @param {string} rewardsManagerProgramPDA Rewards Manager PDA
-   * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
-   * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
-   * @param {Uint8Array} feePayerSecretKeys fee payer secret keys, if client wants to switch between different fee payers during relay
-   * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
-   * @param {PublicKey|string} audiusDataAdminStorageKeypairPublicKey admin storage PK for audius-data program
-   * @param {PublicKey|string} audiusDataProgramId program ID for the audius-data Anchor program
-   * @param {Idl} audiusDataIdl IDL for the audius-data Anchor program.
    */
   static configSolanaWeb3({
     solanaClusterEndpoint,
@@ -255,7 +229,7 @@ class AudiusLibs {
     audiusDataAdminStorageKeypairPublicKey,
     audiusDataProgramId,
     audiusDataIdl
-  }) {
+  }: LibsSolanaWeb3Config): SolanaWeb3Config {
     if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
       audiusDataAdminStorageKeypairPublicKey = new PublicKey(
         audiusDataAdminStorageKeypairPublicKey
@@ -275,9 +249,9 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypairs: feePayerSecretKeys
-        ? feePayerSecretKeys.map((key) => Keypair.fromSecretKey(key))
-        : null,
+      feePayerKeypairs: feePayerSecretKeys?.map((key) =>
+        Keypair.fromSecretKey(key)
+      ),
       confirmationTimeout,
       audiusDataAdminStorageKeypairPublicKey,
       audiusDataProgramId,
@@ -287,16 +261,67 @@ class AudiusLibs {
 
   /**
    * Configures a solana audius-data
-   * @param {Object} config
-   * @param {string} config.programId Program ID of the audius data program
-   * @param {string} config.adminAccount Public Key of admin account
    */
-  static configSolanaAudiusData({ programId, adminAccount }) {
+  static configSolanaAudiusData({
+    programId,
+    adminAccount
+  }: AnchorAudiusDataConfig) {
     return {
       programId,
       adminAccount
     }
   }
+
+  version: string
+
+  ethWeb3Config: EthWeb3Config
+  web3Config: Web3Config
+  solanaWeb3Config: SolanaWeb3Config
+  solanaAudiusDataConfig: AnchorAudiusDataConfig
+  identityServiceConfig: LibsIdentityServiceConfig
+  creatorNodeConfig: CreatorNodeConfig
+  discoveryProviderConfig: LibsDiscoveryProviderConfig
+  comstockConfig: LibsComstockConfig
+  wormholeConfig: WormholeConfig
+  captchaConfig: CaptchaConfig
+  hedgehogConfig: LibsHedgehogConfig
+  isServer: boolean
+  isDebug: boolean
+  logger: Logger
+
+  AudiusABIDecoder: AudiusABIDecoder
+  Utils: Utils
+
+  // Services to initialize. Initialized in .init().
+  userStateManager: Nullable<UserStateManager>
+  identityService: Nullable<IdentityService>
+  hedgehog: Nullable<HedgehogBase>
+  discoveryProvider: Nullable<DiscoveryProvider>
+  ethWeb3Manager: Nullable<EthWeb3Manager>
+  ethContracts: Nullable<EthContracts>
+  web3Manager: Nullable<Web3Manager>
+  solanaWeb3Manager: Nullable<SolanaWeb3Manager>
+  solanaAudiusData: Nullable<SolanaAudiusData>
+  contracts: Nullable<AudiusContracts>
+  wormholeClient: Nullable<Wormhole>
+  creatorNode: Nullable<CreatorNode>
+  captcha: Nullable<Captcha>
+  schemas?: Schemas
+  comstock: Nullable<Comstock>
+
+  // API
+  ServiceProvider: Nullable<ServiceProvider>
+  Account: Nullable<Account>
+  User: Nullable<Users>
+  Track: Nullable<Track>
+  Playlist: Nullable<Playlists>
+  File: Nullable<File>
+  Rewards: Nullable<Rewards>
+  Reactions: Nullable<Reactions>
+
+  preferHigherPatchForPrimary: boolean
+  preferHigherPatchForSecondaries: boolean
+  localStorage: LocalStorage
 
   /**
    * Constructs an Audius Libs instance with configs.
@@ -326,10 +351,10 @@ class AudiusLibs {
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
     localStorage = getPlatformLocalStorage()
-  }) {
+  }: AudiusLibsConfig) {
     // set version
 
-    this.version = packageJSON.version
+    this.version = version
 
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
@@ -358,11 +383,15 @@ class AudiusLibs {
     this.ethContracts = null
     this.web3Manager = null
     this.solanaWeb3Manager = null
-    this.anchorAudiusData = null
+    this.solanaAudiusData = null
+    this.wormholeClient = null
     this.contracts = null
     this.creatorNode = null
+    this.captcha = null
+    this.comstock = null
 
     // API
+    this.ServiceProvider = null
     this.Account = null
     this.User = null
     this.Track = null
@@ -452,25 +481,24 @@ class AudiusLibs {
     /** Contracts - Eth and Data Contracts */
     const contractsToInit = []
     if (this.ethWeb3Manager) {
+      const {
+        tokenAddress = null,
+        registryAddress = null,
+        claimDistributionContractAddress = null,
+        wormholeContractAddress = null
+      } = this.ethWeb3Config ?? {}
+
       this.ethContracts = new EthContracts({
         ethWeb3Manager: this.ethWeb3Manager,
-        tokenContractAddress: this.ethWeb3Config
-          ? this.ethWeb3Config.tokenAddress
-          : null,
-        registryAddress: this.ethWeb3Config
-          ? this.ethWeb3Config.registryAddress
-          : null,
-        claimDistributionContractAddress:
-          (this.ethWeb3Config &&
-            this.ethWeb3Config.claimDistributionContractAddress) ||
-          null,
-        wormholeContractAddress:
-          (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) ||
-          null,
+        tokenContractAddress: tokenAddress!,
+        registryAddress: registryAddress!,
+        claimDistributionContractAddress: claimDistributionContractAddress!,
+        wormholeContractAddress: wormholeContractAddress!,
         isServer: this.isServer,
         logger: this.logger,
         isDebug: this.isDebug
       })
+
       contractsToInit.push(this.ethContracts.init())
     }
     if (this.web3Manager) {
@@ -485,9 +513,11 @@ class AudiusLibs {
     }
     await Promise.all(contractsToInit)
     if (
+      this.hedgehog &&
       this.wormholeConfig &&
       this.ethWeb3Manager &&
       this.ethContracts &&
+      this.identityService &&
       this.solanaWeb3Manager
     ) {
       this.wormholeClient = new Wormhole(
@@ -500,8 +530,7 @@ class AudiusLibs {
         this.wormholeConfig.solBridgeAddress,
         this.wormholeConfig.solTokenBridgeAddress,
         this.wormholeConfig.ethBridgeAddress,
-        this.wormholeConfig.ethTokenBridgeAddress,
-        this.isServer
+        this.wormholeConfig.ethTokenBridgeAddress
       )
     }
 
@@ -522,7 +551,7 @@ class AudiusLibs {
       const currentUser = this.userStateManager.getCurrentUser()
       const creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ||
-        this.creatorNodeConfig.fallbackUrl
+          this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 
       this.creatorNode = new CreatorNode(
@@ -556,14 +585,15 @@ class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.solanaWeb3Manager,
-      this.anchorAudiusData,
+      this.solanaAudiusData,
       this.wormholeClient,
       this.creatorNode,
       this.comstock,
       this.captcha,
       this.isServer,
       this.logger
-    ]
+    ] as BaseConstructorArgs
+
     this.ServiceProvider = new ServiceProvider(...services)
     this.User = new Users(
       this.ServiceProvider,
@@ -581,15 +611,7 @@ class AudiusLibs {
   }
 }
 
-// This is needed to ensure default and named exports are handled correctly by rollup
-// https://github.com/rollup/plugins/tree/master/packages/commonjs#defaultismoduleexports
-// exports.__esModule = true
+export { AudiusABIDecoder, Utils, SolanaUtils, CreatorNode }
 
-module.exports = AudiusLibs
-
-module.exports.AudiusABIDecoder = AudiusABIDecoder
-module.exports.Utils = Utils
-module.exports.SolanaUtils = SolanaUtils
-module.exports.SanityChecks = SanityChecks
-module.exports.RewardsAttester = RewardsAttester
-module.exports.CreatorNode = CreatorNode
+export { SanityChecks } from './sanityChecks'
+export { RewardsAttester } from './services/solana'

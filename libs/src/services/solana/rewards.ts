@@ -13,7 +13,7 @@ import BN from 'bn.js'
 import { SolanaUtils } from './SolanaUtils'
 import { RewardsManagerError } from './errors'
 import type { TransactionHandler } from './transactionHandler'
-import type { Logger } from '../../utils'
+import type { Logger, Nullable } from '../../utils'
 import type { IdentityService } from '../identity'
 
 // Various prefixes used for rewards
@@ -269,7 +269,7 @@ export type CreateSenderParams = {
   feePayer: PublicKey
   operatorEthAddress: string
   attestations: AttestationMeta[]
-  identityService: IdentityService
+  identityService: Nullable<IdentityService>
   transactionHandler: TransactionHandler
 }
 

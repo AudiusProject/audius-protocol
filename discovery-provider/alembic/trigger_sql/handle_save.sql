@@ -4,42 +4,57 @@ declare
   new_val int;
   milestone_name text;
   milestone integer;
-  delta int;
 begin
-  -- ensure agg rows present
-  -- this can be removed if we do this elsewhere
-  -- but is here now for safety
+
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
   if new.save_type = 'track' then
     insert into aggregate_track (track_id) values (new.save_item_id) on conflict do nothing;
   else
-    insert into aggregate_playlist (playlist_id) values (new.save_item_id) on conflict do nothing;
-  end if;
-
-  -- increment or decrement?
-  if new.is_delete then
-    delta := -1;
-  else
-    delta := 1;
+    insert into aggregate_playlist (playlist_id, is_album) values (new.save_item_id, new.save_type = 'album') on conflict do nothing;
   end if;
 
   -- update agg track or playlist
   if new.save_type = 'track' then
     milestone_name := 'TRACK_SAVE_COUNT';
+
     update aggregate_track 
-    set save_count = save_count + delta
+    set save_count = (
+      SELECT count(*)
+      FROM saves r
+      WHERE
+          r.is_current IS TRUE
+          AND r.is_delete IS FALSE
+          AND r.save_type = new.save_type
+          AND r.save_item_id = new.save_item_id
+    )
     where track_id = new.save_item_id
     returning save_count into new_val;
 
     -- update agg user
     update aggregate_user 
-    set track_save_count = track_save_count + delta
+    set track_save_count = (
+      select count(*)
+      from saves r
+      where r.is_current IS TRUE
+        AND r.is_delete IS FALSE
+        AND r.user_id = new.user_id
+        AND r.save_type = new.save_type
+    )
     where user_id = new.user_id;
 
   else
     milestone_name := 'PLAYLIST_SAVE_COUNT';
+
     update aggregate_playlist
-    set save_count = save_count + delta
+    set save_count = (
+      SELECT count(*)
+      FROM saves r
+      WHERE
+          r.is_current IS TRUE
+          AND r.is_delete IS FALSE
+          AND r.save_type = new.save_type
+          AND r.save_item_id = new.save_item_id
+    )
     where playlist_id = new.save_item_id
     returning save_count into new_val;
   end if;
@@ -59,7 +74,10 @@ end;
 $$ language plpgsql;
 
 
-drop trigger if exists on_save on saves;
-create trigger on_save
+do $$ begin
+  create trigger on_save
   after insert on saves
   for each row execute procedure handle_save();
+exception
+  when others then null;
+end $$;

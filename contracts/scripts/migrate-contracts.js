@@ -128,7 +128,7 @@ const outputFlaskConfigFile = async (outputPath) => {
 
 module.exports = async callback => {
   try {
-    const libsDirRoot = path.join(getDirectoryRoot(AudiusLibs), 'data-contracts')
+    const libsDirRoot = path.join(getDirectoryRoot(AudiusLibs), 'src/data-contracts')
     fs.removeSync(libsDirRoot)
 
     await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))

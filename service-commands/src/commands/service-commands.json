@@ -22,9 +22,7 @@
     "up": [
       "export DOCKER_CLIENT_TIMEOUT=360; export COMPOSE_HTTP_TIMEOUT=360; docker network create -d bridge audius_dev || true"
     ],
-    "down": [
-      "docker network rm audius_dev || true"
-    ]
+    "down": ["docker network rm audius_dev || true"]
   },
   "contracts": {
     "up": [
@@ -37,9 +35,7 @@
       "echo 'Writing configs'",
       "cd contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
-    "down": [
-      "cd contracts/; npm run ganache-q"
-    ]
+    "down": ["cd contracts/; npm run ganache-q"]
   },
   "contracts-predeployed": {
     "up": [
@@ -48,10 +44,10 @@
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/config.json",
-      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/libs/data-contracts/config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/libs/src/data-contracts/config.json",
       "docker cp audius_ganache_cli:/app/contract_config.ini $PROTOCOL_DIR/discovery-provider/contract_config.ini",
       "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/discovery-provider/build/contracts",
-      "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/libs/data-contracts/ABIs",
+      "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/libs/src/data-contracts/ABIs",
       "docker cp audius_ganache_cli:/app/build/contracts/. $PROTOCOL_DIR/contracts/build",
       "docker cp audius_ganache_cli:/app/migration-output.json $PROTOCOL_DIR/contracts/migrations/migration-output.json"
     ],
@@ -59,9 +55,7 @@
     "host": "localhost",
     "port": 8545,
     "health_check_endpoint": "",
-    "down": [
-      "cd contracts/; npm run ganache-q"
-    ]
+    "down": ["cd contracts/; npm run ganache-q"]
   },
   "eth-contracts": {
     "path": "eth-contracts",
@@ -75,9 +69,7 @@
       "echo 'Writing configs'",
       "cd eth-contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
-    "down": [
-      "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
-    ]
+    "down": ["cd eth-contracts/; npm run ganache-q; sudo rm -rf build"]
   },
   "eth-contracts-predeployed": {
     "up": [
@@ -85,20 +77,18 @@
       "docker cp audius_ganache_cli_eth_contracts:/app/migration-output.json $PROTOCOL_DIR/eth-contracts/migrations/migration-output.json",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/identity-service/eth-contract-config.json",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/creator-node/eth-contract-config.json",
-      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/libs/eth-contracts/config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/libs/src/eth-contracts/config.json",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json ~/.audius/eth-config.json",
       "docker cp audius_ganache_cli_eth_contracts:/app/aao-config.json ~/.audius/aao-config.json",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth_contract_config.ini $PROTOCOL_DIR/discovery-provider/eth_contract_config.ini",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/discovery-provider/build/eth-contracts",
-      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/libs/eth-contracts/ABIs"
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/libs/src/eth-contracts/ABIs"
     ],
     "protocol": "http",
     "host": "localhost",
     "port": 8546,
     "health_check_endpoint": "",
-    "down": [
-      "cd contracts/; npm run ganache-q"
-    ]
+    "down": ["cd contracts/; npm run ganache-q"]
   },
   "solana-validator-predeployed": {
     "protocol": "http",
@@ -145,36 +135,20 @@
     ]
   },
   "ipfs": {
-    "up": [
-      "libs/scripts/ipfs.sh up local-ipfs-node"
-    ],
-    "down": [
-      "libs/scripts/ipfs.sh down local-ipfs-node"
-    ]
+    "up": ["libs/scripts/ipfs.sh up local-ipfs-node"],
+    "down": ["libs/scripts/ipfs.sh down local-ipfs-node"]
   },
   "ipfs-2": {
-    "up": [
-      "libs/scripts/ipfs.sh up local-ipfs-node-2 6011 6012"
-    ],
-    "down": [
-      "libs/scripts/ipfs.sh down local-ipfs-node-2"
-    ]
+    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-2 6011 6012"],
+    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-2"]
   },
   "ipfs-3": {
-    "up": [
-      "libs/scripts/ipfs.sh up local-ipfs-node-3 6021 6022"
-    ],
-    "down": [
-      "libs/scripts/ipfs.sh down local-ipfs-node-3"
-    ]
+    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-3 6021 6022"],
+    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-3"]
   },
   "ipfs-4": {
-    "up": [
-      "libs/scripts/ipfs.sh up local-ipfs-node-4 6031 6032"
-    ],
-    "down": [
-      "libs/scripts/ipfs.sh down local-ipfs-node-4"
-    ]
+    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-4 6031 6032"],
+    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-4"]
   },
   "init-contracts-info": {
     "up": [
@@ -182,18 +156,14 @@
     ]
   },
   "init-token-versions": {
-    "up": [
-      "cd libs/; npm run init-local init-all"
-    ]
+    "up": ["cd libs/; npm run init-local init-all"]
   },
   "discovery-provider": {
     "protocol": "http",
     "host": "dn1_web-server_1",
     "port": 5000,
     "health_check_endpoint": "health_check",
-    "up": [
-      "UP=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
-    ],
+    "up": ["UP=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"],
     "up-web-server": [
       "UP_WEB_SERVER=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
     ],
@@ -220,27 +190,17 @@
     "host": "localhost",
     "port": 4000,
     "health_check_endpoint": "health_check",
-    "up": [
-      "${PROTOCOL_DIR}/creator-node/scripts/up.sh #"
-    ],
+    "up": ["${PROTOCOL_DIR}/creator-node/scripts/up.sh #"],
     "down": [
       "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#; docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
-    "restart": [
-      "RESTART=true ${PROTOCOL_DIR}/creator-node/scripts/up.sh #"
-    ],
-    "register": [
-      "cd libs/; npm run init-local register-cnode #"
-    ],
-    "deregister": [
-      "cd libs/; npm run init-local deregister-cnode #"
-    ],
+    "restart": ["RESTART=true ${PROTOCOL_DIR}/creator-node/scripts/up.sh #"],
+    "register": ["cd libs/; npm run init-local register-cnode #"],
+    "deregister": ["cd libs/; npm run init-local deregister-cnode #"],
     "update-delegate-wallet": [
       "cd libs/; npm run init-local update-cnode-config #"
     ],
-    "unset-shell-env": [
-      "cd creator-node; . compose/env/unsetShellEnv.sh"
-    ]
+    "unset-shell-env": ["cd creator-node; . compose/env/unsetShellEnv.sh"]
   },
   "identity-service": {
     "protocol": "http",
@@ -257,19 +217,13 @@
     ]
   },
   "distribute": {
-    "up": [
-      "node libs/initScripts/local.js distribute"
-    ]
+    "up": ["node libs/initScripts/local.js distribute"]
   },
   "account": {
-    "up": [
-      "node libs/initScripts/local.js print-accounts"
-    ]
+    "up": ["node libs/initScripts/local.js print-accounts"]
   },
   "init-repos": {
-    "up": [
-      ". $PROTOCOL_DIR/service-commands/scripts/init-repos.sh"
-    ]
+    "up": [". $PROTOCOL_DIR/service-commands/scripts/init-repos.sh"]
   },
   "user-replica-set-manager": {
     "up": [
@@ -286,9 +240,7 @@
       "sleep 5",
       "echo 'AAO Started'"
     ],
-    "register": [
-      "cd service-commands; ./scripts/registerAAO.sh"
-    ],
+    "register": ["cd service-commands; ./scripts/registerAAO.sh"],
     "down": [
       "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
       "echo 'Stopping AAO...'",
@@ -316,20 +268,14 @@
     ]
   },
   "libs": {
-    "up": [
-      "echo 'Process spawned in background using Node.'"
-    ],
+    "up": ["echo 'Process spawned in background using Node.'"],
     "down": [
       "ps x -o '%r %a' | grep '.*/audius-protocol/service-commands/scripts/run-libs.sh$' | awk '{print -$1}' | xargs -r kill -- -9"
     ]
   },
   "monitoring": {
-    "up": [
-      "cd monitoring; scripts/up.sh"
-    ],
-    "down": [
-      "cd monitoring; scripts/down.sh"
-    ]
+    "up": ["cd monitoring; scripts/up.sh"],
+    "down": ["cd monitoring; scripts/down.sh"]
   },
   "logging": {
     "up": ["./logging/bin/start.sh"],

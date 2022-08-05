@@ -21,13 +21,26 @@ from triggers import ensure_tag_on_master
     envvar="CIRCLE_API_KEY",
     required=True,
 )
-def cli(git_tag, circle_api_key):
+@click.option(
+    "-u",
+    "--slack-mentions-user",
+    help="Used when $CIRCLE_SLACK_MENTIONS_USER is not set, for CircleCI @mentions",
+    envvar="CIRCLE_SLACK_MENTIONS_USER",
+    required=True,
+)
+def cli(git_tag, circle_api_key, slack_mentions_user):
     # only allow merged git_tags to be deployed
     ensure_tag_on_master(git_tag)
 
     # trigger a circleci job
     project = "audius-protocol"
-    data = {"branch": "master", "parameters": {"sdk_release_tag": git_tag}}
+    data = {
+        "branch": "master",
+        "parameters": {
+            "sdk_release_tag": git_tag,
+            "slack_mentions_user": slack_mentions_user,
+        },
+    }
     r = requests.post(
         f"https://circleci.com/api/v2/project/github/AudiusProject/{project}/pipeline",
         allow_redirects=True,

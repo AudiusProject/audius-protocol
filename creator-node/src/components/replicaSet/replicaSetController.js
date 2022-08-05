@@ -12,8 +12,10 @@ const {
   respondToURSMRequestForSignature
 } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
-const { enqueueSync } = require('./syncQueueComponentService')
-const secondarySyncFromPrimary = require('../../services/sync/secondarySyncFromPrimary')
+const {
+  enqueueSync,
+  processImmediateSync
+} = require('./syncQueueComponentService')
 
 const router = express.Router()
 
@@ -60,17 +62,12 @@ const respondToURSMRequestForProposalController = async (req) => {
  */
 const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
-  req.logger.debug(`/sync serviceRegistry empty: ${_.isEmpty(serviceRegistry)}`)
-  req.logger.debug(
-    `/sync serviceRegistry?.nodeConfig empty: ${_.isEmpty(
-      serviceRegistry?.nodeConfig
-    )}`
-  )
-  req.logger.debug(
-    `/sync serviceRegistry?.syncQueue empty: ${_.isEmpty(
-      serviceRegistry?.syncQueue
-    )}`
-  )
+  if (
+    _.isEmpty(serviceRegistry?.syncQueue) ||
+    _.isEmpty(serviceRegistry?.syncImmediateQueue)
+  ) {
+    return errorResponseServerError('Sync Queue is not up and running yet')
+  }
   const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
@@ -103,13 +100,12 @@ const syncRouteController = async (req, res) => {
    */
   if (immediate) {
     try {
-      await secondarySyncFromPrimary(
+      await processImmediateSync({
         serviceRegistry,
         walletPublicKeys,
         creatorNodeEndpoint,
-        blockNumber,
         forceResync
-      )
+      })
     } catch (e) {
       return errorResponseServerError(e)
     }
@@ -128,7 +124,6 @@ const syncRouteController = async (req, res) => {
           serviceRegistry,
           walletPublicKeys: [wallet],
           creatorNodeEndpoint,
-          blockNumber,
           forceResync
         })
         delete syncDebounceQueue[wallet]

@@ -31,27 +31,30 @@ class StateReconciliationManager {
       name: QUEUE_NAMES.MANUAL_SYNC,
       removeOnComplete: QUEUE_HISTORY.MANUAL_SYNC,
       removeOnFail: QUEUE_HISTORY.MANUAL_SYNC,
-      lockDuration: MAX_QUEUE_RUNTIMES.MANUAL_SYNC
+      lockDuration: MAX_QUEUE_RUNTIMES.MANUAL_SYNC,
+      prometheusRegistry
     })
 
     const recurringSyncQueue = makeQueue({
       name: QUEUE_NAMES.RECURRING_SYNC,
       removeOnComplete: QUEUE_HISTORY.RECURRING_SYNC,
       removeOnFail: QUEUE_HISTORY.RECURRING_SYNC,
-      lockDuration: MAX_QUEUE_RUNTIMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
+      lockDuration: MAX_QUEUE_RUNTIMES.RECURRING_SYNC,
+      prometheusRegistry
     })
 
     const updateReplicaSetQueue = makeQueue({
       name: QUEUE_NAMES.UPDATE_REPLICA_SET,
       removeOnComplete: QUEUE_HISTORY.UPDATE_REPLICA_SET,
       removeOnFail: QUEUE_HISTORY.UPDATE_REPLICA_SET,
-      lockDuration: MAX_QUEUE_RUNTIMES.UPDATE_REPLICA_SET
+      lockDuration: MAX_QUEUE_RUNTIMES.UPDATE_REPLICA_SET,
+      prometheusRegistry
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await manualSyncQueue.clean({ force: true })
-    await recurringSyncQueue.clean({ force: true })
-    await updateReplicaSetQueue.clean({ force: true })
+    await manualSyncQueue.obliterate({ force: true })
+    await recurringSyncQueue.obliterate({ force: true })
+    await updateReplicaSetQueue.obliterate({ force: true })
 
     this.registerQueueEventHandlersAndJobProcessors({
       manualSyncQueue,

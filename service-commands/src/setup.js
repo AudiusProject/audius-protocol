@@ -775,7 +775,7 @@ const allUp = async ({
 
   // Add AAO commands
   if (withAAO) {
-    nodeUpCommands.push([Service.AAO, SetupCommand.UP])
+    nodeUpCommands.push([[Service.AAO, SetupCommand.UP]])
     if (buildDataEthContracts) {
       nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
     }

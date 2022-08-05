@@ -1,8 +1,7 @@
-import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
+import type { Hedgehog } from '@audius/hedgehog'
 import type { EthContracts } from '../ethContracts'
 import type { ContractReceipt } from 'ethers'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
-import type { Hedgehog } from '../hedgehog'
 import type { IdentityService, RelayTransactionData } from '../identity'
 import type { SolanaWeb3Manager } from '../solana'
 
@@ -20,8 +19,16 @@ import type {
   Transaction
 } from '@solana/web3.js'
 import type { GetSignedVAAResponse } from '@certusone/wormhole-sdk/lib/cjs/proto/publicrpc/v1/publicrpc'
-/** Singleton state-manager for Audius Eth Contracts */
 
+export type WormholeConfig = {
+  rpcHosts: string[]
+  solBridgeAddress: string
+  solTokenBridgeAddress: string
+  ethBridgeAddress: string
+  ethTokenBridgeAddress: string
+}
+
+/** Singleton state-manager for Audius Eth Contracts */
 export class Wormhole {
   hedgehog: Hedgehog
   ethWeb3Manager: EthWeb3Manager
@@ -264,9 +271,7 @@ export class Wormhole {
       // NOTE: The into to fromSeed is a 32 bytes Uint8Array
       const rootSolanaAccount =
         this.solanaWeb3Manager.solanaWeb3.Keypair.fromSeed(
-          (
-            this.hedgehog as unknown as HedgehogBase
-          ).wallet?.getPrivateKey() as Uint8Array
+          this.hedgehog.wallet?.getPrivateKey() as Uint8Array
         )
 
       const solanaAddress = rootSolanaAccount.publicKey.toString()
@@ -423,9 +428,7 @@ export class Wormhole {
       nonce,
       deadline
     )
-    const privateKey = (this.hedgehog as unknown as HedgehogBase)
-      .getWallet()
-      ?.getPrivateKey()
+    const privateKey = this.hedgehog.getWallet()?.getPrivateKey()
     const signedDigest = sign(digest, privateKey!)
     return {
       chainId,

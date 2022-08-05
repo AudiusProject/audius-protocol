@@ -38,11 +38,13 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
 
   function getPrometheusRegistry() {
     const startTimerStub = sandbox.stub().returns(() => {})
+    const startQueueMetricsStub = sandbox.stub().returns(() => {})
     const getMetricStub = sandbox.stub().returns({
       startTimer: startTimerStub
     })
     const prometheusRegistry = {
       getMetric: getMetricStub,
+      startQueueMetrics: startQueueMetricsStub,
       metricNames: {}
     }
     return prometheusRegistry

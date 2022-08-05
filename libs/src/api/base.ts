@@ -4,10 +4,9 @@ import type { AudiusContracts } from '../services/dataContracts'
 import type { DiscoveryProvider } from '../services/discoveryProvider'
 import type { EthContracts } from '../services/ethContracts'
 import type { EthWeb3Manager } from '../services/ethWeb3Manager'
-import type { Hedgehog } from '../services/hedgehog'
-import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
+import type { Hedgehog } from '@audius/hedgehog'
 import type { IdentityService } from '../services/identity'
-import type { SolanaAudiusData } from '../services/solanaAudiusData'
+import type { SolanaAudiusData } from '../services/solanaAudiusData/SolanaAudiusData'
 import type { SolanaWeb3Manager } from '../services/solana'
 import type { Web3Manager } from '../services/web3Manager'
 import type { UserStateManager } from '../userStateManager'
@@ -45,7 +44,7 @@ export type BaseConstructorArgs = [
 export class Base {
   userStateManager: UserStateManager
   identityService: IdentityService
-  hedgehog: HedgehogBase
+  hedgehog: Hedgehog
   discoveryProvider: DiscoveryProvider
   web3Manager: Web3Manager
   contracts: AudiusContracts
@@ -82,7 +81,7 @@ export class Base {
   ) {
     this.userStateManager = userStateManager
     this.identityService = identityService
-    this.hedgehog = hedgehog as unknown as HedgehogBase
+    this.hedgehog = hedgehog
     this.discoveryProvider = discoveryProvider
     this.web3Manager = web3Manager
     this.contracts = contracts
