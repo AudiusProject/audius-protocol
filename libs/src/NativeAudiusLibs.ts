@@ -1,23 +1,7 @@
 import type { provider } from 'web3-core'
-import type { Merge } from 'type-fest'
-
-import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
-
+import Web3 from './LibsWeb3'
 import { version } from './version'
-import {
-  AnchorAudiusDataConfig,
-  SolanaAudiusData
-} from './services/solanaAudiusData'
-import { Web3Config, Web3Manager } from './services/web3Manager'
-import { EthContracts } from './services/ethContracts'
-import {
-  SolanaWeb3Manager,
-  SolanaUtils,
-  SolanaWeb3Config
-} from './services/solana'
-import { AudiusContracts } from './services/dataContracts'
-import { IdentityService } from './services/identity'
-import { Comstock } from './services/comstock'
+import type { SolanaWeb3Config } from './services/solana'
 import { Hedgehog, HedgehogConfig } from './services/hedgehog'
 import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
 import { CreatorNode, CreatorNodeConfig } from './services/creatorNode'
@@ -25,24 +9,26 @@ import {
   DiscoveryProvider,
   DiscoveryProviderConfig
 } from './services/discoveryProvider'
-import { Wormhole, WormholeConfig } from './services/wormhole'
-import { AudiusABIDecoder } from './services/ABIDecoder'
 import { Schemas, SchemaValidator } from './services/schemaValidator'
 import { UserStateManager } from './userStateManager'
-import { Utils, Captcha, Nullable, Logger, CaptchaConfig } from './utils'
-import { ServiceProvider } from './api/ServiceProvider'
+import type { Logger, CaptchaConfig, Nullable } from './utils'
+import { Captcha, Utils } from './utils'
 
+import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
+import { Web3Config, Web3Manager } from './services/web3Manager'
+import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
+import { Comstock } from './services/comstock'
+import { IdentityService } from './services/identity'
+import { EthContracts } from './services/ethContracts'
+import { AudiusContracts } from './services/dataContracts'
 import { Account } from './api/Account'
 import { Users } from './api/Users'
 import { Track } from './api/Track'
 import { Playlists } from './api/Playlist'
-import { File } from './api/File'
 import { Rewards } from './api/Rewards'
 import { Reactions } from './api/Reactions'
-import Web3 from './LibsWeb3'
-
-import { Keypair, PublicKey } from '@solana/web3.js'
-import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
+import { File } from './api/File'
+import { ServiceProvider } from './api/ServiceProvider'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
 
@@ -55,13 +41,6 @@ type LibsHedgehogConfig = Omit<
   HedgehogConfig,
   'identityService' | 'localStorage'
 >
-
-type LibsSolanaWeb3Config = SolanaWeb3Config & {
-  // fee payer secret keys, if client wants to switch between different fee payers during relay
-  feePayerSecretKeys?: Uint8Array[]
-}
-
-type LibsWormholeConfig = Merge<WormholeConfig, { rpcHosts: string | string[] }>
 
 type LibsDiscoveryProviderConfig = Omit<
   DiscoveryProviderConfig,
@@ -76,12 +55,10 @@ type AudiusLibsConfig = {
   web3Config: Web3Config
   ethWeb3Config: EthWeb3Config
   solanaWeb3Config: SolanaWeb3Config
-  solanaAudiusDataConfig: AnchorAudiusDataConfig
   identityServiceConfig: LibsIdentityServiceConfig
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   creatorNodeConfig: CreatorNodeConfig
   comstockConfig: LibsComstockConfig
-  wormholeConfig: WormholeConfig
   captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
@@ -144,6 +121,7 @@ export class AudiusLibs {
     web3Provider: string,
     // network chain id
     networkId: string,
+
     // wallet address to force use instead of the first wallet on the provided web3
     walletOverride: Nullable<string> = null
   ) {
@@ -231,91 +209,26 @@ export class AudiusLibs {
 
   /**
    * Configures wormhole
+   * This is a stubbed version for native
    */
-  static configWormhole({
-    rpcHosts,
-    solBridgeAddress,
-    solTokenBridgeAddress,
-    ethBridgeAddress,
-    ethTokenBridgeAddress
-  }: LibsWormholeConfig): WormholeConfig {
-    let rpcHostList
-    if (typeof rpcHosts === 'string') {
-      rpcHostList = rpcHosts.split(',')
-    } else if (Array.isArray(rpcHosts)) {
-      rpcHostList = rpcHosts
-    } else {
-      throw new Error('rpcHosts must be of type string or Array')
-    }
-    return {
-      rpcHosts: rpcHostList,
-      solBridgeAddress,
-      solTokenBridgeAddress,
-      ethBridgeAddress,
-      ethTokenBridgeAddress
-    }
+  static configWormhole() {
+    return {}
   }
 
   /**
    * Configures a solana web3
+   * This is a stubbed version for native
    */
-  static configSolanaWeb3({
-    solanaClusterEndpoint,
-    mintAddress,
-    solanaTokenAddress,
-    claimableTokenPDA,
-    feePayerAddress,
-    claimableTokenProgramAddress,
-    rewardsManagerProgramId,
-    rewardsManagerProgramPDA,
-    rewardsManagerTokenPDA,
-    useRelay,
-    feePayerSecretKeys,
-    confirmationTimeout,
-    audiusDataAdminStorageKeypairPublicKey,
-    audiusDataProgramId,
-    audiusDataIdl
-  }: LibsSolanaWeb3Config): SolanaWeb3Config {
-    if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
-      audiusDataAdminStorageKeypairPublicKey = new PublicKey(
-        audiusDataAdminStorageKeypairPublicKey
-      )
-    }
-    if (audiusDataProgramId instanceof String) {
-      audiusDataProgramId = new PublicKey(audiusDataProgramId)
-    }
-    return {
-      solanaClusterEndpoint,
-      mintAddress,
-      solanaTokenAddress,
-      claimableTokenPDA,
-      feePayerAddress,
-      claimableTokenProgramAddress,
-      rewardsManagerProgramId,
-      rewardsManagerProgramPDA,
-      rewardsManagerTokenPDA,
-      useRelay,
-      feePayerKeypairs: feePayerSecretKeys?.map((key) =>
-        Keypair.fromSecretKey(key)
-      ),
-      confirmationTimeout,
-      audiusDataAdminStorageKeypairPublicKey,
-      audiusDataProgramId,
-      audiusDataIdl
-    }
+  static configSolanaWeb3() {
+    return {}
   }
 
   /**
    * Configures a solana audius-data
+   * This is a stubbed version for native
    */
-  static configSolanaAudiusData({
-    programId,
-    adminAccount
-  }: AnchorAudiusDataConfig) {
-    return {
-      programId,
-      adminAccount
-    }
+  static configSolanaAudiusData() {
+    return {}
   }
 
   version: string
@@ -323,20 +236,15 @@ export class AudiusLibs {
   ethWeb3Config: EthWeb3Config
   web3Config: Web3Config
   solanaWeb3Config: SolanaWeb3Config
-  solanaAudiusDataConfig: AnchorAudiusDataConfig
   identityServiceConfig: LibsIdentityServiceConfig
   creatorNodeConfig: CreatorNodeConfig
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   comstockConfig: LibsComstockConfig
-  wormholeConfig: WormholeConfig
   captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
   isDebug: boolean
   logger: Logger
-
-  AudiusABIDecoder: AudiusABIDecoder
-  Utils: Utils
 
   // Services to initialize. Initialized in .init().
   userStateManager: Nullable<UserStateManager>
@@ -346,16 +254,14 @@ export class AudiusLibs {
   ethWeb3Manager: Nullable<EthWeb3Manager>
   ethContracts: Nullable<EthContracts>
   web3Manager: Nullable<Web3Manager>
-  solanaWeb3Manager: Nullable<SolanaWeb3Manager>
-  solanaAudiusData: Nullable<SolanaAudiusData>
+  // solanaWeb3Manager: Nullable<SolanaWeb3Manager>
   contracts: Nullable<AudiusContracts>
-  wormholeClient: Nullable<Wormhole>
   creatorNode: Nullable<CreatorNode>
   captcha: Nullable<Captcha>
   schemas?: Schemas
   comstock: Nullable<Comstock>
 
-  // API
+  // // API
   ServiceProvider: Nullable<ServiceProvider>
   Account: Nullable<Account>
   User: Nullable<Users>
@@ -383,12 +289,10 @@ export class AudiusLibs {
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
-    solanaAudiusDataConfig,
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
     comstockConfig,
-    wormholeConfig,
     captchaConfig,
     hedgehogConfig,
     isServer,
@@ -405,20 +309,15 @@ export class AudiusLibs {
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
     this.solanaWeb3Config = solanaWeb3Config
-    this.solanaAudiusDataConfig = solanaAudiusDataConfig
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.comstockConfig = comstockConfig
-    this.wormholeConfig = wormholeConfig
     this.captchaConfig = captchaConfig
     this.hedgehogConfig = hedgehogConfig
     this.isServer = isServer
     this.isDebug = isDebug
     this.logger = logger
-
-    this.AudiusABIDecoder = AudiusABIDecoder
-    this.Utils = Utils
 
     // Services to initialize. Initialized in .init().
     this.userStateManager = null
@@ -428,15 +327,13 @@ export class AudiusLibs {
     this.ethWeb3Manager = null
     this.ethContracts = null
     this.web3Manager = null
-    this.solanaWeb3Manager = null
-    this.solanaAudiusData = null
-    this.wormholeClient = null
+    // this.solanaWeb3Manager = null
     this.contracts = null
     this.creatorNode = null
     this.captcha = null
     this.comstock = null
 
-    // API
+    // // API
     this.ServiceProvider = null
     this.Account = null
     this.User = null
@@ -507,39 +404,23 @@ export class AudiusLibs {
         this.identityService.setWeb3Manager(this.web3Manager)
       }
     }
-    if (this.solanaWeb3Config) {
-      this.solanaWeb3Manager = new SolanaWeb3Manager(
-        this.solanaWeb3Config,
-        this.identityService,
-        this.web3Manager
-      )
-      await this.solanaWeb3Manager.init()
-    }
-    if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
-      this.solanaAudiusData = new SolanaAudiusData(
-        this.solanaAudiusDataConfig,
-        this.solanaWeb3Manager,
-        this.web3Manager
-      )
-      await this.solanaAudiusData.init()
-    }
 
     /** Contracts - Eth and Data Contracts */
     const contractsToInit = []
     if (this.ethWeb3Manager) {
       const {
-        tokenAddress = null,
-        registryAddress = null,
-        claimDistributionContractAddress = null,
-        wormholeContractAddress = null
-      } = this.ethWeb3Config ?? {}
+        tokenAddress,
+        registryAddress,
+        claimDistributionContractAddress,
+        wormholeContractAddress
+      } = this.ethWeb3Config
 
       this.ethContracts = new EthContracts({
         ethWeb3Manager: this.ethWeb3Manager,
-        tokenContractAddress: tokenAddress!,
-        registryAddress: registryAddress!,
-        claimDistributionContractAddress: claimDistributionContractAddress!,
-        wormholeContractAddress: wormholeContractAddress!,
+        tokenContractAddress: tokenAddress,
+        registryAddress,
+        claimDistributionContractAddress,
+        wormholeContractAddress,
         isServer: this.isServer,
         logger: this.logger,
         isDebug: this.isDebug
@@ -557,27 +438,6 @@ export class AudiusLibs {
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
-    if (
-      this.hedgehog &&
-      this.wormholeConfig &&
-      this.ethWeb3Manager &&
-      this.ethContracts &&
-      this.identityService &&
-      this.solanaWeb3Manager
-    ) {
-      this.wormholeClient = new Wormhole(
-        this.hedgehog,
-        this.ethWeb3Manager,
-        this.ethContracts,
-        this.identityService,
-        this.solanaWeb3Manager,
-        this.wormholeConfig.rpcHosts,
-        this.wormholeConfig.solBridgeAddress,
-        this.wormholeConfig.solTokenBridgeAddress,
-        this.wormholeConfig.ethBridgeAddress,
-        this.wormholeConfig.ethTokenBridgeAddress
-      )
-    }
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
@@ -629,9 +489,9 @@ export class AudiusLibs {
       this.contracts,
       this.ethWeb3Manager,
       this.ethContracts,
-      this.solanaWeb3Manager,
-      this.solanaAudiusData,
-      this.wormholeClient,
+      null as any,
+      null as any,
+      null as any,
       this.creatorNode,
       this.comstock,
       this.captcha,
@@ -655,7 +515,5 @@ export class AudiusLibs {
   }
 }
 
-export { AudiusABIDecoder, Utils, SolanaUtils, CreatorNode }
-
+export { Utils } from './utils'
 export { SanityChecks } from './sanityChecks'
-export { RewardsAttester } from './services/solana'

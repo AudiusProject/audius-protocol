@@ -14,7 +14,7 @@ import {
   Logger
 } from '../../utils'
 import { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } from './constants'
-import type { MonitoringCallbacks } from './CreatorNode'
+import type { MonitoringCallbacks } from '../types'
 
 type Timeout = number | null
 
@@ -428,8 +428,7 @@ export class CreatorNodeSelection extends ServiceSelection {
           const url = new URL(check.request.url)
           const data = check.response.data.data
           try {
-            // @ts-expect-error we make a check that it exists above, not sure why this isn't caught
-            this.creatorNode.monitoringCallbacks.healthCheck({
+            this.creatorNode.monitoringCallbacks.healthCheck?.({
               endpoint: url.origin,
               pathname: url.pathname,
               searchParams: url.searchParams,

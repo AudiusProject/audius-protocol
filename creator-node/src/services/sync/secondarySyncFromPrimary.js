@@ -26,6 +26,7 @@ const handleSyncFromPrimary = async ({
   )
 
   const start = Date.now()
+  let returnValue = {}
 
   genericLogger.info('begin nodesync for ', wallet, 'time', start)
 
@@ -100,10 +101,11 @@ const handleSyncFromPrimary = async ({
         `Failed to retrieve export from ${creatorNodeEndpoint} for wallet`,
         wallet
       )
-      return {
+      returnValue = {
         error: new Error(resp.data.error),
         result: 'failure_export_wallet'
       }
+      throw returnValue.error
     }
 
     // TODO - explain patch
@@ -111,19 +113,21 @@ const handleSyncFromPrimary = async ({
       if (resp.request && resp.request.responseText) {
         resp.data = JSON.parse(resp.request.responseText)
       } else {
-        return {
+        returnValue = {
           error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
           result: 'failure_malformed_export'
         }
+        throw returnValue.error
       }
     }
 
     const { data: body } = resp
     if (!body.data.hasOwnProperty('cnodeUsers')) {
-      return {
+      returnValue = {
         error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
         result: 'failure_malformed_export'
       }
+      throw returnValue.error
     }
 
     genericLogger.info(
@@ -141,12 +145,13 @@ const handleSyncFromPrimary = async ({
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
-        return {
+        returnValue = {
           error: new Error(
             `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
           ),
           result: 'failure_malformed_export'
         }
+        throw returnValue.error
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
 
@@ -180,12 +185,13 @@ const handleSyncFromPrimary = async ({
       }
 
       if (wallet !== fetchedWalletPublicKey) {
-        return {
+        returnValue = {
           error: new Error(
             `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
           ),
           result: 'failure_malformed_export'
         }
+        throw returnValue.error
       }
 
       /**
@@ -205,12 +211,13 @@ const handleSyncFromPrimary = async ({
 
       // Error if returned data is not within requested range
       if (fetchedLatestClockVal < localMaxClockVal) {
-        return {
+        returnValue = {
           error: new Error(
             `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
           ),
           result: 'failure_inconsistent_clock'
         }
+        throw returnValue.error
       } else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
         genericLogger.info(
@@ -223,22 +230,24 @@ const handleSyncFromPrimary = async ({
         fetchedClockRecords[0] &&
         fetchedClockRecords[0].clock !== localMaxClockVal + 1
       ) {
-        return {
+        returnValue = {
           error: new Error(
             `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
           ),
           result: 'failure_import_not_contiguous'
         }
+        throw returnValue.error
       } else if (
         !_.isEmpty(fetchedCNodeUser.clockRecords) &&
         maxClockRecordId !== fetchedLatestClockVal
       ) {
-        return {
+        returnValue = {
           error: new Error(
             `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
           ),
           result: 'failure_import_not_consistent'
         }
+        throw returnValue.error
       }
 
       // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
@@ -273,11 +282,15 @@ const handleSyncFromPrimary = async ({
          * Every subsequent sync will enter the if case and update the existing local cnodeUserRecord.
          */
         if (cnodeUserRecord) {
+          genericLogger.info(
+            logPrefix,
+            `cNodeUserRecord was non-empty -- updating CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}. Clock value: ${fetchedLatestClockVal}`
+          )
           const [numRowsUpdated, respObj] = await models.CNodeUser.update(
             {
               lastLogin: fetchedCNodeUser.lastLogin,
               latestBlockNumber: fetchedLatestBlockNumber,
-              clock: fetchedCNodeUser.clock,
+              clock: fetchedLatestClockVal,
               createdAt: fetchedCNodeUser.createdAt
             },
             {
@@ -296,22 +309,27 @@ const handleSyncFromPrimary = async ({
 
           // Error if update failed
           if (numRowsUpdated !== 1 || respObj.length !== 1) {
-            return {
+            returnValue = {
               error: new Error(
                 `Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`
               ),
               result: 'failure_db_transaction'
             }
+            throw returnValue.error
           }
           cnodeUser = respObj[0]
         } else {
+          genericLogger.info(
+            logPrefix,
+            `cNodeUserRecord was empty -- inserting CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}. Clock value: ${fetchedLatestClockVal}`
+          )
           // Will throw error if creation fails
           cnodeUser = await models.CNodeUser.create(
             {
               walletPublicKey: fetchedWalletPublicKey,
               lastLogin: fetchedCNodeUser.lastLogin,
               latestBlockNumber: fetchedLatestBlockNumber,
-              clock: fetchedCNodeUser.clock,
+              clock: fetchedLatestClockVal,
               createdAt: fetchedCNodeUser.createdAt
             },
             {
@@ -324,7 +342,7 @@ const handleSyncFromPrimary = async ({
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         genericLogger.info(
           logPrefix,
-          `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`
+          `Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedLatestClockVal}`
         )
 
         /**
@@ -458,10 +476,11 @@ const handleSyncFromPrimary = async ({
           if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
             const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
             genericLogger.error(logPrefix, errorMsg)
-            return {
+            returnValue = {
               error: new Error(errorMsg),
               result: 'failure_skip_threshold_not_reached'
             }
+            throw returnValue.error
 
             // If max failure threshold reached, continue with sync and reset failure count
           } else {
@@ -558,12 +577,27 @@ const handleSyncFromPrimary = async ({
 
         await transaction.rollback()
 
-        await DBManager.fixInconsistentUser(fetchedCNodeUser.cnodeUserUUID)
-
-        return {
-          error: new Error(e),
-          result: 'failure_db_transaction'
+        try {
+          const numRowsUpdated = await DBManager.fixInconsistentUser(
+            fetchedCNodeUser.cnodeUserUUID
+          )
+          genericLogger.warn(
+            logPrefix,
+            `fixInconsistentUser() executed for ${fetchedCNodeUser.cnodeUserUUID} - numRowsUpdated:${numRowsUpdated}`
+          )
+        } catch (e) {
+          genericLogger.error(
+            logPrefix,
+            `fixInconsistentUser() error for ${fetchedCNodeUser.cnodeUserUUID} - ${e.message}`
+          )
         }
+
+        return _.isEmpty(returnValue)
+          ? {
+              error: new Error(e),
+              result: 'failure_db_transaction'
+            }
+          : returnValue
       }
     }
   } catch (e) {
@@ -577,10 +611,12 @@ const handleSyncFromPrimary = async ({
       }. From endpoint ${creatorNodeEndpoint}.`
     )
 
-    return {
-      error: new Error(e),
-      result: 'failure_sync_secondary_from_primary'
-    }
+    return _.isEmpty(returnValue)
+      ? {
+          error: new Error(e),
+          result: 'failure_sync_secondary_from_primary'
+        }
+      : returnValue
   } finally {
     try {
       await redis.WalletWriteLock.release(wallet)
