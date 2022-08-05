@@ -71,8 +71,10 @@ services:
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+    command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
+      - ./dev-tools:/tmp/dev-tools
     ports:
       - "8546:8545"
     logging: *default-logging
