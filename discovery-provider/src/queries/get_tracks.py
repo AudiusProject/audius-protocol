@@ -37,6 +37,7 @@ class GetTrackArgs(TypedDict):
     authed_user_id: Optional[int]
     min_block_number: int
     sort: str
+    query: Optional[str]
     filter_deleted: bool
     routes: List[RouteArgs]
     with_users: bool
@@ -98,6 +99,10 @@ def _get_tracks(session, args):
     if "min_block_number" in args:
         min_block_number = args.get("min_block_number")
         base_query = base_query.filter(Track.blocknumber >= min_block_number)
+
+    if "query" in args:
+        query = args.get("query")
+        base_query = base_query.filter(Track.title.ilike(f"%{query.lower()}%"))
 
     if "sort" in args:
         if args["sort"] == "date":
