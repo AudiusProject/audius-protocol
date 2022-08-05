@@ -38,3 +38,10 @@ full_response = ns.model(
         "version": fields.Nested(version_metadata, required=True),
     },
 )
+
+id_occupied = ns.model(
+    "occupied",
+    {
+        "is_occupied": fields.Boolean(required=True)
+    },
+)
