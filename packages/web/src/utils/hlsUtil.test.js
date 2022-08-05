@@ -1,6 +1,6 @@
 import { generateM3U8, generateM3U8Variants } from 'utils/hlsUtil'
 
-jest.mock('services/AudiusBackend', () => ({
+jest.mock('services/audius-backend', () => ({
   fetchCID: (multihash) => multihash
 }))
 

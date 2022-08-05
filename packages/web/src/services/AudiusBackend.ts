@@ -55,10 +55,6 @@ import { getErrorMessage } from 'common/utils/error'
 import { encodeHashId } from 'common/utils/hashIds'
 import { Timer } from 'common/utils/performance'
 
-import {
-  waitForLibsInit,
-  withEagerOption
-} from './audius-backend/eagerLoadUtils'
 import { monitoringCallbacks } from './serviceMonitoring'
 
 type DisplayEncoding = 'utf8' | 'hex'
@@ -157,49 +153,6 @@ const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
 
 type TransactionReceipt = { blockHash: string; blockNumber: number }
 
-/**
- *
- * @param {number} cid
- * @param {string[]} creatorNodeGateways
- * @param {boolean} cache
- * @param {boolean} asUrl
- * @param {Nullable<number>} trackId
- * @returns {Promise<string>}
- */
-export const fetchCID = async (
-  cid: CID,
-  creatorNodeGateways = [] as string[],
-  cache = true,
-  asUrl = true,
-  trackId: Nullable<ID> = null
-) => {
-  await waitForLibsInit()
-  try {
-    const res = await audiusLibs.File.fetchCID(
-      cid,
-      creatorNodeGateways,
-      () => {},
-      // If requesting a url (we mean a blob url for the file),
-      // otherwise, default to JSON
-      asUrl ? 'blob' : 'json',
-      trackId
-    )
-    if (asUrl) {
-      const url = URL.createObjectURL(res.data)
-      if (cache) CIDCache.add(cid, url)
-      return url
-    }
-    return res?.data ?? null
-  } catch (e) {
-    const message = getErrorMessage(e)
-    if (message === 'Unauthorized') {
-      return message
-    }
-    console.error(e)
-    return asUrl ? '' : null
-  }
-}
-
 let preloadImageTimer: Timer
 const avoidGC: HTMLImageElement[] = []
 
@@ -227,6 +180,26 @@ type AudiusBackendWormholeConfig = Partial<{
   solTokenBridgeAddress: string
   wormholeRpcHosts: string
 }>
+
+type WithEagerOption = (
+  options: {
+    normal: (libs: any) => any
+    eager: (...args: any) => any
+    endpoint?: string
+    requiresUser?: boolean
+  },
+  ...args: any
+) => Promise<any>
+
+type WaitForLibsInit = () => Promise<unknown>
+
+type FetchCID = (
+  cid: CID,
+  creatorNodeGateways: string[],
+  cache?: boolean,
+  asUrl?: boolean,
+  trackId?: Nullable<ID>
+) => Promise<any>
 
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
@@ -264,6 +237,10 @@ type AudiusBackendParams = {
   web3NetworkId: Maybe<string>
   web3ProviderUrls: Maybe<string[]>
   wormholeConfig: AudiusBackendWormholeConfig
+  getLibs: () => Promise<any>
+  withEagerOption: WithEagerOption
+  waitForLibsInit: WaitForLibsInit
+  fetchCID: FetchCID
 }
 
 export const audiusBackend = ({
@@ -311,7 +288,11 @@ export const audiusBackend = ({
     solBridgeAddress,
     solTokenBridgeAddress,
     wormholeRpcHosts
-  }
+  },
+  getLibs,
+  withEagerOption,
+  waitForLibsInit,
+  fetchCID
 }: AudiusBackendParams) => {
   const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
 
@@ -581,17 +562,17 @@ export const audiusBackend = ({
     // Wait for optimizely to load if necessary
     await waitForRemoteConfig()
 
-    const { libs } = await import('./audius-backend/AudiusLibsLazyLoader')
+    const libsModule = await getLibs()
 
-    AudiusLibs = libs
-    Utils = libs.Utils
-    SanityChecks = libs.SanityChecks
-    SolanaUtils = libs.SolanaUtils
+    AudiusLibs = libsModule.libs
+    Utils = libsModule.Utils
+    SanityChecks = libsModule.SanityChecks
+    SolanaUtils = libsModule.SolanaUtils
 
     // initialize libs
     let libsError: Nullable<string> = null
     const { web3Config } = await getWeb3Config(
-      libs,
+      AudiusLibs,
       registryAddress,
       web3ProviderUrls,
       web3NetworkId
