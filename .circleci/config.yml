@@ -302,6 +302,9 @@ jobs:
               --source-disk="$GCLOUD_VM_NAME" \
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
+      - slack-fail:
+          branch_pattern: master
+          slack_mentions_user: "@Dheeraj"
 
   publish-sdk:
     docker:
