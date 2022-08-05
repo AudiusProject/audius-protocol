@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from src.models.indexing.block import Block
-from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.play import Play
 from src.models.tracks.track import Track
 from src.tasks.generate_trending import get_listen_counts
