@@ -44,7 +44,7 @@ begin
           'milestone:FOLLOWER_COUNT:id:' || new.followee_user_id || ':threshold:' || milestone,
           new.blocknumber,
           new.created_at,
-          ('{"type":"FOLLOWER_COUNT", "user_id":' || new.followee_user_id ||',"threshold":' || milestone || '}')::json
+          json_build_object('type', 'FOLLOWER_COUNT', 'user_id', new.followee_user_id, 'threshold', milestone)
         )
     on conflict do nothing;
   end if;

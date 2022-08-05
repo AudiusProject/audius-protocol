@@ -22,7 +22,7 @@ begin
         values
             (new.play_item_id, 'LISTEN_COUNT', milestone, new.slot, new.created_at)
         on conflict do nothing;
-		select tracks.owner_id into owner_user_id from tracks where is_current and track_id = new.play_item_id;
+        select tracks.owner_id into owner_user_id from tracks where is_current and track_id = new.play_item_id;
         insert into notification
             (user_ids, specifier, type, slot, timestamp, data)
             values
@@ -32,7 +32,7 @@ begin
                 'milestone',
                 new.slot,
                 new.created_at,
-			    json_build_object('type', 'LISTEN_COUNT', 'track_id', new.play_item_id, 'threshold', milestone)
+                json_build_object('type', 'LISTEN_COUNT', 'track_id', new.play_item_id, 'threshold', milestone)
             )
         on conflict do nothing;
     end if;
