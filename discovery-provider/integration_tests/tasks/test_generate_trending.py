@@ -76,20 +76,12 @@ def setup_trending(db, date):
             session.add(track)
 
         # seed plays
-        aggregate_plays = {}
         for i, play_meta in enumerate(test_plays):
             item_id = play_meta.get("item_id")
-            if item_id in aggregate_plays:
-                aggregate_plays[item_id] += 1
-            else:
-                aggregate_plays[item_id] = 1
-
             play = Play(
                 id=i, play_item_id=item_id, created_at=play_meta.get("created_at", date)
             )
             session.add(play)
-        for i, count in aggregate_plays.items():
-            session.add(AggregatePlay(play_item_id=i, count=count))
 
 
 # Helper to sort results before validating
