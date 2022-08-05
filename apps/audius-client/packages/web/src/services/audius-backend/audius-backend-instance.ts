@@ -1,9 +1,15 @@
 import { audiusBackend } from 'services/AudiusBackend'
-import { LIBS_INITTED_EVENT } from 'services/audius-backend/eagerLoadUtils'
+import {
+  LIBS_INITTED_EVENT,
+  waitForLibsInit,
+  withEagerOption
+} from 'services/audius-backend/eagerLoadUtils'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { track } from 'store/analytics/providers'
 import { isElectron, isMobile } from 'utils/clientUtil'
+
+import { fetchCID } from './fetchCID'
 
 /**
  * audiusBackend initialized for a web environment
@@ -106,5 +112,9 @@ export const audiusBackendInstance = audiusBackend({
     solBridgeAddress: process.env.REACT_APP_SOL_BRIDGE_ADDRESS,
     solTokenBridgeAddress: process.env.REACT_APP_SOL_TOKEN_BRIDGE_ADDRESS,
     wormholeRpcHosts: process.env.REACT_APP_WORMHOLE_RPC_HOSTS
-  }
+  },
+  getLibs: () => import('@audius/sdk/dist/legacy'),
+  withEagerOption,
+  waitForLibsInit,
+  fetchCID
 })
