@@ -30,10 +30,6 @@ const handleSyncFromPrimary = async ({
 
   genericLogger.info('begin nodesync for ', wallet, 'time', start)
 
-  /**
-   * Ensure access to each wallet, then acquire redis lock for duration of sync
-   * @notice - there's a bug where logPrefix is set to the last element of `walletPublicKeys` - this code only works when `walletPublicKeys.length === 1` 🤦‍♂️
-   */
   const logPrefix = `[secondarySyncFromPrimary][wallet=${wallet}]`
   try {
     await redis.WalletWriteLock.acquire(
