@@ -119,16 +119,13 @@ describe('test Prometheus metrics', async function () {
     assert.ok(resp.text.includes(NAMESPACE_PREFIX + '_jobs_delayed'))
   })
 
-  it.only('Checks the duration of a bull queue job', async function () {
-    await request(app).get('/health_check')
-
+  it('Checks the duration of a bull queue job', async function () {
     const genericBullQueue = new GenericBullQueue()
     const job = await genericBullQueue.addTask({ timeout: 500 })
 
     await job.finished()
 
     const resp = await request(app).get('/prometheus_metrics').expect(200)
-    console.log(resp)
     assert.ok(
       resp.text.includes(NAMESPACE_PREFIX + '_jobs_duration_seconds_bucket')
     )
