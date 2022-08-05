@@ -1,10 +1,13 @@
+import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 
 from src.models.indexing.block import Block
-from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.play import Play
 from src.models.tracks.track import Track
 from src.tasks.generate_trending import get_listen_counts
+from src.utils.db_session import get_db
+
+logger = logging.getLogger(__name__)
 
 
 # Setup trending from simplified metadata
@@ -71,25 +74,18 @@ def setup_trending(db, date):
             # add block and then flush before
             # adding track, bc track.blocknumber foreign key
             # references block
+            session.query(Block).update({"is_current": False})
             session.add(block)
             session.flush()
             session.add(track)
 
         # seed plays
-        aggregate_plays = {}
         for i, play_meta in enumerate(test_plays):
             item_id = play_meta.get("item_id")
-            if item_id in aggregate_plays:
-                aggregate_plays[item_id] += 1
-            else:
-                aggregate_plays[item_id] = 1
-
             play = Play(
                 id=i, play_item_id=item_id, created_at=play_meta.get("created_at", date)
             )
             session.add(play)
-        for i, count in aggregate_plays.items():
-            session.add(AggregatePlay(play_item_id=i, count=count))
 
 
 # Helper to sort results before validating
@@ -102,14 +98,17 @@ def validate_results(actual, expected):
 # Tests
 
 
-def test_get_listen_counts_year(postgres_mock_db):
+def test_get_listen_counts_year(app):
     """Happy path test: test that we get all valid listens from prior year"""
     # setup
+    with app.app_context():
+        db = get_db()
+
     date = datetime.now()
-    setup_trending(postgres_mock_db, date)
+    setup_trending(db, date)
 
     # run
-    with postgres_mock_db.scoped_session() as session:
+    with db.scoped_session() as session:
         res = get_listen_counts(session, "year", None, 10, 0)
 
     # validate
@@ -121,14 +120,17 @@ def test_get_listen_counts_year(postgres_mock_db):
     validate_results(res, expected)
 
 
-def test_get_listen_counts_week(postgres_mock_db):
+def test_get_listen_counts_week(app):
     """Test slicing by time range"""
     # setup
+    with app.app_context():
+        db = get_db()
+
     date = datetime.now()
-    setup_trending(postgres_mock_db, date)
+    setup_trending(db, date)
 
     # run
-    with postgres_mock_db.scoped_session() as session:
+    with db.scoped_session() as session:
         res = get_listen_counts(session, "week", None, 10, 0)
 
     # validate
@@ -140,14 +142,17 @@ def test_get_listen_counts_week(postgres_mock_db):
     validate_results(res, expected)
 
 
-def test_get_listen_counts_genre_filtered(postgres_mock_db):
+def test_get_listen_counts_genre_filtered(app):
     """Test slicing by genre"""
     # setup
+    with app.app_context():
+        db = get_db()
+
     date = datetime.now()
-    setup_trending(postgres_mock_db, date)
+    setup_trending(db, date)
 
     # run
-    with postgres_mock_db.scoped_session() as session:
+    with db.scoped_session() as session:
         res = get_listen_counts(session, "year", "Pop", 10, 0)
 
     # validate
@@ -155,15 +160,23 @@ def test_get_listen_counts_genre_filtered(postgres_mock_db):
     validate_results(res, expected)
 
 
-def test_get_listen_counts_all_time(postgres_mock_db):
+def test_get_listen_counts_all_time(app):
     """Test slicing by genre"""
     # setup
+    with app.app_context():
+        db = get_db()
+
     date = datetime.now()
-    setup_trending(postgres_mock_db, date)
+    setup_trending(db, date)
 
     # run
-    with postgres_mock_db.scoped_session() as session:
+    with db.scoped_session() as session:
         res = get_listen_counts(session, None, None, 10, 0)
+        logger.info(res)
+        logger.info(res)
+        logger.info(res)
+        logger.info(res)
+        logger.info(res)
 
     # validate
     expected = [

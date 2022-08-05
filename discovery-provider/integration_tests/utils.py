@@ -5,12 +5,15 @@ from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.playlists.playlist import Playlist
 from src.models.rewards.challenge import Challenge
+from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.follow import Follow
 from src.models.social.hourly_play_counts import HourlyPlayCount
 from src.models.social.play import Play
+from src.models.social.reaction import Reaction
 from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.models.tracks.aggregate_track import AggregateTrack
@@ -20,9 +23,11 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
+from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.user import User
-from src.models.users.user_bank import UserBankAccount
+from src.models.users.user_bank import UserBankAccount, UserBankTx
 from src.models.users.user_listening_history import UserListeningHistory
+from src.models.users.user_tip import UserTip
 from src.tasks.aggregates import get_latest_blocknumber
 from src.utils import helpers
 from src.utils.db_session import get_db
@@ -115,6 +120,12 @@ def populate_mock_db(db, entities, block_offset=None):
         user_bank_accounts = entities.get("user_bank_accounts", [])
         associated_wallets = entities.get("associated_wallets", [])
         ursm_content_nodes = entities.get("ursm_content_nodes", [])
+        reactions = entities.get("reactions", [])
+        user_bank_txs = entities.get("user_bank_txs", [])
+        user_tips = entities.get("user_tips", [])
+        supporter_rank_ups = entities.get("supporter_rank_ups", [])
+        reward_manager_txs = entities.get("reward_manager_txs", [])
+        challenge_disbursements = entities.get("challenge_disbursements", [])
 
         num_blocks = max(
             len(tracks), len(users), len(follows), len(saves), len(reposts)
@@ -155,6 +166,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 track_segments=track_meta.get("track_segments", []),
                 tags=track_meta.get("tags", None),
                 genre=track_meta.get("genre", ""),
+                remix_of=track_meta.get("remix_of", None),
                 updated_at=track_meta.get("updated_at", datetime.now()),
                 created_at=track_meta.get("created_at", datetime.now()),
                 release_date=track_meta.get("release_date", None),
@@ -435,5 +447,59 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=ursm_content_node.get("created_at", datetime.now()),
             )
             session.add(node)
-
+        for i, reaction in enumerate(reactions):
+            reaction = Reaction(
+                id=reaction.get("id", i),
+                slot=reaction.get("slot", i),
+                reaction_value=reaction.get("reaction_value", 1),
+                sender_wallet=reaction.get("sender_wallet", "0x"),
+                reaction_type=reaction.get("reaction_type", "type"),
+                reacted_to=reaction.get("reacted_to", "reaction_to"),
+                timestamp=reaction.get("timestamp", datetime.now()),
+                tx_signature=reaction.get("tx_signature", str(i)),
+            )
+            session.add(reaction)
+        for i, user_bank_tx in enumerate(user_bank_txs):
+            ubtx = UserBankTx(
+                slot=user_bank_tx.get("slot", i),
+                signature=user_bank_tx.get("signature", str(i)),
+                created_at=user_bank_tx.get("created_at", datetime.now()),
+            )
+            session.add(ubtx)
+        for i, supporter_rank_up in enumerate(supporter_rank_ups):
+            sru = SupporterRankUp(
+                slot=supporter_rank_up.get("slot", i),
+                sender_user_id=supporter_rank_up.get("sender_user_id", i),
+                receiver_user_id=supporter_rank_up.get("receiver_user_id", i),
+                rank=supporter_rank_up.get("rank", 1),
+            )
+            session.add(sru)
+        for i, user_tip in enumerate(user_tips):
+            ut = UserTip(
+                slot=user_tip.get("slot", i),
+                signature=user_tip.get("signature", str(i)),
+                sender_user_id=user_tip.get("sender_user_id", i),
+                receiver_user_id=user_tip.get("receiver_user_id", i),
+                amount=user_tip.get("amount", i),
+                created_at=user_tip.get("created_at", datetime.now()),
+                updated_at=user_tip.get("updated_at", datetime.now()),
+            )
+            session.add(ut)
+        for i, reward_manager_tx in enumerate(reward_manager_txs):
+            rmtx = RewardManagerTransaction(
+                slot=reward_manager_tx.get("slot", i),
+                signature=reward_manager_tx.get("signature", str(i)),
+                created_at=reward_manager_tx.get("created_at", datetime.now()),
+            )
+            session.add(rmtx)
+        for i, challenge_disbursement in enumerate(challenge_disbursements):
+            cb = ChallengeDisbursement(
+                challenge_id=challenge_disbursement.get("challenge_id", str(i)),
+                user_id=challenge_disbursement.get("user_id", i),
+                specifier=challenge_disbursement.get("specifier", str(i)),
+                signature=challenge_disbursement.get("signature", str(i)),
+                slot=challenge_disbursement.get("slot", i),
+                amount=challenge_disbursement.get("amount", i),
+            )
+            session.add(cb)
         session.flush()
