@@ -129,5 +129,6 @@ describe('test Prometheus metrics', async function () {
     assert.ok(
       resp.text.includes(NAMESPACE_PREFIX + '_jobs_duration_seconds_bucket')
     )
+    assert.ok(resp.text.includes(`queue_name="genericBullQueue"`))
   })
 })
