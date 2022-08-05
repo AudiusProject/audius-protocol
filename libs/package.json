@@ -1,13 +1,13 @@
 {
   "name": "@audius/sdk",
-  "version": "0.0.27",
+  "version": "0.0.32",
   "audius": {
-    "releaseSHA": "40f9da613540c1874c0e8c73be49b9941c0e2b84"
+    "releaseSHA": "21fc91b10563fb51f934142f065a0ea7c5803828"
   },
   "description": "",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
-  "types": "dist/types.d.ts",
+  "types": "dist/index.d.ts",
   "browser": {
     "./dist/index.cjs.js": "./dist/index.browser.cjs.js",
     "./dist/index.esm.js": "./dist/index.browser.esm.js"
@@ -50,6 +50,7 @@
     "ajv": "6.12.2",
     "async-retry": "1.3.1",
     "axios": "0.19.2",
+    "bn.js": "5.2.1",
     "borsh": "0.4.0",
     "bs58": "4.0.1",
     "cipher-base": "1.0.4",
@@ -126,6 +127,7 @@
     "standard": "16.0.4",
     "ts-mocha": "9.0.2",
     "ts-node": "10.7.0",
+    "type-fest": "^2.17.0",
     "typescript": "4.6.2"
   },
   "repository": {

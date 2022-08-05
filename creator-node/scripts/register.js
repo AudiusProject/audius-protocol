@@ -1,4 +1,4 @@
-const AudiusLibs = require("@audius/libs");
+const { libs: AudiusLibs } = require("@audius/sdk");
 const config = require("../src/config");
 const axios = require("axios");
 const BN = require("bn.js");
@@ -47,10 +47,11 @@ async function main() {
     }
   }
 
-  const tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.register(
+  const tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.registerWithDelegate(
     "content-node",
     config.get("creatorNodeEndpoint"),
     new BN("200000000000000000000000"),
+    config.get("delegateOwnerWallet"),
   );
 }
 

@@ -38,8 +38,8 @@ export type DiscoveryProviderConfig = {
   whitelist?: Set<string>
   blacklist?: Set<string>
   userStateManager: UserStateManager
-  ethContracts: EthContracts
-  web3Manager?: Web3Manager
+  ethContracts: Nullable<EthContracts>
+  web3Manager?: Nullable<Web3Manager>
   reselectTimeout?: number
   selectionRequestTimeout?: number
   selectionRequestRetries?: number
@@ -84,8 +84,8 @@ export class DiscoveryProvider {
   whitelist: Set<string> | undefined
   blacklist: Set<string> | undefined
   userStateManager: UserStateManager
-  ethContracts: EthContracts
-  web3Manager: Web3Manager | undefined
+  ethContracts: Nullable<EthContracts>
+  web3Manager?: Nullable<Web3Manager>
   unhealthyBlockDiff: number
   serviceSelector: DiscoveryProviderSelection
   selectionRequestTimeout: number
@@ -900,7 +900,7 @@ export class DiscoveryProvider {
       // Fire monitoring callbacks for request success case
       if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
-          this.monitoringCallbacks.request({
+          this.monitoringCallbacks.request?.({
             endpoint: url.origin,
             pathname: url.pathname,
             queryString: url.search,
@@ -924,7 +924,7 @@ export class DiscoveryProvider {
       // Fire monitoring callbacks for request failure case
       if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
-          this.monitoringCallbacks.request({
+          this.monitoringCallbacks.request?.({
             endpoint: url.origin,
             pathname: url.pathname,
             queryString: url.search,

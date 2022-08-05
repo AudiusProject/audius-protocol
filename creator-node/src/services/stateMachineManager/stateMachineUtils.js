@@ -243,10 +243,11 @@ const makeQueue = ({
   removeOnComplete,
   removeOnFail,
   lockDuration,
+  prometheusRegistry = null,
   limiter = null
 }) => {
   // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-  return new BullQueue(name, {
+  const queue = new BullQueue(name, {
     redis: {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -263,6 +264,12 @@ const makeQueue = ({
     },
     limiter
   })
+
+  if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
+    prometheusRegistry.startQueueMetrics(queue)
+  }
+
+  return queue
 }
 
 const registerQueueEvents = (queue, queueLogger) => {

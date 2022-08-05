@@ -14,7 +14,7 @@ export type IssueSyncRequestJobParams = {
   syncType: string
   syncMode: string
   syncRequestParameters: SyncRequestAxiosParams
-  attemptNumber: number
+  attemptNumber?: number
 }
 export type IssueSyncRequestJobReturnValue = {
   error: any

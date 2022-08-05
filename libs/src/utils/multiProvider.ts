@@ -1,5 +1,5 @@
 import { callbackify, promisify } from 'util'
-import Web3 from '../web3'
+import Web3 from '../LibsWeb3'
 import { shuffle } from 'lodash'
 import type { HttpProvider, AbstractProvider } from 'web3-core'
 import type { JsonRpcPayload } from 'web3-core-helpers'

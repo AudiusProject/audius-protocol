@@ -7,7 +7,10 @@ end;
 $$ language plpgsql;
 
 
-drop trigger if exists on_user on users;
-create trigger on_user
+do $$ begin
+  create trigger on_user
   after insert on users
   for each row execute procedure handle_user();
+exception
+  when others then null;
+end $$;

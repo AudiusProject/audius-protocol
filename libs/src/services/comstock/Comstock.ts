@@ -1,5 +1,9 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 
+export type ComstockConfig = {
+  comstockEndpoint: string
+}
+
 export class Comstock {
   comstockEndpoint: string
 

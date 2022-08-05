@@ -313,6 +313,13 @@ contract('Governance.sol', async (accounts) => {
     )
   })
 
+  it('Confirm governance fails reinitialization', async () => {
+    await _lib.assertRevert(
+      governance.initialize(registry.address, 0, 0, 0, 10, accounts[14]),
+      'Contract instance has already been initialized'
+    )
+  })
+
   it('Initialize require statements', async function () {
     const governance0 = await Governance.new({ from: proxyDeployerAddress })
     const newMaxInProgressProposals = 100

@@ -248,7 +248,7 @@ commands:
 
 # global parameters
 parameters:
-  sdk_release_tag:
+  sdk_release_commit:
     type: string
     default: ""
   slack_mentions_user:
@@ -303,13 +303,13 @@ jobs:
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
 
-  publish-libs:
+  publish-sdk:
     docker:
       - image: circleci/node:14.17.5
     resource_class: xlarge
     parameters:
-      sdk_release_tag:
-        description: The git tag/commit to build and release
+      sdk_release_commit:
+        description: The git commit to build and release
         type: string
         default: ""
       slack_mentions_user:
@@ -333,7 +333,7 @@ jobs:
           name: Bump and Publish Libs
           command: |
             export PROTOCOL_DIR=/home/circleci/project
-            libs/scripts/release.sh << parameters.sdk_release_tag >>
+            libs/scripts/release.sh << parameters.sdk_release_commit >>
       - slack-fail:
           branch_pattern: master
           slack_mentions_user: << parameters.slack_mentions_user >>
@@ -447,7 +447,6 @@ jobs:
       - restore_cache:
           keys:
             - eth-contracts-{{ checksum "eth-contracts/package.json" }}
-            - eth-contracts-
       - run:
           name: eth-contracts repo init
           command: |
@@ -509,7 +508,7 @@ jobs:
     # uses medium (2vcpu/4gb) by default
     resource_class: medium
     docker:
-      - image: circleci/node:16
+      - image: circleci/node:14.17.5
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
@@ -956,7 +955,7 @@ workflows:
     when:
       and:
          - not: << pipeline.parameters.full_ci >>
-         - not: << pipeline.parameters.sdk_release_tag >>
+         - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
       - test-libs:
           name: test-libs
@@ -1007,16 +1006,16 @@ workflows:
   # 1. go to the CircleCI dashboard
   # 2. go to your branch of choice
   # 3. click "Trigger Pipeline"
-  # 4. Add string paramter "sdk_release_tag" and set to a valid git tag/commit
+  # 4. Add string paramter "sdk_release_commit" and set to a valid git commit
   sdk-release:
-    when: << pipeline.parameters.sdk_release_tag >>
+    when: << pipeline.parameters.sdk_release_commit >>
     jobs:
-      - publish-libs:
+      - publish-sdk:
           context:
             - Audius Client
             - slack-secrets
-          name: publish-libs (<< pipeline.parameters.sdk_release_tag >>)
-          sdk_release_tag: << pipeline.parameters.sdk_release_tag >>
+          name: publish-sdk (<< pipeline.parameters.sdk_release_commit >>)
+          sdk_release_commit: << pipeline.parameters.sdk_release_commit >>
           slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
           filters:
             branches:

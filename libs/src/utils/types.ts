@@ -32,7 +32,7 @@ export type UserMetadata = {
   album_count: number
   bio: string | null
   cover_photo: Nullable<CID>
-  creator_node_endpoint: Nullable<string>
+  creator_node_endpoint: string
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
   followee_count: number
