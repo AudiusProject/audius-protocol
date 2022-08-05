@@ -869,6 +869,11 @@ export class DiscoveryProvider {
     return res.map((r) => ({ ...r, amount: parseInt(r.amount) }))
   }
 
+  async getIsPlaylistIdOccupied(playlistId: string) {
+    const req = Requests.getIsPlaylistIdOccupied(playlistId)
+    return await this._makeRequest<{ is_occupied: boolean }>(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**

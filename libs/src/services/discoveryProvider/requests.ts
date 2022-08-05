@@ -689,3 +689,9 @@ export const verifyToken = (token: string) => {
     }
   }
 }
+
+export const getIsPlaylistIdOccupied = (playlistId: string) => {
+  return {
+    endpoint: `/v1/playlists/${playlistId}/occupied`
+  }
+}
