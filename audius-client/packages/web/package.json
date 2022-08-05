@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "@audius/common": "1.2.2",
-    "@audius/sdk": "0.0.22",
+    "@audius/sdk": "0.0.32",
     "@audius/stems": "1.2.2",
     "@coinbase/cbpay-js": "1.0.2",
     "@craco/craco": "7.0.0-alpha.3",
