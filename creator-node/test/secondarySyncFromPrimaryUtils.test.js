@@ -40,7 +40,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
         { libs: mockedLibs, logContext: mockLogContext },
         {
           forceResync: true,
-          apiSigning: {
+          signatureData: {
             data: 'theres data but no signing stuff'
           }
         }
@@ -52,7 +52,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
         { libs: mockedLibs, logContext: mockLogContext },
         {
           forceResync: true,
-          apiSigning: {
+          signatureData: {
             timestamp: 'theres a timestamp',
             signature: 'but not data'
           }
@@ -80,7 +80,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
         {
           forceResync: true,
           // dummy signature data
-          apiSigning: {
+          signatureData: {
             timestamp: '2022-08-02T21:38:42.670Z',
             signature:
               '0xf33f4f9bc242acbd68ecb2c624b132cb606a71c1747253709dcb205406e3bb256be30dde81b6574cec8771f6f68ab175c6d5bf8448664900a73b03efbe16d63c1c',
@@ -99,7 +99,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
         {
           forceResync: true,
           // dummy signature data
-          apiSigning: {
+          signatureData: {
             timestamp: '2022-08-02T21:38:42.670Z',
             signature:
               '0xf33f4f9bc242acbd68ecb2c624b132cb606a71c1747253709dcb205406e3bb256be30dde81b6574cec8771f6f68ab175c6d5bf8448664900a73b03efbe16d63c1c',
@@ -134,7 +134,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
         {
           forceResync: true,
           // dummy signature data
-          apiSigning: {
+          signatureData: {
             timestamp: '2022-08-02T21:38:42.670Z',
             signature:
               '0xf33f4f9bc242acbd68ecb2c624b132cb606a71c1747253709dcb205406e3bb256be30dde81b6574cec8771f6f68ab175c6d5bf8448664900a73b03efbe16d63c1c',
@@ -169,7 +169,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
         {
           forceResync: true,
           // dummy signature data
-          apiSigning: {
+          signatureData: {
             timestamp: '2022-08-02T21:38:42.670Z',
             signature:
               '0xf33f4f9bc242acbd68ecb2c624b132cb606a71c1747253709dcb205406e3bb256be30dde81b6574cec8771f6f68ab175c6d5bf8448664900a73b03efbe16d63c1c',
