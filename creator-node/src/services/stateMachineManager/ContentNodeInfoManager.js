@@ -24,8 +24,9 @@ class ContentNodeInfoManager {
   }
 
   /**
-   * Updates `this.cNodeEndpointToSpIdMap` to the mapping of <endpoint : spId>. If the fetch fails, rely on the previous
-   * `this.cNodeEndpointToSpIdMap` value. If the existing map is empty, throw error as we need this map to issue reconfigs.
+   * Updates `this.cNodeEndpointToSpIdMap` to the mapping of <endpoint : spId>, and `this.contentNodeSpIdToChainInfo`
+   * to the mapping of <spId : sp info on chain>. If the fetch fails, rely on the previous `this.cNodeEndpointToSpIdMap`
+   * and `this.contentNodeSpIdToChainInfo` values. If the existing map is empty, throw error as we need this map to issue reconfigs.
    * @param {Object} ethContracts audiusLibs.ethContracts instance; has helper fn to get service provider info
    */
   async updateContentNodeChainInfo(ethContracts) {
