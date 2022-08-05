@@ -109,10 +109,6 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
     # Add pagination
     base_query = add_query_pagination(base_query, limit, offset)
     base_query = base_query.all()
-    import logging
-
-    logger = logging.getLogger(__name__)
-    logger.info(f"raymont {base_query}")
     track_ids = track_ids[offset : offset + limit]
 
     tracks = helpers.query_result_to_list(base_query)
