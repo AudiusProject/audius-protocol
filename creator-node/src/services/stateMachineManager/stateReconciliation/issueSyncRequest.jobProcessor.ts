@@ -36,9 +36,9 @@ const {
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {
-  generateDataForSignatureRecovery,
-  signSyncData
+  generateDataForSignatureRecovery
 } = require('../../sync/secondarySyncFromPrimaryUtils')
+const { generateTimestampAndSignature } = require('../../../apiSigning')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
@@ -235,7 +235,10 @@ async function _handleIssueSyncRequest({
   try {
     if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
       const data = generateDataForSignatureRecovery(syncRequestParameters.data)
-      const { timestamp, signature } = signSyncData(data)
+      const { timestamp, signature } = generateTimestampAndSignature(
+        data,
+        config.get('delegatePrivateKey')
+      )
 
       await axios({
         ...syncRequestParameters,

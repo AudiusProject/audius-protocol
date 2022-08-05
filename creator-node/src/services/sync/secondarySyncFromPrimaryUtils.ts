@@ -8,14 +8,12 @@ import type {
 const _ = require('lodash')
 
 const { logger: genericLogger } = require('../../logging')
-const config = require('../../config')
 const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
-const {
-  recoverWallet,
-  generateTimestampAndSignature
-} = require('../../apiSigning')
+const { recoverWallet } = require('../../apiSigning')
 
-const generateDataForSignatureRecovery = (body: SyncRequestAxiosData) => {
+const generateDataForSignatureRecovery = (
+  body: SyncRequestAxiosData
+): ForceResyncSigningData => {
   const { wallet, creator_node_endpoint, sync_type, immediate } = body
   return {
     wallet,
@@ -23,23 +21,6 @@ const generateDataForSignatureRecovery = (body: SyncRequestAxiosData) => {
     sync_type,
     immediate
   }
-}
-
-// Function to sign sync data. This is used to determine whether or not to `forceResync`
-const signSyncData = (syncData: ForceResyncSigningData) => {
-  return generateTimestampAndSignature(
-    syncData,
-    config.get('delegatePrivateKey')
-  )
-}
-
-// Derive the Content Node delegate wallet from the data, signature, and timestamp
-const recoverWalletFromSyncData = ({
-  data,
-  timestamp,
-  signature
-}: ForceResyncAuthParams) => {
-  return recoverWallet({ ...data, timestamp }, signature)
 }
 
 /**
@@ -77,11 +58,10 @@ const shouldForceResync = async (
   }
 
   // Derive the Content Node delegate wallet from the data, signature, and timestamp
-  const recoveredPrimaryWallet = recoverWalletFromSyncData({
-    data,
-    timestamp,
+  const recoveredPrimaryWallet = recoverWallet(
+    { ...data, timestamp },
     signature
-  })
+  )
 
   try {
     // Get the delegate wallet from the primary of the observed user
@@ -107,4 +87,4 @@ const shouldForceResync = async (
   return false
 }
 
-export { shouldForceResync, signSyncData, generateDataForSignatureRecovery }
+export { shouldForceResync, generateDataForSignatureRecovery }
