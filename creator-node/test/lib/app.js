@@ -7,12 +7,13 @@ const SyncQueue = require('../../src/services/sync/syncQueue')
 const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
 const BlacklistManager = require('../../src/blacklistManager')
+const ImageProcessingQueue = require('../../src/ImageProcessingQueue.js')
 
 async function getApp(
   libsClient,
   blacklistManager = BlacklistManager,
   setMockFn = null,
-  spId = null
+  spId = 1
 ) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
@@ -33,6 +34,7 @@ async function getApp(
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
     asyncProcessingQueue: apq,
+    imageProcessingQueue: new ImageProcessingQueue(),
     nodeConfig,
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),

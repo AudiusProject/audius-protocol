@@ -4,11 +4,7 @@ from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
-from src.queries.query_helpers import (
-    get_users_by_id,
-    get_users_ids,
-    populate_track_metadata,
-)
+from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.tasks.generate_trending import generate_trending
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
@@ -143,11 +139,5 @@ def _get_trending_tracks_with_session(
     # Re-sort the populated tracks b/c it loses sort order in sql query
     sorted_tracks = [tracks_map[track_id] for track_id in track_ids]
 
-    if args.get("with_users", False):
-        user_id_list = get_users_ids(sorted_tracks)
-        users = get_users_by_id(session, user_id_list, current_user_id)
-        for track in sorted_tracks:
-            user = users[track["owner_id"]]
-            if user:
-                track["user"] = user
+    add_users_to_tracks(session, tracks, current_user_id)
     return sorted_tracks

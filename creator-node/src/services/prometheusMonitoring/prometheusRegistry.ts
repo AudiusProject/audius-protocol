@@ -82,14 +82,17 @@ export class PrometheusRegistry {
       ...labels
     }
 
-    const jobDuration = job.finishedOn - job.processedOn!
-    this.getMetric(
-      this.metricNames.JOBS_DURATION_MILLISECONDS_HISTOGRAM
-    ).observe(jobLabels, jobDuration)
+    // job duration in seconds
+    const jobDuration = (job.finishedOn - job.processedOn!) * 1000
+    this.getMetric(this.metricNames.JOBS_DURATION_SECONDS_HISTOGRAM).observe(
+      jobLabels,
+      jobDuration
+    )
 
-    const waitingDuration = job.processedOn! - job.timestamp
+    // job duration in seconds
+    const waitingDuration = (job.processedOn! - job.timestamp) * 1000
     this.getMetric(
-      this.metricNames.JOBS_WAITING_DURATION_MILLISECONDS_HISTOGRAM
+      this.metricNames.JOBS_WAITING_DURATION_SECONDS_HISTOGRAM
     ).observe(jobLabels, waitingDuration)
 
     this.getMetric(this.metricNames.JOBS_ATTEMPTS_HISTOGRAM).observe(
@@ -98,13 +101,16 @@ export class PrometheusRegistry {
     )
   }
 
-  public startQueueMetrics(queue: Queue, useGlobal: boolean) {
-    // @ts-ignore
-    const keyPrefix = queue.keyPrefix.replace(/.*\{|\}/gi, '')
-
+  /**
+   * @param queue the bull queue to collect metrics on
+   * @param useGlobal whether to search jobs via global callbacks or not
+   *
+   * This function is used to collect prometheus metrics on bull queues
+   * by registering callbacks when jobs fail, wait, or complete
+   */
+  public startQueueMetrics(queue: Queue, useGlobal = false) {
     const labels = {
-      queue_name: queue.name,
-      queue_prefix: keyPrefix
+      queue_name: queue.name
     }
 
     if (useGlobal) {

@@ -125,7 +125,7 @@ export default [
   {
     input: 'src/sdk/index.ts',
     output: [
-      { file: 'dist/index.browser.cjs.js', format: 'es', sourcemap: true },
+      { file: 'dist/index.browser.cjs.js', format: 'cjs', sourcemap: true },
       { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
     ],
     ...browserConfig
@@ -157,8 +157,18 @@ export default [
    * Includes libs but does not include polyfills
    */
   {
-    input: 'src/index.ts',
+    input: 'src/legacy.ts',
     output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
+    ...browserLegacyConfig
+  },
+
+  /**
+   * ReactNative bundle used for our mobile app
+   * Includes a modified version of AudiusLibs with solana dependencies removed
+   */
+  {
+    input: 'src/native-libs.ts',
+    output: [{ file: 'dist/native-libs.js', format: 'es', sourcemap: true }],
     ...browserLegacyConfig
   },
 
@@ -167,10 +177,7 @@ export default [
    */
   {
     input: 'src/core.ts',
-    output: [
-      { file: 'dist/core.cjs.js', format: 'cjs', sourcemap: true },
-      { file: 'dist/core.esm.js', format: 'es', sourcemap: true }
-    ],
+    output: [{ file: 'dist/core.js', format: 'es', sourcemap: true }],
     ...commonConfig
   }
 ]

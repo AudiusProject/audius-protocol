@@ -4,17 +4,17 @@ declare
   new_val int;
   milestone_name text;
   milestone integer;
+  owner_user_id int;
+  track_remix_of json;
+  is_remix_cosign boolean;
 begin
-  -- ensure agg rows present
-  -- this can be removed if we do this elsewhere
-  -- but is here now for safety
+
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
   if new.save_type = 'track' then
     insert into aggregate_track (track_id) values (new.save_item_id) on conflict do nothing;
   else
-    insert into aggregate_playlist (playlist_id) values (new.save_item_id) on conflict do nothing;
+    insert into aggregate_playlist (playlist_id, is_album) values (new.save_item_id, new.save_type = 'album') on conflict do nothing;
   end if;
-
 
   -- update agg track or playlist
   if new.save_type = 'track' then
@@ -44,7 +44,9 @@ begin
         AND r.save_type = new.save_type
     )
     where user_id = new.user_id;
-
+  	if new.is_delete IS FALSE then
+		  select tracks.owner_id, tracks.remix_of into owner_user_id, track_remix_of from tracks where is_current and track_id = new.save_item_id;
+	  end if;
   else
     milestone_name := 'PLAYLIST_SAVE_COUNT';
 
@@ -60,6 +62,10 @@ begin
     )
     where playlist_id = new.save_item_id
     returning save_count into new_val;
+    if new.is_delete IS FALSE then
+		  select playlists.playlist_owner_id into owner_user_id from playlists where is_current and playlist_id = new.save_item_id;
+	  end if;
+
   end if;
 
   -- create a milestone if applicable
@@ -70,7 +76,61 @@ begin
     values
       (new.save_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
     on conflict do nothing;
+    insert into notification
+      (user_ids, type, specifier, blocknumber, timestamp, data)
+      values
+      (
+        ARRAY [owner_user_id],
+        'milestone',
+        'milestone:' || milestone_name  || ':id:' || new.save_item_id || ':threshold:' || milestone,
+        new.blocknumber,
+        new.created_at,
+        json_build_object('type', milestone_name, 'threshold', milestone)
+      )
+      on conflict do nothing;
   end if;
+
+  begin
+    -- create a notification for the saved content's owner
+    if new.is_delete is false then
+      insert into notification
+        (blocknumber, user_ids, timestamp, type, specifier, data)
+        values
+        ( 
+          new.blocknumber,
+          ARRAY [owner_user_id], 
+          new.created_at, 
+          'save',
+          'save:' || new.save_item_id || ':type:'|| new.save_type,
+          json_build_object('save_item_id', new.save_item_id, 'user_id', new.user_id, 'type', new.save_type)
+        )
+      on conflict do nothing;
+    end if;
+
+    -- create a notification for remix cosign
+    if new.is_delete is false and new.save_type = 'track' and track_remix_of is not null then
+      select
+        case when tracks.owner_id = new.user_id then TRUE else FALSE end as boolean into is_remix_cosign
+        from tracks 
+        where is_current and track_id = (track_remix_of->'tracks'->0->>'parent_track_id')::int;
+      if is_remix_cosign then
+        insert into notification
+          (blocknumber, user_ids, timestamp, type, specifier, data)
+          values
+          ( 
+            new.blocknumber,
+            ARRAY [owner_user_id], 
+            new.created_at, 
+            'cosign',
+            'cosign:parent_track' || (track_remix_of->'tracks'->0->>'parent_track_id')::int || ':original_track:'|| new.save_item_id,
+            json_build_object('parent_track_id', (track_remix_of->'tracks'->0->>'parent_track_id')::int, 'track_id', new.save_item_id, 'track_owner_id', owner_user_id)
+          )
+        on conflict do nothing;
+      end if;
+    end if;
+  exception
+    when others then return null;
+  end;
 
   return null;
 end; 

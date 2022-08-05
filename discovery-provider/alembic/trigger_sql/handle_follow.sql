@@ -3,7 +3,6 @@ declare
   new_follower_count int;
   milestone integer;
 begin
-  -- ensure rows for safety
   insert into aggregate_user (user_id) values (new.followee_user_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.follower_user_id) on conflict do nothing;
 
@@ -31,17 +30,48 @@ begin
   -- create a milestone if applicable
   select new_follower_count into milestone where new_follower_count in (10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000);
   if milestone is not null and new.is_delete is false then
-    insert into milestones 
-      (id, name, threshold, blocknumber, slot, timestamp)
-    values
-      (new.followee_user_id, 'FOLLOWER_COUNT', milestone, new.blocknumber, new.slot, new.created_at)
+      insert into milestones 
+        (id, name, threshold, blocknumber, slot, timestamp)
+      values
+        (new.followee_user_id, 'FOLLOWER_COUNT', milestone, new.blocknumber, new.slot, new.created_at)
+      on conflict do nothing;
+      insert into notification
+        (user_ids, type, specifier, blocknumber, timestamp, data)
+        values
+        (
+          ARRAY [new.followee_user_id],
+          'milestone_follower_count',
+          'milestone:FOLLOWER_COUNT:id:' || new.followee_user_id || ':threshold:' || milestone,
+          new.blocknumber,
+          new.created_at,
+          json_build_object('type', 'FOLLOWER_COUNT', 'user_id', new.followee_user_id, 'threshold', milestone)
+        )
     on conflict do nothing;
   end if;
+
+  begin
+    -- create a notification for the followee
+    if new.is_delete is false then
+      insert into notification
+      (blocknumber, user_ids, timestamp, type, specifier, data)
+      values
+      (
+        new.blocknumber,
+        ARRAY [new.followee_user_id],
+        new.created_at,
+        'follow',
+        'follow:' || new.followee_user_id,
+        json_build_object('followee_user_id', new.followee_user_id, 'follower_user_id', new.follower_user_id)
+      )
+      on conflict do nothing;
+    end if;
+	exception
+		when others then null;
+	end;
 
   return null;
 end; 
 $$ language plpgsql;
-
 
 do $$ begin
   create trigger on_follow

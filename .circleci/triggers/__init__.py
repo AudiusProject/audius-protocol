@@ -46,11 +46,14 @@ def standardize_branch(branches):
     return result
 
 
-def ensure_tag_on_master(tag):
-    """Ensure tag has been merged before proceeding"""
+def ensure_commit_on_master(commit):
+    """Ensure commit has been merged before proceeding"""
+    if commit == "master":
+        print("Commit cannot be 'master'.")
+        exit(1)
     try:
         branches = run_cmd(
-            f"git branch -a --contains {tag}", exit_on_error=False
+            f"git branch -a --contains {commit}", exit_on_error=False
         ).split("\n")
     except:
         branches = ["missing"]

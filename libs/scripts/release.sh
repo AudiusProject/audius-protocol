@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 if [[ -z ${1} ]]; then
-    echo "A git tag must be supplied as the first parameter."
+    echo "A git commit must be supplied as the first parameter."
     exit 1
 else
-    GIT_TAG=${1}
+    GIT_COMMIT=${1}
 fi
 
 if [[ $(whoami) != "circleci" ]]; then
@@ -33,53 +33,59 @@ function commit-message () {
 ${CHANGE_LOG}"
 }
 
-# Make a new branch off GIT_TAG, bumps npm,
-# commits with the relevant changelog, and pushes
-function bump-npm () {
-    # Configure git client
-    git config --global user.email "audius-infra@audius.co"
-    git config --global user.name "audius-infra"
+# Pull in master, ensure commit is on master, ensure clean build environment
+function git-reset () {
+    (
+        # Configure git client
+        git config --global user.email "audius-infra@audius.co"
+        git config --global user.name "audius-infra"
 
-    # Make sure master is up to date
-    git checkout master -f
-    git pull
+        # Make sure master is up to date
+        git checkout master -f
+        git pull
 
-    # only allow tags/commits found on master, release branches, or tags to be deployed
-    git branch -a --contains ${GIT_TAG} \
-        | tee /dev/tty \
-        | grep -Eq 'remotes/origin/master|remotes/origin/release' \
-        || (
-            echo "tag not found on master nor release branches"
+        if [[ "${GIT_COMMIT}" == "master" ]]; then
+            echo "Commit cannot be 'master'."
             exit 1
-        )
+        fi
 
-    # Ensure working directory clean
-    git reset --hard ${GIT_TAG}
+        # only allow commits found on master or release branches to be deployed
+        echo "commit has to be on master or a release branch"
+        git branch -a --contains ${GIT_COMMIT} \
+            | tee /dev/tty \
+            | grep -Eq 'remotes/origin/master|remotes/origin/release' \
+            || exit 1
 
-    # grab change log early, before the version bump
-    LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
-    CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
+        # Ensure working directory clean
+        git reset --hard ${GIT_COMMIT}
+    )
+}
 
-    # Patch the version
-    VERSION=$(npm version patch)
-    tmp=$(mktemp)
-    jq ". += {audius: {releaseSHA: \"${GIT_TAG}\"}}" package.json > "$tmp" \
-        && mv "$tmp" package.json
+# Make a new branch off GIT_COMMIT, bumps npm,
+# commits with the relevant changelog, and pushes
+function bump-version () {
+    (
+        # Patch the version
+        VERSION=$(npm version patch)
+        tmp=$(mktemp)
+        jq ". += {audius: {releaseSHA: \"${GIT_COMMIT}\"}}" package.json > "$tmp" \
+            && mv "$tmp" package.json
 
-    # Build project
-    npm i
-    npm run build
+        # Build project
+        npm i
+        npm run build
 
-    # Publishing dry run, prior to pushing a branch
-    npm publish . --access public --dry-run
+        # Publishing dry run, prior to pushing a branch
+        npm publish . --access public --dry-run
 
-    # Commit to a new branch
-    git checkout -b ${STUB}-${VERSION}
-    git add .
-    git commit -m "$(commit-message)"
+        # Commit to a new branch
+        git checkout -b ${STUB}-${VERSION}
+        git add .
+        git commit -m "$(commit-message)"
 
-    # Push branch to remote
-    git push -u origin ${STUB}-${VERSION}
+        # Push branch to remote
+        git push -u origin ${STUB}-${VERSION}
+    )
 }
 
 # Merge the created branch into master, then delete the branch
@@ -128,6 +134,17 @@ function cleanup () {
 STUB=sdk
 cd ${PROTOCOL_DIR}/libs
 
-# perform release
-bump-npm
+# pull in master
+git-reset
+
+# grab change log early, before the version bump
+LAST_RELEASED_SHA=$(jq -r '.audius.releaseSHA' package.json)
+CHANGE_LOG=$(git-changelog ${LAST_RELEASED_SHA})
+
+# perform version bump and perform publishing dry-run
+bump-version
+
+# grab VERSION again since we escaped the bump-version subshell
+VERSION=v$(jq -r '.version' package.json)
+
 merge-bump && publish && info || cleanup

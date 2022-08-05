@@ -35,7 +35,6 @@ const {
   findCIDInNetwork,
   timeout
 } = require('../utils')
-const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
@@ -652,6 +651,8 @@ router.post(
     if (!req.file) {
       return errorResponseBadRequest('Must provide image file in request body.')
     }
+    const imageProcessingQueue =
+      req.app.get('serviceRegistry').imageProcessingQueue
 
     const routestart = Date.now()
     const imageBufferOriginal = req.file.path
@@ -662,7 +663,7 @@ router.post(
     let resizeResp
     try {
       if (req.body.square === 'true') {
-        resizeResp = await ImageProcessingQueue.resizeImage({
+        resizeResp = await imageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
           sizes: {
@@ -674,7 +675,7 @@ router.post(
           logContext: req.logContext
         })
       } /** req.body.square == 'false' */ else {
-        resizeResp = await ImageProcessingQueue.resizeImage({
+        resizeResp = await imageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
           sizes: {

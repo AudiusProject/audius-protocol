@@ -7,7 +7,7 @@ const { Keypair } = require('@solana/web3.js')
 const initializeApp = require('./app')
 const config = require('./config')
 const { sequelize } = require('./models')
-const { runMigrations } = require('./migrationManager')
+const { runMigrations, clearRunningQueries } = require('./migrationManager')
 const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
 
@@ -38,6 +38,7 @@ const runDBMigrations = async () => {
 
 const connectToDBAndRunMigrations = async () => {
   await verifyDBConnection()
+  await clearRunningQueries()
   await runDBMigrations()
 }
 
