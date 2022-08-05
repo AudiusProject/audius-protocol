@@ -5,6 +5,8 @@ declare
   milestone_name text;
   milestone integer;
   owner_user_id int;
+  track_remix_of json;
+  is_remix_cosign boolean;
 begin
 
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
@@ -41,7 +43,7 @@ begin
     where track_id = new.repost_item_id
     returning repost_count into new_val;
   	if new.is_delete IS FALSE then
-		  select owner_id into owner_user_id from tracks where is_current and track_id = new.repost_item_id;
+		  select tracks.owner_id, tracks.remix_of into owner_user_id, track_remix_of from tracks where is_current and track_id = new.repost_item_id;
 	  end if;
   else
     milestone_name := 'PLAYLIST_REPOST_COUNT';
@@ -103,6 +105,28 @@ begin
 	exception
 		when others then null;
 	end;
+
+  -- create a notification for remix cosign
+  if new.is_delete is false and new.repost_type = 'track' and track_remix_of is not null then
+    select
+      case when tracks.owner_id = new.user_id then TRUE else FALSE end as boolean into is_remix_cosign
+      from tracks
+      where is_current and track_id = (track_remix_of->'tracks'->0->>'parent_track_id')::int;
+    if is_remix_cosign then
+      insert into notification
+        (blocknumber, user_ids, timestamp, type, specifier, data)
+        values
+        (
+          new.blocknumber,
+          ARRAY [owner_user_id],
+          new.created_at,
+          'cosign',
+          'cosign:parent_track' || (track_remix_of->'tracks'->0->>'parent_track_id')::int || ':original_track:'|| new.repost_item_id,
+          json_build_object('parent_track_id', (track_remix_of->'tracks'->0->>'parent_track_id')::int, 'track_id', new.repost_item_id, 'track_owner_id', owner_user_id)
+        )
+      on conflict do nothing;
+    end if;
+  end if;
 
   return null;
 end;
