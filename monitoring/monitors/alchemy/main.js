@@ -33,7 +33,7 @@ const METRICS = Object.freeze({
   [metricNames.TOKEN_TRANSFER]: new promClient.Histogram({
     name: `${prefix}${metricNames.TOKEN_TRANSFER}`,
     help: 'Token transfers',
-    buckets: [1, 10, 100, 1000, 10000, 100000],
+    buckets: [100000, 1000000, 10000000, 100000000, 1000000000, 10000000000],
   }),
   [metricNames.API_FAILURE]: new promClient.Gauge({
     name: `${prefix}${metricNames.API_FAILURE}`,
@@ -142,8 +142,6 @@ const monitorTransfers = async () => {
     topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef']
   }).on('data', (data) => {
     try {
-      console.log(data)
-
       balance = parseInt(data.data, 16)
       balance = balance / Math.pow(10, AUDIUS_DECIMALS)
       balance = balance.toFixed(2)
