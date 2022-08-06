@@ -17,6 +17,7 @@ import {
 import { WalletLinkProvider } from 'walletlink'
 
 import { newUserMetadata } from 'common/schemas'
+import { PhantomProvider } from 'common/services/audius-backend'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
@@ -60,7 +61,6 @@ import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
 } from 'pages/profile-page/sagas'
-import { PhantomProvider } from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'

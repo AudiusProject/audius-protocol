@@ -8,9 +8,9 @@ import {
   StringKeys
 } from '@audius/common'
 
+import { AuthHeaders } from 'common/services/audius-backend'
 import { SearchKind } from 'common/store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
-import { AuthHeaders } from 'services/AudiusBackend'
 import { SupporterResponse } from 'services/audius-backend/Tipping'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {

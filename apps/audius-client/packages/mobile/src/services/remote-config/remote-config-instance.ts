@@ -1,5 +1,6 @@
 import { remoteConfig } from '@audius/common'
-import * as optimizely from '@optimizely/react-sdk'
+// eslint-disable-next-line import/no-unresolved -- this module needs to come from web to work for some reason
+import * as optimizely from '@optimizely/optimizely-sdk'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Config from 'react-native-config'
 
