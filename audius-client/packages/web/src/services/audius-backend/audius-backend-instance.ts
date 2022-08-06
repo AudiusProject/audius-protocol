@@ -1,4 +1,4 @@
-import { audiusBackend } from 'services/AudiusBackend'
+import { audiusBackend } from 'common/services/audius-backend'
 import {
   LIBS_INITTED_EVENT,
   waitForLibsInit,
@@ -6,6 +6,7 @@ import {
 } from 'services/audius-backend/eagerLoadUtils'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { monitoringCallbacks } from 'services/serviceMonitoring'
 import { track } from 'store/analytics/providers'
 import { isElectron, isMobile } from 'utils/clientUtil'
 
@@ -21,6 +22,7 @@ export const audiusBackendInstance = audiusBackend({
   ethProviderUrls: (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: process.env.REACT_APP_ETH_REGISTRY_ADDRESS,
   ethTokenAddress: process.env.REACT_APP_ETH_TOKEN_ADDRESS,
+  fetchCID,
   getFeatureEnabled,
   getHostUrl: () => {
     const nativeMobile = process.env.REACT_APP_NATIVE_MOBILE === 'true'
@@ -28,6 +30,7 @@ export const audiusBackendInstance = audiusBackend({
       ? `${process.env.REACT_APP_PUBLIC_PROTOCOL}//${process.env.REACT_APP_PUBLIC_HOSTNAME}`
       : window.location.origin
   },
+  getLibs: () => import('@audius/sdk/dist/legacy'),
   getWeb3Config: async (
     libs,
     registryAddress,
@@ -65,6 +68,7 @@ export const audiusBackendInstance = audiusBackend({
   isElectron: isElectron(),
   isMobile: isMobile(),
   legacyUserNodeUrl: process.env.REACT_APP_LEGACY_USER_NODE,
+  monitoringCallbacks,
   nativeMobile: process.env.REACT_APP_NATIVE_MOBILE === 'true',
   onLibsInit: (libs: any) => {
     window.audiusLibs = libs
@@ -95,6 +99,7 @@ export const audiusBackendInstance = audiusBackend({
   userNodeUrl: process.env.REACT_APP_USER_NODE,
   web3NetworkId: process.env.REACT_APP_WEB3_NETWORK_ID,
   web3ProviderUrls: (process.env.REACT_APP_WEB3_PROVIDER_URL || '').split(','),
+  waitForLibsInit,
   waitForWeb3: async () => {
     if (!window.web3Loaded) {
       await new Promise<void>((resolve) => {
@@ -106,15 +111,13 @@ export const audiusBackendInstance = audiusBackend({
       })
     }
   },
+
+  withEagerOption,
   wormholeConfig: {
     ethBridgeAddress: process.env.REACT_APP_ETH_BRIDGE_ADDRESS,
     ethTokenBridgeAddress: process.env.REACT_APP_ETH_TOKEN_BRIDGE_ADDRESS,
     solBridgeAddress: process.env.REACT_APP_SOL_BRIDGE_ADDRESS,
     solTokenBridgeAddress: process.env.REACT_APP_SOL_TOKEN_BRIDGE_ADDRESS,
     wormholeRpcHosts: process.env.REACT_APP_WORMHOLE_RPC_HOSTS
-  },
-  getLibs: () => import('@audius/sdk/dist/legacy'),
-  withEagerOption,
-  waitForLibsInit,
-  fetchCID
+  }
 })
