@@ -7,8 +7,8 @@ import {
   removeNullable
 } from '@audius/common'
 
+import { AuthHeaders } from 'common/services/audius-backend'
 import { encodeHashId } from 'common/utils/hashIds'
-import { AuthHeaders } from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import * as adapter from 'services/audius-api-client/ResponseAdapter'
 import { APIPlaylist, APITrack } from 'services/audius-api-client/types'

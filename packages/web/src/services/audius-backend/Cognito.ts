@@ -1,4 +1,4 @@
-import { AuthHeaders } from 'services/AudiusBackend'
+import { AuthHeaders } from 'common/services/audius-backend'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
