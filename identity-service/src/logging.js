@@ -33,7 +33,7 @@ function loggingMiddleware (req, res, next) {
     requestUrl: urlParts[0],
     requestQueryParams: urlParts.length > 1 ? urlParts[1] : undefined,
     requestIP: req.ip,
-    requestHeaders: req.header
+    requestHeaders: req.headers
   })
   if (requestNotExcludedFromLogging(req.originalUrl)) {
     req.logger.debug('Begin processing request')
