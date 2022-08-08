@@ -61,7 +61,11 @@ class SyncImmediateQueue {
     })
   }
 
-  async processImmediateSync({
+  /**
+   * Process a manual sync with immediate: true. This holds the promise open until the job finishes processing and returns the result.
+   * It does not return the promise once the job has been added to the queue unlike other queues.
+   */
+  async processManualImmediateSync({
     walletPublicKeys,
     creatorNodeEndpoint,
     forceResync
