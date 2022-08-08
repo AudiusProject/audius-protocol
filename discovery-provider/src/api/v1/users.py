@@ -20,6 +20,8 @@ from src.api.v1.helpers import (
     format_limit,
     format_offset,
     format_query,
+    format_sort_direction,
+    format_sort_method,
     get_current_user_id,
     get_default_max,
     make_full_response,
@@ -615,12 +617,16 @@ class TrackHistoryFull(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
         get_tracks_args = GetUserListeningHistoryArgs(
             user_id=decoded_id,
             current_user_id=current_user_id,
             limit=limit,
             offset=offset,
             query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
         )
         track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
