@@ -21,6 +21,7 @@
   "dependencies": {
     "@audius/sdk": "0.0.15",
     "@bull-board/express": "4.0.1",
+    "@opentelemetry/exporter-jaeger": "^1.5.0",
     "@opentelemetry/instrumentation": "^0.31.0",
     "@opentelemetry/instrumentation-bunyan": "^0.29.0",
     "@opentelemetry/instrumentation-express": "^0.30.0",
