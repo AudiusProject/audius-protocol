@@ -1,4 +1,13 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, String, text
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 from src.models.base import Base
@@ -14,6 +23,7 @@ class Notification(Base, RepresentableMixin):
         server_default=text("nextval('notification_id_seq'::regclass)"),
     )
     specifier = Column(String, nullable=False)
+    group_id = Column(String, nullable=False)
     notification_group_id = Column(Integer, ForeignKey("notification_group.id"))  # type: ignore
     type = Column(String, nullable=False)
     slot = Column(Integer)
@@ -21,6 +31,7 @@ class Notification(Base, RepresentableMixin):
     timestamp = Column(DateTime, nullable=False)
     data = Column(postgresql.JSONB())  # type: ignore
     user_ids = Column(postgresql.ARRAY(Integer()), index=True)
+    UniqueConstraint("specifier", "group_id", name="uq_notification")
 
 
 class NotificationGroup(Base, RepresentableMixin):

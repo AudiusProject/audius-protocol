@@ -38,7 +38,8 @@ def test_challenge_disbursement_notification(app):
         )
         assert len(notifications) == 3
 
-        assert notifications[0].specifier == "challenge_reward:1:2"
+        assert notifications[0].specifier == "1"
+        assert notifications[0].group_id == "challenge_reward:1:2"
         assert notifications[0].notification_group_id == None
         assert notifications[0].type == "challenge_reward"
         assert notifications[0].slot == 2

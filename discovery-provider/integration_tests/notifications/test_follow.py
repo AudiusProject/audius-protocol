@@ -30,10 +30,14 @@ def test_repost_notification(app):
             session.query(Notification).order_by(asc(Notification.blocknumber)).all()
         )
         assert len(notifications) == 4
-        assert notifications[0].specifier == "follow:1"
-        assert notifications[1].specifier == "follow:2"
-        assert notifications[2].specifier == "follow:3"
-        assert notifications[3].specifier == "follow:4"
+        assert notifications[0].group_id == "follow:1"
+        assert notifications[0].specifier == "2"
+        assert notifications[1].group_id == "follow:2"
+        assert notifications[1].specifier == "3"
+        assert notifications[2].group_id == "follow:3"
+        assert notifications[2].specifier == "4"
+        assert notifications[3].group_id == "follow:4"
+        assert notifications[3].specifier == "5"
         assert notifications[0].notification_group_id == None
         assert notifications[0].type == "follow"
         assert notifications[0].slot == None
