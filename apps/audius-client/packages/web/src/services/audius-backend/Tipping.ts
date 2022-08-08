@@ -1,6 +1,6 @@
 import { Supporter, Supporting, UserTip } from '@audius/common'
 
-import { APIUser } from 'services/audius-api-client/types'
+import { APIUser } from 'common/services/audius-api-client/types'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 export const TIPPING_SUPPORT_DEFAULT_LIMIT = 25
@@ -14,6 +14,7 @@ export type SupportingResponse = Omit<Supporting, 'receiver_id'> & {
 export type SupporterResponse = Omit<Supporter, 'sender_id'> & {
   sender: APIUser
 }
+
 export type SupportRequest = {
   encodedUserId: string
   limit?: number

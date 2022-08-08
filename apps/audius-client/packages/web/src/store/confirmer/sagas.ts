@@ -1,6 +1,6 @@
 import { call, delay, put, race, select, takeEvery } from 'redux-saga/effects'
 
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import * as confirmerActions from 'store/confirmer/actions'
 import {
   getResult,

@@ -7,7 +7,7 @@ import Config from 'react-native-config'
 // https://dev.to/edmondso006/react-native-local-ios-and-android-notifications-2c58
 import PushNotification from 'react-native-push-notification'
 
-import { dispatch } from 'app/App'
+import { dispatch } from 'app/store'
 import { open } from 'app/store/notifications/actions'
 import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import { EventNames } from 'app/types/analytics'

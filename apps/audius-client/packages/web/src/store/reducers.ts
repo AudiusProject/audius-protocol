@@ -35,9 +35,7 @@ import dragndrop from 'store/dragndrop/reducer'
 import player from 'store/player/slice'
 import playlistLibrary from 'store/playlist-library/slice'
 
-import { webStoreContext } from './storeContext'
-
-export const commonStoreReducers = clientStoreReducers(webStoreContext)
+export const commonStoreReducers = clientStoreReducers()
 
 const createRootReducer = (routeHistory: History) =>
   combineReducers({

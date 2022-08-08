@@ -16,8 +16,6 @@ import { UsersCacheState } from './users/types'
 
 /**
  * Selects from the cache and strips away cache-only fields.
- * @param {CommonState} state
- * @param {object} props { kind, id?, uid? }
  */
 export function getEntry(
   state: CommonState,
@@ -73,8 +71,6 @@ export function getEntry(
 
 /**
  * Selects the timestamps from the cache.
- * @param {CommonState} state
- * @param {object} props { kind, ids }
  */
 export const getEntryTimestamp = (
   state: CommonState,
@@ -89,9 +85,6 @@ export const getEntryTimestamp = (
 
 /**
  * Gets all cache entries and strips away cache-only fields.
- * @param {CommonState} state
- * @param {object} props { kind }
- * @returns {object}
  */
 export function getAllEntries(
   state: CommonState,

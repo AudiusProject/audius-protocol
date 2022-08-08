@@ -12,7 +12,7 @@ import { open as openTikTokModal } from 'common/store/ui/share-sound-to-tiktok-m
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
 import { useFlag } from 'hooks/useRemoteConfig'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { useRecord, make } from 'store/analytics/actions'
 import { copyLinkToClipboard } from 'utils/clipboardUtil'

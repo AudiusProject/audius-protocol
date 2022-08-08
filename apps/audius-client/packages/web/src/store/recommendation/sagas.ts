@@ -2,7 +2,7 @@ import { ID, UserTrack, Nullable } from '@audius/common'
 import { call } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import Explore from 'services/audius-backend/Explore'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 

@@ -2,7 +2,7 @@ import { ID, BNWei, StringWei, WalletAddress } from '@audius/common'
 import BN from 'bn.js'
 
 import { stringWeiToBN } from 'common/utils/wallet'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 // 0.001 Audio

@@ -1,5 +1,5 @@
 import remoteConfig from 'audius-client/src/common/store/remote-config/sagas'
-import { all, fork } from 'redux-saga/effects'
+import { all, fork } from 'typed-redux-saga/macro'
 
 import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
 
@@ -12,5 +12,5 @@ export default function* rootSaga() {
     ...remoteConfig(remoteConfigInstance),
     ...oauthSagas()
   ]
-  yield all(sagas.map(fork))
+  yield* all(sagas.map(fork))
 }

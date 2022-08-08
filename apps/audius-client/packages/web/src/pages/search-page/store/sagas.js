@@ -9,7 +9,7 @@ import * as searchPageActions from 'common/store/pages/search-results/actions'
 import { tracksActions as tracksLineupActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import { trimToAlphaNumeric } from 'common/utils/formatUtil'
 import tracksSagas from 'pages/search-page/store/lineups/tracks/sagas'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForBackendSetup } from 'store/backend/sagas'
 

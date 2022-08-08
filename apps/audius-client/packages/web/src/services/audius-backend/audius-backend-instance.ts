@@ -1,3 +1,5 @@
+import type { AudiusLibs } from '@audius/sdk'
+
 import { audiusBackend } from 'common/services/audius-backend'
 import {
   LIBS_INITTED_EVENT,
@@ -70,7 +72,7 @@ export const audiusBackendInstance = audiusBackend({
   legacyUserNodeUrl: process.env.REACT_APP_LEGACY_USER_NODE,
   monitoringCallbacks,
   nativeMobile: process.env.REACT_APP_NATIVE_MOBILE === 'true',
-  onLibsInit: (libs: any) => {
+  onLibsInit: (libs: AudiusLibs) => {
     window.audiusLibs = libs
     const event = new CustomEvent(LIBS_INITTED_EVENT)
     window.dispatchEvent(event)

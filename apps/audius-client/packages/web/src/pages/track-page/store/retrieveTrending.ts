@@ -17,7 +17,7 @@ import {
   getTrendingGenre
 } from 'common/store/pages/trending/selectors'
 import { Genre } from 'common/utils/genres'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { AppState } from 'store/types'
 

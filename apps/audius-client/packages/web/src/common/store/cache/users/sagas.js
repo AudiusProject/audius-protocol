@@ -23,7 +23,7 @@ import {
   getAudiusAccountUser,
   setAudiusAccountUser
 } from 'services/LocalStorage'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForValue } from 'utils/sagaHelpers'
 

@@ -18,7 +18,7 @@ import {
 } from 'common/store/pages/track/selectors'
 import { getIsReachable } from 'common/store/reachability/selectors'
 import tracksSagas from 'pages/track-page/store/lineups/tracks/sagas'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'

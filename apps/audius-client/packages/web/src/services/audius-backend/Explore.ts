@@ -7,11 +7,11 @@ import {
   removeNullable
 } from '@audius/common'
 
+import * as adapter from 'common/services/audius-api-client/ResponseAdapter'
+import { APIPlaylist, APITrack } from 'common/services/audius-api-client/types'
 import { AuthHeaders } from 'common/services/audius-backend'
 import { encodeHashId } from 'common/utils/hashIds'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import * as adapter from 'services/audius-api-client/ResponseAdapter'
-import { APIPlaylist, APITrack } from 'services/audius-api-client/types'
+import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 type CollectionWithScore = APIPlaylist & { score: number }
