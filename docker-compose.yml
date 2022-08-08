@@ -182,6 +182,7 @@ services:
       SOLANA_REWARD_MANAGER_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
       SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
       SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
+      SOLANA_FEEPAYER_SECRET_KEY: "${SOLANA_FEEPAYER_SECRET_KEY}"
 
       IDENTITY_SERVICE_URL: "http://identity-service:7000"
       FALLBACK_CREATOR_NODE_URL: "http://creator-node:4000" # this should choose a random cn everytime this is run
@@ -351,6 +352,8 @@ services:
       rateLimitingBatchCidsExistLimit: 1
       maxAudioFileSizeBytes: 250000000
       maxMemoryFileSizeBytes: 50000000
+
+      identityService: "http://identity-service:7000"
 
       ethProviderUrl: "http://eth-ganache:8545"
       ethTokenAddress: "${ETH_TOKEN_ADDRESS}"

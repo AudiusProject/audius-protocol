@@ -38,9 +38,9 @@ def generate_env(protocol_dir, creator_node_replicas):
     bootstrap_sp_ids = []
     bootstrap_sp_owner_wallets = []
     for replica in range(creator_node_replicas):
-        if f"CN{replica}_SP_OWNER_ADDRESS" in env:
+        if f"CN{replica + 1}_SP_OWNER_ADDRESS" in env:
             bootstrap_sp_ids.append(str(replica + 1))
-            bootstrap_sp_owner_wallets.append(env[f"CN{replica}_SP_OWNER_ADDRESS"])
+            bootstrap_sp_owner_wallets.append(env[f"CN{replica + 1}_SP_OWNER_ADDRESS"])
     env["BOOTSTRAP_SP_IDS"] = ",".join(bootstrap_sp_ids)
     env["BOOTSTRAP_SP_OWNER_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
     env["BOOTSTRAP_SP_DELEGATE_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
@@ -157,6 +157,10 @@ def exec(protocol_dir, service, command, args):
             "--index",
             str(index),
             service,
+            "sh",
+            "-c",
+            'while IFS= read -rd "" var; do export "$var"; done </proc/1/environ; exec "$@"',
+            "-",
             command,
             *args,
         ],
