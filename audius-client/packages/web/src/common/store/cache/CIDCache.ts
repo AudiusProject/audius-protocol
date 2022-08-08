@@ -6,6 +6,7 @@
 const MAX_SIZE = 2000
 
 class ContentIdentifierCache {
+  cache: Map<string, string>
   constructor() {
     // Acts as an LRU cache
     this.cache = new Map()
@@ -13,26 +14,22 @@ class ContentIdentifierCache {
 
   /**
    * Check if a CID is in the cache
-   * @param {string} cid
    */
-  has(cid) {
+  has(cid: string) {
     return this.cache.has(cid)
   }
 
   /**
    * Retrieve the URL for an cid
-   * @param {string} cid
    */
-  get(cid) {
+  get(cid: string) {
     return this.cache.get(cid)
   }
 
   /**
    * Adds an cid reference to a URL
-   * @param {string} cid
-   * @param {string} url a local url, e.g. one created by URL.createObjectURL().
    */
-  add(cid, url) {
+  add(cid: string, url: string) {
     this.cache.set(cid, url)
     if (this.cache.size > MAX_SIZE) {
       const firstKey = this.cache.keys().next().value
@@ -41,6 +38,4 @@ class ContentIdentifierCache {
   }
 }
 
-const CIDCache = new ContentIdentifierCache()
-window.CIDCache = CIDCache
-export default CIDCache
+export const CIDCache = new ContentIdentifierCache()

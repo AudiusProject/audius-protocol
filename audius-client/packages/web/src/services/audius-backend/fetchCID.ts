@@ -1,6 +1,6 @@
 import { CID, ID, Nullable } from '@audius/common'
 
-import CIDCache from 'common/store/cache/CIDCache'
+import { CIDCache } from 'common/store/cache'
 import { getErrorMessage } from 'common/utils/error'
 
 import { waitForLibsInit } from './eagerLoadUtils'

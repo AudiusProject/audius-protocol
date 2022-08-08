@@ -5,7 +5,7 @@ import { call, put, select, takeEvery } from 'redux-saga/effects'
 
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import * as artistRecommendationsActions from './slice'

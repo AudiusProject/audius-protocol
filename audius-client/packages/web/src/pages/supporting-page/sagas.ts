@@ -1,6 +1,7 @@
 import { ID, User, UserMetadata } from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
+import * as adapter from 'common/services/audius-api-client/ResponseAdapter'
 import { getUser } from 'common/store/cache/users/selectors'
 import { setSupportingForUser } from 'common/store/tipping/slice'
 import { SupportingMapForUser } from 'common/store/tipping/types'
@@ -16,7 +17,6 @@ import { USER_LIST_TAG } from 'common/store/user-list/supporting/types'
 import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
 import { stringWeiToBN } from 'common/utils/wallet'
 import { createUserListProvider } from 'components/user-list/utils'
-import * as adapter from 'services/audius-api-client/ResponseAdapter'
 import {
   fetchSupporting,
   SupportingResponse

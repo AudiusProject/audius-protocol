@@ -60,7 +60,7 @@ import {
   weiToAudioString,
   weiToString
 } from 'common/utils/wallet'
-import AudiusAPIClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import {
   fetchRecentUserTips,
   fetchSupporters,
@@ -694,14 +694,11 @@ function* fetchUserSupporterAsync(
 ) {
   const { currentUserId, userId, supporterUserId } = action.payload
   try {
-    const response = yield* call(
-      [AudiusAPIClient, AudiusAPIClient.getUserSupporter],
-      {
-        currentUserId,
-        userId,
-        supporterUserId
-      }
-    )
+    const response = yield* call([apiClient, apiClient.getUserSupporter], {
+      currentUserId,
+      userId,
+      supporterUserId
+    })
     if (response) {
       const supportingMap = yield* select(getSupporting)
       yield put(

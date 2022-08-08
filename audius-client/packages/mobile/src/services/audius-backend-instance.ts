@@ -10,6 +10,13 @@ import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
 
+// TODO: declare this at the root and use actual audiusLibs type
+declare global {
+  interface Window {
+    audiusLibs: any
+  }
+}
+
 let audiusLibs: AudiusLibs
 
 /**

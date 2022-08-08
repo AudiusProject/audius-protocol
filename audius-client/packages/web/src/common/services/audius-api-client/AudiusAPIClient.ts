@@ -5,19 +5,21 @@ import {
   Nullable,
   removeNullable,
   IntKeys,
-  StringKeys
+  StringKeys,
+  RemoteConfigInstance
 } from '@audius/common'
+import { AudiusLibs } from '@audius/sdk'
 
 import { AuthHeaders } from 'common/services/audius-backend'
 import { SearchKind } from 'common/store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
-import { SupporterResponse } from 'services/audius-backend/Tipping'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import type { SupporterResponse } from 'services/audius-backend/Tipping'
 import {
   getEagerDiscprov,
   waitForLibsInit
 } from 'services/audius-backend/eagerLoadUtils'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+
+import type { AudiusBackend } from '../audius-backend'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
@@ -34,6 +36,7 @@ import {
   OpaqueID
 } from './types'
 
+// TODO: declare this at the root and use actual audiusLibs type
 declare global {
   interface Window {
     audiusLibs: any
@@ -419,15 +422,33 @@ type GetUserSupporterArgs = {
   currentUserId: Nullable<ID>
 }
 
-class AudiusAPIClient {
+type AudiusAPIClientConfig = {
+  audiusBackendInstance: AudiusBackend
+  audiusLibs?: AudiusLibs
+  overrideEndpoint?: string
+  remoteConfigInstance: RemoteConfigInstance
+}
+
+export class AudiusAPIClient {
   initializationState: InitializationState = {
     state: 'uninitialized'
   }
 
+  audiusBackendInstance: AudiusBackend
+  audiusLibs?: AudiusLibs
   overrideEndpoint?: string
+  remoteConfigInstance: RemoteConfigInstance
 
-  constructor({ overrideEndpoint }: { overrideEndpoint?: string } = {}) {
+  constructor({
+    audiusBackendInstance,
+    audiusLibs,
+    overrideEndpoint,
+    remoteConfigInstance
+  }: AudiusAPIClientConfig) {
+    this.audiusBackendInstance = audiusBackendInstance
+    this.audiusLibs = audiusLibs
     this.overrideEndpoint = overrideEndpoint
+    this.remoteConfigInstance = remoteConfigInstance
   }
 
   async getTrending({
@@ -446,7 +467,7 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined,
       genre: genre || undefined
     }
-    const experiment = remoteConfigInstance.getRemoteVar(
+    const experiment = this.remoteConfigInstance.getRemoteVar(
       StringKeys.TRENDING_EXPERIMENT
     )
     const trendingResponse: Nullable<APIResponse<APITrack[]>> =
@@ -472,7 +493,7 @@ class AudiusAPIClient {
       offset,
       user_id: encodedCurrentUserId
     }
-    const experiment = remoteConfigInstance.getRemoteVar(
+    const experiment = this.remoteConfigInstance.getRemoteVar(
       StringKeys.UNDERGROUND_TRENDING_EXPERIMENT
     )
     const trendingResponse: Nullable<APIResponse<APITrack[]>> =
@@ -495,7 +516,7 @@ class AudiusAPIClient {
       limit,
       genre: genre || undefined
     }
-    const experiment = remoteConfigInstance.getRemoteVar(
+    const experiment = this.remoteConfigInstance.getRemoteVar(
       StringKeys.TRENDING_EXPERIMENT
     )
     const trendingIdsResponse: Nullable<APIResponse<TrendingIdsResponse>> =
@@ -534,7 +555,8 @@ class AudiusAPIClient {
     const encodedCurrentUserId = encodeHashId(currentUserId)
     const params = {
       genre,
-      limit: remoteConfigInstance.getRemoteVar(IntKeys.AUTOPLAY_LIMIT) || 10,
+      limit:
+        this.remoteConfigInstance.getRemoteVar(IntKeys.AUTOPLAY_LIMIT) || 10,
       exclusion_list:
         exclusionList.length > 0 ? exclusionList.map(String) : undefined,
       user_id: encodedCurrentUserId || undefined
@@ -918,7 +940,7 @@ class AudiusAPIClient {
     let headers = {}
     if (encodedCurrentUserId && getUnlisted) {
       const { data, signature } =
-        await audiusBackendInstance.signDiscoveryNodeRequest()
+        await this.audiusBackendInstance.signDiscoveryNodeRequest()
       headers = {
         [AuthHeaders.Message]: data,
         [AuthHeaders.Signature]: signature
@@ -1144,7 +1166,7 @@ class AudiusAPIClient {
       time
     }
 
-    const experiment = remoteConfigInstance.getRemoteVar(
+    const experiment = this.remoteConfigInstance.getRemoteVar(
       StringKeys.PLAYLIST_TRENDING_EXPERIMENT
     )
     const response: Nullable<APIResponse<APIPlaylist[]>> =
@@ -1410,7 +1432,7 @@ class AudiusAPIClient {
     }
 
     // Listen for libs on chain selection
-    audiusBackendInstance.addDiscoveryProviderSelectionListener(
+    this.audiusBackendInstance.addDiscoveryProviderSelectionListener(
       (endpoint: string | null) => {
         if (endpoint) {
           console.debug(`APIClient: Setting to libs discprov: ${endpoint}`)
@@ -1463,8 +1485,11 @@ class AudiusAPIClient {
     }, {})
 
     const formattedPath = this._formatPath(pathType, path)
-    if (this.initializationState.type === 'libs' && window.audiusLibs) {
-      const data = await window.audiusLibs.discoveryProvider._makeRequest(
+    const audiusLibs =
+      this.audiusLibs ??
+      (this.initializationState.type === 'libs' && window.audiusLibs)
+    if (audiusLibs) {
+      const data = await audiusLibs.discoveryProvider._makeRequest(
         {
           endpoint: formattedPath,
           queryParams: sanitizedParams,
@@ -1542,7 +1567,3 @@ class AudiusAPIClient {
     return `${this.initializationState.endpoint}${path}?${params}`
   }
 }
-
-const instance = new AudiusAPIClient()
-
-export default instance
