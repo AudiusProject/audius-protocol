@@ -140,7 +140,7 @@ const syncRouteController = async (req, res) => {
         blockNumber,
         forceResyncConfig: {
           forceResync: req.body.forceResync,
-          apiSigning: {
+          signatureData: {
             timestamp: req.body.timestamp,
             signature: req.body.signature,
             data
