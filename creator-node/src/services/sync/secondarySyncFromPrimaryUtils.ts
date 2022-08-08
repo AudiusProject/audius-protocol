@@ -1,5 +1,4 @@
 import type {
-  ForceResyncAuthParams,
   ForceResyncConfig,
   ForceResyncSigningData,
   SyncRequestAxiosData
@@ -10,6 +9,8 @@ const _ = require('lodash')
 const { logger: genericLogger } = require('../../logging')
 const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
 const { recoverWallet } = require('../../apiSigning')
+
+const asyncRetry = require('../../utils/asyncRetry')
 
 const generateDataForSignatureRecovery = (
   body: SyncRequestAxiosData
@@ -65,8 +66,12 @@ const shouldForceResync = async (
 
   try {
     // Get the delegate wallet from the primary of the observed user
-    const userPrimaryId = (await libs.User.getUsers(1, 0, null, wallet))[0]
-      .primary_id
+    const userPrimaryId = await asyncRetry({
+      asyncFn: async () => {
+        return (await libs.User.getUsers(1, 0, null, wallet))[0].primary_id
+      },
+      logLabel: 'shouldForceResync'
+    })
     const { delegateOwnerWallet: actualPrimaryWallet } =
       ContentNodeInfoManager.getContentNodeInfoFromSpId(userPrimaryId)
 

@@ -14,7 +14,7 @@ const {
 const { ensureStorageMiddleware } = require('../../middlewares')
 const {
   enqueueSync,
-  processSyncOfTypeImmediate
+  processManualImmediateSync
 } = require('./syncQueueComponentService')
 const {
   generateDataForSignatureRecovery
@@ -105,7 +105,7 @@ const syncRouteController = async (req, res) => {
 
   if (immediate) {
     try {
-      await processSyncOfTypeImmediate({
+      await processManualImmediateSync({
         serviceRegistry,
         wallet,
         creatorNodeEndpoint: primaryEndpoint,

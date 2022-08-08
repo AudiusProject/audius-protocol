@@ -11,12 +11,12 @@ const enqueueSync = async (params) => {
  * Enqueues an sync of MANUAL that will operate immediately
  * @param {Object} params See the SyncImmediateQueue for explicit params
  */
-const processSyncOfTypeImmediate = async (params) => {
+const processManualImmediateSync = async (params) => {
   const { serviceRegistry } = params
-  await serviceRegistry.syncImmediateQueue.processSyncOfTypeImmediate(params)
+  await serviceRegistry.syncImmediateQueue.processManualImmediateSync(params)
 }
 
 module.exports = {
   enqueueSync,
-  processSyncOfTypeImmediate
+  processManualImmediateSync
 }
