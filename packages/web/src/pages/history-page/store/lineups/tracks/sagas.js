@@ -8,7 +8,7 @@ import {
   PREFIX,
   tracksActions
 } from 'common/store/pages/history-page/lineups/tracks/actions'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { LineupSagas } from 'store/lineup/sagas'
 
 function* getHistoryTracks() {

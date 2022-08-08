@@ -8,7 +8,7 @@ import {
   trendingUndergroundLineupActions
 } from 'common/store/pages/trending-underground/lineup/actions'
 import { getLineup } from 'common/store/pages/trending-underground/lineup/selectors'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { LineupSagas } from 'store/lineup/sagas'
 

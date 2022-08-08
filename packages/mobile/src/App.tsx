@@ -20,7 +20,7 @@ import useConnectivity from 'app/components/web/useConnectivity'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import PushNotifications from 'app/notifications'
 import { RootScreen } from 'app/screens/root-screen'
-import createStore from 'app/store'
+import { store } from 'app/store'
 import { setup as setupAnalytics } from 'app/utils/analytics'
 
 import { Drawers } from './Drawers'
@@ -30,9 +30,6 @@ import { WebAppManager } from './WebAppManager'
 Sentry.init({
   dsn: Config.SENTRY_DSN
 })
-
-const store = createStore()
-export const dispatch = store.dispatch
 
 const Airplay = Platform.select({
   ios: () => require('./components/audio/Airplay').default,

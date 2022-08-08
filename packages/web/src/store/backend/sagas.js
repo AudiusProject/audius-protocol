@@ -12,7 +12,7 @@ import {
 import * as accountActions from 'common/store/account/reducer'
 import * as reachabilityActions from 'common/store/reachability/actions'
 import { getIsReachable } from 'common/store/reachability/selectors'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import fingerprintClient from 'services/fingerprint/FingerprintClient'
 import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecycle'
