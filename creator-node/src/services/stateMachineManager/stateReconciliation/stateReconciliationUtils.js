@@ -10,6 +10,8 @@ const {
   HEALTHY_SERVICES_TTL_SEC
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+const { trace, context, SpanStatusCode } = require('@opentelemetry/api')
+const { getTracer } = require('../../../tracer')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
@@ -103,8 +105,16 @@ const issueSyncRequestsUntilSynced = async (
   wallet,
   primaryClockVal,
   timeoutMs,
-  queue
+  queue,
+  syncSpan
 ) => {
+  const ctx = trace.setSpan(context.active(), syncSpan)
+  const span = getTracer().startSpan(
+    'issueSyncRequestsUntilSynced',
+    undefined,
+    ctx
+  )
+
   // Issue syncRequest before polling secondary for replication
   const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
     userWallet: wallet,
@@ -121,11 +131,13 @@ const issueSyncRequestsUntilSynced = async (
   } else if (!_.isEmpty(syncReqToEnqueue)) {
     await queue.add({
       enqueuedBy: 'issueSyncRequestsUntilSynced',
+      syncSpan,
       ...syncReqToEnqueue
     })
   } else {
     // Log error that the sync request couldn't be created and return
     logger.error(`Failed to create manual sync request`)
+    span.end()
     return
   }
 
@@ -153,11 +165,14 @@ const issueSyncRequestsUntilSynced = async (
       // NOTE - we might want to make this timeout longer
       await Utils.timeout(500)
     } catch (e) {
+      span.recordException(e)
+      span.setStatus({ code: SpanStatusCode.ERROR })
       // do nothing and let while loop continue
     }
   }
 
   // This condition will only be hit if the secondary has failed to sync within timeoutMs
+  span.end()
   throw new Error(
     `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
   )

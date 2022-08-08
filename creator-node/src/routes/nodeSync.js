@@ -1,4 +1,5 @@
 const express = require('express')
+const { trace, context, SpanStatusCode } = require('@opentelemetry/api')
 
 const models = require('../models')
 const {
@@ -10,6 +11,7 @@ const {
 const config = require('../config')
 const retry = require('async-retry')
 const exportComponentService = require('../components/replicaSet/exportComponentService')
+const { getTracer } = require('../tracer')
 
 const router = express.Router()
 
@@ -25,6 +27,10 @@ const router = express.Router()
 router.get(
   '/export',
   handleResponse(async (req, res) => {
+    const parentSpan = trace.getSpan(context.active())
+    const ctx = trace.setSpan(context.active(), parentSpan)
+    const span = getTracer().startSpan('try export with retry', undefined, ctx)
+
     const start = Date.now()
 
     const walletPublicKeys = req.query.wallet_public_key // array
@@ -46,7 +52,8 @@ router.get(
             requestedClockRangeMin,
             requestedClockRangeMax,
             forceExport,
-            logger: req.logger
+            logger: req.logger,
+            parentSpan: span
           })
         },
         {
@@ -62,8 +69,11 @@ router.get(
         } ms`
       )
 
+      span.end()
       return successResponse({ cnodeUsers: cnodeUsersDict })
     } catch (e) {
+      span.recordException(e)
+      span.setStatus({ code: SpanStatusCode.ERROR })
       req.logger.error(
         `Error in /export for wallets ${walletPublicKeys} to source endpoint ${
           sourceEndpoint || '(not provided)'
@@ -72,6 +82,7 @@ router.get(
         } ms ||`,
         e
       )
+      span.end()
       return errorResponseServerError(e.message)
     }
   })

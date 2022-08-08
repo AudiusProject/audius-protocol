@@ -1,8 +1,10 @@
 const _ = require('lodash')
+const { trace, context, SpanStatusCode } = require('@opentelemetry/api')
 
 const models = require('../../models')
 const { Transaction } = require('sequelize')
 const DBManager = require('../../dbManager')
+const { getTracer } = require('../../tracer')
 
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
@@ -16,8 +18,12 @@ const exportComponentService = async ({
   requestedClockRangeMin,
   requestedClockRangeMax,
   forceExport = false,
-  logger
+  logger,
+  parentSpan
 }) => {
+  const ctx = trace.setSpan(context.active(), parentSpan)
+  const span = getTracer().startSpan(`exportComponentService`, undefined, ctx)
+
   const transaction = await models.sequelize.transaction({
     isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
   })
@@ -145,8 +151,11 @@ const exportComponentService = async ({
 
     await transaction.commit()
 
+    span.end()
     return cnodeUsersDict
   } catch (e) {
+    span.recordException(e)
+    span.setStatus({ code: SpanStatusCode.ERROR })
     await transaction.rollback()
 
     for (const cnodeUserUUID in cnodeUsersDict) {
@@ -158,11 +167,14 @@ const exportComponentService = async ({
           `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() executed - numRowsUpdated:${numRowsUpdated}`
         )
       } catch (e) {
+        span.recordException(e)
+        span.setStatus({ code: SpanStatusCode.ERROR })
         logger.error(
           `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() error - ${e.message}`
         )
       }
     }
+    span.end()
     throw new Error(e)
   }
 }

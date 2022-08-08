@@ -1,4 +1,5 @@
 const promiseAny = require('promise.any')
+const { trace, context } = require('@opentelemetry/api')
 
 const {
   sendResponse,
@@ -18,6 +19,7 @@ const BlacklistManager = require('./blacklistManager')
 const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
+const { getTracer } = require('./tracer')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -263,6 +265,14 @@ async function issueAndWaitForSecondarySyncRequests(
   req,
   ignoreWriteQuorum = false
 ) {
+  const syncSpan = getTracer().startSpan('syncSpan')
+  const ctx = trace.setSpan(context.active(), syncSpan)
+  const span = getTracer().startSpan(
+    'issueAndWaitForSecondarySyncRequest',
+    undefined,
+    ctx
+  )
+
   const route = req.url.split('?')[0]
   const serviceRegistry = req.app.get('serviceRegistry')
   const { manualSyncQueue, prometheusRegistry } = serviceRegistry
@@ -306,6 +316,7 @@ async function issueAndWaitForSecondarySyncRequests(
     )})`
     req.logger.error(errorMsg)
     if (enforceWriteQuorum) {
+      span.end()
       throw new Error(errorMsg)
     }
     return
@@ -322,6 +333,7 @@ async function issueAndWaitForSecondarySyncRequests(
     const errorMsg = `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
     req.logger.error(errorMsg)
     if (enforceWriteQuorum) {
+      span.end()
       throw new Error(errorMsg)
     }
     return
@@ -344,8 +356,10 @@ async function issueAndWaitForSecondarySyncRequests(
         'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
       req.logger.error(errorMsg)
       if (enforceWriteQuorum) {
+        span.end()
         throw new Error(errorMsg)
       }
+      span.end()
       return
     }
 
@@ -392,7 +406,8 @@ async function issueAndWaitForSecondarySyncRequests(
           wallet,
           primaryClockVal,
           pollingDurationMs,
-          manualSyncQueue
+          manualSyncQueue,
+          syncSpan
         )
       })
 
@@ -442,11 +457,13 @@ async function issueAndWaitForSecondarySyncRequests(
       e.message
     )
     if (enforceWriteQuorum) {
+      span.end()
       throw new Error(
         `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
       )
     }
   }
+  span.end()
 }
 
 /**

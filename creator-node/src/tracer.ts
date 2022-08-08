@@ -57,4 +57,4 @@ export const getTracer = () => {
   return trace.getTracer(SERVICE_NAME)
 }
 
-module.exports = { setupTracing }
+module.exports = { setupTracing, getTracer }
