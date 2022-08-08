@@ -58,8 +58,8 @@ def entity_manager_update(
         users_to_fetch: Set[int] = set()
 
         # collect events by entity type and action
-        collect_entities_to_fetch(
-            update_task, entity_manager_txs, entities_to_fetch, users_to_fetch
+        entities_to_fetch = collect_entities_to_fetch(
+            update_task, entity_manager_txs, users_to_fetch
         )
 
         # fetch existing playlists
@@ -276,9 +276,9 @@ def delete_playlist(params: ManagePlaylistParameters):
 def collect_entities_to_fetch(
     update_task,
     entity_manager_txs,
-    entities_to_fetch: Dict[EntityType, Set[int]],
     users_to_fetch: Set[int],
 ):
+    entities_to_fetch: Dict[EntityType, Set[int]] = {}
     for tx_receipt in entity_manager_txs:
         entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
         for event in entity_manager_event_tx:
@@ -288,6 +288,7 @@ def collect_entities_to_fetch(
 
             entities_to_fetch[entity_type].add(entity_id)
             users_to_fetch.add(user_id)
+    return entities_to_fetch
 
 
 def fetch_existing_entities(
@@ -352,7 +353,9 @@ def get_entity_manager_events_tx(update_task, tx_receipt):
     )().processReceipt(tx_receipt)
 
 
-def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):
+def process_playlist_contents(
+    playlist_record: Playlist, playlist_metadata, block_integer_time
+):
     # mapping of track's metadata time to index time
     metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
     for track in playlist_record.playlist_contents["track_ids"]:

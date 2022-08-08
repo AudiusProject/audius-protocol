@@ -392,6 +392,17 @@ export class DiscoveryProvider {
   }
 
   /**
+   * Check if playlist ID is occupied
+   * @param playlistId encoded string of playlist ID
+   * @returns true if occupied
+   */
+  async getPlaylistIsOccupied(playlistId: string): Promise<unknown> {
+    const req = Requests.getPlaylistIsOccupied(playlistId)
+    const resp = await this._makeRequest(req)
+    return resp
+  }
+
+  /**
    * Return social feed for current user
    * @param filter - filter by "all", "original", or "repost"
    * @param limit - max # of items to return

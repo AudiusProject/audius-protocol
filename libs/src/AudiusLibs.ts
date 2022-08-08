@@ -45,7 +45,7 @@ import { Keypair, PublicKey } from '@solana/web3.js'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
-import type { EntityManager } from './api/entityManager'
+import { EntityManager } from './api/entityManager'
 
 
 type LibsIdentityServiceConfig = {
@@ -147,7 +147,7 @@ export class AudiusLibs {
     // network chain id
     networkId: string,
     // wallet address to force use instead of the first wallet on the provided web3
-    walletOverride: Nullable<string> = null
+    walletOverride: Nullable<string> = null,
     // entity manager address
     entityManagerAddress: Nullable<string> = null
   ) {
@@ -369,6 +369,7 @@ export class AudiusLibs {
   File: Nullable<File>
   Rewards: Nullable<Rewards>
   Reactions: Nullable<Reactions>
+  EntityManager: Nullable<EntityManager>
 
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
@@ -450,6 +451,7 @@ export class AudiusLibs {
     this.File = null
     this.Rewards = null
     this.Reactions = null
+    this.EntityManager = null
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries

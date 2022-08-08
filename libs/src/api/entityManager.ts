@@ -1,7 +1,6 @@
 import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
-import type { Nullable } from '../utils'
-import web3 from '../web3'
+import { Nullable, Utils } from '../utils'
 
 export enum Action {
   CREATE = 'Create',
@@ -31,6 +30,8 @@ export interface PlaylistOperationResponse {
    */
   error: Nullable<string>
 }
+
+const { encodeHashId } = Utils
 
 // Minimum playlist ID, intentionally higher than legacy playlist ID range
 const MIN_PLAYLIST_ID = 400000
@@ -64,20 +65,23 @@ export class EntityManager extends Base {
    * Minimum value is artificially set to 400000
    */
   async getValidPlaylistId(): Promise<number> {
-    // TODO: Confirm collision of ID with disc prov endpoint to account for hidden / private
-    let playlistId: number = this.getRandomInt(MIN_PLAYLIST_ID, MAX_PLAYLIST_ID)
-    let validIdFound: boolean = false
-    while (!validIdFound) {
-      const resp: any = await this.discoveryProvider.getPlaylists(1, 0, [
-        playlistId
-      ])
-      if (resp.length !== 0) {
-        playlistId = this.getRandomInt(MIN_PLAYLIST_ID, MAX_PLAYLIST_ID)
-      } else {
-        validIdFound = true
+    while (true) {
+      const playlistId: number = this.getRandomInt(
+        MIN_PLAYLIST_ID,
+        MAX_PLAYLIST_ID
+      )
+      const encodedPlaylistId = encodeHashId(playlistId)
+
+      if (encodedPlaylistId) {
+        const resp: any = await this.discoveryProvider.getPlaylistIsOccupied(
+          encodedPlaylistId
+        )
+
+        if (!resp.is_occupied) {
+          return playlistId
+        }
       }
     }
-    return playlistId
   }
 
   /**

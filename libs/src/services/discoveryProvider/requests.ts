@@ -241,6 +241,13 @@ export const getPlaylists = (
   }
 }
 
+export const getPlaylistIsOccupied = (playlistId: string) => {
+  return {
+    endpoint: 'v1/playlists',
+    urlParams: '/' + playlistId + '/occupied'
+  }
+}
+
 export const getSocialFeed = (
   filter: string,
   limit = 100,
@@ -687,11 +694,5 @@ export const verifyToken = (token: string) => {
     queryParams: {
       token: token
     }
-  }
-}
-
-export const getIsPlaylistIdOccupied = (playlistId: string) => {
-  return {
-    endpoint: `/v1/playlists/${playlistId}/occupied`
   }
 }

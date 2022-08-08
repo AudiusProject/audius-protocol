@@ -73,7 +73,6 @@ class CIDMetadataClient:
                     f"CIDMetadataClient | Invalid URL from provided gateway addr - {url}"
                 )
 
-            logger.info(f"newcontract | fetching {multihash} from {url}")
             async with async_session.get(
                 url, timeout=GET_METADATA_TIMEOUT_SECONDS
             ) as resp:
@@ -161,12 +160,6 @@ class CIDMetadataClient:
 
                     cid, metadata_json = future_result
 
-                    # # TODO add playlist type
-                    # metadata_format = (
-                    #     track_metadata_format
-                    #     if cid_type[cid] == "track"
-                    #     else user_metadata_format
-                    # )
                     metadata_format = None
                     if cid_type[cid] == "track":
                         metadata_format = track_metadata_format

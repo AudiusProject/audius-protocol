@@ -417,7 +417,7 @@ PLAYLIST_OCCUPIED_ROUTE = "/<string:playlist_id>/occupied"
 
 
 @ns.route(PLAYLIST_OCCUPIED_ROUTE)
-class Playlist(Resource):
+class GetPlaylistIsOccupied(Resource):
     @record_metrics
     @ns.doc(
         id="""Check if Playlist ID is occupied""",
