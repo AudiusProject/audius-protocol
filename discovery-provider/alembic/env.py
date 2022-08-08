@@ -27,7 +27,8 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-kill_running_queries_sql = text("""
+kill_running_queries_sql = text(
+    """
     BEGIN;
         SELECT
             pg_cancel_backend(pid),
@@ -36,10 +37,14 @@ kill_running_queries_sql = text("""
             age(clock_timestamp(), query_start),
             substring(trim(regexp_replace(query, '\s+', ' ', 'g')) from 1 for 200)
         FROM pg_stat_activity
-        WHERE state != 'idle' AND query NOT ILIKE '%pg_stat_activity%'
+        JOIN pg_user USING (usename)
+        WHERE state != 'idle'
+          AND query NOT ILIKE '%pg_stat_activity%'
+          AND usesuper = false
         ORDER BY query_start DESC;
     COMMIT;
-""")
+"""
+)
 
 
 def run_migrations_offline():
