@@ -10,3 +10,5 @@ export type TopSupportersPageState = {
   topSupportersPage: TopSupportersOwnState
   userList: UserListStoreState
 }
+
+export const USER_LIST_TAG = 'TOP SUPPORTERS'

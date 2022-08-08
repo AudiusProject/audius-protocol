@@ -12,6 +12,7 @@ import {
   getUserList,
   getUserIds
 } from 'common/store/user-list/supporting/selectors'
+import { USER_LIST_TAG } from 'common/store/user-list/supporting/types'
 import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
 import { stringWeiToBN } from 'common/utils/wallet'
 import { createUserListProvider } from 'components/user-list/utils'
@@ -20,8 +21,6 @@ import {
   fetchSupporting,
   SupportingResponse
 } from 'services/audius-backend/Tipping'
-
-export const USER_LIST_TAG = 'SUPPORTING'
 
 type SupportingProcessExtraType = {
   userId: ID

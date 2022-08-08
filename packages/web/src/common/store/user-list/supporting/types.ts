@@ -10,3 +10,5 @@ export type SupportingPageState = {
   supportingPage: SupportingOwnState
   userList: UserListStoreState
 }
+
+export const USER_LIST_TAG = 'SUPPORTING'
