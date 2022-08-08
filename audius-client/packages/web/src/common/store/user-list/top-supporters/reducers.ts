@@ -2,10 +2,9 @@ import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
 
 import { UserListReducerFactory } from 'common/store/user-list/reducer'
-import { USER_LIST_TAG } from 'pages/top-supporters-page/sagas'
 
 import * as actions from './actions'
-import { TopSupportersOwnState } from './types'
+import { TopSupportersOwnState, USER_LIST_TAG } from './types'
 
 type TopSupportersActions = ActionType<typeof actions>
 

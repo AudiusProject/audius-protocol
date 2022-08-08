@@ -3,10 +3,8 @@ import { createReducer, ActionType } from 'typesafe-actions'
 
 import { UserListReducerFactory } from 'common/store/user-list/reducer'
 
-import { USER_LIST_TAG } from '../../../../pages/followers-page/sagas'
-
 import * as actions from './actions'
-import { FollowersOwnState } from './types'
+import { FollowersOwnState, USER_LIST_TAG } from './types'
 
 type FollowersActions = ActionType<typeof actions>
 

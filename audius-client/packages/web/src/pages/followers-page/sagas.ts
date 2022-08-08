@@ -9,11 +9,10 @@ import {
   getUserList,
   getUserIds
 } from 'common/store/user-list/followers/selectors'
+import { USER_LIST_TAG } from 'common/store/user-list/followers/types'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-
-export const USER_LIST_TAG = 'FOLLOWERS'
 
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,

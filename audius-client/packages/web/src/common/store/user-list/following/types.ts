@@ -10,3 +10,5 @@ export type FollowingPageState = {
   followingPage: FollowingOwnState
   userList: UserListStoreState
 }
+
+export const USER_LIST_TAG = 'FOLLOWING'

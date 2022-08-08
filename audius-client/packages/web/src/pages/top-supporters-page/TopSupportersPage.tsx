@@ -1,10 +1,10 @@
 import { useContext, useEffect } from 'react'
 
 import { getUserList } from 'common/store/user-list/top-supporters/selectors'
+import { USER_LIST_TAG } from 'common/store/user-list/top-supporters/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import UserList from 'components/user-list/UserList'
-import { USER_LIST_TAG } from 'pages/top-supporters-page/sagas'
 
 const messages = {
   title: 'Top Supporters'

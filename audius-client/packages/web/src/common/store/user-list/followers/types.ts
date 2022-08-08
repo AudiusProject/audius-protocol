@@ -10,3 +10,5 @@ export type FollowersPageState = {
   followersPage: FollowersOwnState
   userList: UserListStoreState
 }
+
+export const USER_LIST_TAG = 'FOLLOWERS'
