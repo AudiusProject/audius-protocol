@@ -11,3 +11,5 @@ export type FavoritesPageState = {
   favoritesPage: FavoritesOwnState
   userList: UserListStoreState
 }
+
+export const USER_LIST_TAG = 'FAVORITES'

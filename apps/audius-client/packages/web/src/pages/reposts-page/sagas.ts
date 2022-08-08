@@ -14,12 +14,10 @@ import {
   getUserList,
   getUserIds
 } from 'common/store/user-list/reposts/selectors'
-import { RepostType } from 'common/store/user-list/reposts/types'
+import { RepostType, USER_LIST_TAG } from 'common/store/user-list/reposts/types'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-
-export const USER_LIST_TAG = 'REPOSTS'
 
 const getPlaylistReposts = createUserListProvider<Collection>({
   getExistingEntity: getCollection,

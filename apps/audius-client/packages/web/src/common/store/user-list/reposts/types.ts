@@ -16,3 +16,5 @@ export type RepostsPageState = {
   repostsPage: RepostsOwnState
   userList: UserListStoreState
 }
+
+export const USER_LIST_TAG = 'REPOSTS'
