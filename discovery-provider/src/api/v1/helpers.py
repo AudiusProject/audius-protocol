@@ -510,6 +510,20 @@ user_favorited_tracks_parser = pagination_with_current_user_parser.copy()
 user_favorited_tracks_parser.add_argument(
     "query", required=False, description="The filter query"
 )
+user_favorited_tracks_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+user_favorited_tracks_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
 
 user_tracks_route_parser = pagination_with_current_user_parser.copy()
 user_tracks_route_parser.add_argument(
@@ -518,10 +532,24 @@ user_tracks_route_parser.add_argument(
     type=str,
     default="date",
     choices=("date", "plays"),
-    description="Field to sort by",
+    description="[Deprecated] Field to sort by",
 )
 user_tracks_route_parser.add_argument(
     "query", required=False, description="The filter query"
+)
+user_tracks_route_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+user_tracks_route_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()

@@ -1,14 +1,17 @@
 import logging  # pylint: disable=C0302
 from typing import List, Optional, TypedDict
 
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, asc, desc, func, or_
 from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
-from src.models.tracks.track import Track
+from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_route import TrackRoute
+from src.models.tracks.track_with_aggregates import TrackWithAggregates
 from src.models.users.user import User
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
+    SortDirection,
+    SortMethod,
     add_query_pagination,
     add_users_to_tracks,
     get_pagination_vars,
@@ -29,6 +32,7 @@ class RouteArgs(TypedDict):
 
 
 class GetTrackArgs(TypedDict):
+    user_id: int
     limit: int
     offset: int
     handle: str
@@ -36,22 +40,32 @@ class GetTrackArgs(TypedDict):
     current_user_id: int
     authed_user_id: Optional[int]
     min_block_number: int
+
+    # Deprecated, prefer sort_method and sort_direction
     sort: str
+
     query: Optional[str]
     filter_deleted: bool
     routes: List[RouteArgs]
-    with_users: bool
+
+    # Optional sort method for the returned results
+    sort_method: Optional[SortMethod]
+    sort_direction: Optional[SortDirection]
 
 
 def _get_tracks(session, args):
     # Create initial query
-    base_query = session.query(Track)
-    base_query = base_query.filter(Track.is_current == True, Track.stem_of == None)
+    base_query = session.query(TrackWithAggregates)
+    base_query = base_query.filter(
+        TrackWithAggregates.is_current == True, TrackWithAggregates.stem_of == None
+    )
 
     if "routes" in args:
         routes = args.get("routes")
         # Join the routes table
-        base_query = base_query.join(TrackRoute, TrackRoute.track_id == Track.track_id)
+        base_query = base_query.join(
+            TrackRoute, TrackRoute.track_id == TrackWithAggregates.track_id
+        )
 
         # Add the query conditions for each route
         filter_cond = []
@@ -73,14 +87,16 @@ def _get_tracks(session, args):
             and args.get("user_id") == args.get("authed_user_id")
         )
         if not is_authed_user:
-            base_query = base_query.filter(Track.is_unlisted == False)
+            base_query = base_query.filter(TrackWithAggregates.is_unlisted == False)
 
     # Conditionally process an array of tracks
     if "id" in args:
         track_id_list = args.get("id")
         try:
             # Update query with track_id list
-            base_query = base_query.filter(Track.track_id.in_(track_id_list))
+            base_query = base_query.filter(
+                TrackWithAggregates.track_id.in_(track_id_list)
+            )
         except ValueError as e:
             logger.error("Invalid value found in track id list", exc_info=True)
             raise e
@@ -88,23 +104,25 @@ def _get_tracks(session, args):
     # Allow filtering of tracks by a certain creator
     if "user_id" in args:
         user_id = args.get("user_id")
-        base_query = base_query.filter(Track.owner_id == user_id)
+        base_query = base_query.filter(TrackWithAggregates.owner_id == user_id)
 
     # Allow filtering of deletes
     if "filter_deleted" in args:
         filter_deleted = args.get("filter_deleted")
         if filter_deleted:
-            base_query = base_query.filter(Track.is_delete == False)
+            base_query = base_query.filter(TrackWithAggregates.is_delete == False)
 
     if "min_block_number" in args:
         min_block_number = args.get("min_block_number")
-        base_query = base_query.filter(Track.blocknumber >= min_block_number)
+        base_query = base_query.filter(
+            TrackWithAggregates.blocknumber >= min_block_number
+        )
 
     if "query" in args:
         query = args.get("query")
-        base_query = base_query.join(Track.user, aliased=True).filter(
+        base_query = base_query.join(TrackWithAggregates.user, aliased=True).filter(
             or_(
-                Track.title.ilike(f"%{query.lower()}%"),
+                TrackWithAggregates.title.ilike(f"%{query.lower()}%"),
                 User.name.ilike(f"%{query.lower()}%"),
             )
         )
@@ -114,14 +132,17 @@ def _get_tracks(session, args):
             base_query = base_query.order_by(
                 coalesce(
                     # This func is defined in alembic migrations
-                    func.to_date_safe(Track.release_date, "Dy Mon DD YYYY HH24:MI:SS"),
-                    Track.created_at,
+                    func.to_date_safe(
+                        TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
+                    ),
+                    TrackWithAggregates.created_at,
                 ).desc(),
-                Track.track_id.desc(),
+                TrackWithAggregates.track_id.desc(),
             )
         elif args["sort"] == "plays":
             base_query = base_query.join(
-                AggregatePlay, AggregatePlay.play_item_id == Track.track_id
+                AggregatePlay,
+                AggregatePlay.play_item_id == TrackWithAggregates.track_id,
             ).order_by(AggregatePlay.count.desc())
         else:
             whitelist_params = [
@@ -131,7 +152,42 @@ def _get_tracks(session, args):
                 "blocknumber",
                 "track_id",
             ]
-            base_query = parse_sort_param(base_query, Track, whitelist_params)
+            base_query = parse_sort_param(
+                base_query, TrackWithAggregates, whitelist_params
+            )
+
+    if "sort_method" in args:
+        sort_method = args["sort_method"]
+        sort_direction = args["sort_direction"]
+        sort_fn = desc if sort_direction == SortDirection.desc else asc
+        if sort_method == SortMethod.title:
+            base_query = base_query.order_by(sort_fn(TrackWithAggregates.title))
+        elif sort_method == SortMethod.artist_name:
+            base_query = base_query.order_by(sort_fn(TrackWithAggregates.user.name))
+        elif sort_method == SortMethod.release_date:
+            base_query = base_query.order_by(
+                sort_fn(
+                    coalesce(
+                        func.to_date_safe(
+                            TrackWithAggregates.release_date,
+                            "Dy Mon DD YYYY HH24:MI:SS",
+                        ),
+                        TrackWithAggregates.created_at,
+                    )
+                )
+            )
+        elif sort_method == SortMethod.plays:
+            base_query = base_query.join(TrackWithAggregates.aggregate_play).order_by(
+                sort_fn(AggregatePlay.count)
+            )
+        elif sort_method == SortMethod.reposts:
+            base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
+                sort_fn(AggregateTrack.repost_count)
+            )
+        elif sort_method == SortMethod.saves:
+            base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
+                sort_fn(AggregateTrack.save_count)
+            )
 
     query_results = add_query_pagination(base_query, args["limit"], args["offset"])
     tracks = helpers.query_result_to_list(query_results.all())
@@ -225,14 +281,9 @@ def get_tracks(args: GetTrackArgs):
                 if track["download"] is not None:
                     track["download"]["cid"] = None
 
-        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+        tracks = populate_track_metadata(
+            session, track_ids, tracks, current_user_id, track_has_aggregates=True
+        )
+        tracks = add_users_to_tracks(session, tracks, current_user_id)
 
-        if args.get("with_users", False):
-            add_users_to_tracks(session, tracks, current_user_id)
-        else:
-            # Remove the user from the tracks
-            tracks = [
-                {key: val for key, val in dict.items() if key != "user"}
-                for dict in tracks
-            ]
     return tracks

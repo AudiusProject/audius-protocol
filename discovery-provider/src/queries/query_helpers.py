@@ -111,6 +111,7 @@ class SortMethod(str, enum.Enum):
     artist_name = "artist_name"
     release_date = "release_date"
     last_listen_date = "last_listen_date"
+    added_date = "added_date"
     length = "length"
     plays = "plays"
     reposts = "reposts"

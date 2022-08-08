@@ -1,7 +1,8 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import Integer, String, asc, desc, or_, text
+from sqlalchemy import Integer, String, asc, desc, func, or_, text
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_with_aggregates import TrackWithAggregates
@@ -120,7 +121,16 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
     elif sort_method == SortMethod.artist_name:
         base_query = base_query.order_by(sort_fn(TrackWithAggregates.user.name))
     elif sort_method == SortMethod.release_date:
-        base_query = base_query.order_by(sort_fn(TrackWithAggregates.release_date))
+        base_query = base_query.order_by(
+            sort_fn(
+                coalesce(
+                    func.to_date_safe(
+                        TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
+                    ),
+                    TrackWithAggregates.created_at,
+                )
+            )
+        )
     elif sort_method == SortMethod.last_listen_date:
         base_query = base_query.order_by(sort_fn(order.c.ord))
     elif sort_method == SortMethod.plays:
