@@ -31,6 +31,7 @@ def test_repost_notification(app):
         ],
     }
     populate_mock_db(db, entities)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
 

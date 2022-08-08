@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from sqlite3 import Timestamp
 from typing import List
 
 from integration_tests.utils import populate_mock_db
