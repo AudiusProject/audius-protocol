@@ -5,32 +5,38 @@ import type { Animated } from 'react-native'
 import { LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
+import { Divider } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
-import { ArtistRecommendations } from './ArtistRecommendations'
-import { CoverPhoto } from './CoverPhoto'
-import { ExpandableBio } from './ExpandableBio'
-import { ProfileInfo } from './ProfileInfo'
-import { ProfileMetrics } from './ProfileMetrics'
-import { ProfilePicture } from './ProfilePicture'
-import { ProfileSocials } from './ProfileSocials'
-import { UploadTrackButton } from './UploadTrackButton'
-import { useSelectProfileRoot } from './selectors'
+import { ArtistRecommendations } from '../ArtistRecommendations'
+import { CoverPhoto } from '../CoverPhoto'
+import { ProfileInfo } from '../ProfileInfo'
+import { ProfileMetrics } from '../ProfileMetrics'
+import { ProfilePicture } from '../ProfilePicture'
+import { TipArtistButton } from '../TipArtistButton'
+import { UploadTrackButton } from '../UploadTrackButton'
+import { useSelectProfileRoot } from '../selectors'
+
+import { CollapsedSection } from './CollapsedSection'
+import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
+import { ExpandedSection } from './ExpandedSection'
+import { TopSupporters } from './TopSupporters'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
-    backgroundColor: palette.neutralLight10,
+    backgroundColor: palette.white,
     paddingTop: spacing(8),
-    paddingHorizontal: spacing(3),
-    paddingBottom: spacing(3)
+    paddingHorizontal: spacing(3)
   },
   profilePicture: {
     position: 'absolute',
     top: 37,
     left: 11,
     zIndex: 100
-  }
+  },
+  divider: { marginHorizontal: -12, marginBottom: spacing(2) },
+  bottomDivider: { marginTop: spacing(2), marginHorizontal: -12 }
 }))
 
 type ProfileHeaderProps = {
@@ -44,6 +50,7 @@ export const ProfileHeader = (props: ProfileHeaderProps) => {
   const accountId = useSelectorWeb(getUserId)
   const isOwner = profile?.user_id === accountId
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
+  const [isExpanded, setIsExpanded] = useToggle(false)
 
   const handleFollow = useCallback(() => {
     if (!profile?.does_current_user_follow) {
@@ -57,24 +64,30 @@ export const ProfileHeader = (props: ProfileHeaderProps) => {
     setHasUserFollowed(false)
   }, [setHasUserFollowed])
 
+  const handleToggleExpand = useCallback(() => {
+    setIsExpanded(!isExpanded)
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+  }, [isExpanded, setIsExpanded])
+
   return (
-    // Box-none gets us scrolling on the non-touchable parts of the header
-    // See scroll on header documentation:
-    // https://github.com/PedroBern/react-native-collapsible-tab-view/tree/v2#scroll-on-header
-    // And also known drawbacks:
-    // https://github.com/PedroBern/react-native-collapsible-tab-view/pull/30
     <>
       <CoverPhoto scrollY={scrollY} />
       <ProfilePicture style={styles.profilePicture} />
       <View pointerEvents='box-none' style={styles.header}>
         <ProfileInfo onFollow={handleFollow} />
         <ProfileMetrics />
-        <ProfileSocials />
-        <ExpandableBio />
+        {isExpanded ? <ExpandedSection /> : <CollapsedSection />}
+        <ExpandHeaderToggleButton
+          isExpanded={isExpanded}
+          onPress={handleToggleExpand}
+        />
+        <Divider style={styles.divider} />
         {!hasUserFollowed ? null : (
           <ArtistRecommendations onClose={handleCloseArtistRecs} />
         )}
-        {isOwner ? <UploadTrackButton /> : null}
+        {isOwner ? <UploadTrackButton /> : <TipArtistButton />}
+        <TopSupporters />
+        <Divider style={styles.bottomDivider} />
       </View>
     </>
   )

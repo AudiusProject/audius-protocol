@@ -56,7 +56,13 @@ const SupportingSectionTitle = () => {
 }
 
 export const ExpandedSection = () => {
-  const { supporting_count, user_id } = useSelectProfile(['supporting_count'])
+  const { supporting_count, user_id, current_user_followee_follow_count } =
+    useSelectProfile([
+      'supporting_count',
+      'user_id',
+
+      'current_user_followee_follow_count'
+    ])
   const accountId = useSelectorWeb(getUserId)
   const isOwner = user_id === accountId
 
@@ -66,7 +72,9 @@ export const ExpandedSection = () => {
       <SocialsAndSites />
       <View style={{ flexDirection: 'row', marginVertical: spacing(2) }}>
         <ProfileTierTile />
-        {isOwner ? null : <ProfileMutualsButton />}
+        {isOwner || current_user_followee_follow_count === 0 ? null : (
+          <ProfileMutualsButton />
+        )}
       </View>
       {supporting_count > 0 ? (
         <>

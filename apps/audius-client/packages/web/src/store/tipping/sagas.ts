@@ -9,8 +9,7 @@ import {
   User,
   BNWei,
   StringWei,
-  Nullable,
-  FeatureFlags
+  Nullable
 } from '@audius/common'
 import BN from 'bn.js'
 import {
@@ -69,7 +68,6 @@ import {
   UserTipRequest
 } from 'services/audius-backend/Tipping'
 import { UpdateTipsStorageMessage } from 'services/native-mobile-interface/tipping'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
@@ -206,10 +204,6 @@ function* overrideSupportersForUser({
 
 function* sendTipAsync() {
   yield call(waitForRemoteConfig)
-  const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
-  if (!isTippingEnabled) {
-    return
-  }
 
   const sender = yield* select(getAccountUser)
   if (!sender) {

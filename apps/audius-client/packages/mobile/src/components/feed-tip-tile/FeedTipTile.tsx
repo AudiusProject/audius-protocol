@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
 import type { User } from '@audius/common'
-import { FeatureFlags } from '@audius/common'
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
 import {
@@ -14,7 +13,6 @@ import { View } from 'react-native'
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
 import {
@@ -72,9 +70,6 @@ export const FeedTipTile = () => {
   const usersMap = useSelectorWeb((state) =>
     getUsers(state, { ids: tipToDisplay ? tipperIds : [] })
   )
-  const { isEnabled: isTippingEnabled } = useFeatureFlag(
-    FeatureFlags.TIPPING_ENABLED
-  )
 
   useEffect(() => {
     const fetchRecentTipsAsync = async () => {
@@ -102,7 +97,7 @@ export const FeedTipTile = () => {
     }
   }, [dispatchWeb, account, tipToDisplay])
 
-  if (!isTippingEnabled || !showTip) {
+  if (!showTip) {
     return null
   }
 
