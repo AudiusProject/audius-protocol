@@ -73,12 +73,15 @@ const recoverWallet = (data, signature) => {
  * Returns boolean indicating if provided timestamp is older than MAX_SIGNATURE_AGE
  * @param {string} signatureTimestamp unix timestamp string when signature was generated
  */
-const signatureHasExpired = (signatureTimestamp) => {
+const signatureHasExpired = (
+  signatureTimestamp,
+  maxTTL = MAX_SIGNATURE_AGE_MS
+) => {
   const signatureTimestampDate = new Date(signatureTimestamp)
   const currentTimestampDate = new Date()
   const signatureAge = currentTimestampDate - signatureTimestampDate
 
-  return signatureAge >= MAX_SIGNATURE_AGE_MS
+  return signatureAge >= maxTTL
 }
 
 /**

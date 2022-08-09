@@ -8,7 +8,7 @@ const _ = require('lodash')
 
 const { logger: genericLogger } = require('../../logging')
 const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
-const { recoverWallet } = require('../../apiSigning')
+const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
 
 const asyncRetry = require('../../utils/asyncRetry')
 
@@ -57,6 +57,9 @@ const shouldForceResync = async (
   if (!data || !timestamp || !signature) {
     return false
   }
+
+  const expired = signatureHasExpired(timestamp)
+  if (expired) return false
 
   // Derive the Content Node delegate wallet from the data, signature, and timestamp
   const recoveredPrimaryWallet = recoverWallet(

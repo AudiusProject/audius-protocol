@@ -62,6 +62,41 @@ describe('test secondarySyncFromPrimaryUtils', function () {
     )
   })
 
+  it('if timestamp from data signature is over the ttl, do not force resync', async function () {
+    const { shouldForceResync } = proxyquire(
+      '../src/services/sync/secondarySyncFromPrimaryUtils',
+      {
+        '../../apiSigning': {
+          recoverWallet: () => {
+            return '0xcorrectprimarywallet'
+          }
+        },
+        '../stateMachineManager/ContentNodeInfoManager': {
+          getContentNodeInfoFromSpId: () => {
+            return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
+          }
+        }
+      }
+    )
+
+    assert.deepStrictEqual(
+      await shouldForceResync(
+        { libs: mockedLibs, logContext: mockLogContext },
+        {
+          forceResync: true,
+          // dummy signature data
+          signatureData: {
+            timestamp: '2022-08-02T21:38:42.670Z',
+            signature:
+              '0xf33f4f9bc242acbd68ecb2c624b132cb606a71c1747253709dcb205406e3bb256be30dde81b6574cec8771f6f68ab175c6d5bf8448664900a73b03efbe16d63c1c',
+            data: { key: 'some data' }
+          }
+        }
+      ),
+      false
+    )
+  })
+
   it('if force resync configs does not recover the correct primary wallet, do not force resync', async function () {
     const { shouldForceResync } = proxyquire(
       '../src/services/sync/secondarySyncFromPrimaryUtils',
@@ -118,6 +153,9 @@ describe('test secondarySyncFromPrimaryUtils', function () {
         '../../apiSigning': {
           recoverWallet: () => {
             return '0xdifferentprimarywallet'
+          },
+          signatureHasExpired: () => {
+            return false
           }
         },
         '../stateMachineManager/ContentNodeInfoManager': {
@@ -153,6 +191,9 @@ describe('test secondarySyncFromPrimaryUtils', function () {
         '../../apiSigning': {
           recoverWallet: () => {
             return '0xcorrectprimarywallet'
+          },
+          signatureHasExpired: () => {
+            return false
           }
         },
         '../stateMachineManager/ContentNodeInfoManager': {
