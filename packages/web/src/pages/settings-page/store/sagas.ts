@@ -1,13 +1,13 @@
 import { Name } from '@audius/common'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as actions from 'common/store/pages/settings/actions'
 import { getBrowserNotificationSettings } from 'common/store/pages/settings/selectors'
 import { BrowserNotificationSetting } from 'common/store/pages/settings/types'
 import { getErrorMessage } from 'common/utils/error'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import {
   Permission,
   isPushManagerAvailable,

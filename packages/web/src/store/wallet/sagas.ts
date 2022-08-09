@@ -4,6 +4,7 @@ import { all, call, put, take, takeEvery, select } from 'typed-redux-saga/macro'
 
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
+import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
 import {
   fetchAssociatedWallets,
   transferEthAudioToSolWAudio
@@ -26,7 +27,6 @@ import { stringWeiToBN, weiToString } from 'common/utils/wallet'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
-import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
 
 // TODO: handle errors
 const errors = {

@@ -1,6 +1,7 @@
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
 import { getAccountUser } from 'common/store/account/selectors'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as actions from 'common/store/pages/settings/actions'
 import { initialState } from 'common/store/pages/settings/reducer'
 import { getPushNotificationSettings } from 'common/store/pages/settings/selectors'
@@ -14,7 +15,6 @@ import {
   EnablePushNotificationsMessage,
   DisablePushNotificationsMessage
 } from 'services/native-mobile-interface/notifications'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
 
 function* watchGetPushNotificationSettings() {

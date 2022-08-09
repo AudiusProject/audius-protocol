@@ -1,8 +1,8 @@
 import { put, call, take } from 'typed-redux-saga'
 
+import * as backendActions from 'common/store/backend/actions'
 import { setFeePayer } from 'common/store/solana/slice'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import * as backendActions from 'store/backend/actions'
 
 function* watchForFeePayer() {
   yield take(backendActions.SETUP_BACKEND_SUCCEEDED)

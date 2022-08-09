@@ -17,6 +17,7 @@ import {
   getUserHandle,
   getUserId
 } from 'common/store/account/selectors'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import {
   getClaimStatus,
   getClaimToRetry,
@@ -54,7 +55,6 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 // eslint-disable-next-line jest/no-mocks-import
 import { MockRemoteConfigInstance } from 'services/remote-config/__mocks__/remote-config-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import { waitForBackendSetup } from 'store/backend/sagas'
 
 import rewardsSagas from './sagas'
 
