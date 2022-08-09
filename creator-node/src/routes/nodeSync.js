@@ -1,5 +1,5 @@
 const express = require('express')
-const { trace, context, SpanStatusCode } = require('@opentelemetry/api')
+const { SpanStatusCode } = require('@opentelemetry/api')
 
 const models = require('../models')
 const {
@@ -27,64 +27,61 @@ const router = express.Router()
 router.get(
   '/export',
   handleResponse(async (req, res) => {
-    const parentSpan = trace.getSpan(context.active())
-    const ctx = trace.setSpan(context.active(), parentSpan)
-    const span = getTracer().startSpan('try export with retry', undefined, ctx)
+    return getTracer().startActiveSpan('time to export', async (span) => {
+      const start = Date.now()
 
-    const start = Date.now()
+      const walletPublicKeys = req.query.wallet_public_key // array
+      const sourceEndpoint = req.query.source_endpoint // string
+      const forceExport = !!req.query.force_export // boolean
 
-    const walletPublicKeys = req.query.wallet_public_key // array
-    const sourceEndpoint = req.query.source_endpoint // string
-    const forceExport = !!req.query.force_export // boolean
+      const maxExportClockValueRange = config.get('maxExportClockValueRange')
 
-    const maxExportClockValueRange = config.get('maxExportClockValueRange')
+      // Define clock range (min and max) for export
+      const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
+      const requestedClockRangeMax =
+        requestedClockRangeMin + (maxExportClockValueRange - 1)
 
-    // Define clock range (min and max) for export
-    const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
-    const requestedClockRangeMax =
-      requestedClockRangeMin + (maxExportClockValueRange - 1)
+      try {
+        const cnodeUsersDict = await retry(
+          async () => {
+            return await exportComponentService({
+              walletPublicKeys,
+              requestedClockRangeMin,
+              requestedClockRangeMax,
+              forceExport,
+              logger: req.logger
+            })
+          },
+          {
+            retries: 3
+          }
+        )
 
-    try {
-      const cnodeUsersDict = await retry(
-        async () => {
-          return await exportComponentService({
-            walletPublicKeys,
-            requestedClockRangeMin,
-            requestedClockRangeMax,
-            forceExport,
-            logger: req.logger,
-            parentSpan: span
-          })
-        },
-        {
-          retries: 3
-        }
-      )
+        req.logger.info(
+          `Successful export for wallets ${walletPublicKeys} to source endpoint ${
+            sourceEndpoint || '(not provided)'
+          } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${
+            Date.now() - start
+          } ms`
+        )
 
-      req.logger.info(
-        `Successful export for wallets ${walletPublicKeys} to source endpoint ${
-          sourceEndpoint || '(not provided)'
-        } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${
-          Date.now() - start
-        } ms`
-      )
-
-      span.end()
-      return successResponse({ cnodeUsers: cnodeUsersDict })
-    } catch (e) {
-      span.recordException(e)
-      span.setStatus({ code: SpanStatusCode.ERROR })
-      req.logger.error(
-        `Error in /export for wallets ${walletPublicKeys} to source endpoint ${
-          sourceEndpoint || '(not provided)'
-        } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${
-          Date.now() - start
-        } ms ||`,
-        e
-      )
-      span.end()
-      return errorResponseServerError(e.message)
-    }
+        span.end()
+        return successResponse({ cnodeUsers: cnodeUsersDict })
+      } catch (e) {
+        span.recordException(e)
+        span.setStatus({ code: SpanStatusCode.ERROR })
+        req.logger.error(
+          `Error in /export for wallets ${walletPublicKeys} to source endpoint ${
+            sourceEndpoint || '(not provided)'
+          } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${
+            Date.now() - start
+          } ms ||`,
+          e
+        )
+        span.end()
+        return errorResponseServerError(e.message)
+      }
+    })
   })
 )
 

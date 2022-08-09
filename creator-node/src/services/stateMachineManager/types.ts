@@ -15,6 +15,7 @@ import type {
   UpdateReplicaSetJobParamsWithoutEnabledReconfigModes
 } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
+import type { SpanContext } from '@opentelemetry/api'
 
 import { Queue } from 'bull'
 
@@ -61,6 +62,7 @@ export type JobsToEnqueue = Partial<
 export type DecoratedJobReturnValue<JobReturnValue> = JobReturnValue & {
   jobsToEnqueue?: JobsToEnqueue
   metricsToRecord?: any
+  spanContext: SpanContext
 }
 export type AnyDecoratedJobReturnValue =
   | DecoratedJobReturnValue<MonitorStateJobReturnValue>

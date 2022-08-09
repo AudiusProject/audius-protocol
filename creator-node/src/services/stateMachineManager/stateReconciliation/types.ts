@@ -1,3 +1,5 @@
+import type { SpanContext } from '@opentelemetry/api'
+
 // Issue sync request job
 export type SyncRequestAxiosParams = {
   baseURL: string
@@ -11,6 +13,7 @@ export type SyncRequestAxiosParams = {
   }
 }
 export type IssueSyncRequestJobParams = {
+  parentSpanContext: SpanContext
   syncType: string
   syncMode: string
   syncRequestParameters: SyncRequestAxiosParams
@@ -44,6 +47,7 @@ export type ReplicaToUserInfoMap = {
 }
 export type UpdateReplicaSetJobParamsWithoutEnabledReconfigModes =
   UpdateReplicaSetUser & {
+    parentSpanContext: SpanContext
     unhealthyReplicas: string[]
     replicaToUserInfoMap: ReplicaToUserInfoMap
   }

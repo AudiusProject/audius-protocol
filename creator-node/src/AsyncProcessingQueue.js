@@ -1,9 +1,9 @@
-import { trace, context } from '@opentelemetry/api'
 const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
 const { getTracer } = require('./tracer')
+const { SemanticAttributes } = require('@opentelemetry/api')
 
 // Processing fns
 const {
@@ -68,55 +68,67 @@ class AsyncProcessingQueue {
   }
 
   async processTask(job, done) {
-    const { logContext, parentSpan, task } = job.data
+    const { logContext, task, parentSpanContext } = job.data
 
     const func = this.getFn(task)
 
-    const ctx = trace.setSpan(context.active(), parentSpan)
-    const span = getTracer().startSpan(
-      `processTask on AsyncProcessingQueue`,
-      undefined,
-      ctx
-    )
-
-    if (task === PROCESS_NAMES.transcodeHandOff) {
-      const { transcodeFilePath, segmentFileNames, sp } =
-        await this.monitorProgress(task, transcodeHandOff, job.data)
-
-      if (!transcodeFilePath || !segmentFileNames) {
-        this.logStatus(
-          'Failed to hand off transcode. Retrying upload to current node...'
-        )
-        await this.addTrackContentUploadTask({
-          logContext,
-          req: job.data.req
-        })
-        done(null, {})
-      } else {
-        this.logStatus(
-          `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
-        )
-        await this.addProcessTranscodeAndSegmentTask({
-          logContext,
-          req: { ...job.data.req, transcodeFilePath, segmentFileNames }
-        })
-        done(null, { response: { transcodeFilePath, segmentFileNames } })
-      }
-    } else {
-      try {
-        const response = await this.monitorProgress(task, func, job.data)
-        done(null, { response })
-      } catch (e) {
-        this.logError(
-          `Could not process taskType=${task} uuid=${
-            logContext.requestID
-          }: ${e.toString()}`,
-          logContext
-        )
-        done(e.toString())
+    const options = {
+      links: [
+        {
+          context: parentSpanContext
+        }
+      ],
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: 'this.queue.process',
+        [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
-    span.end()
+    return getTracer().startActiveSpan(
+      'processTask on AsyncProcessingQueue',
+      options,
+      async (span) => {
+        if (task === PROCESS_NAMES.transcodeHandOff) {
+          const { transcodeFilePath, segmentFileNames, sp } =
+            await this.monitorProgress(task, transcodeHandOff, job.data)
+
+          if (!transcodeFilePath || !segmentFileNames) {
+            this.logStatus(
+              'Failed to hand off transcode. Retrying upload to current node...'
+            )
+            await this.addTrackContentUploadTask({
+              parentSpanContext: span.spanContext,
+              logContext,
+              req: job.data.req
+            })
+            done(null, {})
+          } else {
+            this.logStatus(
+              `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
+            )
+            await this.addProcessTranscodeAndSegmentTask({
+              parentSpanContext: span.spanContext,
+              logContext,
+              req: { ...job.data.req, transcodeFilePath, segmentFileNames }
+            })
+            done(null, { response: { transcodeFilePath, segmentFileNames } })
+          }
+        } else {
+          try {
+            const response = await this.monitorProgress(task, func, job.data)
+            done(null, { response })
+          } catch (e) {
+            this.logError(
+              `Could not process taskType=${task} uuid=${
+                logContext.requestID
+              }: ${e.toString()}`,
+              logContext
+            )
+            done(e.toString())
+          }
+        }
+        span.end()
+      }
+    )
   }
 
   async logStatus(message, logContext = {}) {

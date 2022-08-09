@@ -7,8 +7,15 @@ import type {
 } from './types'
 import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
+import type { Span, SpanContext } from '@opentelemetry/api'
 
 import { Queue } from 'bull'
+
+import { SpanStatusCode } from '@opentelemetry/api'
+
+// eslint-disable-next-line import/no-unresolved
+import { getTracer } from '../../tracer'
+import _ from 'lodash'
 
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES } = require('./stateMachineConstants')
@@ -53,73 +60,82 @@ module.exports = function (
   prometheusRegistry: any
 ) {
   return async function (jobId: string, resultString: string) {
-    // Create a logger so that we can filter logs by the tag `jobId` = <id of the job that successfully completed>
-    const logger = createChildLogger(baseLogger, { jobId })
+    return getTracer().startActiveSpan(
+      'makeOnCompleteCallback',
+      async (span: Span) => {
+        // Create a logger so that we can filter logs by the tag `jobId` = <id of the job that successfully completed>
+        const logger = createChildLogger(baseLogger, { jobId })
 
-    // update-replica-set jobs need enabledReconfigModes as an array.
-    // `this` comes from the function being bound via .bind() to ./index.js
-    if (!this?.hasOwnProperty('enabledReconfigModesSet')) {
-      logger.error(
-        'Function was supposed to be bound to StateMachineManager to access enabledReconfigModesSet! Update replica set jobs will not be able to process!'
-      )
-      return
-    }
-    const enabledReconfigModes: string[] = Array.from(
-      this.enabledReconfigModesSet
-    )
-
-    // Bull serializes the job result into redis, so we have to deserialize it into JSON
-    let jobResult: AnyDecoratedJobReturnValue
-    try {
-      logger.info(`Job successfully completed. Parsing result: ${resultString}`)
-      jobResult = JSON.parse(resultString) || {}
-    } catch (e: any) {
-      logger.error(`Failed to parse job result string: ${e.message}`)
-      return
-    }
-
-    const { jobsToEnqueue, metricsToRecord } = jobResult
-
-    // Enqueue jobs into each queue
-    for (const [queueName, queueJobs] of Object.entries(
-      jobsToEnqueue || {}
-    ) as [TQUEUE_NAMES, ParamsForJobsToEnqueue[]][]) {
-      // Make sure we're working with a valid queue
-      const queue: Queue = queueNameToQueueMap[queueName]
-      if (!queue) {
-        logger.error(
-          `Job returned data trying to enqueue jobs to a queue whose name isn't recognized: ${queueName}`
-        )
-        continue
-      }
-
-      // Inject data into jobs that require extra params
-      let jobs: AnyJobParams[]
-      switch (queueName) {
-        case QUEUE_NAMES.UPDATE_REPLICA_SET: {
-          jobs = injectEnabledReconfigModes(
-            queueJobs as UpdateReplicaSetJobParams[],
-            enabledReconfigModes
+        // update-replica-set jobs need enabledReconfigModes as an array.
+        // `this` comes from the function being bound via .bind() to ./index.js
+        if (!this?.hasOwnProperty('enabledReconfigModesSet')) {
+          logger.error(
+            'Function was supposed to be bound to StateMachineManager to access enabledReconfigModesSet! Update replica set jobs will not be able to process!'
           )
-          break
+          return
         }
-        default: {
-          jobs = queueJobs as AnyJobParams[]
-          break
+        const enabledReconfigModes: string[] = Array.from(
+          this.enabledReconfigModesSet
+        )
+
+        // Bull serializes the job result into redis, so we have to deserialize it into JSON
+        let jobResult: AnyDecoratedJobReturnValue
+        try {
+          logger.info(
+            `Job successfully completed. Parsing result: ${resultString}`
+          )
+          jobResult = JSON.parse(resultString) || {}
+        } catch (e: any) {
+          logger.error(`Failed to parse job result string: ${e.message}`)
+          return
         }
+
+        const { jobsToEnqueue, metricsToRecord, spanContext } = jobResult
+
+        // Enqueue jobs into each queue
+        for (const [queueName, queueJobs] of Object.entries(
+          jobsToEnqueue || {}
+        ) as [TQUEUE_NAMES, ParamsForJobsToEnqueue[]][]) {
+          // Make sure we're working with a valid queue
+          const queue: Queue = queueNameToQueueMap[queueName]
+          if (!queue) {
+            logger.error(
+              `Job returned data trying to enqueue jobs to a queue whose name isn't recognized: ${queueName}`
+            )
+            continue
+          }
+
+          // Inject data into jobs that require extra params
+          let jobs: AnyJobParams[]
+          switch (queueName) {
+            case QUEUE_NAMES.UPDATE_REPLICA_SET: {
+              jobs = injectEnabledReconfigModes(
+                queueJobs as UpdateReplicaSetJobParams[],
+                enabledReconfigModes
+              )
+              break
+            }
+            default: {
+              jobs = queueJobs as AnyJobParams[]
+              break
+            }
+          }
+
+          jobs = injectSpanContext(jobs, spanContext)
+          await enqueueJobs(
+            jobs,
+            queue,
+            queueName,
+            nameOfQueueWithCompletedJob,
+            jobId,
+            logger
+          )
+        }
+
+        recordMetrics(prometheusRegistry, logger, metricsToRecord)
+        span.end()
       }
-
-      await enqueueJobs(
-        jobs,
-        queue,
-        queueName,
-        nameOfQueueWithCompletedJob,
-        jobId,
-        logger
-      )
-    }
-
-    recordMetrics(prometheusRegistry, logger, metricsToRecord)
+    )
   }
 }
 
@@ -131,30 +147,35 @@ const enqueueJobs = async (
   triggeredByJobId: string,
   logger: Logger
 ) => {
-  logger.info(
-    `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueNameToAddTo}`
-  )
-
-  // Add 'enqueuedBy' field for tracking
-  try {
-    const bulkAddResult = await queueToAddTo.addBulk(
-      jobs.map((job) => {
-        return {
-          data: {
-            enqueuedBy: `${triggeredByQueueName}#${triggeredByJobId}`,
-            ...job
-          }
-        }
-      })
-    )
+  getTracer().startActiveSpan('enqueueJobs', async (span) => {
     logger.info(
-      `Added ${bulkAddResult.length} jobs to ${queueNameToAddTo} in bulk after successful completion`
+      `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueNameToAddTo}`
     )
-  } catch (e: any) {
-    logger.error(
-      `Failed to bulk-add jobs to ${queueNameToAddTo} after successful completion: ${e}`
-    )
-  }
+
+    // Add 'enqueuedBy' field for tracking
+    try {
+      const bulkAddResult = await queueToAddTo.addBulk(
+        jobs.map((job) => {
+          return {
+            data: {
+              enqueuedBy: `${triggeredByQueueName}#${triggeredByJobId}`,
+              ...job
+            }
+          }
+        })
+      )
+      logger.info(
+        `Added ${bulkAddResult.length} jobs to ${queueNameToAddTo} in bulk after successful completion`
+      )
+    } catch (e: any) {
+      span.recordException(e)
+      span.setStatus({ code: SpanStatusCode.ERROR })
+      logger.error(
+        `Failed to bulk-add jobs to ${queueNameToAddTo} after successful completion: ${e}`
+      )
+    }
+    span.end()
+  })
 }
 
 // Injects enabledReconfigModes into update-replica-set jobs
@@ -166,6 +187,16 @@ const injectEnabledReconfigModes = (
 })[] => {
   return jobs.map((job) => {
     return { ...job, enabledReconfigModes }
+  })
+}
+
+// Injects spanContext into jobs
+const injectSpanContext = (
+  jobs: AnyJobParams[],
+  spanContext: SpanContext
+): AnyJobParams[] => {
+  return jobs.map((job) => {
+    return { ...job, parentSpanContext: spanContext }
   })
 }
 

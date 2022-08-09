@@ -16,6 +16,7 @@ const monitorStateJobProcessor = require('./monitorState.jobProcessor')
 const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
 const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
 const fetchCNodeEndpointToSpIdMapJobProcessor = require('./fetchCNodeEndpointToSpIdMap.jobProcessor')
+const { getTracer } = require('../../../tracer')
 
 const monitorStateLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.MONITOR_STATE
@@ -197,7 +198,7 @@ class StateMonitoringManager {
       cNodeEndpointToSpIdMapQueueLogger.info(
         `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
       )
-      queue.add({})
+      queue.add({ parentSpanContext: result.spanContext() })
     })
     queue.on('failed', (job, err) => {
       cNodeEndpointToSpIdMapQueueLogger.error(
@@ -214,12 +215,13 @@ class StateMonitoringManager {
    */
   enqueueMonitorStateJobAfterFailure(monitoringQueue, failedJob) {
     const {
-      data: { lastProcessedUserId, discoveryNodeEndpoint }
+      data: { lastProcessedUserId, discoveryNodeEndpoint, spanContext }
     } = failedJob
 
     monitoringQueue.add({
       lastProcessedUserId,
-      discoveryNodeEndpoint
+      discoveryNodeEndpoint,
+      parentSpanContext: spanContext()
     })
   }
 
@@ -238,21 +240,24 @@ class StateMonitoringManager {
       return
     }
 
-    // Start at a random userId to avoid biased processing of early users
-    const latestUserId = await getLatestUserIdFromDiscovery(
-      discoveryNodeEndpoint
-    )
-    const lastProcessedUserId = _.random(0, latestUserId)
-
-    // Enqueue first monitorState job after a delay. This job requeues itself upon completion or failure
-    await queue.add(
-      /** data */
-      {
-        lastProcessedUserId,
+    getTracer().startActiveSpan('stateMonitoringQueue', async (span) => {
+      // Start at a random userId to avoid biased processing of early users
+      const latestUserId = await getLatestUserIdFromDiscovery(
         discoveryNodeEndpoint
-      },
-      /** opts */ { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
-    )
+      )
+      const lastProcessedUserId = _.random(0, latestUserId)
+
+      // Enqueue first monitorState job after a delay. This job requeues itself upon completion or failure
+      await queue.add(
+        /** data */
+        {
+          lastProcessedUserId,
+          discoveryNodeEndpoint,
+          parentSpanContext: span.spanContext()
+        },
+        /** opts */ { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
+      )
+    })
   }
 
   /**

@@ -4,12 +4,17 @@ import type {
   AnyDecoratedJobReturnValue,
   AnyJobParams
 } from './types'
+import type { Span } from '@opentelemetry/api'
 
 const _ = require('lodash')
 
 const { createChildLogger } = require('../../logging')
 const redis = require('../../redis')
 const { QUEUE_NAMES } = require('./stateMachineConstants')
+
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
+const { SpanStatusCode } = require('@opentelemetry/api')
+const { getTracer } = require('../../tracer')
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -37,29 +42,53 @@ module.exports = async function (
 
   const { id: jobId, data: jobData } = job
 
-  const jobLogger = createChildLogger(parentLogger, { jobId })
-  jobLogger.info(`New job: ${JSON.stringify(job)}`)
-
-  let result
-  const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames[
-      `STATE_MACHINE_${queueName}_JOB_DURATION_SECONDS_HISTOGRAM`
-    ]
-  )
-  const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
-  try {
-    await redis.set(`latestJobStart_${queueName}`, Date.now())
-    result = await jobProcessor({ logger: jobLogger, ...jobData })
-    metricEndTimerFn({ uncaughtError: false, ...getLabels(queueName, result) })
-    await redis.set(`latestJobSuccess_${queueName}`, Date.now())
-  } catch (error: any) {
-    jobLogger.error(`Error processing job: ${error}`)
-    jobLogger.error(error.stack)
-    result = { error: error.message || `${error}` }
-    metricEndTimerFn({ uncaughtError: true })
+  const options = {
+    links: [
+      {
+        context: jobData.parentSpanContext
+      }
+    ],
+    attributes: {
+      jobId: jobId,
+      [SemanticAttributes.CODE_FUNCTION]: 'processJob',
+      [SemanticAttributes.CODE_FILEPATH]: __filename
+    }
   }
+  return getTracer().startActiveSpan(
+    'processJob',
+    options,
+    async (span: Span) => {
+      const jobLogger = createChildLogger(parentLogger, { jobId })
+      jobLogger.info(`New job: ${JSON.stringify(job)}`)
 
-  return result
+      let result
+      const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
+        prometheusRegistry.metricNames[
+          `STATE_MACHINE_${queueName}_JOB_DURATION_SECONDS_HISTOGRAM`
+        ]
+      )
+      const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
+      try {
+        await redis.set(`latestJobStart_${queueName}`, Date.now())
+        result = await jobProcessor({ logger: jobLogger, ...jobData })
+        metricEndTimerFn({
+          uncaughtError: false,
+          ...getLabels(queueName, result)
+        })
+        await redis.set(`latestJobSuccess_${queueName}`, Date.now())
+      } catch (error: any) {
+        span.recordException(error)
+        span.setStatus({ code: SpanStatusCode.ERROR })
+        jobLogger.error(`Error processing job: ${error}`)
+        jobLogger.error(error.stack)
+        result = { error: error.message || `${error}` }
+        metricEndTimerFn({ uncaughtError: true })
+      }
+
+      span.end()
+      return result
+    }
+  )
 }
 
 /**

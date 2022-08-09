@@ -3,9 +3,13 @@ import type {
   FetchCNodeEndpointToSpIdMapJobParams,
   FetchCNodeEndpointToSpIdMapJobReturnValue
 } from './types'
+import type { Span } from '@opentelemetry/api'
 
 const initAudiusLibs = require('../../initAudiusLibs')
 const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
+
+const { SpanStatusCode, SemanticAttributes } = require('@opentelemetry/api')
+const { getTracer } = require('../../../tracer')
 
 /**
  * Processes a job to update the cNodeEndpoint->spId map by reading the chain.
@@ -15,28 +19,51 @@ const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
  * @return {Object} the updated mapping, which will be used to update the enabled reconfig modes in stateMachineManager/index.js, and any error message that occurred
  */
 module.exports = async function ({
-  logger
+  logger,
+  parentSpanContext
 }: DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>): Promise<
   DecoratedJobReturnValue<FetchCNodeEndpointToSpIdMapJobReturnValue>
 > {
-  let errorMsg = ''
-  try {
-    const audiusLibs = await initAudiusLibs({
-      enableEthContracts: true,
-      enableContracts: false,
-      enableDiscovery: false,
-      enableIdentity: false,
-      logger
-    })
-    await NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
-      audiusLibs.ethContracts
-    )
-  } catch (e: any) {
-    errorMsg = e.message || e.toString()
-    logger.error(`updateEndpointToSpIdMap Error: ${errorMsg}`)
+  const options = {
+    links: [
+      {
+        context: parentSpanContext
+      }
+    ],
+    attributes: {
+      [SemanticAttributes.CODE_FUNCTION]: 'processJob',
+      [SemanticAttributes.CODE_FILEPATH]: __filename
+    }
   }
-  return {
-    cNodeEndpointToSpIdMap: NodeToSpIdManager.getCNodeEndpointToSpIdMap(),
-    errorMsg
-  }
+  return getTracer().startActiveSpan(
+    'fetchCNodeEndpointToSpIdMap.jobProcessor',
+    options,
+    async (span: Span) => {
+      let errorMsg = ''
+      try {
+        span.addEvent('init libs')
+        const audiusLibs = await initAudiusLibs({
+          enableEthContracts: true,
+          enableContracts: false,
+          enableDiscovery: false,
+          enableIdentity: false,
+          logger
+        })
+        await NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
+          audiusLibs.ethContracts
+        )
+      } catch (e: any) {
+        span.recordException(e)
+        span.setStatus({ code: SpanStatusCode.ERROR })
+        errorMsg = e.message || e.toString()
+        logger.error(`updateEndpointToSpIdMap Error: ${errorMsg}`)
+      }
+      span.end()
+      return {
+        cNodeEndpointToSpIdMap: NodeToSpIdManager.getCNodeEndpointToSpIdMap(),
+        spanContext: parentSpanContext,
+        errorMsg
+      }
+    }
+  )
 }

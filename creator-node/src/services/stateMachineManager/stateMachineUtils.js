@@ -4,6 +4,7 @@ const { libs } = require('@audius/sdk')
 const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
+const { getTracer } = require('../../tracer')
 
 const {
   METRIC_RECORD_TYPE,
@@ -120,25 +121,31 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
  * Signs request with spID to bypass rate limits
  */
 const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
-  const spID = config.get('spID')
+  return getTracer().startActiveSpan(
+    'retrieveClockValueForUserFromReplica',
+    async (span) => {
+      const spID = config.get('spID')
 
-  const { timestamp, signature } = generateTimestampAndSignature(
-    { spID },
-    DELEGATE_PRIVATE_KEY
-  )
+      const { timestamp, signature } = generateTimestampAndSignature(
+        { spID },
+        DELEGATE_PRIVATE_KEY
+      )
 
-  const clockValue = await CreatorNode.getClockValue(
-    replica,
-    wallet,
-    CLOCK_STATUS_REQUEST_TIMEOUT_MS,
-    {
-      spID,
-      timestamp,
-      signature
+      const clockValue = await CreatorNode.getClockValue(
+        replica,
+        wallet,
+        CLOCK_STATUS_REQUEST_TIMEOUT_MS,
+        {
+          spID,
+          timestamp,
+          signature
+        }
+      )
+
+      span.end()
+      return clockValue
     }
   )
-
-  return clockValue
 }
 
 /**

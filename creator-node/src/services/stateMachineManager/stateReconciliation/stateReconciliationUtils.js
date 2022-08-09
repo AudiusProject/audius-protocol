@@ -105,91 +105,100 @@ const issueSyncRequestsUntilSynced = async (
   wallet,
   primaryClockVal,
   timeoutMs,
-  queue,
-  syncSpan
+  queue
 ) => {
-  const ctx = trace.setSpan(context.active(), syncSpan)
-  const span = getTracer().startSpan(
+  return getTracer().startActiveSpan(
     'issueSyncRequestsUntilSynced',
-    undefined,
-    ctx
-  )
-
-  // Issue syncRequest before polling secondary for replication
-  const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-    userWallet: wallet,
-    secondaryEndpoint: secondaryUrl,
-    primaryEndpoint: primaryUrl,
-    syncType: SyncType.Manual,
-    syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-    immediate: true
-  })
-  if (!_.isEmpty(duplicateSyncReq)) {
-    // Log duplicate and return
-    logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
-    return
-  } else if (!_.isEmpty(syncReqToEnqueue)) {
-    await queue.add({
-      enqueuedBy: 'issueSyncRequestsUntilSynced',
-      syncSpan,
-      ...syncReqToEnqueue
-    })
-  } else {
-    // Log error that the sync request couldn't be created and return
-    logger.error(`Failed to create manual sync request`)
-    span.end()
-    return
-  }
-
-  // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
-  const start = Date.now()
-  while (Date.now() - start < timeoutMs) {
-    try {
-      // Retrieve secondary clock status for user
-      const secondaryClockStatusResp = await axios({
-        method: 'get',
-        baseURL: secondaryUrl,
-        url: `/users/clock_status/${wallet}`,
-        responseType: 'json',
-        timeout: 1000 // 1000ms = 1s
+    async (span) => {
+      // Issue syncRequest before polling secondary for replication
+      const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+        userWallet: wallet,
+        secondaryEndpoint: secondaryUrl,
+        primaryEndpoint: primaryUrl,
+        syncType: SyncType.Manual,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+        immediate: true
       })
-      const { clockValue: secondaryClockVal, syncInProgress } =
-        secondaryClockStatusResp.data.data
-
-      // If secondary is synced, return successfully
-      if (secondaryClockVal >= primaryClockVal) {
+      if (!_.isEmpty(duplicateSyncReq)) {
+        // Log duplicate and return
+        logger.warn(
+          `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
+        )
+        return
+      } else if (!_.isEmpty(syncReqToEnqueue)) {
+        await queue.add({
+          enqueuedBy: 'issueSyncRequestsUntilSynced',
+          parentSpanContext: span.spanContext(),
+          ...syncReqToEnqueue
+        })
+      } else {
+        // Log error that the sync request couldn't be created and return
+        logger.error(`Failed to create manual sync request`)
+        span.end()
         return
       }
 
-      // Give secondary some time to process ongoing sync
-      // NOTE - we might want to make this timeout longer
-      await Utils.timeout(500)
-    } catch (e) {
-      span.recordException(e)
-      span.setStatus({ code: SpanStatusCode.ERROR })
-      // do nothing and let while loop continue
-    }
-  }
+      // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
+      const start = Date.now()
+      while (Date.now() - start < timeoutMs) {
+        try {
+          // Retrieve secondary clock status for user
+          const secondaryClockStatusResp = await axios({
+            method: 'get',
+            baseURL: secondaryUrl,
+            url: `/users/clock_status/${wallet}`,
+            responseType: 'json',
+            timeout: 1000 // 1000ms = 1s
+          })
+          const { clockValue: secondaryClockVal, syncInProgress } =
+            secondaryClockStatusResp.data.data
 
-  // This condition will only be hit if the secondary has failed to sync within timeoutMs
-  span.end()
-  throw new Error(
-    `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
+          // If secondary is synced, return successfully
+          if (secondaryClockVal >= primaryClockVal) {
+            return
+          }
+
+          // Give secondary some time to process ongoing sync
+          // NOTE - we might want to make this timeout longer
+          await Utils.timeout(500)
+        } catch (e) {
+          span.recordException(e)
+          span.setStatus({ code: SpanStatusCode.ERROR })
+          // do nothing and let while loop continue
+        }
+      }
+
+      // This condition will only be hit if the secondary has failed to sync within timeoutMs
+      span.end()
+      throw new Error(
+        `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
+      )
+    }
   )
 }
 
 const getCachedHealthyNodes = async () => {
-  const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)
-  return healthyNodes
+  return getTracer().startActiveSpan('getCachedHealthyNodes', async (span) => {
+    const healthyNodes = await redisClient.lrange(
+      HEALTHY_NODES_CACHE_KEY,
+      0,
+      -1
+    )
+    span.end()
+    return healthyNodes
+  })
 }
 
 const cacheHealthyNodes = async (healthyNodes) => {
-  const pipeline = redisClient.pipeline()
-  await pipeline
-    .del(HEALTHY_NODES_CACHE_KEY)
-    .rpush(HEALTHY_NODES_CACHE_KEY, ...(healthyNodes || []))
-    .expire(HEALTHY_NODES_CACHE_KEY, HEALTHY_SERVICES_TTL_SEC)
-    .exec()
+  getTracer().startActiveSpan('cacheHealthNodes', async (span) => {
+    const pipeline = redisClient.pipeline()
+    await pipeline
+      .del(HEALTHY_NODES_CACHE_KEY)
+      .rpush(HEALTHY_NODES_CACHE_KEY, ...(healthyNodes || []))
+      .expire(HEALTHY_NODES_CACHE_KEY, HEALTHY_SERVICES_TTL_SEC)
+      .exec()
+    span.end()
+  })
 }
 
 module.exports = {

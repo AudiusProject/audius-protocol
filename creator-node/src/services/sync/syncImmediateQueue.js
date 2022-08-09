@@ -3,6 +3,10 @@ const Bull = require('bull')
 const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
+const { SpanStatusCode } = require('@opentelemetry/api')
+const { getTracer } = require('../../tracer')
+
 const SYNC_QUEUE_HISTORY = 500
 const LOCK_DURATION = 1000 * 60 * 5 // 5 minutes
 
@@ -43,30 +47,60 @@ class SyncImmediateQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
+      const {
+        walletPublicKeys,
+        creatorNodeEndpoint,
+        forceResync,
+        parentSpanContext
+      } = job.data
 
-      try {
-        await secondarySyncFromPrimary(
-          this.serviceRegistry,
-          walletPublicKeys,
-          creatorNodeEndpoint,
-          null, // blockNumber
-          forceResync
-        )
-      } catch (e) {
-        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
-        logger.error(msg)
-        throw e
+      const options = {
+        links: [
+          {
+            context: parentSpanContext
+          }
+        ],
+        attributes: {
+          [SemanticAttributes.CODE_FUNCTION]: 'this.queue.process',
+          [SemanticAttributes.CODE_FILEPATH]: __filename
+        }
       }
+      getTracer().startActiveSpan(
+        'this.queue.process',
+        options,
+        async (span) => {
+          try {
+            await secondarySyncFromPrimary(
+              this.serviceRegistry,
+              walletPublicKeys,
+              creatorNodeEndpoint,
+              null, // blockNumber
+              forceResync
+            )
+          } catch (e) {
+            span.recordException(e)
+            span.setStatus({ code: SpanStatusCode.ERROR })
+            const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
+            logger.error(msg)
+            throw e
+          }
+        }
+      )
     })
   }
 
   async processImmediateSync({
     walletPublicKeys,
     creatorNodeEndpoint,
-    forceResync
+    forceResync,
+    parentSpanContext
   }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
+    const jobProps = {
+      walletPublicKeys,
+      creatorNodeEndpoint,
+      forceResync,
+      parentSpanContext
+    }
     const job = await this.queue.add(jobProps)
     const result = await job.finished()
     return result

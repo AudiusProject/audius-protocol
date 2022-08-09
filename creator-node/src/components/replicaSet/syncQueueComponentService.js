@@ -5,12 +5,14 @@ const enqueueSync = async ({
   serviceRegistry,
   walletPublicKeys,
   creatorNodeEndpoint,
-  forceResync
+  forceResync,
+  parentSpanContext
 }) => {
   await serviceRegistry.syncQueue.enqueueSync({
     walletPublicKeys,
     creatorNodeEndpoint,
-    forceResync
+    forceResync,
+    parentSpanContext
   })
 }
 
@@ -18,12 +20,14 @@ const processImmediateSync = async ({
   serviceRegistry,
   walletPublicKeys,
   creatorNodeEndpoint,
-  forceResync
+  forceResync,
+  parentSpan
 }) => {
   await serviceRegistry.syncImmediateQueue.processImmediateSync({
     walletPublicKeys,
     creatorNodeEndpoint,
-    forceResync
+    forceResync,
+    parentSpan
   })
 }
 

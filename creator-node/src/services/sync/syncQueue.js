@@ -1,5 +1,9 @@
 const Bull = require('bull')
 
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
+const { SpanStatusCode } = require('@opentelemetry/api')
+const { getTracer } = require('../../tracer')
+
 const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
@@ -49,31 +53,66 @@ class SyncQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
+      const {
+        walletPublicKeys,
+        creatorNodeEndpoint,
+        forceResync,
+        parentSpanContext
+      } = job.data
 
-      let result = {}
-      try {
-        result = await secondarySyncFromPrimary(
-          this.serviceRegistry,
-          walletPublicKeys,
-          creatorNodeEndpoint,
-          null, // blockNumber
-          forceResync
-        )
-      } catch (e) {
-        logger.error(
-          `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
-          e.message
-        )
-        result = { error: e.message }
+      const options = {
+        links: [
+          {
+            context: parentSpanContext
+          }
+        ],
+        attributes: {
+          [SemanticAttributes.CODE_FUNCTION]: 'this.queue.process',
+          [SemanticAttributes.CODE_FILEPATH]: __filename
+        }
       }
+      return getTracer().startActiveSpan(
+        'this.queue.process',
+        options,
+        async (span) => {
+          let result = {}
+          try {
+            result = await secondarySyncFromPrimary(
+              this.serviceRegistry,
+              walletPublicKeys,
+              creatorNodeEndpoint,
+              null, // blockNumber
+              forceResync
+            )
+          } catch (e) {
+            span.recordException(e)
+            span.setStatus({ code: SpanStatusCode.ERROR })
+            logger.error(
+              `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
+              e.message
+            )
+            result = { error: e.message }
+          }
 
-      return result
+          span.end()
+          return result
+        }
+      )
     })
   }
 
-  async enqueueSync({ walletPublicKeys, creatorNodeEndpoint, forceResync }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
+  async enqueueSync({
+    walletPublicKeys,
+    creatorNodeEndpoint,
+    forceResync,
+    parentSpanContext
+  }) {
+    const jobProps = {
+      walletPublicKeys,
+      creatorNodeEndpoint,
+      forceResync,
+      parentSpanContext
+    }
     const job = await this.queue.add(jobProps)
     return job
   }

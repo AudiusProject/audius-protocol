@@ -70,8 +70,8 @@ router.post(
     if (selfTranscode) {
       getTracer().startActiveSpan('transcode', async (span) => {
         await AsyncProcessingQueue.addTrackContentUploadTask({
+          parentSpanContext: span.spanConext,
           logContext: req.logContext,
-          parentSpan: span,
           req: {
             fileName: req.fileName,
             fileDir: req.fileDir,
@@ -84,8 +84,8 @@ router.post(
     } else {
       getTracer.startActiveSpan('transcode', async (span) => {
         await AsyncProcessingQueue.addTranscodeHandOffTask({
+          parentSpanContext: span.spanConext,
           logContext: req.logContext,
-          parentSpan: span,
           req: {
             fileName: req.fileName,
             fileDir: req.fileDir,
@@ -140,13 +140,16 @@ router.post(
     const AsyncProcessingQueue =
       req.app.get('serviceRegistry').asyncProcessingQueue
 
-    await AsyncProcessingQueue.addTranscodeAndSegmentTask({
-      logContext: req.logContext,
-      req: {
-        fileName: req.fileName,
-        fileDir: req.fileDir,
-        uuid: req.logContext.requestID
-      }
+    getTracer().startActiveSpan('transcode and segment', async (span) => {
+      await AsyncProcessingQueue.addTranscodeAndSegmentTask({
+        parentSpanContext: span.spanContext(),
+        logContext: req.logContext,
+        req: {
+          fileName: req.fileName,
+          fileDir: req.fileDir,
+          uuid: req.logContext.requestID
+        }
+      })
     })
 
     return successResponse({ uuid: req.logContext.requestID })
