@@ -45,7 +45,7 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
  * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
-module.exports = async function ({
+const updateReplicaSetJobProcessor = async function ({
   logger,
   wallet,
   userId,
@@ -580,3 +580,5 @@ const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
   return enabledReconfigModes.includes(mode)
 }
+
+module.exports = updateReplicaSetJobProcessor
