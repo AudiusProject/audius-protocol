@@ -246,46 +246,6 @@ async function getAllRegisteredCNodes(libs, logger) {
 }
 
 /**
- * Get all Discovery Nodes registered on chain
- * Fetches from Redis if available, else fetches from chain and updates Redis value
- * @returns {Promise<Object[]>} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
- */
-async function getAllRegisteredDNodes({ libs, logger, redis }) {
-  const cacheKey = 'all_registered_dnodes'
-
-  let DNodes
-  try {
-    // Fetch from Redis if present
-    const dnodesList = await redis.get(cacheKey)
-    if (dnodesList) {
-      return JSON.parse(dnodesList)
-    }
-
-    // Else, fetch from chain
-    const discoveryNodes =
-      await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
-        'discovery-node'
-      )
-
-    // Write fetched value to Redis with 30min expiry
-    await redis.set(
-      cacheKey,
-      JSON.stringify(discoveryNodes),
-      'EX',
-      THIRTY_MINUTES_IN_SECONDS
-    )
-
-    DNodes = discoveryNodes
-  } catch (e) {
-    logger.error(`Error getting values in getAllRegisteredDNodes: ${e.message}`)
-
-    DNodes = []
-  }
-
-  return DNodes
-}
-
-/**
  * Return if a fix has already been attempted in today for this filePath
  * @param {String} filePath path of CID on the file system
  */
@@ -396,7 +356,6 @@ module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
 module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
-module.exports.getAllRegisteredDNodes = getAllRegisteredDNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
 module.exports.currentNodeShouldHandleTranscode =

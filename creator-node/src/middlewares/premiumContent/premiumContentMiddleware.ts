@@ -8,7 +8,7 @@ import { recoverWallet } from '../../apiSigning'
 import { NextFunction, Request, Response } from 'express'
 import { isPremiumContentMatch } from '../../premiumContent/helpers'
 import { PremiumContentType } from '../../premiumContent/types'
-import { getAllRegisteredDNodes } from '../../utils'
+import { getAllRegisteredDNodes } from '../../utils/registeredNodes'
 import type Logger from 'bunyan'
 import { Redis } from 'ioredis'
 
@@ -94,15 +94,6 @@ export const premiumContentMiddleware = async (
   }
 }
 
-type Service = {
-  owner: string
-  endpoint: string
-  spID: number
-  type: 'discovery-node' | 'content-node'
-  blockNumber: number
-  delegateOwnerWallet: string
-}
-
 async function isRegisteredDiscoveryNode({
   wallet,
   libs,
@@ -114,12 +105,12 @@ async function isRegisteredDiscoveryNode({
   logger: Logger
   redis: Redis
 }) {
-  const allRegisteredDiscoveryNodes = (await getAllRegisteredDNodes({
+  const allRegisteredDiscoveryNodes = await getAllRegisteredDNodes({
     libs,
     logger,
     redis
-  })) as Service[]
+  })
   return allRegisteredDiscoveryNodes.some(
-    (node: Service) => node.delegateOwnerWallet === wallet
+    (node) => node.delegateOwnerWallet === wallet
   )
 }
