@@ -173,7 +173,6 @@
   right: 26px;
   bottom: 8px;
   width: 4px;
-  background: var(--white);
 }
 
 .iconKebabHorizontal {
@@ -208,7 +207,7 @@
   width: auto !important;
 }
 
-.statsWrapper > * {
+.statsWrapper>* {
   margin-right: auto !important;
 }
 
