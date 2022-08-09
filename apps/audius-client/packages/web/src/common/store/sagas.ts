@@ -27,7 +27,7 @@ export const sagas = (ctx: CommonStoreContext) => ({
   tracks: tracksSagas,
   users: usersSagas,
   remoteConfig: remoteConfigSagas,
-  cast: castSagas(ctx),
+  cast: castSagas,
   signOut: signOutSagas,
   recoveryEmail: recoveryEmailSagas
   // TODO:

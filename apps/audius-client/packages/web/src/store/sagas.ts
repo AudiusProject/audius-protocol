@@ -56,7 +56,6 @@ import trendingPlaylistSagas from 'pages/trending-playlists/store/sagas'
 import trendingUndergroundSagas from 'pages/trending-underground/store/sagas'
 import uploadSagas from 'pages/upload-page/store/sagas'
 import { initInterface } from 'services/native-mobile-interface/helpers'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import accountSagas from 'store/account/sagas'
 import analyticsSagas from 'store/analytics/sagas'
 import cookieBannerSagas from 'store/application/ui/cookieBanner/sagas'
@@ -76,7 +75,7 @@ import tippingSagas from 'store/tipping/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
 import walletSagas from 'store/wallet/sagas'
 
-import { webStoreContext } from './storeContext'
+import { storeContext } from './storeContext'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -136,7 +135,7 @@ export default function* rootSaga() {
     walletSagas(),
 
     // Cast
-    castSagas(webStoreContext),
+    castSagas(),
 
     // Application
     addToPlaylistSagas(),
@@ -169,7 +168,7 @@ export default function* rootSaga() {
     oauthSagas(),
 
     // Remote config
-    remoteConfigSagas(remoteConfigInstance),
+    remoteConfigSagas(),
 
     // Solana
     solanaSagas(),
