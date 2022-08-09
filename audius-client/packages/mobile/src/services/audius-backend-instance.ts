@@ -17,7 +17,7 @@ declare global {
   }
 }
 
-let audiusLibs: AudiusLibs
+export let audiusLibs: AudiusLibs
 
 /**
  * audiusBackend initialized for a mobile environment

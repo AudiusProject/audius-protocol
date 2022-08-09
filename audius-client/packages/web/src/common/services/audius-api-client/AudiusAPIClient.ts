@@ -8,7 +8,7 @@ import {
   StringKeys,
   RemoteConfigInstance
 } from '@audius/common'
-import { AudiusLibs } from '@audius/sdk'
+import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 
 import { AuthHeaders } from 'common/services/audius-backend'
 import { SearchKind } from 'common/store/pages/search-results/types'
