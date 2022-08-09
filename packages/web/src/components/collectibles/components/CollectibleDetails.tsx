@@ -17,7 +17,6 @@ import { getHash } from 'utils/route'
 
 import { getFrameFromGif } from '../ethCollectibleHelpers'
 
-import { collectibleMessages } from './CollectiblesPage'
 import styles from './CollectiblesPage.module.css'
 
 type CollectibleDetailsProps = {
@@ -113,17 +112,6 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                     className={styles.media}
                   />
                   <IconPlay className={styles.playIcon} />
-                  <div className={styles.stamp}>
-                    {collectible.isOwned ? (
-                      <span className={styles.owned}>
-                        {collectibleMessages.owned}
-                      </span>
-                    ) : (
-                      <span className={styles.created}>
-                        {collectibleMessages.created}
-                      </span>
-                    )}
-                  </div>
                   {collectibleChainElement}
                 </div>
               )}
@@ -134,17 +122,6 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                     style={{ height: '100%', width: '100%' }}
                     src={`${videoUrl}#t=0.1`}
                   />
-                  <div className={styles.stamp}>
-                    {collectible.isOwned ? (
-                      <span className={styles.owned}>
-                        {collectibleMessages.owned}
-                      </span>
-                    ) : (
-                      <span className={styles.created}>
-                        {collectibleMessages.created}
-                      </span>
-                    )}
-                  </div>
                   {collectibleChainElement}
                 </div>
               )}
@@ -157,17 +134,6 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                     preloaded={true}
                     className={styles.media}
                   />
-                  <div className={styles.stamp}>
-                    {collectible.isOwned ? (
-                      <span className={styles.owned}>
-                        {collectibleMessages.owned}
-                      </span>
-                    ) : (
-                      <span className={styles.created}>
-                        {collectibleMessages.created}
-                      </span>
-                    )}
-                  </div>
                   {collectibleChainElement}
                 </div>
               )}
