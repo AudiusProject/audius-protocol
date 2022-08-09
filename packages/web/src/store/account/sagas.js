@@ -34,7 +34,7 @@ import {
 import { recordIP } from 'services/audius-backend/RecordIP'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
-import fingerprintClient from 'services/fingerprint/FingerprintClient'
+import { fingerprintClient } from 'services/fingerprint'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { setSentryUser } from 'services/sentry'

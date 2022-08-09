@@ -3,6 +3,7 @@ import type { CommonStoreContext } from 'audius-client/src/common/store'
 
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { fingerprintClient } from 'app/services/fingerprint'
 import { remoteConfigInstance } from 'app/services/remote-config'
 
 export const storeContext: CommonStoreContext = {
@@ -10,5 +11,6 @@ export const storeContext: CommonStoreContext = {
   setLocalStorageItem: async (key, value) => AsyncStorage.setItem(key, value),
   remoteConfigInstance,
   audiusBackendInstance,
-  apiClient
+  apiClient,
+  fingerprintClient
 }
