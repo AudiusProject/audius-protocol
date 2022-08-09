@@ -696,7 +696,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
         trackOwnerId
       }
     })
-    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -747,7 +747,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // Make chain NOT recognize wallet as owner of track
     const blockchainTrackId = 1
     const getTrackStub = sinon.stub().resolves(-1)
-    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -861,7 +861,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
         trackOwnerId
       }
     })
-    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -1195,7 +1195,7 @@ describe('test Polling Tracks with real files', function () {
         trackOwnerId
       }
     })
-    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
 
     // Complete track1 creation
     await request(app2)

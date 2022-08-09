@@ -424,7 +424,7 @@ router.post(
         // Verify that blockchain track id is owned by user attempting to upload it
         const serviceRegistry = req.app.get('serviceRegistry')
         const { libs } = serviceRegistry
-        const trackResp = await libs.contracts.TrackFactory.getTrack(
+        const trackResp = await libs.contracts.TrackFactoryClient.getTrack(
           blockchainTrackId
         )
         // eslint-disable-next-line eqeqeq
