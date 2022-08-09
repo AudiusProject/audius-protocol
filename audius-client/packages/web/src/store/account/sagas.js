@@ -22,6 +22,7 @@ import {
 } from 'common/store/pages/settings/actions'
 import { getFeePayer } from 'common/store/solana/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
+import { updateProfileAsync } from 'pages/profile-page/sagas'
 import {
   getAudiusAccount,
   getAudiusAccountUser,
@@ -31,6 +32,7 @@ import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
+import { fetchCID } from 'services/audius-backend'
 import { recordIP } from 'services/audius-backend/RecordIP'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
@@ -56,6 +58,7 @@ import {
 import { isMobile, isElectron } from 'utils/clientUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 
+import disconnectedWallets from './disconnected_wallet_fix.json'
 import mobileSagas, { setHasSignedInOnMobile } from './mobileSagas'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
@@ -115,6 +118,48 @@ function* onFetchAccount(account) {
 
   const feePayerOverride = yield select(getFeePayer)
   yield call(createUserBankIfNeeded, feePayerOverride)
+
+  // Repair users from flare-101 that were impacted and lost connected wallets
+  // TODO: this should be removed after sufficient time has passed or users have gotten
+  // reconnected.
+  if (account.user_id in disconnectedWallets) {
+    const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
+      account.creator_node_endpoint
+    )
+    const cid = account.metadata_multihash ?? null
+    if (cid) {
+      const contentNodeMetadata = yield call(
+        fetchCID,
+        cid,
+        gateways,
+        /* cache */ false,
+        /* asUrl */ false
+      )
+      const newMetadata = {
+        ...account
+      }
+      let requiresUpdate = false
+      if (
+        contentNodeMetadata.associated_wallets === null &&
+        disconnectedWallets[account.user_id].associated_wallets !== null
+      ) {
+        requiresUpdate = true
+        newMetadata.associated_wallets =
+          disconnectedWallets[account.user_id].associated_wallets
+      }
+      if (
+        contentNodeMetadata.associated_sol_wallets === null &&
+        disconnectedWallets[account.user_id].associated_sol_wallets !== null
+      ) {
+        requiresUpdate = true
+        newMetadata.associated_sol_wallets =
+          disconnectedWallets[account.user_id].associated_sol_wallets
+      }
+      if (requiresUpdate) {
+        yield fork(updateProfileAsync, { metadata: newMetadata })
+      }
+    }
+  }
 }
 
 export function* fetchAccountAsync(action) {
