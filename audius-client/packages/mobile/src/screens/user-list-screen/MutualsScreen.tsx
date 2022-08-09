@@ -4,7 +4,7 @@ import { setMutuals } from 'audius-client/src/common/store/user-list/mutuals/act
 import { getUserList } from 'audius-client/src/common/store/user-list/mutuals/selectors'
 import { USER_LIST_TAG } from 'audius-client/src/common/store/user-list/mutuals/types'
 
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import IconFollowing from 'app/assets/images/iconFollowing.svg'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
@@ -25,7 +25,7 @@ export const MutualsScreen = () => {
   }, [dispatchWeb, userId])
 
   return (
-    <UserListScreen title={messages.title} titleIcon={IconTrophy}>
+    <UserListScreen title={messages.title} titleIcon={IconFollowing}>
       <UserList
         userSelector={getUserList}
         tag={USER_LIST_TAG}

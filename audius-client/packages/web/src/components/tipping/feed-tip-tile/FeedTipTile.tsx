@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { Name, User, FeatureFlags } from '@audius/common'
+import { Name, User } from '@audius/common'
 import { IconButton, PillButton, useMediaQueryListener } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,7 +15,6 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { useRecord, make } from 'store/analytics/actions'
 import {
   setUsers,
@@ -183,8 +182,6 @@ const DismissTipButton = () => {
 const MAX_WIDTH_FOR_SHORT_TIP_BUTTON = 884
 
 export const FeedTipTile = () => {
-  const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
-
   const { isMatch: useShortButtonFormat } = useMediaQueryListener(
     `(max-width: ${MAX_WIDTH_FOR_SHORT_TIP_BUTTON}px)`
   )
@@ -214,7 +211,7 @@ export const FeedTipTile = () => {
     }
   }, [dispatch, usersMap, tipToDisplay])
 
-  if (!isTippingEnabled || !showTip) {
+  if (!showTip) {
     return null
   }
 
