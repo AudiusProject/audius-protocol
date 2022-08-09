@@ -711,6 +711,57 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(200)
   })
 
+  // depends on "uploads /track_content_async" and "creates Audius track" tests
+  it('fails Audius track creation when passing track ID that mismatches on-chain track ID', async function () {
+    libsMock.User.getUsers.exactly(4)
+
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const {
+      track_segments: trackSegments,
+      source_file: sourceFile,
+      transcodedTrackUUID
+    } = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session)
+    )
+
+    const metadata = {
+      test: 'field1',
+      track_segments: trackSegments,
+      owner_id: 1
+    }
+
+    const trackMetadataResp = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
+      .send({ metadata, sourceFile })
+      .expect(200)
+
+    assert.deepStrictEqual(
+      trackMetadataResp.body.data.metadataMultihash,
+      'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
+    )
+
+    // Make chain NOT recognize wallet as owner of track
+    const blockchainTrackId = 1
+    const getTrackStub = sinon.stub().resolves(-1)
+    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+
+    await request(app)
+      .post('/tracks')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({
+        blockchainTrackId,
+        blockNumber: 10,
+        metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
+        transcodedTrackUUID
+      })
+      .expect(500)
+  })
+
   // depends on "uploads /track_content_async"
   it('fails to create downloadable track with no track_id and no source_id present', async function () {
     libsMock.User.getUsers.exactly(2)
