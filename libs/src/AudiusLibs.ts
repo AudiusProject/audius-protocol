@@ -20,11 +20,7 @@ import { IdentityService } from './services/identity'
 import { Comstock } from './services/comstock'
 import { Hedgehog, HedgehogConfig } from './services/hedgehog'
 import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
-import {
-  CreatorNode,
-  CreatorNodeConfig,
-  MonitoringCallbacks
-} from './services/creatorNode'
+import { CreatorNode, CreatorNodeConfig } from './services/creatorNode'
 import {
   DiscoveryProvider,
   DiscoveryProviderConfig
@@ -48,6 +44,7 @@ import Web3 from './LibsWeb3'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import type { BaseConstructorArgs } from './api/base'
+import type { MonitoringCallbacks } from './services/types'
 
 type LibsIdentityServiceConfig = {
   url: string

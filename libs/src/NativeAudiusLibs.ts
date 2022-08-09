@@ -4,11 +4,7 @@ import { version } from './version'
 import type { SolanaWeb3Config } from './services/solana'
 import { Hedgehog, HedgehogConfig } from './services/hedgehog'
 import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
-import {
-  CreatorNode,
-  CreatorNodeConfig,
-  MonitoringCallbacks
-} from './services/creatorNode'
+import { CreatorNode, CreatorNodeConfig } from './services/creatorNode'
 import {
   DiscoveryProvider,
   DiscoveryProviderConfig
@@ -34,6 +30,7 @@ import { Reactions } from './api/Reactions'
 import { File } from './api/File'
 import { ServiceProvider } from './api/ServiceProvider'
 import type { BaseConstructorArgs } from './api/base'
+import type { MonitoringCallbacks } from './services/types'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -124,6 +121,7 @@ export class AudiusLibs {
     web3Provider: string,
     // network chain id
     networkId: string,
+
     // wallet address to force use instead of the first wallet on the provided web3
     walletOverride: Nullable<string> = null
   ) {
@@ -207,6 +205,30 @@ export class AudiusLibs {
       claimDistributionContractAddress,
       wormholeContractAddress
     }
+  }
+
+  /**
+   * Configures wormhole
+   * This is a stubbed version for native
+   */
+  static configWormhole() {
+    return {}
+  }
+
+  /**
+   * Configures a solana web3
+   * This is a stubbed version for native
+   */
+  static configSolanaWeb3() {
+    return {}
+  }
+
+  /**
+   * Configures a solana audius-data
+   * This is a stubbed version for native
+   */
+  static configSolanaAudiusData() {
+    return {}
   }
 
   version: string
@@ -492,3 +514,6 @@ export class AudiusLibs {
     this.Reactions = new Reactions(...services)
   }
 }
+
+export { Utils } from './utils'
+export { SanityChecks } from './sanityChecks'

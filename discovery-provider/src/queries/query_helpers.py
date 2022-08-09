@@ -21,7 +21,7 @@ from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
-from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
+from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
 
@@ -1214,15 +1214,9 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
 
     Returns: None
     """
-    user_ids = get_users_ids(tracks)
-    users = []
-    if tracks and len(tracks) > 0 and tracks[0].get("user"):
-        users = list(map(lambda t: t["user"][0], tracks))
-    else:
-        # This shouldn't happen - all tracks should come preloaded with their owners per the relationship
-        users = get_unpopulated_users(session, user_ids)
-        logger.warning("add_users_to_tracks() called but tracks have no users")
-    set_users_in_cache(users)
+    users = [t.get("user")[0] for t in tracks]
+    user_ids = [u.get("user_id") for u in users]
+
     # bundle peripheral info into user results
     populated_users = populate_user_metadata(session, user_ids, users, current_user_id)
     user_map = {}

@@ -14,13 +14,13 @@ const enqueueSync = async ({
   })
 }
 
-const processImmediateSync = async ({
+const processManualImmediateSync = async ({
   serviceRegistry,
   walletPublicKeys,
   creatorNodeEndpoint,
   forceResync
 }) => {
-  await serviceRegistry.syncImmediateQueue.processImmediateSync({
+  await serviceRegistry.syncImmediateQueue.processManualImmediateSync({
     walletPublicKeys,
     creatorNodeEndpoint,
     forceResync
@@ -29,5 +29,5 @@ const processImmediateSync = async ({
 
 module.exports = {
   enqueueSync,
-  processImmediateSync
+  processManualImmediateSync
 }
