@@ -713,6 +713,12 @@ const config = convict({
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
     default: false
+  },
+  findCIDInNetworkEnabled: {
+    doc: 'enable findCIDInNetwork lookups',
+    format: Boolean,
+    env: 'findCIDInNetworkEnabled',
+    default: true
   }
   /**
    * unsupported options at the moment
