@@ -9,8 +9,6 @@ const _ = require('lodash')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-const { libs } = require('@audius/sdk')
-const Utils = libs
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -687,12 +685,25 @@ describe('test Polling Tracks with mocked IPFS', function () {
       'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
     )
 
+    // Make chain recognize wallet as owner of track
+    const blockchainTrackId = 1
+    const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+      let trackOwnerId = -1
+      if (blockchainTrackIdArg === blockchainTrackId) {
+        trackOwnerId = userId
+      }
+      return {
+        trackOwnerId
+      }
+    })
+    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
         transcodedTrackUUID
@@ -788,12 +799,25 @@ describe('test Polling Tracks with mocked IPFS', function () {
       'QmPjrvx9MBcvf495t43ZhiMpKWwu1JnqkcNUN3Z9EBWm49'
     )
 
+    // Make chain recognize wallet as owner of track
+    const blockchainTrackId = 1
+    const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+      let trackOwnerId = -1
+      if (blockchainTrackIdArg === blockchainTrackId) {
+        trackOwnerId = userId
+      }
+      return {
+        trackOwnerId
+      }
+    })
+    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
         transcodedTrackUUID
@@ -1105,13 +1129,30 @@ describe('test Polling Tracks with real files', function () {
       .expect(200)
     const track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
 
+    // Make chain recognize wallet as owner of track
+    const track1BlockchainId = 1
+    const track2BlockchainId = 2
+    const getTrackStub = sinon.stub().callsFake((blockchainTrackId) => {
+      let trackOwnerId = -1
+      if (
+        blockchainTrackId === track1BlockchainId ||
+        blockchainTrackId === track2BlockchainId
+      ) {
+        trackOwnerId = userId
+      }
+      return {
+        trackOwnerId
+      }
+    })
+    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+
     // Complete track1 creation
     await request(app2)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId: track1BlockchainId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataFileUUID,
         transcodedTrackUUID
@@ -1124,7 +1165,7 @@ describe('test Polling Tracks with real files', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
       .send({
-        blockchainTrackId: 2,
+        blockchainTrackId: track2BlockchainId,
         blockNumber: 20,
         metadataFileUUID: track2MetadataFileUUID,
         transcodedTrackUUID: transcodedTrack2UUID

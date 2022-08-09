@@ -792,13 +792,26 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
         expectedTrackMetadataMultihash
       )
 
+      // Make chain recognize wallet as owner of track
+      const blockchainTrackId = 1
+      const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+        let trackOwnerId = -1
+        if (blockchainTrackIdArg === blockchainTrackId) {
+          trackOwnerId = userId
+        }
+        return {
+          trackOwnerId
+        }
+      })
+      libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+
       // Complete track upload
       await request(app)
         .post('/tracks')
         .set('X-Session-ID', session.sessionToken)
         .set('User-Id', session.userId)
         .send({
-          blockchainTrackId: 1,
+          blockchainTrackId,
           blockNumber: 10,
           metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
           transcodedTrackUUID

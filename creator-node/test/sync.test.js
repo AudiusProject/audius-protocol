@@ -162,13 +162,26 @@ describe('test nodesync', async function () {
       trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
       trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
+      // Make chain recognize wallet as owner of track
+      const blockchainTrackId = 1
+      const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+        let trackOwnerId = -1
+        if (blockchainTrackIdArg === blockchainTrackId) {
+          trackOwnerId = userId
+        }
+        return {
+          trackOwnerId
+        }
+      })
+      libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+
       // associate track + track metadata with blockchain ID
       await request(app)
         .post('/tracks')
         .set('X-Session-ID', sessionToken)
         .set('User-Id', userId)
         .send({
-          blockchainTrackId: 1,
+          blockchainTrackId,
           blockNumber: 10,
           metadataFileUUID: trackMetadataFileUUID,
           transcodedTrackUUID
