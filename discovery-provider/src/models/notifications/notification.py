@@ -31,7 +31,7 @@ class Notification(Base, RepresentableMixin):
     timestamp = Column(DateTime, nullable=False)
     data = Column(postgresql.JSONB())  # type: ignore
     user_ids = Column(postgresql.ARRAY(Integer()), index=True)
-    UniqueConstraint("specifier", "group_id", name="uq_notification")
+    UniqueConstraint("group_id", "specifier", name="uq_notification")
 
 
 class NotificationGroup(Base, RepresentableMixin):

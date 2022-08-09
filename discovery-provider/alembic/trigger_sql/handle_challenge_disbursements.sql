@@ -14,8 +14,8 @@ begin
 			new.slot,
 			ARRAY [new.user_id],
 			reward_manager_tx.created_at,
-			'challenge_reward', 
-			'challenge_reward:' || new.user_id || ':' || new.specifier,
+			'challenge_reward',
+			'challenge_reward:' || new.user_id || ':challenge:' || new.challenge_id || ':specifier:' || new.specifier,
 			new.user_id,
 			json_build_object('specifier', new.specifier, 'challenge_id', new.challenge_id, 'amount', new.amount)
 		)

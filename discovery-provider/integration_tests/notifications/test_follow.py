@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from sqlalchemy import asc
+from sqlalchemy import asc, desc
 from src.models.notifications.notification import Notification
 from src.utils.db_session import get_db
 
@@ -17,19 +17,24 @@ def test_repost_notification(app):
 
     # Insert a follow and check that a notificaiton is created for the followee
     entities = {
-        "users": [{"user_id": i + 1} for i in range(5)],
+        "users": [{"user_id": i + 1} for i in range(50)],
         "follows": [
             {"follower_user_id": i + 2, "followee_user_id": i + 1} for i in range(4)
-        ],
+        ]
+        + [{"follower_user_id": i + 4, "followee_user_id": 1} for i in range(25)],
     }
+
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
 
         notifications: List[Notification] = (
-            session.query(Notification).order_by(asc(Notification.blocknumber)).all()
+            session.query(Notification)
+            .filter(Notification.type == "follow")
+            .order_by(asc(Notification.blocknumber))
+            .all()
         )
-        assert len(notifications) == 4
+        assert len(notifications) == 29
         assert notifications[0].group_id == "follow:1"
         assert notifications[0].specifier == "2"
         assert notifications[1].group_id == "follow:2"
@@ -44,3 +49,25 @@ def test_repost_notification(app):
         assert notifications[0].blocknumber == 0
         assert notifications[0].data == {"followee_user_id": 1, "follower_user_id": 2}
         assert notifications[0].user_ids == [1]
+
+        milstone_notifications: List[Notification] = (
+            session.query(Notification)
+            .filter(Notification.type == "milestone_follower_count")
+            .order_by(desc(Notification.group_id))
+            .all()
+        )
+
+        assert len(milstone_notifications) == 2
+        assert (
+            milstone_notifications[0].group_id
+            == "milestone:FOLLOWER_COUNT:id:1:threshold:25"
+        )
+        assert milstone_notifications[0].specifier == "1"
+        assert milstone_notifications[0].notification_group_id == None
+        assert milstone_notifications[0].type == "milestone_follower_count"
+        assert milstone_notifications[0].data == {
+            "type": "FOLLOWER_COUNT",
+            "user_id": 1,
+            "threshold": 25,
+        }
+        assert milstone_notifications[0].user_ids == [1]

@@ -40,8 +40,8 @@ begin
         values
         (
           ARRAY [new.followee_user_id],
-          'milestone:FOLLOWER_COUNT:id:' || new.followee_user_id || ':threshold:' || milestone,
           'milestone_follower_count',
+          'milestone:FOLLOWER_COUNT:id:' || new.followee_user_id || ':threshold:' || milestone,
           new.followee_user_id,
           new.blocknumber,
           new.created_at,

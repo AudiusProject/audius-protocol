@@ -84,7 +84,7 @@ def upgrade():
         op.create_unique_constraint(
             "uq_notification",
             "notification",
-            ["specifier", "group_id"],
+            ["group_id", "specifier"],
             info={"if_not_exists": True},
         )
 
