@@ -370,19 +370,20 @@ const _selectRandomReplicaSetNodes = async (
   ]} ||`
 
   const newReplicaNodesSet = new Set<string>()
+
+  const viablePotentialReplicas = healthyNodes.filter(
+    (node) => !healthyReplicaSet.has(node)
+  )
+
   let selectNewReplicaSetAttemptCounter = 0
   while (
     newReplicaNodesSet.size < numberOfUnhealthyReplicas &&
     selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS
   ) {
-    const randomHealthyNode = _.sample(healthyNodes)
+    const randomHealthyNode = _.sample(viablePotentialReplicas)
 
     // If node is already present in new replica set or is part of the existing replica set, keep finding a unique healthy node
-    if (
-      newReplicaNodesSet.has(randomHealthyNode) ||
-      healthyReplicaSet.has(randomHealthyNode)
-    )
-      continue
+    if (newReplicaNodesSet.has(randomHealthyNode)) continue
 
     // If the node was marked as healthy before, keep finding a unique healthy node
     if (unhealthyReplicasSet.has(randomHealthyNode)) {
