@@ -16,6 +16,9 @@ const {
   enqueueSync,
   processManualImmediateSync
 } = require('./syncQueueComponentService')
+const {
+  generateDataForSignatureRecovery
+} = require('../../services/sync/secondarySyncFromPrimaryUtils')
 
 const router = express.Router()
 
@@ -71,11 +74,9 @@ const syncRouteController = async (req, res) => {
   const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
-  const creatorNodeEndpoint = req.body.creator_node_endpoint // string
+  const primaryEndpoint = req.body.creator_node_endpoint // string
   const immediate = req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
   const blockNumber = req.body.blockNumber // integer
-  const forceResync =
-    req.body.forceResync === true || req.body.forceResync === 'true' // boolean - default false
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -86,11 +87,13 @@ const syncRouteController = async (req, res) => {
     )
   }
 
+  const wallet = walletPublicKeys[0]
+
   // If sync_type body param provided, log it (param is currently only used for logging)
   const syncType = req.body.sync_type
   if (syncType) {
     req.logger.info(
-      `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`
+      `SyncRouteController - sync of type: ${syncType} initiated for ${wallet} from ${primaryEndpoint}`
     )
   }
 
@@ -98,13 +101,24 @@ const syncRouteController = async (req, res) => {
    * If immediate sync requested, enqueue immediately and return response
    * Else, debounce + add sync to queue
    */
+  const data = generateDataForSignatureRecovery(req.body)
+
   if (immediate) {
     try {
       await processManualImmediateSync({
         serviceRegistry,
-        walletPublicKeys,
-        creatorNodeEndpoint,
-        forceResync
+        wallet,
+        creatorNodeEndpoint: primaryEndpoint,
+        forceResyncConfig: {
+          forceResync: req.body.forceResync,
+          signatureData: {
+            timestamp: req.body.timestamp,
+            signature: req.body.signature,
+            data
+          },
+          wallet
+        },
+        logContext: req.logContext
       })
     } catch (e) {
       return errorResponseServerError(e)
@@ -112,26 +126,34 @@ const syncRouteController = async (req, res) => {
   } else {
     const debounceTime = nodeConfig.get('debounceTime')
 
-    for (const wallet of walletPublicKeys) {
-      if (wallet in syncDebounceQueue) {
-        clearTimeout(syncDebounceQueue[wallet])
-        req.logger.info(
-          `SyncRouteController - clear timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
-        )
-      }
-      syncDebounceQueue[wallet] = setTimeout(async function () {
-        await enqueueSync({
-          serviceRegistry,
-          walletPublicKeys: [wallet],
-          creatorNodeEndpoint,
-          forceResync
-        })
-        delete syncDebounceQueue[wallet]
-      }, debounceTime)
+    if (wallet in syncDebounceQueue) {
+      clearTimeout(syncDebounceQueue[wallet])
       req.logger.info(
-        `SyncRouteController - set timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
+        `SyncRouteController - clear timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
       )
     }
+    syncDebounceQueue[wallet] = setTimeout(async function () {
+      await enqueueSync({
+        serviceRegistry,
+        wallet,
+        creatorNodeEndpoint: primaryEndpoint,
+        blockNumber,
+        forceResyncConfig: {
+          forceResync: req.body.forceResync,
+          signatureData: {
+            timestamp: req.body.timestamp,
+            signature: req.body.signature,
+            data
+          },
+          wallet
+        },
+        logContext: req.logContext
+      })
+      delete syncDebounceQueue[wallet]
+    }, debounceTime)
+    req.logger.info(
+      `SyncRouteController - set timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
+    )
   }
 
   return successResponse()

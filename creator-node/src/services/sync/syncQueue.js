@@ -49,20 +49,27 @@ class SyncQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
+      const {
+        wallet,
+        creatorNodeEndpoint,
+        forceResyncConfig,
+        blockNumber,
+        logContext
+      } = job.data
 
       let result = {}
       try {
-        result = await secondarySyncFromPrimary(
-          this.serviceRegistry,
-          walletPublicKeys,
+        await secondarySyncFromPrimary({
+          serviceRegistry: this.serviceRegistry,
+          wallet,
           creatorNodeEndpoint,
-          null, // blockNumber
-          forceResync
-        )
+          blockNumber,
+          forceResyncConfig,
+          logContext
+        })
       } catch (e) {
         logger.error(
-          `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
+          `secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}`,
           e.message
         )
         result = { error: e.message }
@@ -72,9 +79,20 @@ class SyncQueue {
     })
   }
 
-  async enqueueSync({ walletPublicKeys, creatorNodeEndpoint, forceResync }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
-    const job = await this.queue.add(jobProps)
+  async enqueueSync({
+    wallet,
+    creatorNodeEndpoint,
+    blockNumber,
+    forceResyncConfig,
+    logContext
+  }) {
+    const job = await this.queue.add({
+      wallet,
+      creatorNodeEndpoint,
+      blockNumber,
+      forceResyncConfig,
+      logContext
+    })
     return job
   }
 }

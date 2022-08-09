@@ -23,7 +23,7 @@ const {
   SYNC_MODES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const initAudiusLibs = require('../../initAudiusLibs')
 
@@ -479,15 +479,15 @@ const _issueUpdateReplicaSetOp = async (
     for (const endpt of newReplicaSetEndpoints) {
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
-      if (!CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]) {
+      if (!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]) {
         response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
-          CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+          ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
         )} | endpt=${endpt}. Skipping reconfig.`
         logger.error(response.errorMsg)
         return response
       }
       newReplicaSetSPIds.push(
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]
+        ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]
       )
     }
 
