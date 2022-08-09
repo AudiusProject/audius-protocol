@@ -63,7 +63,7 @@ type PaginationArgs = {
 // DataLoaders
 //
 
-let esUrl = 'http://localhost:9200'
+let esUrl = process.env.audius_elasticsearch_url || 'http://localhost:9200'
 const esc = new Client({ node: esUrl })
 
 const indexNames = {
