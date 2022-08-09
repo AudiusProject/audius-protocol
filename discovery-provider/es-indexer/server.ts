@@ -17,6 +17,9 @@ const typeDefs = gql`
 
     favorited_by(limit: Int = 3, offset: Int = 0): [User!]!
     reposted_by(limit: Int = 3, offset: Int = 0): [User!]!
+
+    is_reposted: Boolean!
+    is_saved: Boolean!
   }
 
   type User {
@@ -28,6 +31,9 @@ const typeDefs = gql`
 
     follower_count: Int!
     following_count: Int!
+
+    is_follower: Boolean!
+    is_followed: Boolean!
 
     tracks(limit: Int = 3, offset: Int = 0): [Track!]!
     playlists(limit: Int = 3, offset: Int = 0): [Playlist!]!
@@ -47,6 +53,9 @@ const typeDefs = gql`
     favorited_by(limit: Int = 3, offset: Int = 0): [User!]!
     reposted_by(limit: Int = 3, offset: Int = 0): [User!]!
     tracks(limit: Int = 3, offset: Int = 0): [Track!]!
+
+    is_reposted: Boolean!
+    is_saved: Boolean!
   }
 
   type Query {
@@ -111,8 +120,16 @@ const resolvers = {
     favorited_by: async (parent: TrackDoc, args: PaginationArgs) => {
       return usersLoadMany(parent.saved_by, args)
     },
-    stream_urls: async (track: TrackDoc) => {
-      const user = await userLoader.load(track.owner_id)
+    is_saved: async (track: TrackDoc, _args: any, ctx: Ctx) => {
+      const me = await ctx.me
+      return track.saved_by.includes(me.user_id)
+    },
+    is_reposted: async (track: TrackDoc, _args: any, ctx: Ctx) => {
+      const me = await ctx.me
+      return track.reposted_by.includes(me.user_id)
+    },
+    stream_urls: async (track: TrackDoc, _args: any, ctx: Ctx) => {
+      const user = await ctx.es.user.load(track.owner_id)
       return buildStreamUrls(user, track)
     },
   },
@@ -121,6 +138,14 @@ const resolvers = {
     name: (parent: PlaylistDoc) => parent.playlist_name,
     tracks: fetchTracks,
     favorite_count: (parent: PlaylistDoc) => parent.save_count,
+    is_saved: async (playlist: PlaylistDoc, _args: any, ctx: Ctx) => {
+      const me = await ctx.me
+      return playlist.saved_by.includes(me.user_id)
+    },
+    is_reposted: async (playlist: PlaylistDoc, _args: any, ctx: Ctx) => {
+      const me = await ctx.me
+      return playlist.reposted_by.includes(me.user_id)
+    },
     reposted_by: async (parent: TrackDoc, args: PaginationArgs) => {
       return usersLoadMany(parent.reposted_by, args)
     },
@@ -152,9 +177,17 @@ const resolvers = {
     following: async (parent: UserDoc, args: PaginationArgs) => {
       return usersLoadMany(parent.following_ids, args)
     },
+    is_follower: async (user: UserDoc, args: PaginationArgs, ctx: Ctx) => {
+      const me = await ctx.me
+      return user.following_ids.includes(me.user_id)
+    },
+    is_followed: async (user: UserDoc, args: PaginationArgs, ctx: Ctx) => {
+      const me = await ctx.me
+      return me.following_ids.includes(user.user_id)
+    },
   },
   Query: {
-    users: async (parent: any, args: any) => {
+    users: async (parent: any, args: any, ctx: Ctx) => {
       const bb = bodybuilder()
       if (args.handle) {
         bb.filter('term', 'handle', args.handle)
@@ -234,11 +267,36 @@ export function buildStreamUrls(user: UserRow, track: TrackRow) {
 // server
 //
 
+type Ctx = {
+  es: {
+    user: DataLoader<number | string, UserDoc>
+  }
+  me?: Promise<UserDoc | undefined>
+}
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   csrfPrevention: true,
   cache: 'bounded',
+  context: ({ req }) => {
+    if (req.body.operationName === 'IntrospectionQuery') return
+
+    // set up per-request data loaders
+    const ctx: Ctx = {
+      es: {
+        user: new DataLoader(newMgetLoader(indexNames.users)),
+      },
+    }
+
+    // me: current user promise
+    const currentUserId = req.headers['x-user-id'] as string
+    if (currentUserId) {
+      ctx.me = ctx.es.user.load(currentUserId)
+    }
+
+    return ctx
+  },
 })
 
 server.listen().then(({ url }) => {
