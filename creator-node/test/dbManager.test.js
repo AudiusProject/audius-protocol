@@ -27,34 +27,6 @@ const { fetchDBStateForWallet, assertTableEquality } = require('./lib/utils')
 
 const TestAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
-/** Add state to AudiusUsers table for given userId */
-const uploadAudiusUserState = async function ({
-  app,
-  userId,
-  sessionToken,
-  metadataObj,
-  audiusUserBlockNumber
-}) {
-  const audiusUserMetadataResp = await request(app)
-    .post('/audius_users/metadata')
-    .set('X-Session-ID', sessionToken)
-    .set('User-Id', userId)
-    .set('Enforce-Write-Quorum', false)
-    .send({ metadata: metadataObj })
-    .expect(200)
-
-  await request(app)
-    .post('/audius_users')
-    .set('X-Session-ID', sessionToken)
-    .set('User-Id', userId)
-    .send({
-      blockchainUserId: userId,
-      blockNumber: audiusUserBlockNumber,
-      metadataFileUUID: audiusUserMetadataResp.body.data.metadataFileUUID
-    })
-    .expect(200)
-}
-
 describe('Test createNewDataRecord()', async function () {
   const req = {
     logger: {
@@ -714,6 +686,18 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
         .set('Enforce-Write-Quorum', false)
         .send({ metadata: audiusUserMetadata })
         .expect(200)
+      // Make chain recognize current session wallet as the wallet for the session user ID
+      const blockchainUserId = 1
+      const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+        let wallet = 'no wallet'
+        if (blockchainUserIdArg === blockchainUserId) {
+          wallet = session.walletPublicKey
+        }
+        return {
+          wallet
+        }
+      })
+      libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
       await request(app)
         .post('/audius_users')
         .set('X-Session-ID', session.sessionToken)
@@ -1112,11 +1096,12 @@ describe('Test fetchFilesHashFromDB()', async function () {
 describe('Test fixInconsistentUser()', async function () {
   const userId = 1
 
-  let server, app
+  let server, app, libsMock
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getLibsMock())
+    libsMock = getLibsMock()
+    const appInfo = await getApp(libsMock)
     server = appInfo.server
     app = appInfo.app
   })
@@ -1132,6 +1117,46 @@ describe('Test fixInconsistentUser()', async function () {
     await server.close()
   })
 
+  /** Add state to AudiusUsers table for given userId */
+  const uploadAudiusUserState = async function ({
+    sessionToken,
+    walletPublicKey,
+    metadataObj,
+    audiusUserBlockNumber
+  }) {
+    const audiusUserMetadataResp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
+      .set('Enforce-Write-Quorum', false)
+      .send({ metadata: metadataObj })
+      .expect(200)
+
+    // Make chain recognize current session wallet as the wallet for the session user ID
+    const blockchainUserId = 1
+    const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+      let wallet = 'no wallet'
+      if (blockchainUserIdArg === blockchainUserId) {
+        wallet = walletPublicKey
+      }
+      return {
+        wallet
+      }
+    })
+    libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
+    await request(app)
+      .post('/audius_users')
+      .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
+      .send({
+        blockchainUserId: userId,
+        blockNumber: audiusUserBlockNumber,
+        metadataFileUUID: audiusUserMetadataResp.body.data.metadataFileUUID
+      })
+      .expect(200)
+  }
+
   it('Confirm no change to healthy users DB state', async function () {
     const { cnodeUserUUID, walletPublicKey, sessionToken } = await createStarterCNodeUser(userId)
 
@@ -1140,9 +1165,8 @@ describe('Test fixInconsistentUser()', async function () {
     const audiusUserMetadata = { test: 'field1' }
     const metadataCID = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
     await uploadAudiusUserState({
-      app,
-      userId,
       sessionToken,
+      walletPublicKey,
       metadataObj: audiusUserMetadata,
       audiusUserBlockNumber
     })
@@ -1227,9 +1251,8 @@ describe('Test fixInconsistentUser()', async function () {
     const audiusUserMetadata = { test: 'field1' }
     const metadataCID = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
     await uploadAudiusUserState({
-      app,
-      userId,
       sessionToken,
+      walletPublicKey,
       metadataObj: audiusUserMetadata,
       audiusUserBlockNumber
     })
