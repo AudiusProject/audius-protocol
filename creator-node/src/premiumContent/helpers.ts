@@ -6,17 +6,17 @@ type PremiumContentMatchArgs = {
   userWallet: string
   premiumContentId: number
   premiumContentType: PremiumContentType
-  logger?: Logger
+  logger?: any
 }
 
-const PREMIUM_CONTENT_SIGNATURE_MAX_TTL = 6 * 60 * 60 * 1000 // 6 hours
+const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
 
 export const isPremiumContentMatch = ({
   signedDataFromDiscoveryNode,
   userWallet,
   premiumContentId,
   premiumContentType,
-  logger
+  logger = console
 }: PremiumContentMatchArgs) => {
   const {
     premiumContentId: signedPremiumContentId,
@@ -25,33 +25,31 @@ export const isPremiumContentMatch = ({
     timestamp: signedTimestamp
   } = signedDataFromDiscoveryNode
 
-  const theLogger = logger || console
-
   const isSignatureTooOld =
-    Date.now() - signedTimestamp >= PREMIUM_CONTENT_SIGNATURE_MAX_TTL
+    Date.now() - signedTimestamp >= PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS
   if (isSignatureTooOld) {
-    theLogger.info(
+    logger.info(
       `Premium content signature for id ${premiumContentId} and type ${premiumContentType} is too old.`
     )
     return false
   }
 
   if (signedPremiumContentId !== premiumContentId) {
-    theLogger.info(
+    logger.info(
       `Premium content ids do not match for type ${premiumContentType}: ${signedPremiumContentId} (signed) vs ${premiumContentId} (requested).`
     )
     return false
   }
 
   if (signedPremiumContentType !== premiumContentType) {
-    theLogger.info(
+    logger.info(
       `Premium content types do not match: ${signedPremiumContentType} (signed) vs ${premiumContentType} (requested).`
     )
     return false
   }
 
   if (signedUserWallet !== userWallet) {
-    theLogger.info(
+    logger.info(
       `Premium content user wallets do not match: ${signedUserWallet} (signed) vs ${userWallet} (requested).`
     )
     return false

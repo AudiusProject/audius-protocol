@@ -66,17 +66,17 @@ export const premiumContentMiddleware = async (
     const { premiumContentId, premiumContentType } = req.params
 
     const userWallet = recoverWallet(signedDataFromUser, signatureFromUser)
-    if (
-      !isPremiumContentMatch({
-        signedDataFromDiscoveryNode: JSON.parse(
-          signedDataFromDiscoveryNode as string
-        ),
-        userWallet,
-        premiumContentId: parseInt(premiumContentId),
-        premiumContentType: premiumContentType as PremiumContentType,
-        logger
-      })
-    ) {
+    const signedDataFromDiscoveryNodeObj = JSON.parse(
+      signedDataFromDiscoveryNode as string
+    )
+    const isMatch = isPremiumContentMatch({
+      signedDataFromDiscoveryNode: signedDataFromDiscoveryNodeObj,
+      userWallet,
+      premiumContentId: parseInt(premiumContentId),
+      premiumContentType: premiumContentType as PremiumContentType,
+      logger
+    })
+    if (!isMatch) {
       return sendResponse(
         req,
         res,
@@ -114,12 +114,12 @@ async function isRegisteredDiscoveryNode({
   logger: Logger
   redis: Redis
 }) {
-  const allRegisteredDiscoveryNodes = await getAllRegisteredDNodes({
+  const allRegisteredDiscoveryNodes = (await getAllRegisteredDNodes({
     libs,
     logger,
     redis
-  })
-  return (allRegisteredDiscoveryNodes as Service[]).some(
+  })) as Service[]
+  return allRegisteredDiscoveryNodes.some(
     (node: Service) => node.delegateOwnerWallet === wallet
   )
 }

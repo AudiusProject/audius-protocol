@@ -9,6 +9,15 @@ const web3 = new Web3()
  */
 const MAX_SIGNATURE_AGE_MS = 300000
 
+const generateSignature = (data, privateKey) => {
+  // JSON stringify automatically removes white space given 1 param
+  const toSignStr = JSON.stringify(sortKeys(data))
+  const toSignHash = web3.utils.keccak256(toSignStr)
+  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+
+  return { signature: signedResponse.signature }
+}
+
 /**
  * Generate the timestamp and signature for api signing
  * @param {object} data
@@ -17,21 +26,9 @@ const MAX_SIGNATURE_AGE_MS = 300000
 const generateTimestampAndSignature = (data, privateKey) => {
   const timestamp = new Date().toISOString()
   const toSignObj = { ...data, timestamp }
-  // JSON stringify automatically removes white space given 1 param
-  const toSignStr = JSON.stringify(sortKeys(toSignObj))
-  const toSignHash = web3.utils.keccak256(toSignStr)
-  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+  const { signature } = generateSignature(toSignObj, privateKey)
 
-  return { timestamp, signature: signedResponse.signature }
-}
-
-const generateSignature = (data, privateKey) => {
-  // JSON stringify automatically removes white space given 1 param
-  const toSignStr = JSON.stringify(sortKeys(data))
-  const toSignHash = web3.utils.keccak256(toSignStr)
-  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
-
-  return { signature: signedResponse.signature }
+  return { timestamp, signature }
 }
 
 // Keeps track of a cached listen signature

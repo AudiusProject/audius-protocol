@@ -277,15 +277,7 @@ async function getAllRegisteredDNodes({ libs, logger, redis }) {
 
     DNodes = discoveryNodes
   } catch (e) {
-    if (logger) {
-      logger.error(
-        `Error getting values in getAllRegisteredDNodes: ${e.message}`
-      )
-    } else {
-      console.error(
-        `Error getting values in getAllRegisteredDNodes: ${e.message}`
-      )
-    }
+    logger.error(`Error getting values in getAllRegisteredDNodes: ${e.message}`)
 
     DNodes = []
   }
