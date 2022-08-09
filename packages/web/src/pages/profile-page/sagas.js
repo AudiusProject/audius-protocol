@@ -2,7 +2,6 @@ import {
   DefaultSizes,
   Kind,
   DoubleKeys,
-  FeatureFlags,
   makeUid,
   makeKindId
 } from '@audius/common'
@@ -37,7 +36,6 @@ import { apiClient } from 'services/audius-api-client'
 import { fetchCID } from 'services/audius-backend'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import SolanaClient from 'services/solana-client/SolanaClient'
 import * as confirmerActions from 'store/confirmer/actions'
@@ -152,10 +150,6 @@ export function* fetchSolanaCollectibles(user) {
 
 function* fetchSupportersAndSupporting(userId) {
   yield call(waitForRemoteConfig)
-  const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
-  if (!isTippingEnabled) {
-    return
-  }
 
   /**
    * If the profile is that of the logged in user, then
