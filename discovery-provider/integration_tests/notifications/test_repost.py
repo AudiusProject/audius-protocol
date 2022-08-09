@@ -31,13 +31,15 @@ def test_repost_notification(app):
         ],
     }
     populate_mock_db(db, entities)
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
 
         notifications: List[Notification] = session.query(Notification).all()
         assert len(notifications) == 1
         notification = notifications[0]
-        assert notification.specifier == "repost:100:type:track"
+        assert notification.specifier == "1"
+        assert notification.group_id == "repost:100:type:track"
         assert notification.notification_group_id == None
         assert notification.type == "repost"
         assert notification.slot == None
