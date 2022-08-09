@@ -1083,6 +1083,7 @@ workflows:
       - bake-gcp-dev-image:
           context:
             - GCP2
+            - slack-secrets
           name: bake-gcp-dev-image-nightly
       - docker-build-and-push:
           name: build-eth-contracts
