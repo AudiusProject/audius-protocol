@@ -97,8 +97,9 @@ export async function startListener() {
   const sql = tables.map((t) => `LISTEN ${t}; `).join(' ')
 
   client.on('notification', (msg) => {
+    if (!msg.payload) return
     const body = JSON.parse(msg.payload)
-    const handler = handlers[msg.channel]
+    const handler = handlers[msg.channel as keyof typeof handlers]
     if (handler) {
       handler(body)
     } else {

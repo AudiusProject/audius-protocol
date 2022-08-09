@@ -100,10 +100,10 @@ function keyHitsByID(hits: any[]) {
     return memo
   }, {})
 }
-const userLoader = new DataLoader<number, UserDoc>(
+const userLoader = new DataLoader<number | string, UserDoc>(
   newMgetLoader(indexNames.users)
 )
-const trackLoader = new DataLoader<number, TrackDoc>(
+const trackLoader = new DataLoader<number | string, TrackDoc>(
   newMgetLoader(indexNames.tracks)
 )
 
@@ -122,10 +122,12 @@ const resolvers = {
     },
     is_saved: async (track: TrackDoc, _args: any, ctx: Ctx) => {
       const me = await ctx.me
+      if (!me) return false
       return track.saved_by.includes(me.user_id)
     },
     is_reposted: async (track: TrackDoc, _args: any, ctx: Ctx) => {
       const me = await ctx.me
+      if (!me) return false
       return track.reposted_by.includes(me.user_id)
     },
     stream_urls: async (track: TrackDoc, _args: any, ctx: Ctx) => {
@@ -140,10 +142,12 @@ const resolvers = {
     favorite_count: (parent: PlaylistDoc) => parent.save_count,
     is_saved: async (playlist: PlaylistDoc, _args: any, ctx: Ctx) => {
       const me = await ctx.me
+      if (!me) return false
       return playlist.saved_by.includes(me.user_id)
     },
     is_reposted: async (playlist: PlaylistDoc, _args: any, ctx: Ctx) => {
       const me = await ctx.me
+      if (!me) return false
       return playlist.reposted_by.includes(me.user_id)
     },
     reposted_by: async (parent: TrackDoc, args: PaginationArgs) => {
@@ -179,10 +183,12 @@ const resolvers = {
     },
     is_follower: async (user: UserDoc, args: PaginationArgs, ctx: Ctx) => {
       const me = await ctx.me
+      if (!me) return false
       return user.following_ids.includes(me.user_id)
     },
     is_followed: async (user: UserDoc, args: PaginationArgs, ctx: Ctx) => {
       const me = await ctx.me
+      if (!me) return false
       return me.following_ids.includes(user.user_id)
     },
   },

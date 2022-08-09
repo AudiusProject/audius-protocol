@@ -15,11 +15,11 @@ export abstract class BaseIndexer<RowType> {
   private logger: Logger
   private rowCounter = 0
   protected batchSize = 1000
-  protected mapping: IndicesCreateRequest
+  protected mapping?: IndicesCreateRequest
 
   private es: Client
 
-  constructor(tableName: string, idColumn: string) {
+  constructor(tableName: keyof typeof indexNames, idColumn: string) {
     this.tableName = tableName
     this.idColumn = idColumn
     this.indexName = indexNames[tableName]
@@ -106,9 +106,10 @@ export abstract class BaseIndexer<RowType> {
     const { es, logger, indexName, tableName } = this
     const indices = await es.cat.indices({ format: 'json' })
     const old = indices.filter(
-      (i) => i.index.startsWith(tableName) && i.index != indexName
+      (i) => i.index?.startsWith(tableName) && i.index != indexName
     )
     for (let { index } of old) {
+      if (!index) continue
       try {
         await es.indices.delete({ index: index })
         logger.info(`dropped old index: ${index}`)
@@ -191,7 +192,7 @@ export abstract class BaseIndexer<RowType> {
   }
 
   buildIndexOps(rows: RowType[]) {
-    return rows.flatMap((row) => [
+    return rows.flatMap((row: any) => [
       { index: { _id: row[this.idColumn], _index: this.indexName } },
       row,
     ])

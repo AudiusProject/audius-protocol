@@ -1,4 +1,4 @@
-export function splitTags(tags: string | null): string[] {
+export function splitTags(tags: string | null | undefined): string[] {
   if (!tags) return []
   return tags
     .split(',')
