@@ -32,7 +32,7 @@ def upgrade():
                             array[tracks.owner_id],
                             tracks.owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_track_repost_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "track_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -47,7 +47,7 @@ def upgrade():
                             array[playlists.playlist_owner_id],
                             playlists.playlist_owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_playlist_repost_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "playlist_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -61,7 +61,7 @@ def upgrade():
                             array[tracks.owner_id],
                             tracks.owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_track_save_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "track_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -75,7 +75,7 @@ def upgrade():
                             array[playlists.playlist_owner_id],
                             playlists.playlist_owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_playlist_save_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "playlist_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -89,7 +89,7 @@ def upgrade():
                             array[milestones.id],
                             milestones.id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_follower_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "user_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -102,7 +102,7 @@ def upgrade():
                             array[tracks.owner_id],
                             tracks.owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_listen_count',
+                            'milestone',
                             milestones.slot,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "track_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -124,12 +124,7 @@ def downgrade():
             """
         delete from notification 
         where type in (
-            'milestone_listen_count',
-            'milestone_track_save_count',
-            'milestone_track_repost_count',
-            'milestone_playlist_save_count',
-            'milestone_playlist_repost_count',
-            'milestone_follower_count'
+            'milestone',
         );
         """
         )
