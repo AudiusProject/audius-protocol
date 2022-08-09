@@ -2,17 +2,24 @@ import FingerprintJS, { Agent } from '@fingerprintjs/fingerprintjs-pro'
 
 import { isElectron, isMobile } from 'utils/clientUtil'
 
-const IDENTITY_SERVICE = process.env.REACT_APP_IDENTITY_SERVICE
+type FingerprintClientConfig = {
+  apiKey: string
+  endpoint: string
+  identityService: string
+}
 
-class FingerprintClient {
+export class FingerprintClient {
   private apiKey: string
   private fingerprint: Agent | null
   private endpoint: string
+  private identityService: string
 
-  constructor(apiKey: string, endpoint: string) {
+  constructor(config: FingerprintClientConfig) {
+    const { apiKey, endpoint, identityService } = config
     this.apiKey = apiKey
     this.fingerprint = null
     this.endpoint = endpoint
+    this.identityService = identityService
   }
 
   async init() {
@@ -39,7 +46,7 @@ class FingerprintClient {
 
       // First, see if we've fingerprinted this user before
       const response = await fetch(
-        `${IDENTITY_SERVICE}/fp?userId=${userId}&origin=${origin}`
+        `${this.identityService}/fp?userId=${userId}&origin=${origin}`
       )
 
       if (response.status !== 200) {
@@ -66,9 +73,3 @@ class FingerprintClient {
     }
   }
 }
-
-const apiKey = process.env.REACT_APP_FINGERPRINT_PUBLIC_API_KEY || ''
-const endpoint = process.env.REACT_APP_FINGERPRINT_ENDPOINT || ''
-const client = new FingerprintClient(apiKey, endpoint)
-
-export default client

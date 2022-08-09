@@ -12,7 +12,6 @@ import {
 import * as accountActions from 'common/store/account/reducer'
 import * as reachabilityActions from 'common/store/reachability/actions'
 import { getIsReachable } from 'common/store/reachability/selectors'
-import fingerprintClient from 'services/fingerprint/FingerprintClient'
 import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecycle'
 
 import { getContext } from '../effects'
@@ -75,6 +74,7 @@ export function* setupBackend() {
   }
 
   const apiClient = yield* getContext('apiClient')
+  const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   // Init APICLient
