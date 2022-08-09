@@ -7,7 +7,7 @@ import {
   select,
   call,
   race
-} from 'typed-redux-saga/macro'
+} from 'typed-redux-saga'
 
 import * as accountActions from 'common/store/account/reducer'
 import * as reachabilityActions from 'common/store/reachability/actions'
