@@ -655,7 +655,7 @@ export const audiusBackend = ({
       libsError = getErrorMessage(err)
     }
 
-    return { libsError }
+    return { libsError, web3Error: false }
   }
 
   function getEthWeb3Config() {

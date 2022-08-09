@@ -23,6 +23,7 @@ import {
   getUserHandle,
   getUserId
 } from 'common/store/account/selectors'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import {
   getClaimStatus,
   getClaimToRetry,
@@ -64,7 +65,6 @@ import { apiClient } from 'services/audius-api-client'
 import { getCognitoExists } from 'services/audius-backend/Cognito'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForValue } from 'utils/sagaHelpers'
 import {

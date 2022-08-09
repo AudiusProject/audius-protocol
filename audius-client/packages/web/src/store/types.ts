@@ -36,6 +36,8 @@ import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 import PlayerReducer from 'store/player/slice'
 import PlaylistLibraryReducer from 'store/playlist-library/slice'
 
+import { BackendState } from '../common/store/backend/types'
+
 import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
@@ -44,7 +46,6 @@ import { MobileKeyboardState } from './application/ui/mobileKeyboard/types'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { UserListModalState } from './application/ui/userListModal/types'
-import { BackendState } from './backend/types'
 import { ConfirmerState } from './confirmer/types'
 import { DragNDropState } from './dragndrop/types'
 

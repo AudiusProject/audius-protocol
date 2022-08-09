@@ -2,9 +2,9 @@ import { Collection, Status } from '@audius/common'
 import { takeEvery, call, put } from 'typed-redux-saga/macro'
 
 import { getAccountStatus } from 'common/store/account/selectors'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import Explore from 'services/audius-backend/Explore'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { EXPLORE_PAGE } from 'utils/route'
 import { waitForValue, requiresAccount } from 'utils/sagaHelpers'
 

@@ -9,6 +9,7 @@ import {
 import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
 
 import { getAccountStatus, getUserId } from 'common/store/account/selectors'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { setSmartCollection } from 'common/store/pages/collection/actions'
@@ -17,7 +18,6 @@ import {
   fetchSmartCollectionSucceeded
 } from 'common/store/pages/smart-collection/slice'
 import Explore from 'services/audius-backend/Explore'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { getLuckyTracks } from 'store/recommendation/sagas'
 import { EXPLORE_PAGE } from 'utils/route'
 import { requiresAccount, waitForValue } from 'utils/sagaHelpers'

@@ -3,9 +3,9 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
 import * as actions from 'common/store/social/collections/actions'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import * as sagas from 'store/social/collections/sagas'
 import { noopReducer } from 'store/testHelper'
 

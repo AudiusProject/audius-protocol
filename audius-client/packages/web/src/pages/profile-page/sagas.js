@@ -10,6 +10,7 @@ import { merge } from 'lodash'
 import { call, delay, fork, put, select, takeEvery } from 'redux-saga/effects'
 
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
 import {
   fetchUsers,
@@ -39,7 +40,6 @@ import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import SolanaClient from 'services/solana-client/SolanaClient'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { isMobile } from 'utils/clientUtil'

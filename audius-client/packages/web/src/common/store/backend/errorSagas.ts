@@ -1,7 +1,7 @@
 import { takeEvery, put } from 'redux-saga/effects'
 
+import * as backendActions from 'common/store/backend/actions'
 import * as errorActions from 'common/store/errors/actions'
-import * as backendActions from 'store/backend/actions'
 
 function* handleError(action: any) {
   console.error(`Got setup err: ${JSON.stringify(action)}`)
