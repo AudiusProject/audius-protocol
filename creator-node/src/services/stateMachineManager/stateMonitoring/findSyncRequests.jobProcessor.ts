@@ -19,7 +19,7 @@ const config = require('../../../config')
 const {
   METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const { makeGaugeIncToRecord } = require('../stateMachineUtils')
 const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
 const {
@@ -226,7 +226,7 @@ async function _findSyncsForUser(
 
     // Secondary is unhealthy if its spID is mismatched -- don't sync to it
     if (
-      CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
+      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary] !==
       secondaryInfo.spId
     ) {
       outcomesBySecondary[secondary].result = 'no_sync_sp_id_mismatch'

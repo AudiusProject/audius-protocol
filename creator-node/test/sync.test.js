@@ -77,7 +77,9 @@ describe('test nodesync', async function () {
    * Wipe DB, server, and redis state
    */
   afterEach(async function () {
-    sandbox.restore()
+    if (sandbox) {
+      sandbox.restore()
+    }
     await sinon.restore()
     await server.close()
   })
@@ -1011,11 +1013,11 @@ describe('test nodesync', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      const result = await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT
-      )
+      const result = await secondarySyncFromPrimary({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT
+      })
 
       assert.deepStrictEqual(result, {
         result: 'success'
@@ -1060,11 +1062,11 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      const result = await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT
-      )
+      const result = await secondarySyncFromPrimary({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT
+      })
 
       assert.deepStrictEqual(result, {
         result: 'success'
@@ -1107,13 +1109,23 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary with `forceResync` = true
-      const result = await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT,
-        /* blockNumber */ null,
-        /* forceResync */ true
+      const secondarySyncFromPrimary = proxyquire(
+        '../src/services/sync/secondarySyncFromPrimary',
+        {
+          './secondarySyncFromPrimaryUtils': {
+            shouldForceResync: async () => {
+              return true
+            }
+          }
+        }
       )
+
+      const result = await secondarySyncFromPrimary({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT,
+        blockNumber: null
+      })
 
       assert.deepStrictEqual(result, {
         result: 'success'

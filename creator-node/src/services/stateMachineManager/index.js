@@ -6,7 +6,7 @@ const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
 const { RECONFIG_MODES, QUEUE_NAMES } = require('./stateMachineConstants')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
-const CNodeToSpIdMapManager = require('./CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('./ContentNodeInfoManager')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -17,7 +17,7 @@ class StateMachineManager {
     this.updateEnabledReconfigModesSet()
 
     // Initialize class immediately since bull jobs are run on cadence even on deploy
-    await CNodeToSpIdMapManager.updateCnodeEndpointToSpIdMap(
+    await ContentNodeInfoManager.updateContentNodeChainInfo(
       audiusLibs.ethContracts
     )
 
