@@ -124,7 +124,7 @@ def downgrade():
             """
         delete from notification 
         where type in (
-            'milestone',
+            'milestone'
         );
         """
         )

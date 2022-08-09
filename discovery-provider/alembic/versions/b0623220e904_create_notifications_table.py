@@ -112,17 +112,12 @@ def downgrade():
         table_name="notification",
         info={"if_exists": True},
     )
-    op.drop_constraint(
-        "fk_notification_group_notification",
-        "notification_group",
-        "foreignkey",
-        info={"if_exists": True},
-    )
-    op.drop_constraint(
-        "uq_notification",
-        "notification",
-        info={"if_exists": True},
-    )
+    if foreign_key_exists("notification_group", "fk_notification_group_notification"):
+        op.drop_constraint(
+            "fk_notification_group_notification", "notification_group", "foreignkey"
+        )
+    if unique_constraints_exists("notification", "uq_notification"):
+        op.drop_constraint("uq_notification", "notification")
 
     op.drop_table("notification", info={"if_exists": True})
     op.drop_table("notification_group", info={"if_exists": True})
