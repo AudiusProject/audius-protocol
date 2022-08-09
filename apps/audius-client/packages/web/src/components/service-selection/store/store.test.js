@@ -2,8 +2,8 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { noopReducer } from 'store/testHelper'
 
 import * as sagas from './sagas'

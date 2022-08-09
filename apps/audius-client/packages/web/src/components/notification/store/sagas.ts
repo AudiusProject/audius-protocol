@@ -22,6 +22,7 @@ import {
 } from 'typed-redux-saga/macro'
 
 import { getUserId, getHasAccount } from 'common/store/account/selectors'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
@@ -49,7 +50,6 @@ import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/n
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { make } from 'store/analytics/actions'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { isElectron } from 'utils/clientUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 

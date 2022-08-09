@@ -3,6 +3,8 @@ import { combineReducers } from 'redux'
 
 import accountSlice from 'common/store/account/reducer'
 import averageColorReducer from 'common/store/average-color/slice'
+import backend from 'common/store/backend/reducer'
+import { BackendState } from 'common/store/backend/types'
 import collectionsReducer from 'common/store/cache/collections/reducer'
 import { asCache } from 'common/store/cache/reducer'
 import tracksReducer from 'common/store/cache/tracks/reducer'
@@ -82,6 +84,7 @@ import repostsUserListReducer from 'common/store/user-list/reposts/reducers'
 import supportingUserListReducer from 'common/store/user-list/supporting/reducers'
 import topSupportersUserListReducer from 'common/store/user-list/top-supporters/reducers'
 import wallet from 'common/store/wallet/slice'
+
 /**
  * A function that creates common reducers. The function takes
  * a CommonStoreContext as input such that platforms (native and web)
@@ -92,6 +95,7 @@ export const reducers = () => ({
   account: accountSlice.reducer,
 
   // Config
+  backend,
   reachability,
 
   // Cache
@@ -172,6 +176,7 @@ export type CommonState = {
   account: ReturnType<typeof accountSlice.reducer>
 
   // Config
+  backend: BackendState
   reachability: ReachabilityState
 
   // Cache

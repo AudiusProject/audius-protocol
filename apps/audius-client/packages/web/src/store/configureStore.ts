@@ -19,6 +19,7 @@ import history from 'utils/history'
 import logger from 'utils/logger'
 import { ERROR_PAGE } from 'utils/route'
 
+import { webStoreContext } from './storeContext'
 import { AppState } from './types'
 
 declare global {
@@ -114,7 +115,10 @@ const sentryMiddleware = createSentryMiddleware(Sentry, {
   stateTransformer: statePruner
 })
 
-const sagaMiddleware = createSagaMiddleware({ onError: onSagaError })
+const sagaMiddleware = createSagaMiddleware({
+  onError: onSagaError,
+  context: webStoreContext
+})
 
 const middlewares = applyMiddleware(
   routerMiddleware(history),

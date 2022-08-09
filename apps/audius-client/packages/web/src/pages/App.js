@@ -21,6 +21,7 @@ import {
   getConnectivityFailure,
   getUserHandle
 } from 'common/store/account/selectors'
+import { getWeb3Error } from 'common/store/backend/selectors'
 import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import { setTheme } from 'common/store/ui/theme/actions'
 import { getTheme } from 'common/store/ui/theme/selectors'
@@ -84,7 +85,6 @@ import {
   incrementScrollCount as incrementScrollCountAction,
   decrementScrollCount as decrementScrollCountAction
 } from 'store/application/ui/scrollLock/actions'
-import { getWeb3Error } from 'store/backend/selectors'
 import { isMobile, getClient } from 'utils/clientUtil'
 import lazyWithPreload from 'utils/lazyWithPreload'
 import 'utils/redirect'

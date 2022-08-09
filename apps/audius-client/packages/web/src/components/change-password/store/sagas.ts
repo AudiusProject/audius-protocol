@@ -1,6 +1,7 @@
 import { Name } from '@audius/common'
 import { call, put, takeEvery } from 'redux-saga/effects'
 
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import {
   confirmCredentials,
   confirmCredentialsSucceeded,
@@ -11,7 +12,6 @@ import {
 } from 'common/store/change-password/slice'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make, TrackEvent } from 'store/analytics/actions'
-import { waitForBackendSetup } from 'store/backend/sagas'
 
 function* handleConfirmCredentials(
   action: ReturnType<typeof confirmCredentials>

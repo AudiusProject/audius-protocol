@@ -8,15 +8,12 @@ import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 
+import { CommonStoreContext } from './storeContext'
+
 // In the future, these state slices will live in packages/common.
 // For now they live in the web client. As features get migrated to RN
 // relevant state slices should be added here. Eventually they will be pulled into
 // packages/common and the mobile client will no longer be dependent on the web client
-
-export type CommonStoreContext = {
-  getLocalStorageItem: (key: string) => Promise<string | null>
-  setLocalStorageItem: (key: string, value: string) => Promise<void>
-}
 
 /**
  * A function that creates common sagas. The function takes

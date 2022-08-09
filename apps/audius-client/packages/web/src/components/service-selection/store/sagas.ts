@@ -2,9 +2,9 @@ import { Kind } from '@audius/common'
 import { all, fork, call, put, select, takeEvery } from 'typed-redux-saga/macro'
 
 import { getAccountUser } from 'common/store/account/selectors'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { watchServiceSelectionErrors } from './errorSagas'

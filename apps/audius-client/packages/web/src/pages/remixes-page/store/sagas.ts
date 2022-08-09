@@ -1,12 +1,12 @@
 import { TrackMetadata } from '@audius/common'
 import { takeEvery, call, put } from 'redux-saga/effects'
 
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
 import {
   fetchTrack,
   fetchTrackSucceeded
 } from 'common/store/pages/remixes/slice'
-import { waitForBackendSetup } from 'store/backend/sagas'
 
 import tracksSagas from './lineups/tracks/sagas'
 

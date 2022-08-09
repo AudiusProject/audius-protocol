@@ -7,17 +7,17 @@ import {
   select,
   call,
   race
-} from 'redux-saga/effects'
+} from 'typed-redux-saga/macro'
 
 import * as accountActions from 'common/store/account/reducer'
 import * as reachabilityActions from 'common/store/reachability/actions'
 import { getIsReachable } from 'common/store/reachability/selectors'
-import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import fingerprintClient from 'services/fingerprint/FingerprintClient'
 import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecycle'
-import * as backendActions from 'store/backend/actions'
 
+import { getContext } from '../effects'
+
+import * as backendActions from './actions'
 import { watchBackendErrors } from './errorSagas'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -27,22 +27,22 @@ const REACHABILITY_TIMEOUT_MS = 8 * 1000
  * Waits for the backend to be setup. Can be used as a blocking call in another saga,
  * For example:
  * function * saga () {
- *  yield call(waitForBackendSetup) // Blocks until the backend lib is ready to receive requests.
- *  yield call(audiusBackendInstance.doSomething, param)
+ *  yield* call(waitForBackendSetup) // Blocks until the backend lib is ready to receive requests.
+ *  yield* call(audiusBackendInstance.doSomething, param)
  * }
  */
 export function* waitForBackendSetup() {
-  const isBackendSetup = yield select((store) => store.backend.isSetup)
-  const isReachable = yield select(getIsReachable)
+  const isBackendSetup = yield* select((store) => store.backend.isSetup)
+  const isReachable = yield* select(getIsReachable)
   if (!isBackendSetup && !isReachable) {
-    yield all([
+    yield* all([
       take(backendActions.SETUP_BACKEND_SUCCEEDED),
       take(reachabilityActions.SET_REACHABLE)
     ])
   } else if (!isReachable) {
-    yield take(reachabilityActions.SET_REACHABLE)
+    yield* take(reachabilityActions.SET_REACHABLE)
   } else if (!isBackendSetup) {
-    yield take(backendActions.SETUP_BACKEND_SUCCEEDED)
+    yield* take(backendActions.SETUP_BACKEND_SUCCEEDED)
   }
 }
 
@@ -54,7 +54,7 @@ function* awaitReachability() {
   const message = new RequestNetworkConnected()
   message.send()
 
-  const { action } = yield race({
+  const { action } = yield* race({
     action: take(reachabilityActions.SET_REACHABLE),
     delay: delay(REACHABILITY_TIMEOUT_MS)
   })
@@ -63,34 +63,37 @@ function* awaitReachability() {
 }
 
 export function* setupBackend() {
-  const establishedReachability = yield call(awaitReachability)
+  const establishedReachability = yield* call(awaitReachability)
 
   // If we couldn't connect, show the error page
   // and just sit here waiting for reachability.
   if (!establishedReachability) {
     console.error('No internet connectivity')
-    yield put(accountActions.fetchAccountNoInternet())
-    yield take(reachabilityActions.SET_REACHABLE)
+    yield* put(accountActions.fetchAccountNoInternet())
+    yield* take(reachabilityActions.SET_REACHABLE)
     console.info('Reconnected')
   }
 
+  const apiClient = yield* getContext('apiClient')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
   // Init APICLient
-  yield call(() => apiClient.init())
+  yield* call(() => apiClient.init())
   // Fire-and-forget init fp
   fingerprintClient.init()
-  yield put(accountActions.fetchAccount())
-  const { web3Error, libsError } = yield call(audiusBackendInstance.setup)
+  yield* put(accountActions.fetchAccount())
+  const { web3Error, libsError } = yield* call(audiusBackendInstance.setup)
   if (libsError) {
-    yield put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
-    yield put(backendActions.setupBackendFailed())
-    yield put(backendActions.libsError(libsError))
+    yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
+    yield* put(backendActions.setupBackendFailed())
+    yield* put(backendActions.libsError(libsError))
     return
   }
-  yield put(backendActions.setupBackendSucceeded(web3Error))
+  yield* put(backendActions.setupBackendSucceeded(web3Error))
 }
 
 function* watchSetupBackend() {
-  yield takeEvery(backendActions.SETUP, setupBackend)
+  yield* takeEvery(backendActions.SETUP, setupBackend)
 }
 
 export default function sagas() {
