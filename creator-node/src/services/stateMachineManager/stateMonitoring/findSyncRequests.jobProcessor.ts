@@ -79,8 +79,8 @@ module.exports = async function ({
     const { wallet, primary, secondary1, secondary2 } = user
 
     const userSecondarySyncMetrics = {
-      [secondary1]: { successRate: 1, failureCount: 0 },
-      [secondary2]: { successRate: 1, failureCount: 0 },
+      [secondary1]: { successRate: 1, failureCount: 0, successCount: 0 },
+      [secondary2]: { successRate: 1, failureCount: 0, successCount: 0 },
       ...userSecondarySyncMetricsMap[wallet]
     }
     logger.info(
