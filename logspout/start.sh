@@ -13,6 +13,9 @@ if [[ "${audius_discprov_url}" ]]; then
    hostname=${audius_discprov_url}
 elif [[ "${creatorNodeEndpoint}" ]]; then
    hostname=${creatorNodeEndpoint}
+# if neither hostname is not defined, set audius_delegate_owner_wallet as a proxy for hostname
+elif [[ "${audius_delegate_owner_wallet}" ]]; then
+   hostname=DelegateOwnerWallet-${audius_delegate_owner_wallet}
 fi
 
 # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
