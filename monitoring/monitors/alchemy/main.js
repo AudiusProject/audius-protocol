@@ -51,6 +51,7 @@ const AUDIUS_DECIMALS = 18
 
 const scanWallets = async () => {
   // Wallet addresses to monitor all transactions for
+  // source: https://audius.org/en/security
   const addresses = {
     registry: {
       name: 'Registry',
