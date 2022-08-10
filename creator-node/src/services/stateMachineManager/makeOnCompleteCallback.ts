@@ -53,8 +53,11 @@ module.exports = function (
   prometheusRegistry: any
 ) {
   return async function (jobId: string, resultString: string) {
-    // Create a logger so that we can filter logs by the tag `jobId` = <id of the job that successfully completed>
-    const logger = createChildLogger(baseLogger, { jobId })
+    // Create a logger so that we can filter logs by the tags `queue` and `jobId` = <id of the job that successfully completed>
+    const logger = createChildLogger(baseLogger, {
+      queue: nameOfQueueWithCompletedJob,
+      jobId
+    })
 
     // update-replica-set jobs need enabledReconfigModes as an array.
     // `this` comes from the function being bound via .bind() to ./index.js

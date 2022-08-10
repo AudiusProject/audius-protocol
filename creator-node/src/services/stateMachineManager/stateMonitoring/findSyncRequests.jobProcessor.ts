@@ -78,9 +78,23 @@ module.exports = async function ({
   for (const user of users) {
     const { wallet, primary, secondary1, secondary2 } = user
 
-    const userSecondarySyncMetrics = userSecondarySyncMetricsMap[wallet] || {
-      [secondary1]: { successRate: 1, failureCount: 0 },
-      [secondary2]: { successRate: 1, failureCount: 0 }
+    const userSecondarySyncMetrics = userSecondarySyncMetricsMap[wallet] || {}
+    logger.info(
+      `Finding sync requests for user ${JSON.stringify(
+        user
+      )} with secondarySyncMetrics ${JSON.stringify(userSecondarySyncMetrics)}`
+    )
+    userSecondarySyncMetrics[secondary1] = userSecondarySyncMetrics[
+      secondary1
+    ] || {
+      successRate: 1,
+      failureCount: 0
+    }
+    userSecondarySyncMetrics[secondary2] = userSecondarySyncMetrics[
+      secondary2
+    ] || {
+      successRate: 1,
+      failureCount: 0
     }
 
     const {
