@@ -427,8 +427,11 @@ router.post(
         const trackResp = await libs.contracts.TrackFactoryClient.getTrack(
           blockchainTrackId
         )
-        // eslint-disable-next-line eqeqeq
-        if (trackResp.trackOwnerId != req.session.userId) {
+        if (
+          !trackResp?.trackOwnerId ||
+          // eslint-disable-next-line eqeqeq
+          trackResp.trackOwnerId != req.session.userId
+        ) {
           throw new Error(
             `Owner ID ${trackResp.trackOwnerId} of blockchainTrackId ${blockchainTrackId} does not match the ID of the user attempting to write this track: ${req.session.userId}`
           )

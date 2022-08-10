@@ -118,8 +118,10 @@ router.post(
     const userResp = await libs.contracts.UserFactoryClient.getUser(
       blockchainUserId
     )
-    // eslint-disable-next-line eqeqeq
-    if (userResp.wallet != req.session.wallet) {
+    if (
+      !userResp?.wallet ||
+      userResp.wallet.toLowerCase() !== req.session.wallet.toLowerCase()
+    ) {
       throw new Error(
         `Owner wallet ${userResp.wallet} of blockchainUserId ${blockchainUserId} does not match the wallet of the user attempting to write this data: ${req.session.wallet}`
       )
