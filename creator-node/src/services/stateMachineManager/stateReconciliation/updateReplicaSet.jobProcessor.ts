@@ -513,6 +513,23 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
       }
+
+      const shouldReconfig = await _shouldReconfig({
+        libs: audiusLibs,
+        oldPrimarySpId,
+        oldSecondary1SpId,
+        oldSecondary2SpId,
+        userId,
+        logger
+      })
+
+      if (!shouldReconfig) {
+        logger.info(
+          `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
+        )
+        return response
+      }
+
       await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
         userId,
         newReplicaSetSPIds[0], // new primary
@@ -520,18 +537,18 @@ const _issueUpdateReplicaSetOp = async (
         oldPrimarySpId,
         [oldSecondary1SpId, oldSecondary2SpId]
       )
-      const timeElapsedMs = Date.now() - startTimeMs
-      logger.info(
-        `[_issueUpdateReplicaSetOp] updateReplicaSet took ${timeElapsedMs}ms for userId=${userId} wallet=${wallet} `
-      )
 
       response.issuedReconfig = true
+      logger.info(
+        `[_issueUpdateReplicaSetOp] _updateReplicaSet took ${
+          Date.now() - startTimeMs
+        }ms for userId=${userId} wallet=${wallet}`
+      )
     } catch (e: any) {
-      const timeElapsedMs = Date.now() - startTimeMs
-      // NOTE: This error might be misleading because the reconfig event already took place in another node in the replica set.
-      // Check the transaction for details, or user history to make sure only 1 reconfig event occurred.
       throw new Error(
-        `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${timeElapsedMs}ms. Look into the txn for more details as this may be a false alarm. - Error ${e.message}`
+        `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${
+          Date.now() - startTimeMs
+        }ms - Error ${e.message}`
       )
     }
 
@@ -592,6 +609,56 @@ const _issueUpdateReplicaSetOp = async (
 const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
   return enabledReconfigModes.includes(mode)
+}
+
+type ShouldReconfigParams = {
+  libs: any
+  oldPrimarySpId: number
+  oldSecondary1SpId: number
+  oldSecondary2SpId: number
+  userId: number
+  logger: any
+}
+const _shouldReconfig = async ({
+  libs,
+  oldPrimarySpId,
+  oldSecondary1SpId,
+  oldSecondary2SpId,
+  userId,
+  logger
+}: ShouldReconfigParams): Promise<boolean> => {
+  // If any error occurs in determing if a reconfig event should happen, default to issuing
+  // a reconfig event anyway just to prevent users from keeping an unhealthy replica set
+  let shouldReconfig = true
+  try {
+    const {
+      primaryId: currentPrimarySpId,
+      secondaryIds: currentSecondarySpIds
+    } = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+      userId
+    )
+
+    if (
+      !currentPrimarySpId ||
+      !currentSecondarySpIds ||
+      currentSecondarySpIds.length < 2
+    ) {
+      throw new Error(
+        `Could not get current replica set: currentPrimarySpId=${currentPrimarySpId} currentSecondarySpIds=${currentSecondarySpIds}`
+      )
+    }
+
+    shouldReconfig =
+      currentPrimarySpId === oldPrimarySpId &&
+      currentSecondarySpIds[0] === oldSecondary1SpId &&
+      currentSecondarySpIds[1] === oldSecondary2SpId
+  } catch (e: any) {
+    logger.error(
+      `[_issueUpdateReplicaSetOp] error in _shouldReconfig. : ${e.message}`
+    )
+  }
+
+  return shouldReconfig
 }
 
 module.exports = updateReplicaSetJobProcessor
