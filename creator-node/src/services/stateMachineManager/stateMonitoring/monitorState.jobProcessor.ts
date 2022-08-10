@@ -23,7 +23,7 @@ const {
 } = require('./stateMonitoringUtils')
 const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
 
-const { SemanticAttributes } = require('@opentelemetry/api')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { getTracer } = require('../../../tracer')
 
 // Number of users to process each time monitor-state job processor is called
@@ -252,24 +252,24 @@ module.exports = async function ({
         unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
         replicaToAllUserInfoMaps,
         userSecondarySyncMetricsMap,
-        parentSpanContext
+        parentSpanContext: span.spanContext()
       }
       const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
         users,
         unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
         replicaToAllUserInfoMaps,
         userSecondarySyncMetricsMap,
-        parentSpanContext
+        parentSpanContext: span.spanContext()
       }
       const monitorStateJob: MonitorStateJobParams = {
         lastProcessedUserId: lastProcessedUser?.user_id || 0,
         discoveryNodeEndpoint,
-        parentSpanContext
+        parentSpanContext: span.spanContext()
       }
 
       span.end()
       return {
-        spanContext: parentSpanContext,
+        spanContext: span.spanContext(),
         jobsToEnqueue: {
           // Enqueue a job to find sync requests that need to be issued for the slice of users we just monitored
           [QUEUE_NAMES.FIND_SYNC_REQUESTS]: [findSyncRequestsJob],

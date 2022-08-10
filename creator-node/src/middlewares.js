@@ -19,6 +19,7 @@ const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
 const { getTracer } = require('./tracer')
+const { SpanStatusCode } = require('@opentelemetry/api')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -300,6 +301,7 @@ async function issueAndWaitForSecondarySyncRequests(
 
       // This sync request uses the manual sync queue, so we can't proceed if manual syncs are disabled
       if (config.get('manualSyncsDisabled')) {
+        span.addEvent('manual sync queue disabled')
         endHistogramTimer({
           enforceWriteQuorum: String(enforceWriteQuorum),
           ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -314,23 +316,26 @@ async function issueAndWaitForSecondarySyncRequests(
           span.end()
           throw new Error(errorMsg)
         }
+        span.end()
         return
       }
 
       // Wallet is required and should've been set in auth middleware
       if (!req.session || !req.session.wallet) {
+        const errorMsg = `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
+        span.addEvent(errorMsg)
         endHistogramTimer({
           enforceWriteQuorum: String(enforceWriteQuorum),
           ignoreWriteQuorum: String(ignoreWriteQuorum),
           route,
           result: 'failed_short_circuit'
         })
-        const errorMsg = `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
         req.logger.error(errorMsg)
         if (enforceWriteQuorum) {
           span.end()
           throw new Error(errorMsg)
         }
+        span.end()
         return
       }
       const wallet = req.session.wallet
@@ -351,7 +356,6 @@ async function issueAndWaitForSecondarySyncRequests(
             'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
           req.logger.error(errorMsg)
           if (enforceWriteQuorum) {
-            span.end()
             throw new Error(errorMsg)
           }
           span.end()
@@ -380,6 +384,9 @@ async function issueAndWaitForSecondarySyncRequests(
           where: { walletPublicKey: wallet }
         })
         if (!cnodeUser || !cnodeUser.clock) {
+          span.addEvent(
+            `issueAndWaitForSecondarySyncRequests Error - Failed to retrieve current clock value for user ${wallet} on current node.`
+          )
           endHistogramTimer({
             enforceWriteQuorum: String(enforceWriteQuorum),
             ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -420,6 +427,8 @@ async function issueAndWaitForSecondarySyncRequests(
             result: 'succeeded'
           })
         } catch (e) {
+          span.recordException(e)
+          span.setStatus({ code: SpanStatusCode.ERROR })
           endHistogramTimer({
             enforceWriteQuorum: String(enforceWriteQuorum),
             ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -429,6 +438,7 @@ async function issueAndWaitForSecondarySyncRequests(
           const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
             Date.now() - replicationStart
           }ms`
+          span.addEvent(errorMsg)
           req.logger.error(`${errorMsg}: ${e.message}`)
 
           // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
@@ -440,6 +450,8 @@ async function issueAndWaitForSecondarySyncRequests(
 
         // If any error during replication, error if quorum is enforced
       } catch (e) {
+        span.recordException(e)
+        span.setStatus({ code: SpanStatusCode.ERROR })
         endHistogramTimer({
           enforceWriteQuorum: String(enforceWriteQuorum),
           ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -451,6 +463,9 @@ async function issueAndWaitForSecondarySyncRequests(
           e.message
         )
         if (enforceWriteQuorum) {
+          span.addEvent(
+            `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
+          )
           span.end()
           throw new Error(
             `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`

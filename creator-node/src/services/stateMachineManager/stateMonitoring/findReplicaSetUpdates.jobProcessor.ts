@@ -25,7 +25,7 @@ const CNodeHealthManager = require('../CNodeHealthManager')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const config = require('../../../config')
 
-const { SemanticAttributes } = require('@opentelemetry/api')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { getTracer } = require('../../../tracer')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -131,7 +131,7 @@ module.exports = async function ({
             const { wallet } = updateReplicaSetOp
 
             updateReplicaSetJobs.push({
-              parentSpanContext,
+              parentSpanContext: span.spanContext(),
               wallet,
               userId: updateReplicaSetOp.userId,
               primary: updateReplicaSetOp.primary,
@@ -161,7 +161,7 @@ module.exports = async function ({
 
       span.end()
       return {
-        spanContext: parentSpanContext,
+        spanContext: span.spanContext(),
         cNodeEndpointToSpIdMap:
           CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap(),
         jobsToEnqueue: updateReplicaSetJobs?.length

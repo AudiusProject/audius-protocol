@@ -28,7 +28,8 @@ const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const initAudiusLibs = require('../../initAudiusLibs')
 
-const { SpanStatusCode, SemanticAttributes } = require('@opentelemetry/api')
+const { SpanStatusCode } = require('@opentelemetry/api')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { getTracer } = require('../../../tracer')
 
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
@@ -158,7 +159,7 @@ module.exports = async function ({
         issuedReconfig,
         newReplicaSet,
         healthyNodes,
-        spanContext: parentSpanContext,
+        spanContext: span.spanContext(),
         jobsToEnqueue: syncJobsToEnqueue?.length
           ? {
               [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue

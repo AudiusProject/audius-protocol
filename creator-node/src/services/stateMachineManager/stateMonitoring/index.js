@@ -198,7 +198,7 @@ class StateMonitoringManager {
       cNodeEndpointToSpIdMapQueueLogger.info(
         `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
       )
-      queue.add({ parentSpanContext: result.spanContext() })
+      queue.add({ parentSpanContext: result.spanContext })
     })
     queue.on('failed', (job, err) => {
       cNodeEndpointToSpIdMapQueueLogger.error(
@@ -221,7 +221,7 @@ class StateMonitoringManager {
     monitoringQueue.add({
       lastProcessedUserId,
       discoveryNodeEndpoint,
-      parentSpanContext: spanContext()
+      parentSpanContext: spanContext
     })
   }
 

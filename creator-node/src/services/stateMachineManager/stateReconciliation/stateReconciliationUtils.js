@@ -10,7 +10,7 @@ const {
   HEALTHY_SERVICES_TTL_SEC
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-const { trace, context, SpanStatusCode } = require('@opentelemetry/api')
+const { SpanStatusCode } = require('@opentelemetry/api')
 const { getTracer } = require('../../../tracer')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
@@ -31,68 +31,81 @@ const getNewOrExistingSyncReq = ({
   syncMode,
   immediate = false
 }) => {
-  if (
-    !userWallet ||
-    !primaryEndpoint ||
-    !secondaryEndpoint ||
-    !syncType ||
-    !syncMode
-  ) {
-    throw new Error(
-      `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
-    )
-  }
-  /**
-   * If duplicate sync already exists, do not add and instead return existing sync job info
-   * Ignore syncMode when checking for duplicates, since it doesn't matter
-   */
-  const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
-    syncType,
-    userWallet,
-    secondaryEndpoint,
-    immediate
-  )
-  if (duplicateSyncJobInfo) {
-    logger.info(
-      `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
-    )
-
-    return {
-      duplicateSyncReq: duplicateSyncJobInfo
+  return getTracer().startActiveSpan('getNewOrExistingSyncReq', (span) => {
+    if (
+      !userWallet ||
+      !primaryEndpoint ||
+      !secondaryEndpoint ||
+      !syncType ||
+      !syncMode
+    ) {
+      span.addEvent(
+        `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
+      )
+      span.setStatus({ code: SpanStatusCode.ERROR })
+      span.end()
+      throw new Error(
+        `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
+      )
     }
-  }
+    /**
+     * If duplicate sync already exists, do not add and instead return existing sync job info
+     * Ignore syncMode when checking for duplicates, since it doesn't matter
+     */
+    const duplicateSyncJobInfo =
+      SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
+        syncType,
+        userWallet,
+        secondaryEndpoint,
+        immediate
+      )
+    if (duplicateSyncJobInfo) {
+      span.addEvent(
+        `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
+      )
+      logger.info(
+        `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
+      )
 
-  // Define axios params for sync request to secondary
-  const syncRequestParameters = {
-    baseURL: secondaryEndpoint,
-    url: '/sync',
-    method: 'post',
-    data: {
-      wallet: [userWallet],
-      creator_node_endpoint: primaryEndpoint,
-      // Note - `sync_type` param is only used for logging by nodeSync.js
-      sync_type: syncType,
-      // immediate = true will ensure secondary skips debounce and evaluates sync immediately
+      span.end()
+      return {
+        duplicateSyncReq: duplicateSyncJobInfo
+      }
+    }
+
+    // Define axios params for sync request to secondary
+    const syncRequestParameters = {
+      baseURL: secondaryEndpoint,
+      url: '/sync',
+      method: 'post',
+      data: {
+        wallet: [userWallet],
+        creator_node_endpoint: primaryEndpoint,
+        // Note - `sync_type` param is only used for logging by nodeSync.js
+        sync_type: syncType,
+        // immediate = true will ensure secondary skips debounce and evaluates sync immediately
+        immediate
+      }
+    }
+
+    // Add job to issue manual or recurring sync request based on `syncType` param
+    const syncReqToEnqueue = {
+      syncType,
+      syncMode,
+      syncRequestParameters
+    }
+
+    SyncRequestDeDuplicator.recordSync(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
       immediate
-    }
-  }
+    )
 
-  // Add job to issue manual or recurring sync request based on `syncType` param
-  const syncReqToEnqueue = {
-    syncType,
-    syncMode,
-    syncRequestParameters
-  }
-
-  SyncRequestDeDuplicator.recordSync(
-    syncType,
-    userWallet,
-    secondaryEndpoint,
-    syncReqToEnqueue,
-    immediate
-  )
-
-  return { syncReqToEnqueue }
+    span.addEvent(JSON.stringify(syncReqToEnqueue))
+    span.end()
+    return { syncReqToEnqueue }
+  })
 }
 
 /**
@@ -119,13 +132,19 @@ const issueSyncRequestsUntilSynced = async (
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
         immediate: true
       })
+
       if (!_.isEmpty(duplicateSyncReq)) {
         // Log duplicate and return
         logger.warn(
           `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
         )
+        span.addEvent(
+          `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
+        )
+        span.end()
         return
       } else if (!_.isEmpty(syncReqToEnqueue)) {
+        span.addEvent(JSON.stringify(syncReqToEnqueue))
         await queue.add({
           enqueuedBy: 'issueSyncRequestsUntilSynced',
           parentSpanContext: span.spanContext(),
@@ -134,6 +153,7 @@ const issueSyncRequestsUntilSynced = async (
       } else {
         // Log error that the sync request couldn't be created and return
         logger.error(`Failed to create manual sync request`)
+        span.addEvent(`Failed to create manual sync request`)
         span.end()
         return
       }
@@ -155,6 +175,7 @@ const issueSyncRequestsUntilSynced = async (
 
           // If secondary is synced, return successfully
           if (secondaryClockVal >= primaryClockVal) {
+            span.end()
             return
           }
 

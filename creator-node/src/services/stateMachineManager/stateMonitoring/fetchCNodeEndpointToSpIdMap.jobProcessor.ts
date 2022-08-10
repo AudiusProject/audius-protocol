@@ -8,7 +8,8 @@ import type { Span } from '@opentelemetry/api'
 const initAudiusLibs = require('../../initAudiusLibs')
 const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
 
-const { SpanStatusCode, SemanticAttributes } = require('@opentelemetry/api')
+const { SpanStatusCode } = require('@opentelemetry/api')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { getTracer } = require('../../../tracer')
 
 /**
@@ -31,7 +32,8 @@ module.exports = async function ({
       }
     ],
     attributes: {
-      [SemanticAttributes.CODE_FUNCTION]: 'processJob',
+      [SemanticAttributes.CODE_FUNCTION]:
+        'fetchCNodeEndpointToSpIdMap.jobProcessor',
       [SemanticAttributes.CODE_FILEPATH]: __filename
     }
   }
@@ -61,7 +63,7 @@ module.exports = async function ({
       span.end()
       return {
         cNodeEndpointToSpIdMap: NodeToSpIdManager.getCNodeEndpointToSpIdMap(),
-        spanContext: parentSpanContext,
+        spanContext: span.spanContext(),
         errorMsg
       }
     }

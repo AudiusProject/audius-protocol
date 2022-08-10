@@ -16,7 +16,7 @@ import { QUEUE_NAMES } from '../stateMachineConstants'
 
 const _: LoDashStatic = require('lodash')
 
-const { SemanticAttributes } = require('@opentelemetry/api')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { getTracer } = require('../../../tracer')
 
 const config = require('../../../config')
@@ -170,7 +170,7 @@ module.exports = async function ({
 
       span.end()
       return {
-        spanContext: parentSpanContext,
+        spanContext: span.spanContext(),
         duplicateSyncReqs,
         errors,
         jobsToEnqueue: syncReqsToEnqueue?.length

@@ -10,7 +10,7 @@ import type {
   IssueSyncRequestJobReturnValue,
   SyncRequestAxiosParams
 } from './types'
-import type { SpanContext, Span } from '@opentelemetry/api'
+import type { Span } from '@opentelemetry/api'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
@@ -169,7 +169,7 @@ module.exports = async function ({
       return {
         jobsToEnqueue,
         metricsToRecord,
-        spanContext: parentSpanContext,
+        spanContext: span.spanContext(),
         error
       }
     }

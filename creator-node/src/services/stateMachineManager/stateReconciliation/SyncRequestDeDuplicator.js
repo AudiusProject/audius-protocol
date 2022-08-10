@@ -1,3 +1,5 @@
+const { getTracer } = require('../../../tracer')
+
 /**
  * Ensure a sync request for (syncType, userWallet, secondaryEndpoint) can only be enqueued once
  * This is used to ensure multiple concurrent sync tasks are not being redundantly used on a single user
@@ -23,15 +25,18 @@ class SyncRequestDeDuplicator {
     secondaryEndpoint,
     immediate = false
   ) {
-    const syncKey = this._getSyncKey(
-      syncType,
-      userWallet,
-      secondaryEndpoint,
-      immediate
-    )
+    return getTracer().startActiveSpan('getDuplicateSyncJobInfo', (span) => {
+      const syncKey = this._getSyncKey(
+        syncType,
+        userWallet,
+        secondaryEndpoint,
+        immediate
+      )
 
-    const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
-    return duplicateSyncJobInfo || null
+      const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
+      span.end()
+      return duplicateSyncJobInfo || null
+    })
   }
 
   /** Record job info for sync with given properties */
@@ -42,14 +47,18 @@ class SyncRequestDeDuplicator {
     immediate = false,
     jobProps
   ) {
-    const syncKey = this._getSyncKey(
-      syncType,
-      userWallet,
-      secondaryEndpoint,
-      immediate
-    )
+    getTracer().startActiveSpan('recordSync', (span) => {
+      const syncKey = this._getSyncKey(
+        syncType,
+        userWallet,
+        secondaryEndpoint,
+        immediate
+      )
+      span.setAttribute('syncKey', syncKey)
 
-    this.waitingSyncsByUserWalletMap[syncKey] = jobProps
+      this.waitingSyncsByUserWalletMap[syncKey] = jobProps
+      span.end()
+    })
   }
 
   /** Remove sync with given properties */

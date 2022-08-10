@@ -3,7 +3,7 @@ const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
 const { getTracer } = require('./tracer')
-const { SemanticAttributes } = require('@opentelemetry/api')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 
 // Processing fns
 const {
@@ -79,12 +79,13 @@ class AsyncProcessingQueue {
         }
       ],
       attributes: {
-        [SemanticAttributes.CODE_FUNCTION]: 'this.queue.process',
+        requestID: logContext.requestID,
+        [SemanticAttributes.CODE_FUNCTION]: 'AyncProcessingQueue.processTask',
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
     getTracer().startActiveSpan(
-      'processTask on AsyncProcessingQueue',
+      'process task on AsyncProcessingQueue',
       options,
       async (span) => {
         if (task === PROCESS_NAMES.transcodeHandOff) {
@@ -96,7 +97,7 @@ class AsyncProcessingQueue {
               'Failed to hand off transcode. Retrying upload to current node...'
             )
             await this.addTrackContentUploadTask({
-              parentSpanContext: span.spanContext,
+              parentSpanContext: span.spanContext(),
               logContext,
               req: job.data.req
             })
@@ -106,7 +107,7 @@ class AsyncProcessingQueue {
               `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
             )
             await this.addProcessTranscodeAndSegmentTask({
-              parentSpanContext: span.spanContext,
+              parentSpanContext: span.spanContext(),
               logContext,
               req: { ...job.data.req, transcodeFilePath, segmentFileNames }
             })
