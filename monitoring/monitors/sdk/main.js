@@ -83,13 +83,16 @@ const PROPOSERS = new Set([
 ])
 
 const scanGovernanceProposals = async () => {
+  // Grab all and last proposals
   const proposals = await audiusLibs.ethContracts.GovernanceClient.getProposals()
   const lastProposal = proposals[proposals.length - 1]
 
+  // Count total Proposals
   METRICS[metricNames.PROPOSALS].set(
     parseFloat(lastProposal.proposalId)
   )
 
+  // Count open Proposals
   let currentBlockNumber = 15265449
   currentBlockNumber = 15265423
   if (lastProposal.blockNumber > currentBlockNumber) {
@@ -104,6 +107,8 @@ const scanGovernanceProposals = async () => {
     )
   }
 
+  // Count proposals by unknown Proposers,
+  // if the latest Proposer is unknown
   if (!PROPOSERS.has(lastProposal.proposer)) {
     let count = 0
     for (const proposal of proposals) {
