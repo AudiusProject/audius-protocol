@@ -1,4 +1,4 @@
-ARG TAG=v3.2.14-dm-test-1
+ARG TAG=v3.2.14-disable-logging
 FROM gliderlabs/logspout:v3.2.14
 
 # ignores previously log on startup
