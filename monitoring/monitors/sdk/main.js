@@ -1,30 +1,13 @@
 const express = require('express')
 const promClient = require('prom-client')
-const Audius = require('@audius/libs')
+const { libs } = require('@audius/sdk')
 
 const ETH_TOKEN_ADDRESS = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
 const ETH_REGISTRY_ADDRESS = '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C'
 const ETH_PROVIDER_ENDPOINT = 'https://eth.audius.co'
 const ETH_OWNER_WALLET = '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5'
-// const { sdk } = require('@audius/sdk')
-// const audiusLibs = sdk({
-//   appName: "audius-monitors-sdk",
-//   // ethContractsConfig: {
-//   //   ethWeb3Manager: "",
-//   //   tokenContractAddress: "0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998",
-//   //   registryAddress: "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C",
-//   //   claimDistributionContractAddress: "https://eth.audius.co",
-//   //   wormholeContractAddress: "0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5"
-//   // },
-//   ethWeb3Config: Audius.configEthWeb3(
-//         ETH_TOKEN_ADDRESS,
-//         ETH_REGISTRY_ADDRESS,
-//         ETH_PROVIDER_ENDPOINT,
-//         ETH_OWNER_WALLET
-//       )
-// })
-const audiusLibs = new Audius({
-  ethWeb3Config: Audius.configEthWeb3(
+const audiusLibs = new libs({
+  ethWeb3Config: libs.configEthWeb3(
     ETH_TOKEN_ADDRESS,
     ETH_REGISTRY_ADDRESS,
     ETH_PROVIDER_ENDPOINT,

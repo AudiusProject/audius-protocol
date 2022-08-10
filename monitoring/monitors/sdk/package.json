@@ -10,7 +10,6 @@
     "author": "",
     "dependencies": {
       "@audius/sdk": "0.0.32",
-      "@audius/libs": "1.2.118",
       "prom-client": "14.0.1",
       "web3": "1.7.5"
     }
