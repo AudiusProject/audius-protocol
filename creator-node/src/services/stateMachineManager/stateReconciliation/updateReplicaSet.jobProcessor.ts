@@ -514,7 +514,7 @@ const _issueUpdateReplicaSetOp = async (
         })
       }
 
-      const shouldReconfig = await _shouldReconfig({
+      const canReconfig = await _canReconfig({
         libs: audiusLibs,
         oldPrimarySpId,
         oldSecondary1SpId,
@@ -523,7 +523,7 @@ const _issueUpdateReplicaSetOp = async (
         logger
       })
 
-      if (!shouldReconfig) {
+      if (!canReconfig) {
         logger.info(
           `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
         )
@@ -611,7 +611,7 @@ const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   return enabledReconfigModes.includes(mode)
 }
 
-type ShouldReconfigParams = {
+type CanReconfigParams = {
   libs: any
   oldPrimarySpId: number
   oldSecondary1SpId: number
@@ -619,17 +619,17 @@ type ShouldReconfigParams = {
   userId: number
   logger: any
 }
-const _shouldReconfig = async ({
+const _canReconfig = async ({
   libs,
   oldPrimarySpId,
   oldSecondary1SpId,
   oldSecondary2SpId,
   userId,
   logger
-}: ShouldReconfigParams): Promise<boolean> => {
-  // If any error occurs in determing if a reconfig event should happen, default to issuing
+}: CanReconfigParams): Promise<boolean> => {
+  // If any error occurs in determining if a reconfig event can happen, default to issuing
   // a reconfig event anyway just to prevent users from keeping an unhealthy replica set
-  let shouldReconfig = true
+  let canReconfig = true
   try {
     const {
       primaryId: currentPrimarySpId,
@@ -648,17 +648,17 @@ const _shouldReconfig = async ({
       )
     }
 
-    shouldReconfig =
+    canReconfig =
       currentPrimarySpId === oldPrimarySpId &&
       currentSecondarySpIds[0] === oldSecondary1SpId &&
       currentSecondarySpIds[1] === oldSecondary2SpId
   } catch (e: any) {
     logger.error(
-      `[_issueUpdateReplicaSetOp] error in _shouldReconfig. : ${e.message}`
+      `[_issueUpdateReplicaSetOp] error in _canReconfig. : ${e.message}`
     )
   }
 
-  return shouldReconfig
+  return canReconfig
 }
 
 module.exports = updateReplicaSetJobProcessor
