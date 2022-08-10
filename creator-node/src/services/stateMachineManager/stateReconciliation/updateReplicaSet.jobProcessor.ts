@@ -492,6 +492,13 @@ const _issueUpdateReplicaSetOp = async (
       )
     }
 
+    const oldPrimarySpId =
+      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[primary]
+    const oldSecondary1SpId =
+      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary1]
+    const oldSecondary2SpId =
+      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary2]
+
     // Submit chain tx to update replica set
     const startTimeMs = Date.now()
     try {
@@ -504,10 +511,12 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
       }
-      await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
         userId,
-        newReplicaSetSPIds[0], // primary
-        newReplicaSetSPIds.slice(1) // [secondary1, secondary2]
+        newReplicaSetSPIds[0], // new primary
+        newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+        oldPrimarySpId,
+        [oldSecondary1SpId, oldSecondary2SpId]
       )
       const timeElapsedMs = Date.now() - startTimeMs
       logger.info(
@@ -517,8 +526,10 @@ const _issueUpdateReplicaSetOp = async (
       response.issuedReconfig = true
     } catch (e: any) {
       const timeElapsedMs = Date.now() - startTimeMs
+      // NOTE: This error might be misleading because the reconfig event already took place in another node in the replica set.
+      // Check the transaction for details, or user history to make sure only 1 reconfig event occurred.
       throw new Error(
-        `UserReplicaSetManagerClient.updateReplicaSet() Failed in ${timeElapsedMs}ms - Error ${e.message}`
+        `[_issueUpdateReplicaSetOp] Update replica set failed in ${timeElapsedMs}ms. Look into txn for details as this may be a false alarm. - Error ${e.message}`
       )
     }
 
