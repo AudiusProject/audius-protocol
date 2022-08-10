@@ -33,5 +33,7 @@ done
 export SYSLOG_STRUCTURED_DATA="$(echo ${audius_loggly_token} | base64 -d)@41058 ${tags}"
 echo SYSLOG_STRUCTURED_DATA=${SYSLOG_STRUCTURED_DATA}
 
-# start logspout and point it to Loggly
-/bin/logspout multiline+syslog+tcp://logs-01.loggly.com:514
+# start logspout if audius_loggly_disable is not set
+if [[ -z "$audius_loggly_disable" ]]; then
+   /bin/logspout multiline+syslog+tcp://logs-01.loggly.com:514
+fi
