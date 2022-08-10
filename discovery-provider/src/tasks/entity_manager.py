@@ -278,7 +278,7 @@ def collect_entities_to_fetch(
     entity_manager_txs,
     users_to_fetch: Set[int],
 ):
-    entities_to_fetch: Dict[EntityType, Set[int]] = {}
+    entities_to_fetch: Dict[EntityType, Set[int]] = defaultdict(set)
     for tx_receipt in entity_manager_txs:
         entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
         for event in entity_manager_event_tx:
@@ -343,6 +343,7 @@ def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
         txhash=txhash,
         is_current=False,
         is_delete=old_playlist.is_delete,
+        metadata_multihash=old_playlist.metadata_multihash,
     )
     return new_playlist
 
@@ -356,34 +357,62 @@ def get_entity_manager_events_tx(update_task, tx_receipt):
 def process_playlist_contents(
     playlist_record: Playlist, playlist_metadata, block_integer_time
 ):
-    # mapping of track's metadata time to index time
-    metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
-    for track in playlist_record.playlist_contents["track_ids"]:
-        track_id = track["track"]
-        metadata_time = track["metadata_time"]
+    if playlist_record.metadata_multihash:
+        # playlist already has metadata
+        metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
+        for track in playlist_record.playlist_contents["track_ids"]:
+            track_id = track["track"]
+            metadata_time = track["metadata_time"]
+            metadata_index_time_dict[track_id][metadata_time] = track["time"]
 
-        metadata_index_time_dict[track_id][metadata_time] = track["time"]
+        updated_tracks = []
+        for track in playlist_metadata["playlist_contents"]["track_ids"]:
+            track_id = track["track"]
+            metadata_time = track["time"]
+            index_time = block_integer_time  # default to current block for new tracks
 
-    updated_tracks = []
-    for track in playlist_metadata["playlist_contents"]["track_ids"]:
-        track_id = track["track"]
-        metadata_time = track["time"]
-        index_time = block_integer_time  # default to current block for new tracks
+            if (
+                track_id in metadata_index_time_dict
+                and metadata_time in metadata_index_time_dict[track_id]
+            ):
+                # track exists in prev record (reorder / delete)
+                index_time = metadata_index_time_dict[track_id][metadata_time]
 
-        if (
-            track_id in metadata_index_time_dict
-            and metadata_time in metadata_index_time_dict[track_id]
-        ):
-            # track exists in prev record (reorder / delete)
-            index_time = metadata_index_time_dict[track_id][metadata_time]
+            updated_tracks.append(
+                {
+                    "track": track_id,
+                    "time": index_time,
+                    "metadata_time": metadata_time,
+                }
+            )
+    else:
+        # upgrade legacy playlist to include metadata
+        # assume metadata and indexing timestamp is the same
+        track_id_index_times: Set = set()
+        for track in playlist_record.playlist_contents["track_ids"]:
+            track_id = track["track"]
+            index_time = track["time"]
+            track_id_index_times.add((track_id, index_time))
 
-        updated_tracks.append(
-            {
-                "track": track_id,
-                "time": index_time,
-                "metadata_time": metadata_time,
-            }
-        )
+        updated_tracks = []
+        for track in playlist_metadata["playlist_contents"]["track_ids"]:
+            track_id = track["track"]
+            metadata_time = track["time"]
+
+            # use track["time"] if present in previous record else this is a new track
+            index_time = (
+                track["time"]
+                if (track_id, metadata_time) in track_id_index_times
+                else block_integer_time
+            )
+            updated_tracks.append(
+                {
+                    "track": track_id,
+                    "time": index_time,
+                    "metadata_time": metadata_time,
+                }
+            )
+
     return {"track_ids": updated_tracks}
 
 
