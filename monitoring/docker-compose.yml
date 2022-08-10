@@ -1,4 +1,11 @@
-version: '3'
+version: "3.9"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: "50m"
+    max-file: "3"
+  driver: json-file
 
 services:
   prometheus:
@@ -11,6 +18,7 @@ services:
     restart: always
     volumes:
       - ./data/prometheus:/prometheus
+    logging: *default-logging
 
   grafana:
     build:
@@ -28,8 +36,30 @@ services:
     restart: always
     volumes:
       - ./data/grafana:/var/lib/grafana
+    logging: *default-logging
 
   # Exporters
+
+  exporter_alchemy:
+    build: monitors/alchemy
+    volumes:
+      - ./monitors/alchemy/main.js:/app/main.js
+    ports:
+      - "2000:3000"
+    environment:
+      - API_KEY
+      - HTTPS
+      - WEBSOCKETS
+      - ADDRESS
+    logging: *default-logging
+
+  exporter_sdk:
+    build: monitors/sdk
+    volumes:
+      - ./monitors/sdk/main.js:/app/main.js
+    ports:
+      - "2001:3000"
+    logging: *default-logging
 
   ## Elasticsearch Exporter
 
@@ -42,6 +72,7 @@ services:
     restart: always
     networks:
       - audius_dev
+    logging: *default-logging
 
   ## Postgres Exporters
 
@@ -54,6 +85,7 @@ services:
     restart: always
     networks:
       - audius_dev
+    logging: *default-logging
 
   exporter_postgres_cn1:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
@@ -64,6 +96,7 @@ services:
     restart: always
     networks:
       - audius_dev
+    logging: *default-logging
 
   exporter_postgres_cn2:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
@@ -74,6 +107,7 @@ services:
     restart: always
     networks:
       - audius_dev
+    logging: *default-logging
 
   exporter_postgres_cn3:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
@@ -84,6 +118,7 @@ services:
     restart: always
     networks:
       - audius_dev
+    logging: *default-logging
 
   exporter_postgres_cn4:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
@@ -94,6 +129,7 @@ services:
     restart: always
     networks:
       - audius_dev
+    logging: *default-logging
 
   exporter_postgres_is:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
@@ -104,6 +140,7 @@ services:
     restart: always
     networks:
       - audius_dev
+    logging: *default-logging
 
 networks:
   audius_dev:
