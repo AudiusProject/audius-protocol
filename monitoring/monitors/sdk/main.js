@@ -21,31 +21,24 @@ const audiusLibs = new libs({
 const prefix = 'audius_monitors_sdk_'
 const metricNames = {
   PROPOSALS: 'proposals',
-  OPEN_PROPOSALS: 'open_proposals',
   PROPOSALS_BY_UNKNOWN_PROPOSERS: 'proposals_by_unknown_proposers',
   API_FAILURE: 'api_failure',
 }
 const METRICS = Object.freeze({
   [metricNames.PROPOSALS]: new promClient.Gauge({
     name: `${prefix}${metricNames.PROPOSALS}`,
-    help: 'Number of proposals',
-    labelNames: ['proposer'],
-  }),
-  [metricNames.OPEN_PROPOSALS]: new promClient.Gauge({
-    name: `${prefix}${metricNames.OPEN_PROPOSALS}`,
-    help: 'Number of open proposals',
-    labelNames: ['proposer'],
+    help: 'Number for all Proposal (by outcome)',
+    labelNames: ['outcome'],
   }),
   [metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS]: new promClient.Gauge({
     name: `${prefix}${metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS}`,
-    help: 'The number of unknown proposers',
+    help: 'The number of proposals opened by an unknown proposer',
   }),
   [metricNames.API_FAILURE]: new promClient.Gauge({
     name: `${prefix}${metricNames.API_FAILURE}`,
     help: 'Count when alchemy calls fail.',
   }),
 })
-METRICS[metricNames.OPEN_PROPOSALS].set(0)
 METRICS[metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS].set(0)
 METRICS[metricNames.API_FAILURE].set(0)
 const enableDefaultMetrics = () => {
@@ -56,7 +49,7 @@ enableDefaultMetrics()
 
 // Constants
 const PROPOSERS = new Set([
-  // '0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d',
+  '0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d',
   '0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0',
   '0xD79819bAf3326FAbB7ba95b098e6515a0f6408B8',
   '0x8C860adb28CA8A33dB5571536BFCF7D6522181e5',
@@ -65,43 +58,62 @@ const PROPOSERS = new Set([
   '0xbdbB5945f252bc3466A319CDcC3EE8056bf2e569',
 ])
 
+let PREVIOUSLY_SEEN_PROPOSAL_ID = 0
+const PROPOSAL_OUTCOME_TALLY = {}
+const OUTCOME = Object.freeze({
+  0: 'InProgress',
+  1: 'Rejected',
+  2: 'ApprovedExecuted',
+  3: 'QuorumNotMet',
+  4: 'ApprovedExecutionFailed',
+  // Evaluating - transient internal state
+  5: 'Vetoed',
+  6: 'TargetContractAddressChanged',
+  7: 'TargetContractCodeHashChanged',
+})
+
+const tallyProposalOutcomes = (outcome) => {
+  if (!PROPOSAL_OUTCOME_TALLY[outcome]) {
+    PROPOSAL_OUTCOME_TALLY[outcome] = 0
+  }
+  PROPOSAL_OUTCOME_TALLY[outcome] += 1
+}
+
 const scanGovernanceProposals = async () => {
-  // Grab all and last proposals
+  // Grab all proposals
   const proposals = await audiusLibs.ethContracts.GovernanceClient.getProposals()
   const lastProposal = proposals[proposals.length - 1]
 
-  // Count total Proposals
-  METRICS[metricNames.PROPOSALS].set(
-    parseFloat(lastProposal.proposalId)
-  )
-
-  // Count open Proposals
-  let currentBlockNumber = 15265449
-  currentBlockNumber = 15265423
-  if (lastProposal.blockNumber > currentBlockNumber) {
-    let count = 0
+  // If a new proposal is detected (or the exporter is starting) calculate and save new metrics
+  if (PREVIOUSLY_SEEN_PROPOSAL_ID !== parseInt(lastProposal.proposalId)) {
+    // scan all proposals and...
+    let unknownProposerCount = 0
     for (const proposal of proposals) {
-      if (proposal.blockNumber > currentBlockNumber) {
-        ++count
-      }
-    }
-    METRICS[metricNames.OPEN_PROPOSALS].set(
-      parseFloat(count)
-    )
-  }
-
-  // Count proposals by unknown Proposers,
-  // if the latest Proposer is unknown
-  if (!PROPOSERS.has(lastProposal.proposer)) {
-    let count = 0
-    for (const proposal of proposals) {
+      // count all unknown proposers
       if (!PROPOSERS.has(proposal.proposer)) {
-        ++count
+        ++unknownProposerCount
       }
+
+      // grab the full proposal to look for open proposals
+      const fullProposal = await audiusLibs.ethContracts.GovernanceClient.getProposalById(proposal.proposalId)
+      tallyProposalOutcomes(OUTCOME[fullProposal.outcome])
     }
+
+    // save the number of proposals opened by an unknown proposer
     METRICS[metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS].set(
-      parseFloat(count)
+      parseFloat(unknownProposerCount)
     )
+
+    // save counts for all Proposal by outcome
+    for (const outcome in PROPOSAL_OUTCOME_TALLY) {
+      METRICS[metricNames.PROPOSALS].set(
+        { outcome },
+        parseFloat(PROPOSAL_OUTCOME_TALLY[outcome])
+      )
+    }
+
+    // set flag to cache tally
+    PREVIOUSLY_SEEN_PROPOSAL_ID = parseInt(lastProposal.proposalId)
   }
 }
 const monitorGovernanceProposals = async () => {
@@ -131,7 +143,7 @@ const main = async () => {
   })
   server.listen(port, () => {
     console.log(
-            `Server listening to ${port}, metrics exposed on /metrics endpoint`,
+      `Server listening to ${port}, metrics exposed on /metrics endpoint`,
     )
   })
 }
