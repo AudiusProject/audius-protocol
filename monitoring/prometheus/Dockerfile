@@ -1,4 +1,4 @@
-FROM node:14 as generator
+FROM node:14.17.5 as generator
 
 WORKDIR /dist
 

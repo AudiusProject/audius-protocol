@@ -2,7 +2,7 @@
 # It's just a Dockerfile that runs a single network monitoring job 
 # because the main Dockerfile that's used in production wraps everything in a CRON job
 
-FROM node:16
+FROM node:14.17.5
 
 RUN apt-get update && apt-get -y install -qq --force-yes cron
 

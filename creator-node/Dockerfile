@@ -51,7 +51,7 @@ RUN bash scripts/init-db.sh
 
 
 
-FROM node:14.16 AS builder
+FROM node:14.17.5 AS builder
 RUN apt-get install make
 
 WORKDIR /app

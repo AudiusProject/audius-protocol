@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:14.17.5
 
 RUN apt-get update && apt-get -y install -qq --force-yes cron
 

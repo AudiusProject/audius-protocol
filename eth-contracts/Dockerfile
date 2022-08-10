@@ -4,12 +4,12 @@
 # FROM audius-eth-contracts:latest as eth-contracts
 # COPY --from=eth-contracts /usr/src/app/build/contracts/ ./build/contracts/
 
-FROM node:16 as builder
+FROM node:14.17.5 as builder
 
 COPY package*.json ./
 RUN npm install --loglevel verbose
 
-FROM node:16-slim
+FROM node:14.17.5-slim
 WORKDIR /usr/src/app
 COPY --from=builder /node_modules ./node_modules
 COPY . .
