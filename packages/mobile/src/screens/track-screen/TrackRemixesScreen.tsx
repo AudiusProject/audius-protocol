@@ -37,6 +37,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   text: {
     ...typography.body,
+    color: palette.neutral,
     textAlign: 'center',
     lineHeight: 20
   },
