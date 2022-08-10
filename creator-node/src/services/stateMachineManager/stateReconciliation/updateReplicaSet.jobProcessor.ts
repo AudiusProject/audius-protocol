@@ -407,7 +407,9 @@ const _selectRandomReplicaSetNodes = async (
       }
     } catch (e: any) {
       // Something went wrong in checking clock value. Reselect another secondary.
-      logger.error(`${logStr} ${e.message}`)
+      logger.error(
+        `${logStr} randomHealthyNode=${randomHealthyNode} ${e.message}`
+      )
     }
   }
 
@@ -529,7 +531,7 @@ const _issueUpdateReplicaSetOp = async (
       // NOTE: This error might be misleading because the reconfig event already took place in another node in the replica set.
       // Check the transaction for details, or user history to make sure only 1 reconfig event occurred.
       throw new Error(
-        `UserReplicaSetManagerClient.updateReplicaSet() Failed in ${timeElapsedMs}ms. Look into the txn for more details as this may be a false alarm. - Error ${e.message}`
+        `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${timeElapsedMs}ms. Look into the txn for more details as this may be a false alarm. - Error ${e.message}`
       )
     }
 
