@@ -1109,13 +1109,26 @@ describe('test Polling Tracks with real files', function () {
       .expect(200)
     const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
+    // Make chain recognize wallet as owner of track
+    const blockchainTrackId = 1
+    const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+      let trackOwnerId = -1
+      if (blockchainTrackIdArg === blockchainTrackId) {
+        trackOwnerId = userId
+      }
+      return {
+        trackOwnerId
+      }
+    })
+    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+
     // Complete track creation
     await request(app2)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataFileUUID,
         transcodedTrackUUID

@@ -210,7 +210,7 @@ describe('test nodesync', async function () {
 
       beforeEach(createUserAndTrack)
 
-      it.only('Test default export', async function () {
+      it('Test default export', async function () {
         // confirm maxExportClockValueRange > cnodeUser.clock
         const cnodeUserClock = (
           await models.CNodeUser.findOne({

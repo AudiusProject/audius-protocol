@@ -429,8 +429,8 @@ router.post(
         )
         if (
           !trackResp?.trackOwnerId ||
-          // eslint-disable-next-line eqeqeq
-          trackResp.trackOwnerId != req.session.userId
+          parseInt(trackResp.trackOwnerId, 10) !==
+            parseInt(req.session.userId, 10)
         ) {
           throw new Error(
             `Owner ID ${trackResp.trackOwnerId} of blockchainTrackId ${blockchainTrackId} does not match the ID of the user attempting to write this track: ${req.session.userId}`
