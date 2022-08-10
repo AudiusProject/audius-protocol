@@ -592,7 +592,7 @@ jobs:
 
   test-discovery-provider:
     docker:
-      - image: cimg/python:3.9-node
+      - image: cimg/python:3.7-node
       # Discovery provider dependencies
       - image: circleci/postgres:11.1
         environment:
@@ -616,6 +616,8 @@ jobs:
     resource_class: medium+
     steps:
       - checkout
+      - run: python --version
+      - run: node --version
       - diff-if-necessary:
           service: discovery-provider
       - restore_cache:
