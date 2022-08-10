@@ -190,7 +190,7 @@ describe('test nodesync', async function () {
           trackOwnerId
         }
       })
-      libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+      libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
 
       // associate track + track metadata with blockchain ID
       await request(app)
@@ -210,7 +210,7 @@ describe('test nodesync', async function () {
 
       beforeEach(createUserAndTrack)
 
-      it('Test default export', async function () {
+      it.only('Test default export', async function () {
         // confirm maxExportClockValueRange > cnodeUser.clock
         const cnodeUserClock = (
           await models.CNodeUser.findOne({

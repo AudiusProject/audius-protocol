@@ -1102,7 +1102,7 @@ describe('test ContentBlacklist', function () {
         trackOwnerId
       }
     })
-    libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
 
     // associate track metadata with track
     await request(app)

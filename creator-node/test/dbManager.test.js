@@ -787,7 +787,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
           trackOwnerId
         }
       })
-      libsMock.contracts.TrackFactory = { getTrack: getTrackStub }
+      libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
 
       // Complete track upload
       await request(app)
