@@ -17,7 +17,7 @@ type Service = {
  * Fetches from Redis if available, else fetches from chain and updates Redis value
  * @returns {Promise<Service[]>} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
  */
-export const getAllRegisteredDNodes = async ({
+export const getRegisteredDiscoveryNodes = async ({
   libs,
   logger,
   redis
@@ -53,7 +53,7 @@ export const getAllRegisteredDNodes = async ({
     DNodes = discoveryNodes
   } catch (e) {
     logger.error(
-      `registeredNodes | Error getting values in getAllRegisteredDNodes: ${
+      `registeredNodes | Error getting values in getRegisteredDiscoveryNodes: ${
         (e as Error).message
       }`
     )

@@ -15,7 +15,7 @@ const generateSignature = (data, privateKey) => {
   const toSignHash = web3.utils.keccak256(toSignStr)
   const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
 
-  return { signature: signedResponse.signature }
+  return signedResponse.signature
 }
 
 /**
@@ -26,7 +26,7 @@ const generateSignature = (data, privateKey) => {
 const generateTimestampAndSignature = (data, privateKey) => {
   const timestamp = new Date().toISOString()
   const toSignObj = { ...data, timestamp }
-  const { signature } = generateSignature(toSignObj, privateKey)
+  const signature = generateSignature(toSignObj, privateKey)
 
   return { timestamp, signature }
 }
@@ -76,7 +76,7 @@ const recoverWallet = (data, signature) => {
 }
 
 /**
- * Returns boolean indicating if provided timestamp is older than MAX_SIGNATURE_AGE
+ * Returns boolean indicating if provided timestamp is older than maxTTL
  * @param {string} signatureTimestamp unix timestamp string when signature was generated
  */
 const signatureHasExpired = (

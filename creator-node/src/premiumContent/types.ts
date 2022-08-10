@@ -4,5 +4,5 @@ export type PremiumContentSignatureData = {
   premiumContentId: number
   premiumContentType: PremiumContentType
   userWallet: string
-  timestamp: number
+  timestamp: string
 }

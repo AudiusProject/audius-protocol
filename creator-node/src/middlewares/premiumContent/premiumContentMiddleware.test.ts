@@ -79,7 +79,7 @@ describe('Test premium content middleware', function () {
   })
 
   it('fails when recovered DN wallet is not from registered DN', async () => {
-    const { signature: signatureFromDiscoveryNode } = generateSignature(
+    const signatureFromDiscoveryNode = generateSignature(
       headers.signedDataFromDiscoveryNode,
       dummyDNPrivateKey
     )
@@ -116,12 +116,12 @@ describe('Test premium content middleware', function () {
       userWallet: dummyUserWallet,
       timestamp: longAgo
     })
-    const { signature: signatureFromDiscoveryNode } = generateSignature(
+    const signatureFromDiscoveryNode = generateSignature(
       signedDataFromDiscoveryNode,
       dummyDNPrivateKey
     )
 
-    const { signature: signatureFromUser } = generateSignature(
+    const signatureFromUser = generateSignature(
       headers.signedDataFromUser,
       dummyUserPrivateKey
     )
@@ -168,12 +168,12 @@ describe('Test premium content middleware', function () {
       userWallet: dummyUserWallet,
       timestamp: Date.now()
     })
-    const { signature: signatureFromDiscoveryNode } = generateSignature(
+    const signatureFromDiscoveryNode = generateSignature(
       signedDataFromDiscoveryNode,
       dummyDNPrivateKey
     )
 
-    const { signature: signatureFromUser } = generateSignature(
+    const signatureFromUser = generateSignature(
       headers.signedDataFromUser,
       dummyUserPrivateKey
     )
@@ -220,12 +220,12 @@ describe('Test premium content middleware', function () {
       userWallet: dummyUserWallet,
       timestamp: Date.now()
     })
-    const { signature: signatureFromDiscoveryNode } = generateSignature(
+    const signatureFromDiscoveryNode = generateSignature(
       signedDataFromDiscoveryNode,
       dummyDNPrivateKey
     )
 
-    const { signature: signatureFromUser } = generateSignature(
+    const signatureFromUser = generateSignature(
       headers.signedDataFromUser,
       dummyUserPrivateKey
     )
@@ -272,12 +272,12 @@ describe('Test premium content middleware', function () {
       userWallet: dummyUserWallet,
       timestamp: Date.now()
     })
-    const { signature: signatureFromDiscoveryNode } = generateSignature(
+    const signatureFromDiscoveryNode = generateSignature(
       signedDataFromDiscoveryNode,
       dummyDNPrivateKey
     )
 
-    const { signature: signatureFromUser } = generateSignature(
+    const signatureFromUser = generateSignature(
       headers.signedDataFromUser,
       dummyDNPrivateKey // to denote that someone other than the user signed it
     )
@@ -324,12 +324,12 @@ describe('Test premium content middleware', function () {
       userWallet: dummyUserWallet,
       timestamp: Date.now()
     })
-    const { signature: signatureFromDiscoveryNode } = generateSignature(
+    const signatureFromDiscoveryNode = generateSignature(
       signedDataFromDiscoveryNode,
       dummyDNPrivateKey
     )
 
-    const { signature: signatureFromUser } = generateSignature(
+    const signatureFromUser = generateSignature(
       headers.signedDataFromUser,
       dummyUserPrivateKey
     )

@@ -1,4 +1,4 @@
-import type Logger from 'bunyan'
+import { signatureHasExpired } from '../apiSigning'
 import { PremiumContentSignatureData, PremiumContentType } from './types'
 
 type PremiumContentMatchArgs = {
@@ -25,9 +25,11 @@ export const isPremiumContentMatch = ({
     timestamp: signedTimestamp
   } = signedDataFromDiscoveryNode
 
-  const isSignatureTooOld =
-    Date.now() - signedTimestamp >= PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS
-  if (isSignatureTooOld) {
+  const hasSignatureExpired = signatureHasExpired(
+    signedTimestamp,
+    PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS
+  )
+  if (hasSignatureExpired) {
     logger.info(
       `Premium content signature for id ${premiumContentId} and type ${premiumContentType} is too old.`
     )

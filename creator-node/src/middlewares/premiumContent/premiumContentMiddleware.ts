@@ -8,7 +8,7 @@ import { recoverWallet } from '../../apiSigning'
 import { NextFunction, Request, Response } from 'express'
 import { isPremiumContentMatch } from '../../premiumContent/helpers'
 import { PremiumContentType } from '../../premiumContent/types'
-import { getAllRegisteredDNodes } from '../../utils/registeredNodes'
+import { getRegisteredDiscoveryNodes } from '../../utils/getRegisteredDiscoveryNodes'
 import type Logger from 'bunyan'
 import { Redis } from 'ioredis'
 
@@ -105,7 +105,7 @@ async function isRegisteredDiscoveryNode({
   logger: Logger
   redis: Redis
 }) {
-  const allRegisteredDiscoveryNodes = await getAllRegisteredDNodes({
+  const allRegisteredDiscoveryNodes = await getRegisteredDiscoveryNodes({
     libs,
     logger,
     redis
