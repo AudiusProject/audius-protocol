@@ -9,9 +9,9 @@ x-logging:
 
 services:
   alchemy:
-    build: .
+    build: alchemy
     volumes:
-      - ./main.js:/app/main.js
+      - ./alchemy/main.js:/app/main.js
     ports:
       - "2000:3000"
     environment:
@@ -19,4 +19,12 @@ services:
       - HTTPS
       - WEBSOCKETS
       - ADDRESS
+    logging: *default-logging
+
+  sdk:
+    build: sdk
+    volumes:
+      - ./sdk/main.js:/app/main.js
+    ports:
+      - "2001:3000"
     logging: *default-logging

@@ -1,5 +1,5 @@
 {
-    "name": "audius-monitors-alchemy",
+    "name": "audius-monitors-sdk",
     "version": "1.0.0",
     "description": "",
     "main": "main.js",
@@ -9,8 +9,9 @@
     "keywords": [],
     "author": "",
     "dependencies": {
-      "@alch/alchemy-web3": "1.4.6",
-      "alchemy-sdk": "2.0.1",
-      "prom-client": "14.0.1"
+      "@audius/sdk": "0.0.32",
+      "@audius/libs": "1.2.118",
+      "prom-client": "14.0.1",
+      "web3": "1.7.5"
     }
   }
