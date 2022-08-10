@@ -109,6 +109,9 @@
     "webpack-bundle-analyzer": "4.5.0"
   },
   "main": "src/electron.js",
+  "build": {
+    "extends": null
+  },
   "scripts": {
     "configure-local-env": "node ./scripts/configureLocalEnv.js",
     "configure-local-env-cloud": "node ./scripts/configureLocalEnv.js --remote-host",
