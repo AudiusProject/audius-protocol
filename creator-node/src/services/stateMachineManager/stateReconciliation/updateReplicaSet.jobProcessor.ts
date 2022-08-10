@@ -45,7 +45,7 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
  * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
-module.exports = async function ({
+const updateReplicaSetJobProcessor = async function ({
   logger,
   wallet,
   userId,
@@ -370,19 +370,20 @@ const _selectRandomReplicaSetNodes = async (
   ]} ||`
 
   const newReplicaNodesSet = new Set<string>()
+
+  const viablePotentialReplicas = healthyNodes.filter(
+    (node) => !healthyReplicaSet.has(node)
+  )
+
   let selectNewReplicaSetAttemptCounter = 0
   while (
     newReplicaNodesSet.size < numberOfUnhealthyReplicas &&
     selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS
   ) {
-    const randomHealthyNode = _.sample(healthyNodes)
+    const randomHealthyNode = _.sample(viablePotentialReplicas)
 
     // If node is already present in new replica set or is part of the existing replica set, keep finding a unique healthy node
-    if (
-      newReplicaNodesSet.has(randomHealthyNode) ||
-      healthyReplicaSet.has(randomHealthyNode)
-    )
-      continue
+    if (newReplicaNodesSet.has(randomHealthyNode)) continue
 
     // If the node was marked as healthy before, keep finding a unique healthy node
     if (unhealthyReplicasSet.has(randomHealthyNode)) {
@@ -579,3 +580,5 @@ const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
   return enabledReconfigModes.includes(mode)
 }
+
+module.exports = updateReplicaSetJobProcessor

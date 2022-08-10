@@ -32,7 +32,7 @@ export const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
 export const SYNC_MONITORING_RETRY_DELAY_MS = 15_000
 
 // Max number of attempts to select new replica set in reconfig
-export const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 5
+export const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 20
 
 // Max number of attempts to run a job that attempts to issue a manual sync
 export const MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS = 2
