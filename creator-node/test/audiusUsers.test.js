@@ -118,11 +118,24 @@ describe('Test AudiusUsers', function () {
     } })
     assert.ok(file)
 
+    // Make chain recognize current session wallet as the wallet for the session user ID
+    const blockchainUserId = 1
+    const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+      let wallet = 'no wallet'
+      if (blockchainUserIdArg === blockchainUserId) {
+        wallet = session.walletPublicKey
+      }
+      return {
+        wallet
+      }
+    })
+    libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(200)
   })
 
@@ -143,18 +156,31 @@ describe('Test AudiusUsers', function () {
       throw new Error('invalid return data')
     }
 
+    // Make chain recognize current session wallet as the wallet for the session user ID
+    const blockchainUserId = 1
+    const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+      let wallet = 'no wallet'
+      if (blockchainUserIdArg === blockchainUserId) {
+        wallet = session.walletPublicKey
+      }
+      return {
+        wallet
+      }
+    })
+    libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(200)
 
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(200)
   })
 
@@ -191,11 +217,24 @@ describe('Test AudiusUsers', function () {
       throw new Error('invalid return data')
     }
 
+    // Make chain recognize current session wallet as the wallet for the session user ID
+    const blockchainUserId = 1
+    const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+      let wallet = 'no wallet'
+      if (blockchainUserIdArg === blockchainUserId) {
+        wallet = session.walletPublicKey
+      }
+      return {
+        wallet
+      }
+    })
+    libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp2.body.data.metadataFileUUID })
+      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp2.body.data.metadataFileUUID })
       .expect(200)
   })
 
@@ -220,11 +259,24 @@ describe('Test AudiusUsers', function () {
     const cnodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID: session.cnodeUserUUID } })
     await cnodeUser.update({ latestBlockNumber: 100 })
 
+    // Make chain recognize current session wallet as the wallet for the session user ID
+    const blockchainUserId = 1
+    const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+      let wallet = 'no wallet'
+      if (blockchainUserIdArg === blockchainUserId) {
+        wallet = session.walletPublicKey
+      }
+      return {
+        wallet
+      }
+    })
+    libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(400, {
         error: 'Invalid blockNumber param 10. Must be greater or equal to previously processed blocknumber 100.'
       })
