@@ -529,7 +529,7 @@ const _issueUpdateReplicaSetOp = async (
       // NOTE: This error might be misleading because the reconfig event already took place in another node in the replica set.
       // Check the transaction for details, or user history to make sure only 1 reconfig event occurred.
       throw new Error(
-        `[_issueUpdateReplicaSetOp] Update replica set failed in ${timeElapsedMs}ms. Look into txn for details as this may be a false alarm. - Error ${e.message}`
+        `UserReplicaSetManagerClient.updateReplicaSet() Failed in ${timeElapsedMs}ms. Look into the txn for more details as this may be a false alarm. - Error ${e.message}`
       )
     }
 
