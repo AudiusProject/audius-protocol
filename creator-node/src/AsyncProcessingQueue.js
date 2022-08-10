@@ -83,7 +83,7 @@ class AsyncProcessingQueue {
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
-    return getTracer().startActiveSpan(
+    getTracer().startActiveSpan(
       'processTask on AsyncProcessingQueue',
       options,
       async (span) => {

@@ -1,5 +1,4 @@
 const promiseAny = require('promise.any')
-const { trace, context } = require('@opentelemetry/api')
 
 const {
   sendResponse,
