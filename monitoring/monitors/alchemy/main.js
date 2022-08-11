@@ -1,9 +1,10 @@
 const { createAlchemyWeb3 } = require('@alch/alchemy-web3')
 const express = require('express')
 const promClient = require('prom-client')
+const web3 = require('web3');
 
 // Setup Alchemy client
-const web3 = createAlchemyWeb3(
+const alchemyWeb3 = createAlchemyWeb3(
   process.env.WEBSOCKETS,
 )
 
@@ -127,7 +128,7 @@ const scanWallets = async () => {
     const address = addresses[key].address
 
     // Get token balances
-    const balances = await web3.alchemy.getTokenBalances(address)
+    const balances = await alchemyWeb3.alchemy.getTokenBalances(address)
 
     // Remove tokens with zero balance
     const nonZeroBalances = balances.tokenBalances.filter(token => {
@@ -151,13 +152,14 @@ const scanWallets = async () => {
         symbol = 'AUDIO'
       } else {
         // Get metadata of non-AUDIO token
-        const metadata = await web3.alchemy.getTokenMetadata(token.contractAddress)
+        const metadata = await alchemyWeb3.alchemy.getTokenMetadata(token.contractAddress)
         name = metadata.name
         decimals = metadata.decimals
         symbol = metadata.symbol
       }
 
       // Compute token balance in human-readable format
+      balance = new web3.utils.BN(balance)
       balance = balance / Math.pow(10, decimals)
       balance = balance.toFixed(2)
 
@@ -189,12 +191,13 @@ const monitorWallets = async () => {
 }
 
 const monitorTransfers = async () => {
-  web3.eth.subscribe('logs', {
+  // subscribe to "transfer" topics on the token address
+  alchemyWeb3.eth.subscribe('logs', {
     address: AUDIUS_TOKEN_CONTRACT,
     topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef']
   }).on('data', (data) => {
     try {
-      let balance = parseInt(data.data, 16)
+      let balance = new web3.utils.BN(data.data)
       balance = balance / Math.pow(10, AUDIUS_DECIMALS)
       balance = balance.toFixed(2)
       console.log(balance)
