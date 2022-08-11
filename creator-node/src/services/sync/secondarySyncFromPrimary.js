@@ -27,7 +27,6 @@ const handleSyncFromPrimary = async ({
   )
 
   const start = Date.now()
-  let returnValue = {}
 
   genericLogger.info('begin nodesync for ', wallet, 'time', start)
 
@@ -63,12 +62,30 @@ const handleSyncFromPrimary = async ({
     }
   }
 
+  let returnValue = {}
   try {
     let localMaxClockVal
     if (forceResync) {
       genericLogger.warn(`${logPrefix} Forcing resync..`)
-      await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
-      localMaxClockVal = -1
+
+      // Wipe local DB state
+      let deleteError
+      try {
+        deleteError = await DBManager.deleteAllCNodeUserDataFromDB({
+          lookupWallet: wallet
+        })
+        localMaxClockVal = -1
+      } catch (e) {
+        deleteError = e
+      }
+
+      if (deleteError) {
+        returnValue = {
+          error: deleteError,
+          result: 'failure_delete_db_data'
+        }
+        throw returnValue.error
+      }
     } else {
       // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
       const cnodeUser = await models.CNodeUser.findOne({

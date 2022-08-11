@@ -74,6 +74,7 @@ export const METRIC_LABELS = Object.freeze({
     result: [
       'success',
       'failure_force_resync_check',
+      'failure_delete_db_data',
       'failure_sync_secondary_from_primary',
       'failure_malformed_export',
       'failure_db_transaction',
