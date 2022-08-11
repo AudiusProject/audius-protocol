@@ -85,7 +85,8 @@ describe('test updateReplicaSet job processor', function () {
       },
       contracts: {
         UserReplicaSetManagerClient: {
-          updateReplicaSet: updateReplicaSetStub
+          updateReplicaSet: updateReplicaSetStub,
+          _updateReplicaSet: updateReplicaSetStub
         }
       }
     }
