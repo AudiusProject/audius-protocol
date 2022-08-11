@@ -59,7 +59,11 @@ Track.addTrackToChain = async (libs, userId, { digest, hashFn, size }) => {
 }
 
 Track.updateTrackOnChainAndCnode = async (libs, metadata) => {
-  const { blockHash, blockNumber, trackId } = await libs.updateTrackOnChainAndCnode(metadata)
+  const {
+    blockHash,
+    blockNumber,
+    trackId
+  } = await libs.updateTrackOnChainAndCnode(metadata)
   return { blockHash, blockNumber, trackId }
 }
 

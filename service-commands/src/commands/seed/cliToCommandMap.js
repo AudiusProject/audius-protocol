@@ -1,7 +1,5 @@
 const fs = require('fs')
-const {
-    SeedUtils
-} = require('../../utils')
+const { SeedUtils } = require('../../utils')
 
 const {
   parseMetadataIntoObject,
@@ -48,184 +46,187 @@ Notes on params:
 */
 
 const CLI_TO_COMMAND_MAP = {
-    'upload-track': {
-      api: 'Track',
-      description: 'upload track with dummy audio and cover art file',
-      method: 'uploadTrack',
-      params: [
-        {
-          name: 'trackFile',
-          description: 'path to track file on local FS',
-          userInputHandler: fs.ensureFileSync,
-          defaultHandler: getUserProvidedOrRandomTrackFile
-        },
-        {
-          name: 'coverArtFile',
-          description: 'path to cover art file on local FS',
-          userInputHandler: fs.ensureFileSync,
-          defaultHandler: getUserProvidedOrRandomImageFile,
-        },
-        {
-          name: 'metadata',
-          description: 'metadata for track in comma-separated string',
-          userInputHandler: parseMetadataIntoObject,
-          defaultHandler: getUserProvidedOrRandomTrackMetadata,
-        },
-        {
-          name: 'onProgress',
-          description: 'non-configurable; this is hardcoded to log out upload progress to console',
-          defaultHandler: getProgressCallback
-        }
-      ],
-      onSuccess: addTrackToSeedSessionCache
-    },
-    // below is the only API not working right now - failing with tx rejection 'caller does not own userId'
-    // 'update-user': {
-    //   api: 'User',
-    //   description: 'update user metadata',
-    //   method: 'updateUser',
-    //   params: [
-    //     {
-    //       name: 'userId',
-    //       description: 'user ID of user to update metadata for',
-    //       userInputHandler: Number,
-    //       defaultHandler: getActiveUserFromSeedSessionCache
-    //     },
-    //     {
-    //       name: 'metadata',
-    //       description: 'metadata for user in comma-separated string',
-    //       userInputHandler: parseMetadataIntoObject
-    //     }
-    //   ]
-    // },
-    'follow-user': {
-      api: 'User',
-      description: 'follow user',
-      method: 'addUserFollow',
-      params: [
-        {
-          name: 'followeeUserId',
-          description: 'user ID of user receiving the follow',
-          userInputHandler: Number,
-          defaultHandler: getRandomUserIdFromCurrentSeedSessionCache
-        }
-      ]
-    },
-    'unfollow-user': {
-      api: 'User',
-      description: 'unfollow user',
-      method: 'deleteUserFollow',
-      params: [
-        {
-          name: 'followeeUserId',
-          description: 'user ID of user to stop following',
-          userInputHandler: Number,
-          defaultHandler: getRandomUserIdFromCurrentSeedSessionCache
-        }
-      ]
-    },
-    'repost-track': {
-      api: 'Track',
-      description: 'add track repost by user',
-      method: 'addTrackRepost',
-      params: [
-        {
-          name: 'trackId',
-          description: 'track ID of track receiving the repost',
-          userInputHandler: Number,
-          defaultHandler: getRandomTrackIdFromCurrentSeedSessionCache
-        }
-      ]
-    },
-    'favorite-track': {
-      api: 'Track',
-      description: 'add track favorite/save by user',
-      method: 'addTrackSave',
-      params: [
-        {
-          name: 'trackId',
-          description: 'track ID of track receiving the favorite',
-          userInputHandler: Number,
-          defaultHandler: getRandomTrackIdFromCurrentSeedSessionCache
-        }
-      ]
-    },
-    'create-playlist': {
-      api: 'Playlist',
-      description: 'create playlist',
-      method: 'createPlaylist',
-      params: [
-        {
-          name: 'userId',
-          description: 'ID of user creating the playlist',
-          userInputHandler: Number,
-          defaultHandler: getActiveUserFromSeedSessionCache
-        },
-        {
-          name: 'playlistName',
-          description: 'name of playlist',
-          defaultHandler: getRandomString
-        },
-        {
-          name: 'isPrivate',
-          description: 'set to true to create playlist as private',
-          userInputHandler: Boolean,
-          defaultHandler: () => false
-        },
-        {
-          name: 'isAlbum',
-          description: 'set to true to create playlist as album',
-          userInputHandler: Boolean,
-          defaultHandler: () => false
-        },
-        {
-          name: 'trackIds',
-          description: 'comma-separated list of track IDs to associate with the playlist - example: 5,6',
-          userInputHandler: userInput => userInput.split(',').map(Number)
-        }
-      ]
-    },
-    'add-playlist-track': {
-      api: 'Playlist',
-      description: 'add track to playlist (must be owned by user ID passed in as active user)',
-      method: 'addPlaylistTrack',
-      params: [
-        {
-          name: 'playlistId',
-          description: 'ID of playlist to add track to (must already exist)',
-          userInputHandler: Number
-        },
-        {
-          name: 'trackId',
-          description: 'ID of track to add',
-          userInputHandler: Number
-        }
-      ]
-    },
-    'repost-playlist': {
-      api: 'Playlist',
-      description: 'repost playlist',
-      method: 'addPlaylistRepost',
-      params: [
-        {
-          name: 'playlistId',
-          description: 'ID of playlist to repost',
-          userInputHandler: Number
-        }
-      ]
-    },
-    'favorite-playlist': {
-      api: 'Playlist',
-      description: 'favorite playlist',
-      method: 'addPlaylistSave',
-      params: [
-        {
-          name: 'playlistId',
-          description: 'ID of playlist to favorite',
-          userInputHandler: Number
-        }
-      ]
-    }
+  'upload-track': {
+    api: 'Track',
+    description: 'upload track with dummy audio and cover art file',
+    method: 'uploadTrack',
+    params: [
+      {
+        name: 'trackFile',
+        description: 'path to track file on local FS',
+        userInputHandler: fs.ensureFileSync,
+        defaultHandler: getUserProvidedOrRandomTrackFile
+      },
+      {
+        name: 'coverArtFile',
+        description: 'path to cover art file on local FS',
+        userInputHandler: fs.ensureFileSync,
+        defaultHandler: getUserProvidedOrRandomImageFile
+      },
+      {
+        name: 'metadata',
+        description: 'metadata for track in comma-separated string',
+        userInputHandler: parseMetadataIntoObject,
+        defaultHandler: getUserProvidedOrRandomTrackMetadata
+      },
+      {
+        name: 'onProgress',
+        description:
+          'non-configurable; this is hardcoded to log out upload progress to console',
+        defaultHandler: getProgressCallback
+      }
+    ],
+    onSuccess: addTrackToSeedSessionCache
+  },
+  // below is the only API not working right now - failing with tx rejection 'caller does not own userId'
+  // 'update-user': {
+  //   api: 'User',
+  //   description: 'update user metadata',
+  //   method: 'updateUser',
+  //   params: [
+  //     {
+  //       name: 'userId',
+  //       description: 'user ID of user to update metadata for',
+  //       userInputHandler: Number,
+  //       defaultHandler: getActiveUserFromSeedSessionCache
+  //     },
+  //     {
+  //       name: 'metadata',
+  //       description: 'metadata for user in comma-separated string',
+  //       userInputHandler: parseMetadataIntoObject
+  //     }
+  //   ]
+  // },
+  'follow-user': {
+    api: 'User',
+    description: 'follow user',
+    method: 'addUserFollow',
+    params: [
+      {
+        name: 'followeeUserId',
+        description: 'user ID of user receiving the follow',
+        userInputHandler: Number,
+        defaultHandler: getRandomUserIdFromCurrentSeedSessionCache
+      }
+    ]
+  },
+  'unfollow-user': {
+    api: 'User',
+    description: 'unfollow user',
+    method: 'deleteUserFollow',
+    params: [
+      {
+        name: 'followeeUserId',
+        description: 'user ID of user to stop following',
+        userInputHandler: Number,
+        defaultHandler: getRandomUserIdFromCurrentSeedSessionCache
+      }
+    ]
+  },
+  'repost-track': {
+    api: 'Track',
+    description: 'add track repost by user',
+    method: 'addTrackRepost',
+    params: [
+      {
+        name: 'trackId',
+        description: 'track ID of track receiving the repost',
+        userInputHandler: Number,
+        defaultHandler: getRandomTrackIdFromCurrentSeedSessionCache
+      }
+    ]
+  },
+  'favorite-track': {
+    api: 'Track',
+    description: 'add track favorite/save by user',
+    method: 'addTrackSave',
+    params: [
+      {
+        name: 'trackId',
+        description: 'track ID of track receiving the favorite',
+        userInputHandler: Number,
+        defaultHandler: getRandomTrackIdFromCurrentSeedSessionCache
+      }
+    ]
+  },
+  'create-playlist': {
+    api: 'Playlist',
+    description: 'create playlist',
+    method: 'createPlaylist',
+    params: [
+      {
+        name: 'userId',
+        description: 'ID of user creating the playlist',
+        userInputHandler: Number,
+        defaultHandler: getActiveUserFromSeedSessionCache
+      },
+      {
+        name: 'playlistName',
+        description: 'name of playlist',
+        defaultHandler: getRandomString
+      },
+      {
+        name: 'isPrivate',
+        description: 'set to true to create playlist as private',
+        userInputHandler: Boolean,
+        defaultHandler: () => false
+      },
+      {
+        name: 'isAlbum',
+        description: 'set to true to create playlist as album',
+        userInputHandler: Boolean,
+        defaultHandler: () => false
+      },
+      {
+        name: 'trackIds',
+        description:
+          'comma-separated list of track IDs to associate with the playlist - example: 5,6',
+        userInputHandler: userInput => userInput.split(',').map(Number)
+      }
+    ]
+  },
+  'add-playlist-track': {
+    api: 'Playlist',
+    description:
+      'add track to playlist (must be owned by user ID passed in as active user)',
+    method: 'addPlaylistTrack',
+    params: [
+      {
+        name: 'playlistId',
+        description: 'ID of playlist to add track to (must already exist)',
+        userInputHandler: Number
+      },
+      {
+        name: 'trackId',
+        description: 'ID of track to add',
+        userInputHandler: Number
+      }
+    ]
+  },
+  'repost-playlist': {
+    api: 'Playlist',
+    description: 'repost playlist',
+    method: 'addPlaylistRepost',
+    params: [
+      {
+        name: 'playlistId',
+        description: 'ID of playlist to repost',
+        userInputHandler: Number
+      }
+    ]
+  },
+  'favorite-playlist': {
+    api: 'Playlist',
+    description: 'favorite playlist',
+    method: 'addPlaylistSave',
+    params: [
+      {
+        name: 'playlistId',
+        description: 'ID of playlist to favorite',
+        userInputHandler: Number
+      }
+    ]
+  }
 }
 
 module.exports = CLI_TO_COMMAND_MAP

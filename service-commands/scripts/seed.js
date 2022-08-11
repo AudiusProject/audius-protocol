@@ -1,12 +1,12 @@
+const { setupTracing } = require('../src/tracer')
+setupTracing()
+
 const { program } = require('commander')
 const ServiceCommands = require('../src/index')
 const _ = require('lodash')
 const colors = require('colors')
 
-const {
-    SeedSession,
-    SeedUtils
-} = ServiceCommands
+const { SeedSession, SeedUtils } = ServiceCommands
 
 const {
   parseMetadataIntoObject,
@@ -43,7 +43,12 @@ program
   )
   .option('-e, --email <email>', 'email for user account creation', '')
   .option('-p, --password <password>', 'password for user account', '')
-  .option('-n, --count <count>', 'number of random users to create', parseSeedActionRepeatCount, 1)
+  .option(
+    '-n, --count <count>',
+    'number of random users to create',
+    parseSeedActionRepeatCount,
+    1
+  )
   .option(
     '-m, --metadata <metadata-object>',
     'metadata to associate with user. Write this as a series of comma-separated key-values e.g. -m email=test@audius.co,password=2343,handle=christinus,is_verified=true',
@@ -52,7 +57,11 @@ program
   .action(async opts => {
     const { userAlias: alias, count, ...options } = opts.opts()
     const createSingleUser = async (singleUserAlias, options) => {
-      console.log(`Creating user with alias ${singleUserAlias} and options: ${JSON.stringify(options)}`.info)
+      console.log(
+        `Creating user with alias ${singleUserAlias} and options: ${JSON.stringify(
+          options
+        )}`.info
+      )
       const seed = new SeedSession()
       await seed.init()
       await seed.createUser(singleUserAlias, options)
@@ -96,12 +105,14 @@ program
       )
     } else {
       console.log(
-        `Setting active user for seed session to userId ${userId} / alias ${alias}.`.info
+        `Setting active user for seed session to userId ${userId} / alias ${alias}.`
+          .info
       )
       const seed = new SeedSession()
       await seed.setUser({ alias, userId })
       console.log(
-        `Active user for seed session set to userId ${userId} / alias ${alias}.`.success
+        `Active user for seed session set to userId ${userId} / alias ${alias}.`
+          .success
       )
       process.exit(0)
     }
@@ -116,7 +127,7 @@ program
     const { userAlias: alias, userId } = options.opts()
     const seed = new SeedSession()
     const headers = await seed.getAuthenticationHeaders({ alias, userId })
-    console.log({headers})
+    console.log({ headers })
     process.exit(0)
   })
 
@@ -133,7 +144,6 @@ program
     process.exit(0)
   })
 
-
 const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
   Object.entries(CLI_TO_COMMAND_MAP).forEach(
     ([cliCommand, { api, description, method, params, onSuccess }]) => {
@@ -148,14 +158,17 @@ const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
         require userId to be passed in explicitly.
       */
       if (!userIdInLibsApiMethodParams) {
-        configuredProgram = configuredProgram
-        .option(
+        configuredProgram = configuredProgram.option(
           '-u, --user-id <number>',
           'ID of user to set as active when performing action',
           null
         )
       }
-      const addParamAsOption = ({ name, description, userInputHandler = passThroughUserInput }) => {
+      const addParamAsOption = ({
+        name,
+        description,
+        userInputHandler = passThroughUserInput
+      }) => {
         const cliOption = camelToKebabCase(name)
         const shortOption = cliOption.charAt(0)
         configuredProgram = configuredProgram.option(
@@ -171,12 +184,15 @@ const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
       configuredProgram.action(async opts => {
         const { userId, ...options } = opts.opts()
         const seed = new SeedSession()
-        console.log(`Running seed ${cliCommand} with options: ${JSON.stringify(options)}`)
+        console.log(
+          `Running seed ${cliCommand} with options: ${JSON.stringify(options)}`
+        )
         let userIdToSet = userId
         if (!userIdToSet) {
           // try to set from cache
           console.log(
-            'No user ID for action specified; trying to get active user from seed local cache...'.info
+            'No user ID for action specified; trying to get active user from seed local cache...'
+              .info
           )
           const activeUser = seed.cache.getActiveUser()
           if (!activeUser.hedgehogEntropyKey) {
@@ -189,11 +205,15 @@ const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
         await seed.setUser({ userId: userIdToSet })
         console.log(`Calling libs.${api}.${method} to seed...`.info)
 
-        const convertUserInputToApiMethodArguments = async (options, params) => {
+        const convertUserInputToApiMethodArguments = async (
+          options,
+          params
+        ) => {
           for (const option of Object.entries(options)) {
-            let [optionName, userProvidedValue] = option
+            const [optionName, userProvidedValue] = option
             const match = param => param.name === optionName
-            const defaultHandler = params.find(match).defaultHandler || passThroughUserInput
+            const defaultHandler =
+              params.find(match).defaultHandler || passThroughUserInput
             options[optionName] = await defaultHandler(userProvidedValue, seed)
           }
           const args = userIdInLibsApiMethodParams
@@ -202,13 +222,25 @@ const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
 
           return args
         }
+
         const args = await convertUserInputToApiMethodArguments(options, params)
-        const response = await seed.libs[api][method](...args)
-        if (typeof onSuccess === 'function') {
-          onSuccess(response, seed)
-        }
-        console.log(`Successfully executed action ${cliCommand}`.happy)
-        console.log(`Options: ${JSON.stringify(options, null, 4)}: \n\nResponse: ${JSON.stringify(response, null, 4)}`)
+        getTracer().startActiveTrace(
+          `seed.libs[${api}][${method}](${args})`,
+          async span => {
+            const response = await seed.libs[api][method](...args)
+            if (typeof onSuccess === 'function') {
+              onSuccess(response, seed)
+            }
+            console.log(`Successfully executed action ${cliCommand}`.happy)
+            console.log(
+              `Options: ${JSON.stringify(
+                options,
+                null,
+                4
+              )}: \n\nResponse: ${JSON.stringify(response, null, 4)}`
+            )
+          }
+        )
         process.exit(0)
       })
     }
