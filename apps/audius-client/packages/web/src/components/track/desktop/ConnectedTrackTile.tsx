@@ -1,4 +1,11 @@
-import { memo, useState, useCallback, useEffect } from 'react'
+import {
+  memo,
+  useState,
+  useCallback,
+  useEffect,
+  MouseEvent,
+  useRef
+} from 'react'
 
 import {
   UID,
@@ -39,6 +46,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getUid, getPlaying, getBuffering } from 'store/player/selectors'
 import { AppState } from 'store/types'
+import { isDescendantElementOf } from 'utils/domUtils'
 import { fullTrackPage, profilePage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
@@ -130,6 +138,8 @@ const ConnectedTrackTile = memo(
     const isOwner = handle === userHandle
     const isArtistPick = showArtistPick && _artist_pick === trackId
 
+    const menuRef = useRef<HTMLDivElement>(null)
+
     const onClickStatRepost = () => {
       setRepostUsers(trackId)
       setModalVisibility()
@@ -189,7 +199,7 @@ const ConnectedTrackTile = memo(
       return (
         <Menu menu={menu}>
           {(ref, triggerPopup) => (
-            <div className={styles.menuContainer}>
+            <div className={styles.menuContainer} ref={menuRef}>
               <div
                 className={cn(styles.menuKebabContainer, {
                   [styles.small]: size === TrackTileSize.SMALL,
@@ -292,9 +302,23 @@ const ConnectedTrackTile = memo(
       shareTrack(trackId)
     }, [shareTrack, trackId])
 
-    const onTogglePlay = useCallback(() => {
-      togglePlay(uid, trackId)
-    }, [togglePlay, uid, trackId])
+    const onTogglePlay = useCallback(
+      (e?: MouseEvent /* click event within TrackTile */) => {
+        // Skip toggle play if click event happened within track menu container
+        // because clicking on it should not affect corresponding track.
+        // We have to do this instead of stopping the event propagation
+        // because we need it to bubble up to the document to allow
+        // the document click listener to close other track/playlist tile menus
+        // that are already open.
+        const shouldSkipTogglePlay = isDescendantElementOf(
+          e?.target,
+          menuRef.current
+        )
+        if (shouldSkipTogglePlay) return
+        togglePlay(uid, trackId)
+      },
+      [togglePlay, uid, trackId]
+    )
 
     if (is_delete || user?.is_deactivated) return null
 

@@ -299,9 +299,7 @@ const TrackTile = memo(
                 {renderShareButton()}
               </div>
             )}
-            {!isLoading && (
-              <div onClick={onStopPropagation}>{rightActions}</div>
-            )}
+            {!isLoading && <div>{rightActions}</div>}
           </div>
         </div>
       </div>
