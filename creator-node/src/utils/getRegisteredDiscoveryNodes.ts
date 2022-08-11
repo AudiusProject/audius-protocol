@@ -8,7 +8,7 @@ type Service = {
   owner: string
   endpoint: string
   spID: number
-  type: 'discovery-node' | 'content-node'
+  type: 'discovery-node'
   blockNumber: number
   delegateOwnerWallet: string
 }
