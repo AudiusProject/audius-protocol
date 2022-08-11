@@ -68,7 +68,11 @@ const handleSyncFromPrimary = async ({
     if (forceResync) {
       genericLogger.warn(`${logPrefix} Forcing resync..`)
 
-      // Wipe local DB state
+      /**
+       * Wipe local DB state
+       *
+       * deleteAllCNodeUserDataFromDB() is not ideal since it can either return an error or throw an error; both scenarios are handled
+       */
       let deleteError
       try {
         deleteError = await DBManager.deleteAllCNodeUserDataFromDB({
