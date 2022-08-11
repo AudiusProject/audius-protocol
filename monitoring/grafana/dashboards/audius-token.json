@@ -337,73 +337,11 @@
         "type": "timeseries"
       },
       {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "short"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 24,
-          "x": 0,
-          "y": 25
-        },
-        "id": 14,
-        "options": {
-          "displayMode": "gradient",
-          "minVizHeight": 10,
-          "minVizWidth": 0,
-          "orientation": "auto",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "showUnfilled": true,
-          "text": {}
-        },
-        "pluginVersion": "9.0.2",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "audius_monitors_alchemy_token_transfer_bucket{le=~\"10000|100000|1000000|10000000|100000000|1000000000|10000000000\"}",
-            "legendFormat": "≤ {{le}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Token Transfers",
-        "type": "bargauge"
-      },
-      {
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 33
+          "y": 25
         },
         "id": 2,
         "title": "Foundation Addresses",
@@ -466,7 +404,7 @@
           "h": 8,
           "w": 24,
           "x": 0,
-          "y": 34
+          "y": 26
         },
         "id": 17,
         "options": {
@@ -496,7 +434,7 @@
             "refId": "A"
           }
         ],
-        "title": "Alchemy Balances (Staking)",
+        "title": "Contract Balances (Staking)",
         "type": "timeseries"
       },
       {
@@ -555,7 +493,7 @@
           "h": 8,
           "w": 24,
           "x": 0,
-          "y": 42
+          "y": 34
         },
         "id": 4,
         "options": {
@@ -585,7 +523,7 @@
             "refId": "A"
           }
         ],
-        "title": "Alchemy Balances",
+        "title": "Contract Balances",
         "type": "timeseries"
       },
       {
@@ -645,7 +583,7 @@
           "h": 8,
           "w": 24,
           "x": 0,
-          "y": 50
+          "y": 42
         },
         "id": 5,
         "options": {
@@ -675,7 +613,7 @@
             "refId": "A"
           }
         ],
-        "title": "Alchemy Movements",
+        "title": "Contract Movements",
         "type": "timeseries"
       },
       {
@@ -684,7 +622,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 58
+          "y": 50
         },
         "id": 9,
         "panels": [],
@@ -748,7 +686,7 @@
           "h": 8,
           "w": 24,
           "x": 0,
-          "y": 59
+          "y": 51
         },
         "id": 7,
         "options": {
