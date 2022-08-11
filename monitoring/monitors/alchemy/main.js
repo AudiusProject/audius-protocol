@@ -109,14 +109,6 @@ const scanWallets = async () => {
     //   address: '0x6f08105c8CEef2BC5653640fcdbBE1e7bb519D39',
     //   tokens: [],
     // },
-    // // ClaimableTokens: {
-    // //   address: 'Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ',
-    // //   tokens: [],
-    // // },
-    // // RewardsManager: {
-    // //   address: 'DDZDcYdQFEMwcu2Mwo75yGFjJ1mUQyyXLWzhZLEVFcei',
-    // //   tokens: [],
-    // // },
     // multiSig: {
     //   name: 'MultiSig',
     //   address: '0xeABCcd75dA6c021c7553dB4A74CACC958812432A',
