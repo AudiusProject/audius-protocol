@@ -89,10 +89,8 @@ export type TrackListItemProps = {
   hideArt?: boolean
   index: number
   isActive?: boolean
-  isDragging?: boolean
   isLoading?: boolean
   isPlaying?: boolean
-  isRemoveActive?: boolean
   isReorderable?: boolean
   onRemove?: (index: number) => void
   onSave?: (isSaved: boolean, trackId: ID) => void
@@ -106,8 +104,6 @@ export const TrackListItem = ({
   hideArt,
   index,
   isActive,
-  isDragging = false,
-  isRemoveActive = false,
   isReorderable = false,
   isLoading = false,
   isPlaying = false,
