@@ -27,5 +27,3 @@
 #     RequestsInstrumentor().instrument()
 #     SQLAlchemyInstrumentor().instrument()
 #     CeleryInstrumentor().instrument()
-
-
