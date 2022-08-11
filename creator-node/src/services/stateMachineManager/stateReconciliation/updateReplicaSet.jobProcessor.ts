@@ -617,7 +617,7 @@ type CanReconfigParams = {
   oldSecondary1SpId: number
   oldSecondary2SpId: number
   userId: number
-  logger: any
+  logger: Logger
 }
 const _canReconfig = async ({
   libs,
