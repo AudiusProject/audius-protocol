@@ -160,6 +160,7 @@ export class Rewards extends Base {
   }: SubmitAndEvaluateConfig) {
     let phase
     let nodesToReselect = null
+    let aaoErrorCode = null
     try {
       phase = AttestationPhases.SANITY_CHECKS
 
@@ -180,6 +181,7 @@ export class Rewards extends Base {
         discoveryNodeAttestations,
         aaoAttestation,
         error: aggregateError,
+        aaoErrorCode: errorCode,
         erroringNodes
       } = await this.aggregateAttestations({
         challengeId,
@@ -196,6 +198,7 @@ export class Rewards extends Base {
       })
       if (aggregateError) {
         nodesToReselect = erroringNodes
+        aaoErrorCode = errorCode
         throw new Error(aggregateError)
       }
 
@@ -283,7 +286,13 @@ export class Rewards extends Base {
         )
       }
 
-      return { success: true, error: null, phase: null, nodesToReselect: null }
+      return {
+        success: true,
+        error: null,
+        aaoErrorCode,
+        phase: null,
+        nodesToReselect: null
+      }
     } catch (e) {
       const err = (e as Error).message
       const log =
@@ -296,7 +305,13 @@ export class Rewards extends Base {
           encodedUserId
         )}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`
       )
-      return { success: false, error: err, phase, nodesToReselect }
+      return {
+        success: false,
+        error: err,
+        aaoErrorCode,
+        phase,
+        nodesToReselect
+      }
     }
   }
 
@@ -336,6 +351,7 @@ export class Rewards extends Base {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
         error: AggregateAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT,
+        aaoErrorCode: null,
         erroringNodes: null
       }
     }
@@ -345,21 +361,25 @@ export class Rewards extends Base {
     let aaoAttestation: Nullable<AttestationMeta> = null
 
     try {
-      const { success, error: aaoAttestationError } =
-        await this.getAAOAttestation({
-          challengeId,
-          specifier,
-          handle,
-          amount,
-          AAOEndpoint,
-          oracleEthAddress
-        })
+      const {
+        success,
+        aaoErrorCode,
+        error: aaoAttestationError
+      } = await this.getAAOAttestation({
+        challengeId,
+        specifier,
+        handle,
+        amount,
+        AAOEndpoint,
+        oracleEthAddress
+      })
 
       if (aaoAttestationError) {
         return {
           discoveryNodeAttestations: null,
           aaoAttestation: null,
           error: aaoAttestationError,
+          aaoErrorCode,
           erroringNodes: null
         }
       }
@@ -375,6 +395,7 @@ export class Rewards extends Base {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
         error: GetAttestationError.AAO_ATTESTATION_ERROR,
+        aaoErrorCode: null,
         erroringNodes: null
       }
     }
@@ -417,6 +438,7 @@ export class Rewards extends Base {
         discoveryNodeAttestations: discoveryNodeSuccesses,
         aaoAttestation,
         error: null,
+        aaoErrorCode: null,
         erroringNodes: null
       }
     } catch (e: any) {
@@ -430,6 +452,7 @@ export class Rewards extends Base {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
         error: GetAttestationError.DISCOVERY_NODE_ATTESTATION_ERROR,
+        aaoErrorCode: null,
         erroringNodes: null
       }
     }
@@ -541,13 +564,14 @@ export class Rewards extends Base {
     try {
       const response: AxiosResponse<{
         result: string
+        errorCode?: number
         needs: keyof typeof GetAttestationError
       }> = await axios(request)
       // if attestation is successful, 'result' represents a signature
       // otherwise, 'result' is false
       // - there may or may not be a value for `needs` if the attestation fails
       // - depending on whether the user can take an action to attempt remediation
-      const { result, needs } = response.data
+      const { result, errorCode, needs } = response.data
 
       if (!result) {
         logger.error(
@@ -559,6 +583,7 @@ export class Rewards extends Base {
           : GetAttestationError.AAO_ATTESTATION_REJECTION
         return {
           success: null,
+          aaoErrorCode: errorCode,
           error: mappedErr
         }
       }
@@ -568,6 +593,7 @@ export class Rewards extends Base {
           signature: result,
           ethAddress: oracleEthAddress
         },
+        aaoErrorCode: null,
         error: null
       }
     } catch (e) {
@@ -575,6 +601,7 @@ export class Rewards extends Base {
       logger.error(`Failed to get AAO attestation: ${err}`)
       return {
         success: null,
+        aaoErrorCode: null,
         error: GetAttestationError.AAO_ATTESTATION_ERROR
       }
     }
