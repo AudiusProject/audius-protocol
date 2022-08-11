@@ -31,7 +31,7 @@ export interface PlaylistOperationResponse {
   error: Nullable<string>
 }
 
-const { encodeHashId } = Utils
+const { encodeHashId, decodeHashId } = Utils
 
 // Minimum playlist ID, intentionally higher than legacy playlist ID range
 const MIN_PLAYLIST_ID = 400000
@@ -59,29 +59,32 @@ export class EntityManager extends Base {
     return Math.floor(Math.random() * (max - min) + min)
   }
 
-  /**
-   * Calculate an unoccupied playlist ID
-   * Maximum value is postgres integer max (2147483647)
-   * Minimum value is artificially set to 400000
-   */
-  async getValidPlaylistId(): Promise<number> {
-    while (true) {
-      const playlistId: number = this.getRandomInt(
-        MIN_PLAYLIST_ID,
-        MAX_PLAYLIST_ID
+  async getFullPlaylist(playlistId: number, userId: number) {
+    const encodedPlaylistId = encodeHashId(playlistId) as string
+    const encodedUserId = encodeHashId(userId) as string
+
+    const playlist: any = (
+      await this.discoveryProvider.getFullPlaylist(
+        encodedPlaylistId,
+        encodedUserId
       )
-      const encodedPlaylistId = encodeHashId(playlistId)
+    )[0]
+    return playlist
+  }
 
-      if (encodedPlaylistId) {
-        const resp: any = await this.discoveryProvider.getPlaylistIsOccupied(
-          encodedPlaylistId
-        )
+  mapAddedTimestamps(added_timestamps: any) {
+    const trackIds = added_timestamps.map(
+      (trackObj: {
+        track_id: string
+        metadata_timestamp?: number
+        timestamp: number
+      }) => ({
+        track: decodeHashId(trackObj.track_id),
+        time: trackObj.metadata_timestamp ?? trackObj.timestamp
+      })
+    )
 
-        if (!resp.is_occupied) {
-          return playlistId
-        }
-      }
-    }
+    return trackIds
   }
 
   /**
@@ -121,6 +124,8 @@ export class EntityManager extends Base {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
     try {
+      console.log('asdf createdPlaylist libs', playlistId)
+
       const currentUserId: string | null =
         this.userStateManager.getCurrentUserId()
       if (!currentUserId) {
@@ -161,6 +166,7 @@ export class EntityManager extends Base {
         action: createAction,
         metadataMultihash
       })
+      console.log('asdf createdPlaylist response', manageEntityResponse)
       const txReceipt = manageEntityResponse.txReceipt
       responseValues.blockHash = txReceipt.blockHash
       responseValues.blockNumber = txReceipt.blockNumber
@@ -259,23 +265,13 @@ export class EntityManager extends Base {
         )
         dirCID = updatedPlaylistImage.dirCID
       }
-      const playlist: any = (
-        await this.discoveryProvider.getPlaylists(1, 0, [playlistId], userId)
-      )[0]
-
-      const trackIds = playlist.playlist_contents.track_ids.map(
-        (trackObj: {
-          track: number
-          metadata_time?: number
-          time: number
-        }) => ({
-          track: trackObj.track,
-          time: trackObj.metadata_time ?? trackObj.time
-        })
+      const playlist = await this.getFullPlaylist(playlistId, userId)
+      const existingPlaylistTracks = this.mapAddedTimestamps(
+        playlist.added_timestamps
       )
       const metadata: PlaylistMetadata = {
         playlist_id: playlistId,
-        playlist_contents: { track_ids: trackIds },
+        playlist_contents: { track_ids: existingPlaylistTracks },
         playlist_name: playlistName ?? playlist.playlist_name,
         playlist_image_sizes_multihash:
           dirCID ?? playlist.playlist_image_sizes_multihash,
@@ -317,6 +313,7 @@ export class EntityManager extends Base {
       this.getDefaultPlaylistReponseValues()
 
     try {
+      console.log('asdf libs add track', trackId)
       const currentUserId: string | null =
         this.userStateManager.getCurrentUserId()
       if (!playlistId || playlistId === undefined) {
@@ -331,31 +328,28 @@ export class EntityManager extends Base {
       const updateAction = Action.UPDATE
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
-      const playlist: any = (
-        await this.discoveryProvider.getPlaylists(1, 0, [playlistId], userId)
-      )[0]
 
-      const updatedTrackIds = playlist.playlist_contents.track_ids.map(
-        (trackObj: {
-          track: number
-          metadata_time?: number
-          time?: number
-        }) => ({
-          track: trackObj.track,
-          time: trackObj.metadata_time ?? trackObj.time
-        })
+      const playlist = await this.getFullPlaylist(playlistId, userId)
+      console.log('asdf existing playlist', playlist)
+
+      const updatedPlaylistTracks = this.mapAddedTimestamps(
+        playlist.added_timestamps
       )
 
       const web3 = this.web3Manager.getWeb3()
       const currentBlockNumber = await web3.eth.getBlockNumber()
       const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-      updatedTrackIds.push({ track: trackId, time: currentBlock.timestamp })
+      updatedPlaylistTracks.push({
+        track: trackId,
+        time: currentBlock.timestamp
+      })
+      console.log('asdf updatedPlaylistTracks', updatedPlaylistTracks)
 
       const metadata: PlaylistMetadata = {
         playlist_id: playlistId,
-        playlist_contents: { track_ids: updatedTrackIds },
+        playlist_contents: { track_ids: updatedPlaylistTracks },
         playlist_name: playlist.playlist_name,
-        playlist_image_sizes_multihash: playlist.playlist_image_sizes_multihash,
+        playlist_image_sizes_multihash: playlist.cover_art,
         description: playlist.description,
         is_album: playlist.is_album,
         is_private: playlist.is_private
@@ -373,6 +367,7 @@ export class EntityManager extends Base {
       responseValues.blockHash = txReceipt.blockHash
       responseValues.blockNumber = txReceipt.blockNumber
       responseValues.playlistId = playlistId
+      console.log('asdf added track blockNunber', responseValues.blockNumber)
       return responseValues
     } catch (e) {
       const error = (e as Error).message
@@ -557,6 +552,14 @@ export class EntityManager extends Base {
     let error = null
     let resp: any
     try {
+      console.log('asdf managing entity', {
+        userId,
+        entityType,
+        entityId,
+        action,
+        metadataMultihash
+      })
+
       resp = await this.contracts.EntityManagerClient?.manageEntity(
         userId,
         entityType,
@@ -564,9 +567,11 @@ export class EntityManager extends Base {
         action,
         metadataMultihash
       )
+
       return { txReceipt: resp.txReceipt, error }
     } catch (e) {
       error = (e as Error).message
+      console.log('asdf manageEntity error', error)
       return { txReceipt: null, error }
     }
   }

@@ -443,4 +443,6 @@ def process_playlist_data_event(
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
 
-    logger.info(f"index.py | AudiusData | Updated playlist record {playlist_record}")
+    logger.info(
+        f"asdf index.py | AudiusData | Updated playlist record {playlist_record}"
+    )

@@ -31,6 +31,7 @@ def use_redis_cache(key, ttl_sec, work_func):
     redis = redis_connection.get_redis()
     cached_value = get_json_cached_key(redis, key)
     if cached_value:
+        logger.info(f"asdf use redis cache {cached_value}")
         return cached_value
     to_cache = work_func()
     set_json_cached_key(redis, key, to_cache, ttl_sec)
@@ -144,6 +145,8 @@ def cache(**kwargs):
                 if cached_resp:
                     if transform is not None:
                         return transform(cached_resp)
+                    logger.info(f"asdf get cached response {cached_resp}")
+
                     return cached_resp, 200
 
             response = func(*args, **kwargs)
@@ -152,6 +155,8 @@ def cache(**kwargs):
                 resp, status_code = response
                 if status_code < 400:
                     set_json_cached_key(redis, key, resp, ttl_sec)
+                logger.info(f"asdf get non cached response {resp}")
+
                 return resp, status_code
             set_json_cached_key(redis, key, response, ttl_sec)
             return transform(response)

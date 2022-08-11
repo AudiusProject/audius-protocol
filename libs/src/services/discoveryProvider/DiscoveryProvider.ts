@@ -391,15 +391,9 @@ export class DiscoveryProvider {
     return await this._makeRequest<CollectionMetadata[]>(req)
   }
 
-  /**
-   * Check if playlist ID is occupied
-   * @param playlistId encoded string of playlist ID
-   * @returns true if occupied
-   */
-  async getPlaylistIsOccupied(playlistId: string): Promise<unknown> {
-    const req = Requests.getPlaylistIsOccupied(playlistId)
-    const resp = await this._makeRequest(req)
-    return resp
+  async getFullPlaylist(encodedPlaylistId: string, encodedUserId: string) {
+    const req = Requests.getFullPlaylist(encodedPlaylistId, encodedUserId)
+    return await this._makeRequest(req)
   }
 
   /**
@@ -878,11 +872,6 @@ export class DiscoveryProvider {
     const res = await this._makeRequest<Array<{ amount: string }>>(req)
     if (!res) return []
     return res.map((r) => ({ ...r, amount: parseInt(r.amount) }))
-  }
-
-  async getIsPlaylistIdOccupied(playlistId: string) {
-    const req = Requests.getIsPlaylistIdOccupied(playlistId)
-    return await this._makeRequest<{ is_occupied: boolean }>(req)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
