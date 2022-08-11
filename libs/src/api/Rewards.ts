@@ -160,7 +160,7 @@ export class Rewards extends Base {
   }: SubmitAndEvaluateConfig) {
     let phase
     let nodesToReselect = null
-    let aaoErrorCode
+    let aaoErrorCode = null
     try {
       phase = AttestationPhases.SANITY_CHECKS
 
