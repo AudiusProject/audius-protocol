@@ -18,6 +18,14 @@ export enum ClaimStatus {
   ERROR = 'error'
 }
 
+export type ClaimState =
+  | { status: ClaimStatus.NONE }
+  | { status: ClaimStatus.CLAIMING }
+  | { status: ClaimStatus.WAITING_FOR_RETRY }
+  | { status: ClaimStatus.ALREADY_CLAIMED }
+  | { status: ClaimStatus.SUCCESS }
+  | { status: ClaimStatus.ERROR; aaoErrorCode: number | undefined }
+
 export type Claim = {
   challengeId: ChallengeRewardID
   specifiers: Specifier[]
@@ -61,7 +69,7 @@ type RewardsUIState = {
     Record<ChallengeRewardID, Partial<UserChallenge>>
   >
   disbursedChallenges: Partial<Record<ChallengeRewardID, Specifier[]>>
-  claimStatus: ClaimStatus
+  claimState: ClaimState
   claimToRetry?: Claim
   hCaptchaStatus: HCaptchaStatus
   cognitoFlowStatus: CognitoFlowStatus
@@ -78,7 +86,7 @@ const initialState: RewardsUIState = {
   userChallengesOverrides: {},
   disbursedChallenges: {},
   loading: true,
-  claimStatus: ClaimStatus.NONE,
+  claimState: { status: ClaimStatus.NONE },
   hCaptchaStatus: HCaptchaStatus.NONE,
   cognitoFlowStatus: CognitoFlowStatus.CLOSED,
   showRewardClaimedToast: false
@@ -216,7 +224,7 @@ const slice = createSlice({
       action: PayloadAction<{ token: string }>
     ) => {},
     resetAndCancelClaimReward: (state) => {
-      state.claimStatus = ClaimStatus.NONE
+      state.claimState = { status: ClaimStatus.NONE }
     },
     claimChallengeReward: (
       state,
@@ -226,20 +234,29 @@ const slice = createSlice({
         retryCount?: number
       }>
     ) => {
-      state.claimStatus = ClaimStatus.CLAIMING
+      state.claimState = { status: ClaimStatus.CLAIMING }
     },
     claimChallengeRewardWaitForRetry: (state, action: PayloadAction<Claim>) => {
-      state.claimStatus = ClaimStatus.WAITING_FOR_RETRY
+      state.claimState = { status: ClaimStatus.WAITING_FOR_RETRY }
       state.claimToRetry = action.payload
     },
-    claimChallengeRewardFailed: (state) => {
-      state.claimStatus = ClaimStatus.ERROR
+    claimChallengeRewardFailed: (
+      state,
+      action: PayloadAction<
+        | {
+            aaoErrorCode: number
+          }
+        | undefined
+      >
+    ) => {
+      const aaoErrorCode = action.payload?.aaoErrorCode
+      state.claimState = { status: ClaimStatus.ERROR, aaoErrorCode }
     },
     claimChallengeRewardAlreadyClaimed: (state) => {
-      state.claimStatus = ClaimStatus.ALREADY_CLAIMED
+      state.claimState = { status: ClaimStatus.ALREADY_CLAIMED }
     },
     claimChallengeRewardSucceeded: (state) => {
-      state.claimStatus = ClaimStatus.SUCCESS
+      state.claimState = { status: ClaimStatus.SUCCESS }
     },
     setCognitoFlowStatus: (
       state,
