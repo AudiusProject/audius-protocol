@@ -57,6 +57,7 @@ const handleSyncFromPrimary = async ({
   try {
     let localMaxClockVal
     if (forceResync) {
+      genericLogger.warn(`${logPrefix} Forcing resync..`)
       await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
       localMaxClockVal = -1
     } else {
