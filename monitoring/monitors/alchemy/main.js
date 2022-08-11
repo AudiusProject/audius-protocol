@@ -53,11 +53,6 @@ const scanWallets = async () => {
   // Wallet addresses to monitor all transactions for
   // source: https://audius.org/en/security
   const addresses = {
-    registry: {
-      name: 'Registry',
-      address: '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C',
-      tokens: [],
-    },
     token: {
       name: 'Token',
       address: AUDIUS_TOKEN_CONTRACT,
@@ -73,54 +68,59 @@ const scanWallets = async () => {
       address: '0xe6D97B2099F142513be7A2a068bE040656Ae4591',
       tokens: [],
     },
-    delegateManager: {
-      name: 'DelegateManager',
-      address: '0x4d7968ebfD390D5E7926Cb3587C39eFf2F9FB225',
-      tokens: [],
-    },
-    claimsManager: {
-      name: 'ClaimsManager',
-      address: '0x44617F9dCEd9787C3B06a05B35B4C779a2AA1334',
-      tokens: [],
-    },
-    serviceTypeManager: {
-      name: 'ServiceTypeManager',
-      address: '0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5',
-      tokens: [],
-    },
-    serviceProviderFactory: {
-      name: 'ServiceProviderFactory',
-      address: '0xD17A9bc90c582249e211a4f4b16721e7f65156c8',
-      tokens: [],
-    },
-    ethRewardsManager: {
-      name: 'EthRewardsManager',
-      address: '0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0',
-      tokens: [],
-    },
-    wormholeClient: {
-      name: 'WormholeClient',
-      address: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
-      tokens: [],
-    },
-    trustedNotifierManager: {
-      name: 'TrustedNotifierManager',
-      address: '0x6f08105c8CEef2BC5653640fcdbBE1e7bb519D39',
-      tokens: [],
-    },
-    // ClaimableTokens: {
-    //   address: 'Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ',
+    // delegateManager: {
+    //   name: 'DelegateManager',
+    //   address: '0x4d7968ebfD390D5E7926Cb3587C39eFf2F9FB225',
     //   tokens: [],
     // },
-    // RewardsManager: {
-    //   address: 'DDZDcYdQFEMwcu2Mwo75yGFjJ1mUQyyXLWzhZLEVFcei',
+    // registry: {
+    //   name: 'Registry',
+    //   address: '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C',
     //   tokens: [],
     // },
-    multiSig: {
-      name: 'MultiSig',
-      address: '0xeABCcd75dA6c021c7553dB4A74CACC958812432A',
-      tokens: [],
-    },
+    // claimsManager: {
+    //   name: 'ClaimsManager',
+    //   address: '0x44617F9dCEd9787C3B06a05B35B4C779a2AA1334',
+    //   tokens: [],
+    // },
+    // serviceTypeManager: {
+    //   name: 'ServiceTypeManager',
+    //   address: '0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5',
+    //   tokens: [],
+    // },
+    // serviceProviderFactory: {
+    //   name: 'ServiceProviderFactory',
+    //   address: '0xD17A9bc90c582249e211a4f4b16721e7f65156c8',
+    //   tokens: [],
+    // },
+    // ethRewardsManager: {
+    //   name: 'EthRewardsManager',
+    //   address: '0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0',
+    //   tokens: [],
+    // },
+    // wormholeClient: {
+    //   name: 'WormholeClient',
+    //   address: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
+    //   tokens: [],
+    // },
+    // trustedNotifierManager: {
+    //   name: 'TrustedNotifierManager',
+    //   address: '0x6f08105c8CEef2BC5653640fcdbBE1e7bb519D39',
+    //   tokens: [],
+    // },
+    // // ClaimableTokens: {
+    // //   address: 'Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ',
+    // //   tokens: [],
+    // // },
+    // // RewardsManager: {
+    // //   address: 'DDZDcYdQFEMwcu2Mwo75yGFjJ1mUQyyXLWzhZLEVFcei',
+    // //   tokens: [],
+    // // },
+    // multiSig: {
+    //   name: 'MultiSig',
+    //   address: '0xeABCcd75dA6c021c7553dB4A74CACC958812432A',
+    //   tokens: [],
+    // },
   }
 
   for (const key in addresses) {
