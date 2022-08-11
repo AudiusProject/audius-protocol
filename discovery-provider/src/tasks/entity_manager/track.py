@@ -4,10 +4,10 @@ from typing import Dict
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.entity_manager.types import (
+    TRACK_ID_OFFSET,
     Action,
     EntityType,
     ManageEntityParameters,
-    TRACK_ID_OFFSET,
 )
 from src.tasks.tracks import (
     dispatch_challenge_track_upload,

@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple, TypedDict
+from typing import Any, Dict, List, Set, Tuple
 
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -9,25 +9,21 @@ from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.utils import helpers
-from src.tasks.entity_manager.track import (
-    create_track,
-    update_track,
-    delete_track,
-)
 from src.tasks.entity_manager.playlist import (
     create_playlist,
-    update_playlist,
     delete_playlist,
+    update_playlist,
 )
+from src.tasks.entity_manager.track import create_track, delete_track, update_track
 from src.tasks.entity_manager.types import (
+    MANAGE_ENTITY_EVENT_TYPE,
     Action,
     EntityType,
-    RecordDict,
     ExistingRecordDict,
-    MANAGE_ENTITY_EVENT_TYPE,
     ManageEntityParameters,
+    RecordDict,
 )
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 

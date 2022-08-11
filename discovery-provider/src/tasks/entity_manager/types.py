@@ -1,11 +1,8 @@
-import logging
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Set, TypedDict
+from typing import Dict, List, TypedDict
 
-from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
