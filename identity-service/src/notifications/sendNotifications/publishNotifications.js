@@ -52,6 +52,8 @@ const getPublishNotifBaseType = (notification) => {
       return notificationTypes.SupporterRankUp
     case notificationTypes.SupportingRankUp:
       return notificationTypes.SupportingRankUp
+    case notificationTypes.SupporterDethroned:
+      return notificationTypes.SupporterDethroned
   }
 }
 
@@ -61,7 +63,8 @@ const solanaNotificationBaseTypes = [
   notificationTypes.TipReceive,
   notificationTypes.Reaction,
   notificationTypes.SupporterRankUp,
-  notificationTypes.SupportingRankUp
+  notificationTypes.SupportingRankUp,
+  notificationTypes.SupporterDethroned
 ]
 
 // Gets the userId that a notification should be sent to based off the notification's base type
@@ -80,6 +83,7 @@ const getPublishUserId = (notif, baseType) => {
   else if (baseType === notificationTypes.SupporterRankUp) return notif.initiator
   else if (baseType === notificationTypes.SupportingRankUp) return notif.metadata.entity_id
   else if (baseType === notificationTypes.TipReceive) return notif.initiator
+  else if (baseType === notificationTypes.SupporterDethroned) return notif.initiator
 }
 
 // Notification types that always get send a notification, regardless of settings
@@ -138,6 +142,9 @@ const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
   }
   if ([notificationTypes.TipReceive, notificationTypes.Reaction, notificationTypes.SupporterRankUp, notificationTypes.SupportingRankUp].includes(notificationType)) {
     return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.TIPPING_ENABLED)
+  }
+  if (notificationType === notificationTypes.SupporterDethroned) {
+    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SUPPORTER_DETHRONED_ENABLED)
   }
   return false
 }

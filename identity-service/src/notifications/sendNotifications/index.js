@@ -37,6 +37,8 @@ function getUserIdsToNotify (notifications) {
         const supportingId = notification.metadata.entity_id
         const supportedId = notification.initiator
         return userIds.concat([supportingId, supportedId])
+      case notificationTypes.SupporterDethroned:
+        return userIds.concat(notification.initiator)
       default:
         return userIds
     }
