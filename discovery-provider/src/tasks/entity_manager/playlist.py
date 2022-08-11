@@ -157,7 +157,9 @@ def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
     return new_playlist
 
 
-def process_playlist_contents(playlist_record: Playlist, playlist_metadata, block_integer_time):
+def process_playlist_contents(
+    playlist_record: Playlist, playlist_metadata, block_integer_time
+):
     if playlist_record.metadata_multihash:
         # playlist already has metadata
         metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
@@ -228,7 +230,9 @@ def process_playlist_data_event(
         playlist_metadata["is_album"] if "is_album" in playlist_metadata else False
     )
     playlist_record.description = playlist_metadata["description"]
-    playlist_record.playlist_image_multihash = playlist_metadata["playlist_image_sizes_multihash"]
+    playlist_record.playlist_image_multihash = playlist_metadata[
+        "playlist_image_sizes_multihash"
+    ]
     playlist_record.playlist_image_sizes_multihash = playlist_metadata[
         "playlist_image_sizes_multihash"
     ]

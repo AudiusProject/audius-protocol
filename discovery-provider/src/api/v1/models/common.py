@@ -41,7 +41,5 @@ full_response = ns.model(
 
 id_occupied = ns.model(
     "occupied",
-    {
-        "is_occupied": fields.Boolean(required=True)
-    },
+    {"is_occupied": fields.Boolean(required=True)},
 )
