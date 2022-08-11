@@ -11,6 +11,12 @@ type PremiumContentMatchArgs = {
 
 const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
 
+/**
+ * Verify that DN-signed data timestamp is relatively recent.
+ * Verify that id and type (track/playlist) of content requested are same as those in the DN-signed data.
+ * Verify that wallet from recovered user signature is the same as that of wallet in the DN-signed data.
+ * If all these verifications are successful, then we have a match.
+ */
 export const isPremiumContentMatch = ({
   signedDataFromDiscoveryNode,
   userWallet,
