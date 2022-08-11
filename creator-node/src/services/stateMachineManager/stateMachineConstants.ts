@@ -150,5 +150,5 @@ export const SYNC_MODES = Object.freeze({
 
 export const FETCH_FILES_HASH_NUM_RETRIES = 3
 
-// Seconds to hold the cache of healthy content nodes for update-replica-set jobs (10 mins)
-export const HEALTHY_SERVICES_TTL_SEC = 10 * 60
+// Seconds to hold the cache of healthy content nodes for update-replica-set jobs
+export const HEALTHY_SERVICES_TTL_SEC = 60 /* 1 min */
