@@ -4,9 +4,7 @@ ENV WORKDIR /app
 WORKDIR ${WORKDIR}
 
 COPY package.json .
-RUN npm install \
-    && npm install -g \
-        nodemon
+RUN npm install
 
 COPY main.js .
-CMD nodemon --watch . main.js
+CMD npm run exporter
