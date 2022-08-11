@@ -46,7 +46,7 @@ const enableDefaultMetrics = () => {
 enableDefaultMetrics()
 
 // Constants
-const AUDIUS_CONTRACT = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
+const AUDIUS_TOKEN_CONTRACT = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
 const AUDIUS_DECIMALS = 18
 
 const scanWallets = async () => {
@@ -60,7 +60,7 @@ const scanWallets = async () => {
     },
     token: {
       name: 'Token',
-      address: AUDIUS_CONTRACT,
+      address: AUDIUS_TOKEN_CONTRACT,
       tokens: [],
     },
     governance: {
@@ -144,7 +144,7 @@ const scanWallets = async () => {
       // Get balance of token
       let balance = token.tokenBalance
 
-      if (token.contractAddress === AUDIUS_CONTRACT) {
+      if (token.contractAddress === AUDIUS_TOKEN_CONTRACT) {
         // Skip API call for common request
         name = 'Audius'
         decimals = AUDIUS_DECIMALS
@@ -190,7 +190,7 @@ const monitorWallets = async () => {
 
 const monitorTransfers = async () => {
   web3.eth.subscribe('logs', {
-    address: AUDIUS_CONTRACT,
+    address: AUDIUS_TOKEN_CONTRACT,
     topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef']
   }).on('data', (data) => {
     try {
