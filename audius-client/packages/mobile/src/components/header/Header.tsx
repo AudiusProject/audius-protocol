@@ -1,13 +1,16 @@
 import type { ReactChild } from 'react'
 
+import type { TextStyle, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import { GradientText } from 'app/components/core'
+import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
 
 type ScreenHeaderProps = {
   children?: ReactChild
   text: string
+  styles?: StylesProp<{ root: ViewStyle; header: TextStyle }>
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -32,12 +35,16 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const Header = ({ children, text }: ScreenHeaderProps) => {
+export const Header = (props: ScreenHeaderProps) => {
+  const { children, text, styles: stylesProp } = props
   const styles = useStyles()
 
   return (
-    <View style={styles.root}>
-      <GradientText accessibilityRole='header' style={styles.header}>
+    <View style={[styles.root, stylesProp?.root]}>
+      <GradientText
+        accessibilityRole='header'
+        style={[styles.header, stylesProp?.header]}
+      >
         {text}
       </GradientText>
       {children}

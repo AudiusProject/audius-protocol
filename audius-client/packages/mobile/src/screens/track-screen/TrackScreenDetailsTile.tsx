@@ -36,11 +36,11 @@ import {
   REPOSTING_USERS_ROUTE
 } from 'audius-client/src/utils/route'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
-import { Image, Pressable, View } from 'react-native'
+import { Image, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconHidden from 'app/assets/images/iconHidden.svg'
-import { Text } from 'app/components/core'
+import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -89,17 +89,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     justifyContent: 'center',
     flexWrap: 'wrap',
     paddingVertical: spacing(4)
-  },
-
-  tag: {
-    margin: spacing(1),
-    borderRadius: 2,
-    backgroundColor: palette.neutralLight4,
-    paddingVertical: spacing(1),
-    paddingHorizontal: spacing(2),
-    color: palette.white,
-    textTransform: 'uppercase',
-    overflow: 'hidden'
   },
 
   moodEmoji: {
@@ -331,11 +320,9 @@ export const TrackScreenDetailsTile = ({
     return filteredTags.length > 0 ? (
       <View style={styles.tags}>
         {filteredTags.map((tag) => (
-          <Pressable key={tag} onPress={() => handlePressTag(tag)}>
-            <Text style={styles.tag} variant='label'>
-              {tag}
-            </Text>
-          </Pressable>
+          <Tag key={tag} onPress={() => handlePressTag(tag)}>
+            {tag}
+          </Tag>
         ))}
       </View>
     ) : null
