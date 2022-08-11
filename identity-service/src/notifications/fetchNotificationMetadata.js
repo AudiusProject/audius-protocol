@@ -290,6 +290,11 @@ async function fetchNotificationMetadata (
         }
         break
       }
+      case NotificationType.SupporterDethroned:
+        // Fetch both the supported user, and the new top supporter
+        userIdsToFetch.push(notification.metadata.supportingUserId)
+        userIdsToFetch.push(notification.metadata.newTopSupporterUserId)
+        break
     }
   }
 

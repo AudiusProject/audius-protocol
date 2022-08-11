@@ -208,6 +208,16 @@ const formatSupportingRankUp = (notification) => ({
   entityType: Entity.User
 })
 
+const formatSupporterDethroned = (notification) => ({
+  ...getCommonNotificationsFields(notification),
+  type: notification.type,
+  entityType: Entity.User,
+  entityId: notification.metadata.newTopSupporterUserId,
+  supportedUserId:  notification.metadata.supportedUserId,
+  newAmount: notification.metadata.newAmount,
+  oldAmount: notification.metadata.oldAmount
+})
+
 const formatSupporterRankUp = (notification) => ({
   ...getCommonNotificationsFields(notification),
   type: notification.type,
@@ -267,6 +277,7 @@ const notificationResponseMap = {
   [NotificationType.Reaction]: formatReaction,
   [NotificationType.SupporterRankUp]: formatSupporterRankUp,
   [NotificationType.SupportingRankUp]: formatSupportingRankUp,
+  [NotificationType.SupporterDethroned]: formatSupporterDethroned,
   [NotificationType.AddTrackToPlaylist]: formatAddTrackToPlaylist
 }
 
@@ -373,6 +384,10 @@ module.exports = function (app) {
         NotificationType.SupporterRankUp,
         NotificationType.SupportingRankUp
       ]
+    }
+
+    if (req.query.withSupporterDethroned !== 'true') {
+      filterSolanaNotificationTypes.push(NotificationType.SupporterDethroned)
     }
 
     const queryFilter = filterNotificationTypes.length > 0 ? {

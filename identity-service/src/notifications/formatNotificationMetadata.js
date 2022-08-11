@@ -230,6 +230,18 @@ function formatSupportingRankUp (notification, metadata) {
     receivingUser: user
   }
 }
+
+function formatSupporterDethroned(notification, metadata) {
+  return {
+    type: NotificationType.SupporterDethroned,
+    receivingUser: notification.initiator,
+    newTopSupporter: metadata.users[notification.metadata.newTopSupporterUserId],
+    supportedUser: metadata.users[notification.metadata.supportedUserId],
+    oldAmount: formatWei(new BN(notification.metadata.oldAmount)),
+    newAmount: formatWei(new BN(notification.metadata.newAmount))
+  }
+}
+
 // This is different from the above corresponding function
 // because it operates on data coming from the database
 // as opposed to that coming from the DN.
@@ -304,6 +316,7 @@ const notificationResponseMap = {
   [NotificationType.TipReceive]: formatTipReceive,
   [NotificationType.SupporterRankUp]: formatSupporterRankUp,
   [NotificationType.SupportingRankUp]: formatSupportingRankUp,
+  [NotificationType.SupporterDethroned]: formatSupporterDethroned,
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone('repost'),
   [NotificationType.MilestoneFavorite]: formatMilestone('favorite'),
@@ -333,6 +346,7 @@ const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
 const AddTrackToPlaylistTitle = 'Your track got on a playlist! 💿'
 const TipReceiveTitle = 'You Received a Tip!'
+const DethronedTitle = "👑 You've Been Dethroned!"
 
 const challengeInfoMap = {
   'profile-completion': {
@@ -393,7 +407,8 @@ const notificationResponseTitleMap = {
   [NotificationType.Reaction]: makeReactionTitle,
   [NotificationType.TipReceive]: () => TipReceiveTitle,
   [NotificationType.SupporterRankUp]: makeSupportingOrSupporterTitle,
-  [NotificationType.SupportingRankUp]: makeSupportingOrSupporterTitle
+  [NotificationType.SupportingRankUp]: makeSupportingOrSupporterTitle,
+  [NotificationType.SupporterDethroned]: () => DethronedTitle,
 
 }
 
@@ -468,6 +483,9 @@ const pushNotificationMessagesMap = {
   },
   [notificationTypes.TipReceive] (notification) {
     return `${capitalize(notification.sendingUser.name)} sent you a tip of ${notification.amount} $AUDIO`
+  },
+  [notificationTypes.SupporterDethroned] (notification) {
+    return `${capitalize(notification.newTopSupporter.handle)} dethroned you to become ${notification.supportedUser.name}'s top supporter. Tip to reclaim the throne?`
   }
 
 }
