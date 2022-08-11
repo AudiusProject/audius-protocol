@@ -92,7 +92,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_sdk_open_proposals",
+            "expr": "audius_monitors_sdk_proposals{outcome=\"InProgress\"}",
             "legendFormat": "Open Proposals",
             "range": true,
             "refId": "A"
@@ -102,6 +102,7 @@
         "type": "stat"
       },
       {
+        "description": "The number of open proposals at the moment.\n\n---\n\nThe number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -132,10 +133,11 @@
                 "mode": "none"
               },
               "thresholdsStyle": {
-                "mode": "off"
+                "mode": "line"
               }
             },
             "mappings": [],
+            "max": 2,
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -144,8 +146,12 @@
                   "value": null
                 },
                 {
+                  "color": "yellow",
+                  "value": 1
+                },
+                {
                   "color": "red",
-                  "value": 80
+                  "value": 2
                 }
               ]
             },
@@ -179,7 +185,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_sdk_open_proposals",
+            "expr": "audius_monitors_sdk_proposals{outcome=\"InProgress\"}",
             "legendFormat": "Open Proposals",
             "range": true,
             "refId": "A"
@@ -234,7 +240,7 @@
             "datasource": {
               "type": "prometheus"
             },
-            "expr": "audius_monitors_sdk_proposals",
+            "expr": "sum(audius_monitors_sdk_proposals)",
             "refId": "A"
           }
         ],
@@ -242,6 +248,7 @@
         "type": "stat"
       },
       {
+        "description": "The number of new proposals within the last 24 hours.\n\n---\n\nAny more than 2 should trigger multiple alarms (including this one) since an attacker may be self-signing multiple proposals.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -272,10 +279,11 @@
                 "mode": "none"
               },
               "thresholdsStyle": {
-                "mode": "off"
+                "mode": "line"
               }
             },
             "mappings": [],
+            "max": 10,
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -285,7 +293,7 @@
                 },
                 {
                   "color": "red",
-                  "value": 80
+                  "value": 2
                 }
               ]
             },
@@ -319,7 +327,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "increase(audius_monitors_sdk_proposals[24h])",
+            "expr": "sum(audius_monitors_sdk_proposals) - sum(audius_monitors_sdk_proposals offset 1d OR on() vector(87))",
             "legendFormat": "New Proposals",
             "range": true,
             "refId": "A"
@@ -389,6 +397,7 @@
         "type": "stat"
       },
       {
+        "description": "The number of proposals opened by unknown proposers.\n\n---\n\nWe ignore any previous one-off proposers to keep this metric at 0. Anything greater than 0 should be considered to be created by an attacker.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -423,6 +432,7 @@
               }
             },
             "mappings": [],
+            "max": 10,
             "thresholds": {
               "mode": "absolute",
               "steps": [
