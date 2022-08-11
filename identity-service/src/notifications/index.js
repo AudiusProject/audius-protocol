@@ -470,7 +470,11 @@ async function filterOutAbusiveUsers (notifications) {
     usersAbuseMap[user.blockchainUserId] = user.isAbusive
   })
   console.log(`filterOutAbusiveUsers: usersAbuseMap: ${JSON.stringify(usersAbuseMap, null, 2)}`)
-  const result = notifications.filter(notification => !usersAbuseMap[notification.initiator])
+  const result = notifications.filter(notification => {
+    const isInitiatorAbusive = usersAbuseMap[notification.initiator.toString()]
+    const isUserEntityAbusive = notification.metadata && notification.metadata.entity_type === 'user' && notification.metadata.entity_id && usersAbuseMap[notification.metadata.entity_id.toString()]
+    return !isInitiatorAbusive && !isUserEntityAbusive
+  })
   console.log(`filterOutAbusiveUsers: result: ${JSON.stringify(result, null, 2)}`)
   logger.info(`notifications | index.js | Filtered out ${notifications.length - result.length} bad initiators out of ${notifications.length} total.`)
   return result
