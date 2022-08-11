@@ -4,6 +4,7 @@ import type { Maybe } from '@audius/common'
 import { IntKeys, StringKeys } from '@audius/common'
 import { getOptimisticUserChallenges } from 'audius-client/src/common/store/challenges/selectors/optimistic-challenges'
 import {
+  getAAOErrorCode,
   getChallengeRewardsModalType,
   getClaimStatus
 } from 'audius-client/src/common/store/pages/audio-rewards/selectors'
@@ -54,6 +55,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   }, [dispatchWeb, onClose])
 
   const claimStatus = useSelectorWeb(getClaimStatus)
+  const aaoErrorCode = useSelectorWeb(getAAOErrorCode)
 
   const { toast } = useContext(ToastContext)
 
@@ -182,6 +184,7 @@ export const ChallengeRewardsDrawerProvider = () => {
       claimableAmount={audioToClaim}
       claimedAmount={audioClaimedSoFar}
       claimStatus={claimStatus}
+      aaoErrorCode={aaoErrorCode}
       onClaim={hasConfig ? onClaim : undefined}
       isVerifiedChallenge={!!config.isVerifiedChallenge}
       showProgressBar={
