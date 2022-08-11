@@ -10,6 +10,12 @@ module.exports = {
   down: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
 
+      // Drop any DethronedNotifs
+      await queryInterface.sequelize.query(`
+        DELETE FROM "SolanaNotifications"
+        WHERE "type" = 'SupporterDethroned';
+      `, { transaction })
+
       // Recreate the old enum:
 
       // Create a new enum
