@@ -59,7 +59,7 @@ class SyncQueue {
 
       let result = {}
       try {
-        await secondarySyncFromPrimary({
+        result = await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
           wallet,
           creatorNodeEndpoint,
