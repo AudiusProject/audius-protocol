@@ -3,7 +3,8 @@ from typing import List
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.models.playlists.playlist import Playlist
-from src.tasks.entity_manager import PLAYLIST_ID_OFFSET, entity_manager_update
+from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.tasks.entity_manager.types import PLAYLIST_ID_OFFSET
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -86,7 +87,7 @@ def test_index_valid_playlists(app, mocker):
         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
     mocker.patch(
-        "src.tasks.entity_manager.get_entity_manager_events_tx",
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
         side_effect=get_events_side_effect,
         autospec=True,
     )
@@ -307,7 +308,7 @@ def test_index_invalid_playlists(app, mocker):
         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
     mocker.patch(
-        "src.tasks.entity_manager.get_entity_manager_events_tx",
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
         side_effect=get_events_side_effect,
         autospec=True,
     )
