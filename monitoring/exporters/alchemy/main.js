@@ -5,7 +5,7 @@ const web3 = require('web3');
 
 // Setup Alchemy client
 const alchemyWeb3 = createAlchemyWeb3(
-  process.env.WEBSOCKETS,
+  process.env.ALCHEMY_WEBSOCKETS,
 )
 
 // Setup additional Alchemy client (used for testing and possible future features)

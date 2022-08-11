@@ -47,10 +47,7 @@ services:
     ports:
       - "2000:3000"
     environment:
-      - API_KEY
-      - HTTPS
-      - WEBSOCKETS
-      - ADDRESS
+      - ALCHEMY_WEBSOCKETS
     logging: *default-logging
 
   exporter_sdk:
