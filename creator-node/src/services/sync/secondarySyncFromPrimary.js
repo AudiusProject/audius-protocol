@@ -49,14 +49,21 @@ const handleSyncFromPrimary = async ({
   /**
    * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
    */
-  const forceResync = await shouldForceResync(
+  const shouldForceResyncBool = await shouldForceResync(
     { libs, logContext },
     forceResyncConfig
   )
+  const forceResyncQueryParam = forceResyncConfig?.forceResync
+  if (forceResyncQueryParam && !shouldForceResyncBool) {
+    return {
+      error: new Error(`Cannot issue sync for wallet ${wallet} due to shouldForceResync() rejection`),
+      result: 'failure_force_resync_check'
+    }
+  }
 
   try {
     let localMaxClockVal
-    if (forceResync) {
+    if (shouldForceResyncBool) {
       genericLogger.warn(`${logPrefix} Forcing resync..`)
       await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
       localMaxClockVal = -1
@@ -666,6 +673,8 @@ async function secondarySyncFromPrimary({
   )
   const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
 
+  const mode = forceResyncConfig?.forceResync ? 'force_resync' : 'default'
+
   const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
@@ -674,7 +683,7 @@ async function secondarySyncFromPrimary({
     forceResyncConfig,
     logContext
   })
-  metricEndTimerFn({ result })
+  metricEndTimerFn({ result, mode })
 
   if (error) {
     throw new Error(error)
