@@ -39,6 +39,7 @@ const METRICS = Object.freeze({
     help: 'Count when alchemy calls fail.',
   }),
 })
+METRICS[metricNames.PROPOSALS].set({outcome: 'InProgress'}, 0)
 METRICS[metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS].set(0)
 METRICS[metricNames.API_FAILURE].set(0)
 const enableDefaultMetrics = () => {
