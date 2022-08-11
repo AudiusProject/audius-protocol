@@ -95,7 +95,7 @@ async function processSupporterRankChangeNotification (notifications, tx) {
 
 const getSupporters = async (receiverUserId) => {
   const encodedReceiverId = encodeHashId(receiverUserId)
-  const { discoveryProvider} = audiusLibsWrapper.getAudiusLibs()
+  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
   const url = `${discoveryProvider.discoveryProviderEndpoint}/v1/full/users/${encodedReceiverId}/supporters`
 
   try {

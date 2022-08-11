@@ -64,7 +64,7 @@ const solanaNotificationBaseTypes = [
   notificationTypes.Reaction,
   notificationTypes.SupporterRankUp,
   notificationTypes.SupportingRankUp,
-  notificationTypes.SupporterDethroned,
+  notificationTypes.SupporterDethroned
 ]
 
 // Gets the userId that a notification should be sent to based off the notification's base type

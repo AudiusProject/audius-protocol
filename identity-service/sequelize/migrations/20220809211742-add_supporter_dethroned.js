@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: (queryInterface) => {
@@ -9,7 +9,6 @@ module.exports = {
 
   down: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
-
       // Drop any DethronedNotifs
       await queryInterface.sequelize.query(`
         DELETE FROM "SolanaNotifications"
@@ -44,4 +43,4 @@ module.exports = {
       `, { transaction })
     })
   }
-};
+}

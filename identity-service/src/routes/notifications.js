@@ -213,7 +213,7 @@ const formatSupporterDethroned = (notification) => ({
   type: notification.type,
   entityType: Entity.User,
   entityId: notification.metadata.newTopSupporterUserId,
-  supportedUserId:  notification.metadata.supportedUserId,
+  supportedUserId: notification.metadata.supportedUserId,
   newAmount: notification.metadata.newAmount,
   oldAmount: notification.metadata.oldAmount
 })

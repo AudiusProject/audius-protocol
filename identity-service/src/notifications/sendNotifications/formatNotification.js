@@ -263,7 +263,7 @@ async function formatNotifications (notifications, notificationSettings, tx) {
     }
 
     if (notif.type === notificationTypes.SupporterDethroned) {
-      formattedNotifications.push({...notif})
+      formattedNotifications.push({ ...notif })
     }
   }
   const [formattedCreateNotifications, users] = await _processSubscriberPushNotifications()

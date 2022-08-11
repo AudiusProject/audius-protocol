@@ -231,7 +231,7 @@ function formatSupportingRankUp (notification, metadata) {
   }
 }
 
-function formatSupporterDethroned(notification, metadata) {
+function formatSupporterDethroned (notification, metadata) {
   return {
     type: NotificationType.SupporterDethroned,
     receivingUser: notification.initiator,
@@ -408,7 +408,7 @@ const notificationResponseTitleMap = {
   [NotificationType.TipReceive]: () => TipReceiveTitle,
   [NotificationType.SupporterRankUp]: makeSupportingOrSupporterTitle,
   [NotificationType.SupportingRankUp]: makeSupportingOrSupporterTitle,
-  [NotificationType.SupporterDethroned]: () => DethronedTitle,
+  [NotificationType.SupporterDethroned]: () => DethronedTitle
 
 }
 
