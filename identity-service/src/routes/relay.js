@@ -1,10 +1,12 @@
 const crypto = require('crypto')
 
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseForbidden, errorResponseServerError } = require('../apiHelpers')
 const txRelay = require('../relay/txRelay')
 const captchaMiddleware = require('../captchaMiddleware')
 const { detectAbuse } = require('../utils/antiAbuse')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
+
+const blockRelayAbuseErrorCodes = new Set(['3', '8', '10', '11', '12', '13', '14', '15'])
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
@@ -13,13 +15,27 @@ module.exports = function (app) {
     const body = req.body
     const redis = req.app.get('redis')
 
+    // TODO: Use auth middleware to derive this
+    const user = await models.User.findOne({
+      where: { req.senderAddress },
+      attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isAbusive', 'isAbusiveErrorCode']
+    })
+
     let optimizelyClient
     let detectAbuseOnRelay = false
+    let blockAbuseOnRelay = false
     try {
       optimizelyClient = req.app.get('optimizelyClient')
       detectAbuseOnRelay = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY)
+      blockAbuseOnRelay = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY)
     } catch (error) {
       req.logger.error(`failed to retrieve optimizely feature flag for detectAbuseOnRelay: ${error}`)
+    }
+
+    if (blockAbuseOnRelay && user?.isAbusiveErrorCode) {
+      return errorResponseForbidden(
+        `Forbidden ${user.isAbusiveErrorCode}`
+      )
     }
 
     if (body && body.contractRegistryKey && body.contractAddress && body.senderAddress && body.encodedABI) {
@@ -63,7 +79,7 @@ module.exports = function (app) {
 
       if (detectAbuseOnRelay) {
         const reqIP = req.get('X-Forwarded-For') || req.ip
-        detectAbuse('relay', body.senderAddress, reqIP) // fired & forgotten
+        detectAbuse(user, 'relay', body.senderAddress, reqIP) // fired & forgotten
       }
 
       return successResponse({ receipt: receipt })

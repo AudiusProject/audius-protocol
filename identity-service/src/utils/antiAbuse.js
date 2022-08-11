@@ -5,6 +5,8 @@ const { logger } = require('../logging')
 
 const aaoEndpoint = config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
 
+const blockedUser
+
 const getAbuseAttestation = async (challengeId, handle, reqIP) => {
   const res = await axios.post(`${aaoEndpoint}/attestation/${handle}`, {
     challengeId,
@@ -21,13 +23,9 @@ const getAbuseAttestation = async (challengeId, handle, reqIP) => {
   return data
 }
 
-const detectAbuse = async (challengeId, walletAddress, reqIP) => {
+const detectAbuse = async (user, challengeId, walletAddress, reqIP) => {
   let isAbusive = false
-
-  const user = await models.User.findOne({
-    where: { walletAddress },
-    attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isAbusive']
-  })
+  let isAbusiveErrorCode = null
 
   if (!user) {
     logger.info(`antiAbuse: no user for wallet ${walletAddress}`)
@@ -40,17 +38,20 @@ const detectAbuse = async (challengeId, walletAddress, reqIP) => {
     isAbusive = true
   } else {
     try {
-      const { result } = await getAbuseAttestation(challengeId, user.handle, reqIP)
+      const { result, errorCode } = await getAbuseAttestation(challengeId, user.handle, reqIP)
       if (!result) {
         // The anti abuse system deems them abusive. Flag them as such.
         isAbusive = true
+      }
+      if (errorCode) {
+        isAbusiveErrorCode = errorCode
       }
     } catch (e) {
       logger.warn(`antiAbuse: aao request failed ${e.message}`)
     }
   }
-  if (user.isAbusive !== isAbusive) {
-    await user.update({ isAbusive })
+  if (user.isAbusive !== isAbusive || user.isAbusiveErrorCode !== isAbusiveErrorCode) {
+    await user.update({ isAbusive, isAbusiveErrorCode })
   }
 }
 
