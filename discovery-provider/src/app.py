@@ -12,9 +12,10 @@ from celery.schedules import crontab, timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
-from src import api_helpers, exceptions
+from src import api_helpers, exceptions, tracer
 from src.api.v1 import api as api_v1
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
@@ -198,7 +199,9 @@ def create(test_config=None, mode="app"):
     assert isinstance(mode, str), f"Expected string, provided {arg_type}"
     assert mode in ("app", "celery"), f"Expected app/celery, provided {mode}"
 
+    tracer.configure_tracer()
     app = Flask(__name__)
+    FlaskInstrumentor().instrument_app(app)
 
     # Tell Flask that it should respect the X-Forwarded-For and X-Forwarded-Proto
     # headers coming from a proxy (if any).
@@ -325,6 +328,8 @@ def configure_flask(test_config, app, mode="app"):
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
+
+    FlaskInstrumentor().instrument_app(app)
 
     return app
 
