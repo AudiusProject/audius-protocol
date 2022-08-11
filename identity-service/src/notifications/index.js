@@ -469,7 +469,9 @@ async function filterOutAbusiveUsers (notifications) {
   users.forEach(user => {
     usersAbuseMap[user.blockchainUserId] = user.isAbusive
   })
+  console.log(`filterOutAbusiveUsers: usersAbuseMap: ${JSON.stringify(usersAbuseMap, null, 2)}`)
   const result = notifications.filter(notification => !usersAbuseMap[notification.initiator])
+  console.log(`filterOutAbusiveUsers: result: ${JSON.stringify(result, null, 2)}`)
   logger.info(`notifications | index.js | Filtered out ${notifications.length - result.length} bad initiators out of ${notifications.length} total.`)
   return result
 }
