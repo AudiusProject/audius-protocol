@@ -450,31 +450,20 @@ class NotificationProcessor {
  * @returns {Promise<Object[]>} notifications - after having filtered out notifications from bad initiators
  */
 async function filterOutAbusiveUsers (notifications) {
-  const notificationsWithAbuse = await Promise.all(
-    notifications.map(async notification => ({
-      notification,
-      isInitiatorAbusive: await isUserAbusive(notification.initiatior)
-    }))
-  )
-  const result = notificationsWithAbuse
-    .filter(({ isInitiatorAbusive }) => !isInitiatorAbusive)
-    .map(({ notification }) => notification)
-
+  const initiatorIds = notifications.map(({ initiator }) => initiator)
+  const users = await models.User.findAll({
+    where: {
+      blockchainUserId: { [ models.Sequelize.Op.in ]: initiatorIds }
+    },
+    attributes: ['blockchainUserId', 'isAbusive']
+  })
+  const usersAbuseMap = {}
+  users.forEach(user => {
+    usersAbuseMap[user.blockchainUserId] = user.isAbusive
+  })
+  const result = notifications.filter(notification => !usersAbuseMap[notification.initiator])
   logger.info(`notifications | index.js | Filtered out ${notifications.length - result.length} bad initiators out of ${notifications.length} total.`)
   return result
-}
-
-/**
- * Get whether user is abusive.
- * @param {number} userId
- * @returns {Promise<boolean>} isAbusive
- */
-async function isUserAbusive (userId) {
-  const user = await models.User.findOne({
-    where: { blockchainUserId: userId },
-    attributes: ['isAbusive']
-  })
-  return user.isAbusive
 }
 
 module.exports = NotificationProcessor
