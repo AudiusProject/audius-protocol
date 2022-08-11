@@ -39,7 +39,7 @@ const METRICS = Object.freeze({
     help: 'Count when alchemy calls fail.',
   }),
 })
-METRICS[metricNames.PROPOSALS].set({outcome: 'InProgress'}, 0)
+METRICS[metricNames.PROPOSALS].set({ outcome: 'InProgress' }, 0)
 METRICS[metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS].set(0)
 METRICS[metricNames.API_FAILURE].set(0)
 const enableDefaultMetrics = () => {
@@ -49,7 +49,7 @@ const enableDefaultMetrics = () => {
 enableDefaultMetrics()
 
 // Constants
-const PROPOSERS = new Set([
+const KNOWN_PROPOSERS = new Set([
   '0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d',
   '0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0',
   '0xD79819bAf3326FAbB7ba95b098e6515a0f6408B8',
@@ -58,9 +58,6 @@ const PROPOSERS = new Set([
   '0xA62c3ced6906B188A4d4A3c981B79f2AABf2107F',
   '0xbdbB5945f252bc3466A319CDcC3EE8056bf2e569',
 ])
-
-let PREVIOUSLY_SEEN_PROPOSAL_ID = 0
-const PROPOSAL_OUTCOME_TALLY = {}
 const OUTCOME = Object.freeze({
   0: 'InProgress',
   1: 'Rejected',
@@ -72,6 +69,8 @@ const OUTCOME = Object.freeze({
   6: 'TargetContractAddressChanged',
   7: 'TargetContractCodeHashChanged',
 })
+let PREVIOUSLY_SEEN_PROPOSAL_ID = 0
+const PROPOSAL_OUTCOME_TALLY = {}
 
 const tallyProposalOutcomes = (outcome) => {
   if (!PROPOSAL_OUTCOME_TALLY[outcome]) {
@@ -85,13 +84,15 @@ const scanGovernanceProposals = async () => {
   const proposals = await audiusLibs.ethContracts.GovernanceClient.getProposals()
   const lastProposal = proposals[proposals.length - 1]
 
-  // If a new proposal is detected (or the exporter is starting) calculate and save new metrics
+  // If a new proposal is detected (or the exporter is starting) calculate
+  // and export new metrics
   if (PREVIOUSLY_SEEN_PROPOSAL_ID !== parseInt(lastProposal.proposalId)) {
-    // scan all proposals and...
     let unknownProposerCount = 0
+
+    // scan all proposals and...
     for (const proposal of proposals) {
-      // count all unknown proposers
-      if (!PROPOSERS.has(proposal.proposer)) {
+      // tally unknown proposers
+      if (!KNOWN_PROPOSERS.has(proposal.proposer)) {
         ++unknownProposerCount
       }
 
