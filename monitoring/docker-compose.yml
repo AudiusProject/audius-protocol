@@ -41,9 +41,9 @@ services:
   # Exporters
 
   exporter_alchemy:
-    build: monitors/alchemy
+    build: exporters/alchemy
     volumes:
-      - ./monitors/alchemy/main.js:/app/main.js
+      - ./exporters/alchemy/main.js:/app/main.js
     ports:
       - "2000:3000"
     environment:
@@ -51,9 +51,9 @@ services:
     logging: *default-logging
 
   exporter_sdk:
-    build: monitors/sdk
+    build: exporters/sdk
     volumes:
-      - ./monitors/sdk/main.js:/app/main.js
+      - ./exporters/sdk/main.js:/app/main.js
     ports:
       - "2001:3000"
     logging: *default-logging
