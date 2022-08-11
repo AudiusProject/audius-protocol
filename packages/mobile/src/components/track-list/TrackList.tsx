@@ -86,7 +86,7 @@ export const TrackList = ({
   )
 
   const renderDraggableTrack: DraggableFlatListProps<TrackMetadata>['renderItem'] =
-    ({ item: track, index = -1, drag, isActive: isDragActive }) => {
+    ({ item: track, index = -1, drag }) => {
       const isActive = track.uid !== undefined && track.uid === playingUid
 
       // The dividers above and belove the active track should be hidden
@@ -108,7 +108,6 @@ export const TrackList = ({
             drag={drag}
             hideArt={hideArt}
             isActive={isActive}
-            isDragging={isDragActive}
             isPlaying={isPlaying}
             isReorderable={isReorderable}
             track={track}

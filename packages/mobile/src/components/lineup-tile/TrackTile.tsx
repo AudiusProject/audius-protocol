@@ -93,6 +93,10 @@ const TrackTileComponent = ({
     track_id
   } = track
 
+  const currentScreen = navigation.getState().history?.[0]
+  // @ts-expect-error -- history returning unknown[]
+  const isOnArtistsTracksTab = currentScreen?.key.includes('Tracks')
+
   const { user_id } = user
 
   const isOwner = user_id === currentUserId
@@ -141,7 +145,7 @@ const TrackTileComponent = ({
       OverflowAction.SHARE,
       OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
-      OverflowAction.VIEW_ARTIST_PAGE
+      isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
     dispatchWeb(

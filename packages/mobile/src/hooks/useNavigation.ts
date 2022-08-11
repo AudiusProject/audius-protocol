@@ -57,6 +57,7 @@ export const useNavigation = <
 
   return useMemo(
     () => ({
+      ...nativeNavigation,
       navigate: performNavigation(nativeNavigation.navigate),
       push:
         'push' in nativeNavigation
