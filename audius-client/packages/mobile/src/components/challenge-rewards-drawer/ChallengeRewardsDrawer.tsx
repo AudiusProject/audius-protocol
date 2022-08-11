@@ -2,6 +2,7 @@ import React from 'react'
 
 import type { UserChallengeState } from '@audius/common'
 import { ClaimStatus } from 'audius-client/src/common/store/pages/audio-rewards/slice'
+import { getAAOErrorEmojis } from 'audius-client/src/common/utils/aaoErrorCodes'
 import { fillString } from 'audius-client/src/common/utils/fillString'
 import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 import type { ImageSourcePropType } from 'react-native'
@@ -30,6 +31,8 @@ const messages = {
   claim: 'Claim Your Reward',
   claimErrorMessage:
     'Something has gone wrong, not all your rewards were claimed. Please try again.',
+  claimErrorMessageAAO:
+    'Your account is unable to claim rewards at this time. Please try again later or contact @support@audius.co. ',
   claimableLabel: '$AUDIO available to claim',
   claimedLabel: '$AUDIO claimed so far'
 }
@@ -165,6 +168,8 @@ type ChallengeRewardsDrawerProps = {
   claimedAmount: number
   /** The status of the rewards being claimed */
   claimStatus: ClaimStatus
+  /** Error code from AAO in the case of AAO rejection */
+  aaoErrorCode?: number
   /** Callback that runs on the claim rewards button being clicked */
   onClaim?: () => void
   /** Whether the challenge is for verified users only */
@@ -186,6 +191,7 @@ export const ChallengeRewardsDrawer = ({
   claimableAmount,
   claimedAmount,
   claimStatus,
+  aaoErrorCode,
   onClaim,
   isVerifiedChallenge,
   showProgressBar,
@@ -217,6 +223,21 @@ export const ChallengeRewardsDrawer = ({
     messages.claimableLabel
   }`
 
+  const getErrorMessage = () => {
+    if (aaoErrorCode === undefined) {
+      return (
+        <Text style={styles.claimRewardsError} weight='bold'>
+          {messages.claimErrorMessage}
+        </Text>
+      )
+    }
+    return (
+      <Text style={styles.claimRewardsError} weight='bold'>
+        {messages.claimErrorMessageAAO}
+        {getAAOErrorEmojis(aaoErrorCode)}
+      </Text>
+    )
+  }
   return (
     <AppDrawer
       modalName='ChallengeRewardsExplainer'
@@ -321,11 +342,7 @@ export const ChallengeRewardsDrawer = ({
               {claimedAmountText}
             </Text>
           ) : null}
-          {claimError ? (
-            <Text style={styles.claimRewardsError} weight='bold'>
-              {messages.claimErrorMessage}
-            </Text>
-          ) : null}
+          {claimError ? getErrorMessage() : null}
         </View>
       </View>
     </AppDrawer>

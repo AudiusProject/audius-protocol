@@ -231,13 +231,14 @@ function* claimChallengeRewardAsync(
     console.error('Error claiming rewards: Config is missing')
     return
   }
+  let aaoErrorCode
   try {
     const challenges = specifiers.map((specifier) => ({
       challenge_id: challengeId,
       specifier
     }))
 
-    const response: { error?: string } = yield* call(
+    const response: { error?: string; aaoErrorCode?: number } = yield* call(
       audiusBackendInstance.submitAndEvaluateAttestations,
       {
         challenges,
@@ -283,6 +284,7 @@ function* claimChallengeRewardAsync(
             yield put(claimChallengeRewardAlreadyClaimed())
             break
           case FailureReason.BLOCKED:
+            aaoErrorCode = response.aaoErrorCode
             throw new Error('User is blocked from claiming')
           // For these 'attestation aggregation errors',
           // we've already retried in libs so unlikely to succeed here.
@@ -296,7 +298,12 @@ function* claimChallengeRewardAsync(
             // If this was an aggregate challenges with multiple specifiers,
             // then libs handles the retries and we shouldn't retry here.
             if (specifiers.length > 1) {
-              yield put(claimChallengeRewardFailed())
+              aaoErrorCode = response.aaoErrorCode
+              if (aaoErrorCode !== undefined) {
+                yield put(claimChallengeRewardFailed({ aaoErrorCode }))
+              } else {
+                yield put(claimChallengeRewardFailed())
+              }
               break
             }
             yield delay(getBackoff(retryCount))
@@ -309,7 +316,12 @@ function* claimChallengeRewardAsync(
             )
         }
       } else {
-        yield put(claimChallengeRewardFailed())
+        aaoErrorCode = response.aaoErrorCode
+        if (aaoErrorCode !== undefined) {
+          yield put(claimChallengeRewardFailed({ aaoErrorCode }))
+        } else {
+          yield put(claimChallengeRewardFailed())
+        }
       }
     } else {
       yield put(
@@ -322,7 +334,11 @@ function* claimChallengeRewardAsync(
     }
   } catch (e) {
     console.error('Error claiming rewards:', e)
-    yield put(claimChallengeRewardFailed())
+    if (aaoErrorCode !== undefined) {
+      yield put(claimChallengeRewardFailed({ aaoErrorCode }))
+    } else {
+      yield put(claimChallengeRewardFailed())
+    }
   }
 }
 

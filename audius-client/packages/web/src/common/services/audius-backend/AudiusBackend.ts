@@ -2950,7 +2950,9 @@ export const audiusBackend = ({
         const error = hcaptchaOrCognito
           ? hcaptchaOrCognito.error
           : res.errors[0].error
-        return { error }
+        const aaoErrorCode = res.errors[0].aaoErrorCode
+
+        return { error, aaoErrorCode }
       }
       return res
     } catch (e) {

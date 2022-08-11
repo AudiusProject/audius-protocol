@@ -3,6 +3,8 @@ import { createSelector } from 'reselect'
 
 import { CommonState } from 'common/store'
 
+import { ClaimStatus } from './slice'
+
 export const getTrendingRewardsModalType = (state: CommonState) =>
   state.pages.audioRewards.trendingRewardsModalType
 
@@ -49,7 +51,7 @@ export const getUserChallengesLoading = (state: CommonState) =>
   state.pages.audioRewards.loading
 
 export const getClaimStatus = (state: CommonState) =>
-  state.pages.audioRewards.claimStatus
+  state.pages.audioRewards.claimState.status
 
 export const getClaimToRetry = (state: CommonState) =>
   state.pages.audioRewards.claimToRetry
@@ -68,3 +70,11 @@ export const getCognitoFlowUrlStatus = (state: CommonState) =>
 
 export const getShowRewardClaimedToast = (state: CommonState) =>
   state.pages.audioRewards.showRewardClaimedToast
+
+export const getAAOErrorCode = (state: CommonState) => {
+  const claimState = state.pages.audioRewards.claimState
+  if (claimState.status !== ClaimStatus.ERROR) {
+    return undefined
+  }
+  return claimState.aaoErrorCode
+}
