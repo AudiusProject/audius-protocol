@@ -241,10 +241,16 @@ export const getPlaylists = (
   }
 }
 
-export const getPlaylistIsOccupied = (playlistId: string) => {
+export const getFullPlaylist = (
+  encodedPlaylistId: string,
+  encodedUserId: string
+) => {
   return {
-    endpoint: 'v1/playlists',
-    urlParams: '/' + playlistId + '/occupied'
+    endpoint: 'v1/full/playlists',
+    urlParams: '/' + encodedPlaylistId,
+    queryParams: {
+      user_id: encodedUserId
+    }
   }
 }
 

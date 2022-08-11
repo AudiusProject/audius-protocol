@@ -91,7 +91,6 @@ def get_playlists(args):
             playlist_ids = list(
                 map(lambda playlist: playlist["playlist_id"], playlists)
             )
-
             return (playlists, playlist_ids)
 
         try:
@@ -99,10 +98,8 @@ def get_playlists(args):
             # redis cache or via get_unpopulated_playlists
             key = make_cache_key(args)
 
-            (playlists, playlist_ids) = use_redis_cache(
-                key, UNPOPULATED_PLAYLIST_CACHE_DURATION_SEC, get_unpopulated_playlists
-            )
-
+            (playlists, playlist_ids) = get_unpopulated_playlists()
+            logger.info(f"asdf unpopulated playlists {playlists}")
             # bundle peripheral info into playlist results
             playlists = populate_playlist_metadata(
                 session,
