@@ -8,9 +8,7 @@ import type {
   RecoverOrphanedDataJobReturnValue
 } from './types'
 
-const {
-  QUEUE_NAMES
-} = require('../../prometheusMonitoring/prometheus.constants')
+const { QUEUE_NAMES } = require('../stateMachineConstants')
 
 /**
  * Processes a job to find users who have data on this node but who do not have this node in their replica set.
