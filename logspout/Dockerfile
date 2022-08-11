@@ -1,4 +1,4 @@
-ARG TAG=v3.2.14-update-1
+ARG TAG=v3.2.14-1
 FROM gliderlabs/logspout:v3.2.14
 
 # ignores previously log on startup
