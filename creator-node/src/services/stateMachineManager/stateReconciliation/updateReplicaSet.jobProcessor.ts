@@ -494,13 +494,6 @@ const _issueUpdateReplicaSetOp = async (
       )
     }
 
-    const oldPrimarySpId =
-      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[primary]
-    const oldSecondary1SpId =
-      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary1]
-    const oldSecondary2SpId =
-      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary2]
-
     // Submit chain tx to update replica set
     const startTimeMs = Date.now()
     try {
@@ -513,6 +506,12 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
       }
+
+      const {
+        [primary]: oldPrimarySpId,
+        [secondary1]: oldSecondary1SpId,
+        [secondary2]: oldSecondary2SpId
+      } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
 
       const canReconfig = await _canReconfig({
         libs: audiusLibs,
