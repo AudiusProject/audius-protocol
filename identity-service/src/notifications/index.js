@@ -333,7 +333,9 @@ class NotificationProcessor {
     // The owner info is then used to target listenCount milestone notifications
     // Timeout of 5 minutes
     const timeout = 5 /* min */ * 60 /* sec */ * 1000 /* ms */
-    const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
+    const notificationsFromDN = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
+    const { info: metadata, owners, milestones } = notificationsFromDN
+    const notifications = await filterOutAbusiveUsers(notificationsFromDN.notifications)
     logger.info(`notifications main indexAll job - query notifications from discovery node complete in ${Date.now() - time}ms`)
     time = Date.now()
 
@@ -401,7 +403,9 @@ class NotificationProcessor {
 
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-    const { info: metadata, notifications } = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
+    const notificationsFromDN = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
+    const metadata = notificationsFromDN.info
+    const notifications = await filterOutAbusiveUsers(notificationsFromDN.notifications)
     logger.info(`${logLabel} - query solana notifications from discovery node complete in ${Date.now() - time}ms`)
     time = Date.now()
 
@@ -438,6 +442,39 @@ class NotificationProcessor {
 
     return metadata.max_slot_number
   }
+}
+
+/**
+ * Filters out notifications whose initiators are deemed abusive.
+ * @param {Object[]} notifications
+ * @returns {Promise<Object[]>} notifications - after having filtered out notifications from bad initiators
+ */
+async function filterOutAbusiveUsers (notifications) {
+  const notificationsWithAbuse = await Promise.all(
+    notifications.map(async notification => ({
+      notification,
+      isInitiatorAbusive: await isUserAbusive(notification.initiatior)
+    }))
+  )
+  const result = notificationsWithAbuse
+    .filter(({ isInitiatorAbusive }) => !isInitiatorAbusive)
+    .map(({ notification }) => notification)
+
+  logger.info(`notifications | index.js | Filtered out ${notifications.length - result.length} bad initiators out of ${notifications.length} total.`)
+  return result
+}
+
+/**
+ * Get whether user is abusive.
+ * @param {number} userId
+ * @returns {Promise<boolean>} isAbusive
+ */
+async function isUserAbusive (userId) {
+  const user = await models.User.findOne({
+    where: { blockchainUserId: userId },
+    attributes: ['isAbusive']
+  })
+  return user.isAbusive
 }
 
 module.exports = NotificationProcessor
