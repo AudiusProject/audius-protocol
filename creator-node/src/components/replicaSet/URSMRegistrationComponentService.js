@@ -104,7 +104,7 @@ const respondToURSMRequestForSignature = async (
       randomBytesToSign
     },
     headers: {
-      'User-Agent': `Axios - audius/content-node - ${config.get(
+      'User-Agent': `Axios - @audius/content-node - ${config.get(
         'creatorNodeEndpoint'
       )} - URSMRegistrationComponentService#respondToURSMRequestForSignature`
     }

@@ -151,7 +151,9 @@ async function timeRequests({
   headers = null
 }: TimeRequestsConfig) {
   let serviceTimings = await Promise.all(
-    requests.map(async (request) => await timeRequest(request, timeout, headers))
+    requests.map(
+      async (request) => await timeRequest(request, timeout, headers)
+    )
   )
 
   if (filterNonResponsive) {
