@@ -1,11 +1,8 @@
 const axios = require('axios')
-const models = require('../models')
 const config = require('../config.js')
 const { logger } = require('../logging')
 
 const aaoEndpoint = config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
-
-const blockedUser
 
 const getAbuseAttestation = async (challengeId, handle, reqIP) => {
   const res = await axios.post(`${aaoEndpoint}/attestation/${handle}`, {
@@ -23,14 +20,9 @@ const getAbuseAttestation = async (challengeId, handle, reqIP) => {
   return data
 }
 
-const detectAbuse = async (user, challengeId, walletAddress, reqIP) => {
+const detectAbuse = async (user, challengeId, reqIP) => {
   let isAbusive = false
   let isAbusiveErrorCode = null
-
-  if (!user) {
-    logger.info(`antiAbuse: no user for wallet ${walletAddress}`)
-    return
-  }
 
   if (!user.handle) {
     // Something went wrong during sign up and identity has no knowledge
@@ -42,9 +34,9 @@ const detectAbuse = async (user, challengeId, walletAddress, reqIP) => {
       if (!result) {
         // The anti abuse system deems them abusive. Flag them as such.
         isAbusive = true
-      }
-      if (errorCode) {
-        isAbusiveErrorCode = `${errorCode}`
+        if (errorCode) {
+          isAbusiveErrorCode = `${errorCode}`
+        }
       }
     } catch (e) {
       logger.warn(`antiAbuse: aao request failed ${e.message}`)
