@@ -134,14 +134,15 @@ export function* fetchNotifications(
     const timeOffset = lastNotification
       ? lastNotification.timestamp
       : moment().toISOString()
-    const withTips = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED) ?? false
+    const withDethroned =
+      getFeatureEnabled(FeatureFlags.SUPPORTER_DETHRONED_ENABLED) ?? false
 
     const notificationsResponse: NotificationsResponse = yield* call(
       audiusBackendInstance.getNotifications,
       {
         limit,
         timeOffset,
-        withTips
+        withDethroned
       }
     )
     if ('error' in notificationsResponse) {
@@ -275,6 +276,10 @@ export function* parseAndProcessNotifications(
       trackIdsToFetch.push(notification.trackId)
       userIdsToFetch.push(notification.playlistOwnerId)
       collectionIdsToFetch.push(notification.playlistId)
+    }
+    if (notification.type === NotificationType.SupporterDethroned) {
+      userIdsToFetch.push(notification.supportedUserId)
+      userIdsToFetch.push(notification.entityId)
     }
   })
 
@@ -513,13 +518,14 @@ export function* getNotifications(isFirstFetch: boolean) {
       )
       if (!hasAccount) return
       const timeOffset = moment().toISOString()
-      const withTips = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED) ?? false
+      const withDethroned =
+        getFeatureEnabled(FeatureFlags.SUPPORTER_DETHRONED_ENABLED) ?? false
 
       const notificationsResponse: NotificationsResponse | undefined =
         yield* call(audiusBackendInstance.getNotifications, {
           limit,
           timeOffset,
-          withTips
+          withDethroned
         })
       if (
         !notificationsResponse ||

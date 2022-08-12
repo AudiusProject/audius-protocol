@@ -139,6 +139,7 @@ export enum Name {
   NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE = 'Notifications: Clicked Tip Reaction Twitter Share',
   NOTIFICATIONS_CLICK_TIP_RECEIVED_TWITTER_SHARE = 'Notifications: Clicked Tip Received Twitter Share',
   NOTIFICATIONS_CLICK_TIP_SENT_TWITTER_SHARE = 'Notifications: Clicked Tip Sent Twitter Share',
+  NOTIFICATIONS_CLICK_DETHRONED_TWITTER_SHARE = 'Notifications: Clicked Dethroned Twitter Share',
   NOTIFICATIONS_CLICK_SUPPORTER_RANK_UP_TWITTER_SHARE = 'Notifications: Clicked Supporter Rank Up Twitter Share',
   NOTIFICATIONS_CLICK_SUPPORTING_RANK_UP_TWITTER_SHARE = 'Notifications: Clicked Supporting Rank Up Twitter Share',
   NOTIFICATIONS_CLICK_ADD_TRACK_TO_PLAYLIST_TWITTER_SHARE = 'Notifications: Clicked Add Track to Playlist Twitter Share',
@@ -747,6 +748,10 @@ type NotificationsClickTipSent = {
   eventName: Name.NOTIFICATIONS_CLICK_TIP_SENT_TWITTER_SHARE
   text: string
 }
+type NotificationsClickDethroned = {
+  eventName: Name.NOTIFICATIONS_CLICK_DETHRONED_TWITTER_SHARE
+  text: string
+}
 type NotificationsClickSupporterRankUp = {
   eventName: Name.NOTIFICATIONS_CLICK_SUPPORTER_RANK_UP_TWITTER_SHARE
   text: string
@@ -1324,6 +1329,7 @@ export type AllTrackingEvents =
   | NotificationsClickTipReaction
   | NotificationsClickTipReceived
   | NotificationsClickTipSent
+  | NotificationsClickDethroned
   | NotificationsClickSupporterRankUp
   | NotificationsClickSupportingRankUp
   | NotificationsClickAddTrackToPlaylist
