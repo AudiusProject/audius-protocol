@@ -1,6 +1,7 @@
 import { Name } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import {
@@ -22,7 +23,6 @@ import { Status } from 'common/store/ui/share-sound-to-tiktok-modal/types'
 import { getErrorMessage } from 'common/utils/error'
 import { encodeHashId } from 'common/utils/hashIds'
 import { show as showConfetti } from 'components/music-confetti/store/slice'
-import { apiClient } from 'services/audius-api-client'
 import { make } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 
@@ -52,6 +52,7 @@ function* handleRequestOpen(action: ReturnType<typeof requestOpen>) {
 }
 
 async function* handleShare() {
+  const apiClient = yield* getContext('apiClient')
   yield* put(make(Name.TIKTOK_START_SHARE_SOUND, {}))
 
   yield* put(setStatus({ status: Status.SHARE_STARTED }))

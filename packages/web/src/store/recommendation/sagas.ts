@@ -3,7 +3,6 @@ import { call } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { apiClient } from 'services/audius-api-client'
 import Explore from 'services/audius-backend/Explore'
 
 export function* getRecommendedTracks(
@@ -11,6 +10,7 @@ export function* getRecommendedTracks(
   exclusionList: number[],
   currentUserId: Nullable<ID>
 ) {
+  const apiClient = yield* getContext('apiClient')
   const tracks = yield* call([apiClient, apiClient.getRecommended], {
     genre,
     exclusionList,

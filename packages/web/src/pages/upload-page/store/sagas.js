@@ -36,7 +36,6 @@ import { fetchServicesFailed } from 'components/service-selection/store/slice'
 import UploadType from 'pages/upload-page/components/uploadType'
 import { getStems } from 'pages/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
-import { apiClient } from 'services/audius-api-client'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -820,6 +819,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
 
 function* uploadSingleTrack(track) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const apiClient = yield* getContext('apiClient')
   // Need an object to hold phase error info that
   // can get captured by confirmer closure
   // while remaining mutable.

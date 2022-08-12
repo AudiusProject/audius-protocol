@@ -3,7 +3,7 @@ import { select, call, put } from 'typed-redux-saga/macro'
 
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
-import { apiClient } from 'services/audius-api-client'
+import { getContext } from 'common/store/effects'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { getTrack } from '../selectors'
@@ -20,6 +20,7 @@ const INITIAL_FETCH_LIMIT = 6
  * @param trackId the parent track for which to fetch remixes
  */
 export function* fetchAndProcessRemixes(trackId: ID) {
+  const apiClient = yield* getContext('apiClient')
   const currentUserId = yield* select(getUserId)
   const {
     tracks: remixes,
@@ -71,6 +72,7 @@ export function* fetchAndProcessRemixes(trackId: ID) {
  * @param trackId the track for which to fetch remix parents
  */
 export function* fetchAndProcessRemixParents(trackId: ID) {
+  const apiClient = yield* getContext('apiClient')
   const currentUserId = yield* select(getUserId)
   const remixParents = (yield* call([apiClient, 'getRemixing'], {
     trackId,

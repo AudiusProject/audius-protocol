@@ -1,6 +1,6 @@
 import { call, delay, put, race, select, takeEvery } from 'redux-saga/effects'
 
-import { apiClient } from 'services/audius-api-client'
+import { getContext } from 'common/store'
 import * as confirmerActions from 'store/confirmer/actions'
 import {
   getResult,
@@ -25,6 +25,7 @@ const POLLING_FREQUENCY_MILLIS = 2000
 /* Exported  */
 
 export function* confirmTransaction(blockHash: string, blockNumber: number) {
+  const apiClient = yield* getContext('apiClient')
   /**
    * Assume confirmation when there is nothing to confirm
    */

@@ -14,7 +14,6 @@ import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import * as trackActions from 'common/store/cache/tracks/actions'
 import { getTracks as getTracksSelector } from 'common/store/cache/tracks/selectors'
-import { apiClient } from 'services/audius-api-client'
 
 import { setTracksIsBlocked } from './blocklist'
 import {
@@ -62,6 +61,7 @@ export function* retrieveTrackByHandleAndSlug({
         return track
       },
       retrieveFromSource: function* (permalinks: string[]) {
+        const apiClient = yield* getContext('apiClient')
         const userId = yield* select(getUserId)
         const track = yield* call((args) => {
           const split = args[0].split('/')
@@ -217,6 +217,7 @@ export function* retrieveTracks({
       return selected
     },
     retrieveFromSource: function* (ids: ID[] | UnlistedTrackRequest[]) {
+      const apiClient = yield* getContext('apiClient')
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       let fetched: UserTrackMetadata | UserTrackMetadata[] | null | undefined
       if (canBeUnlisted) {

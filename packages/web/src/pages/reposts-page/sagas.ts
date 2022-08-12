@@ -17,7 +17,6 @@ import {
 import { RepostType, USER_LIST_TAG } from 'common/store/user-list/reposts/types'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
-import { apiClient } from 'services/audius-api-client'
 
 const getPlaylistReposts = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
@@ -27,7 +26,8 @@ const getPlaylistReposts = createUserListProvider<Collection>({
     limit,
     offset,
     entityId,
-    currentUserId
+    currentUserId,
+    apiClient
   }) => {
     const users = await apiClient.getPlaylistRepostUsers({
       limit,
@@ -51,12 +51,8 @@ const getTrackReposts = createUserListProvider<Track>({
     limit,
     offset,
     entityId,
-    currentUserId
-  }: {
-    limit: number
-    offset: number
-    entityId: ID
-    currentUserId: ID | null
+    currentUserId,
+    apiClient
   }) => {
     const users = await apiClient.getTrackRepostUsers({
       limit,

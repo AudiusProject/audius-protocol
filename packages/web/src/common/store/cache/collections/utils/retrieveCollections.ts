@@ -7,7 +7,7 @@ import {
   Track,
   makeUid
 } from '@audius/common'
-import { call, select } from 'redux-saga/effects'
+import { call, select } from 'typed-redux-saga'
 
 import { CommonState, getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
@@ -15,7 +15,6 @@ import { getCollections } from 'common/store/cache/collections/selectors'
 import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { apiClient } from 'services/audius-api-client'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
@@ -83,11 +82,11 @@ export function* retrieveTracksForCollections(
 
 /**
  * Retrieves a single collection via API client
- * @param playlistId
  */
 export function* retrieveCollection(playlistId: ID) {
-  const userId: ReturnType<typeof getUserId> = yield select(getUserId)
-  const playlists: UserCollectionMetadata[] = yield apiClient.getPlaylist({
+  const apiClient = yield* getContext('apiClient')
+  const userId = yield* select(getUserId)
+  const playlists = yield* call(apiClient.getPlaylist, {
     playlistId,
     currentUserId: userId
   })
