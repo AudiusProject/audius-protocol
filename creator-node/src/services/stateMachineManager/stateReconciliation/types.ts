@@ -85,3 +85,9 @@ export type UpdateReplicaSetJobReturnValue = {
   newReplicaSet: NewReplicaSet
   healthyNodes: string[]
 }
+
+// Recover orphaned data job
+export type RecoverOrphanedDataJobParams = {}
+export type RecoverOrphanedDataJobReturnValue = {
+  usersWithOrphanedData: any[] // TODO: Choose user type
+}
