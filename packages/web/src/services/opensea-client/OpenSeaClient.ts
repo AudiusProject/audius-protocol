@@ -1,13 +1,6 @@
 import { Collectible } from '@audius/common'
 import * as allPromisesSettled from 'promise.allsettled'
 
-import {
-  isAssetValid,
-  assetToCollectible,
-  creationEventToCollectible,
-  transferEventToCollectible,
-  isNotFromNullAddress
-} from 'components/collectibles/ethCollectibleHelpers'
 import { CollectibleState } from 'components/collectibles/types'
 import {
   OpenSeaAsset,
@@ -15,6 +8,14 @@ import {
   OpenSeaEvent,
   OpenSeaEventExtended
 } from 'services/opensea-client/types'
+
+import {
+  isAssetValid,
+  assetToCollectible,
+  creationEventToCollectible,
+  transferEventToCollectible,
+  isNotFromNullAddress
+} from './ethCollectibleHelpers'
 
 const OPENSEA_API_URL = process.env.REACT_APP_OPENSEA_API_URL
 const OPENSEA_NUM_ASSETS_LIMIT = 1000

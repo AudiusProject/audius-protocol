@@ -44,7 +44,6 @@ import { recordIP } from 'services/audius-backend/RecordIP'
 import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
 import { fingerprintClient } from 'services/fingerprint'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { setSentryUser } from 'services/sentry'
 import { identify } from 'store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'store/playlist-library/sagas'
@@ -172,6 +171,7 @@ function* onFetchAccount(account) {
 
 export function* fetchAccountAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const remoteConfigInstance = yield getContext('remoteConfigInstance')
   let fromSource = false
   if (action) {
     fromSource = action.fromSource

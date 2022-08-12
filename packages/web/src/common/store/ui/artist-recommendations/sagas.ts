@@ -6,12 +6,12 @@ import { call, put, select, takeEvery } from 'redux-saga/effects'
 import { getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import * as artistRecommendationsActions from './slice'
 
 export function* fetchRelatedArtists(action: Action) {
   const apiClient = yield* getContext('apiClient')
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   if (artistRecommendationsActions.fetchRelatedArtists.match(action)) {
     const userId = action.payload.userId
     const currentUserId: ID = yield select(getUserId)

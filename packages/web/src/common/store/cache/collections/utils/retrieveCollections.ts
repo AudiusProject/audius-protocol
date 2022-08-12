@@ -86,7 +86,7 @@ export function* retrieveTracksForCollections(
 export function* retrieveCollection(playlistId: ID) {
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
-  const playlists = yield* call(apiClient.getPlaylist, {
+  const playlists = yield* call([apiClient, 'getPlaylist'], {
     playlistId,
     currentUserId: userId
   })

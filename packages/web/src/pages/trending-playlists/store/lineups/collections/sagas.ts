@@ -9,11 +9,11 @@ import {
   trendingPlaylistLineupActions
 } from 'common/store/pages/trending-playlists/lineups/actions'
 import { getLineup } from 'common/store/pages/trending-playlists/lineups/selectors'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { LineupSagas } from 'store/lineup/sagas'
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   const apiClient = yield* getContext('apiClient')
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield call(remoteConfigInstance.waitForRemoteConfig)
   const TF = new Set(
     remoteConfigInstance.getRemoteVar(StringKeys.TPF)?.split(',') ?? []

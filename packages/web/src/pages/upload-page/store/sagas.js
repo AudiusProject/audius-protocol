@@ -27,12 +27,12 @@ import { reformat } from 'common/store/cache/collections/utils'
 import * as tracksActions from 'common/store/cache/tracks/actions'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
-import { formatUrlName } from 'common/utils/formatUtil'
 import {
   getSelectedServices,
   getStatus
-} from 'components/service-selection/store/selectors'
-import { fetchServicesFailed } from 'components/service-selection/store/slice'
+} from 'common/store/service-selection/selectors'
+import { fetchServicesFailed } from 'common/store/service-selection/slice'
+import { formatUrlName } from 'common/utils/formatUtil'
 import UploadType from 'pages/upload-page/components/uploadType'
 import { getStems } from 'pages/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'

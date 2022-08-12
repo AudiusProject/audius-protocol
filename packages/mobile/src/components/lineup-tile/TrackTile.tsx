@@ -160,7 +160,8 @@ const TrackTileComponent = ({
     dispatchWeb,
     has_current_user_reposted,
     has_current_user_saved,
-    isOwner
+    isOwner,
+    isOnArtistsTracksTab
   ])
 
   const handlePressShare = useCallback(() => {

@@ -9,15 +9,19 @@ import { connect } from 'react-redux'
 
 import SearchBar from 'components/search-bar/SearchBar'
 
-import styles from './ServiceSelectionModal.module.css'
-import Service from './components/Service'
 import {
   getShowModal,
   getServices,
   getPrimary,
   getSecondaries
-} from './store/selectors'
-import { setSelected, closeModal } from './store/slice'
+} from '../../common/store/service-selection/selectors'
+import {
+  setSelected,
+  closeModal
+} from '../../common/store/service-selection/slice'
+
+import styles from './ServiceSelectionModal.module.css'
+import Service from './components/Service'
 import { getCountry } from './utils'
 
 const PRIMARY_SERVICE_ID = 'primary-service'
