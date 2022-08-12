@@ -1,21 +1,23 @@
 const _ = require('lodash')
 const axios = require('axios')
 
-const { logger } = require('../../logging')
+const { logger: genericLogger } = require('../../logging')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
+const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 
-const handleSyncFromPrimary = async (
+const handleSyncFromPrimary = async ({
   serviceRegistry,
-  walletPublicKeys,
+  wallet,
   creatorNodeEndpoint,
-  blockNumber = null,
-  forceResync = false
-) => {
+  forceResyncConfig,
+  logContext,
+  blockNumber = null
+}) => {
   const { nodeConfig, redis, libs } = serviceRegistry
   const FileSaveMaxConcurrency = nodeConfig.get(
     'nodeSyncFileSaveMaxConcurrency'
@@ -25,45 +27,43 @@ const handleSyncFromPrimary = async (
   )
 
   const start = Date.now()
+  let returnValue = {}
 
-  logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
+  genericLogger.info('begin nodesync for ', wallet, 'time', start)
 
-  /**
-   * Ensure access to each wallet, then acquire redis lock for duration of sync
-   * @notice - there's a bug where logPrefix is set to the last element of `walletPublicKeys` - this code only works when `walletPublicKeys.length === 1` 🤦‍♂️
-   */
-  let logPrefix
-  for (const wallet of walletPublicKeys) {
-    logPrefix = `[secondarySyncFromPrimary][wallet=${wallet}]`
-    try {
-      await redis.WalletWriteLock.acquire(
-        wallet,
-        redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
-      )
-    } catch (e) {
-      return {
-        error: new Error(
-          `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
-        ),
-        result: 'failure_sync_in_progress'
-      }
+  const logPrefix = `[secondarySyncFromPrimary][wallet=${wallet}]`
+  try {
+    await redis.WalletWriteLock.acquire(
+      wallet,
+      redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
+    )
+  } catch (e) {
+    return {
+      error: new Error(
+        `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
+      ),
+      result: 'failure_sync_in_progress'
     }
   }
 
   /**
    * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
    */
-  try {
-    const wallet = walletPublicKeys[0]
+  const forceResync = await shouldForceResync(
+    { libs, logContext },
+    forceResyncConfig
+  )
 
+  try {
     let localMaxClockVal
     if (forceResync) {
+      genericLogger.warn(`${logPrefix} Forcing resync..`)
       await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
       localMaxClockVal = -1
     } else {
       // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
       const cnodeUser = await models.CNodeUser.findOne({
-        where: { walletPublicKey: walletPublicKeys[0] }
+        where: { walletPublicKey: wallet }
       })
       localMaxClockVal = cnodeUser ? cnodeUser.clock : -1
     }
@@ -77,7 +77,7 @@ const handleSyncFromPrimary = async (
 
     // Build export query params
     const exportQueryParams = {
-      wallet_public_key: walletPublicKeys,
+      wallet_public_key: wallet,
       clock_range_min: localMaxClockVal + 1
     }
 
@@ -97,15 +97,16 @@ const handleSyncFromPrimary = async (
     })
 
     if (resp.status !== 200) {
-      logger.error(
+      genericLogger.error(
         logPrefix,
-        `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`,
-        walletPublicKeys
+        `Failed to retrieve export from ${creatorNodeEndpoint} for wallet`,
+        wallet
       )
-      return {
+      returnValue = {
         error: new Error(resp.data.error),
         result: 'failure_export_wallet'
       }
+      throw returnValue.error
     }
 
     // TODO - explain patch
@@ -113,24 +114,26 @@ const handleSyncFromPrimary = async (
       if (resp.request && resp.request.responseText) {
         resp.data = JSON.parse(resp.request.responseText)
       } else {
-        return {
+        returnValue = {
           error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
           result: 'failure_malformed_export'
         }
+        throw returnValue.error
       }
     }
 
     const { data: body } = resp
     if (!body.data.hasOwnProperty('cnodeUsers')) {
-      return {
+      returnValue = {
         error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
         result: 'failure_malformed_export'
       }
+      throw returnValue.error
     }
 
-    logger.info(
+    genericLogger.info(
       logPrefix,
-      `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${
+      `Successful export from ${creatorNodeEndpoint} for wallet ${wallet} and requested min clock ${
         localMaxClockVal + 1
       }`
     )
@@ -143,12 +146,13 @@ const handleSyncFromPrimary = async (
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
-        return {
+        returnValue = {
           error: new Error(
             `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
           ),
           result: 'failure_malformed_export'
         }
+        throw returnValue.error
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
 
@@ -162,7 +166,7 @@ const handleSyncFromPrimary = async (
         const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
         userReplicaSet = await getCreatorNodeEndpoints({
           libs,
-          logger: logger,
+          logger: genericLogger,
           wallet: fetchedWalletPublicKey,
           blockNumber,
           ensurePrimary: false,
@@ -175,19 +179,20 @@ const handleSyncFromPrimary = async (
         // Spread + set uniq's the array
         userReplicaSet = [...new Set(userReplicaSet)]
       } catch (e) {
-        logger.error(
+        genericLogger.error(
           logPrefix,
           `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
         )
       }
 
-      if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
-        return {
+      if (wallet !== fetchedWalletPublicKey) {
+        returnValue = {
           error: new Error(
             `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
           ),
           result: 'failure_malformed_export'
         }
+        throw returnValue.error
       }
 
       /**
@@ -207,15 +212,16 @@ const handleSyncFromPrimary = async (
 
       // Error if returned data is not within requested range
       if (fetchedLatestClockVal < localMaxClockVal) {
-        return {
+        returnValue = {
           error: new Error(
             `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
           ),
           result: 'failure_inconsistent_clock'
         }
+        throw returnValue.error
       } else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
-        logger.info(
+        genericLogger.info(
           logPrefix,
           `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`
         )
@@ -225,22 +231,24 @@ const handleSyncFromPrimary = async (
         fetchedClockRecords[0] &&
         fetchedClockRecords[0].clock !== localMaxClockVal + 1
       ) {
-        return {
+        returnValue = {
           error: new Error(
             `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
           ),
           result: 'failure_import_not_contiguous'
         }
+        throw returnValue.error
       } else if (
         !_.isEmpty(fetchedCNodeUser.clockRecords) &&
         maxClockRecordId !== fetchedLatestClockVal
       ) {
-        return {
+        returnValue = {
           error: new Error(
             `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
           ),
           result: 'failure_import_not_consistent'
         }
+        throw returnValue.error
       }
 
       // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
@@ -250,7 +258,7 @@ const handleSyncFromPrimary = async (
        * Process all DB updates for cnodeUser
        */
       try {
-        logger.info(
+        genericLogger.info(
           logPrefix,
           `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`
         )
@@ -275,11 +283,15 @@ const handleSyncFromPrimary = async (
          * Every subsequent sync will enter the if case and update the existing local cnodeUserRecord.
          */
         if (cnodeUserRecord) {
+          genericLogger.info(
+            logPrefix,
+            `cNodeUserRecord was non-empty -- updating CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}. Clock value: ${fetchedLatestClockVal}`
+          )
           const [numRowsUpdated, respObj] = await models.CNodeUser.update(
             {
               lastLogin: fetchedCNodeUser.lastLogin,
               latestBlockNumber: fetchedLatestBlockNumber,
-              clock: fetchedCNodeUser.clock,
+              clock: fetchedLatestClockVal,
               createdAt: fetchedCNodeUser.createdAt
             },
             {
@@ -298,22 +310,27 @@ const handleSyncFromPrimary = async (
 
           // Error if update failed
           if (numRowsUpdated !== 1 || respObj.length !== 1) {
-            return {
+            returnValue = {
               error: new Error(
                 `Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`
               ),
               result: 'failure_db_transaction'
             }
+            throw returnValue.error
           }
           cnodeUser = respObj[0]
         } else {
+          genericLogger.info(
+            logPrefix,
+            `cNodeUserRecord was empty -- inserting CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}. Clock value: ${fetchedLatestClockVal}`
+          )
           // Will throw error if creation fails
           cnodeUser = await models.CNodeUser.create(
             {
               walletPublicKey: fetchedWalletPublicKey,
               lastLogin: fetchedCNodeUser.lastLogin,
               latestBlockNumber: fetchedLatestBlockNumber,
-              clock: fetchedCNodeUser.clock,
+              clock: fetchedLatestClockVal,
               createdAt: fetchedCNodeUser.createdAt
             },
             {
@@ -324,9 +341,9 @@ const handleSyncFromPrimary = async (
         }
 
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
-        logger.info(
+        genericLogger.info(
           logPrefix,
-          `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`
+          `Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedLatestClockVal}`
         )
 
         /**
@@ -357,7 +374,7 @@ const handleSyncFromPrimary = async (
             i,
             i + FileSaveMaxConcurrency
           )
-          logger.info(
+          genericLogger.info(
             logPrefix,
             `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
               i + FileSaveMaxConcurrency
@@ -373,7 +390,7 @@ const handleSyncFromPrimary = async (
             trackFilesSlice.map(async (trackFile) => {
               const success = await saveFileForMultihashToFS(
                 libs,
-                logger,
+                genericLogger,
                 trackFile.multihash,
                 trackFile.storagePath,
                 userReplicaSet,
@@ -388,7 +405,7 @@ const handleSyncFromPrimary = async (
             })
           )
         }
-        logger.info(logPrefix, 'Saved all track files to disk.')
+        genericLogger.info(logPrefix, 'Saved all track files to disk.')
 
         // Save all non-track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
@@ -396,7 +413,7 @@ const handleSyncFromPrimary = async (
             i,
             i + FileSaveMaxConcurrency
           )
-          logger.info(
+          genericLogger.info(
             logPrefix,
             `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
               i + FileSaveMaxConcurrency
@@ -419,7 +436,7 @@ const handleSyncFromPrimary = async (
                 ) {
                   success = await saveFileForMultihashToFS(
                     libs,
-                    logger,
+                    genericLogger,
                     multihash,
                     nonTrackFile.storagePath,
                     userReplicaSet,
@@ -428,7 +445,7 @@ const handleSyncFromPrimary = async (
                 } else {
                   success = await saveFileForMultihashToFS(
                     libs,
-                    logger,
+                    genericLogger,
                     multihash,
                     nonTrackFile.storagePath,
                     userReplicaSet
@@ -443,7 +460,7 @@ const handleSyncFromPrimary = async (
             })
           )
         }
-        logger.info(logPrefix, 'Saved all non-track files to disk.')
+        genericLogger.info(logPrefix, 'Saved all non-track files to disk.')
 
         /**
          * Handle scenario where failed to retrieve/save > 0 CIDs
@@ -459,11 +476,12 @@ const handleSyncFromPrimary = async (
           // Throw error if failure threshold not yet reached
           if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
             const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
-            logger.error(logPrefix, errorMsg)
-            return {
+            genericLogger.error(logPrefix, errorMsg)
+            returnValue = {
               error: new Error(errorMsg),
               result: 'failure_skip_threshold_not_reached'
             }
+            throw returnValue.error
 
             // If max failure threshold reached, continue with sync and reset failure count
           } else {
@@ -472,7 +490,7 @@ const handleSyncFromPrimary = async (
               fetchedWalletPublicKey
             )
 
-            logger.info(
+            genericLogger.info(
               logPrefix,
               `User Sync continuing with ${numCIDsThatFailedSaveFileOp} skipped files, since SyncRequestMaxUserFailureCountBeforeSkip (${SyncRequestMaxUserFailureCountBeforeSkip}) reached.`
             )
@@ -493,7 +511,7 @@ const handleSyncFromPrimary = async (
           })),
           { transaction }
         )
-        logger.info(logPrefix, 'Saved all ClockRecord entries to DB')
+        genericLogger.info(logPrefix, 'Saved all ClockRecord entries to DB')
 
         await models.File.bulkCreate(
           nonTrackFiles.map((file) => {
@@ -508,7 +526,7 @@ const handleSyncFromPrimary = async (
           }),
           { transaction }
         )
-        logger.info(logPrefix, 'Saved all non-track File entries to DB')
+        genericLogger.info(logPrefix, 'Saved all non-track File entries to DB')
 
         await models.Track.bulkCreate(
           fetchedCNodeUser.tracks.map((track) => ({
@@ -517,7 +535,7 @@ const handleSyncFromPrimary = async (
           })),
           { transaction }
         )
-        logger.info(logPrefix, 'Saved all Track entries to DB')
+        genericLogger.info(logPrefix, 'Saved all Track entries to DB')
 
         await models.File.bulkCreate(
           trackFiles.map((trackFile) => {
@@ -531,7 +549,7 @@ const handleSyncFromPrimary = async (
           }),
           { transaction }
         )
-        logger.info(logPrefix, 'Saved all track File entries to DB')
+        genericLogger.info(logPrefix, 'Saved all track File entries to DB')
 
         await models.AudiusUser.bulkCreate(
           fetchedCNodeUser.audiusUsers.map((audiusUser) => ({
@@ -540,11 +558,11 @@ const handleSyncFromPrimary = async (
           })),
           { transaction }
         )
-        logger.info(logPrefix, 'Saved all AudiusUser entries to DB')
+        genericLogger.info(logPrefix, 'Saved all AudiusUser entries to DB')
 
         await transaction.commit()
 
-        logger.info(
+        genericLogger.info(
           logPrefix,
           `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${numCIDsThatFailedSaveFileOp} skipped.`
         )
@@ -552,7 +570,7 @@ const handleSyncFromPrimary = async (
         // track that sync for this user was successful
         await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
       } catch (e) {
-        logger.error(
+        genericLogger.error(
           logPrefix,
           `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`,
           e
@@ -560,48 +578,60 @@ const handleSyncFromPrimary = async (
 
         await transaction.rollback()
 
-        return {
-          error: new Error(e),
-          result: 'failure_db_transaction'
+        try {
+          const numRowsUpdated = await DBManager.fixInconsistentUser(
+            fetchedCNodeUser.cnodeUserUUID
+          )
+          genericLogger.warn(
+            logPrefix,
+            `fixInconsistentUser() executed for ${fetchedCNodeUser.cnodeUserUUID} - numRowsUpdated:${numRowsUpdated}`
+          )
+        } catch (e) {
+          genericLogger.error(
+            logPrefix,
+            `fixInconsistentUser() error for ${fetchedCNodeUser.cnodeUserUUID} - ${e.message}`
+          )
         }
+
+        return _.isEmpty(returnValue)
+          ? {
+              error: new Error(e),
+              result: 'failure_db_transaction'
+            }
+          : returnValue
       }
     }
   } catch (e) {
-    for (const wallet of walletPublicKeys) {
-      await SyncHistoryAggregator.recordSyncFail(wallet)
-    }
-    logger.error(
+    await SyncHistoryAggregator.recordSyncFail(wallet)
+    genericLogger.error(
       logPrefix,
-      `Sync complete for wallets: ${walletPublicKeys.join(
-        ','
-      )}. Status: Error, message: ${e.message}. Duration sync: ${
+      `Sync complete for wallet: ${wallet}. Status: Error, message: ${
+        e.message
+      }. Duration sync: ${
         Date.now() - start
       }. From endpoint ${creatorNodeEndpoint}.`
     )
 
-    return {
-      error: new Error(e),
-      result: 'failure_sync_secondary_from_primary'
-    }
+    return _.isEmpty(returnValue)
+      ? {
+          error: new Error(e),
+          result: 'failure_sync_secondary_from_primary'
+        }
+      : returnValue
   } finally {
-    // Release all redis locks
-    for (const wallet of walletPublicKeys) {
-      try {
-        await redis.WalletWriteLock.release(wallet)
-      } catch (e) {
-        logger.warn(
-          logPrefix,
-          `Failure to release write lock for ${wallet} with error ${e.message}`
-        )
-      }
+    try {
+      await redis.WalletWriteLock.release(wallet)
+    } catch (e) {
+      genericLogger.warn(
+        logPrefix,
+        `Failure to release write lock for ${wallet} with error ${e.message}`
+      )
     }
   }
 
-  logger.info(
+  genericLogger.info(
     logPrefix,
-    `Sync complete for wallets: ${walletPublicKeys.join(
-      ','
-    )}. Status: Success. Duration sync: ${
+    `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
       Date.now() - start
     }. From endpoint ${creatorNodeEndpoint}.`
   )
@@ -616,18 +646,19 @@ const handleSyncFromPrimary = async (
  *    any data corruption from primary needs to be handled separately and should not be replicated.
  *
  * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
- *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
+ *    only replicate partial data state. This is by design, and state machine will trigger repeated syncs
  *    with progressively increasing clock values until secondaries have completely synced up.
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-module.exports = async function (
+async function secondarySyncFromPrimary({
   serviceRegistry,
-  walletPublicKeys,
+  wallet,
   creatorNodeEndpoint,
-  blockNumber = null,
-  forceResync = false
-) {
+  forceResyncConfig,
+  logContext,
+  blockNumber = null
+}) {
   const { prometheusRegistry } = serviceRegistry
   const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames
@@ -635,18 +666,21 @@ module.exports = async function (
   )
   const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
 
-  const { error, ...labels } = await handleSyncFromPrimary(
+  const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,
-    walletPublicKeys,
+    wallet,
     creatorNodeEndpoint,
     blockNumber,
-    forceResync
-  )
-  metricEndTimerFn(labels)
+    forceResyncConfig,
+    logContext
+  })
+  metricEndTimerFn({ result })
 
   if (error) {
     throw new Error(error)
   }
 
-  return labels
+  return { result }
 }
+
+module.exports = secondarySyncFromPrimary

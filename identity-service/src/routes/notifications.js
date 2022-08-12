@@ -6,52 +6,25 @@ const {
 } = require('../apiHelpers')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
-const { fetchAnnouncements } = require('../announcements.js')
-
-const NotificationType = Object.freeze({
-  Follow: 'Follow',
-  Repost: 'Repost',
-  Favorite: 'Favorite',
-  FavoriteTrack: 'FavoriteTrack',
-  FavoritePlaylist: 'FavoritePlaylist',
-  FavoriteAlbum: 'FavoriteAlbum',
-  RepostTrack: 'RepostTrack',
-  RepostPlaylist: 'RepostPlaylist',
-  RepostAlbum: 'RepostAlbum',
-  CreateTrack: 'CreateTrack',
-  CreateAlbum: 'CreateAlbum',
-  CreatePlaylist: 'CreatePlaylist',
-  Announcement: 'Announcement',
-  UserSubscription: 'UserSubscription',
-  Milestone: 'Milestone',
-  MilestoneRepost: 'MilestoneRepost',
-  MilestoneFavorite: 'MilestoneFavorite',
-  MilestoneListen: 'MilestoneListen',
-  MilestoneFollow: 'MilestoneFollow',
-  RemixCreate: 'RemixCreate',
-  RemixCosign: 'RemixCosign',
-  TrendingTrack: 'TrendingTrack',
-  ChallengeReward: 'ChallengeReward',
-  TierChange: 'TierChange',
-  TipReceive: 'TipReceive',
-  TipSend: 'TipSend',
-  Reaction: 'Reaction',
-  SupporterRankUp: 'SupporterRankUp',
-  SupportingRankUp: 'SupportingRankUp',
-  AddTrackToPlaylist: 'AddTrackToPlaylist'
-})
+const { fetchAnnouncements } = require('../announcements')
+const { notificationTypes: NotificationType } = require('../notifications/constants')
 
 const ClientNotificationTypes = new Set([
   NotificationType.Follow,
-  NotificationType.Repost,
-  NotificationType.Favorite,
+  NotificationType.Repost.base,
+  NotificationType.Favorite.base,
   NotificationType.Announcement,
   NotificationType.UserSubscription,
   NotificationType.Milestone,
   NotificationType.TrendingTrack,
   NotificationType.ChallengeReward,
   NotificationType.TierChange,
-  NotificationType.AddTrackToPlaylist
+  NotificationType.AddTrackToPlaylist,
+  NotificationType.TipSend,
+  NotificationType.TipReceive,
+  NotificationType.Reaction,
+  NotificationType.SupportingRankUp,
+  NotificationType.SupporterRankUp
 ])
 
 const Entity = Object.freeze({
@@ -95,7 +68,7 @@ const formatUserSubscriptionTrack = notification => {
 const formatFavorite = (entityType) => notification => {
   return {
     ...getCommonNotificationsFields(notification),
-    type: NotificationType.Favorite,
+    type: NotificationType.Favorite.base,
     entityType,
     entityId: notification.entityId,
     userIds: notification.actions.map(action => action.actionEntityId)
@@ -107,7 +80,7 @@ const formatRepost = entityType => notification => {
     ...getCommonNotificationsFields(notification),
     entityType,
     entityId: notification.entityId,
-    type: NotificationType.Repost,
+    type: NotificationType.Repost.base,
     userIds: notification.actions.map(action => action.actionEntityId)
   }
 }
@@ -235,6 +208,16 @@ const formatSupportingRankUp = (notification) => ({
   entityType: Entity.User
 })
 
+const formatSupporterDethroned = (notification) => ({
+  ...getCommonNotificationsFields(notification),
+  type: notification.type,
+  entityType: Entity.User,
+  entityId: notification.metadata.newTopSupporterUserId,
+  supportedUserId: notification.metadata.supportedUserId,
+  newAmount: notification.metadata.newAmount,
+  oldAmount: notification.metadata.oldAmount
+})
+
 const formatSupporterRankUp = (notification) => ({
   ...getCommonNotificationsFields(notification),
   type: notification.type,
@@ -271,15 +254,15 @@ const getCommonNotificationsFields = (notification) => ({
 
 const notificationResponseMap = {
   [NotificationType.Follow]: formatFollow,
-  [NotificationType.FavoriteTrack]: formatFavorite(Entity.Track),
-  [NotificationType.FavoritePlaylist]: formatFavorite(Entity.Playlist),
-  [NotificationType.FavoriteAlbum]: formatFavorite(Entity.Album),
-  [NotificationType.RepostTrack]: formatRepost(Entity.Track),
-  [NotificationType.RepostPlaylist]: formatRepost(Entity.Playlist),
-  [NotificationType.RepostAlbum]: formatRepost(Entity.Album),
-  [NotificationType.CreateTrack]: formatUserSubscriptionTrack,
-  [NotificationType.CreateAlbum]: formatUserSubscriptionCollection(Entity.Album),
-  [NotificationType.CreatePlaylist]: formatUserSubscriptionCollection(Entity.Playlist),
+  [NotificationType.Favorite.track]: formatFavorite(Entity.Track),
+  [NotificationType.Favorite.playlist]: formatFavorite(Entity.Playlist),
+  [NotificationType.Favorite.album]: formatFavorite(Entity.Album),
+  [NotificationType.Repost.track]: formatRepost(Entity.Track),
+  [NotificationType.Repost.playlist]: formatRepost(Entity.Playlist),
+  [NotificationType.Repost.album]: formatRepost(Entity.Album),
+  [NotificationType.Create.track]: formatUserSubscriptionTrack,
+  [NotificationType.Create.album]: formatUserSubscriptionCollection(Entity.Album),
+  [NotificationType.Create.playlist]: formatUserSubscriptionCollection(Entity.Playlist),
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone,
   [NotificationType.MilestoneFavorite]: formatMilestone,
@@ -294,6 +277,7 @@ const notificationResponseMap = {
   [NotificationType.Reaction]: formatReaction,
   [NotificationType.SupporterRankUp]: formatSupporterRankUp,
   [NotificationType.SupportingRankUp]: formatSupportingRankUp,
+  [NotificationType.SupporterDethroned]: formatSupporterDethroned,
   [NotificationType.AddTrackToPlaylist]: formatAddTrackToPlaylist
 }
 
@@ -400,6 +384,10 @@ module.exports = function (app) {
         NotificationType.SupporterRankUp,
         NotificationType.SupportingRankUp
       ]
+    }
+
+    if (req.query.withSupporterDethroned !== 'true') {
+      filterSolanaNotificationTypes.push(NotificationType.SupporterDethroned)
     }
 
     const queryFilter = filterNotificationTypes.length > 0 ? {
@@ -819,5 +807,4 @@ module.exports = function (app) {
 
 module.exports.mergeAudiusAnnoucements = mergeAudiusAnnoucements
 module.exports.mapMilestone = mapMilestone
-module.exports.NotificationType = NotificationType
 module.exports.Entity = Entity

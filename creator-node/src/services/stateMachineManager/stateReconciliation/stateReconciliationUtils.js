@@ -1,9 +1,17 @@
 const _ = require('lodash')
 const axios = require('axios')
+
+const redisClient = require('../../../redis')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
-const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
+const {
+  SyncType,
+  SYNC_MODES,
+  HEALTHY_SERVICES_TTL_SEC
+} = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+
+const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
 /**
  * Returns a job can be enqueued to add a sync request for the given user to the given secondary,
@@ -39,9 +47,10 @@ const getNewOrExistingSyncReq = ({
   const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
     syncType,
     userWallet,
-    secondaryEndpoint
+    secondaryEndpoint,
+    immediate
   )
-  if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
+  if (duplicateSyncJobInfo) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
@@ -73,12 +82,12 @@ const getNewOrExistingSyncReq = ({
     syncRequestParameters
   }
 
-  // Record sync in syncDeDuplicator
   SyncRequestDeDuplicator.recordSync(
     syncType,
     userWallet,
     secondaryEndpoint,
-    syncReqToEnqueue
+    syncReqToEnqueue,
+    immediate
   )
 
   return { syncReqToEnqueue }
@@ -138,35 +147,9 @@ const issueSyncRequestsUntilSynced = async (
       // If secondary is synced, return successfully
       if (secondaryClockVal >= primaryClockVal) {
         return
-
-        // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
-      } else if (!syncInProgress) {
-        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-          userWallet: wallet,
-          secondaryEndpoint: secondaryUrl,
-          primaryEndpoint: primaryUrl,
-          syncType: SyncType.Manual,
-          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
-        })
-        if (!_.isEmpty(duplicateSyncReq)) {
-          // Log duplicate and return
-          logger.warn(`Duplicate sync request: ${duplicateSyncReq}`)
-          return
-        } else if (!_.isEmpty(syncReqToEnqueue)) {
-          await queue.add({
-            enqueuedBy: 'issueSyncRequestsUntilSynced retry',
-            ...syncReqToEnqueue
-          })
-        } else {
-          // Log error that the sync request couldn't be created and return
-          logger.error(
-            `Failed to create manual sync request: ${duplicateSyncReq}`
-          )
-          return
-        }
       }
 
-      // Give secondary some time to process ongoing or newly enqueued sync
+      // Give secondary some time to process ongoing sync
       // NOTE - we might want to make this timeout longer
       await Utils.timeout(500)
     } catch (e) {
@@ -180,7 +163,23 @@ const issueSyncRequestsUntilSynced = async (
   )
 }
 
+const getCachedHealthyNodes = async () => {
+  const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)
+  return healthyNodes
+}
+
+const cacheHealthyNodes = async (healthyNodes) => {
+  const pipeline = redisClient.pipeline()
+  await pipeline
+    .del(HEALTHY_NODES_CACHE_KEY)
+    .rpush(HEALTHY_NODES_CACHE_KEY, ...(healthyNodes || []))
+    .expire(HEALTHY_NODES_CACHE_KEY, HEALTHY_SERVICES_TTL_SEC)
+    .exec()
+}
+
 module.exports = {
   getNewOrExistingSyncReq,
-  issueSyncRequestsUntilSynced
+  issueSyncRequestsUntilSynced,
+  getCachedHealthyNodes,
+  cacheHealthyNodes
 }

@@ -1,15 +1,25 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { AuthHeaders } from '../../constants'
 import { uuid } from '../../utils/uuid'
-import type { Captcha } from '../../utils'
+import type { Captcha, Nullable } from '../../utils'
 
 import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
 import type { TransactionReceipt } from 'web3-core'
 import type Wallet from 'ethereumjs-wallet'
-import type { TransactionInstruction } from '@solana/web3.js'
+import type BN from 'bn.js'
 
 type Data = Record<string, unknown>
+
+type RelayTransactionInstruction = {
+  programId: string
+  data: Buffer
+  keys: Array<{
+    pubkey: string
+    isSigner: boolean
+    isWritable: boolean
+  }>
+}
 
 export type RelayTransaction = {
   resp: {
@@ -26,9 +36,9 @@ export type RelayTransaction = {
 }
 
 export type RelayTransactionData = {
-  instructions: TransactionInstruction[]
-  skipPreflight: boolean
-  feePayerOverride: string | null
+  instructions: RelayTransactionInstruction[]
+  skipPreflight?: boolean
+  feePayerOverride?: string | null
   signatures?: Array<{ publicKey: string; signature: Buffer }> | null
   retry?: boolean
   recentBlockhash?: string
@@ -54,14 +64,14 @@ type Reaction = {
 // Only probabilistically capture 50% of relay captchas
 const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
 
-type IdentityServiceConfig = {
+export type IdentityServiceConfig = {
   identityServiceEndpoint: string
-  captcha?: Captcha
+  captcha?: Nullable<Captcha>
 }
 
 export class IdentityService {
   identityServiceEndpoint: string
-  captcha: Captcha | undefined
+  captcha?: Nullable<Captcha>
   web3Manager: Web3Manager | null
 
   constructor({ identityServiceEndpoint, captcha }: IdentityServiceConfig) {
@@ -116,7 +126,7 @@ export class IdentityService {
   }
 
   async getUserEvents(walletAddress: string) {
-    return await this._makeRequest({
+    return await this._makeRequest<{ needsRecoveryEmail: boolean }>({
       url: '/userEvents',
       method: 'get',
       params: { walletAddress }
@@ -203,8 +213,8 @@ export class IdentityService {
   async logTrackListen(
     trackId: number,
     userId: number,
-    listenerAddress: string,
-    signatureData?: { signature: string; timestamp: string },
+    listenerAddress: Nullable<string>,
+    signatureData: Nullable<{ signature: string; timestamp: string }>,
     solanaListen = false
   ) {
     const data: {
@@ -408,8 +418,16 @@ export class IdentityService {
     transferTokens
   }: {
     senderAddress: string
-    permit: string
-    transferTokens: string[]
+    permit: {
+      contractAddress: string
+      encodedABI: string
+      gasLimit: number
+    }
+    transferTokens: {
+      contractAddress: string
+      encodedABI: string
+      gasLimit: number
+    }
   }) {
     return await this._makeRequest({
       url: '/wormhole_relay',
@@ -427,7 +445,7 @@ export class IdentityService {
    * @param senderAddress wallet
    */
   async getEthRelayer(senderAddress: string) {
-    return await this._makeRequest({
+    return await this._makeRequest<{ selectedEthWallet: string }>({
       url: '/eth_relayer',
       method: 'get',
       params: {
@@ -475,7 +493,7 @@ export class IdentityService {
 
   async updateMinimumDelegationAmount(
     wallet: string,
-    minimumDelegationAmount: number,
+    minimumDelegationAmount: BN,
     signedData: AxiosRequestConfig['headers']
   ) {
     return await this._makeRequest({

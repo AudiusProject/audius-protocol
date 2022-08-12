@@ -3,38 +3,47 @@ declare
   old_row tracks%ROWTYPE;
   new_val int;
   delta int := 0;
+  parent_track_owner_id int;
 begin
-  -- ensure agg_track
-  -- this could be the only place we do this one:
   insert into aggregate_track (track_id) values (new.track_id) on conflict do nothing;
-
-  -- for extra safety ensure agg_user
-  -- this should just happen in handle_user
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
-  -- if it's a new track increment agg user track_count
-  -- assert new.is_current = true; -- not actually true in tests
-  select * into old_row from tracks where is_current = false and track_id = new.track_id order by blocknumber desc limit 1;
+  update aggregate_user 
+  set track_count = (
+    select count(*)
+    from tracks t
+    where t.is_current IS TRUE
+      AND t.is_delete IS FALSE
+      AND t.is_unlisted IS FALSE
+      AND t.stem_of IS NULL
+      AND t.owner_id = new.owner_id
+  )
+  where user_id = new.owner_id
+  ;
 
-  -- track becomes invisible (one way change)
-  if old_row.is_delete != new.is_delete or old_row.is_unlisted != new.is_unlisted then
-    delta := -1;
-  end if;
-
-  if old_row is null and new.is_delete = false and new.is_unlisted = false and new.stem_of is null then
-    delta := 1;
-  end if;
-
-  if delta != 0 then
-    update aggregate_user 
-    set track_count = track_count + delta
-    where user_id = new.owner_id
-    returning track_count into new_val;
-
-    -- if delta = 1 and new_val = 3 then
-    --   raise notice 'could create rewards row for: user track_count = 3';
-    -- end if;
-  end if;
+  -- If remix, create notification
+  begin
+    if new.remix_of is not null AND new.is_unlisted = FALSE AND new.is_delete = FALSE AND new.stem_of IS NULL then
+      select owner_id into parent_track_owner_id from tracks where is_current and track_id = (new.remix_of->'tracks'->0->>'parent_track_id')::int limit 1;
+      if parent_track_owner_id is not null then
+        insert into notification
+        (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
+        values
+        (
+          new.blocknumber,
+          ARRAY [parent_track_owner_id],
+          new.updated_at,
+          'remix',
+          new.owner_id,
+          'remix:track:' || new.track_id || ':parent_track:' || (new.remix_of->'tracks'->0->>'parent_track_id')::int || ':blocknumber:' || new.blocknumber,
+          json_build_object('track_id', new.track_id, 'parent_track_id', (new.remix_of->'tracks'->0->>'parent_track_id')::int)
+        )
+        on conflict do nothing;
+      end if;
+    end if;
+	exception
+		when others then null;
+	end;
 
   return null;
 end;
@@ -42,7 +51,10 @@ $$ language plpgsql;
 
 
 
-drop trigger if exists on_track on tracks;
-create trigger on_track
+do $$ begin
+  create trigger on_track
   after insert on tracks
   for each row execute procedure handle_track();
+exception
+  when others then null;
+end $$;

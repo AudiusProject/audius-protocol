@@ -1,12 +1,14 @@
 const AsyncProcessingQueue = require('../../src/AsyncProcessingQueue')
 
 class AsyncProcessingQueueMock {
-  constructor() {
-    const apq = new AsyncProcessingQueue()
+  constructor(libsMock, prometheusRegistry) {
+    const apq = new AsyncProcessingQueue(libsMock, prometheusRegistry)
 
     this.PROCESS_NAMES = apq.PROCESS_NAMES
     this.PROCESS_STATES = apq.PROCESS_STATES
   }
+
+  async startQueueMetrics() {}
 
   async getAsyncProcessingQueueJobs() {
     return {

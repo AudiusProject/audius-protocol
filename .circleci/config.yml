@@ -5,8 +5,151 @@
 version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
+  slack: circleci/slack@4.9.3
 
 commands:
+  slack-basic:
+    parameters:
+      event:
+        description: when this notification will fire. options are fail, pass, always.
+        type: string
+        default: always
+      branch_pattern:
+        description: branch_pattern arg for slack/notify
+        type: string
+        default: .+
+      channel:
+        description: Slack channel to send message to
+        type: string
+        default: $SLACK_DEFAULT_CHANNEL
+      text:
+        description: Markdown formatted Slack message
+        type: string
+        default: "Job started. :crossed_fingers:"
+      slack_mentions_user:
+        description: Used for CircleCI @mentions
+        type: string
+        default: ""
+    steps:
+      - slack/notify:
+          channel: << parameters.channel >>
+          branch_pattern: << parameters.branch_pattern >>
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "<< parameters.text >>",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Job*: ${CIRCLE_JOB}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch*: $CIRCLE_BRANCH"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author*: $CIRCLE_USERNAME"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Mentions*: << parameters.slack_mentions_user >>"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Job"
+                      },
+                      "url": "${CIRCLE_BUILD_URL}"
+                    }
+                  ]
+                }
+              ]
+            }
+          event: << parameters.event >>
+  slack-fail:
+    parameters:
+      event:
+        description: when this notification will fire. options are fail, pass, always.
+        type: string
+        default: fail
+      branch_pattern:
+        description: branch_pattern arg for slack/notify
+        type: string
+        default: .+
+      channel:
+        description: Slack channel to send message to
+        type: string
+        default: $SLACK_DEFAULT_CHANNEL
+      text:
+        description: Markdown formatted Slack message
+        type: string
+        default: "Job Failed. :red_circle:"
+      slack_mentions_user:
+        description: Used for CircleCI @mentions
+        type: string
+        default: ""
+    steps:
+      - slack-basic:
+          event: << parameters.event >>
+          branch_pattern: << parameters.branch_pattern >>
+          channel: << parameters.channel >>
+          text: << parameters.text >>
+          slack_mentions_user: << parameters.slack_mentions_user >>
+  slack-success:
+    parameters:
+      event:
+        description: when this notification will fire. options are fail, pass, always.
+        type: string
+        default: pass
+      branch_pattern:
+        description: branch_pattern arg for slack/notify
+        type: string
+        default: .+
+      channel:
+        description: Slack channel to send message to
+        type: string
+        default: $SLACK_DEFAULT_CHANNEL
+      text:
+        description: Markdown formatted Slack message
+        type: string
+        default: "Deployment Successful! :tada:"
+      slack_mentions_user:
+        description: Used for CircleCI @mentions
+        type: string
+        default: ""
+    steps:
+      - slack-basic:
+          event: << parameters.event >>
+          branch_pattern: << parameters.branch_pattern >>
+          channel: << parameters.channel >>
+          text: << parameters.text >>
+          slack_mentions_user: << parameters.slack_mentions_user >>
+
   diff-if-necessary:
     parameters:
       service:
@@ -61,13 +204,14 @@ commands:
             }
             trap cleanup EXIT
 
+            set -x
+
             # authenticate into gcloud
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
 
             GCLOUD_VM_NAME=<< parameters.instance-name >>-$(date +%s)
-            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
             git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
@@ -82,7 +226,7 @@ commands:
 
             # run A setup on remote dev box to clone protocol and install the prerequisites for A
             # A setup ... || true is necessary because exit code returns 141 by default
-            [ <<parameters.fast>> ] && A_SETUP_ARGS="--fast" || A_SETUP_ARGS=""
+            <<parameters.fast>> && A_SETUP_ARGS="--fast" || A_SETUP_ARGS=""
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME $A_SETUP_ARGS --spot-instance || true
 
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
@@ -104,6 +248,12 @@ commands:
 
 # global parameters
 parameters:
+  sdk_release_commit:
+    type: string
+    default: ""
+  slack_mentions_user:
+    type: string
+    default: ""
   full_ci:
     type: boolean
     default: false
@@ -136,6 +286,10 @@ jobs:
             cd audius-protocol/;
             git checkout -f;
           post-gcp-command: |
+            BAKE_IMAGE_NAME=ci-image-bake-latest
+
+            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
+
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
 
@@ -148,11 +302,23 @@ jobs:
               --source-disk="$GCLOUD_VM_NAME" \
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
+      - slack-fail:
+          branch_pattern: master
+          slack_mentions_user: "@Dheeraj"
 
-  publish-libs:
+  publish-sdk:
     docker:
       - image: circleci/node:14.17.5
     resource_class: xlarge
+    parameters:
+      sdk_release_commit:
+        description: The git commit to build and release
+        type: string
+        default: ""
+      slack_mentions_user:
+        description: Used for CircleCI @mentions
+        type: string
+        default: ""
     steps:
       - checkout
       - setup_remote_docker
@@ -162,11 +328,21 @@ jobs:
       - run:
           name: npm Auth
           command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/.npmrc
+      - slack-basic:
+          event: always
+          branch_pattern: master
+          slack_mentions_user: << parameters.slack_mentions_user >>
       - run:
           name: Bump and Publish Libs
           command: |
             export PROTOCOL_DIR=/home/circleci/project
-            libs/scripts/release.sh
+            libs/scripts/release.sh << parameters.sdk_release_commit >>
+      - slack-fail:
+          branch_pattern: master
+          slack_mentions_user: << parameters.slack_mentions_user >>
+      - slack-success:
+          branch_pattern: master
+          slack_mentions_user: << parameters.slack_mentions_user >>
 
   test-mad-dog-e2e:
     parameters:
@@ -201,6 +377,7 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
     steps:
+      - checkout
       - diff-if-necessary:
           service: discovery-provider
       - run-on-gcp:
@@ -215,15 +392,8 @@ jobs:
             git checkout $CIRCLE_BRANCH
             A up -nc 0
             cd libs
-            npm run gen:dev
-            cd libs/src/sdk/api/generated
             # Check if there are any changes generated
-            if [ -z "$(git status . --porcelain)" ]; then 
-              printf '%s\n' "No diff found between generated types and checked in types" >&2
-            else
-              printf '%s\n' "Found diff between generated types and checked in types, please 'npm run gen:dev' in libs" >&2
-              exit 1    
-            fi
+            ./scripts/verify-types.sh
 
   test-libs:
     docker:
@@ -280,7 +450,6 @@ jobs:
       - restore_cache:
           keys:
             - eth-contracts-{{ checksum "eth-contracts/package.json" }}
-            - eth-contracts-
       - run:
           name: eth-contracts repo init
           command: |
@@ -342,7 +511,7 @@ jobs:
     # uses medium (2vcpu/4gb) by default
     resource_class: medium
     docker:
-      - image: circleci/node:16
+      - image: circleci/node:14.17.5
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
@@ -731,7 +900,7 @@ jobs:
             # 2. CIRCLE_TAG if defined,
             # 3. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
             # 4. 'latest', which is the default
-            echo "export IMAGE_TAG=`[ << parameters.logspout-tag >> ] && echo $(head -n1 logspout/Dockerfile | cut -f 2 -d ':') || [ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+            echo "export IMAGE_TAG=`[ << parameters.logspout-tag >> ] && echo $(head -n1 logspout/Dockerfile | cut -f 2 -d '=') || [ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
           name: Docker login
           command: |
@@ -786,6 +955,10 @@ jobs:
 workflows:
   # test, build and push all commits
   test-build-and-push:
+    when:
+      and:
+         - not: << pipeline.parameters.full_ci >>
+         - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
       - test-libs:
           name: test-libs
@@ -832,6 +1005,25 @@ workflows:
             - GCP2
 
 
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. go to your branch of choice
+  # 3. click "Trigger Pipeline"
+  # 4. Add string paramter "sdk_release_commit" and set to a valid git commit
+  sdk-release:
+    when: << pipeline.parameters.sdk_release_commit >>
+    jobs:
+      - publish-sdk:
+          context:
+            - Audius Client
+            - slack-secrets
+          name: publish-sdk (<< pipeline.parameters.sdk_release_commit >>)
+          sdk_release_commit: << pipeline.parameters.sdk_release_commit >>
+          slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
+          filters:
+            branches:
+              only: /(^master$)/
+
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
   # 2. go to your branch of choice
@@ -859,31 +1051,12 @@ workflows:
             - hold-build-logspout
       - hold-bake-gcp-dev-image:
           type: approval
-          filters:
-            branches:
-              only: /(^master$)/
       - bake-gcp-dev-image:
           context:
             - GCP2
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
-          filters:
-            branches:
-              only: /(^master$)/
-      - hold-publish-libs:
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-      - publish-libs:
-          context: Audius Client
-          name: publish-libs
-          requires:
-            - hold-publish-libs
-          filters:
-            branches:
-              only: /(^master$)/
 
   # test master at midnight daily
   test-nightly:
@@ -910,6 +1083,7 @@ workflows:
       - bake-gcp-dev-image:
           context:
             - GCP2
+            - slack-secrets
           name: bake-gcp-dev-image-nightly
       - docker-build-and-push:
           name: build-eth-contracts

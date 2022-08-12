@@ -85,17 +85,16 @@ describe('test updateReplicaSet job processor', function () {
       },
       contracts: {
         UserReplicaSetManagerClient: {
-          updateReplicaSet: updateReplicaSetStub
+          updateReplicaSet: updateReplicaSetStub,
+          _updateReplicaSet: updateReplicaSetStub
         }
       }
     }
     return proxyquire(
-      '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.js',
+      '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.ts',
       {
         '../../../config': config,
-        '../QueueInterfacer': {
-          getAudiusLibs: () => audiusLibsStub
-        },
+        '../../initAudiusLibs': sandbox.stub().resolves(audiusLibsStub),
         './stateReconciliationUtils': {
           getNewOrExistingSyncReq: getNewOrExistingSyncReqStub
         },
@@ -109,7 +108,7 @@ describe('test updateReplicaSet job processor', function () {
           MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: maxSelectNewReplicaSetAttempts,
           QUEUE_NAMES
         },
-        '../CNodeToSpIdMapManager': {
+        '../ContentNodeInfoManager': {
           getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
         }
       }
@@ -243,7 +242,7 @@ describe('test updateReplicaSet job processor', function () {
         reconfigType: RECONFIG_MODES.ONE_SECONDARY.key
       },
       healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: {}
+      jobsToEnqueue: undefined
     })
   })
 
@@ -290,7 +289,7 @@ describe('test updateReplicaSet job processor', function () {
         enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
       })
     ).to.eventually.be.fulfilled.and.deep.equal({
-      errorMsg: '',
+      errorMsg: `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfUnhealthyReplicas=3 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`,
       issuedReconfig: false,
       newReplicaSet: {
         newPrimary: null,
@@ -300,7 +299,7 @@ describe('test updateReplicaSet job processor', function () {
         reconfigType: null
       },
       healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: {}
+      jobsToEnqueue: undefined
     })
   })
 })

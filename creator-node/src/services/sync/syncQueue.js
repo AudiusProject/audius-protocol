@@ -4,6 +4,7 @@ const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
+const LOCK_DURATION = 1000 * 60 * 30 // 30 minutes
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
@@ -28,6 +29,11 @@ class SyncQueue {
       defaultJobOptions: {
         removeOnComplete: SYNC_QUEUE_HISTORY,
         removeOnFail: SYNC_QUEUE_HISTORY
+      },
+      settings: {
+        lockDuration: LOCK_DURATION,
+        // We never want to re-process stalled jobs
+        maxStalledCount: 0
       }
     })
 
@@ -42,31 +48,51 @@ class SyncQueue {
     const jobProcessorConcurrency = this.nodeConfig.get(
       'syncQueueMaxConcurrency'
     )
-    this.queue.process(jobProcessorConcurrency, async (job, done) => {
-      const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
+    this.queue.process(jobProcessorConcurrency, async (job) => {
+      const {
+        wallet,
+        creatorNodeEndpoint,
+        forceResyncConfig,
+        blockNumber,
+        logContext
+      } = job.data
 
+      let result = {}
       try {
-        await secondarySyncFromPrimary(
-          this.serviceRegistry,
-          walletPublicKeys,
+        await secondarySyncFromPrimary({
+          serviceRegistry: this.serviceRegistry,
+          wallet,
           creatorNodeEndpoint,
-          null, // blockNumber
-          forceResync
-        )
+          blockNumber,
+          forceResyncConfig,
+          logContext
+        })
       } catch (e) {
         logger.error(
-          `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
+          `secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}`,
           e.message
         )
+        result = { error: e.message }
       }
 
-      done()
+      return result
     })
   }
 
-  async enqueueSync({ walletPublicKeys, creatorNodeEndpoint, forceResync }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
-    const job = await this.queue.add(jobProps)
+  async enqueueSync({
+    wallet,
+    creatorNodeEndpoint,
+    blockNumber,
+    forceResyncConfig,
+    logContext
+  }) {
+    const job = await this.queue.add({
+      wallet,
+      creatorNodeEndpoint,
+      blockNumber,
+      forceResyncConfig,
+      logContext
+    })
     return job
   }
 }

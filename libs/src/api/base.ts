@@ -3,15 +3,15 @@ import type { CreatorNode } from '../services/creatorNode'
 import type { AudiusContracts } from '../services/dataContracts'
 import type { DiscoveryProvider } from '../services/discoveryProvider'
 import type { EthContracts } from '../services/ethContracts'
-import type { WormholeClient } from '../services/ethContracts/WormholeClient'
 import type { EthWeb3Manager } from '../services/ethWeb3Manager'
-import type { Hedgehog } from '../services/hedgehog'
+import type { Hedgehog } from '@audius/hedgehog'
 import type { IdentityService } from '../services/identity'
-import type { SolanaAudiusData } from '../services/solanaAudiusData'
-import type SolanaWeb3Manager from '../services/solanaWeb3Manager'
+import type { SolanaAudiusData } from '../services/solanaAudiusData/SolanaAudiusData'
+import type { SolanaWeb3Manager } from '../services/solana'
 import type { Web3Manager } from '../services/web3Manager'
 import type { UserStateManager } from '../userStateManager'
 import type { Captcha } from '../utils'
+import type { Wormhole } from '../services/wormhole'
 
 export const Services = Object.freeze({
   IDENTITY_SERVICE: 'Identity Service',
@@ -33,7 +33,7 @@ export type BaseConstructorArgs = [
   EthContracts,
   SolanaWeb3Manager,
   SolanaAudiusData,
-  WormholeClient,
+  Wormhole,
   CreatorNode,
   Comstock,
   Captcha,
@@ -52,7 +52,7 @@ export class Base {
   ethContracts: EthContracts
   solanaWeb3Manager: SolanaWeb3Manager
   anchorAudiusData: SolanaAudiusData
-  wormholeClient: WormholeClient
+  wormholeClient: Wormhole
   creatorNode: CreatorNode
   comstock: Comstock
   captcha: Captcha
@@ -72,7 +72,7 @@ export class Base {
     ethContracts: EthContracts,
     solanaWeb3Manager: SolanaWeb3Manager,
     anchorAudiusData: SolanaAudiusData,
-    wormholeClient: WormholeClient,
+    wormholeClient: Wormhole,
     creatorNode: CreatorNode,
     comstock: Comstock,
     captcha: Captcha,

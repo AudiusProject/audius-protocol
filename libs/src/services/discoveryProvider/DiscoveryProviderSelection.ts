@@ -16,6 +16,7 @@ import type { EthContracts } from '../ethContracts'
 import type { AxiosResponse } from 'axios'
 import type { Maybe, Nullable } from '../../utils'
 import type { LocalStorage } from '../../utils/localStorage'
+import type { MonitoringCallbacks } from '../types'
 
 const PREVIOUS_VERSIONS_TO_CHECK = 5
 
@@ -25,10 +26,7 @@ export type DiscoveryProviderSelectionConfig = Omit<
 > & {
   reselectTimeout?: number
   selectionCallback?: (endpoint: string, decisionTree: Decision[]) => void
-  monitoringCallbacks?: {
-    healthCheck: (config: Record<string, unknown>) => void
-    request: (config: Record<string, unknown>) => void
-  }
+  monitoringCallbacks?: MonitoringCallbacks
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
   localStorage?: LocalStorage
@@ -54,7 +52,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
 
   constructor(
     config: DiscoveryProviderSelectionConfig,
-    ethContracts: EthContracts
+    ethContracts: Nullable<EthContracts>
   ) {
     super({
       /**
@@ -62,7 +60,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
        * the list of registered providers from chain
        */
       getServices: async ({ verbose = false } = {}) => {
-        this.currentVersion = await ethContracts.getCurrentVersion(
+        this.currentVersion = await ethContracts!.getCurrentVersion(
           DISCOVERY_SERVICE_NAME
         )
         const services = await this.ethContracts.getServiceProviderList(
@@ -72,7 +70,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
       },
       ...config
     })
-    this.ethContracts = ethContracts
+    this.ethContracts = ethContracts!
     this.currentVersion = ''
     this.reselectTimeout = config.reselectTimeout
     this.selectionCallback = config.selectionCallback
@@ -183,7 +181,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
     if ('healthCheck' in this.monitoringCallbacks) {
       const url = new URL(response.config.url as string)
       try {
-        this.monitoringCallbacks.healthCheck({
+        this.monitoringCallbacks.healthCheck?.({
           endpoint: url.origin,
           pathname: url.pathname,
           queryString: url.search,

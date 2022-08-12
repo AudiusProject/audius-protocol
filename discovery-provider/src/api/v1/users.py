@@ -19,6 +19,7 @@ from src.api.v1.helpers import (
     extend_user,
     format_limit,
     format_offset,
+    format_query,
     get_current_user_id,
     get_default_max,
     make_full_response,
@@ -27,8 +28,12 @@ from src.api.v1.helpers import (
     pagination_with_current_user_parser,
     search_parser,
     success_response,
+    track_history_parser,
+    user_favorited_tracks_parser,
+    user_tracks_route_parser,
     verify_token_parser,
 )
+from src.api.v1.models.activities import activity_model, activity_model_full
 from src.api.v1.models.common import favorite
 from src.api.v1.models.support import (
     supporter_response,
@@ -36,6 +41,7 @@ from src.api.v1.models.support import (
     supporting_response,
     supporting_response_full,
 )
+from src.api.v1.models.tracks import track, track_full
 from src.api.v1.models.users import (
     associated_wallets,
     challenge_response,
@@ -80,9 +86,6 @@ from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
-
-from .models.activities import activity_model, activity_model_full
-from .models.tracks import track, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -191,15 +194,6 @@ class UserHandle(FullUserHandle):
 
 
 USER_TRACKS_ROUTE = "/<string:id>/tracks"
-user_tracks_route_parser = pagination_with_current_user_parser.copy()
-user_tracks_route_parser.add_argument(
-    "sort",
-    required=False,
-    type=str,
-    default="date",
-    choices=("date", "plays"),
-    description="Field to sort by",
-)
 
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track))
@@ -230,6 +224,7 @@ class TrackList(Resource):
         sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
+        query = format_query(args)
 
         args = {
             "user_id": decoded_id,
@@ -240,6 +235,7 @@ class TrackList(Resource):
             "sort": sort,
             "limit": limit,
             "offset": offset,
+            "query": query,
         }
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
@@ -275,6 +271,7 @@ class FullTrackList(Resource):
         sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
+        query = format_query(args)
 
         args = {
             "user_id": decoded_id,
@@ -285,6 +282,7 @@ class FullTrackList(Resource):
             "sort": sort,
             "limit": limit,
             "offset": offset,
+            "query": query,
         }
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
@@ -565,19 +563,20 @@ class UserFavoritedTracksFull(Resource):
     @cache(ttl_sec=5)
     def _get(self, id):
         """Fetch favorited tracks for a user."""
-        args = pagination_with_current_user_parser.parse_args()
+        args = user_favorited_tracks_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
 
         offset = format_offset(args)
         limit = format_limit(args)
+        query = format_query(args)
         get_tracks_args = {
             "filter_deleted": False,
             "user_id": decoded_id,
             "current_user_id": current_user_id,
             "limit": limit,
             "offset": offset,
-            "with_users": True,
+            "query": query,
         }
         track_saves = get_save_tracks(get_tracks_args)
         tracks = list(map(extend_activity, track_saves))
@@ -589,7 +588,7 @@ class UserFavoritedTracksFull(Resource):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.expect(user_favorited_tracks_parser)
     @full_ns.marshal_with(favorites_full_response)
     def get(self, id):
         return self._get(id)
@@ -610,16 +609,18 @@ class TrackHistoryFull(Resource):
     @record_metrics
     @cache(ttl_sec=5)
     def _get(self, id):
-        args = pagination_with_current_user_parser.parse_args()
+        args = track_history_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
         offset = format_offset(args)
         limit = format_limit(args)
+        query = format_query(args)
         get_tracks_args = GetUserListeningHistoryArgs(
             user_id=decoded_id,
             current_user_id=current_user_id,
             limit=limit,
             offset=offset,
+            query=query,
         )
         track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
@@ -631,7 +632,7 @@ class TrackHistoryFull(Resource):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.expect(track_history_parser)
     @full_ns.marshal_with(history_response_full)
     def get(self, id):
         return self._get(id)
@@ -645,7 +646,7 @@ class TrackHistory(TrackHistoryFull):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.expect(pagination_with_current_user_parser)
+    @ns.expect(track_history_parser)
     @ns.marshal_with(history_response)
     def get(self, id):
         return super()._get(id)

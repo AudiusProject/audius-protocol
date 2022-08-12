@@ -333,7 +333,9 @@ class NotificationProcessor {
     // The owner info is then used to target listenCount milestone notifications
     // Timeout of 5 minutes
     const timeout = 5 /* min */ * 60 /* sec */ * 1000 /* ms */
-    const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
+    const notificationsFromDN = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
+    const { info: metadata, owners, milestones } = notificationsFromDN
+    const notifications = await filterOutAbusiveUsers(notificationsFromDN.notifications)
     logger.info(`notifications main indexAll job - query notifications from discovery node complete in ${Date.now() - time}ms`)
     time = Date.now()
 
@@ -401,7 +403,9 @@ class NotificationProcessor {
 
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-    const { info: metadata, notifications } = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
+    const notificationsFromDN = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
+    const metadata = notificationsFromDN.info
+    const notifications = await filterOutAbusiveUsers(notificationsFromDN.notifications)
     logger.info(`${logLabel} - query solana notifications from discovery node complete in ${Date.now() - time}ms`)
     time = Date.now()
 
@@ -438,6 +442,36 @@ class NotificationProcessor {
 
     return metadata.max_slot_number
   }
+}
+
+/**
+ * Filters out notifications whose initiators are deemed abusive.
+ * @param {Object[]} notifications
+ * @returns {Promise<Object[]>} notifications - after having filtered out notifications from bad initiators
+ */
+async function filterOutAbusiveUsers (notifications) {
+  const initiatorIds = notifications.map(({ initiator }) => initiator)
+  const userEntityIds = notifications
+    .filter(({ metadata }) => metadata && metadata.entity_type === 'user')
+    .map(({ metadata }) => metadata.entity_id)
+  const allUserIds = initiatorIds.concat(userEntityIds)
+  const users = await models.User.findAll({
+    where: {
+      blockchainUserId: { [ models.Sequelize.Op.in ]: allUserIds }
+    },
+    attributes: ['blockchainUserId', 'isAbusive']
+  })
+  const usersAbuseMap = {}
+  users.forEach(user => {
+    usersAbuseMap[user.blockchainUserId] = user.isAbusive
+  })
+  const result = notifications.filter(notification => {
+    const isInitiatorAbusive = usersAbuseMap[notification.initiator.toString()]
+    const isUserEntityAbusive = notification.metadata && notification.metadata.entity_type === 'user' && notification.metadata.entity_id && usersAbuseMap[notification.metadata.entity_id.toString()]
+    return !isInitiatorAbusive && !isUserEntityAbusive
+  })
+  logger.info(`notifications | index.js | Filtered out ${notifications.length - result.length} bad initiators out of ${notifications.length} total.`)
+  return result
 }
 
 module.exports = NotificationProcessor

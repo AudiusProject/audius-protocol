@@ -2,6 +2,7 @@ const _ = require('lodash')
 
 const models = require('../../models')
 const { Transaction } = require('sequelize')
+const DBManager = require('../../dbManager')
 
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
@@ -21,6 +22,7 @@ const exportComponentService = async ({
     isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
   })
 
+  const cnodeUsersDict = {}
   try {
     // Fetch cnodeUser for each walletPublicKey.
     const cnodeUsers = await models.CNodeUser.findAll({
@@ -86,8 +88,7 @@ const exportComponentService = async ({
     ])
 
     /** Bundle all data into cnodeUser objects to maximize import speed. */
-    const cnodeUsersDict = {}
-    cnodeUsers.forEach((cnodeUser) => {
+    for (const cnodeUser of cnodeUsers) {
       // Add cnodeUserUUID data fields
       cnodeUser.audiusUsers = []
       cnodeUser.tracks = []
@@ -103,7 +104,7 @@ const exportComponentService = async ({
         // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
         cnodeUser.clock = requestedClockRangeMax
         logger.info(
-          `nodeSync.js#export - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`
+          `exportComponentService() - cnodeUserUUID:${cnodeUser.cnodeUserUUID} - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`
         )
       }
 
@@ -112,8 +113,11 @@ const exportComponentService = async ({
         ...clockRecords.map((record) => record.clock)
       )
       if (!_.isEmpty(clockRecords) && cnodeUser.clock !== maxClockRecord) {
-        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}`
-        logger.error(errorMsg)
+        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
+        logger.error(
+          `exportComponentService() - cnodeUserUUID:${cnodeUser.cnodeUserUUID} - ${errorMsg}`
+        )
+
         if (!forceExport) {
           throw new Error(errorMsg)
         }
@@ -124,7 +128,7 @@ const exportComponentService = async ({
         requestedClockRangeMax,
         localClockMax: cnodeUser.clock
       }
-    })
+    }
 
     audiusUsers.forEach((audiusUser) => {
       cnodeUsersDict[audiusUser.cnodeUserUUID].audiusUsers.push(audiusUser)
@@ -144,6 +148,21 @@ const exportComponentService = async ({
     return cnodeUsersDict
   } catch (e) {
     await transaction.rollback()
+
+    for (const cnodeUserUUID in cnodeUsersDict) {
+      try {
+        const numRowsUpdated = await DBManager.fixInconsistentUser(
+          cnodeUserUUID
+        )
+        logger.warn(
+          `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() executed - numRowsUpdated:${numRowsUpdated}`
+        )
+      } catch (e) {
+        logger.error(
+          `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() error - ${e.message}`
+        )
+      }
+    }
     throw new Error(e)
   }
 }

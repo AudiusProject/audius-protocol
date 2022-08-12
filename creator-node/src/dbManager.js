@@ -308,6 +308,34 @@ class DBManager {
       throw new Error(`[fetchFilesHashesFromDB] ${e.message}`)
     }
   }
+
+  /**
+   * Given a user's UUID, this function will set their clock value equal to the max clock value
+   * found in the ClockRecords table for that same user
+   *
+   * @param cnodeUserUUID the UUID for the user whose clock needs to be made consistent
+   */
+  static async fixInconsistentUser(cnodeUserUUID) {
+    const [, metadata] = await sequelize.query(
+      `
+    UPDATE "CNodeUsers" as cnodeusers
+    SET clock = subquery.max_clock
+    FROM (
+        SELECT "cnodeUserUUID", MAX(clock) AS max_clock
+        FROM "ClockRecords"
+        WHERE "cnodeUserUUID" = :cnodeUserUUID
+        GROUP BY "cnodeUserUUID"
+    ) AS subquery
+    WHERE cnodeusers."cnodeUserUUID" = subquery."cnodeUserUUID"
+    `,
+      {
+        replacements: { cnodeUserUUID }
+      }
+    )
+
+    const numRowsUpdated = metadata?.rowCount || 0
+    return numRowsUpdated
+  }
 }
 
 /**

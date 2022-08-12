@@ -253,7 +253,12 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           })
           let lastSentTimestamp
           if (latestUserEmail) {
-            lastSentTimestamp = moment(latestUserEmail.timestamp)
+            // When testing, noticed that it's possible for the latest user email timestamp
+            // to be milliseconds behind the notifications createdAt timestamp,
+            // which results in those notifications not being returned from the query.
+            // We subtract 1 second from the latest user email timestamp to ensure
+            // that all the email notification records that we care about.
+            lastSentTimestamp = moment(latestUserEmail.timestamp).subtract(1, 'seconds')
           } else {
             lastSentTimestamp = moment(0) // EPOCH
           }

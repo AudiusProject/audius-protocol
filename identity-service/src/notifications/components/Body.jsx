@@ -1,11 +1,8 @@
 import React from 'react'
 
 import Footer from './Footer'
-import Notification, {
-  NotificationType,
-  getUsers,
-  getEntity
-} from './notifications/Notification'
+import Notification from './notifications/Notification'
+import { notificationTypes as NotificationType } from '../constants'
 
 const AudiusImage = () => {
   return (
@@ -52,11 +49,11 @@ const getNumberSuffix = (num) => {
 }
 
 const snippetMap = {
-  [NotificationType.Favorite] (notification) {
+  [NotificationType.Favorite.base] (notification) {
     const [user] = notification.users
     return `${user.name} favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
-  [NotificationType.Repost] (notification) {
+  [NotificationType.Repost.base] (notification) {
     const [user] = notification.users
     return `${user.name} reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
@@ -101,6 +98,18 @@ const snippetMap = {
   },
   [NotificationType.AddTrackToPlaylist] (notification) {
     return `${notification.playlistOwner.name} added ${notification.track.title} to ${notification.playlist.playlist_name}`
+  },
+  [NotificationType.TipReceive] (notification) {
+    return `${notification.sendingUser.name} sent you a tip of ${notification.amount} $AUDIO`
+  },
+  [NotificationType.Reaction] (notification) {
+    return `${notification.reactingUser.name} reacted to your tip of ${notification.amount} $AUDIO`
+  },
+  [NotificationType.SupporterRankUp] (notification) {
+    return `${notification.sendingUser.name} became your #${notification.rank} top supporter`
+  },
+  [NotificationType.SupportingRankUp] (notification) {
+    return `You're now ${notification.receivingUser.name}'s #${notification.rank} top supporter`
   }
 }
 

@@ -26,8 +26,10 @@ const notificationTypes = Object.freeze({
   MilestoneFavorite: 'MilestoneFavorite',
   MilestoneListen: 'MilestoneListen',
   Announcement: 'Announcement',
+  UserSubscription: 'UserSubscription',
   TrendingTrack: 'TrendingTrack',
   ChallengeReward: 'ChallengeReward',
+  TierChange: 'TierChange',
   PlaylistUpdate: 'PlaylistUpdate',
   Tip: 'Tip',
   TipReceive: 'TipReceive',
@@ -35,6 +37,7 @@ const notificationTypes = Object.freeze({
   Reaction: 'Reaction',
   SupporterRankUp: 'SupporterRankUp',
   SupportingRankUp: 'SupportingRankUp',
+  SupporterDethroned: 'SupporterDethroned',
   AddTrackToPlaylist: 'AddTrackToPlaylist'
 })
 

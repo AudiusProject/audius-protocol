@@ -28,7 +28,7 @@ describe('test retrieveUserInfoFromReplicaSet()', function () {
       [healthyCn2]: ['wallet1', 'wallet2'],
       [unhealthyCn]: ['wallet1', 'wallet2']
     }
-    const expectedReplicaToUserInfoMap = {
+    const expectedreplicaToAllUserInfoMaps = {
       [healthyCn1]: {
         wallet1: { clock: 1, filesHash: '0x1'},
         wallet2: { clock: 2, filesHash: '0x2'},
@@ -55,7 +55,7 @@ describe('test retrieveUserInfoFromReplicaSet()', function () {
             users: walletPublicKeys.map((wallet) => {
               return {
                 walletPublicKey: wallet,
-                ...expectedReplicaToUserInfoMap[healthyCn1][wallet]
+                ...expectedreplicaToAllUserInfoMaps[healthyCn1][wallet]
               }
             })
           }
@@ -71,7 +71,7 @@ describe('test retrieveUserInfoFromReplicaSet()', function () {
             users: walletPublicKeys.map((wallet) => {
               return {
                 walletPublicKey: wallet,
-                ...expectedReplicaToUserInfoMap[healthyCn2][wallet]
+                ...expectedreplicaToAllUserInfoMaps[healthyCn2][wallet]
               }
             })
           }
@@ -98,16 +98,16 @@ describe('test retrieveUserInfoFromReplicaSet()', function () {
       }
     )
 
-    const { replicaToUserInfoMap, unhealthyPeers } =
+    const { replicaToAllUserInfoMaps, unhealthyPeers } =
       await retrieveUserInfoFromReplicaSet(replicaToWalletMap)
 
     // Verify that all mocked endpoints were been hit the expected number of times
     expect(nock.isDone()).to.be.true
 
     // Verify that each wallet had the expected clock value and the unhealthy node was marked as unhealthy
-    expect(Object.keys(replicaToUserInfoMap)).to.have.lengthOf(3)
-    expect(replicaToUserInfoMap).to.deep.equal(
-      expectedReplicaToUserInfoMap
+    expect(Object.keys(replicaToAllUserInfoMaps)).to.have.lengthOf(3)
+    expect(replicaToAllUserInfoMaps).to.deep.equal(
+      expectedreplicaToAllUserInfoMaps
     )
     expect(unhealthyPeers).to.have.property('size', 1)
     expect(unhealthyPeers).to.include('http://unhealthyCn.co')

@@ -40,7 +40,7 @@ psutil==5.8.0
 pytz==2021.1
 prometheus-client==0.13.1
 click==8.0.4
-numpy==1.21.4
+numpy==1.20.3
 datasketch==1.5.7
 
 # Solana support
@@ -54,7 +54,6 @@ pycparser==2.20
 PyNaCl==1.4.0
 requests==2.25.1
 aiohttp==3.8.1
-six==1.16.0
 solana==0.23.1
 typing-extensions==3.10.0.0
 urllib3==1.26.3

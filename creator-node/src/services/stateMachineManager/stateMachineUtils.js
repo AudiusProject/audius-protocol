@@ -31,11 +31,11 @@ const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
  * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
  *
  * @returns {Object} response
- * @returns {Object} response.replicaToUserInfoMap map(replica => map(wallet => { clock, filesHash }))
+ * @returns {Object} response.replicaToAllUserInfoMaps map(replica => map(wallet => { clock, filesHash }))
  * @returns {Set} response.unhealthyPeers unhealthy peer endpoints
  */
 const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
-  const replicaToUserInfoMap = {}
+  const replicaToAllUserInfoMaps = {}
   const unhealthyPeers = new Set()
 
   const spID = config.get('spID')
@@ -44,7 +44,7 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
   const replicas = Object.keys(replicaToWalletMap)
   await Promise.all(
     replicas.map(async (replica) => {
-      replicaToUserInfoMap[replica] = {}
+      replicaToAllUserInfoMaps[replica] = {}
 
       const walletsOnReplica = replicaToWalletMap[replica]
 
@@ -100,7 +100,7 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
            * @notice `filesHash` will be null if node has no files for user. This can happen even if clock > 0 if user has AudiusUser or Track table records without any File table records
            */
           const { walletPublicKey, clock, filesHash } = clockStatusResp
-          replicaToUserInfoMap[replica][walletPublicKey] = {
+          replicaToAllUserInfoMaps[replica][walletPublicKey] = {
             clock,
             filesHash
           }
@@ -110,7 +110,7 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
   )
 
   return {
-    replicaToUserInfoMap,
+    replicaToAllUserInfoMaps,
     unhealthyPeers
   }
 }
@@ -243,10 +243,11 @@ const makeQueue = ({
   removeOnComplete,
   removeOnFail,
   lockDuration,
+  prometheusRegistry = null,
   limiter = null
 }) => {
   // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-  return new BullQueue(name, {
+  const queue = new BullQueue(name, {
     redis: {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -263,6 +264,12 @@ const makeQueue = ({
     },
     limiter
   })
+
+  if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
+    prometheusRegistry.startQueueMetrics(queue)
+  }
+
+  return queue
 }
 
 const registerQueueEvents = (queue, queueLogger) => {

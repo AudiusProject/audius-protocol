@@ -38,11 +38,13 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
 
   function getPrometheusRegistry() {
     const startTimerStub = sandbox.stub().returns(() => {})
+    const startQueueMetricsStub = sandbox.stub().returns(() => {})
     const getMetricStub = sandbox.stub().returns({
       startTimer: startTimerStub
     })
     const prometheusRegistry = {
       getMetric: getMetricStub,
+      startQueueMetrics: startQueueMetricsStub,
       metricNames: {}
     }
     return prometheusRegistry
@@ -56,7 +58,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     }
     const createChildLogger = sandbox.stub().returns(loggerStub)
     const processJobMock = proxyquire(
-      '../src/services/stateMachineManager/processJob.js',
+      '../src/services/stateMachineManager/processJob.ts',
       {
         '../../logging': {
           createChildLogger
