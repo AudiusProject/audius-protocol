@@ -6,6 +6,7 @@ import {
   Nullable
 } from '@audius/common'
 import BN from 'bn.js'
+import JSBI from 'jsbi'
 
 import {
   WEI,
@@ -15,6 +16,9 @@ import {
   parseWeiNumber,
   convertFloatToWei
 } from 'common/utils/formatUtil'
+
+const WEI_DECIMALS = 18 // 18 decimals on ETH AUDIO
+const SPL_DECIMALS = 8 // 8 decimals on SPL AUDIO
 
 export const weiToAudioString = (bnWei: BNWei): StringAudio => {
   const stringAudio = formatWeiToAudioString(bnWei) as StringAudio
@@ -107,4 +111,23 @@ export const shortenSPLAddress = (addr: string) => {
 
 export const shortenEthAddress = (addr: string) => {
   return `0x${addr.substring(2, 4)}...${addr.substr(addr.length - 5)}`
+}
+
+export const convertJSBIToAmountObject = (amount: JSBI, decimals: number) => {
+  const divisor = JSBI.BigInt(10 ** decimals)
+  const quotient = JSBI.divide(amount, divisor)
+  const remainder = JSBI.remainder(amount, divisor)
+  const uiAmountString = JSBI.GT(remainder, 0)
+    ? `${quotient.toString()}.${remainder.toString().padStart(decimals, '0')}`
+    : quotient.toString()
+  return {
+    amount: JSBI.toNumber(amount),
+    uiAmount: JSBI.toNumber(amount) / 10 ** decimals,
+    uiAmountString
+  }
+}
+
+export const convertWAudioToWei = (amount: BN) => {
+  const decimals = WEI_DECIMALS - SPL_DECIMALS
+  return amount.mul(new BN('1'.padEnd(decimals + 1, '0'))) as BNWei
 }
