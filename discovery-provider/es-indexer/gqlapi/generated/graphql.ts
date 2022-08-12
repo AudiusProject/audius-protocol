@@ -123,6 +123,7 @@ export type User = {
 export type UserFollowersArgs = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
+  query?: InputMaybe<Scalars['String']>;
   sort?: InputMaybe<UserSort>;
   sort_direction?: InputMaybe<SortDirection>;
 };
@@ -131,6 +132,7 @@ export type UserFollowersArgs = {
 export type UserFollowingArgs = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
+  query?: InputMaybe<Scalars['String']>;
   sort?: InputMaybe<UserSort>;
   sort_direction?: InputMaybe<SortDirection>;
 };
@@ -139,6 +141,7 @@ export type UserFollowingArgs = {
 export type UserPlaylistsArgs = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
+  query?: InputMaybe<Scalars['String']>;
   sort?: InputMaybe<PlaylistSort>;
   sort_direction?: InputMaybe<SortDirection>;
 };
@@ -147,6 +150,7 @@ export type UserPlaylistsArgs = {
 export type UserTracksArgs = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
+  query?: InputMaybe<Scalars['String']>;
   sort?: InputMaybe<TrackSort>;
   sort_direction?: InputMaybe<SortDirection>;
 };

@@ -58,7 +58,7 @@ const trackLoader = new DataLoader<number | string, TrackDoc>(
 )
 
 //
-// Resolvers
+// Track Resolver
 //
 
 const trackResolvers: TrackResolvers<Ctx, Track & TrackDoc> = {
@@ -92,6 +92,10 @@ const trackResolvers: TrackResolvers<Ctx, Track & TrackDoc> = {
   },
 }
 
+//
+// Playlist Resolver
+//
+
 const playlistResolvers: PlaylistResolvers<Ctx, Playlist & PlaylistDoc> = {
   id: (playlist) => playlist.playlist_id.toString(),
 
@@ -124,6 +128,9 @@ const playlistResolvers: PlaylistResolvers<Ctx, Playlist & PlaylistDoc> = {
   },
 }
 
+//
+// User Resolver
+//
 const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
   id: (user) => user.user_id.toString(),
 
@@ -135,6 +142,9 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
       .size(args.limit)
       .from(args.offset)
       .sort(args.sort || 'created_at', args.sort_direction || 'desc')
+    if (args.query) {
+      bb.query('match', 'suggest', args.query)
+    }
     const tracks = await bbSearch(indexNames.tracks, bb)
     return tracks as any
   },
@@ -155,6 +165,9 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
       .size(args.limit)
       .from(args.offset)
       .sort(sortBy || 'created_at', args.sort_direction || 'desc')
+    if (args.query) {
+      bb.query('match', 'suggest', args.query)
+    }
     return bbSearch(indexNames.playlists, bb)
   },
 
@@ -164,6 +177,9 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
       .size(args.limit)
       .from(args.offset)
       .sort(args.sort || 'created_at', args.sort_direction || 'desc')
+    if (args.query) {
+      bb.query('match', 'suggest', args.query)
+    }
     return bbSearch(indexNames.users, bb)
   },
 
@@ -177,6 +193,9 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
       .size(args.limit)
       .from(args.offset)
       .sort(args.sort || 'created_at', args.sort_direction || 'desc')
+    if (args.query) {
+      bb.query('match', 'suggest', args.query)
+    }
     return bbSearch(indexNames.users, bb)
   },
 
@@ -192,6 +211,10 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
     return me.following_ids.includes(user.user_id)
   },
 }
+
+//
+// Root Query Resolver
+//
 
 const queryResolvers: QueryResolvers<Ctx> = {
   users: async (root, args, ctx) => {

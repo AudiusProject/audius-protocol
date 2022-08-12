@@ -59,6 +59,7 @@ export const typeDefs = gql`
     is_followed: Boolean!
 
     tracks(
+      query: String
       limit: Int = 3
       offset: Int = 0
       sort: TrackSort
@@ -66,6 +67,7 @@ export const typeDefs = gql`
     ): [Track!]!
 
     playlists(
+      query: String
       limit: Int = 3
       offset: Int = 0
       sort: PlaylistSort
@@ -73,6 +75,7 @@ export const typeDefs = gql`
     ): [Playlist!]!
 
     followers(
+      query: String
       limit: Int = 3
       offset: Int = 0
       sort: UserSort
@@ -80,6 +83,7 @@ export const typeDefs = gql`
     ): [User!]!
 
     following(
+      query: String
       limit: Int = 3
       offset: Int = 0
       sort: UserSort
