@@ -6,7 +6,7 @@ const captchaMiddleware = require('../captchaMiddleware')
 const { detectAbuse } = require('../utils/antiAbuse')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
-const blockRelayAbuseErrorCodes = new Set(['3', '8', '10', '11', '12', '13', '14', '15'])
+const blockRelayAbuseErrorCodes = new Set(['3', '8', '9', '10', '11'])
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that

@@ -44,7 +44,7 @@ const detectAbuse = async (user, challengeId, walletAddress, reqIP) => {
         isAbusive = true
       }
       if (errorCode) {
-        isAbusiveErrorCode = errorCode
+        isAbusiveErrorCode = `${errorCode}`
       }
     } catch (e) {
       logger.warn(`antiAbuse: aao request failed ${e.message}`)
