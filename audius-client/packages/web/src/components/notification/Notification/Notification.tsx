@@ -22,6 +22,7 @@ import { MilestoneNotification } from './MilestoneNotification'
 import { RemixCosignNotification } from './RemixCosignNotification'
 import { RemixCreateNotification } from './RemixCreateNotification'
 import { RepostNotification } from './RepostNotification'
+import { SupporterDethronedNotification } from './SupporterDethronedNotification'
 import { TierChangeNotification } from './TierChangeNotification'
 import { TipReactionNotification } from './TipReactionNotification'
 import { TipReceivedNotification } from './TipReceivedNotification'
@@ -116,6 +117,10 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.AddTrackToPlaylist: {
         return <AddTrackToPlaylistNotification notification={notification} />
+      }
+
+      case NotificationType.SupporterDethroned: {
+        return <SupporterDethronedNotification notification={notification} />
       }
       default: {
         return null

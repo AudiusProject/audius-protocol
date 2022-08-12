@@ -13,7 +13,8 @@ export enum FeatureFlags {
   DISABLE_SIGN_UP_CONFIRMATION = 'disable_sign_up_confirmation',
   TIPPING_ENABLED = 'tipping_enabled',
   WRITE_QUORUM_ENABLED = 'write_quorum_enabled',
-  EARLY_ACCESS = 'early_access'
+  EARLY_ACCESS = 'early_access',
+  SUPPORTER_DETHRONED_ENABLED = 'supporter_dethroned_enabled'
 }
 
 /**
@@ -33,5 +34,6 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: false,
   [FeatureFlags.TIPPING_ENABLED]: false,
   [FeatureFlags.WRITE_QUORUM_ENABLED]: false,
-  [FeatureFlags.EARLY_ACCESS]: false
+  [FeatureFlags.EARLY_ACCESS]: false,
+  [FeatureFlags.SUPPORTER_DETHRONED_ENABLED]: false
 }
