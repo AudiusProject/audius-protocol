@@ -1,5 +1,8 @@
 'use strict'
 
+const { setupTracing } = require('./tracer')
+setupTracing()
+
 const ON_DEATH = require('death')
 const { sequelize } = require('./models')
 const { logger } = require('./logging')
