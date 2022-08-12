@@ -2,6 +2,7 @@ import { ID, UserCollectionMetadata, Kind, makeUid } from '@audius/common'
 import { put, call } from 'redux-saga/effects'
 
 import * as cacheActions from 'common/store/cache/actions'
+import { getContext } from 'common/store/effects'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
@@ -20,10 +21,13 @@ export function* processAndCacheCollections(
   shouldRetrieveTracks = true,
   excludedTrackIds: ID[] = []
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield addUsersFromCollections(collections)
   yield addTracksFromCollections(collections)
 
-  let reformattedCollections = collections.map((c) => reformat(c))
+  let reformattedCollections = collections.map((c) =>
+    reformat(c, audiusBackendInstance)
+  )
 
   if (shouldRetrieveTracks) {
     // Retrieve the tracks

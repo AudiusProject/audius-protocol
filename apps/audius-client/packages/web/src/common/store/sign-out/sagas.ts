@@ -5,18 +5,25 @@ import { disablePushNotifications } from 'pages/settings-page/store/mobileSagas'
 import { make } from 'store/analytics/actions'
 import { signOut } from 'utils/signOut'
 
+import { getContext } from '../effects'
+
 import { signOut as signOutAction } from './slice'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* watchSignOut() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield takeLatest(signOutAction.type, function* () {
     if (NATIVE_MOBILE) {
-      disablePushNotifications()
+      disablePushNotifications(audiusBackendInstance)
       yield put(make(Name.SETTINGS_LOG_OUT, {}))
-      yield call(signOut)
+      yield call(signOut, audiusBackendInstance)
     } else {
-      yield put(make(Name.SETTINGS_LOG_OUT, { callback: signOut }))
+      yield put(
+        make(Name.SETTINGS_LOG_OUT, {
+          callback: () => signOut(audiusBackendInstance)
+        })
+      )
     }
   })
 }

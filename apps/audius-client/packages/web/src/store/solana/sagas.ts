@@ -1,10 +1,11 @@
 import { put, call, take } from 'typed-redux-saga'
 
+import { getContext } from 'common/store'
 import * as backendActions from 'common/store/backend/actions'
 import { setFeePayer } from 'common/store/solana/slice'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 function* watchForFeePayer() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield take(backendActions.SETUP_BACKEND_SUCCEEDED)
   const { feePayer, error } = yield* call(
     audiusBackendInstance.getRandomFeePayer as () => Promise<

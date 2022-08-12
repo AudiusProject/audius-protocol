@@ -1,16 +1,7 @@
-import { CoverArtSizes, Track, TrackMetadata } from '@audius/common'
+import { Track, TrackMetadata } from '@audius/common'
 import { omit } from 'lodash'
 
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-
-/**
- * Adds _cover_art_sizes to a track object if it does not have one set
- */
-const addTrackImages = (
-  track: TrackMetadata
-): TrackMetadata & { duration: number; _cover_art_sizes: CoverArtSizes } => {
-  return audiusBackendInstance.getTrackImages(track)
-}
+import { AudiusBackend } from 'common/services/audius-backend'
 
 /**
  * Potentially add
@@ -77,10 +68,13 @@ const setDefaultFolloweeSaves = <T extends TrackMetadata>(track: T) => {
  * Reformats a track to be used internally within the client
  * This method should *always* be called before a track is cached.
  */
-export const reformat = <T extends TrackMetadata>(track: T): Track => {
+export const reformat = <T extends TrackMetadata>(
+  track: T,
+  audiusBackendInstance: AudiusBackend
+): Track => {
   const t = track
   const withoutUser = omit(t, 'user')
-  const withImages = addTrackImages(withoutUser)
+  const withImages = audiusBackendInstance.getTrackImages(withoutUser)
   const withCosign = setIsCoSigned(withImages)
   const withFieldVisibility = setFieldVisibility(withCosign)
 

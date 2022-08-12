@@ -5,9 +5,9 @@ import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { RESET_REQUIRED_KEY } from 'common/store/account/mobileSagas'
 import { getNeedsAccountRecovery } from 'common/store/account/selectors'
 import EnterPassword from 'components/sign-on/EnterPassword'
-import { RESET_REQUIRED_KEY } from 'store/account/mobileSagas'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 

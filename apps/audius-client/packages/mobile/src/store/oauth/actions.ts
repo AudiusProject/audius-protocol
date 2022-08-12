@@ -1,6 +1,6 @@
 import type {
   AccountImage,
-  InstagramProfile,
+  TwitterAccountPayload,
   TwitterProfile
 } from 'audius-client/src/common/store/account/reducer'
 
@@ -61,7 +61,7 @@ type SetTwitterErrorAction = {
 type SetInstagramInfoAction = {
   type: typeof SET_INSTAGRAM_INFO
   uuid: any
-  profile: InstagramProfile
+  profile: TwitterAccountPayload
   profileImage: AccountImage
   requiresUserReview: any
 }
@@ -145,7 +145,7 @@ export const setTwitterError = (error: any): SetTwitterErrorAction => ({
 
 export const setInstagramInfo = (
   uuid: string,
-  profile: InstagramProfile,
+  profile: TwitterAccountPayload,
   profileImage: AccountImage,
   requiresUserReview: boolean
 ): SetInstagramInfoAction => ({

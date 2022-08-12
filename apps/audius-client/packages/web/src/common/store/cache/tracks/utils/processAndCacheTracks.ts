@@ -1,6 +1,7 @@
 import { Kind, Track, TrackMetadata, makeUid } from '@audius/common'
 import { put, call } from 'redux-saga/effects'
 
+import { getContext } from 'common/store'
 import * as cacheActions from 'common/store/cache/actions'
 
 import { setTracksIsBlocked } from './blocklist'
@@ -15,13 +16,20 @@ import { reformat } from './reformat'
 export function* processAndCacheTracks<T extends TrackMetadata>(
   tracks: T[]
 ): Generator<any, Track[], any> {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // Add users
   yield addUsersFromTracks(tracks)
 
-  const checkedTracks: T[] = yield call(setTracksIsBlocked, tracks)
+  const checkedTracks: T[] = yield call(
+    setTracksIsBlocked,
+    tracks,
+    audiusBackendInstance
+  )
 
   // Remove users, add images
-  const reformattedTracks = checkedTracks.map(reformat)
+  const reformattedTracks = checkedTracks.map((track) =>
+    reformat(track, audiusBackendInstance)
+  )
 
   // insert tracks into cache
   yield put(

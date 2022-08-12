@@ -18,6 +18,7 @@ import { WalletLinkProvider } from 'walletlink'
 
 import { newUserMetadata } from 'common/schemas'
 import { PhantomProvider } from 'common/services/audius-backend'
+import { getContext } from 'common/store'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
@@ -62,7 +63,6 @@ import {
   fetchSolanaCollectiblesForWallets
 } from 'pages/profile-page/sagas'
 import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
 import {
@@ -208,6 +208,7 @@ function* fetchAccountAssociatedWallets() {
 }
 
 function* getAccountMetadataCID(): Generator<any, Nullable<string>, any> {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return null
   const users = yield* call(audiusBackendInstance.getCreators, [accountUserId])
@@ -327,6 +328,7 @@ function* connectSPLWallet(
   solana: PhantomProvider,
   disconnect: () => Promise<void>
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const accountUserId = yield* select(getUserId)
 
@@ -517,6 +519,7 @@ function* connectSPLWallet(
 }
 
 function* connectEthWallet(web3Instance: any) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const accounts: string[] = yield* call(
       web3Instance.eth.getAccounts as () => Promise<string[]>
@@ -692,6 +695,7 @@ function* connectEthWallet(web3Instance: any) {
 }
 
 function* removeWallet(action: ConfirmRemoveWalletAction) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const removeWallet = action.payload.wallet
     const removeChain = action.payload.chain
@@ -807,6 +811,7 @@ const getSignableData = () => {
 }
 
 function* watchForDiscordCode() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* take(fetchAccountSucceeded.type)
   const data = getSignableData()
   const signature = yield* call(audiusBackendInstance.getSignature, data)

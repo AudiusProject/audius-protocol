@@ -1,10 +1,11 @@
 import { Kind } from '@audius/common'
 import { all, fork, call, put, select, takeEvery } from 'typed-redux-saga/macro'
 
+import { AudiusBackend } from 'common/services/audius-backend'
+import { getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { watchServiceSelectionErrors } from './errorSagas'
@@ -21,6 +22,7 @@ import {
 } from './slice'
 
 export function* watchFetchServices() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(fetchServices.type, function* () {
     yield* call(waitForBackendSetup)
     const currentUser = yield* call(waitForValue, getAccountUser)
@@ -73,7 +75,10 @@ export function* watchFetchServices() {
   })
 }
 
-const checkIsSyncing = async (service: string) => {
+const checkIsSyncing = async (
+  service: string,
+  audiusBackendInstance: AudiusBackend
+) => {
   return new Promise<void>((resolve) => {
     const interval = setInterval(async () => {
       const isSyncing = await audiusBackendInstance.isCreatorNodeSyncing(
@@ -88,8 +93,9 @@ const checkIsSyncing = async (service: string) => {
 }
 
 function* updateSyncing(service: string) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(setSyncingAction({ service, isSyncing: true }))
-  yield* call(checkIsSyncing, service)
+  yield* call(checkIsSyncing, service, audiusBackendInstance)
   yield* put(setSyncingAction({ service, isSyncing: false }))
 }
 
@@ -98,6 +104,7 @@ function* setSyncing(service: string) {
 }
 
 function* watchSetSelected() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     setSelected.type,
     function* (action: ReturnType<typeof setSelected>) {

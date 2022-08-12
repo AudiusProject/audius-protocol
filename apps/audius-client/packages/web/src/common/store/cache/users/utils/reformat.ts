@@ -1,23 +1,6 @@
-import {
-  CoverPhotoSizes,
-  ProfilePictureSizes,
-  User,
-  UserMetadata
-} from '@audius/common'
+import { UserMetadata } from '@audius/common'
 
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-
-/**
- * Adds profile picture and cover art to a user object if it does not have one set
- * */
-const addUserImages = (
-  user: UserMetadata
-): UserMetadata & {
-  _profile_picture_sizes: ProfilePictureSizes
-  _cover_photo_sizes: CoverPhotoSizes
-} => {
-  return audiusBackendInstance.getUserImages(user)
-}
+import { AudiusBackend } from 'common/services/audius-backend'
 
 /**
  * Sets a user's display name to their handle if it is falsey.
@@ -36,8 +19,12 @@ const setDisplayNameToHandleIfUnset = <T extends UserMetadata>(user: T) => {
  * Reformats a user to be used internally within the client.
  * This method should *always* be called before a user is cached.
  */
-export const reformat = (user: UserMetadata): User => {
-  const withImages = addUserImages(user)
+export const reformat = (
+  user: UserMetadata,
+  audiusBackendInstance: AudiusBackend
+) => {
+  const withImages = audiusBackendInstance.getUserImages(user)
+
   const withNames = setDisplayNameToHandleIfUnset(withImages)
   return withNames
 }
