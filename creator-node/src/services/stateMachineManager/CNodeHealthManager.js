@@ -113,7 +113,12 @@ class CNodeHealthManager {
       baseURL: endpoint,
       url: '/health_check/verbose',
       method: 'get',
-      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS
+      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS,
+      headers: {
+        'User-Agent': `Axios - @audius/content-node - ${config.get(
+          'creatorNodeEndpoint'
+        )} - CNodeHealthManager#queryVerboseHealthCheck`
+      }
     })
 
     return resp.data.data
