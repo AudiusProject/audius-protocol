@@ -8,6 +8,7 @@ const FEATURE_FLAGS = Object.freeze({
   REWARDS_NOTIFICATIONS_ENABLED: 'rewards_notifications_enabled',
   SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED: 'social_proof_to_send_audio_enabled',
   DETECT_ABUSE_ON_RELAY: 'detect_abuse_on_relay',
+  BLOCK_ABUSE_ON_RELAY: 'block_abuse_on_relay',
   TIPPING_ENABLED: 'tipping_enabled',
   SUPPORTER_DETHRONED_ENABLED: 'supporter_dethroned_enabled'
 })
@@ -22,6 +23,7 @@ const DEFAULTS = Object.freeze({
   [FEATURE_FLAGS.REWARDS_NOTIFICATIONS_ENABLED]: false,
   [FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED]: true,
   [FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY]: false,
+  [FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY]: false,
   [FEATURE_FLAGS.TIPPING_ENABLED]: false,
   [FEATURE_FLAGS.SUPPORTER_DETHRONED_ENABLED]: false
 })

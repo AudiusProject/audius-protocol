@@ -1,5 +1,4 @@
 const axios = require('axios')
-const models = require('../models')
 const config = require('../config.js')
 const { logger } = require('../logging')
 
@@ -21,18 +20,9 @@ const getAbuseAttestation = async (challengeId, handle, reqIP) => {
   return data
 }
 
-const detectAbuse = async (challengeId, walletAddress, reqIP) => {
+const detectAbuse = async (user, challengeId, reqIP) => {
   let isAbusive = false
-
-  const user = await models.User.findOne({
-    where: { walletAddress },
-    attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isAbusive']
-  })
-
-  if (!user) {
-    logger.info(`antiAbuse: no user for wallet ${walletAddress}`)
-    return
-  }
+  let isAbusiveErrorCode = null
 
   if (!user.handle) {
     // Something went wrong during sign up and identity has no knowledge
@@ -40,17 +30,20 @@ const detectAbuse = async (challengeId, walletAddress, reqIP) => {
     isAbusive = true
   } else {
     try {
-      const { result } = await getAbuseAttestation(challengeId, user.handle, reqIP)
+      const { result, errorCode } = await getAbuseAttestation(challengeId, user.handle, reqIP)
       if (!result) {
         // The anti abuse system deems them abusive. Flag them as such.
         isAbusive = true
+        if (errorCode) {
+          isAbusiveErrorCode = `${errorCode}`
+        }
       }
     } catch (e) {
       logger.warn(`antiAbuse: aao request failed ${e.message}`)
     }
   }
-  if (user.isAbusive !== isAbusive) {
-    await user.update({ isAbusive })
+  if (user.isAbusive !== isAbusive || user.isAbusiveErrorCode !== isAbusiveErrorCode) {
+    await user.update({ isAbusive, isAbusiveErrorCode })
   }
 }
 
