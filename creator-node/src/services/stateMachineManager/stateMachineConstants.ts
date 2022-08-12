@@ -60,21 +60,21 @@ export const QUEUE_HISTORY = Object.freeze({
 })
 
 export const QUEUE_NAMES = {
-  // Name of the queue that only processes jobs to slice users and gather data about them
+  // Queue to slice users and gather data about them
   MONITOR_STATE: 'monitor-state-queue',
-  // Name of the queue that only processes jobs to find sync requests
+  // Queue to find sync requests
   FIND_SYNC_REQUESTS: 'find-sync-requests-queue',
-  // Name of the queue that only processes jobs to find replica set updates
+  // Queue to find replica set updates
   FIND_REPLICA_SET_UPDATES: 'find-replica-set-updates-queue',
-  // Name of queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
+  // Queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
   FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-to-endpoint-sp-id-map-queue',
-  // Name of queue that only processes jobs to issue a manual sync
+  // Queue to issue a manual sync
   MANUAL_SYNC: 'manual-sync-queue',
-  // Name of queue that only processes jobs to issue a recurring sync
+  // Queue to issue a recurring sync
   RECURRING_SYNC: 'recurring-sync-queue',
-  // Name of queue that only processes jobs to update a replica set
+  // Queue to update a replica set
   UPDATE_REPLICA_SET: 'update-replica-set-queue',
-  // Name of queue that only processes jobs to search for nodes with orphaned data and merge it into a Replica Set
+  // Queue to search for nodes with orphaned data and merge it into a Replica Set
   RECOVER_ORPHANED_DATA: 'recover-orphaned-data-queue'
 } as const
 export type TQUEUE_NAMES = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES]
