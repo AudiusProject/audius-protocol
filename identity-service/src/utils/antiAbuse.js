@@ -34,7 +34,7 @@ const detectAbuse = async (user, challengeId, reqIP) => {
       if (!result) {
         // The anti abuse system deems them abusive. Flag them as such.
         isAbusive = true
-        if (errorCode) {
+        if (errorCode || errorCode === 0) {
           isAbusiveErrorCode = `${errorCode}`
         }
       }
