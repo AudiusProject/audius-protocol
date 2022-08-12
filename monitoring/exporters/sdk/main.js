@@ -18,7 +18,7 @@ const audiusLibs = new libs({
 })
 
 // Setup Prometheus metrics
-const prefix = 'audius_monitors_sdk_'
+const prefix = 'audius_exporters_sdk_'
 const metricNames = {
   PROPOSALS: 'proposals',
   PROPOSALS_BY_UNKNOWN_PROPOSERS: 'proposals_by_unknown_proposers',

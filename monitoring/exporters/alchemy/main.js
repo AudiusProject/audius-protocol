@@ -17,7 +17,7 @@ const alchemyWeb3 = createAlchemyWeb3(
 // const alchemy = new Alchemy(settings);
 
 // Setup Prometheus metrics
-const prefix = 'audius_monitors_alchemy_'
+const prefix = 'audius_exporters_alchemy_'
 const metricNames = {
   BALANCE: 'balance',
   TOKEN_TRANSFER: 'token_transfer',

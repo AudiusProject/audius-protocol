@@ -1,5 +1,5 @@
 {
-    "name": "audius-monitors-alchemy",
+    "name": "audius-exporters-alchemy",
     "version": "1.0.0",
     "description": "",
     "main": "main.js",

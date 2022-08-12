@@ -92,7 +92,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_sdk_proposals{outcome=\"InProgress\"}",
+            "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
             "legendFormat": "Open Proposals",
             "range": true,
             "refId": "A"
@@ -185,7 +185,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_sdk_proposals{outcome=\"InProgress\"}",
+            "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
             "legendFormat": "Open Proposals",
             "range": true,
             "refId": "A"
@@ -240,7 +240,7 @@
             "datasource": {
               "type": "prometheus"
             },
-            "expr": "sum(audius_monitors_sdk_proposals)",
+            "expr": "sum(audius_exporters_sdk_proposals)",
             "refId": "A"
           }
         ],
@@ -327,7 +327,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "sum(audius_monitors_sdk_proposals) - sum(audius_monitors_sdk_proposals offset 1d OR on() vector(87))",
+            "expr": "sum(audius_exporters_sdk_proposals) - sum(audius_exporters_sdk_proposals offset 1d OR on() vector(87))",
             "legendFormat": "New Proposals",
             "range": true,
             "refId": "A"
@@ -387,7 +387,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_sdk_proposals_by_unknown_proposers",
+            "expr": "audius_exporters_sdk_proposals_by_unknown_proposers",
             "legendFormat": "Unknown Proposers",
             "range": true,
             "refId": "A"
@@ -475,7 +475,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_sdk_proposals_by_unknown_proposers",
+            "expr": "audius_exporters_sdk_proposals_by_unknown_proposers",
             "legendFormat": "Unknown Proposers",
             "range": true,
             "refId": "A"
@@ -574,7 +574,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_sdk_api_failure",
+            "expr": "audius_exporters_sdk_api_failure",
             "legendFormat": "failures",
             "range": true,
             "refId": "A"

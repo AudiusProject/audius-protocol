@@ -123,7 +123,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "increase(audius_monitors_alchemy_token_transfer_sum[5m])",
+            "expr": "increase(audius_exporters_alchemy_token_transfer_sum[5m])",
             "legendFormat": "increase",
             "range": true,
             "refId": "A"
@@ -214,7 +214,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.9, sum(rate(audius_monitors_alchemy_token_transfer_bucket[5m])) by (le))",
+            "expr": "histogram_quantile(0.9, sum(rate(audius_exporters_alchemy_token_transfer_bucket[5m])) by (le))",
             "legendFormat": "p90",
             "range": true,
             "refId": "A"
@@ -224,7 +224,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.5, sum(rate(audius_monitors_alchemy_token_transfer_bucket[5m])) by (le))",
+            "expr": "histogram_quantile(0.5, sum(rate(audius_exporters_alchemy_token_transfer_bucket[5m])) by (le))",
             "hide": false,
             "legendFormat": "p50",
             "range": true,
@@ -235,7 +235,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.1, sum(rate(audius_monitors_alchemy_token_transfer_bucket[5m])) by (le))",
+            "expr": "histogram_quantile(0.1, sum(rate(audius_exporters_alchemy_token_transfer_bucket[5m])) by (le))",
             "hide": false,
             "legendFormat": "p10",
             "range": true,
@@ -327,7 +327,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_alchemy_token_transfer_sum",
+            "expr": "audius_exporters_alchemy_token_transfer_sum",
             "legendFormat": "sum",
             "range": true,
             "refId": "A"
@@ -428,7 +428,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_alchemy_balance{address_name=\"Staking\"}",
+            "expr": "audius_exporters_alchemy_balance{address_name=\"Staking\"}",
             "legendFormat": "{{address_name}}",
             "range": true,
             "refId": "A"
@@ -517,7 +517,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_alchemy_balance{address_name!=\"Staking\"}",
+            "expr": "audius_exporters_alchemy_balance{address_name=\"NotStaking\"}",
             "legendFormat": "{{address_name}}",
             "range": true,
             "refId": "A"
@@ -607,7 +607,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_alchemy_balance{} - (audius_monitors_alchemy_balance offset 1m)",
+            "expr": "audius_exporters_alchemy_balance{} - (audius_exporters_alchemy_balance offset 1m)",
             "legendFormat": "{{address_name}}",
             "range": true,
             "refId": "A"
@@ -706,7 +706,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_monitors_alchemy_api_failure",
+            "expr": "audius_exporters_alchemy_api_failure",
             "legendFormat": "failures",
             "range": true,
             "refId": "A"
