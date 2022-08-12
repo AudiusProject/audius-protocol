@@ -1,6 +1,7 @@
 import { Kind, ID, Name, Track, User, makeKindId } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import * as accountActions from 'common/store/account/reducer'
 import { getUserId, getUserHandle } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
@@ -13,7 +14,6 @@ import * as socialActions from 'common/store/social/tracks/actions'
 import { formatShareText } from 'common/utils/formatUtil'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import TrackDownload from 'services/audius-backend/TrackDownload'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -139,6 +139,7 @@ export function* repostTrackAsync(
 }
 
 export function* confirmRepostTrack(trackId: ID, user: User) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -250,6 +251,7 @@ export function* undoRepostTrackAsync(
 }
 
 export function* confirmUndoRepostTrack(trackId: ID, user: User) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -383,6 +385,7 @@ export function* saveTrackAsync(
 }
 
 export function* confirmSaveTrack(trackId: ID) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -482,6 +485,7 @@ export function* unsaveTrackAsync(
 }
 
 export function* confirmUnsaveTrack(trackId: ID) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -517,6 +521,7 @@ export function* confirmUnsaveTrack(trackId: ID) {
 }
 
 export function* watchSetArtistPick() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
@@ -538,6 +543,7 @@ export function* watchSetArtistPick() {
 }
 
 export function* watchUnsetArtistPick() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
     const userId = yield* select(getUserId)
     yield* put(
@@ -558,6 +564,7 @@ export function* watchUnsetArtistPick() {
 /* RECORD LISTEN */
 
 export function* watchRecordListen() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     socialActions.RECORD_LISTEN,
     function* (action: ReturnType<typeof socialActions.recordListen>) {

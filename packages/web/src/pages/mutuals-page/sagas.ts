@@ -1,6 +1,7 @@
 import { ID, User } from '@audius/common'
 import { put, select } from 'typed-redux-saga/macro'
 
+import { AudiusBackend } from 'common/services/audius-backend'
 import { getUser } from 'common/store/cache/users/selectors'
 import { getMutualsError } from 'common/store/user-list/mutuals/actions'
 import { watchMutualsError } from 'common/store/user-list/mutuals/errorSagas'
@@ -12,19 +13,20 @@ import {
 import { USER_LIST_TAG } from 'common/store/user-list/mutuals/types'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 type FetchMutualsConfig = {
   limit: number
   offset: number
   entityId: ID
   currentUserId: ID | null
+  audiusBackendInstance: AudiusBackend
 }
 
 const fetchAllUsersForEntity = async ({
   limit,
   offset,
-  entityId: userId
+  entityId: userId,
+  audiusBackendInstance
 }: FetchMutualsConfig) => {
   const mutuals = await audiusBackendInstance.getFolloweeFollows(
     userId,

@@ -10,6 +10,7 @@ import {
   all,
   call,
   fork,
+  getContext,
   put,
   select,
   takeEvery,
@@ -33,7 +34,6 @@ import * as signOnActions from 'pages/sign-on/store/actions'
 import { apiClient } from 'services/audius-api-client'
 import { fetchCID } from 'services/audius-backend'
 import TrackDownload from 'services/audius-backend/TrackDownload'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -58,6 +58,7 @@ function* fetchRepostInfo(entries) {
 }
 
 function* fetchSegment(metadata) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const user = yield call(waitForValue, getUser, { id: metadata.owner_id })
   const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
     user.creator_node_endpoint
@@ -216,6 +217,7 @@ function* confirmEditTrack(
   isNowListed,
   currentTrack
 ) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -298,6 +300,7 @@ function* watchEditTrack() {
 }
 
 function* deleteTrackAsync(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
   const userId = yield select(getUserId)
   if (!userId) {
@@ -334,6 +337,7 @@ function* deleteTrackAsync(action) {
 }
 
 function* confirmDeleteTrack(trackId) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -402,6 +406,7 @@ function* watchDeleteTrack() {
 }
 
 function* watchFetchCoverArt() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const inProgress = new Set()
   yield takeEvery(trackActions.FETCH_COVER_ART, function* ({ trackId, size }) {
     // Unique on id and size

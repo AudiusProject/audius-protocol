@@ -8,14 +8,13 @@ import {
 } from '@audius/common'
 import { call, put, select, spawn } from 'typed-redux-saga/macro'
 
-import { CommonState } from 'common/store'
+import { CommonState, getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
 import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import * as trackActions from 'common/store/cache/tracks/actions'
 import { getTracks as getTracksSelector } from 'common/store/cache/tracks/selectors'
 import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import { setTracksIsBlocked } from './blocklist'
 import {
@@ -93,6 +92,7 @@ export function* retrieveTrackByHandleAndSlug({
         return selected
       },
       onBeforeAddToCache: function* (tracks: TrackMetadata[]) {
+        const audiusBackendInstance = yield* getContext('audiusBackendInstance')
         yield* addUsersFromTracks(tracks)
         yield* put(
           trackActions.setPermalinkStatus([
@@ -103,8 +103,14 @@ export function* retrieveTrackByHandleAndSlug({
             }
           ])
         )
-        const checkedTracks = yield* call(setTracksIsBlocked, tracks)
-        return checkedTracks.map(reformat)
+        const checkedTracks = yield* call(
+          setTracksIsBlocked,
+          tracks,
+          audiusBackendInstance
+        )
+        return checkedTracks.map((track) =>
+          reformat(track, audiusBackendInstance)
+        )
       }
     }
   )
@@ -211,6 +217,7 @@ export function* retrieveTracks({
       return selected
     },
     retrieveFromSource: function* (ids: ID[] | UnlistedTrackRequest[]) {
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       let fetched: UserTrackMetadata | UserTrackMetadata[] | null | undefined
       if (canBeUnlisted) {
         const ids = trackIds as UnlistedTrackRequest[]
@@ -255,9 +262,16 @@ export function* retrieveTracks({
     shouldSetLoading: true,
     deleteExistingEntry: false,
     onBeforeAddToCache: function* <T extends TrackMetadata>(tracks: T[]) {
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       yield* addUsersFromTracks(tracks)
-      const checkedTracks = yield* call(setTracksIsBlocked, tracks)
-      return checkedTracks.map(reformat)
+      const checkedTracks = yield* call(
+        setTracksIsBlocked,
+        tracks,
+        audiusBackendInstance
+      )
+      return checkedTracks.map((track) =>
+        reformat(track, audiusBackendInstance)
+      )
     }
   })
 

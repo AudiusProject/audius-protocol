@@ -37,6 +37,16 @@ type RenameAccountPlaylistPayload = {
   name: string
 }
 
+export type TwitterAccountPayload = {
+  uuid: string
+  profile: TwitterProfile
+}
+
+export type InstagramAccountPayload = {
+  uuid: string
+  profile: InstagramProfile
+}
+
 export type InstagramProfile = {
   id: string
   username: string
@@ -149,13 +159,10 @@ const slice = createSlice({
     fetchBrowserPushNotifications: () => {},
     subscribeBrowserPushNotifications: () => {},
     unsubscribeBrowserPushNotifications: () => {},
-    twitterLogin: (
-      state,
-      action: PayloadAction<{ uuid: string; profile: any }>
-    ) => {},
+    twitterLogin: (state, action: PayloadAction<TwitterAccountPayload>) => {},
     instagramLogin: (
       state,
-      action: PayloadAction<{ uuid: string; profile: InstagramProfile }>
+      action: PayloadAction<InstagramAccountPayload>
     ) => {},
     showPushNotificationConfirmation: () => {}
   }

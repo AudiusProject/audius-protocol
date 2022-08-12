@@ -11,7 +11,8 @@ import {
   fork,
   cancel,
   all,
-  race
+  race,
+  getContext
 } from 'redux-saga/effects'
 
 import * as accountActions from 'common/store/account/reducer'
@@ -36,7 +37,6 @@ import UploadType from 'pages/upload-page/components/uploadType'
 import { getStems } from 'pages/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -183,6 +183,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     updateProgress
   ) => {
     return function* () {
+      const audiusBackendInstance = yield getContext('audiusBackendInstance')
       console.debug(
         `Beginning non-collection upload for track: ${metadata.title}`
       )
@@ -225,6 +226,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
   // If it is a collection, we should just upload to creator node.
   const makeConfirmerCallForCollection = (track, metadata, artwork, index) => {
     return function* () {
+      const audiusBackendInstance = yield getContext('audiusBackendInstance')
       console.debug(`Beginning collection upload for track: ${metadata.title}`)
       return yield call(
         audiusBackendInstance.uploadTrackToCreatorNode,
@@ -359,6 +361,7 @@ export function* handleUploads({
   isStem = false,
   isAlbum = false
 }) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const numWorkers = getNumWorkers(tracks.map((t) => t.track.file))
 
   // Map of shape {[trackId]: { track: track, metadata: object, artwork?: file, index: number }}
@@ -656,6 +659,7 @@ export function* handleUploads({
 }
 
 function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   // First upload album art
   const coverArtResp = yield call(
     audiusBackendInstance.uploadImage,
@@ -747,7 +751,11 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
 
         // Add images to the collection since we're not loading it the traditional way with
         // the `fetchCollections` saga
-        confirmedPlaylist = yield call(reformat, confirmedPlaylist)
+        confirmedPlaylist = yield call(
+          reformat,
+          confirmedPlaylist,
+          audiusBackendInstance
+        )
         const uid = yield makeUid(
           Kind.COLLECTIONS,
           confirmedPlaylist.playlist_id,
@@ -811,6 +819,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
 }
 
 function* uploadSingleTrack(track) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   // Need an object to hold phase error info that
   // can get captured by confirmer closure
   // while remaining mutable.

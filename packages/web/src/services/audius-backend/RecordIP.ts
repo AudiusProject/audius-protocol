@@ -1,13 +1,12 @@
-import { AuthHeaders } from 'common/services/audius-backend'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { AudiusBackend, AuthHeaders } from 'common/services/audius-backend'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 // @ts-ignore
 const libs = () => window.audiusLibs
 
-export const recordIP = async (): Promise<
-  { userIP: string } | { error: boolean }
-> => {
+export const recordIP = async (
+  audiusBackendInstance: AudiusBackend
+): Promise<{ userIP: string } | { error: boolean }> => {
   await waitForLibsInit()
   const account = libs().Account.getCurrentUser()
   if (!account) return { error: true }

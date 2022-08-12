@@ -9,9 +9,6 @@ const emptyPolyfill = path.resolve(__dirname, 'src/mocks/empty.ts')
 const resolveModule = (module) =>
   path.resolve(__dirname, 'node_modules', module)
 
-const resolveClientModule = (module) =>
-  path.resolve(clientPath, 'node_modules', module)
-
 const getClientAliases = () => {
   const clientAbsolutePaths = [
     'assets',
@@ -56,9 +53,6 @@ module.exports = (async () => {
       nodeModulesPaths: [path.resolve(__dirname, 'node_modules')],
       extraNodeModules: {
         ...require('node-libs-react-native'),
-        '@optimizely/optimizely-sdk': resolveClientModule(
-          '@optimizely/optimizely-sdk'
-        ),
         // Alias for 'src' to allow for absolute paths
         app: path.resolve(__dirname, 'src'),
         // Aliases for 'audius-client' to allow for absolute paths

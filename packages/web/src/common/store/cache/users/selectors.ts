@@ -22,6 +22,7 @@ export const getUser = (
     kind: Kind.USERS
   })
 }
+
 export const getUserByHandle = (
   state: CommonState,
   props: { handle: string }

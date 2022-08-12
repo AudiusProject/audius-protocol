@@ -529,7 +529,10 @@ export const OAuthLoginPage = () => {
               />
             </div>
             <div className={styles.signOutButtonContainer}>
-              <button className={styles.linkButton} onClick={signOut}>
+              <button
+                className={styles.linkButton}
+                onClick={() => signOut(audiusBackendInstance)}
+              >
                 {messages.signOut}
               </button>
             </div>

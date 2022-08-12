@@ -1,7 +1,8 @@
 import { Kind, TrackMetadata, User, makeUid } from '@audius/common'
 import { uniqBy } from 'lodash'
-import { put, select } from 'redux-saga/effects'
+import { put, select } from 'typed-redux-saga'
 
+import { getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { reformat as reformatUser } from 'common/store/cache/users/utils'
@@ -14,9 +15,8 @@ import { reformat as reformatUser } from 'common/store/cache/users/utils'
 export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   metadataArray: T[]
 ) {
-  const accountUser: ReturnType<typeof getAccountUser> = yield select(
-    getAccountUser
-  )
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const accountUser = yield* select(getAccountUser)
   const currentUserId = accountUser?.user_id
   let users = metadataArray
     .filter((m) => m.user)
@@ -25,7 +25,7 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
       return {
         id: track.user.user_id,
         uid: makeUid(Kind.USERS, track.user.user_id),
-        metadata: reformatUser(track.user)
+        metadata: reformatUser(track.user, audiusBackendInstance)
       }
     })
 

@@ -1,12 +1,12 @@
 import { Name } from '@audius/common'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
+import { getContext } from 'common/store'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as actions from 'common/store/pages/settings/actions'
 import { getBrowserNotificationSettings } from 'common/store/pages/settings/selectors'
 import { BrowserNotificationSetting } from 'common/store/pages/settings/types'
 import { getErrorMessage } from 'common/utils/error'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import {
   Permission,
@@ -25,6 +25,7 @@ import mobileSagas from './mobileSagas'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* watchGetSettings() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
       yield* call(waitForBackendSetup)
@@ -80,6 +81,7 @@ function* watchGetSettings() {
 }
 
 function* watchToogleBrowserPushNotification() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     actions.SET_BROWSER_NOTIFICATION_ENABLED,
     function* (action: actions.SetBrowserNotificationEnabled) {
@@ -146,6 +148,7 @@ function* watchToogleBrowserPushNotification() {
 }
 
 function* watchSetBrowserNotificationSettingsOn() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     actions.SET_BROWSER_NOTIFICATION_SETTINGS_ON,
     function* (action: actions.SetBrowserNotificationSettingsOn) {
@@ -172,6 +175,7 @@ function* watchSetBrowserNotificationSettingsOn() {
 }
 
 function* watchUpdateNotificationSettings() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     actions.TOGGLE_NOTIFICATION_SETTING,
     function* (action: actions.ToggleNotificationSetting) {
@@ -203,6 +207,7 @@ function* watchUpdateNotificationSettings() {
 }
 
 function* watchUpdateEmailFrequency() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     actions.UPDATE_EMAIL_FREQUENCY,
     function* (action: actions.UpdateEmailFrequency) {

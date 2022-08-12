@@ -32,6 +32,7 @@ import { setTheme } from 'common/store/ui/theme/actions'
 import { getTheme } from 'common/store/ui/theme/selectors'
 import { makeGetTierAndVerifiedForUser } from 'common/store/wallet/utils'
 import { show } from 'components/music-confetti/store/slice'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import {
@@ -117,7 +118,9 @@ class SettingsPage extends PureComponent<
           this.props.subscribeBrowserPushNotifications()
         } else {
           const getSafariPermission = async () => {
-            const permissionData = await subscribeSafariPushBrowser()
+            const permissionData = await subscribeSafariPushBrowser(
+              audiusBackendInstance
+            )
             if (
               permissionData &&
               permissionData.permission === Permission.GRANTED
@@ -238,7 +241,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(settingPageActions.getNotificationSettings()),
     getPushNotificationSettings: () =>
       dispatch(settingPageActions.getPushNotificationSettings()),
-    onTwitterLogin: (uuid: string, profile: object) =>
+    onTwitterLogin: (uuid: string, profile: accountActions.TwitterProfile) =>
       dispatch(accountActions.twitterLogin({ uuid, profile })),
     onInstagramLogin: (
       uuid: string,
