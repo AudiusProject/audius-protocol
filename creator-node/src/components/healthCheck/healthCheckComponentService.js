@@ -174,6 +174,12 @@ const healthCheck = async (
     stateMonitoringQueueRateLimitJobsPerInterval: config.get(
       'stateMonitoringQueueRateLimitJobsPerInterval'
     ),
+    recoverOrphanedDataQueueRateLimitInterval: config.get(
+      'recoverOrphanedDataQueueRateLimitInterval'
+    ),
+    recoverOrphanedDataQueueRateLimitJobsPerInterval: config.get(
+      'recoverOrphanedDataQueueRateLimitJobsPerInterval'
+    ),
     transcodeActive,
     transcodeWaiting,
     transcodeQueueIsAvailable: isAvailable,

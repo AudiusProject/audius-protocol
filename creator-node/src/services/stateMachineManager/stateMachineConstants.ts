@@ -54,7 +54,9 @@ export const QUEUE_HISTORY = Object.freeze({
   // Max number of completed/failed jobs to keep in redis for the recurring sync queue
   RECURRING_SYNC: 100_000,
   // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
-  UPDATE_REPLICA_SET: 100_000
+  UPDATE_REPLICA_SET: 100_000,
+  // Max number of completed/failed jobs to keep in redis for the recover-orphaned-data queue
+  RECOVER_ORPHANED_DATA: 10_000
 })
 
 export const QUEUE_NAMES = {
@@ -71,7 +73,9 @@ export const QUEUE_NAMES = {
   // Name of queue that only processes jobs to issue a recurring sync
   RECURRING_SYNC: 'recurring-sync-queue',
   // Name of queue that only processes jobs to update a replica set
-  UPDATE_REPLICA_SET: 'update-replica-set-queue'
+  UPDATE_REPLICA_SET: 'update-replica-set-queue',
+  // Name of queue that only processes jobs to search for nodes with orphaned data and merge it into a Replica Set
+  RECOVER_ORPHANED_DATA: 'recover-orphaned-data-queue'
 } as const
 export type TQUEUE_NAMES = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES]
 
@@ -92,7 +96,9 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   // Max millis to run a recurring sync job for before marking it as stalled
   RECURRING_SYNC: 6 /* min */ * 60 * 1000,
   // Max millis to run an update-replica-set job for before marking it as stalled
-  UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000
+  UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000,
+  // Max millis to run a recover-orphaned-data job for before marking it as stalled
+  RECOVER_ORPHANED_DATA: 60 /* min */ * 60 * 1000
 })
 
 /**
