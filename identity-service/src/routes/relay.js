@@ -32,7 +32,11 @@ module.exports = function (app) {
       req.logger.error(`failed to retrieve optimizely feature flag for detectAbuseOnRelay: ${error}`)
     }
 
-    if (blockAbuseOnRelay && user?.isAbusiveErrorCode) {
+    if (
+      blockAbuseOnRelay &&
+      user?.isAbusiveErrorCode &&
+      blockRelayAbuseErrorCodes.has(user?.isAbusiveErrorCode)
+    ) {
       return errorResponseForbidden(
         `Forbidden ${user.isAbusiveErrorCode}`
       )

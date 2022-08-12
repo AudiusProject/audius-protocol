@@ -5,9 +5,9 @@ module.exports = {
     return queryInterface.addColumn(
       'Users',
       'isAbusiveErrorCode', {
-      type: Sequelize.STRING,
-      defaultValue: null
-    }
+        type: Sequelize.STRING,
+        defaultValue: null
+      }
     )
   },
   down: (queryInterface, Sequelize) => {
