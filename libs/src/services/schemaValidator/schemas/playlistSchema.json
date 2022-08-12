@@ -11,8 +11,11 @@
                     "default": null
                 },
                 "playlist_contents": {
-                    "type": ["array", "null"],
-                    "default": []
+                    "type": "object",
+                    "$ref": "#/definitions/PlaylistContents",
+                    "default": {
+                        "track_ids": []
+                    }
                 },
                 "playlist_name": {
                     "type": ["string", "null"],
@@ -51,6 +54,17 @@
             "maxLength": 46,
             "pattern": "^Qm[a-zA-Z0-9]{44}$",
             "title": "CID"
+        },
+        "PlaylistContents": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "track_ids": {
+                    "type": "array",
+                    "default": []
+                }
+            },
+            "title": "PlaylistContents"
         }
     }
 }

@@ -33,11 +33,6 @@ export interface PlaylistOperationResponse {
 
 const { encodeHashId, decodeHashId } = Utils
 
-// Minimum playlist ID, intentionally higher than legacy playlist ID range
-const MIN_PLAYLIST_ID = 400000
-// Maximum playlist ID, reflects postgres max integer value
-const MAX_PLAYLIST_ID = 2147483647
-
 type PlaylistTrackId = { time: number; track: number; metadata_time?: number }
 
 type PlaylistContents = {
@@ -328,7 +323,6 @@ export class EntityManager extends Base {
       this.REQUIRES(Services.CREATOR_NODE)
 
       const playlist = await this.getFullPlaylist(playlistId, userId)
-      console.log('asdf existing playlist', playlist)
 
       const updatedPlaylistTracks = this.mapAddedTimestamps(
         playlist.added_timestamps
@@ -399,7 +393,6 @@ export class EntityManager extends Base {
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
       const playlist = await this.getFullPlaylist(playlistId, userId)
-      console.log('asdf existing playlist', playlist)
 
       const existingPlaylistTracks = this.mapAddedTimestamps(
         playlist.added_timestamps
@@ -472,9 +465,7 @@ export class EntityManager extends Base {
       const updateAction = Action.UPDATE
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
-      console.log('asdf get full playlist ', { playlistId, userId })
       const playlist = await this.getFullPlaylist(playlistId, userId)
-      console.log('asdf existing playlist', playlist)
 
       const existingPlaylistTracks = this.mapAddedTimestamps(
         playlist.added_timestamps
@@ -552,14 +543,6 @@ export class EntityManager extends Base {
     let error = null
     let resp: any
     try {
-      console.log('asdf managing entity', {
-        userId,
-        entityType,
-        entityId,
-        action,
-        metadataMultihash
-      })
-
       resp = await this.contracts.EntityManagerClient?.manageEntity(
         userId,
         entityType,
@@ -571,7 +554,6 @@ export class EntityManager extends Base {
       return { txReceipt: resp.txReceipt, error }
     } catch (e) {
       error = (e as Error).message
-      console.log('asdf manageEntity error', error)
       return { txReceipt: null, error }
     }
   }

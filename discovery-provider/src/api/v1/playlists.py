@@ -143,7 +143,6 @@ class FullPlaylist(Resource):
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
         playlist = get_playlist(playlist_id, current_user_id)
-        logger.info(f"asdf playlist {playlist}")
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks

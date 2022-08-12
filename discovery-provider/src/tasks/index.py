@@ -748,7 +748,7 @@ def index_blocks(self, db, blocks_list):
                 session.commit()
                 metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
                 logger.info(
-                    f"asdf index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
+                    f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
             except Exception as e:
                 # Use 'commit' as the tx hash here.

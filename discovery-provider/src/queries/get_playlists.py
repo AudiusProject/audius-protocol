@@ -99,7 +99,6 @@ def get_playlists(args):
             key = make_cache_key(args)
 
             (playlists, playlist_ids) = get_unpopulated_playlists()
-            logger.info(f"asdf unpopulated playlists {playlists}")
             # bundle peripheral info into playlist results
             playlists = populate_playlist_metadata(
                 session,

@@ -444,5 +444,5 @@ def process_playlist_data_event(
     playlist_record.metadata_multihash = metadata_cid
 
     logger.info(
-        f"asdf index.py | AudiusData | Updated playlist record {playlist_record}"
+        f"index.py | AudiusData | Updated playlist record {playlist_record}"
     )
