@@ -451,9 +451,13 @@ class NotificationProcessor {
  */
 async function filterOutAbusiveUsers (notifications) {
   const initiatorIds = notifications.map(({ initiator }) => initiator)
+  const userEntityIds = notifications
+    .filter(({ metadata }) => metadata && metadata.entity_type === 'user')
+    .map(({ metadata }) => metadata.entity_id)
+  const allUserIds = initiatorIds.concat(userEntityIds)
   const users = await models.User.findAll({
     where: {
-      blockchainUserId: { [ models.Sequelize.Op.in ]: initiatorIds }
+      blockchainUserId: { [ models.Sequelize.Op.in ]: allUserIds }
     },
     attributes: ['blockchainUserId', 'isAbusive']
   })
@@ -461,7 +465,11 @@ async function filterOutAbusiveUsers (notifications) {
   users.forEach(user => {
     usersAbuseMap[user.blockchainUserId] = user.isAbusive
   })
-  const result = notifications.filter(notification => !usersAbuseMap[notification.initiator])
+  const result = notifications.filter(notification => {
+    const isInitiatorAbusive = usersAbuseMap[notification.initiator.toString()]
+    const isUserEntityAbusive = notification.metadata && notification.metadata.entity_type === 'user' && notification.metadata.entity_id && usersAbuseMap[notification.metadata.entity_id.toString()]
+    return !isInitiatorAbusive && !isUserEntityAbusive
+  })
   logger.info(`notifications | index.js | Filtered out ${notifications.length - result.length} bad initiators out of ${notifications.length} total.`)
   return result
 }

@@ -63,7 +63,7 @@ class StateMonitoringManager {
       lockDuration: MAX_QUEUE_RUNTIMES.MONITOR_STATE,
       prometheusRegistry,
       limiter: {
-        // Bull doesn't allow either of these to be set to 0
+        // Bull doesn't allow either of these to be set to 0, so we'll pause the queue later if the jobs per interval is 0
         max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
       }
@@ -224,7 +224,7 @@ class StateMonitoringManager {
   }
 
   /**
-   * Clears the monitoring queue and adds a job that will start processing users
+   * Adds a job that will start processing users
    * starting from a random userId. Future jobs are added to the queue as a
    * result of this initial job succeeding or failing to complete.
    * @param {Object} queue the StateMonitoringQueue to consume jobs from

@@ -33,8 +33,12 @@ class StateMachineManager {
       audiusLibs.discoveryProvider.discoveryProviderEndpoint,
       prometheusRegistry
     )
-    const { manualSyncQueue, recurringSyncQueue, updateReplicaSetQueue } =
-      await stateReconciliationManager.init(prometheusRegistry)
+    const {
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
+    } = await stateReconciliationManager.init(prometheusRegistry)
 
     // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
     const queueNameToQueueMap = {
@@ -43,7 +47,8 @@ class StateMachineManager {
       [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: findReplicaSetUpdatesQueue,
       [QUEUE_NAMES.MANUAL_SYNC]: manualSyncQueue,
       [QUEUE_NAMES.RECURRING_SYNC]: recurringSyncQueue,
-      [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetQueue
+      [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetQueue,
+      [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: recoverOrphanedDataQueue
     }
     for (const [queueName, queue] of Object.entries(queueNameToQueueMap)) {
       queue.on(
@@ -69,7 +74,8 @@ class StateMachineManager {
       cNodeEndpointToSpIdMapQueue,
       manualSyncQueue,
       recurringSyncQueue,
-      updateReplicaSetQueue
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
     }
   }
 
