@@ -17,6 +17,7 @@ import {
   delay
 } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import {
   getAccountUser,
@@ -63,7 +64,6 @@ import { show as showMusicConfetti } from 'components/music-confetti/store/slice
 import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
 import { apiClient } from 'services/audius-api-client'
 import { getCognitoExists } from 'services/audius-backend/Cognito'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForValue } from 'utils/sagaHelpers'
@@ -168,6 +168,7 @@ const getClaimingConfig = () => {
 function* claimChallengeRewardAsync(
   action: ReturnType<typeof claimChallengeReward>
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { claim, retryOnFailure, retryCount = 0 } = action.payload
   const { specifiers, challengeId, amount } = claim
 
@@ -555,6 +556,7 @@ function* watchUpdateOptimisticListenStreak() {
 }
 
 function* watchUpdateHCaptchaScore() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     updateHCaptchaScore.type,
     function* (action: ReturnType<typeof updateHCaptchaScore>): any {

@@ -1,5 +1,12 @@
 import { Kind, Status, USER_ID_AVAILABLE_EVENT } from '@audius/common'
-import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
+import {
+  call,
+  put,
+  fork,
+  select,
+  takeEvery,
+  getContext
+} from 'redux-saga/effects'
 
 import * as accountActions from 'common/store/account/reducer'
 import {
@@ -34,7 +41,6 @@ import {
 } from 'services/LocalStorage'
 import { fetchCID } from 'services/audius-backend'
 import { recordIP } from 'services/audius-backend/RecordIP'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
 import { fingerprintClient } from 'services/fingerprint'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
@@ -66,13 +72,14 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const IP_STORAGE_KEY = 'user-ip-timestamp'
 
 function* recordIPIfNotRecent(handle) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const timeBetweenRefresh = 24 * 60 * 60 * 1000
   const now = Date.now()
   const minAge = now - timeBetweenRefresh
   const storedIPStr = window.localStorage.getItem(IP_STORAGE_KEY)
   const storedIP = storedIPStr && JSON.parse(storedIPStr)
   if (!storedIP || !storedIP[handle] || storedIP[handle].timestamp < minAge) {
-    const { userIP, error } = yield call(recordIP)
+    const { userIP, error } = yield call(recordIP, audiusBackendInstance)
     if (!error) {
       window.localStorage.setItem(
         IP_STORAGE_KEY,
@@ -85,6 +92,7 @@ function* recordIPIfNotRecent(handle) {
 // Tasks to be run on account successfully fetched, e.g.
 // recording metrics, setting user data
 function* onFetchAccount(account) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   if (account && account.handle) {
     // Set analytics user context
     const traits = {
@@ -163,6 +171,7 @@ function* onFetchAccount(account) {
 }
 
 export function* fetchAccountAsync(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   let fromSource = false
   if (action) {
     fromSource = action.fromSource
@@ -285,6 +294,7 @@ const setBrowerPushPermissionConfirmationModal = setVisibility({
  * Determine if the push notification modal should appear
  */
 export function* showPushNotificationConfirmation() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   if (isMobile() || isElectron()) return
   const account = yield select(getAccountUser)
   if (!account) return
@@ -330,6 +340,7 @@ export function* fetchBrowserPushNotifcationStatus() {
 }
 
 export function* subscribeBrowserPushNotifcations() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   if (isPushManagerAvailable) {
     const pushManagerSubscription = yield call(
       getPushManagerBrowserSubscription
@@ -375,6 +386,7 @@ export function* subscribeBrowserPushNotifcations() {
 }
 
 export function* unsubscribeBrowserPushNotifcations() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   if (isPushManagerAvailable) {
     const pushManagerSubscription = yield call(unsubscribePushManagerBrowser)
     if (pushManagerSubscription) {
@@ -396,6 +408,7 @@ export function* unsubscribeBrowserPushNotifcations() {
 
 function* associateTwitterAccount(action) {
   const { uuid, profile } = action.payload
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   try {
     const userId = yield select(getUserId)
     const handle = yield select(getUserHandle)
@@ -422,6 +435,7 @@ function* associateTwitterAccount(action) {
 
 function* associateInstagramAccount(action) {
   const { uuid, profile } = action.payload
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   try {
     const userId = yield select(getUserId)
     const handle = yield select(getUserHandle)

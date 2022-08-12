@@ -1,6 +1,8 @@
 import { ID, User, UserMetadata } from '@audius/common'
 import { call, select } from 'typed-redux-saga/macro'
 
+import { AudiusBackend } from 'common/services/audius-backend'
+import { getContext } from 'common/store'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
@@ -21,6 +23,7 @@ export type UserListProviderArgs<T, U = void> = {
     offset: number
     entityId: ID
     currentUserId: ID | null
+    audiusBackendInstance: AudiusBackend
   }) => Promise<{ users: UserMetadata[]; extra?: U }>
 
   includeCurrentUser: (entity: T) => boolean
@@ -61,6 +64,7 @@ export function createUserListProvider<T, U = void>({
     currentPage: number
     pageSize: number
   }) {
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const existingEntity: T | null = yield* select(getExistingEntity, { id })
     if (!existingEntity) return { userIds: [], hasMore: false }
 
@@ -74,7 +78,8 @@ export function createUserListProvider<T, U = void>({
       limit: pageSize,
       offset,
       entityId: id,
-      currentUserId: userId
+      currentUserId: userId,
+      audiusBackendInstance
     })
     if (includeCurrentUser(existingEntity)) {
       const currentUser = yield* select(getAccountUser)

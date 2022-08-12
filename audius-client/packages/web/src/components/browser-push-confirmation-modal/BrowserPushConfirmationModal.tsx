@@ -9,6 +9,7 @@ import { subscribeBrowserPushNotifications } from 'common/store/account/reducer'
 import * as settingPageActions from 'common/store/pages/settings/actions'
 import { getBrowserNotificationSettings } from 'common/store/pages/settings/selectors'
 import { setVisibility, getModalVisibility } from 'common/store/ui/modals/slice'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { AppState } from 'store/types'
 import {
   isPushManagerAvailable,
@@ -66,7 +67,9 @@ const ConnectedBrowserPushConfirmationModal = ({
           subscribeBrowserPushNotifications()
         } else {
           const getSafariPermission = async () => {
-            const permissionData = await subscribeSafariPushBrowser()
+            const permissionData = await subscribeSafariPushBrowser(
+              audiusBackendInstance
+            )
             if (
               permissionData &&
               permissionData.permission === Permission.GRANTED

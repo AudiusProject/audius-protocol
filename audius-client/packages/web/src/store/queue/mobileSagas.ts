@@ -1,6 +1,7 @@
 import { ID, UID, removeNullable } from '@audius/common'
 import { all, put, select, takeEvery, call } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
@@ -20,7 +21,6 @@ import {
   shuffle,
   updateIndex
 } from 'common/store/queue/slice'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   PersistQueueMessage,
   RepeatModeMessage,
@@ -40,6 +40,7 @@ const getImageUrl = (cid: string, gateway: string | null): string => {
 }
 
 function* getTrackInfo(id: ID, uid: UID) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return null
 

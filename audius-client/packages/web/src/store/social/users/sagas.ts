@@ -1,6 +1,7 @@
 import { Kind, ID, Name, makeKindId } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
@@ -8,7 +9,6 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import { getUsers, getUser } from 'common/store/cache/users/selectors'
 import * as socialActions from 'common/store/social/users/actions'
 import * as signOnActions from 'pages/sign-on/store/actions'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -68,6 +68,7 @@ export function* followUser(
 }
 
 export function* confirmFollowUser(userId: ID, accountId: ID) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
@@ -175,6 +176,7 @@ export function* unfollowUser(
 }
 
 export function* confirmUnfollowUser(userId: ID, accountId: ID) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),

@@ -10,6 +10,7 @@ import {
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import * as accountActions from 'common/store/account/reducer'
 import { getPlaylistLibrary, getUserId } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
@@ -25,7 +26,6 @@ import { removeFromPlaylistLibrary } from 'common/store/playlist-library/helpers
 import * as socialActions from 'common/store/social/collections/actions'
 import { formatShareText } from 'common/utils/formatUtil'
 import * as signOnActions from 'pages/sign-on/store/actions'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -99,6 +99,7 @@ export function* confirmRepostCollection(
   collectionId: ID,
   user: User
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
@@ -201,6 +202,7 @@ export function* confirmUndoRepostCollection(
   collectionId: ID,
   user: User
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
@@ -367,6 +369,7 @@ export function* saveCollectionAsync(
 }
 
 export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
@@ -480,6 +483,7 @@ export function* unsaveCollectionAsync(
 }
 
 export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),

@@ -1,13 +1,12 @@
 import { IntKeys } from '@audius/common'
 import { each } from 'lodash'
 import moment from 'moment'
-import { all, call, put, take, takeEvery } from 'redux-saga/effects'
+import { all, call, put, take, takeEvery, getContext } from 'redux-saga/effects'
 
 import { getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { getBalance } from 'common/store/wallet/slice'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { DASHBOARD_PAGE } from 'utils/route'
 import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
@@ -15,6 +14,7 @@ import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
 import * as dashboardActions from './actions'
 
 function* fetchDashboardAsync(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
 
   const account = yield call(waitForValue, getAccountUser)
@@ -63,6 +63,7 @@ function* fetchDashboardAsync(action) {
 const formatMonth = (date) => moment.utc(date).format('MMM').toUpperCase()
 
 function* fetchDashboardListenDataAsync(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const listenData = yield call(
     audiusBackendInstance.getTrackListens,
     action.period,

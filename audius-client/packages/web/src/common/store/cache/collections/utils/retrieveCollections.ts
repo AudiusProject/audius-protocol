@@ -9,14 +9,13 @@ import {
 } from '@audius/common'
 import { call, select } from 'redux-saga/effects'
 
-import { CommonState } from 'common/store'
+import { CommonState, getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
@@ -140,6 +139,7 @@ export function* retrieveCollections(
       return selected
     },
     retrieveFromSource: function* (ids: ID[]) {
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       let metadatas: UserCollectionMetadata[]
 
       if (ids.length === 1) {
@@ -158,6 +158,7 @@ export function* retrieveCollections(
       return metadatasWithDeleted
     },
     onBeforeAddToCache: function* (metadatas: UserCollectionMetadata[]) {
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       yield addUsersFromCollections(metadatas)
       yield addTracksFromCollections(metadatas)
 
@@ -165,7 +166,9 @@ export function* retrieveCollections(
         yield call(retrieveTracksForCollections, metadatas, new Set())
       }
 
-      const reformattedCollections = metadatas.map((c) => reformat(c))
+      const reformattedCollections = metadatas.map((c) =>
+        reformat(c, audiusBackendInstance)
+      )
 
       return reformattedCollections
     },

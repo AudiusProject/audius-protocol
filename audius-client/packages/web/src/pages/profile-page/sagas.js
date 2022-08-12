@@ -6,7 +6,15 @@ import {
   makeKindId
 } from '@audius/common'
 import { merge } from 'lodash'
-import { call, delay, fork, put, select, takeEvery } from 'redux-saga/effects'
+import {
+  call,
+  delay,
+  fork,
+  getContext,
+  put,
+  select,
+  takeEvery
+} from 'redux-saga/effects'
 
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
@@ -34,7 +42,6 @@ import { squashNewLines } from 'common/utils/formatUtil'
 import { setAudiusAccountUser } from 'services/LocalStorage'
 import { apiClient } from 'services/audius-api-client'
 import { fetchCID } from 'services/audius-backend'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import SolanaClient from 'services/solana-client/SolanaClient'
@@ -55,6 +62,7 @@ function* watchFetchProfile() {
 }
 
 function* fetchProfileCustomizedCollectibles(user) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
     user.creator_node_endpoint
   )
@@ -178,6 +186,7 @@ function* fetchSupportersAndSupporting(userId) {
 }
 
 function* fetchProfileAsync(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   try {
     let user
     if (action.handle) {
@@ -282,6 +291,7 @@ const MOST_USED_TAGS_COUNT = 5
 // so the number of user tracks plus a large track number are fetched
 const LARGE_TRACKCOUNT_TAGS = 100
 function* fetchMostUsedTags(userId, trackCount) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const trackResponse = yield call(audiusBackendInstance.getArtistTracks, {
     offset: 0,
     limit: trackCount + LARGE_TRACKCOUNT_TAGS,
@@ -305,6 +315,7 @@ function* fetchMostUsedTags(userId, trackCount) {
 }
 
 function* fetchFolloweeFollows(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const profileUserId = yield select(getProfileUserId)
   if (!profileUserId) return
   const followeeFollows = yield call(
@@ -339,6 +350,7 @@ function* watchUpdateProfile() {
 }
 
 export function* updateProfileAsync(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
   let metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
@@ -414,6 +426,7 @@ export function* updateProfileAsync(action) {
 }
 
 function* confirmUpdateProfile(userId, metadata) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
@@ -511,6 +524,7 @@ function* updateCurrentUserFollows(action) {
 }
 
 function* watchSetNotificationSubscription() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield takeEvery(
     profileActions.SET_NOTIFICATION_SUBSCRIPTION,
     function* (action) {

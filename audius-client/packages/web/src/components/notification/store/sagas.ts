@@ -21,6 +21,7 @@ import {
   takeLatest
 } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { getUserId, getHasAccount } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
@@ -45,7 +46,6 @@ import { getIsReachable } from 'common/store/reachability/selectors'
 import { fetchReactionValues } from 'common/store/ui/reactions/slice'
 import { getBalance } from 'common/store/wallet/slice'
 import { getErrorMessage } from 'common/utils/error'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -126,6 +126,7 @@ function* recordPlaylistUpdatesAnalytics(playlistUpdates: ID[]) {
 export function* fetchNotifications(
   action: notificationActions.FetchNotifications
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     yield* put(notificationActions.fetchNotificationsRequested())
     const limit = action.limit || NOTIFICATION_LIMIT_DEFAULT
@@ -382,12 +383,14 @@ export function* fetchNotificationUsers(
 export function* subscribeUserSettings(
   action: notificationActions.SubscribeUser
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(audiusBackendInstance.updateUserSubscription, action.userId, true)
 }
 
 export function* unsubscribeUserSettings(
   action: notificationActions.UnsubscribeUser
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(
     audiusBackendInstance.updateUserSubscription,
     action.userId,
@@ -398,6 +401,7 @@ export function* unsubscribeUserSettings(
 export function* updatePlaylistLastViewedAt(
   action: notificationActions.UpdatePlaylistLastViewedAt
 ) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(
     audiusBackendInstance.updatePlaylistLastViewedAt,
     action.playlistId
@@ -490,6 +494,7 @@ const checkIfNotificationsChanged = (
  * Get notifications, used the polling daemon
  */
 export function* getNotifications(isFirstFetch: boolean) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const isOpen: ReturnType<typeof getNotificationPanelIsOpen> = yield* select(
       getNotificationPanelIsOpen
@@ -588,6 +593,7 @@ export function* getNotifications(isFirstFetch: boolean) {
 }
 
 function* notificationPollingDaemon() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(waitForBackendSetup)
   yield* call(waitForValue, getHasAccount, {})
   yield* call(audiusBackendInstance.getEmailNotificationSettings)
@@ -646,6 +652,7 @@ function* notificationPollingDaemon() {
 }
 
 export function* markAllNotificationsViewed() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(waitForBackendSetup)
   yield* call(audiusBackendInstance.markAllNotificationAsViewed)
   if (NATIVE_MOBILE) {

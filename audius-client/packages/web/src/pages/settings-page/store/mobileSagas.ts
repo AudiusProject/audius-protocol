@@ -1,5 +1,7 @@
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
+import { AudiusBackend } from 'common/services/audius-backend'
+import { getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as actions from 'common/store/pages/settings/actions'
@@ -10,7 +12,6 @@ import {
   PushNotificationSetting
 } from 'common/store/pages/settings/types'
 import { getErrorMessage } from 'common/utils/error'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   EnablePushNotificationsMessage,
   DisablePushNotificationsMessage
@@ -18,6 +19,7 @@ import {
 import { waitForValue } from 'utils/sagaHelpers'
 
 function* watchGetPushNotificationSettings() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_PUSH_NOTIFICATION_SETTINGS, function* () {
     yield* call(waitForBackendSetup)
     try {
@@ -37,7 +39,9 @@ function* watchGetPushNotificationSettings() {
   })
 }
 
-export async function disablePushNotifications() {
+export async function disablePushNotifications(
+  audiusBackendInstance: AudiusBackend
+) {
   // Disabling push notifications should delete the device token
   const message = new DisablePushNotificationsMessage()
   message.send()
@@ -48,6 +52,7 @@ export async function disablePushNotifications() {
 }
 
 function* watchUpdatePushNotificationSettings() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     actions.TOGGLE_PUSH_NOTIFICATION_SETTING,
     function* (action: actions.TogglePushNotificationSetting) {
@@ -74,7 +79,7 @@ function* watchUpdatePushNotificationSettings() {
             )
             yield* call(audiusBackendInstance.registerDeviceToken, token, os)
           } else {
-            yield* call(disablePushNotifications)
+            yield* call(disablePushNotifications, audiusBackendInstance)
           }
         } else {
           if (isOn === undefined) {

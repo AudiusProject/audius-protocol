@@ -7,7 +7,8 @@ import {
   put,
   select,
   takeEvery,
-  takeLatest
+  takeLatest,
+  getContext
 } from 'redux-saga/effects'
 
 import * as accountActions from 'common/store/account/reducer'
@@ -22,7 +23,6 @@ import { getUser } from 'common/store/cache/users/selectors'
 import { squashNewLines } from 'common/utils/formatUtil'
 import * as signOnActions from 'pages/sign-on/store/actions'
 import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -141,6 +141,7 @@ function* createPlaylistAsync(action) {
 }
 
 function* confirmCreatePlaylist(uid, userId, formFields, source) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, uid),
@@ -182,7 +183,7 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
         // The reformatted playlist is the combination of the results we get back
         // from the confirmation, plus any writes that may be in the confirmer still.
         const reformattedPlaylist = {
-          ...reformat(confirmedPlaylist),
+          ...reformat(confirmedPlaylist, audiusBackendInstance),
           ...movedCollection,
           playlist_id: confirmedPlaylist.playlist_id,
           _temp: false
@@ -312,6 +313,7 @@ function* editPlaylistAsync(action) {
 }
 
 function* confirmEditPlaylist(playlistId, userId, formFields) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -343,7 +345,10 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
           cacheActions.update(Kind.COLLECTIONS, [
             {
               id: confirmedPlaylist.playlist_id,
-              metadata: { ...reformat(confirmedPlaylist), artwork: {} }
+              metadata: {
+                ...reformat(confirmedPlaylist, audiusBackendInstance),
+                artwork: {}
+              }
             }
           ])
         )
@@ -432,6 +437,7 @@ function* addTrackToPlaylistAsync(action) {
 }
 
 function* confirmAddTrackToPlaylist(userId, playlistId, trackId, count) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -570,6 +576,7 @@ function* removeTrackFromPlaylistAsync(action) {
 
 // Removes the invalid track ids from the playlist by calling `dangerouslySetPlaylistOrder`
 function* fixInvalidTracksInPlaylist(playlistId, userId, invalidTrackIds) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
   const removedTrackIds = new Set(invalidTrackIds)
 
@@ -600,6 +607,7 @@ function* confirmRemoveTrackFromPlaylist(
   timestamp,
   count
 ) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -729,6 +737,7 @@ function* orderPlaylistAsync(action) {
 }
 
 function* confirmOrderPlaylist(userId, playlistId, trackIds) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -843,6 +852,7 @@ function* publishPlaylistAsync(action) {
 }
 
 function* confirmPublishPlaylist(userId, playlistId) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -953,6 +963,7 @@ function* deletePlaylistAsync(action) {
 }
 
 function* confirmDeleteAlbum(playlistId, trackIds, userId) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -1050,6 +1061,7 @@ function* confirmDeleteAlbum(playlistId, trackIds, userId) {
 }
 
 function* confirmDeletePlaylist(userId, playlistId) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -1171,6 +1183,7 @@ function* watchAdd() {
 }
 
 function* watchFetchCoverArt() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const inProgress = new Set()
   yield takeEvery(
     collectionActions.FETCH_COVER_ART,

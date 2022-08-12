@@ -1,9 +1,9 @@
 import { Name } from '@audius/common'
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make } from 'store/analytics/actions'
 import { requestConfirmation } from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -20,6 +20,7 @@ import {
 const DEACTIVATE_CONFIRMATION_UID = 'DEACTIVATE'
 
 function* handleDeactivateAccount() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     yield* call(waitForBackendSetup)
     const accountUserId = yield* select(getUserId)
@@ -68,6 +69,7 @@ function* handleDeactivateAccount() {
 }
 
 function* waitAndSignOut() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // Wait for all confirmations to end so that reloading doesn't trigger beforeUnload dialog
   // Note: Waiting for getIsConfirming doesn't appear to work here
   yield call(waitForValue, getConfirmCalls, {}, (confirmCalls) => {
@@ -75,7 +77,7 @@ function* waitAndSignOut() {
   })
   // Give a brief delay to allow the beforeUnload handler to clear
   yield delay(10)
-  yield call(signOut)
+  yield call(signOut, audiusBackendInstance)
 }
 
 function* watchDeactivateAccount() {

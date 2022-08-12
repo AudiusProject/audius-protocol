@@ -11,6 +11,7 @@ import {
   call,
   delay,
   fork,
+  getContext,
   put,
   race,
   select,
@@ -20,6 +21,7 @@ import {
 } from 'redux-saga/effects'
 
 import * as accountActions from 'common/store/account/reducer'
+import { fetchAccountAsync, reCacheAccount } from 'common/store/account/sagas'
 import { getAccountUser } from 'common/store/account/selectors'
 import * as backendActions from 'common/store/backend/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
@@ -34,10 +36,8 @@ import { ELECTRONIC_SUBGENRES, Genre } from 'common/utils/genres'
 import { getIGUserUrl } from 'components/instagram-auth/InstagramAuth'
 import { getCityAndRegion } from 'services/Location'
 import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import { fetchAccountAsync, reCacheAccount } from 'store/account/sagas'
 import { identify, make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -144,6 +144,7 @@ function* fetchFollowArtistGenre(followArtistCategory) {
 }
 
 function* fetchReferrer(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { handle } = action
   if (handle) {
     try {
@@ -202,6 +203,7 @@ async function getInstagramUser(handle) {
 
 function* validateHandle(action) {
   const { handle, isOauthVerified, onValidate } = action
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
   try {
     if (handle.length > MAX_HANDLE_LENGTH) {
@@ -256,6 +258,7 @@ function* validateHandle(action) {
 }
 
 function* checkEmail(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   if (!isValidEmailString(action.email)) {
     yield put(signOnActions.validateEmailFailed('characters'))
     return
@@ -288,6 +291,7 @@ function* validateEmail(action) {
 }
 
 function* signUp() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
   const signOn = yield select(getSignOn)
   const location = yield call(getCityAndRegion)
@@ -419,6 +423,7 @@ function* signUp() {
 }
 
 function* signIn(action) {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
   try {
     const signOn = yield select(getSignOn)
@@ -539,6 +544,7 @@ function* followCollections(collectionIds, favoriteSource) {
 }
 
 function* followArtists() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
   try {
     // Auto-follow Hot & New Playlist
@@ -658,6 +664,7 @@ function* watchOpenSignOn() {
 }
 
 function* watchSendWelcomeEmail() {
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield takeLatest(signOnActions.SEND_WELCOME_EMAIL, function* (action) {
     yield call(audiusBackendInstance.sendWelcomeEmail, {
       name: action.name

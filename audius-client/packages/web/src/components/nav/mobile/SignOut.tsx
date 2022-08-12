@@ -5,6 +5,7 @@ import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { disablePushNotifications } from 'pages/settings-page/store/mobileSagas'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { make, useRecord } from 'store/analytics/actions'
 import { signOut } from 'utils/signOut'
 
@@ -25,11 +26,15 @@ const SignOutPage = ({ onClickBack }: { onClickBack: () => void }) => {
   const record = useRecord()
   const onSignOut = useCallback(async () => {
     if (NATIVE_MOBILE) {
-      await disablePushNotifications()
+      await disablePushNotifications(audiusBackendInstance)
       record(make(Name.SETTINGS_LOG_OUT, {}))
-      await signOut()
+      await signOut(audiusBackendInstance)
     } else {
-      record(make(Name.SETTINGS_LOG_OUT, { callback: signOut }))
+      record(
+        make(Name.SETTINGS_LOG_OUT, {
+          callback: () => signOut(audiusBackendInstance)
+        })
+      )
     }
   }, [record])
 

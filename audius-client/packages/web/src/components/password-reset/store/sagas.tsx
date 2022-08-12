@@ -1,10 +1,11 @@
 import { call, put, takeEvery } from 'redux-saga/effects'
 
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { getContext } from 'common/store'
 
 import * as actions from './actions'
 
 function* watchChangePassword() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield takeEvery(
     actions.CHANGE_PASSWORD,
     function* (action: actions.ChangePasswordAction) {
