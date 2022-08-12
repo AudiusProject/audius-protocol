@@ -95,8 +95,6 @@ module.exports = async function primarySyncFromSecondary({
   } catch (e) {
     error = e
 
-    logger.error(`${logPrefix} Sync error ${e.message}`)
-
     await SyncHistoryAggregator.recordSyncFail(wallet)
   } finally {
     await WalletWriteLock.release(wallet)

@@ -27,7 +27,6 @@ const handleSyncFromPrimary = async ({
   )
 
   const start = Date.now()
-  let returnValue = {}
 
   genericLogger.info('begin nodesync for ', wallet, 'time', start)
 
@@ -53,13 +52,44 @@ const handleSyncFromPrimary = async ({
     { libs, logContext },
     forceResyncConfig
   )
+  const forceResyncQueryParam = forceResyncConfig?.forceResync
+  if (forceResyncQueryParam && !forceResync) {
+    return {
+      error: new Error(
+        `Cannot issue sync for wallet ${wallet} due to shouldForceResync() rejection`
+      ),
+      result: 'failure_force_resync_check'
+    }
+  }
 
+  let returnValue = {}
   try {
     let localMaxClockVal
     if (forceResync) {
       genericLogger.warn(`${logPrefix} Forcing resync..`)
-      await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
-      localMaxClockVal = -1
+
+      /**
+       * Wipe local DB state
+       *
+       * deleteAllCNodeUserDataFromDB() is not ideal since it can either return an error or throw an error; both scenarios are handled
+       */
+      let deleteError
+      try {
+        deleteError = await DBManager.deleteAllCNodeUserDataFromDB({
+          lookupWallet: wallet
+        })
+        localMaxClockVal = -1
+      } catch (e) {
+        deleteError = e
+      }
+
+      if (deleteError) {
+        returnValue = {
+          error: deleteError,
+          result: 'failure_delete_db_data'
+        }
+        throw returnValue.error
+      }
     } else {
       // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
       const cnodeUser = await models.CNodeUser.findOne({
@@ -666,6 +696,8 @@ async function secondarySyncFromPrimary({
   )
   const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
 
+  const mode = forceResyncConfig?.forceResync ? 'force_resync' : 'default'
+
   const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
@@ -674,7 +706,7 @@ async function secondarySyncFromPrimary({
     forceResyncConfig,
     logContext
   })
-  metricEndTimerFn({ result })
+  metricEndTimerFn({ result, mode })
 
   if (error) {
     throw new Error(error)
