@@ -44,7 +44,7 @@
     "@ethersproject/solidity": "5.0.5",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
     "@project-serum/anchor": "0.24.1",
-    "@solana/spl-token": "0.1.6",
+    "@solana/spl-token": "0.1.8",
     "@solana/web3.js": "1.37.1",
     "abi-decoder": "2.4.0",
     "ajv": "6.12.2",
