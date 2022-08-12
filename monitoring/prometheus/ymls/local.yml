@@ -19,27 +19,25 @@
           component: 'monitoring'
           job: 'census'
 
-  - job_name: 'monitor-alchemy'
+  - job_name: 'exporters-alchemy'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['host.docker.internal:2000']
         labels:
           host: 'host.docker.internal'
           environment: 'prod'
-          service: 'audius'
-          component: 'monitoring'
-          job: 'alchemy'
+          service: 'exporter'
+          target: 'alchemy'
 
-  - job_name: 'monitor-sdk'
+  - job_name: 'exporters-sdk'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['host.docker.internal:2001']
         labels:
           host: 'host.docker.internal'
           environment: 'prod'
-          service: 'audius'
-          component: 'monitoring'
-          job: 'sdk'
+          service: 'exporter'
+          target: 'audius-sdk'
 
   ###################################################
   # monitor local (remote-dev) setups that use docker
