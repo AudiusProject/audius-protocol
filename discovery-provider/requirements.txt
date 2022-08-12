@@ -42,14 +42,14 @@ prometheus-client==0.13.1
 click==8.0.4
 numpy==1.20.3
 datasketch==1.5.7
-# opentelemetry-instrumentation-flask
-# opentelemetry-instrumentation-requests
-# opentelemetry-instrumentation-sqlalchemy
-# opentelemetry-instrumentation-celery
-# opentelemetry-instrumentation-logging
-# opentelemetry-api
-# opentelemetry-sdk 
-# opentelemetry-exporter-jaeger
+opentelemetry-instrumentation-flask
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-sqlalchemy
+opentelemetry-instrumentation-celery
+opentelemetry-instrumentation-logging
+opentelemetry-api
+opentelemetry-sdk 
+opentelemetry-exporter-jaeger
 
 # Solana support
 base58==2.1.0
