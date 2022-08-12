@@ -62,7 +62,6 @@ import { getBalance, increaseBalance } from 'common/store/wallet/slice'
 import { stringAudioToStringWei } from 'common/utils/wallet'
 import { show as showMusicConfetti } from 'components/music-confetti/store/slice'
 import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
-import { apiClient } from 'services/audius-api-client'
 import { getCognitoExists } from 'services/audius-backend/Cognito'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { AUDIO_PAGE } from 'utils/route'
@@ -417,6 +416,7 @@ function* watchClaimChallengeReward() {
 }
 
 function* fetchUserChallengesAsync() {
+  const apiClient = yield* getContext('apiClient')
   yield* call(waitForBackendSetup)
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return

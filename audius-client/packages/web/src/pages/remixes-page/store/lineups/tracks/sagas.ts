@@ -1,5 +1,6 @@
 import { call, put, select } from 'typed-redux-saga'
 
+import { getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import {
@@ -8,7 +9,6 @@ import {
 } from 'common/store/pages/remixes/lineup/actions'
 import { getTrackId, getLineup } from 'common/store/pages/remixes/selectors'
 import { setCount } from 'common/store/pages/remixes/slice'
-import { apiClient } from 'services/audius-api-client'
 import { LineupSagas } from 'store/lineup/sagas'
 import { AppState } from 'store/types'
 
@@ -21,6 +21,7 @@ function* getTracks({
   limit: number
   payload: { trackId: number | null }
 }) {
+  const apiClient = yield* getContext('apiClient')
   const { trackId } = payload
   if (!trackId) return []
 

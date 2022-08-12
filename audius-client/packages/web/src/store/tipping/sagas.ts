@@ -22,6 +22,7 @@ import {
   cancel
 } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { update } from 'common/store/cache/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
@@ -59,7 +60,6 @@ import {
   weiToAudioString,
   weiToString
 } from 'common/utils/wallet'
-import { apiClient } from 'services/audius-api-client'
 import {
   fetchRecentUserTips,
   fetchSupporters,
@@ -69,7 +69,6 @@ import {
 } from 'services/audius-backend/Tipping'
 import { UpdateTipsStorageMessage } from 'services/native-mobile-interface/tipping'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
 import mobileSagas from 'store/tipping/mobileSagas'
 import {
@@ -203,6 +202,7 @@ function* overrideSupportersForUser({
 }
 
 function* sendTipAsync() {
+  const walletClient = yield* getContext('walletClient')
   yield call(waitForRemoteConfig)
 
   const sender = yield* select(getAccountUser)
@@ -687,6 +687,7 @@ function* fetchUserSupporterAsync(
   action: ReturnType<typeof fetchUserSupporter>
 ) {
   const { currentUserId, userId, supporterUserId } = action.payload
+  const apiClient = yield* getContext('apiClient')
   try {
     const response = yield* call([apiClient, apiClient.getUserSupporter], {
       currentUserId,

@@ -2,7 +2,7 @@ import { ID, Kind, StemCategory, Stem, StemTrackMetadata } from '@audius/common'
 import { call, put } from 'redux-saga/effects'
 
 import * as cacheActions from 'common/store/cache/actions'
-import { apiClient } from 'services/audius-api-client'
+import { getContext } from 'common/store/effects'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { getTrack } from '../selectors'
@@ -17,6 +17,8 @@ import { processAndCacheTracks } from './processAndCacheTracks'
  * @param trackId the parent track for which to fetch stems
  */
 export function* fetchAndProcessStems(trackId: ID) {
+  const apiClient = yield* getContext('apiClient')
+
   const stems: StemTrackMetadata[] = yield call(
     (args) => apiClient.getStems(args),
     {

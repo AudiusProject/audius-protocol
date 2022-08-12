@@ -62,9 +62,7 @@ import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
 } from 'pages/profile-page/sagas'
-import { apiClient } from 'services/audius-api-client'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import walletClient from 'services/wallet-client/WalletClient'
 import {
   loadWalletLink,
   loadBitski,
@@ -137,6 +135,7 @@ function* confirmSendAsync() {
 }
 
 function* fetchEthWalletInfo(wallets: string[]) {
+  const walletClient = yield* getContext('walletClient')
   const ethWalletBalances = yield* call(
     walletClient.getEthWalletBalances,
     wallets
@@ -155,6 +154,7 @@ function* fetchEthWalletInfo(wallets: string[]) {
 }
 
 function* fetchSplWalletInfo(wallets: string[]) {
+  const walletClient = yield* getContext('walletClient')
   const splWalletBalances = yield* call(
     walletClient.getSolWalletBalances,
     wallets
@@ -176,6 +176,7 @@ function* fetchSplWalletInfo(wallets: string[]) {
 }
 
 function* fetchAccountAssociatedWallets() {
+  const apiClient = yield* getContext('apiClient')
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return
   const associatedWallets = yield* call(
@@ -329,6 +330,8 @@ function* connectSPLWallet(
   disconnect: () => Promise<void>
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const apiClient = yield* getContext('apiClient')
+  const walletClient = yield* getContext('walletClient')
   try {
     const accountUserId = yield* select(getUserId)
 
@@ -520,6 +523,8 @@ function* connectSPLWallet(
 
 function* connectEthWallet(web3Instance: any) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const apiClient = yield* getContext('apiClient')
+  const walletClient = yield* getContext('walletClient')
   try {
     const accounts: string[] = yield* call(
       web3Instance.eth.getAccounts as () => Promise<string[]>

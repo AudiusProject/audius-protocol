@@ -17,7 +17,6 @@ import {
 import { USER_LIST_TAG } from 'common/store/user-list/favorites/types'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
-import { apiClient } from 'services/audius-api-client'
 
 const getPlaylistFavorites = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
@@ -27,7 +26,8 @@ const getPlaylistFavorites = createUserListProvider<Collection>({
     limit,
     offset,
     entityId,
-    currentUserId
+    currentUserId,
+    apiClient
   }) => {
     const users = await apiClient.getPlaylistFavoriteUsers({
       limit,
@@ -51,7 +51,8 @@ const getTrackFavorites = createUserListProvider<Track>({
     limit,
     offset,
     entityId,
-    currentUserId
+    currentUserId,
+    apiClient
   }) => {
     const users = await apiClient.getTrackFavoriteUsers({
       limit,

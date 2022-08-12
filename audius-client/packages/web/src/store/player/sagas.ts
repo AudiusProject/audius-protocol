@@ -17,7 +17,6 @@ import { getUser } from 'common/store/cache/users/selectors'
 import * as queueActions from 'common/store/queue/slice'
 import { recordListen } from 'common/store/social/tracks/actions'
 import { encodeHashId } from 'common/utils/hashIds'
-import { apiClient } from 'services/audius-api-client'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import {
   getAudio,
@@ -71,6 +70,7 @@ let FORCE_MP3_STREAM_TRACK_IDS: Set<string> | null = null
 
 export function* watchPlay() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const apiClient = yield* getContext('apiClient')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, onEnd } = action.payload
 
