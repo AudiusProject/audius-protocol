@@ -1,0 +1,16 @@
+
+.body {
+  display: flex;
+  align-items: center;
+}
+
+.profilePicture {
+  margin-right: var(--unit-2);
+}
+
+.crown {
+  width: 24px;
+  height: 24px;
+  margin-right: 14px;
+  background-size: contain;
+}

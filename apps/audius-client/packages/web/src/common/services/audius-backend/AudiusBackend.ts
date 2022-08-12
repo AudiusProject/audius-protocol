@@ -2041,11 +2041,11 @@ export const audiusBackend = ({
   async function getNotifications({
     limit,
     timeOffset,
-    withTips
+    withDethroned
   }: {
     limit: number
     timeOffset: string
-    withTips: boolean
+    withDethroned: boolean
   }) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
@@ -2057,10 +2057,12 @@ export const audiusBackend = ({
         : ''
       const limitQuery = `&limit=${limit}`
       const handleQuery = `&handle=${account.handle}`
-      const withTipsQuery = withTips ? `&withTips=true` : ''
+      const withDethronedQuery = withDethroned
+        ? '&withSupporterDethroned=true'
+        : ''
       // TODO: withRemix, withTrending, withRewards are always true and should be removed in a future release
       const notifications = await fetch(
-        `${identityServiceUrl}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}${withTipsQuery}&withRewards=true&withRemix=true&withTrendingTrack=true`,
+        `${identityServiceUrl}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}${withDethronedQuery}&withTips=true&withRewards=true&withRemix=true&withTrendingTrack=true`,
         {
           headers: {
             'Content-Type': 'application/json',

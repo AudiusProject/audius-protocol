@@ -27,6 +27,7 @@ export enum NotificationType {
   TipSend = 'TipSend',
   SupporterRankUp = 'SupporterRankUp',
   SupportingRankUp = 'SupportingRankUp',
+  SupporterDethroned = 'SupporterDethroned',
   AddTrackToPlaylist = 'AddTrackToPlaylist'
 }
 
@@ -204,6 +205,16 @@ export type AddTrackToPlaylist = BaseNotification & {
   playlistOwnerId: ID
 }
 
+export type SupporterDethroned = BaseNotification & {
+  type: NotificationType.SupporterDethroned
+  entityType: Entity.User
+  entityId: ID // The usurping user
+  supportedUserId: ID
+  // Not currently used:
+  // newAmount	"3000000000000000000"
+  // oldAmount	"2000000000000000000"
+}
+
 export type Notification =
   | Announcement
   | UserSubscription
@@ -221,6 +232,7 @@ export type Notification =
   | TipSend
   | SupporterRankUp
   | SupportingRankUp
+  | SupporterDethroned
   | AddTrackToPlaylist
 
 export default interface NotificationState {
