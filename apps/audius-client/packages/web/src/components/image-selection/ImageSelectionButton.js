@@ -44,7 +44,13 @@ const ImageSelectionButton = ({
     if (onOpenPopup) onOpenPopup()
   }
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    // if it's a keyboard event, the event detail is 0
+    // ignore the default click event in that case
+    // note that trying "e instanceof KeyboardEvent" did not work here
+    if (e.detail === 0) {
+      e.preventDefault()
+    }
     if (!showModal) {
       onClick()
       openModal()
