@@ -58,6 +58,7 @@ import trendingUndergroundSagas from 'pages/trending-underground/store/sagas'
 import uploadSagas from 'pages/upload-page/store/sagas'
 import { initInterface } from 'services/native-mobile-interface/helpers'
 import analyticsSagas from 'store/analytics/sagas'
+import buyAudioSagas from 'store/application/ui/buy-audio/sagas'
 import cookieBannerSagas from 'store/application/ui/cookieBanner/sagas'
 import scrollLockSagas from 'store/application/ui/scrollLock/sagas'
 import stemUploadSagas from 'store/application/ui/stemsUpload/sagas'
@@ -138,6 +139,7 @@ export default function* rootSaga() {
     // Application
     addToPlaylistSagas(),
     artistRecommendationsSagas(),
+    buyAudioSagas(),
     changePasswordSagas(),
     deactivateAccountSagas(),
     deletedSagas(),

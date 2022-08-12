@@ -29,6 +29,7 @@ export type Modals =
   | 'AddToPlaylist'
   | 'DeletePlaylistConfirmation'
   | 'FeatureFlagOverride'
+  | 'BuyAudio'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }
 
@@ -58,7 +59,8 @@ const initialState: ModalsState = {
   Overflow: false,
   AddToPlaylist: false,
   DeletePlaylistConfirmation: false,
-  FeatureFlagOverride: false
+  FeatureFlagOverride: false,
+  BuyAudio: false
 }
 
 const slice = createSlice({

@@ -8,6 +8,11 @@ import { track } from 'store/analytics/providers'
 // @ts-ignore
 const libs = () => window.audiusLibs
 
+export const getUserBank = async () => {
+  await waitForLibsInit()
+  return (await libs().solanaWeb3Manager.getUserBank()) as PublicKey
+}
+
 export const doesUserBankExist = async () => {
   await waitForLibsInit()
   const userBank: PublicKey = await libs().solanaWeb3Manager.getUserBank()
