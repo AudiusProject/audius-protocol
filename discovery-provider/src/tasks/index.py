@@ -325,6 +325,7 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_t
                 )().processReceipt(tx_receipt)
                 for entry in entity_manager_events_tx:
                     event_args = entry["args"]
+                    entity_type = event_args._entityType
                     user_id = event_args._userId
                     cid = event_args._metadata
                     if not cid:
@@ -332,7 +333,12 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_t
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
-                    cid_type[cid] = "playlist_data"
+                    if entity_type == "Playlist":
+                        cid_type[cid] = "playlist_data"
+                    elif entity_type == "Track":
+                        cid_type[cid] = "track"
+                    if entity_type == "User":
+                        cid_type[cid] = "user"
 
         # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
         user_to_replica_set = dict(
