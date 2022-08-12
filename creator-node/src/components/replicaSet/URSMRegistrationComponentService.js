@@ -2,6 +2,7 @@ const axios = require('axios')
 const { promisify } = require('util')
 const crypto = require('crypto')
 const randomBytes = promisify(crypto.randomBytes)
+const config = require('../../config')
 
 const {
   parseCNodeResponse,
@@ -103,7 +104,9 @@ const respondToURSMRequestForSignature = async (
       randomBytesToSign
     },
     headers: {
-      'User-Agent': `Axios - called in URSMRegistrationComponentService#respondToURSMRequestForSignature by ${config.get('creatorNodeEndpoint')}`
+      'User-Agent': `Axios - called in URSMRegistrationComponentService#respondToURSMRequestForSignature by ${config.get(
+        'creatorNodeEndpoint'
+      )}`
     }
   })
   const { responseData, signatureData } = parseCNodeResponse(
