@@ -77,7 +77,8 @@ export class ServiceProvider extends Base {
         url: `${node.endpoint}/health_check/verbose`
       })),
       sortByVersion: true,
-      timeout
+      timeout,
+      headers: { 'User-Agent': 'Axios - called by getSelectableCreatorNodes.ts' }
     })
 
     const services: { [id: string]: any } = {}

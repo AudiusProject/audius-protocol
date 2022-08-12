@@ -236,7 +236,10 @@ class PeerSetManager {
       baseURL: endpoint,
       url: '/health_check/verbose',
       method: 'get',
-      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS
+      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS,
+      headers: {
+        'User-Agent': `Axios - called in peerSetManager#queryVerboseHealthCheck by ${config.get('creatorNodeEndpoint')}`
+      }
     })
 
     return resp.data.data

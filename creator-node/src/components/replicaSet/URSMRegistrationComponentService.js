@@ -101,6 +101,9 @@ const respondToURSMRequestForSignature = async (
     timeout: 1000,
     params: {
       randomBytesToSign
+    },
+    headers: {
+      'User-Agent': `Axios - called in URSMRegistrationComponentService#respondToURSMRequestForSignature by ${config.get('creatorNodeEndpoint')}`
     }
   })
   const { responseData, signatureData } = parseCNodeResponse(

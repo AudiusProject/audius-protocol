@@ -23,8 +23,9 @@ interface Request {
   url: string
 }
 
-interface TimingConfig {
+interface AxiosConfig {
   timeout?: number
+  headers?: object
 }
 
 export interface Timing {
@@ -38,15 +39,17 @@ export interface Timing {
  */
 async function timeRequest(
   request: Request,
-  timeout?: number | null
+  timeout?: number | null,
+  headers?: object | null
 ): Promise<Timing> {
   // This is non-perfect because of the js event loop, but enough
   // of a proximation. Don't use for mission-critical timing.
   const startTime = new Date().getTime()
-  const config: TimingConfig = {}
+  const config: AxiosConfig = {}
   if (timeout !== null && timeout !== undefined) {
     config.timeout = timeout
   }
+  if (headers) config.headers = headers
   let response
   try {
     response = await axios.get(request.url, config)
@@ -131,6 +134,7 @@ interface TimeRequestsConfig {
    *  (even if by 1ms) will be picked always.
    */
   equivalencyDelta?: number | null
+  headers?: object | null
 }
 
 /**
@@ -143,10 +147,11 @@ async function timeRequests({
   currentVersion = null, // only required if `sortByVersion` = false
   filterNonResponsive = false,
   timeout = null,
-  equivalencyDelta = null
+  equivalencyDelta = null,
+  headers = null
 }: TimeRequestsConfig) {
   let serviceTimings = await Promise.all(
-    requests.map(async (request) => await timeRequest(request, timeout))
+    requests.map(async (request) => await timeRequest(request, timeout, headers))
   )
 
   if (filterNonResponsive) {
