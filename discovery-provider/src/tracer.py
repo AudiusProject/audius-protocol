@@ -1,9 +1,11 @@
 from opentelemetry import trace
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from opentelemetry.instrumentation.celery import CeleryInstrumentor
+
+# from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+
+# from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
@@ -25,5 +27,5 @@ def configure_tracer():
 
     LoggingInstrumentor().instrument()
     RequestsInstrumentor().instrument()
-    SQLAlchemyInstrumentor().instrument()
-    CeleryInstrumentor().instrument()
+    # SQLAlchemyInstrumentor().instrument()
+    # CeleryInstrumentor().instrument()
