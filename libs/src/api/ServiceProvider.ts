@@ -78,7 +78,10 @@ export class ServiceProvider extends Base {
       })),
       sortByVersion: true,
       timeout,
-      headers: { 'User-Agent': 'Axios - called by getSelectableCreatorNodes.ts' }
+      headers: {
+        'User-Agent':
+          'Axios - @audius/sdk - ServiceProvider.ts#getSelectableCreatorNodes'
+      }
     })
 
     const services: { [id: string]: any } = {}

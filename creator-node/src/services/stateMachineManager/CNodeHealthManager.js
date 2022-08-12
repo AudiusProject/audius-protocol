@@ -115,9 +115,9 @@ class CNodeHealthManager {
       method: 'get',
       timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS,
       headers: {
-        'User-Agent': `Axios - called in CNodeHealthManager#queryVerboseHealthCheck by ${config.get(
+        'User-Agent': `Axios - audius/content-node - ${config.get(
           'creatorNodeEndpoint'
-        )}`
+        )} - CNodeHealthManager#queryVerboseHealthCheck`
       }
     })
 

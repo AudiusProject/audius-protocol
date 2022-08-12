@@ -365,7 +365,10 @@ export class CreatorNodeSelection extends ServiceSelection {
       currentVersion: this.currentVersion,
       timeout: this.timeout,
       equivalencyDelta: this.equivalencyDelta,
-      headers: { 'User-Agent': 'Axios - called by CreatorNodeSelection.ts' }
+      headers: {
+        'User-Agent':
+          'Axios - @audius/sdk - CreatorNodeSelection.ts#_performHealthChecks'
+      }
     })
 
     const healthyServices = healthCheckedServices.filter((resp) => {

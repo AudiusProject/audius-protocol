@@ -238,7 +238,9 @@ class PeerSetManager {
       method: 'get',
       timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS,
       headers: {
-        'User-Agent': `Axios - called in peerSetManager#queryVerboseHealthCheck by ${config.get('creatorNodeEndpoint')}`
+        'User-Agent': `Axios - audius/content-node - ${config.get(
+          'creatorNodeEndpoint'
+        )} - peerSetManager#queryVerboseHealthCheck`
       }
     })
 

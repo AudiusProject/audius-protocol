@@ -104,9 +104,9 @@ const respondToURSMRequestForSignature = async (
       randomBytesToSign
     },
     headers: {
-      'User-Agent': `Axios - called in URSMRegistrationComponentService#respondToURSMRequestForSignature by ${config.get(
+      'User-Agent': `Axios - audius/content-node - ${config.get(
         'creatorNodeEndpoint'
-      )}`
+      )} - URSMRegistrationComponentService#respondToURSMRequestForSignature`
     }
   })
   const { responseData, signatureData } = parseCNodeResponse(
