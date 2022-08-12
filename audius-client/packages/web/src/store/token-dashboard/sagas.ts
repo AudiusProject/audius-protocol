@@ -48,6 +48,7 @@ import {
   ConfirmRemoveWalletAction,
   ModalState
 } from 'common/store/pages/token-dashboard/types'
+import { fetchServices } from 'common/store/service-selection/slice'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import {
   send as walletSend,
@@ -57,12 +58,10 @@ import {
 } from 'common/store/wallet/slice'
 import { getErrorMessage } from 'common/utils/error'
 import { weiToString } from 'common/utils/wallet'
-import { fetchServices } from 'components/service-selection/store/slice'
 import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
 } from 'pages/profile-page/sagas'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import {
   loadWalletLink,
   loadBitski,
@@ -254,6 +253,7 @@ function* disconnectWeb3(web3Instance: any) {
 }
 
 function* connectWallet() {
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   let web3Instance: any
   try {
     const isBitSkiEnabled = Boolean(
@@ -363,9 +363,10 @@ function* connectSPLWallet(
       return
     }
 
-    const splWalletBalances = yield* call(walletClient.getSolWalletBalances, [
-      connectingWallet
-    ])
+    const splWalletBalances = yield* call(
+      [walletClient, 'getSolWalletBalances'],
+      [connectingWallet]
+    )
     const walletBalance = splWalletBalances[0].balance
 
     const collectiblesMap = yield* call(fetchSolanaCollectiblesForWallets, [
@@ -559,9 +560,10 @@ function* connectEthWallet(web3Instance: any) {
       )
       return
     }
-    const walletBalances = yield* call(walletClient.getEthWalletBalances, [
-      connectingWallet
-    ])
+    const walletBalances = yield* call(
+      [walletClient, 'getEthWalletBalances'],
+      [connectingWallet]
+    )
     const walletBalance = walletBalances[0].balance
 
     const collectiblesMap = yield* call(fetchOpenSeaAssetsForWallets, [

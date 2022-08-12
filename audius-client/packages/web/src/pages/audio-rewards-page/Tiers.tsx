@@ -55,7 +55,7 @@ export const audioTierMapPng: {
   platinum: <img alt='' src={IconPlatinumBadge} />
 }
 
-export const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
+const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
 
 export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
 

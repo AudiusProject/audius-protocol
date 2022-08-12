@@ -9,7 +9,6 @@ import {
   trendingUndergroundLineupActions
 } from 'common/store/pages/trending-underground/lineup/actions'
 import { getLineup } from 'common/store/pages/trending-underground/lineup/selectors'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { LineupSagas } from 'store/lineup/sagas'
 
 function* getTrendingUnderground({
@@ -20,6 +19,7 @@ function* getTrendingUnderground({
   offset: number
 }) {
   const apiClient = yield* getContext('apiClient')
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield call(remoteConfigInstance.waitForRemoteConfig)
   const TF = new Set(
     remoteConfigInstance.getRemoteVar(StringKeys.UTF)?.split(',') ?? []

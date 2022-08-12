@@ -2,9 +2,9 @@ import { Collectible } from '@audius/common'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Connection, PublicKey } from '@solana/web3.js'
 
-import { solanaNFTToCollectible } from 'components/collectibles/solCollectibleHelpers'
 import { CollectibleState } from 'components/collectibles/types'
 
+import { solanaNFTToCollectible } from './solCollectibleHelpers'
 import { SolanaNFTType } from './types'
 
 const SOLANA_CLUSTER_ENDPOINT = process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT

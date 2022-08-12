@@ -3,7 +3,8 @@ import {
   UserChallenge,
   StringAudio,
   IntKeys,
-  StringKeys
+  StringKeys,
+  RemoteConfigInstance
 } from '@audius/common'
 import {
   call,
@@ -63,7 +64,6 @@ import { stringAudioToStringWei } from 'common/utils/wallet'
 import { show as showMusicConfetti } from 'components/music-confetti/store/slice'
 import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
 import { getCognitoExists } from 'services/audius-backend/Cognito'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForValue } from 'utils/sagaHelpers'
 import {
@@ -82,7 +82,7 @@ const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewardsExplainer'
 const COGNITO_CHECK_MAX_RETRIES = 5
 const COGNITO_CHECK_DELAY_MS = 3000
 
-function getOracleConfig() {
+function getOracleConfig(remoteConfigInstance: RemoteConfigInstance) {
   let oracleEthAddress = remoteConfigInstance.getRemoteVar(
     StringKeys.ORACLE_ETH_ADDRESS
   )
@@ -131,7 +131,7 @@ export const getBackoff = (retryCount: number) => {
   return 200 * 2 ** (retryCount + 1)
 }
 
-const getClaimingConfig = () => {
+const getClaimingConfig = (remoteConfigInstance: RemoteConfigInstance) => {
   const quorumSize = remoteConfigInstance.getRemoteVar(
     IntKeys.ATTESTATION_QUORUM_SIZE
   )
@@ -150,7 +150,8 @@ const getClaimingConfig = () => {
   const completionPollFrequency = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS
   )
-  const { oracleEthAddress, AAOEndpoint } = getOracleConfig()
+  const { oracleEthAddress, AAOEndpoint } =
+    getOracleConfig(remoteConfigInstance)
 
   return {
     quorumSize,
@@ -168,6 +169,7 @@ function* claimChallengeRewardAsync(
   action: ReturnType<typeof claimChallengeReward>
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const { claim, retryOnFailure, retryCount = 0 } = action.payload
   const { specifiers, challengeId, amount } = claim
 
@@ -180,7 +182,7 @@ function* claimChallengeRewardAsync(
     parallelization,
     completionPollFrequency,
     completionPollTimeout
-  } = getClaimingConfig()
+  } = getClaimingConfig(remoteConfigInstance)
 
   // Do not proceed to claim if challenge is not complete from a DN perspective.
   // This is possible because the client may optimistically set a challenge as complete
@@ -582,6 +584,7 @@ function* pollUserChallenges(frequency: number) {
 }
 
 function* userChallengePollingDaemon() {
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
   const defaultChallengePollingTimeout = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_REFRESH_INTERVAL_MS

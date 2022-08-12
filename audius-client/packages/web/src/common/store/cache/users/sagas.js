@@ -18,8 +18,8 @@ import { removePlaylistLibraryTempPlaylists } from 'common/store/playlist-librar
 import {
   getSelectedServices,
   getStatus
-} from 'components/service-selection/store/selectors'
-import { fetchServicesFailed } from 'components/service-selection/store/slice'
+} from 'common/store/service-selection/selectors'
+import { fetchServicesFailed } from 'common/store/service-selection/slice'
 import {
   getAudiusAccountUser,
   setAudiusAccountUser

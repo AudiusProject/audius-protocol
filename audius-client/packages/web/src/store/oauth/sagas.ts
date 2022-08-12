@@ -1,7 +1,8 @@
-import { StringKeys } from '@audius/common'
+import { RemoteConfigInstance, StringKeys } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import { takeEvery } from 'redux-saga/effects'
 
+import { getContext } from 'common/store'
 import {
   formatInstagramProfile,
   formatTwitterProfile
@@ -14,7 +15,6 @@ import {
   RequestTwitterAuthMessage,
   RequestTwitterAuthSuccessMessage
 } from 'services/native-mobile-interface/oauth'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import * as oauthActions from 'store/oauth/actions'
 
 import mobileSagas from './mobileSagas'
@@ -183,12 +183,14 @@ function* watchTwitterAuth() {
 type InstagramNativeMobileAuthProps = {
   onSuccess: (username: string, profile: any) => void
   onFailure: (error: any) => void
+  remoteConfigInstance: RemoteConfigInstance
 }
 
 const getProfile = async (
   code: string,
   onSuccess: (username: string, profile: any) => void,
-  onFailure: (error: any) => void
+  onFailure: (error: any) => void,
+  remoteConfigInstance: RemoteConfigInstance
 ) => {
   try {
     const profileResp = await window.fetch(`${IDENTITY_SERVICE}/instagram`, {
@@ -239,14 +241,20 @@ const getProfile = async (
 
 const doInstagramAuth = async ({
   onSuccess,
-  onFailure
+  onFailure,
+  remoteConfigInstance
 }: InstagramNativeMobileAuthProps) => {
   try {
     const message = new RequestInstagramAuthMessage(INSTAGRAM_AUTHORIZE_URL)
     message.send()
     const response = await message.receive()
     if (response.code) {
-      return await getProfile(response.code, onSuccess, onFailure)
+      return await getProfile(
+        response.code,
+        onSuccess,
+        onFailure,
+        remoteConfigInstance
+      )
     } else {
       onFailure('Unable to retrieve information')
     }
@@ -256,6 +264,7 @@ const doInstagramAuth = async ({
 }
 
 function* watchInstagramAuth() {
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield takeEvery(oauthActions.REQUEST_INSTAGRAM_AUTH, function* () {
     const onFailure = (error: any) => {
       console.error(error)
@@ -280,7 +289,8 @@ function* watchInstagramAuth() {
     }
     const props = {
       onSuccess,
-      onFailure
+      onFailure,
+      remoteConfigInstance
     }
     doInstagramAuth(props)
   })

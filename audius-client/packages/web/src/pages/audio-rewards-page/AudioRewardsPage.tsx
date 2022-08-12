@@ -27,12 +27,12 @@ import TrendingRewardsTile from './TrendingRewardsTile'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
 
-export const messages = {
+const messages = {
   title: '$AUDIO & Rewards',
   description: 'Complete tasks to earn $AUDIO tokens!'
 }
 
-export const RewardsContent = () => {
+const RewardsContent = () => {
   const wm = useWithMobileStyle(styles.mobile)
   const { isEnabled: isChallengeRewardsEnabled } = useFlag(
     FeatureFlags.CHALLENGE_REWARDS_UI
@@ -55,7 +55,7 @@ export const RewardsContent = () => {
   )
 }
 
-export const DesktopPage = ({ children }: { children: ReactNode }) => {
+const DesktopPage = ({ children }: { children: ReactNode }) => {
   const dispatch = useDispatch()
   useEffect(() => {
     dispatch(preloadWalletProviders())
@@ -82,7 +82,7 @@ const useMobileNavContext = () => {
   }, [setLeft, setRight])
 }
 
-export const MobilePage = ({ children }: { children: ReactNode }) => {
+const MobilePage = ({ children }: { children: ReactNode }) => {
   useMobileNavContext()
   return (
     <MobilePageContainer
@@ -109,5 +109,3 @@ export const AudioRewardsPage = () => {
     </Page>
   )
 }
-
-export default AudioRewardsPage
