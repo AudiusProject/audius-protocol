@@ -36,7 +36,6 @@ import { ELECTRONIC_SUBGENRES, Genre } from 'common/utils/genres'
 import { getIGUserUrl } from 'components/instagram-auth/InstagramAuth'
 import { getCityAndRegion } from 'services/Location'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { identify, make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -54,8 +53,6 @@ import mobileSagas from './mobileSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 import { checkHandle } from './verifiedChecker'
-
-const { waitForRemoteConfig } = remoteConfigInstance
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
@@ -175,7 +172,7 @@ const isRestrictedHandle = (handle) =>
   restrictedHandles.has(handle.toLowerCase())
 const isHandleCharacterCompliant = (handle) => /^[a-zA-Z0-9_]*$/.test(handle)
 
-async function getInstagramUser(handle) {
+async function getInstagramUser(handle, remoteConfigInstance) {
   try {
     const profileEndpoint =
       remoteConfigInstance.getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
@@ -204,6 +201,7 @@ async function getInstagramUser(handle) {
 function* validateHandle(action) {
   const { handle, isOauthVerified, onValidate } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const remoteConfigInstance = yield getContext('remoteConfigInstance')
   yield call(waitForBackendSetup)
   try {
     if (handle.length > MAX_HANDLE_LENGTH) {
@@ -226,7 +224,7 @@ function* validateHandle(action) {
       const [inUse, twitterUserQuery, instagramUser] = yield all([
         call(audiusBackendInstance.handleInUse, handle),
         call(audiusBackendInstance.twitterHandle, handle),
-        call(getInstagramUser, handle)
+        call(getInstagramUser, handle, remoteConfigInstance)
       ])
       const handleCheckStatus = checkHandle(
         isOauthVerified,
@@ -292,6 +290,7 @@ function* validateEmail(action) {
 
 function* signUp() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForBackendSetup)
   const signOn = yield select(getSignOn)
   const location = yield call(getCityAndRegion)

@@ -7,7 +7,6 @@ import { getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { getBalance } from 'common/store/wallet/slice'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { DASHBOARD_PAGE } from 'utils/route'
 import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
 
@@ -115,6 +114,7 @@ function* fetchDashboardListenDataAsync(action) {
 }
 
 function* pollForBalance() {
+  const remoteConfigInstance = yield getContext('remoteConfigInstance')
   const pollingFreq = remoteConfigInstance.getRemoteVar(
     IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS
   )

@@ -68,7 +68,6 @@ import {
   UserTipRequest
 } from 'services/audius-backend/Tipping'
 import { UpdateTipsStorageMessage } from 'services/native-mobile-interface/tipping'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { make } from 'store/analytics/actions'
 import mobileSagas from 'store/tipping/mobileSagas'
 import {
@@ -80,8 +79,6 @@ import {
 import { updateTipsStorage } from './storageUtils'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
-const { waitForRemoteConfig } = remoteConfigInstance
 
 function* overrideSupportingForUser({
   amountBN,
@@ -203,6 +200,7 @@ function* overrideSupportersForUser({
 
 function* sendTipAsync() {
   const walletClient = yield* getContext('walletClient')
+  const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
 
   const sender = yield* select(getAccountUser)
@@ -220,7 +218,7 @@ function* sendTipAsync() {
   const recipientWallet = recipient.spl_wallet
   const weiBNBalance: BNWei = yield select(getAccountBalance) ??
     (new BN('0') as BNWei)
-  const waudioWeiAmount = yield* call(walletClient.getCurrentWAudioBalance)
+  const waudioWeiAmount = yield* call([walletClient, 'getCurrentWAudioBalance'])
 
   if (weiBNAmount.gt(weiBNBalance)) {
     const errorMessage = 'Not enough $AUDIO'
@@ -247,7 +245,7 @@ function* sendTipAsync() {
         yield delay(1000)
         yield put(convert())
       })
-      yield call(walletClient.transferTokensFromEthToSol)
+      yield call([walletClient, 'transferTokensFromEthToSol'])
       // Cancel showing the notice if the conversion was magically super quick
       yield cancel(showConvertingMessage)
     }

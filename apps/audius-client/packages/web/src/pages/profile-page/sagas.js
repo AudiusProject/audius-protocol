@@ -42,7 +42,6 @@ import { squashNewLines } from 'common/utils/formatUtil'
 import { setAudiusAccountUser } from 'services/LocalStorage'
 import { fetchCID } from 'services/audius-backend'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import SolanaClient from 'services/solana-client/SolanaClient'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -53,8 +52,6 @@ import {
   MAX_PROFILE_TOP_SUPPORTERS
 } from 'utils/constants'
 import { dataURLtoFile } from 'utils/fileUtils'
-
-const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
 
 function* watchFetchProfile() {
   yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)
@@ -127,12 +124,14 @@ export function* fetchOpenSeaAssets(user) {
 }
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
+  const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
   return yield call(SolanaClient.getAllCollectibles, wallets)
 }
 
 export function* fetchSolanaCollectibles(user) {
   const apiClient = yield getContext('apiClient')
+  const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
   const { sol_wallets: solWallets } = yield apiClient.getAssociatedWallets({
     userID: user.user_id
@@ -158,6 +157,7 @@ export function* fetchSolanaCollectibles(user) {
 }
 
 function* fetchSupportersAndSupporting(userId) {
+  const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
 
   /**
@@ -188,6 +188,8 @@ function* fetchSupportersAndSupporting(userId) {
 
 function* fetchProfileAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const { getRemoteVar } = yield getContext('remoteConfigInstance')
+
   try {
     let user
     if (action.handle) {

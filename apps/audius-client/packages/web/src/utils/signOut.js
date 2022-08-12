@@ -1,5 +1,4 @@
 import { IS_MOBILE_USER_KEY } from 'common/store/account/mobileSagas'
-import { BADGE_LOCAL_STORAGE_KEY } from 'pages/audio-rewards-page/Tiers'
 import {
   clearAudiusAccount,
   clearAudiusAccountUser
@@ -13,6 +12,7 @@ import { clearTheme } from './theme/theme'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const AUDIUS_EVENTS = 'events'
 const AUDIUS_USE_METAMASK = 'useMetaMask'
+const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
 
 const removeLocalStorageItems = () => {
   const items = [
