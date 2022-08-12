@@ -35,7 +35,6 @@ import { getFeePayer } from 'common/store/solana/selectors'
 import { ELECTRONIC_SUBGENRES, Genre } from 'common/utils/genres'
 import { getIGUserUrl } from 'components/instagram-auth/InstagramAuth'
 import { getCityAndRegion } from 'services/Location'
-import { apiClient } from 'services/audius-api-client'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { identify, make } from 'store/analytics/actions'
@@ -122,6 +121,7 @@ function* fetchAllFollowArtist() {
 }
 
 function* fetchFollowArtistGenre(followArtistCategory) {
+  const apiClient = yield getContext('apiClient')
   const genres = followArtistCategoryGenreMappings[followArtistCategory]
   try {
     const users = yield apiClient.getTopArtistGenres({

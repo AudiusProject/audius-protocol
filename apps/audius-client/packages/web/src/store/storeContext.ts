@@ -3,6 +3,7 @@ import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { fingerprintClient } from 'services/fingerprint'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { walletClient } from 'services/wallet-client'
 
 export const storeContext: CommonStoreContext = {
   getLocalStorageItem: async (key) => window.localStorage.getItem(key),
@@ -11,5 +12,6 @@ export const storeContext: CommonStoreContext = {
   remoteConfigInstance,
   audiusBackendInstance,
   apiClient,
-  fingerprintClient
+  fingerprintClient,
+  walletClient
 }

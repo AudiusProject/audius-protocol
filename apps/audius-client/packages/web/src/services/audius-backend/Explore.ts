@@ -7,12 +7,11 @@ import {
   removeNullable
 } from '@audius/common'
 
+import { AudiusAPIClient } from 'common/services/audius-api-client'
 import * as adapter from 'common/services/audius-api-client/ResponseAdapter'
 import { APIPlaylist, APITrack } from 'common/services/audius-api-client/types'
-import { AuthHeaders } from 'common/services/audius-backend'
+import { AudiusBackend, AuthHeaders } from 'common/services/audius-backend'
 import { encodeHashId } from 'common/utils/hashIds'
-import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 type CollectionWithScore = APIPlaylist & { score: number }
 
@@ -33,7 +32,9 @@ type UserListens = {
 
 class Explore {
   /** TRACKS ENDPOINTS */
-  static async getTopUserListens(): Promise<TopUserListen[]> {
+  static async getTopUserListens(
+    audiusBackendInstance: AudiusBackend
+  ): Promise<TopUserListen[]> {
     try {
       const { data, signature } = await audiusBackendInstance.signData()
       return fetch(
@@ -53,7 +54,10 @@ class Explore {
     }
   }
 
-  static async getUserListens(trackIds: ID[]): Promise<UserListens> {
+  static async getUserListens(
+    trackIds: ID[],
+    audiusBackendInstance: AudiusBackend
+  ): Promise<UserListens> {
     try {
       const { data, signature } = await audiusBackendInstance.signData()
       const idQuery = trackIds.map((id) => `&trackIdList=${id}`).join('')
@@ -94,7 +98,10 @@ class Explore {
     }
   }
 
-  static async getFeedNotListenedTo(limit = 25) {
+  static async getFeedNotListenedTo(
+    limit = 25,
+    audiusBackendInstance: AudiusBackend
+  ) {
     try {
       const lineupItems = await audiusBackendInstance.getSocialFeed({
         filter: FeedFilter.ORIGINAL,
@@ -109,7 +116,10 @@ class Explore {
       )
       const trackIds = tracks.map((track) => track.track_id)
 
-      const listens: any = await Explore.getUserListens(trackIds)
+      const listens: any = await Explore.getUserListens(
+        trackIds,
+        audiusBackendInstance
+      )
 
       const notListenedToTracks = tracks.filter(
         (track) => !listens[track.track_id]
@@ -121,7 +131,11 @@ class Explore {
     }
   }
 
-  static async getRemixables(currentUserId: ID, limit = 25) {
+  static async getRemixables(
+    currentUserId: ID,
+    limit = 25,
+    apiClient: AudiusAPIClient
+  ) {
     try {
       const tracks = await apiClient.getRemixables({
         limit,

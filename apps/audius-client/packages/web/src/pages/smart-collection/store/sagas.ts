@@ -8,6 +8,7 @@ import {
 } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { getAccountStatus, getUserId } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -34,7 +35,11 @@ import {
 const COLLECTIONS_LIMIT = 25
 
 function* fetchHeavyRotation() {
-  const topListens = yield* call(Explore.getTopUserListens)
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const topListens = yield* call(
+    Explore.getTopUserListens,
+    audiusBackendInstance
+  )
 
   const users = yield* call(
     retrieveUsers,
@@ -87,7 +92,12 @@ function* fetchBestNewReleases() {
 }
 
 function* fetchUnderTheRadar() {
-  const tracks = yield* call(Explore.getFeedNotListenedTo)
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const tracks = yield* call(
+    Explore.getFeedNotListenedTo,
+    undefined,
+    audiusBackendInstance
+  )
 
   const trackIds = tracks
     .filter((track: UserTrack) => !track.user.is_deactivated)
@@ -149,6 +159,7 @@ function* fetchFeelingLucky() {
 }
 
 function* fetchRemixables() {
+  const apiClient = yield* getContext('apiClient')
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -156,7 +167,8 @@ function* fetchRemixables() {
   const tracks = yield* call(
     Explore.getRemixables,
     currentUserId,
-    75 // limit
+    75, // limit
+    apiClient
   )
 
   // Limit the number of times an artist can appear

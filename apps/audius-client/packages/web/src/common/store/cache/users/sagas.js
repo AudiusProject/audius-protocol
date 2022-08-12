@@ -24,7 +24,6 @@ import {
   getAudiusAccountUser,
   setAudiusAccountUser
 } from 'services/LocalStorage'
-import { apiClient } from 'services/audius-api-client'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { pruneBlobValues, reformat } from './utils'
@@ -108,6 +107,7 @@ export function* fetchUsers(
 }
 
 function* retrieveUserByHandle(handle) {
+  const apiClient = yield getContext('apiClient')
   const userId = yield select(getUserId)
   if (Array.isArray(handle)) {
     handle = handle[0]

@@ -11,7 +11,7 @@ import {
 import { select, all } from 'redux-saga/effects'
 
 import { GetSocialFeedArgs } from 'common/services/audius-api-client'
-import { CommonState } from 'common/store'
+import { CommonState, getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -22,7 +22,6 @@ import {
   getFollowIds,
   getStartedSignOnProcess
 } from 'pages/sign-on/store/selectors'
-import { apiClient } from 'services/audius-api-client'
 import { LineupSagas } from 'store/lineup/sagas'
 
 type FeedItem = LineupTrack | Collection
@@ -42,6 +41,7 @@ function* getTracks({
 }): Generator<any, FeedItem[], any> {
   const currentUser = yield select(getAccountUser)
   const filterEnum: FeedFilter = yield select(getFeedFilter)
+  const apiClient = yield* getContext('apiClient')
   const filter = filterMap[filterEnum]
 
   // NOTE: The `/feed` does not paginate, so the feed is requested from 0 to N

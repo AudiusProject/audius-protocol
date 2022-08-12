@@ -1,11 +1,19 @@
 import { Name } from '@audius/common'
-import { call, cancel, fork, put, race, select, take } from 'redux-saga/effects'
+import {
+  call,
+  cancel,
+  fork,
+  put,
+  race,
+  select,
+  take,
+  getContext
+} from 'redux-saga/effects'
 
 import { getUserId } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { setTracksIsBlocked } from 'common/store/cache/tracks/utils/blocklist'
 import * as searchActions from 'components/search-bar/store/actions'
-import { apiClient } from 'services/audius-api-client'
 import { make } from 'store/analytics/actions'
 
 import mobileSagas from './mobileSagas'
@@ -13,6 +21,7 @@ import { getSearch } from './selectors'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export function* getSearchResults(searchText) {
+  const apiClient = yield getContext('apiClient')
   const userId = yield select(getUserId)
   const results = yield apiClient.getSearchAutocomplete({
     currentUserId: userId,

@@ -22,7 +22,6 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
 import { squashNewLines } from 'common/utils/formatUtil'
 import * as signOnActions from 'pages/sign-on/store/actions'
-import { apiClient } from 'services/audius-api-client'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
@@ -577,6 +576,7 @@ function* removeTrackFromPlaylistAsync(action) {
 // Removes the invalid track ids from the playlist by calling `dangerouslySetPlaylistOrder`
 function* fixInvalidTracksInPlaylist(playlistId, userId, invalidTrackIds) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const apiClient = yield getContext('apiClient')
   yield call(waitForBackendSetup)
   const removedTrackIds = new Set(invalidTrackIds)
 

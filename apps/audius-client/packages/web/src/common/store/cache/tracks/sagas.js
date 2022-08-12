@@ -31,7 +31,6 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
 import { squashNewLines, formatUrlName } from 'common/utils/formatUtil'
 import * as signOnActions from 'pages/sign-on/store/actions'
-import { apiClient } from 'services/audius-api-client'
 import { fetchCID } from 'services/audius-backend'
 import TrackDownload from 'services/audius-backend/TrackDownload'
 import { make } from 'store/analytics/actions'
@@ -218,6 +217,7 @@ function* confirmEditTrack(
   currentTrack
 ) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const apiClient = yield getContext('apiClient')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -338,6 +338,7 @@ function* deleteTrackAsync(action) {
 
 function* confirmDeleteTrack(trackId) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const apiClient = yield getContext('apiClient')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),

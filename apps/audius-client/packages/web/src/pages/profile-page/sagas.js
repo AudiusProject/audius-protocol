@@ -40,7 +40,6 @@ import { refreshSupport } from 'common/store/tipping/slice'
 import * as artistRecommendationsActions from 'common/store/ui/artist-recommendations/slice'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { setAudiusAccountUser } from 'services/LocalStorage'
-import { apiClient } from 'services/audius-api-client'
 import { fetchCID } from 'services/audius-backend'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -103,6 +102,7 @@ export function* fetchOpenSeaAssetsForWallets(wallets) {
 }
 
 export function* fetchOpenSeaAssets(user) {
+  const apiClient = yield getContext('apiClient')
   const { wallets } = yield apiClient.getAssociatedWallets({
     userID: user.user_id
   })
@@ -132,6 +132,7 @@ export function* fetchSolanaCollectiblesForWallets(wallets) {
 }
 
 export function* fetchSolanaCollectibles(user) {
+  const apiClient = yield getContext('apiClient')
   yield call(waitForRemoteConfig)
   const { sol_wallets: solWallets } = yield apiClient.getAssociatedWallets({
     userID: user.user_id
@@ -426,6 +427,7 @@ export function* updateProfileAsync(action) {
 }
 
 function* confirmUpdateProfile(userId, metadata) {
+  const apiClient = yield getContext('apiClient')
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(

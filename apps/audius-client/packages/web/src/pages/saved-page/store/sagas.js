@@ -1,11 +1,17 @@
-import { takeLatest, call, put, fork, select } from 'redux-saga/effects'
+import {
+  takeLatest,
+  call,
+  put,
+  fork,
+  select,
+  getContext
+} from 'redux-saga/effects'
 
 import { getAccountUser } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import * as actions from 'common/store/pages/saved-page/actions'
 import { tracksActions } from 'common/store/pages/saved-page/lineups/tracks/actions'
 import { getSaves } from 'common/store/pages/saved-page/selectors'
-import { apiClient } from 'services/audius-api-client'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/tracks/sagas'
@@ -15,6 +21,7 @@ function* fetchTracksLineup() {
 }
 
 function* watchFetchSaves() {
+  const apiClient = yield getContext('apiClient')
   yield takeLatest(actions.FETCH_SAVES, function* () {
     const account = yield call(waitForValue, getAccountUser)
     const userId = account.user_id

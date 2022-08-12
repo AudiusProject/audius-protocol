@@ -1,7 +1,14 @@
 import { Kind, StringKeys, makeUid } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import moment from 'moment'
-import { call, fork, put, select, takeEvery } from 'redux-saga/effects'
+import {
+  call,
+  fork,
+  getContext,
+  put,
+  select,
+  takeEvery
+} from 'redux-saga/effects'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as trackCacheActions from 'common/store/cache/tracks/actions'
@@ -19,13 +26,13 @@ import {
 } from 'common/store/pages/track/selectors'
 import { getIsReachable } from 'common/store/reachability/selectors'
 import tracksSagas from 'pages/track-page/store/lineups/tracks/sagas'
-import { apiClient } from 'services/audius-api-client'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 
 export const TRENDING_BADGE_LIMIT = 10
 
 function* watchTrackBadge() {
+  const apiClient = yield getContext('apiClient')
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
     try {
       yield call(waitForBackendSetup)

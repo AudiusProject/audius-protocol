@@ -2,8 +2,9 @@ import { ID, BNWei, StringWei, WalletAddress } from '@audius/common'
 import BN from 'bn.js'
 
 import { stringWeiToBN } from 'common/utils/wallet'
-import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+
+import { AudiusAPIClient } from '../audius-api-client'
+import { AudiusBackend } from '../audius-backend'
 
 // 0.001 Audio
 export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
@@ -12,12 +13,23 @@ export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
 
 const BN_ZERO = new BN('0') as BNWei
 
-class WalletClient {
-  init() {}
+type WalletClientConfig = {
+  audiusBackendInstance: AudiusBackend
+  apiClient: AudiusAPIClient
+}
+
+export class WalletClient {
+  audiusBackendInstance: AudiusBackend
+  apiClient: AudiusAPIClient
+
+  constructor(config: WalletClientConfig) {
+    this.audiusBackendInstance = config.audiusBackendInstance
+    this.apiClient = config.apiClient
+  }
 
   async getCurrentBalance(bustCache = false): Promise<BNWei> {
     try {
-      const balance = await audiusBackendInstance.getBalance(bustCache)
+      const balance = await this.audiusBackendInstance.getBalance(bustCache)
       return balance as BNWei
     } catch (err) {
       console.error(err)
@@ -27,7 +39,7 @@ class WalletClient {
 
   async getCurrentWAudioBalance(): Promise<BNWei> {
     try {
-      const balance = await audiusBackendInstance.getWAudioBalance()
+      const balance = await this.audiusBackendInstance.getWAudioBalance()
       return balance as BNWei
     } catch (err) {
       console.error(err)
@@ -36,9 +48,9 @@ class WalletClient {
   }
 
   async transferTokensFromEthToSol(): Promise<void> {
-    const balance = await audiusBackendInstance.getBalance(true)
+    const balance = await this.audiusBackendInstance.getBalance(true)
     if (balance.gt(new BN('0'))) {
-      await audiusBackendInstance.transferAudioToWAudio(balance)
+      await this.audiusBackendInstance.transferAudioToWAudio(balance)
     }
   }
 
@@ -47,17 +59,20 @@ class WalletClient {
     bustCache = false
   ): Promise<BNWei> {
     try {
-      const associatedWallets = await apiClient.getAssociatedWallets({
+      const associatedWallets = await this.apiClient.getAssociatedWallets({
         userID
       })
 
       if (associatedWallets === null) throw new Error('Unable to fetch wallets')
       const balances = await Promise.all([
         ...associatedWallets.wallets.map((wallet) =>
-          audiusBackendInstance.getAddressTotalStakedBalance(wallet, bustCache)
+          this.audiusBackendInstance.getAddressTotalStakedBalance(
+            wallet,
+            bustCache
+          )
         ),
         ...associatedWallets.sol_wallets.map((wallet) =>
-          audiusBackendInstance.getAddressWAudioBalance(wallet)
+          this.audiusBackendInstance.getAddressWAudioBalance(wallet)
         )
       ])
 
@@ -80,7 +95,7 @@ class WalletClient {
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
           const balance =
-            await audiusBackendInstance.getAddressTotalStakedBalance(
+            await this.audiusBackendInstance.getAddressTotalStakedBalance(
               wallet,
               bustCache
             )
@@ -100,9 +115,8 @@ class WalletClient {
     try {
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
-          const balance = await audiusBackendInstance.getAddressWAudioBalance(
-            wallet
-          )
+          const balance =
+            await this.audiusBackendInstance.getAddressWAudioBalance(wallet)
           return { address: wallet, balance: balance as BNWei }
         })
       )
@@ -115,7 +129,7 @@ class WalletClient {
 
   async claim(): Promise<void> {
     try {
-      await audiusBackendInstance.makeDistributionClaim()
+      await this.audiusBackendInstance.makeDistributionClaim()
     } catch (err) {
       console.error(err)
       throw err
@@ -127,7 +141,7 @@ class WalletClient {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
-      await audiusBackendInstance.sendTokens(address, amount)
+      await this.audiusBackendInstance.sendTokens(address, amount)
     } catch (err) {
       console.error(err)
       throw err
@@ -140,7 +154,7 @@ class WalletClient {
     }
     try {
       const { res, error, errorCode } =
-        await audiusBackendInstance.sendWAudioTokens(address, amount)
+        await this.audiusBackendInstance.sendWAudioTokens(address, amount)
       if (error) {
         if (error === 'Missing social proof') {
           throw new Error(error)
@@ -166,7 +180,3 @@ class WalletClient {
     }
   }
 }
-
-const client = new WalletClient()
-
-export default client
