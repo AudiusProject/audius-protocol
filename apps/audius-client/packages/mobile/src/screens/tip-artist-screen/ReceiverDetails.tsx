@@ -1,11 +1,15 @@
+import { useCallback } from 'react'
+
 import { getSendUser } from 'audius-client/src/common/store/tipping/selectors'
-import { View } from 'react-native'
+import { Pressable, View } from 'react-native'
 
 import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
+import { getUserRoute } from 'app/utils/routes'
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -22,12 +26,23 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const ReceiverDetails = () => {
   const receiver = useSelectorWeb(getSendUser)
   const styles = useStyles()
+  const navigation = useNavigation()
+
+  const handlePress = useCallback(() => {
+    if (!receiver) return
+    navigation.getParent()?.goBack()
+    navigation.navigate({
+      native: { screen: 'Profile', params: { handle: receiver?.handle } },
+      web: { route: getUserRoute(receiver) }
+    })
+  }, [receiver, navigation])
+
   if (!receiver) return null
 
   const { name, handle } = receiver
 
   return (
-    <View style={styles.root}>
+    <Pressable style={styles.root} onPress={handlePress}>
       <ProfilePicture profile={receiver} />
       <View style={styles.receiverInfo}>
         <Text variant='h3'>
@@ -36,6 +51,6 @@ export const ReceiverDetails = () => {
         </Text>
         <Text variant='h4'>@{handle}</Text>
       </View>
-    </View>
+    </Pressable>
   )
 }

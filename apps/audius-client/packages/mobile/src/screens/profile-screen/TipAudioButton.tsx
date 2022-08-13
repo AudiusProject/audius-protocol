@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
   }
 }))
 
-export const TipArtistButton = () => {
+export const TipAudioButton = () => {
   const navigation = useNavigation()
   const profile = useSelectProfile(['user_id'])
   const dispatchWeb = useDispatchWeb()
