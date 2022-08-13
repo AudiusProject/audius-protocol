@@ -52,11 +52,3 @@
 .overlay > div {
   width: 56px !important;
 }
-
-.toast {
-  position: absolute;
-  bottom: 130px;
-  left: -50%;
-  text-align: center;
-  width: 100%;
-}
