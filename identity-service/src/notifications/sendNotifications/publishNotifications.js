@@ -98,7 +98,8 @@ const alwaysSendNotifications = [
   notificationTypes.Reaction,
   notificationTypes.TipReceive,
   notificationTypes.SupporterRankUp,
-  notificationTypes.SupportingRankUp
+  notificationTypes.SupportingRankUp,
+  notificationTypes.SupporterDethroned
 ]
 
 const mapNotificationBaseTypeToSettings = {
