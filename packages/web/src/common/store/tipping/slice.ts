@@ -1,4 +1,11 @@
-import { ID, RecentTipsStorage, UserTip, User, Nullable } from '@audius/common'
+import {
+  ID,
+  RecentTipsStorage,
+  UserTip,
+  User,
+  Nullable,
+  TipSource
+} from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import {
@@ -98,7 +105,7 @@ const slice = createSlice({
     ) => {},
     beginTip: (
       state,
-      action: PayloadAction<{ user: User | null; source: 'profile' | 'feed' }>
+      action: PayloadAction<{ user: User | null; source: TipSource }>
     ) => {
       if (!action.payload.user) {
         return

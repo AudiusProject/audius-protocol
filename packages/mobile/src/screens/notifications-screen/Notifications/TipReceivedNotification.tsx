@@ -28,7 +28,8 @@ import {
   ProfilePicture,
   TipText,
   UserNameLink,
-  NotificationTwitterButton
+  NotificationTwitterButton,
+  NotificationBody
 } from '../Notification'
 import { ReactionList } from '../Reaction'
 
@@ -104,19 +105,13 @@ export const TipReceivedNotification = (
       <NotificationHeader icon={IconTip}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginBottom: 12
-        }}
-      >
+      <NotificationBody>
         <ProfilePicture profile={user} />
         <NotificationText>
           <UserNameLink user={user} /> {messages.sent}{' '}
           <TipText value={uiAmount} />
         </NotificationText>
-      </View>
+      </NotificationBody>
       {reactionValue ? (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Image
