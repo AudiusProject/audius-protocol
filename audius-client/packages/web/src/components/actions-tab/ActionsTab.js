@@ -74,7 +74,8 @@ const ExpandedActionsTab = (props) => {
       <Tooltip
         text={currentUserReposted ? 'Unrepost' : 'Repost'}
         disabled={isHidden || isDisabled || isOwner}
-        placement={direction === 'horizontal' ? 'bottom' : 'right'}
+        placement={direction === 'horizontal' ? 'top' : 'right'}
+        mount='page'
       >
         <div
           className={cn(styles.actionButton, {
@@ -87,7 +88,7 @@ const ExpandedActionsTab = (props) => {
             disabled={currentUserReposted || isHidden || isDisabled || isOwner}
             delay={REPOST_TOAST_TIMEOUT_MILLIS}
             containerClassName={styles.actionIconContainer}
-            placement={direction === 'horizontal' ? 'bottom' : 'right'}
+            placement={direction === 'horizontal' ? 'top' : 'right'}
           >
             <IconRepost
               className={cn(styles.iconRepost, {
@@ -100,7 +101,8 @@ const ExpandedActionsTab = (props) => {
       <Tooltip
         text='Share'
         disabled={isHidden || isDisabled}
-        placement={direction === 'horizontal' ? 'bottom' : 'right'}
+        placement={direction === 'horizontal' ? 'top' : 'right'}
+        mount='page'
       >
         <div
           className={styles.actionButton}

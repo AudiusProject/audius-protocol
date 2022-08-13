@@ -469,7 +469,9 @@ const NavColumn = ({
                             ? messages.newPlaylistOrFolderTooltip
                             : messages.newPlaylistTooltip
                         }
-                        mount='parent'
+                        getPopupContainer={() =>
+                          scrollbarRef.current?.parentNode
+                        }
                       >
                         <span>
                           <Pill
