@@ -39,6 +39,7 @@
 .toast:global(.ant-tooltip-placement-right) {
   padding-left: 6px;
 }
+
 .toast:global(.ant-tooltip-placement-left) {
   padding-right: 6px;
 }
