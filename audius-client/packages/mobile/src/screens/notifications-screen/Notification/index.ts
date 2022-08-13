@@ -1,5 +1,6 @@
 export * from './NotificationTile'
 export * from './NotificationHeader'
+export * from './NotificationBody'
 export * from './NotificationTitle'
 export * from './NotificationText'
 export * from './ProfilePictureList'

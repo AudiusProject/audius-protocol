@@ -34,7 +34,11 @@ type StaticTwitterProps = {
 type DynamicTwitterProps = {
   type: 'dynamic'
   handle: string
-  shareData: (twitterHandle: string | null | undefined) => Nullable<{
+  additionalHandle?: string
+  shareData: (
+    twitterHandle?: Nullable<string>,
+    otherHandle?: Nullable<string>
+  ) => Nullable<{
     shareText: string
     analytics: ReturnType<typeof make>
   }>
@@ -52,8 +56,21 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     getUser(state, { handle: 'handle' in other ? other.handle : undefined })
   )
 
-  const { userName, shareTwitterStatus, twitterHandle, setLoading, setIdle } =
-    useTwitterButtonStatus(user)
+  const additionalUser = useSelectorWeb((state) =>
+    getUser(state, {
+      handle: 'additionalHandle' in other ? other.additionalHandle : undefined
+    })
+  )
+
+  const {
+    userName,
+    additionalUserName,
+    shareTwitterStatus,
+    twitterHandle,
+    additionalTwitterHandle,
+    setLoading,
+    setIdle
+  } = useTwitterButtonStatus(user, additionalUser)
 
   const handlePress = useCallback(() => {
     if (other.type === 'static' && other.analytics) {
@@ -61,13 +78,23 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     }
     if (other.type === 'dynamic') {
       dispatchWeb(fetchUserSocials(other.handle))
+      if (other.additionalHandle) {
+        dispatchWeb(fetchUserSocials(other.additionalHandle))
+      }
       setLoading()
     }
   }, [other, dispatchWeb, setLoading])
 
   if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
     const handle = twitterHandle ? `@${twitterHandle}` : userName
-    const twitterData = other.shareData(handle)
+    const otherHandle = other.additionalHandle
+      ? additionalTwitterHandle
+        ? `@${additionalTwitterHandle}`
+        : additionalUserName
+      : null
+
+    const twitterData = other.shareData(handle, otherHandle)
+
     if (twitterData) {
       const { shareText, analytics } = twitterData
       openLink(getTwitterLink(url, shareText))

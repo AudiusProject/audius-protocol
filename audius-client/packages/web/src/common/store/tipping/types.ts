@@ -6,7 +6,8 @@ import {
   UserTip,
   User,
   StringAudio,
-  Nullable
+  Nullable,
+  TipSource
 } from '@audius/common'
 
 export type TippingSendStatus =
@@ -51,7 +52,7 @@ export type TippingState = {
     user: Nullable<User>
     amount: StringAudio
     error: Nullable<string>
-    source: 'profile' | 'feed'
+    source: TipSource
   }
   recentTips: UserTip[]
   storage: Nullable<RecentTipsStorage> // what is cached in the web or mobile local storage

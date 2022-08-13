@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react'
 
-import type { ID, FavoriteType } from '@audius/common'
+import type { ID, FavoriteType, TipSource } from '@audius/common'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 import type { NotificationType } from 'audius-client/src/common/store/notifications/types'
@@ -52,7 +52,7 @@ export type AppTabScreenParamList = {
   SearchResults: { query: string }
   SupportingUsers: { userId: ID }
   TagSearch: { query: string }
-  TopSupporters: { userId: ID; source: 'profile' | 'feed' }
+  TopSupporters: { userId: ID; source: TipSource }
   NotificationUsers: {
     id: string // uuid
     notificationType: NotificationType

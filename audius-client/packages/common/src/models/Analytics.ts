@@ -1157,6 +1157,8 @@ type RewardsClaimUnknown = {
   error: string
 }
 
+export type TipSource = 'profile' | 'feed' | 'dethroned'
+
 type TipAudioRequest = {
   eventName: Name.TIP_AUDIO_REQUEST
   amount: StringAudio
@@ -1164,7 +1166,7 @@ type TipAudioRequest = {
   recipientWallet: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
-  source: 'profile' | 'feed'
+  source: TipSource
   device: 'web' | 'native'
 }
 
@@ -1175,7 +1177,7 @@ type TipAudioSuccess = {
   recipientWallet: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
-  source: 'profile' | 'feed'
+  source: TipSource
   device: 'web' | 'native'
 }
 
@@ -1187,7 +1189,7 @@ type TipAudioFailure = {
   senderHandle: string
   recipientHandle: string
   error: string
-  source: 'profile' | 'feed'
+  source: TipSource
   device: 'web' | 'native'
 }
 
@@ -1198,7 +1200,7 @@ type TipAudioTwitterShare = {
   recipientWallet: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
-  source: 'profile' | 'feed'
+  source: TipSource
   device: 'web' | 'native'
 }
 
