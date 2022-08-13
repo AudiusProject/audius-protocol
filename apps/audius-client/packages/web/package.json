@@ -3,10 +3,10 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "private": true,
   "dependencies": {
-    "@audius/common": "1.2.3",
+    "@audius/common": "1.2.4",
     "@audius/sdk": "0.0.34",
     "@audius/stems": "1.2.3",
     "@coinbase/cbpay-js": "1.0.2",
