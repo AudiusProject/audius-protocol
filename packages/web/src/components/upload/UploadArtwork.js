@@ -51,24 +51,24 @@ const UploadArtwork = (props) => {
         {processing ? <LoadingSpinner className={styles.overlay} /> : null}
       </div>
       <div className={styles.button}>
-        <ImageSelectionButton
-          imageName={messages.imageName}
-          hasImage={!!props.artworkUrl}
-          error={props.imageProcessingError}
-          onOpenPopup={props.onOpenPopup}
-          onClosePopup={props.onClosePopup}
-          onSelect={onDrop}
-          source='UploadArtwork'
-        />
-      </div>
-      <div className={styles.toast}>
         <Toast
           text='No artwork? Pick from our library instead!'
-          placement='bottom'
+          placement='top'
           fireOnClick={false}
+          fillParent={false}
           mount='parent'
           open={showTip}
-        />
+        >
+          <ImageSelectionButton
+            imageName={messages.imageName}
+            hasImage={!!props.artworkUrl}
+            error={props.imageProcessingError}
+            onOpenPopup={props.onOpenPopup}
+            onClosePopup={props.onClosePopup}
+            onSelect={onDrop}
+            source='UploadArtwork'
+          />
+        </Toast>
       </div>
     </div>
   )
