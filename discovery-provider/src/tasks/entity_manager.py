@@ -354,9 +354,7 @@ def get_entity_manager_events_tx(update_task, tx_receipt):
     )().processReceipt(tx_receipt)
 
 
-def process_playlist_contents(
-    playlist_record: Playlist, playlist_metadata, block_integer_time
-):
+def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):
     if playlist_record.metadata_multihash:
         # playlist already has metadata
         metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
@@ -443,6 +441,4 @@ def process_playlist_data_event(
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
 
-    logger.info(
-        f"index.py | AudiusData | Updated playlist record {playlist_record}"
-    )
+    logger.info(f"index.py | AudiusData | Updated playlist record {playlist_record}")

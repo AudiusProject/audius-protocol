@@ -127,12 +127,15 @@ def init_contracts():
         abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
-    entity_manager_address = web3.toChecksumAddress(
-        shared_config["contracts"]["entity_manager_address"]
-    )
-    entity_manager_inst = web3.eth.contract(
-        address=entity_manager_address, abi=abi_values["EntityManager"]["abi"]
-    )
+    entity_manager_address = None
+    entity_manager_inst = None
+    if shared_config["contracts"]["entity_manager_address"]:
+        entity_manager_address = web3.toChecksumAddress(
+            shared_config["contracts"]["entity_manager_address"]
+        )
+        entity_manager_inst = web3.eth.contract(
+            address=entity_manager_address, abi=abi_values["EntityManager"]["abi"]
+        )
 
     contract_address_dict = {
         "registry": registry_address,
