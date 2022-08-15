@@ -58,7 +58,11 @@
 
 .foreground {
   height: auto;
-  min-height: calc(150vh + 300px);
+  /* Adjust vw and vh values for image placement */
+  --vw-adjusted: calc(100vw - 100px);
+  --vh-adjusted: calc(100vh + 300px);
+  /* Take the max of view height and width so that the image always fills the space */
+  min-height: max(var(--vh-adjusted), var(--vw-adjusted));
 }
 
 .foregroundImg {
@@ -121,7 +125,8 @@
     0px 42px 33px rgba(0, 0, 0, 0.05), 0px 22px 18px rgba(0, 0, 0, 0.04),
     0px 12.5px 10px rgba(0, 0, 0, 0.035), 0px 7px 5px rgba(0, 0, 0, 0.03),
     0px 2.8px 2.2px rgba(0, 0, 0, 0.02);
-  transform: translateZ(0); /*for older browsers*/
+  transform: translateZ(0);
+  /*for older browsers*/
   will-change: transform;
   letter-spacing: 0.02em;
 }
@@ -136,7 +141,8 @@
     0px 42px 33px rgba(0, 0, 0, 0.05), 0px 22px 18px rgba(0, 0, 0, 0.04),
     0px 12.5px 10px rgba(0, 0, 0, 0.035), 0px 7px 5px rgba(0, 0, 0, 0.03),
     0px 2.8px 2.2px rgba(0, 0, 0, 0.02);
-  transform: translateZ(0); /*for older browsers*/
+  transform: translateZ(0);
+  /*for older browsers*/
   will-change: transform;
   margin-bottom: 72px;
 }
