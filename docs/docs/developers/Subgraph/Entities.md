@@ -36,7 +36,7 @@ title: Subgraph Entities
 
 # AudiusNetwork
 
-Description: Unsure?
+Description: 
 
 | Field                           | Type    | Description                                                                                       |
 | ------------------------------- | ------- | ------------------------------------------------------------------------------------------------- |
@@ -78,6 +78,8 @@ Description: Unsure?
 
 # ServiceType
 
+Description:
+
 | Field    | Type                                                     | Description                              |
 | -------- | -------------------------------------------------------- | ---------------------------------------- |
 | id       | ID                                                       | The type of the service ie. creator-node |
@@ -88,6 +90,8 @@ Description: Unsure?
 
 # ServiceTypeVersion
 
+Description:
+
 | Field          | Type         | Description |
 | -------------- | ------------ | ----------- |
 | id             | ID!          |             |
@@ -96,6 +100,8 @@ Description: Unsure?
 | blockNumber    | BigInt!      |
 
 # ServiceNode
+
+Description:
 
 | Field               | Type         | Description                                                                 |
 | ------------------- | ------------ | --------------------------------------------------------------------------- |
@@ -109,6 +115,8 @@ Description: Unsure?
 | isRegistered        | Boolean!     | Boolean if th service is registered/deregistered                            |
 
 # User
+
+Description:
 
 | Field                             | Type                                        | Description                                                                            |
 | --------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -138,6 +146,8 @@ Description: Unsure?
 
 # Delegate
 
+Description:
+
 | Field           | Type    | Description                                                      |
 | --------------- | ------- | ---------------------------------------------------------------- |
 | id              | ID!     | ID - generated w/ the service provider's & delegator's addresses |
@@ -149,6 +159,8 @@ Description: Unsure?
 
 
 # DecreaseStakeEvent
+
+Description:
 
 | Field              | Type          | Description |
 | ------------------ | ------------- | ----------- |
@@ -163,7 +175,7 @@ Description: Unsure?
 
 # UpdateDeployerCutEvent
 
-Description: implements LockupEvent??
+Description: implements LockupEvent
 
 | Field              | Type          | Description |
 | ------------------ | ------------- | ----------- |
@@ -177,7 +189,7 @@ Description: implements LockupEvent??
 
 # RemoveDelegatorEvent
 
-Description: implements LockupEvent??
+Description: 
 
 | Field              | Type          | Description |
 | ------------------ | ------------- | ----------- |
@@ -192,7 +204,7 @@ Description: implements LockupEvent??
 
 # UndelegateStakeEvent
 
-Description: implements LockupEvent??
+Description: 
 
 | Field              | Type          | Description |
 | ------------------ | ------------- | ----------- |
@@ -207,7 +219,7 @@ Description: implements LockupEvent??
 
 # IncreasedStakeEvent
 
-Description: implements LockupEvent??
+Description: 
 
 | Field          | Type    | Description |
 | -------------- | ------- | ----------- |
@@ -219,7 +231,7 @@ Description: implements LockupEvent??
 
 # IncreasedDelegatedStakeEvent
 
-Description: implements LockupEvent??
+Description: 
 
 | Field           | Type    | Description |
 | --------------- | ------- | ----------- |
@@ -231,6 +243,8 @@ Description: implements LockupEvent??
 
 # ClaimEvent
 
+Description:
+
 | Field       | Type    | Description |
 | ----------- | ------- | ----------- |
 | id          | ID!     |             |
@@ -240,6 +254,8 @@ Description: implements LockupEvent??
 | blockNumber | BigInt! |             |
 
 # SlashEvent
+
+Description:
 
 | Field       | Type    | Description |
 | ----------- | ------- | ----------- |
@@ -251,6 +267,8 @@ Description: implements LockupEvent??
 
 # ClaimRound
 
+Description:
+
 | Field       | Type    | Description      |
 | ----------- | ------- | ---------------- |
 | id          | ID!     | The round number |     
@@ -258,6 +276,8 @@ Description: implements LockupEvent??
 | blockNumber | BigInt! |                  |
 
 # ClaimProcessedEvent
+
+Description:
 
 | Field       | Type    | Description |
 | ----------- | ------- | ----------- |
@@ -269,6 +289,8 @@ Description: implements LockupEvent??
 | blockNumber | BigInt! |             |
 
 # RegisterProviderServicerEvent
+
+Description:
 
 | Field       | Type         | Description |
 | ----------- | ------------ | ----------- |
@@ -283,6 +305,8 @@ Description: implements LockupEvent??
 
 # DeregisterProviderServicerEvent
 
+Description:
+
 | Field         | Type         | Description |
 | ------------- | ------------ | ----------- |
 | id            | ID!          |             |
@@ -295,6 +319,8 @@ Description: implements LockupEvent??
 | blockNumber   | BigInt!      |             |
 
 # Proposal
+
+Description:
 
 | Field                     | Type                                     | Description                                    |
 | ------------------------- | ---------------------------------------- | ---------------------------------------------- |
@@ -316,6 +342,8 @@ Description: implements LockupEvent??
 
 # Vote
 
+Description:
+
 | Field              | Type      | Description                                      |
 | ------------------ | --------- | ------------------------------------------------ |
 | id                 | ID!       | ID - generated from proposal id and user address |
@@ -328,6 +356,8 @@ Description: implements LockupEvent??
 
 # PropotalSubmittedEvent
 
+Description:
+
 | Field       | Type      | Description |
 | ----------- | --------- | ----------- |
 | id          | ID!       |             |
@@ -337,6 +367,8 @@ Description: implements LockupEvent??
 | description | String!   |
 
 # PropotalVoteSubmittedEvent
+
+Description:
 
 | Field       | Type      | Description |
 | ----------- | --------- | ----------- |
@@ -349,6 +381,8 @@ Description: implements LockupEvent??
 | blockNumber | BigInt!   |             |
 
 # PropotalVoteUpdatedEvent
+
+Description:
 
 | Field        | Type      | Description |
 | ------------ | --------- | ----------- |
@@ -363,6 +397,8 @@ Description: implements LockupEvent??
 
 # PropotalOutcomeEvaluatedEvent
 
+Description:
+
 | Field            | Type      | Description |
 | ---------------- | --------- | ----------- |
 | id:              | ID!       |             |
@@ -375,6 +411,8 @@ Description: implements LockupEvent??
 
 # PropotalTransactionExecutedEvent
 
+Description:
+
 | Field                | Type      | Description |
 | -------------------- | --------- | ----------- |
 | id                   | ID!       |             |
@@ -384,6 +422,8 @@ Description: implements LockupEvent??
 | blockNumber          | BigInt!   |          
 
 # GuardianTransactionEcecutedEvent
+
+Description:
 
 | Field                  | Type    | Description |
 | ---------------------- | ------- | ----------- |
@@ -396,6 +436,8 @@ Description: implements LockupEvent??
 | blockNumber            | BigInt! |             |
 
 # ProposalVetoedEvent
+
+Description:
 
 | Field       | Type      | Description |
 | ----------- | --------- | ----------- |
