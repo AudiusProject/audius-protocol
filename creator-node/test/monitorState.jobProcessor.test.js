@@ -256,7 +256,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      CONTENT_NODE_ENDPOINT
+    )
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
@@ -286,7 +289,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      CONTENT_NODE_ENDPOINT
+    )
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
@@ -317,7 +323,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      CONTENT_NODE_ENDPOINT
+    )
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
@@ -347,7 +356,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      CONTENT_NODE_ENDPOINT
+    )
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
@@ -373,7 +385,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      CONTENT_NODE_ENDPOINT
+    )
     expect(buildReplicaSetNodesToUserWalletsMapStub).to.not.have.been.called
     expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been.called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
