@@ -5,7 +5,7 @@ export type SyncRequestAxiosData = {
   immediate?: boolean
   forceResync?: boolean
   timestamp?: string
-  signature?: string,
+  signature?: string
   sidtest?: boolean
 }
 
