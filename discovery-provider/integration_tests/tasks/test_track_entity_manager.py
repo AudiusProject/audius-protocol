@@ -6,7 +6,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challeng
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.types import TRACK_ID_OFFSET
+from src.tasks.entity_manager.utils import TRACK_ID_OFFSET
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict

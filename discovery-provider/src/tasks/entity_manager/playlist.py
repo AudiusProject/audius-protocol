@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Dict, Set
 
 from src.models.playlists.playlist import Playlist
-from src.tasks.entity_manager.types import (
+from src.tasks.entity_manager.utils import (
     PLAYLIST_ID_OFFSET,
     Action,
     EntityType,
@@ -157,9 +157,7 @@ def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
     return new_playlist
 
 
-def process_playlist_contents(
-    playlist_record: Playlist, playlist_metadata, block_integer_time
-):
+def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):
     if playlist_record.metadata_multihash:
         # playlist already has metadata
         metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)

@@ -15,7 +15,7 @@ from src.tasks.entity_manager.playlist import (
     update_playlist,
 )
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
-from src.tasks.entity_manager.types import (
+from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
     EntityType,
@@ -160,7 +160,7 @@ def collect_entities_to_fetch(
 def fetch_existing_entities(
     session: Session, entities_to_fetch: Dict[EntityType, Set[int]]
 ):
-    existing_entities = {}
+    existing_entities: ExistingRecordDict = {}
     playlists: List[Playlist] = (
         session.query(Playlist)
         .filter(

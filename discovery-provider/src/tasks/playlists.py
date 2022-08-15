@@ -7,7 +7,7 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
-from src.tasks.entity_manager.types import PLAYLIST_ID_OFFSET
+from src.tasks.entity_manager.utils import PLAYLIST_ID_OFFSET
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present

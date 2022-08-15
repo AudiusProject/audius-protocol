@@ -3,7 +3,7 @@ from typing import Dict
 
 from src.models.tracks.track import Track
 from src.models.users.user import User
-from src.tasks.entity_manager.types import (
+from src.tasks.entity_manager.utils import (
     TRACK_ID_OFFSET,
     Action,
     EntityType,
