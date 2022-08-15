@@ -6,7 +6,7 @@ export type SyncRequestAxiosData = {
   forceResync?: boolean
   timestamp?: string
   signature?: string
-  sidtest?: boolean
+  from_manual_route?: boolean
 }
 
 export type SyncRequestAxiosParams = {

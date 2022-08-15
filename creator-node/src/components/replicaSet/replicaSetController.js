@@ -163,6 +163,10 @@ const syncRouteController = async (req, res) => {
   return successResponse()
 }
 
+/**
+ * Adds a job to manualSyncQueue to issue a sync to secondary with syncMode MergePrimaryAndSecondary
+ * @notice This will only work if called on a primary for a user
+ */
 const mergePrimaryAndSecondaryController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   const manualSyncQueue = serviceRegistry.manualSyncQueue
@@ -173,7 +177,13 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
   const wallet = req.query.wallet
   const endpoint = req.query.endpoint
 
+  if (!wallet || !endpoint) {
+    return errorResponseBadRequest(`Must provide wallet and endpoint params`)
+  }
+
   const syncType = SyncType.Manual
+  const syncMode = SYNC_MODES.MergePrimaryAndSecondary
+  const immediate = true
 
   const syncRequestParameters = {
     baseURL: endpoint,
@@ -183,14 +193,14 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
       wallet: [wallet],
       creator_node_endpoint: selfEndpoint,
       sync_type: syncType,
-      immediate: true,
-      sidtest: true
+      immediate,
+      from_manual_route: true
     }
   }
 
   await manualSyncQueue.add({
-    syncType: SyncType.Manual,
-    syncMode: SYNC_MODES.MergePrimaryAndSecondary,
+    syncType,
+    syncMode,
     syncRequestParameters
   })
 
@@ -208,9 +218,8 @@ router.post(
   ensureStorageMiddleware,
   handleResponse(syncRouteController)
 )
-
 router.post(
-  '/mergePrimaryAndSecondary',
+  '/merge_primary_and_secondary',
   handleResponse(mergePrimaryAndSecondaryController)
 )
 
