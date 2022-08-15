@@ -24,7 +24,7 @@ const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
-const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
+const CREATOR_NODE_ENDPOINT = config.get('creatorNodeEndpoint')
 
 type Decision = {
   stage: string
@@ -60,7 +60,7 @@ module.exports = async function ({
     {
       lastProcessedUserId,
       discoveryNodeEndpoint,
-      THIS_CNODE_ENDPOINT,
+      CREATOR_NODE_ENDPOINT,
       USERS_PER_JOB
     }
   )
@@ -73,7 +73,7 @@ module.exports = async function ({
     try {
       users = await getNodeUsers(
         discoveryNodeEndpoint,
-        THIS_CNODE_ENDPOINT,
+        CREATOR_NODE_ENDPOINT,
         lastProcessedUserId,
         USERS_PER_JOB
       )
@@ -106,7 +106,7 @@ module.exports = async function ({
     }
 
     try {
-      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
+      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users, CREATOR_NODE_ENDPOINT)
       _addToDecisionTree(decisionTree, 'getUnhealthyPeers Success', logger, {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)

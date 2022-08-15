@@ -50,7 +50,7 @@ class CNodeHealthManager {
    * Performs a health check on the peer set
    * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
    * @param {string} contentNodeEndpoint the IP address / URL of this Content Node
-   * @param {boolean?} [performSimpleCheck=false] flag to dictate whether or not to check health check response to
+   * @param {boolean?} [checkHealthCheckResults=true] flag to dictate whether or not to check health check response to
    *  determine node health
    * @returns the unhealthy peers in a Set
    *
@@ -60,7 +60,7 @@ class CNodeHealthManager {
   async getUnhealthyPeers(
     nodeUsers,
     thisContentNodeEndpoint,
-    performSimpleCheck = false
+    checkHealthCheckResults = true
   ) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
     const peerSet = this._computeContentNodePeerSet(
@@ -75,7 +75,7 @@ class CNodeHealthManager {
     const unhealthyPeers = new Set()
 
     for await (const peer of peerSet) {
-      const isHealthy = await this.isNodeHealthy(peer, performSimpleCheck)
+      const isHealthy = await this.isNodeHealthy(peer, checkHealthCheckResults)
       if (!isHealthy) {
         unhealthyPeers.add(peer)
       }
@@ -84,10 +84,18 @@ class CNodeHealthManager {
     return unhealthyPeers
   }
 
-  async isNodeHealthy(peer, performSimpleCheck = false) {
+  /**
+   * Queries the endpoint's health check and optionally checks the health check results to further
+   * determine if a node is healthy
+   * @param {string} peer content node endpoint
+   * @param {boolean?} [checkHealthCheckResults=true] flag to dictate whether or not to check health check response to
+   *  determine node health 
+   * @returns true or false 
+   */
+  async isNodeHealthy(peer, checkHealthCheckResults = true) {
     try {
-      const verboseHealthCheckResp = await this.queryVerboseHealthCheck(peer)
-      if (!performSimpleCheck) {
+      const verboseHealthCheckResp = await this.queryHealthCheck(peer)
+      if (checkHealthCheckResults) {
         this.determinePeerHealth(verboseHealthCheckResp)
       }
     } catch (e) {
@@ -107,11 +115,11 @@ class CNodeHealthManager {
    * @param {string} endpoint the endpoint to query
    * @returns {Object} the /health_check/verbose response from the endpoint
    */
-  async queryVerboseHealthCheck(endpoint) {
+  async queryHealthCheck(endpoint) {
     // Axios request will throw on timeout or non-200 response
     const resp = await axios({
       baseURL: endpoint,
-      url: '/health_check/verbose',
+      url: '/health_check',
       method: 'get',
       timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS,
       headers: {
@@ -224,7 +232,7 @@ class CNodeHealthManager {
    * @returns boolean of whether primary is healthy or not
    */
   async isPrimaryHealthy(primary) {
-    const isHealthy = await this.isNodeHealthy(primary, true)
+    const isHealthy = await this.isNodeHealthy(primary, false)
 
     if (!isHealthy) {
       const failedTimestamp =
