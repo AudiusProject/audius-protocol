@@ -51,9 +51,6 @@ class AudiusLibsWrapper {
     })
 
     let audiusInstance = new AudiusLibs({
-      discoveryProviderConfig: {
-        whitelist: discoveryProviderWhitelist
-      },
       ethWeb3Config: AudiusLibs.configEthWeb3(
         config.get('ethTokenAddress'),
         config.get('ethRegistryAddress'),
