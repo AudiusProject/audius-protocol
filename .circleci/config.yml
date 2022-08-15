@@ -900,7 +900,7 @@ jobs:
             # 2. CIRCLE_TAG if defined,
             # 3. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
             # 4. 'latest', which is the default
-            echo "export IMAGE_TAG=`[ << parameters.logspout-tag >> ] && echo $(head -n1 logspout/Dockerfile | cut -f 2 -d ':') || [ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+            echo "export IMAGE_TAG=`[ << parameters.logspout-tag >> ] && echo $(head -n1 logspout/Dockerfile | cut -f 2 -d '=') || [ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
           name: Docker login
           command: |
@@ -1083,6 +1083,7 @@ workflows:
       - bake-gcp-dev-image:
           context:
             - GCP2
+            - slack-secrets
           name: bake-gcp-dev-image-nightly
       - docker-build-and-push:
           name: build-eth-contracts

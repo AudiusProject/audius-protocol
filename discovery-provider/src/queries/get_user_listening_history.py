@@ -1,10 +1,16 @@
-from typing import TypedDict
+from typing import Optional, TypedDict
 
+from sqlalchemy import Integer, String, or_, text
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.models.users.user_listening_history import UserListeningHistory
 from src.queries import response_name_constants
-from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
+from src.queries.query_helpers import (
+    add_query_pagination,
+    add_users_to_tracks,
+    populate_track_metadata,
+)
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
@@ -21,6 +27,9 @@ class GetUserListeningHistoryArgs(TypedDict):
 
     # The offset for the listen history
     offset: int
+
+    # Optional filter for the returned results
+    query: Optional[str]
 
 
 def get_user_listening_history(args: GetUserListeningHistoryArgs):
@@ -44,6 +53,7 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
     current_user_id = args["current_user_id"]
     limit = args["limit"]
     offset = args["offset"]
+    query = args["query"]
 
     if user_id != current_user_id:
         return []
@@ -57,34 +67,59 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
     if not listening_history_results:
         return []
 
-    # add query pagination
-    listening_history_results = listening_history_results[offset : offset + limit]
-
+    # Map out all track ids and listen dates
     track_ids = []
-    listen_dates = []
+    listen_dates = {}
     for listen in listening_history_results:
         track_ids.append(listen["track_id"])
-        listen_dates.append(listen["timestamp"])
+        listen_dates[listen["track_id"]] = listen["timestamp"]
 
-    track_results = (session.query(Track).filter(Track.track_id.in_(track_ids))).all()
+    # Order by the listening history order
+    # This helper just makes sure that we can order by the same ordering
+    # of track ids in the history results
+    # https://stackoverflow.com/questions/866465/order-by-the-in-value-list
+    order = (
+        text(
+            """
+        SELECT * 
+        FROM unnest(:track_ids) WITH ORDINALITY t(id, ord)
+        """
+        )
+        .bindparams(track_ids=track_ids)
+        .columns(id=String, ord=Integer)
+        .alias()
+    )
 
-    track_results_dict = {
-        track_result.track_id: track_result for track_result in track_results
-    }
+    base_query = (
+        session.query(Track)
+        .join(order, order.c.id == Track.track_id)
+        .filter(Track.is_current == True)
+    )
 
-    # sort tracks in listening history order
-    sorted_track_results = []
-    for track_id in track_ids:
-        if track_id in track_results_dict:
-            sorted_track_results.append(track_results_dict[track_id])
+    if query is not None:
+        base_query = base_query.join(Track.user, aliased=True).filter(
+            or_(
+                Track.title.ilike(f"%{query.lower()}%"),
+                User.name.ilike(f"%{query.lower()}%"),
+            )
+        )
 
-    tracks = helpers.query_result_to_list(sorted_track_results)
+    base_query = base_query.order_by(order.c.ord)
+
+    # Add pagination
+    base_query = add_query_pagination(base_query, limit, offset)
+    base_query = base_query.all()
+    track_ids = track_ids[offset : offset + limit]
+
+    tracks = helpers.query_result_to_list(base_query)
 
     # bundle peripheral info into track results
     tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
     add_users_to_tracks(session, tracks, current_user_id)
 
-    for idx, track in enumerate(tracks):
-        track[response_name_constants.activity_timestamp] = listen_dates[idx]
+    for track in tracks:
+        track[response_name_constants.activity_timestamp] = listen_dates[
+            track[response_name_constants.track_id]
+        ]
 
     return tracks

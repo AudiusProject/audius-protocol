@@ -77,11 +77,12 @@ begin
       (new.save_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
     on conflict do nothing;
     insert into notification
-      (user_ids, type, specifier, blocknumber, timestamp, data)
+      (user_ids, type, specifier, group_id, blocknumber, timestamp, data)
       values
       (
         ARRAY [owner_user_id],
         'milestone',
+        owner_user_id,
         'milestone:' || milestone_name  || ':id:' || new.save_item_id || ':threshold:' || milestone,
         new.blocknumber,
         new.created_at,
@@ -94,13 +95,14 @@ begin
     -- create a notification for the saved content's owner
     if new.is_delete is false then
       insert into notification
-        (blocknumber, user_ids, timestamp, type, specifier, data)
+        (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
         values
         ( 
           new.blocknumber,
           ARRAY [owner_user_id], 
           new.created_at, 
           'save',
+          new.user_id,
           'save:' || new.save_item_id || ':type:'|| new.save_type,
           json_build_object('save_item_id', new.save_item_id, 'user_id', new.user_id, 'type', new.save_type)
         )
@@ -109,20 +111,21 @@ begin
 
     -- create a notification for remix cosign
     if new.is_delete is false and new.save_type = 'track' and track_remix_of is not null then
-      select 
+      select
         case when tracks.owner_id = new.user_id then TRUE else FALSE end as boolean into is_remix_cosign
         from tracks 
         where is_current and track_id = (track_remix_of->'tracks'->0->>'parent_track_id')::int;
       if is_remix_cosign then
         insert into notification
-          (blocknumber, user_ids, timestamp, type, specifier, data)
+          (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
           values
           ( 
             new.blocknumber,
             ARRAY [owner_user_id], 
             new.created_at, 
             'cosign',
-            'cosign:' || (track_remix_of->'tracks'->0->>'parent_track_id')::int || ':blocknumber:'|| new.blocknumber,
+            new.user_id,
+            'cosign:parent_track' || (track_remix_of->'tracks'->0->>'parent_track_id')::int || ':original_track:'|| new.save_item_id,
             json_build_object('parent_track_id', (track_remix_of->'tracks'->0->>'parent_track_id')::int, 'track_id', new.save_item_id, 'track_owner_id', owner_user_id)
           )
         on conflict do nothing;

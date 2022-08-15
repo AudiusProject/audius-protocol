@@ -32,7 +32,7 @@ export const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
 export const SYNC_MONITORING_RETRY_DELAY_MS = 15_000
 
 // Max number of attempts to select new replica set in reconfig
-export const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 5
+export const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 20
 
 // Max number of attempts to run a job that attempts to issue a manual sync
 export const MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS = 2
@@ -54,24 +54,28 @@ export const QUEUE_HISTORY = Object.freeze({
   // Max number of completed/failed jobs to keep in redis for the recurring sync queue
   RECURRING_SYNC: 100_000,
   // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
-  UPDATE_REPLICA_SET: 100_000
+  UPDATE_REPLICA_SET: 100_000,
+  // Max number of completed/failed jobs to keep in redis for the recover-orphaned-data queue
+  RECOVER_ORPHANED_DATA: 10_000
 })
 
 export const QUEUE_NAMES = {
-  // Name of the queue that only processes jobs to slice users and gather data about them
+  // Queue to slice users and gather data about them
   MONITOR_STATE: 'monitor-state-queue',
-  // Name of the queue that only processes jobs to find sync requests
+  // Queue to find sync requests
   FIND_SYNC_REQUESTS: 'find-sync-requests-queue',
-  // Name of the queue that only processes jobs to find replica set updates
+  // Queue to find replica set updates
   FIND_REPLICA_SET_UPDATES: 'find-replica-set-updates-queue',
-  // Name of queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
+  // Queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
   FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-to-endpoint-sp-id-map-queue',
-  // Name of queue that only processes jobs to issue a manual sync
+  // Queue to issue a manual sync
   MANUAL_SYNC: 'manual-sync-queue',
-  // Name of queue that only processes jobs to issue a recurring sync
+  // Queue to issue a recurring sync
   RECURRING_SYNC: 'recurring-sync-queue',
-  // Name of queue that only processes jobs to update a replica set
-  UPDATE_REPLICA_SET: 'update-replica-set-queue'
+  // Queue to update a replica set
+  UPDATE_REPLICA_SET: 'update-replica-set-queue',
+  // Queue to search for nodes with orphaned data and merge it into a Replica Set
+  RECOVER_ORPHANED_DATA: 'recover-orphaned-data-queue'
 } as const
 export type TQUEUE_NAMES = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES]
 
@@ -92,7 +96,9 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   // Max millis to run a recurring sync job for before marking it as stalled
   RECURRING_SYNC: 6 /* min */ * 60 * 1000,
   // Max millis to run an update-replica-set job for before marking it as stalled
-  UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000
+  UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000,
+  // Max millis to run a recover-orphaned-data job for before marking it as stalled
+  RECOVER_ORPHANED_DATA: 60 /* min */ * 60 * 1000
 })
 
 /**
@@ -150,5 +156,5 @@ export const SYNC_MODES = Object.freeze({
 
 export const FETCH_FILES_HASH_NUM_RETRIES = 3
 
-// Seconds to hold the cache of healthy content nodes for update-replica-set jobs (10 mins)
-export const HEALTHY_SERVICES_TTL_SEC = 10 * 60
+// Seconds to hold the cache of healthy content nodes for update-replica-set jobs
+export const HEALTHY_SERVICES_TTL_SEC = 60 /* 1 min */

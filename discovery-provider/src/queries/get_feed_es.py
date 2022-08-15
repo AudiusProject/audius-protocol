@@ -225,6 +225,10 @@ def get_feed_es(args, limit=10):
         item["followee_reposts"] = follow_reposts[item["item_key"]]
         item["followee_saves"] = follow_saves[item["item_key"]]
 
+        # save_count was renamed to favorite_count when working on search...
+        # but /feed still expects save_count
+        item["save_count"] = item["favorite_count"]
+
     # populate metadata + remove extra fields from items
     sorted_feed = [
         populate_track_or_playlist_metadata_es(item, current_user)

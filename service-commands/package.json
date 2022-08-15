@@ -8,7 +8,7 @@
     "init": "./scripts/init-repos.sh"
   },
   "dependencies": {
-    "@audius/sdk": "0.0.2",
+    "@audius/sdk": "0.0.32",
     "@solana/web3.js": "1.37.1",
     "axios": "0.19.2",
     "borsh": "0.4.0",

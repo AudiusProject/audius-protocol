@@ -1,10 +1,11 @@
+from sqlalchemy import or_
 from src.models.social.save import Save, SaveType
 from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     add_query_pagination,
-    get_users_by_id,
-    get_users_ids,
+    add_users_to_tracks,
     populate_track_metadata,
 )
 from src.utils import helpers
@@ -17,6 +18,7 @@ def get_save_tracks(args):
     limit = args.get("limit")
     offset = args.get("offset")
     filter_deleted = args.get("filter_deleted")
+    query = args.get("query")
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
@@ -36,6 +38,14 @@ def get_save_tracks(args):
         if filter_deleted:
             base_query = base_query.filter(Track.is_delete == False)
 
+        if query:
+            base_query = base_query.join(Track.user, aliased=True).filter(
+                or_(
+                    Track.title.ilike(f"%{query.lower()}%"),
+                    User.name.ilike(f"%{query.lower()}%"),
+                )
+            )
+
         base_query = base_query.order_by(Save.created_at.desc(), Track.track_id.desc())
 
         query_results = add_query_pagination(base_query, limit, offset).all()
@@ -49,14 +59,7 @@ def get_save_tracks(args):
 
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
-
-        if args.get("with_users", False):
-            user_id_list = get_users_ids(tracks)
-            users = get_users_by_id(session, user_id_list, current_user_id)
-            for track in tracks:
-                user = users[track["owner_id"]]
-                if user:
-                    track["user"] = user
+        add_users_to_tracks(session, tracks, current_user_id)
 
         for idx, track in enumerate(tracks):
             track[response_name_constants.activity_timestamp] = save_dates[idx]

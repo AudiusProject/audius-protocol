@@ -23,18 +23,19 @@ begin
 
   -- If remix, create notification
   begin
-    if new.remix_of is not null then
+    if new.remix_of is not null AND new.is_unlisted = FALSE AND new.is_delete = FALSE AND new.stem_of IS NULL then
       select owner_id into parent_track_owner_id from tracks where is_current and track_id = (new.remix_of->'tracks'->0->>'parent_track_id')::int limit 1;
       if parent_track_owner_id is not null then
         insert into notification
-        (blocknumber, user_ids, timestamp, type, specifier, data)
+        (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
         values
         (
           new.blocknumber,
           ARRAY [parent_track_owner_id],
           new.updated_at,
           'remix',
-          'remix:' || new.track_id || ':parent_track:' || (new.remix_of->'tracks'->0->>'parent_track_id')::int || ':blocknumber:' || new.blocknumber,
+          new.owner_id,
+          'remix:track:' || new.track_id || ':parent_track:' || (new.remix_of->'tracks'->0->>'parent_track_id')::int || ':blocknumber:' || new.blocknumber,
           json_build_object('track_id', new.track_id, 'parent_track_id', (new.remix_of->'tracks'->0->>'parent_track_id')::int)
         )
         on conflict do nothing;

@@ -77,7 +77,7 @@ describe('test findSyncRequests job processor', function () {
         '../stateReconciliation/stateReconciliationUtils': {
           getNewOrExistingSyncReq: getNewOrExistingSyncReqStub
         },
-        '../CNodeToSpIdMapManager': {
+        '../ContentNodeInfoManager': {
           getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
         },
         './stateMonitoringUtils': {
@@ -159,20 +159,22 @@ describe('test findSyncRequests job processor', function () {
      */
 
     const expectedSyncReqToEnqueue = 'expectedSyncReqToEnqueue'
-    const getNewOrExistingSyncReqExpectedConditionsArr = [{
-      input: {
-        userWallet: wallet,
-        primaryEndpoint: primary,
-        secondaryEndpoint: secondary1,
-        syncType,
-        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
-      },
-      /**
-       * note - this value can be anything as it's outside scope of this integration test suite
-       * TODO - should prob change this to reflect real object
-       */
-      output: { syncReqToEnqueue: expectedSyncReqToEnqueue }
-    }]
+    const getNewOrExistingSyncReqExpectedConditionsArr = [
+      {
+        input: {
+          userWallet: wallet,
+          primaryEndpoint: primary,
+          secondaryEndpoint: secondary1,
+          syncType,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+        },
+        /**
+         * note - this value can be anything as it's outside scope of this integration test suite
+         * TODO - should prob change this to reflect real object
+         */
+        output: { syncReqToEnqueue: expectedSyncReqToEnqueue }
+      }
+    ]
     const getNewOrExistingSyncReqStub = getConditionalStub(
       'getNewOrExistingSyncReq',
       getNewOrExistingSyncReqExpectedConditionsArr
@@ -189,7 +191,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary1][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary1][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary1][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
@@ -199,7 +202,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -304,16 +308,18 @@ describe('test findSyncRequests job processor', function () {
 
     // Stub having a duplicate sync so that no new sync will be enqueued
     const expectedDuplicateSyncReq = 'expectedDuplicateSyncReq'
-    const getNewOrExistingSyncReqExpectedConditionsArr = [{
-      input: {
-        userWallet: wallet,
-        primaryEndpoint: primary,
-        secondaryEndpoint: secondary1,
-        syncType,
-        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
-      },
-      output: { duplicateSyncReq: expectedDuplicateSyncReq }
-    }]
+    const getNewOrExistingSyncReqExpectedConditionsArr = [
+      {
+        input: {
+          userWallet: wallet,
+          primaryEndpoint: primary,
+          secondaryEndpoint: secondary1,
+          syncType,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+        },
+        output: { duplicateSyncReq: expectedDuplicateSyncReq }
+      }
+    ]
     const getNewOrExistingSyncReqStub = getConditionalStub(
       'getNewOrExistingSyncReq',
       getNewOrExistingSyncReqExpectedConditionsArr
@@ -330,7 +336,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary1][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary1][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary1][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
@@ -340,7 +347,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -460,7 +468,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -576,7 +585,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -698,7 +708,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -819,7 +830,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary1][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary1][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary1][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
@@ -829,7 +841,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.None
       }
@@ -934,25 +947,28 @@ describe('test findSyncRequests job processor', function () {
     // Mock `getNewOrExistingSyncReq()` to return expectedSyncReq for secondary1 and duplicateSyncReq for secondary2
     const expectedSyncReqToEnqueue = 'expectedSyncReqToEnqueue'
     const expectedDuplicateSyncReq = 'expectedDuplicateSyncReq'
-    const getNewOrExistingSyncReqExpectedConditionsArr = [{
-      input: {
-        userWallet: wallet,
-        primaryEndpoint: primary,
-        secondaryEndpoint: secondary1,
-        syncType,
-        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+    const getNewOrExistingSyncReqExpectedConditionsArr = [
+      {
+        input: {
+          userWallet: wallet,
+          primaryEndpoint: primary,
+          secondaryEndpoint: secondary1,
+          syncType,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+        },
+        output: { syncReqToEnqueue: expectedSyncReqToEnqueue }
       },
-      output: { syncReqToEnqueue: expectedSyncReqToEnqueue }
-    }, {
-      input: {
-        userWallet: wallet,
-        primaryEndpoint: primary,
-        secondaryEndpoint: secondary2,
-        syncType,
-        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
-      },
-      output: { duplicateSyncReq: expectedDuplicateSyncReq }
-    }]
+      {
+        input: {
+          userWallet: wallet,
+          primaryEndpoint: primary,
+          secondaryEndpoint: secondary2,
+          syncType,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+        },
+        output: { duplicateSyncReq: expectedDuplicateSyncReq }
+      }
+    ]
     const getNewOrExistingSyncReqStub = getConditionalStub(
       'getNewOrExistingSyncReq',
       getNewOrExistingSyncReqExpectedConditionsArr
@@ -969,7 +985,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary1][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary1][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary1][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       },
@@ -979,7 +996,8 @@ describe('test findSyncRequests job processor', function () {
           primaryClock: replicaToAllUserInfoMaps[primary][wallet].clock,
           secondaryClock: replicaToAllUserInfoMaps[secondary2][wallet].clock,
           primaryFilesHash: replicaToAllUserInfoMaps[primary][wallet].filesHash,
-          secondaryFilesHash: replicaToAllUserInfoMaps[secondary2][wallet].filesHash
+          secondaryFilesHash:
+            replicaToAllUserInfoMaps[secondary2][wallet].filesHash
         },
         output: SYNC_MODES.SyncSecondaryFromPrimary
       }
@@ -1034,11 +1052,13 @@ describe('test findSyncRequests job processor', function () {
       logger
     })
     expect(actualOutput).to.deep.equal(expectedOutput)
-    expect(getNewOrExistingSyncReqStub).to.have.been.calledWithExactly(
-      getNewOrExistingSyncReqExpectedConditionsArr[0].input
-    ).and.to.have.been.calledWithExactly(
-      getNewOrExistingSyncReqExpectedConditionsArr[1].input
-    )
+    expect(getNewOrExistingSyncReqStub)
+      .to.have.been.calledWithExactly(
+        getNewOrExistingSyncReqExpectedConditionsArr[0].input
+      )
+      .and.to.have.been.calledWithExactly(
+        getNewOrExistingSyncReqExpectedConditionsArr[1].input
+      )
     expect(computeSyncModeForUserAndReplicaStub)
       .to.have.been.calledTwice.and.to.have.been.calledWithExactly(
         computeSyncModeForUserAndReplicaExpectedConditionsArr[0].input
@@ -1084,7 +1104,7 @@ describe('test findSyncRequests job processor', function () {
         primarySpID: CN1SpID,
         secondary1SpID: CN3SpID,
         secondary2SpID: CN2SpID
-      },
+      }
     ]
 
     // spIds in mapping must match those in the `users` variable
@@ -1170,7 +1190,7 @@ describe('test findSyncRequests job processor', function () {
           secondaryFilesHash: replicaToAllUserInfoMaps[CN2][wallet2].filesHash
         },
         output: SYNC_MODES.None
-      },
+      }
     ]
     const computeSyncModeForUserAndReplicaStub = getConditionalStub(
       'computeSyncModeForUserAndReplica',
@@ -1222,7 +1242,8 @@ describe('test findSyncRequests job processor', function () {
       errors: [],
       jobsToEnqueue: {
         [QUEUE_NAMES.RECURRING_SYNC]: [
-          expectedSyncReqToEnqueueWallet1, expectedSyncReqToEnqueueWallet2
+          expectedSyncReqToEnqueueWallet1,
+          expectedSyncReqToEnqueueWallet2
         ]
       },
       metricsToRecord: [
@@ -1279,7 +1300,8 @@ describe('test findSyncRequests job processor', function () {
     expect(getNewOrExistingSyncReqStub)
       .to.have.been.calledWithExactly(
         getNewOrExistingSyncReqExpectedConditionsArr[0].input
-      ).and.to.have.been.calledWithExactly(
+      )
+      .and.to.have.been.calledWithExactly(
         getNewOrExistingSyncReqExpectedConditionsArr[1].input
       )
   })

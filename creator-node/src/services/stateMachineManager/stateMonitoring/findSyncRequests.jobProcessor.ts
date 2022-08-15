@@ -19,7 +19,7 @@ const config = require('../../../config')
 const {
   METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const { makeGaugeIncToRecord } = require('../stateMachineUtils')
 const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
 const {
@@ -78,10 +78,16 @@ module.exports = async function ({
   for (const user of users) {
     const { wallet, primary, secondary1, secondary2 } = user
 
-    const userSecondarySyncMetrics = userSecondarySyncMetricsMap[wallet] || {
-      [secondary1]: { successRate: 1, failureCount: 0 },
-      [secondary2]: { successRate: 1, failureCount: 0 }
+    const userSecondarySyncMetrics = {
+      [secondary1]: { successRate: 1, failureCount: 0, successCount: 0 },
+      [secondary2]: { successRate: 1, failureCount: 0, successCount: 0 },
+      ...userSecondarySyncMetricsMap[wallet]
     }
+    logger.info(
+      `Finding sync requests for user ${JSON.stringify(
+        user
+      )} with secondarySyncMetrics ${JSON.stringify(userSecondarySyncMetrics)}`
+    )
 
     const {
       syncReqsToEnqueue: userSyncReqsToEnqueue,
@@ -226,7 +232,7 @@ async function _findSyncsForUser(
 
     // Secondary is unhealthy if its spID is mismatched -- don't sync to it
     if (
-      CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
+      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary] !==
       secondaryInfo.spId
     ) {
       outcomesBySecondary[secondary].result = 'no_sync_sp_id_mismatch'

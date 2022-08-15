@@ -1,10 +1,13 @@
 const crypto = require('crypto')
 
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseForbidden, errorResponseServerError } = require('../apiHelpers')
 const txRelay = require('../relay/txRelay')
 const captchaMiddleware = require('../captchaMiddleware')
 const { detectAbuse } = require('../utils/antiAbuse')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
+const models = require('../models')
+
+const blockRelayAbuseErrorCodes = new Set(['0', '3', '8', '9', '10', '11'])
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
@@ -13,13 +16,38 @@ module.exports = function (app) {
     const body = req.body
     const redis = req.app.get('redis')
 
+    // TODO: Use auth middleware to derive this
+    const user = await models.User.findOne({
+      where: { walletAddress: body.senderAddress },
+      attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isAbusive', 'isAbusiveErrorCode']
+    })
+
     let optimizelyClient
     let detectAbuseOnRelay = false
+    let blockAbuseOnRelay = false
     try {
       optimizelyClient = req.app.get('optimizelyClient')
       detectAbuseOnRelay = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY)
+      blockAbuseOnRelay = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY)
     } catch (error) {
-      req.logger.error(`failed to retrieve optimizely feature flag for detectAbuseOnRelay: ${error}`)
+      req.logger.error(`failed to retrieve optimizely feature flag for ${FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY} or ${FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY}: ${error}`)
+    }
+
+    if (
+      blockAbuseOnRelay &&
+      user &&
+      user.isAbusiveErrorCode &&
+      blockRelayAbuseErrorCodes.has(user.isAbusiveErrorCode)
+    ) {
+      // allow previously abusive users to redeem themselves for next relays
+      if (detectAbuseOnRelay) {
+        const reqIP = req.get('X-Forwarded-For') || req.ip
+        detectAbuse(user, 'relay', reqIP) // fired & forgotten
+      }
+
+      return errorResponseForbidden(
+        `Forbidden ${user.isAbusiveErrorCode}`
+      )
     }
 
     if (body && body.contractRegistryKey && body.contractAddress && body.senderAddress && body.encodedABI) {
@@ -61,9 +89,9 @@ module.exports = function (app) {
         }
       }
 
-      if (detectAbuseOnRelay) {
+      if (user && detectAbuseOnRelay) {
         const reqIP = req.get('X-Forwarded-For') || req.ip
-        detectAbuse('relay', body.senderAddress, reqIP) // fired & forgotten
+        detectAbuse(user, 'relay', reqIP) // fired & forgotten
       }
 
       return successResponse({ receipt: receipt })

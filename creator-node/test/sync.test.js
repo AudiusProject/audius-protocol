@@ -77,7 +77,9 @@ describe('test nodesync', async function () {
    * Wipe DB, server, and redis state
    */
   afterEach(async function () {
-    sandbox.restore()
+    if (sandbox) {
+      sandbox.restore()
+    }
     await sinon.restore()
     await server.close()
   })
@@ -85,6 +87,7 @@ describe('test nodesync', async function () {
   describe('test /export route', async function () {
     let cnodeUserUUID,
       sessionToken,
+      sessionWalletPublicKey,
       metadataMultihash,
       metadataFileUUID,
       transcodedTrackCID,
@@ -97,9 +100,12 @@ describe('test nodesync', async function () {
 
     const createUserAndTrack = async function () {
       // Create user
-      ;({ cnodeUserUUID, sessionToken, userId } = await createStarterCNodeUser(
-        userId
-      ))
+      ;({
+        cnodeUserUUID,
+        sessionToken,
+        userId,
+        walletPublicKey: sessionWalletPublicKey
+      } = await createStarterCNodeUser(userId))
 
       // Upload user metadata
       const metadata = {
@@ -116,6 +122,19 @@ describe('test nodesync', async function () {
         .expect(200)
       metadataMultihash = userMetadataResp.body.data.metadataMultihash
       metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
+
+      // Make chain recognize current session wallet as the wallet for the session user ID
+      const blockchainUserId = 1
+      const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+        let wallet = 'no wallet'
+        if (blockchainUserIdArg === blockchainUserId) {
+          wallet = sessionWalletPublicKey
+        }
+        return {
+          wallet
+        }
+      })
+      libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
 
       // Associate user with with blockchain ID
       const associateRequest = {
@@ -162,13 +181,26 @@ describe('test nodesync', async function () {
       trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
       trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
+      // Make chain recognize wallet as owner of track
+      const blockchainTrackId = 1
+      const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+        let trackOwnerId = -1
+        if (blockchainTrackIdArg === blockchainTrackId) {
+          trackOwnerId = userId
+        }
+        return {
+          trackOwnerId
+        }
+      })
+      libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+
       // associate track + track metadata with blockchain ID
       await request(app)
         .post('/tracks')
         .set('X-Session-ID', sessionToken)
         .set('User-Id', userId)
         .send({
-          blockchainTrackId: 1,
+          blockchainTrackId,
           blockNumber: 10,
           metadataFileUUID: trackMetadataFileUUID,
           transcodedTrackUUID
@@ -787,6 +819,19 @@ describe('test nodesync', async function () {
 
       const metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
 
+      // Make chain recognize current session wallet as the wallet for the session user ID
+      const blockchainUserId = 1
+      const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+        let wallet = 'no wallet'
+        if (blockchainUserIdArg === blockchainUserId) {
+          wallet = session.walletPublicKey
+        }
+        return {
+          wallet
+        }
+      })
+      libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
       // Associate user with with blockchain ID
       const associateRequest = {
         blockchainUserId: 1,
@@ -1011,11 +1056,11 @@ describe('test nodesync', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      const result = await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT
-      )
+      const result = await secondarySyncFromPrimary({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT
+      })
 
       assert.deepStrictEqual(result, {
         result: 'success'
@@ -1060,11 +1105,11 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      const result = await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT
-      )
+      const result = await secondarySyncFromPrimary({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT
+      })
 
       assert.deepStrictEqual(result, {
         result: 'success'
@@ -1107,13 +1152,23 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary with `forceResync` = true
-      const result = await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT,
-        /* blockNumber */ null,
-        /* forceResync */ true
+      const secondarySyncFromPrimary = proxyquire(
+        '../src/services/sync/secondarySyncFromPrimary',
+        {
+          './secondarySyncFromPrimaryUtils': {
+            shouldForceResync: async () => {
+              return true
+            }
+          }
+        }
       )
+
+      const result = await secondarySyncFromPrimary({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT,
+        blockNumber: null
+      })
 
       assert.deepStrictEqual(result, {
         result: 'success'
@@ -1351,6 +1406,19 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       .expect(200)
 
     const metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
+
+    // Make chain recognize current session wallet as the wallet for the session user ID
+    const blockchainUserId = 1
+    const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+      let wallet = 'no wallet'
+      if (blockchainUserIdArg === blockchainUserId) {
+        wallet = session.walletPublicKey
+      }
+      return {
+        wallet
+      }
+    })
+    libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
 
     // Associate user with with blockchain ID
     const associateRequest = {

@@ -162,6 +162,8 @@ class DBManager {
 
       log(`completed in ${Date.now() - start}ms`)
     }
+
+    return error
   }
 
   /**
