@@ -208,8 +208,10 @@ async function _handleIssueSyncRequest({
    * Eventually should make this more robust, but proceeding with caution
    */
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-    // Short-circuit if this syncMode is disabled
-    if (!mergePrimaryAndSecondaryEnabled) {
+    const fromManualRoute = syncRequestParameters.data.from_manual_route
+
+    // Short-circuit if this syncMode is disabled or if manual route override not provided
+    if (!mergePrimaryAndSecondaryEnabled && !fromManualRoute) {
       return { result: 'success_mode_disabled' }
     }
 
