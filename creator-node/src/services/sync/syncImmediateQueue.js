@@ -61,12 +61,12 @@ class SyncImmediateQueue {
           }
         ],
         attributes: {
-          [SemanticAttributes.CODE_FUNCTION]: 'this.queue.process',
+          [SemanticAttributes.CODE_FUNCTION]: 'syncImmediateQueue.process',
           [SemanticAttributes.CODE_FILEPATH]: __filename
         }
       }
       getTracer().startActiveSpan(
-        'this.queue.process',
+        'syncImmediateQueue.process',
         options,
         async (span) => {
           try {
@@ -83,6 +83,8 @@ class SyncImmediateQueue {
             const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
             logger.error(msg)
             throw e
+          } finally {
+            span.end()
           }
         }
       )

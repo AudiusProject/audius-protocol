@@ -69,7 +69,10 @@ const getNewOrExistingSyncReq = ({
 
       span.end()
       return {
-        duplicateSyncReq: { ...duplicateSyncJobInfo, parentSpanContext: span.spanContext() },
+        duplicateSyncReq: {
+          ...duplicateSyncJobInfo,
+          parentSpanContext: span.spanContext()
+        }
       }
     }
 
@@ -100,7 +103,7 @@ const getNewOrExistingSyncReq = ({
       syncType,
       userWallet,
       secondaryEndpoint,
-      immediate,
+      immediate
     )
 
     span.addEvent(JSON.stringify(syncReqToEnqueue))

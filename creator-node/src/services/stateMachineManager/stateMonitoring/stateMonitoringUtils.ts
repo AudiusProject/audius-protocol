@@ -8,28 +8,30 @@ import type { WalletsToSecondariesMapping } from '../types'
 // eslint-disable-next-line import/no-unresolved
 import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
 
-const _ = require('lodash')
-const axios = require('axios')
-const { CancelToken } = axios
+import _ = require('lodash')
+import axios from 'axios'
 
-const asyncRetry = require('../../../utils/asyncRetry')
-const { logger } = require('../../../logging')
+import asyncRetry from '../../../utils/asyncRetry'
+import { logger } from '../../../logging'
 
-const DBManager = require('../../../dbManager')
+import DBManager from '../../../dbManager'
 
-const {
+import {
   GET_NODE_USERS_TIMEOUT_MS,
   GET_NODE_USERS_CANCEL_TOKEN_MS,
   GET_NODE_USERS_DEFAULT_PAGE_SIZE,
   SYNC_MODES,
   FETCH_FILES_HASH_NUM_RETRIES
-} = require('../stateMachineConstants')
+} from '../stateMachineConstants'
+const { CancelToken } = axios
 
 /**
  * @param discoveryNodeEndpoint the endpoint of the Discovery Node to request the latest user ID from
  * @returns the ID of the newest user on Audius
  */
-export const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint: string) => {
+export const getLatestUserIdFromDiscovery = async (
+  discoveryNodeEndpoint: string
+) => {
   // Will throw error on non-200 response
   let latestUserId = 0
   try {

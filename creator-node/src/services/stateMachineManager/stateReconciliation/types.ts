@@ -1,10 +1,11 @@
 import type { SpanContext } from '@opentelemetry/api'
+import { Method } from 'axios'
 
 // Issue sync request job
 export type SyncRequestAxiosParams = {
   baseURL: string
   url: string
-  method: string
+  method: Method
   data: {
     wallet: string[]
     creator_node_endpoint?: string

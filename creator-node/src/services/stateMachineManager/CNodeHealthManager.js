@@ -59,7 +59,7 @@ class CNodeHealthManager {
    */
   async getUnhealthyPeers(
     nodeUsers,
-    thisContentNodeEndpoint,
+    thisContentNodeEndpoint = undefined,
     performSimpleCheck = false
   ) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)

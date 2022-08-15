@@ -1,5 +1,4 @@
 import type Logger from 'bunyan'
-import type { LoDashStatic } from 'lodash'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -10,35 +9,34 @@ import type {
   IssueSyncRequestJobReturnValue,
   SyncRequestAxiosParams
 } from './types'
-import type { Span } from '@opentelemetry/api'
 
-const axios = require('axios')
-const _: LoDashStatic = require('lodash')
+import { SpanStatusCode } from '@opentelemetry/api'
+import axios from 'axios'
+import _ from 'lodash'
 
-const { getTracer } = require('../../../tracer')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
+import { getTracer } from '../../../tracer'
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 
-const config = require('../../../config')
-const models = require('../../../models')
-const Utils = require('../../../utils')
-const {
-  METRIC_NAMES
-} = require('../../prometheusMonitoring/prometheus.constants')
-const {
+import config from '../../../config'
+
+import Utils from '../../../utils'
+import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
+import {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord
-} = require('../stateMachineUtils')
-const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
-const {
+} from '../stateMachineUtils'
+import SecondarySyncHealthTracker from './SecondarySyncHealthTracker'
+import {
   SYNC_MONITORING_RETRY_DELAY_MS,
   QUEUE_NAMES,
   SYNC_MODES,
   SyncType,
   MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-} = require('../stateMachineConstants')
-const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
-const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+} from '../stateMachineConstants'
+import primarySyncFromSecondary from '../../sync/primarySyncFromSecondary'
+import SyncRequestDeDuplicator from './SyncRequestDeDuplicator'
+const models = require('../../../models')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
@@ -104,7 +102,7 @@ module.exports = async function ({
   return getTracer().startActiveSpan(
     'issueSyncRequest.jobProcessor',
     options,
-    async (span: Span) => {
+    async (span) => {
       let jobsToEnqueue: JobsToEnqueue = {}
       let metricsToRecord = []
       let error: any = {}
@@ -184,7 +182,7 @@ async function _handleIssueSyncRequest({
 }: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
   return getTracer().startActiveSpan(
     '_handleIssueSyncRequest',
-    async (span: Span) => {
+    async (span) => {
       if (!syncRequestParameters?.data?.wallet?.length) {
         span.end()
         return { result: 'failure_missing_wallet' }
@@ -322,7 +320,7 @@ async function _handleIssueSyncRequest({
 const _getUserPrimaryClockValues = async (wallets: string[]) => {
   return getTracer().startActiveSpan(
     '_getUserPrimaryClockValues',
-    async (span: Span) => {
+    async (span) => {
       // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
       const cnodeUsersFromDB = await models.CNodeUser.findAll({
         where: {
@@ -363,7 +361,7 @@ const _additionalSyncIsRequired = async (
 ): Promise<AdditionalSyncIsRequiredResponse> => {
   return getTracer().startActiveSpan(
     '_addtionalSyncIsRequired',
-    async (span: Span) => {
+    async (span) => {
       const userWallet = syncRequestParameters.data.wallet[0]
       const secondaryUrl = syncRequestParameters.baseURL
       const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
@@ -371,7 +369,7 @@ const _additionalSyncIsRequired = async (
       const startTimeMs = Date.now()
       const maxMonitoringTimeMs =
         startTimeMs +
-        (syncType === SyncType.MANUAL
+        (syncType === SyncType.Manual
           ? maxManualSyncMonitoringDurationInMs
           : maxSyncMonitoringDurationInMs)
 
@@ -408,6 +406,7 @@ const _additionalSyncIsRequired = async (
           }
         } catch (e: any) {
           span.recordException(e)
+          span.setStatus({ code: SpanStatusCode.ERROR })
           logger.warn(`${logMsgString} || Error: ${e.message}`)
         }
 

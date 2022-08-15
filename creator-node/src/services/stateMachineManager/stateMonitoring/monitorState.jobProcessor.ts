@@ -10,21 +10,22 @@ import type {
   UserSecondarySyncMetricsMap
 } from './types'
 import type { Span } from '@opentelemetry/api'
+import { SpanStatusCode } from '@opentelemetry/api'
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+
+import { getTracer } from '../../../tracer'
 
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
 
-const config = require('../../../config')
-const NodeHealthManager = require('../CNodeHealthManager')
-const {
+import config from '../../../config'
+import NodeHealthManager from '../CNodeHealthManager'
+import {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
   computeUserSecondarySyncSuccessRatesMap
-} = require('./stateMonitoringUtils')
-const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
-
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { getTracer } = require('../../../tracer')
+} from './stateMonitoringUtils'
+import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -139,6 +140,7 @@ module.exports = async function ({
             }
           )
         } catch (e: any) {
+          span.recordException(e)
           logger.error(e.stack)
           _addToDecisionTree(
             decisionTree,
@@ -146,7 +148,6 @@ module.exports = async function ({
             logger,
             { error: e.message }
           )
-          span.end()
           throw new Error(
             `monitor-state job processor getUnhealthyPeers Error: ${e.toString()}`
           )
@@ -186,6 +187,7 @@ module.exports = async function ({
           )
         } catch (e: any) {
           span.recordException(e)
+          span.setStatus({ code: SpanStatusCode.ERROR })
           logger.error(e.stack)
           _addToDecisionTree(
             decisionTree,
@@ -193,7 +195,6 @@ module.exports = async function ({
             logger,
             { error: e.message }
           )
-          span.end()
           throw new Error(
             'monitor-state job processor retrieveUserInfoFromReplicaSet Error'
           )
@@ -215,6 +216,7 @@ module.exports = async function ({
           )
         } catch (e: any) {
           span.recordException(e)
+          span.setStatus({ code: SpanStatusCode.ERROR })
           logger.error(e.stack)
           _addToDecisionTree(
             decisionTree,
@@ -222,13 +224,13 @@ module.exports = async function ({
             logger,
             { error: e.message }
           )
-          span.end()
           throw new Error(
             'monitor-state job processor computeUserSecondarySyncSuccessRatesMap Error'
           )
         }
       } catch (e: any) {
         span.recordException(e)
+        span.setStatus({ code: SpanStatusCode.ERROR })
         logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
       } finally {
         _addToDecisionTree(

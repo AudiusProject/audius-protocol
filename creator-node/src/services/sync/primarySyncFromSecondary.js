@@ -1,7 +1,7 @@
 const axios = require('axios')
 const _ = require('lodash')
 
-const { trace, context, SpanStatusCode } = require('@opentelemetry/api')
+const { SpanStatusCode } = require('@opentelemetry/api')
 const { getTracer } = require('../../tracer')
 
 const config = require('../../config')
@@ -31,96 +31,107 @@ module.exports = async function primarySyncFromSecondary({
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
-  return getTracer().startActiveSpan('handleSyncFromPrimary', async (span) => {
-    const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
-    const logger = genericLogger.child(logContext)
-    logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
-    const start = Date.now()
+  return getTracer().startActiveSpan(
+    'primarySyncFromSecondary',
+    async (span) => {
+      const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
+      const logger = genericLogger.child(logContext)
 
-    // This is used only for logging record endpoint of requesting node
-    const selfEndpoint = config.get('creatorNodeEndpoint') || null
+      span.setAttribute('wallet', wallet)
+      span.addEvent(`[primarySyncFromSecondary] [Wallet: ${wallet}]`)
+      logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
+      const start = Date.now()
 
-    // object to track if the function errored, returned at the end of the function
-    let error = null
+      // This is used only for logging record endpoint of requesting node
+      const selfEndpoint = config.get('creatorNodeEndpoint') || null
 
-    try {
-      let libs
+      // object to track if the function errored, returned at the end of the function
+      let error = null
+
       try {
-        span.addEvent('init libs')
-        libs = await initAudiusLibs({})
-      } catch (e) {
-        throw new Error(`InitAudiusLibs Error - ${e.message}`)
-      }
+        let libs
+        try {
+          span.addEvent('init AudiusLibs')
+          libs = await initAudiusLibs({})
+        } catch (e) {
+          span.recordException(e)
+          span.setStatus({ code: SpanStatusCode.ERROR })
+          throw new Error(`InitAudiusLibs Error - ${e.message}`)
+        }
 
-      await WalletWriteLock.acquire(
-        wallet,
-        WalletWriteLock.VALID_ACQUIRERS.PrimarySyncFromSecondary
-      )
-
-      // TODO should be able to pass this through from StateMachine / caller
-      const userReplicaSet = await getUserReplicaSet({
-        wallet,
-        selfEndpoint,
-        logger,
-        libs
-      })
-
-      // Keep importing data from secondary until full clock range has been retrieved
-      let completed = false
-      let exportClockRangeMin = 0
-      while (!completed) {
-        const fetchedCNodeUser = await fetchExportFromSecondary({
-          secondary,
+        await WalletWriteLock.acquire(
           wallet,
-          exportClockRangeMin,
-          selfEndpoint
-        })
+          WalletWriteLock.VALID_ACQUIRERS.PrimarySyncFromSecondary
+        )
 
-        // Save all files to disk separately from DB writes to minimize DB transaction duration
-        await saveFilesToDisk({
-          files: fetchedCNodeUser.files,
-          userReplicaSet,
-          libs,
-          logger
-        })
-
-        await saveEntriesToDB({
-          fetchedCNodeUser,
+        // TODO should be able to pass this through from StateMachine / caller
+        const userReplicaSet = await getUserReplicaSet({
+          wallet,
+          selfEndpoint,
           logger,
-          logPrefix
+          libs
         })
 
-        const clockInfo = fetchedCNodeUser.clockInfo
-        if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
-          completed = true
+        // Keep importing data from secondary until full clock range has been retrieved
+        let completed = false
+        let exportClockRangeMin = 0
+        while (!completed) {
+          const fetchedCNodeUser = await fetchExportFromSecondary({
+            secondary,
+            wallet,
+            exportClockRangeMin,
+            selfEndpoint
+          })
+
+          // Save all files to disk separately from DB writes to minimize DB transaction duration
+          await saveFilesToDisk({
+            files: fetchedCNodeUser.files,
+            userReplicaSet,
+            libs,
+            logger
+          })
+
+          await saveEntriesToDB({
+            fetchedCNodeUser,
+            logger,
+            logPrefix
+          })
+
+          const clockInfo = fetchedCNodeUser.clockInfo
+          if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
+            completed = true
+          } else {
+            exportClockRangeMin = clockInfo.requestedClockRangeMax + 1
+          }
+        }
+      } catch (e) {
+        span.recordException(e)
+        span.setStatus({ code: SpanStatusCode.ERROR })
+        error = e
+
+        logger.error(`${logPrefix} Sync error ${e.message}`)
+
+        await SyncHistoryAggregator.recordSyncFail(wallet)
+      } finally {
+        await WalletWriteLock.release(wallet)
+
+        if (error) {
+          logger.error(
+            `${logPrefix} Error ${error.message} [Duration: ${
+              Date.now() - start
+            }ms]`
+          )
         } else {
-          exportClockRangeMin = clockInfo.requestedClockRangeMax + 1
+          logger.info(
+            `${logPrefix} Complete [Duration: ${Date.now() - start}ms]`
+          )
         }
       }
-    } catch (e) {
-      span.recordException(e)
-      error = e
 
-      logger.error(`${logPrefix} Sync error ${e.message}`)
-
-      await SyncHistoryAggregator.recordSyncFail(wallet)
-    } finally {
-      await WalletWriteLock.release(wallet)
-
-      if (error) {
-        logger.error(
-          `${logPrefix} Error ${error.message} [Duration: ${
-            Date.now() - start
-          }ms]`
-        )
-      } else {
-        logger.info(`${logPrefix} Complete [Duration: ${Date.now() - start}ms]`)
-      }
+      span.end()
+      return error
     }
-
-    span.end()
-    return error
-  })
+  )
 }
 
 /**
@@ -305,7 +316,7 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
  * Saves all entries to DB that don't already exist in DB
  */
 async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
-  return getTracer().startActiveSpan('getUserReplicaSet', async (span) => {
+  return getTracer().startActiveSpan('saveEntriesToDB', async (span) => {
     const transaction = await models.sequelize.transaction()
 
     try {

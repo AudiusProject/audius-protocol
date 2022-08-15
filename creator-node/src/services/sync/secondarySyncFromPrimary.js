@@ -667,7 +667,6 @@ const handleSyncFromPrimary = async (
       }. From endpoint ${creatorNodeEndpoint}.`
     )
 
-    span.end()
     return { result: 'success' }
   })
 }

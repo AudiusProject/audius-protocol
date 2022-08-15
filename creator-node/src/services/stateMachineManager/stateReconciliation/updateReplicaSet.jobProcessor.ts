@@ -2,7 +2,8 @@ import type Logger from 'bunyan'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 import {
   getCachedHealthyNodes,
-  cacheHealthyNodes
+  cacheHealthyNodes,
+  getNewOrExistingSyncReq
 } from './stateReconciliationUtils'
 import type {
   IssueSyncRequestJobParams,
@@ -11,26 +12,24 @@ import type {
   UpdateReplicaSetJobParams,
   UpdateReplicaSetJobReturnValue
 } from './types'
-import type { Span } from '@opentelemetry/api'
 
-const _ = require('lodash')
+import _ = require('lodash')
 
-const config = require('../../../config')
-const {
+import config = require('../../../config')
+import {
   SyncType,
   RECONFIG_MODES,
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
   QUEUE_NAMES,
   SYNC_MODES
-} = require('../stateMachineConstants')
-const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
-const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
-const initAudiusLibs = require('../../initAudiusLibs')
+} from '../stateMachineConstants'
+import { retrieveClockValueForUserFromReplica } from '../stateMachineUtils'
+import CNodeToSpIdMapManager from '../CNodeToSpIdMapManager'
+import initAudiusLibs from '../../initAudiusLibs'
 
-const { SpanStatusCode } = require('@opentelemetry/api')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { getTracer } = require('../../../tracer')
+import { SpanStatusCode } from '@opentelemetry/api'
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+import { getTracer } from '../../../tracer'
 
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
@@ -84,7 +83,7 @@ module.exports = async function ({
   return getTracer().startActiveSpan(
     'updateReplicaSet.jobProcessor',
     options,
-    async (span: Span) => {
+    async (span) => {
       let audiusLibs = null
       let healthyNodes = []
       healthyNodes = await getCachedHealthyNodes()
@@ -407,13 +406,13 @@ const _selectRandomReplicaSetNodes = async (
 
     // If node is already present in new replica set or is part of the existing replica set, keep finding a unique healthy node
     if (
-      newReplicaNodesSet.has(randomHealthyNode) ||
-      healthyReplicaSet.has(randomHealthyNode)
+      newReplicaNodesSet.has(randomHealthyNode!) ||
+      healthyReplicaSet.has(randomHealthyNode!)
     )
       continue
 
     // If the node was marked as healthy before, keep finding a unique healthy node
-    if (unhealthyReplicasSet.has(randomHealthyNode)) {
+    if (unhealthyReplicasSet.has(randomHealthyNode!)) {
       logger.warn(
         `Selected node ${randomHealthyNode} that is marked as healthy now but was previously marked as unhealthy. Unselecting it and finding another healthy node...`
       )
@@ -426,7 +425,7 @@ const _selectRandomReplicaSetNodes = async (
         randomHealthyNode,
         wallet
       )
-      newReplicaNodesSet.add(randomHealthyNode)
+      newReplicaNodesSet.add(randomHealthyNode!)
       if (clockValue !== -1) {
         logger.warn(
           `${logStr} Found a node with previous state (clock value of ${clockValue}), selecting anyway`
@@ -476,7 +475,7 @@ const _issueUpdateReplicaSetOp = async (
 ): Promise<IssueUpdateReplicaSetResult> => {
   return getTracer().startActiveSpan(
     '_issueUpdateReplicaSetOp',
-    async (span: Span) => {
+    async (span) => {
       const response: IssueUpdateReplicaSetResult = {
         errorMsg: '',
         issuedReconfig: false,
@@ -510,7 +509,14 @@ const _issueUpdateReplicaSetOp = async (
         for (const endpt of newReplicaSetEndpoints) {
           // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
           // selected as part of the new replica set, do not issue reconfig
-          if (!CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]) {
+          if (
+            !(
+              CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<
+                string,
+                number
+              >
+            )[endpt]
+          ) {
             response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
               CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
             )} | endpt=${endpt}. Skipping reconfig.`
@@ -518,7 +524,12 @@ const _issueUpdateReplicaSetOp = async (
             return response
           }
           newReplicaSetSPIds.push(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]
+            (
+              CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<
+                string,
+                number
+              >
+            )[endpt]
           )
         }
 
@@ -571,7 +582,9 @@ const _issueUpdateReplicaSetOp = async (
             `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary1: ${duplicateSyncReq}`
           )
         } else if (!_.isEmpty(syncToEnqueueToSecondary1)) {
-          response.syncJobsToEnqueue.push(syncToEnqueueToSecondary1)
+          response.syncJobsToEnqueue.push(
+            syncToEnqueueToSecondary1 as IssueSyncRequestJobParams
+          )
         }
 
         // Enqueue a sync from new primary to new secondary2. If there is no diff, then this is a no-op.
@@ -590,7 +603,9 @@ const _issueUpdateReplicaSetOp = async (
             `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary2: ${duplicateSyncReq2}`
           )
         } else if (!_.isEmpty(syncToEnqueueToSecondary2)) {
-          response.syncJobsToEnqueue.push(syncToEnqueueToSecondary2)
+          response.syncJobsToEnqueue.push(
+            syncToEnqueueToSecondary2 as IssueSyncRequestJobParams
+          )
         }
 
         logger.info(

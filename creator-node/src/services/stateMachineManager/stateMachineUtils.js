@@ -32,8 +32,8 @@ const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
  *
  * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
  *
- * @returns {Object} response
- * @returns {Object} response.replicaToAllUserInfoMaps map(replica => map(wallet => { clock, filesHash }))
+ * @returns {{replicaToAllUserInfoMaps, unhealthyPeers: Set}} response
+ * @returns {Record<string, Record<string, { clock: string, filesHash: string }>>} response.replicaToAllUserInfoMaps map(replica => map(wallet => { clock, filesHash }))
  * @returns {Set} response.unhealthyPeers unhealthy peer endpoints
  */
 const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
@@ -163,7 +163,7 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
  * makeHistogramToRecord('response_time', 1000, { code: '200' })
  * @param {string} metricName the name of the metric from prometheus.constants
  * @param {number} metricValue the value to observe
- * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ * @param {Record<string, any>} [metricLabels] the optional mapping of metric label name => metric label value
  */
 const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
   return makeMetricToRecord(

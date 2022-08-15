@@ -67,12 +67,12 @@ class SyncQueue {
           }
         ],
         attributes: {
-          [SemanticAttributes.CODE_FUNCTION]: 'this.queue.process',
+          [SemanticAttributes.CODE_FUNCTION]: 'syncQueue.process',
           [SemanticAttributes.CODE_FILEPATH]: __filename
         }
       }
       return getTracer().startActiveSpan(
-        'this.queue.process',
+        'syncQueue.process',
         options,
         async (span) => {
           let result = {}

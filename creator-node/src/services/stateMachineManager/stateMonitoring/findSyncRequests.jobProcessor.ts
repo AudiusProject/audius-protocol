@@ -19,15 +19,11 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { getTracer } from '../../../tracer'
 
 import config from '../../../config'
-import {
-  METRIC_NAMES
-} from '../../prometheusMonitoring/prometheus.constants'
+import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
 import CNodeToSpIdMapManager from '../CNodeToSpIdMapManager'
 import { makeGaugeIncToRecord } from '../stateMachineUtils'
 import { SyncType, SYNC_MODES } from '../stateMachineConstants'
-import {
-  getNewOrExistingSyncReq
-} from '../stateReconciliation/stateReconciliationUtils'
+import { getNewOrExistingSyncReq } from '../stateReconciliation/stateReconciliationUtils'
 import { computeSyncModeForUserAndReplica } from './stateMonitoringUtils'
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -259,8 +255,12 @@ async function _findSyncsForUser(
 
         // Secondary is unhealthy if its spID is mismatched -- don't sync to it
         if (
-          (CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[secondary] !==
-          secondaryInfo.spId
+          (
+            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<
+              string,
+              number
+            >
+          )[secondary] !== secondaryInfo.spId
         ) {
           outcomesBySecondary[secondary].result = 'no_sync_sp_id_mismatch'
           continue
