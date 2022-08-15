@@ -5,6 +5,7 @@ import { Nullable, TrackMetadata, Utils, uuid } from '../../utils'
 import {
   userSchemaType,
   trackSchemaType,
+  playlistSchemaType,
   Schemas
 } from '../schemaValidator/SchemaValidator'
 import type { Web3Manager } from '../web3Manager'
@@ -16,6 +17,22 @@ const { wait } = Utils
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const POLL_STATUS_INTERVAL = 3000 // 3s
 const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
+
+type PlaylistTrackId = { time: number; track: number }
+
+type PlaylistContents = {
+  track_ids: PlaylistTrackId[]
+}
+
+export type PlaylistMetadata = {
+  playlist_contents: PlaylistContents
+  playlist_id: number
+  playlist_name: string
+  playlist_image_sizes_multihash: string
+  description: string
+  is_album: boolean
+  is_private: boolean
+}
 
 type ProgressCB = (loaded: number, total: number) => void
 
@@ -397,6 +414,58 @@ export class CreatorNode {
         data: {
           metadata,
           sourceFile
+        }
+      },
+      true
+    )
+    return body
+  }
+
+  /**
+   * Uploads playlist metadata to a creator node
+   * source file must be provided (returned from uploading track content).
+   * @param metadata
+   */
+  async uploadPlaylistMetadata(metadata: PlaylistMetadata) {
+    // Validate object before sending
+    try {
+      this.schemas[playlistSchemaType].validate?.(metadata)
+    } catch (e) {
+      console.error('Error validating playlist metadata', e)
+    }
+
+    const { data: body } = await this._makeRequest(
+      {
+        url: '/playlists/metadata',
+        method: 'post',
+        data: {
+          metadata
+        }
+      },
+      true
+    )
+    return body
+  }
+
+  /**
+   * Associate an uploaded playlist metadata file with a blockchainId
+   * @param blockchainId - Valid ID assigned to playlist
+   * @param metadataFileUUID unique ID for metadata playlist
+   * @param blockNumber
+   */
+  async associatePlaylistMetadata(
+    blockchainId: number,
+    metadataFileUUID: string,
+    blockNumber: number
+  ) {
+    const { data: body } = await this._makeRequest(
+      {
+        url: '/playlists',
+        method: 'post',
+        data: {
+          blockchainId,
+          metadataFileUUID,
+          blockNumber
         }
       },
       true

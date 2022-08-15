@@ -66,7 +66,11 @@ def add_playlist_added_timestamps(playlist):
     added_timestamps = []
     for track in playlist["playlist_contents"]["track_ids"]:
         added_timestamps.append(
-            {"track_id": encode_int_id(track["track"]), "timestamp": track["time"]}
+            {
+                "track_id": encode_int_id(track["track"]),
+                "timestamp": track["time"],
+                "metadata_timestamp": track.get("metadata_time"),
+            }
         )
     return added_timestamps
 

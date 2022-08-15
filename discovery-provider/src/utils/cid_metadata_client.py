@@ -5,7 +5,11 @@ from typing import Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
-from src.tasks.metadata import track_metadata_format, user_metadata_format
+from src.tasks.metadata import (
+    playlist_metadata_format,
+    track_metadata_format,
+    user_metadata_format,
+)
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 logger = logging.getLogger(__name__)
@@ -156,12 +160,15 @@ class CIDMetadataClient:
 
                     cid, metadata_json = future_result
 
-                    # TODO add playlist type
-                    metadata_format = (
-                        track_metadata_format
-                        if cid_type[cid] == "track"
-                        else user_metadata_format
-                    )
+                    metadata_format = None
+                    if cid_type[cid] == "track":
+                        metadata_format = track_metadata_format
+                    elif cid_type[cid] == "user":
+                        metadata_format = user_metadata_format
+                    elif cid_type[cid] == "playlist_data":
+                        metadata_format = playlist_metadata_format
+                    else:
+                        raise Exception(f"Unknown metadata type ${cid_type[cid]}")
 
                     formatted_json = self._get_metadata_from_json(
                         metadata_format, metadata_json
