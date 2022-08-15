@@ -147,22 +147,6 @@ Description: Unsure?
 | fromUser        | User!   | Reference to the user sending/delegating tokens                  |
 | toUser          | User!   | Reference to the user receiving delegation                       |
 
-# ==================== Delegation & Staking Event Mappings ==============================
-
-enum LockupStatus {
-Requested
-Cancelled
-Evaluated
-}
-
-interface LockupEvent {
-id: ID!
-status: LockupStatus!
-owner: User!
-expiryBlock: BigInt!
-createdBlockNumber: BigInt!
-endedBlockNumber: BigInt
-}
 
 # DecreaseStakeEvent
 
@@ -268,8 +252,8 @@ Description: implements LockupEvent??
 # ClaimRound
 
 | Field       | Type    | Description      |
-| ----------- | ------- | ---------------- | --- |
-| id          | ID!     | The round number |     |
+| ----------- | ------- | ---------------- |
+| id          | ID!     | The round number |     
 | fundAmount  | BigInt! |                  |
 | blockNumber | BigInt! |                  |
 
@@ -309,32 +293,6 @@ Description: implements LockupEvent??
 | endpoint      | String!      |             |
 | unstakeAmount | BigInt!      |             |
 | blockNumber   | BigInt!      |             |
-
-# ==================== Governance Proposals & Votes Event Mappings ==============================
-
-# TODO: implement the enum by converting the raw event type to string enum
-
-# Voting Events
-
-enum VoteType {
-None
-Yes
-No
-}
-
-# enum in sol
-
-enum Outcome {
-InProgress
-Rejected
-ApprovedExecuted
-QuorumNotMet
-ApprovedExecutionFailed
-Evaluating
-Vetoed
-TargetContractAddressChanged
-TargetContractCodeHashChanged
-}
 
 # Proposal
 
@@ -423,7 +381,7 @@ TargetContractCodeHashChanged
 | proposal             | Proposal! |             |
 | success              | Boolean!  |             |
 | returnData           | Bytes     |             |
-| blockNumberv BigInt! |           |
+| blockNumber          | BigInt!   |          
 
 # GuardianTransactionEcecutedEvent
 
