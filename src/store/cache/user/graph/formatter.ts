@@ -35,7 +35,7 @@ export const formatUser = async (
       : { amount: new BN(0), lockupExpiryBlock: 0, target: '' }
   }
 
-  if (user.services.length === 0 && user.stakeAmount === '0')
+  if (user.services.length === 0 && user.stakeAmount === '0' && user.claimableDelegationReceivedAmount === '0')
     return formattedUser
 
   // Note: We must make a contract call to check "validBounds" because that value is not

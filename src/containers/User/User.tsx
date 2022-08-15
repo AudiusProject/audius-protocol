@@ -137,7 +137,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
             <DelegationStatsChip
               className={styles.delegationState}
               deployerCut={
-                (user as Operator | undefined)?.serviceProvider.deployerCut ?? 0
+                (user as Operator | undefined)?.serviceProvider?.deployerCut ?? 0
               }
               delegated={inboundDelegation.amount ?? Utils.toBN('0')}
               minDelegation={
@@ -145,7 +145,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
                 Utils.toBN('0')
               }
               delegators={
-                (user as Operator | undefined)?.delegators.length ?? 0
+                (user as Operator | undefined)?.delegators?.length ?? 0
               }
               isLoading={status === Status.Loading}
             />
@@ -178,7 +178,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
         wallet={user?.wallet}
         timelineType={isServiceProvider ? 'ServiceProvider' : 'Delegator'}
       />
-      {isServiceProvider && (user as Operator).delegators.length > 0 && (
+      {(user as Operator)?.delegators?.length > 0 && (
         <DelegatorsTable
           wallet={user.wallet}
           className={styles.delegatorsContainer}
