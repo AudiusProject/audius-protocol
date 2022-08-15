@@ -819,7 +819,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
 
 function* uploadSingleTrack(track) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
+  const apiClient = yield getContext('apiClient')
   // Need an object to hold phase error info that
   // can get captured by confirmer closure
   // while remaining mutable.
