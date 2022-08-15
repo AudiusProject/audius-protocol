@@ -89,8 +89,8 @@ class CNodeHealthManager {
    * determine if a node is healthy
    * @param {string} peer content node endpoint
    * @param {boolean?} [checkHealthCheckResults=true] flag to dictate whether or not to check health check response to
-   *  determine node health 
-   * @returns true or false 
+   *  determine node health
+   * @returns true or false
    */
   async isNodeHealthy(peer, checkHealthCheckResults = true) {
     try {

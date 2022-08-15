@@ -106,7 +106,10 @@ module.exports = async function ({
     }
 
     try {
-      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users, CREATOR_NODE_ENDPOINT)
+      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(
+        users,
+        CREATOR_NODE_ENDPOINT
+      )
       _addToDecisionTree(decisionTree, 'getUnhealthyPeers Success', logger, {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
