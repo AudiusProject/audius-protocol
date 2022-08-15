@@ -9,19 +9,20 @@ import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
 import type { Span, SpanContext } from '@opentelemetry/api'
 
+import { SpanStatusCode } from '@opentelemetry/api'
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+
 import { Queue } from 'bull'
 
-import { SpanStatusCode } from '@opentelemetry/api'
-
 // eslint-disable-next-line import/no-unresolved
-import { getTracer } from '../../tracer'
 import _ from 'lodash'
 
-const { logger: baseLogger, createChildLogger } = require('../../logging')
-const { QUEUE_NAMES } = require('./stateMachineConstants')
-const {
+import { getTracer } from '../../tracer'
+import { logger as baseLogger, createChildLogger } from '../../logging'
+import { QUEUE_NAMES } from './stateMachineConstants'
+import {
   METRIC_RECORD_TYPE
-} = require('../prometheusMonitoring/prometheus.constants')
+} from '../prometheusMonitoring/prometheus.constants'
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take
@@ -60,11 +61,18 @@ module.exports = function (
   prometheusRegistry: any
 ) {
   return async function (jobId: string, resultString: string) {
+    const options = {
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: 'makeOnCompleteCallback',
+        [SemanticAttributes.CODE_FILEPATH]: __filename
+      }
+    }
     return getTracer().startActiveSpan(
       'makeOnCompleteCallback',
+      options,
       async (span: Span) => {
         // Create a logger so that we can filter logs by the tag `jobId` = <id of the job that successfully completed>
-        const logger = createChildLogger(baseLogger, { jobId })
+        const logger = createChildLogger(baseLogger, { jobId }) as Logger
 
         // update-replica-set jobs need enabledReconfigModes as an array.
         // `this` comes from the function being bound via .bind() to ./index.js
@@ -72,6 +80,7 @@ module.exports = function (
           logger.error(
             'Function was supposed to be bound to StateMachineManager to access enabledReconfigModesSet! Update replica set jobs will not be able to process!'
           )
+          span.end()
           return
         }
         const enabledReconfigModes: string[] = Array.from(
@@ -86,6 +95,9 @@ module.exports = function (
           )
           jobResult = JSON.parse(resultString) || {}
         } catch (e: any) {
+          span.recordException(e)
+          span.setStatus({ code: SpanStatusCode.ERROR })
+          span.end()
           logger.error(`Failed to parse job result string: ${e.message}`)
           return
         }
@@ -147,7 +159,13 @@ const enqueueJobs = async (
   triggeredByJobId: string,
   logger: Logger
 ) => {
-  getTracer().startActiveSpan('enqueueJobs', async (span) => {
+  const options = {
+    attributes: {
+      [SemanticAttributes.CODE_FUNCTION]: 'enqueueJobs',
+      [SemanticAttributes.CODE_FILEPATH]: __filename
+    }
+  }
+  getTracer().startActiveSpan('enqueueJobs', options, async (span) => {
     logger.info(
       `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueNameToAddTo}`
     )

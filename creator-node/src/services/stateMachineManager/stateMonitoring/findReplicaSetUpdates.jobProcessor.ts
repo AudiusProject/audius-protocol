@@ -14,19 +14,18 @@ import type {
   StateMonitoringUser
 } from './types'
 import type { Span } from '@opentelemetry/api'
+import _ from 'lodash'
 
-const _: LoDashStatic = require('lodash')
-
-const {
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+import { getTracer } from '../../../tracer'
+import {
   FIND_REPLICA_SET_UPDATES_BATCH_SIZE,
   QUEUE_NAMES
-} = require('../stateMachineConstants')
-const CNodeHealthManager = require('../CNodeHealthManager')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
-const config = require('../../../config')
+} from '../stateMachineConstants'
+import CNodeHealthManager from '../CNodeHealthManager'
+import CNodeToSpIdMapManager from '../CNodeToSpIdMapManager'
+import config from '../../../config'
 
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { getTracer } = require('../../../tracer')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const minSecondaryUserSyncSuccessPercent =
@@ -68,7 +67,7 @@ module.exports = async function ({
     }
   }
   return getTracer().startActiveSpan(
-    'updateReplicaSet.jobProcessor',
+    'findReplicaSetUpdates.jobProcessor',
     options,
     async (span: Span) => {
       const unhealthyPeersSet = new Set(unhealthyPeers || [])
@@ -241,14 +240,14 @@ const _findReplicaSetUpdatesForUser = async (
 
           // Error case 1 - mismatched spID
           if (
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
+            (CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[secondary] !==
             secondaryInfo.spId
           ) {
             logger.error(
               `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${
                 secondaryInfo.spId
               }, found ${
-                CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary]
+                (CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[secondary]
               }. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
                 CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
               )}`
@@ -296,8 +295,8 @@ const _findReplicaSetUpdatesForUser = async (
           // If the map's spId does not match the query's spId, then regardless
           // of the relationship of the node to the user, issue a reconfig for that node
           if (
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[
-              replica.endpoint
+            (CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[
+              replica.endpoint as string
             ] !== replica.spId
           ) {
             unhealthyReplicas.add(replica.endpoint)

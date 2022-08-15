@@ -54,54 +54,67 @@ router.post(
   ensureStorageMiddleware,
   handleTrackContentUpload,
   handleResponse(async (req, res) => {
-    if (req.fileSizeError || req.fileFilterError) {
-      removeTrackFolder({ logContext: req.logContext }, req.fileDir)
-      return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+    const options = {
+      attributes: {
+        requestID: req.logContext.requestID,
+        [SemanticAttributes.CODE_FUNCTION]: 'handleResponse',
+        [SemanticAttributes.CODE_FILEPATH]: __filename
+      }
     }
+    return getTracer().startActiveSpan('/track_content_async',
+      options,
+      async (span) => {
+        if (req.fileSizeError || req.fileFilterError) {
+          removeTrackFolder({ logContext: req.logContext }, req.fileDir)
+          span.end()
+          return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+        }
 
-    const AsyncProcessingQueue =
-      req.app.get('serviceRegistry').asyncProcessingQueue
+        const AsyncProcessingQueue =
+          req.app.get('serviceRegistry').asyncProcessingQueue
 
-    const selfTranscode = currentNodeShouldHandleTranscode({
-      transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
-      spID: config.get('spID')
-    })
-
-    if (selfTranscode) {
-      getTracer().startActiveSpan('addTrackContentUploadTask', async (span) => {
-        span.setAttribute('requestID', req.logContext.requestID)
-        await AsyncProcessingQueue.addTrackContentUploadTask({
-          parentSpanContext: span.spanContext(),
-          logContext: req.logContext,
-          req: {
-            fileName: req.fileName,
-            fileDir: req.fileDir,
-            fileDestination: req.file.destination,
-            cnodeUserUUID: req.session.cnodeUserUUID
-          }
+        const selfTranscode = currentNodeShouldHandleTranscode({
+          transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
+          spID: config.get('spID')
         })
-        span.end()
-      })
-    } else {
-      getTracer().startActiveSpan('addTranscodeHandOffTask', async (span) => {
-        span.setAttribute('requestID', req.logContext.requestID)
-        await AsyncProcessingQueue.addTranscodeHandOffTask({
-          parentSpanContext: span.spanContext(),
-          logContext: req.logContext,
-          req: {
-            fileName: req.fileName,
-            fileDir: req.fileDir,
-            fileNameNoExtension: req.fileNameNoExtension,
-            fileDestination: req.file.destination,
-            cnodeUserUUID: req.session.cnodeUserUUID,
-            headers: req.headers
-          }
-        })
-        span.end()
-      })
-    }
 
-    return successResponse({ uuid: req.logContext.requestID })
+        if (selfTranscode) {
+          getTracer().startActiveSpan('addTrackContentUploadTask', async (addTaskSpan) => {
+            span.setAttribute('requestID', req.logContext.requestID)
+            await AsyncProcessingQueue.addTrackContentUploadTask({
+              parentSpanContext: span.spanContext(),
+              logContext: req.logContext,
+              req: {
+                fileName: req.fileName,
+                fileDir: req.fileDir,
+                fileDestination: req.file.destination,
+                cnodeUserUUID: req.session.cnodeUserUUID
+              }
+            })
+            addTaskSpan.end()
+          })
+        } else {
+          getTracer().startActiveSpan('addTranscodeHandOffTask', async (handOffTaskSpan) => {
+            span.setAttribute('requestID', req.logContext.requestID)
+            await AsyncProcessingQueue.addTranscodeHandOffTask({
+              parentSpanContext: span.spanContext(),
+              logContext: req.logContext,
+              req: {
+                fileName: req.fileName,
+                fileDir: req.fileDir,
+                fileNameNoExtension: req.fileNameNoExtension,
+                fileDestination: req.file.destination,
+                cnodeUserUUID: req.session.cnodeUserUUID,
+                headers: req.headers
+              }
+            })
+            handOffTaskSpan.end()
+          })
+        }
+
+        span.end()
+        return successResponse({ uuid: req.logContext.requestID })
+      })
   })
 )
 

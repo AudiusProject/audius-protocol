@@ -5,16 +5,17 @@ import type {
   AnyJobParams
 } from './types'
 import type { Span } from '@opentelemetry/api'
+import _ from 'lodash'
 
-const _ = require('lodash')
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+import { SpanStatusCode } from '@opentelemetry/api'
+import { getTracer } from '../../tracer'
 
-const { createChildLogger } = require('../../logging')
-const redis = require('../../redis')
-const { QUEUE_NAMES } = require('./stateMachineConstants')
+import { createChildLogger } from '../../logging'
+import redis from '../../redis'
+import { QUEUE_NAMES } from './stateMachineConstants'
 
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { SpanStatusCode } = require('@opentelemetry/api')
-const { getTracer } = require('../../tracer')
+
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -58,7 +59,7 @@ module.exports = async function (
     'processJob',
     options,
     async (span: Span) => {
-      const jobLogger = createChildLogger(parentLogger, { jobId })
+      const jobLogger = createChildLogger(parentLogger, { jobId }) as Logger
       jobLogger.info(`New job: ${JSON.stringify(job)}`)
 
       let result
@@ -76,12 +77,12 @@ module.exports = async function (
           ...getLabels(queueName, result)
         })
         await redis.set(`latestJobSuccess_${queueName}`, Date.now())
-      } catch (error: any) {
-        span.recordException(error)
+      } catch (error) {
+        span.recordException(error as Error)
         span.setStatus({ code: SpanStatusCode.ERROR })
         jobLogger.error(`Error processing job: ${error}`)
-        jobLogger.error(error.stack)
-        result = { error: error.message || `${error}` }
+        jobLogger.error((error as Error).stack)
+        result = { error: (error as Error).message || `${error}` }
         metricEndTimerFn({ uncaughtError: true })
       }
 

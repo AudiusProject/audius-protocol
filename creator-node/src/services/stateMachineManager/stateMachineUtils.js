@@ -4,6 +4,7 @@ const { libs } = require('@audius/sdk')
 const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { getTracer } = require('../../tracer')
 
 const {
@@ -121,8 +122,16 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
  * Signs request with spID to bypass rate limits
  */
 const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
+  const options = {
+    attributes: {
+      jobId: jobId,
+      [SemanticAttributes.CODE_FUNCTION]: 'retrieveClockValueForUserFromReplica',
+      [SemanticAttributes.CODE_FILEPATH]: __filename
+    }
+  }
   return getTracer().startActiveSpan(
     'retrieveClockValueForUserFromReplica',
+    options,
     async (span) => {
       const spID = config.get('spID')
 

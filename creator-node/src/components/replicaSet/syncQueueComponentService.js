@@ -21,13 +21,13 @@ const processImmediateSync = async ({
   walletPublicKeys,
   creatorNodeEndpoint,
   forceResync,
-  parentSpan
+  parentSpanContext
 }) => {
   await serviceRegistry.syncImmediateQueue.processImmediateSync({
     walletPublicKeys,
     creatorNodeEndpoint,
     forceResync,
-    parentSpan
+    parentSpanContext
   })
 }
 

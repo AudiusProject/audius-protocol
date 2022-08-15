@@ -1,5 +1,5 @@
 const _ = require('lodash')
-const { trace, context, SpanStatusCode } = require('@opentelemetry/api')
+const { SpanStatusCode } = require('@opentelemetry/api')
 
 const models = require('../../models')
 const { Transaction } = require('sequelize')
@@ -36,6 +36,8 @@ const exportComponentService = async ({
       const cnodeUserUUIDs = cnodeUsers.map(
         (cnodeUser) => cnodeUser.cnodeUserUUID
       )
+
+      span.setAttribute('cnodeUserUUIDs', cnodeUserUUIDs)
 
       // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files, clockRecords.
 

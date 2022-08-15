@@ -1,6 +1,3 @@
-const { setupTracing, getTracer } = require('../src/tracer')
-setupTracing()
-
 const { program } = require('commander')
 const ServiceCommands = require('../src/index')
 const _ = require('lodash')
@@ -55,28 +52,25 @@ program
     parseMetadataIntoObject
   )
   .action(async opts => {
-    await getTracer().startActiveSpan('create-user', async span => {
-      const { userAlias: alias, count, ...options } = opts.opts()
-      const createSingleUser = async (singleUserAlias, options) => {
-        console.log(
-          `Creating user with alias ${singleUserAlias} and options: ${JSON.stringify(
-            options
-          )}`.info
-        )
-        const seed = new SeedSession()
-        await seed.init()
-        await seed.createUser(singleUserAlias, options)
-        console.log('Created user!'.success)
-      }
-      console.log(`Creating ${count} user(s)...`.info)
-      // unfortunately can't parallelize because of the way we need to get hedgehog entropy from same location in local storage...
-      for (const n of _.range(1, count + 1)) {
-        const createdUserAlias = n > 1 ? `${alias}-${n}` : alias
-        await createSingleUser(createdUserAlias, options)
-      }
-      console.log(`Created ${count} user(s) successfully!`.happy)
-      span.end()
-    })
+    const { userAlias: alias, count, ...options } = opts.opts()
+    const createSingleUser = async (singleUserAlias, options) => {
+      console.log(
+        `Creating user with alias ${singleUserAlias} and options: ${JSON.stringify(
+          options
+        )}`.info
+      )
+      const seed = new SeedSession()
+      await seed.init()
+      await seed.createUser(singleUserAlias, options)
+      console.log('Created user!'.success)
+    }
+    console.log(`Creating ${count} user(s)...`.info)
+    // unfortunately can't parallelize because of the way we need to get hedgehog entropy from same location in local storage...
+    for (const n of _.range(1, count + 1)) {
+      const createdUserAlias = n > 1 ? `${alias}-${n}` : alias
+      await createSingleUser(createdUserAlias, options)
+    }
+    console.log(`Created ${count} user(s) successfully!`.happy)
     process.exit(0)
   })
 
@@ -141,12 +135,9 @@ program
   .option('-a, --amount <number>', 'Amount of audio to send', null)
   .option('-r, --recipient-id <number>', 'ID of user to receive tip', null)
   .action(async options => {
-    await getTracer().startActiveSpan('tip-identity', async span => {
-      const { amount, userId, recipientId } = options.opts()
-      const seed = new SeedSession()
-      await seed.tipAudioIdentity({ amount, userId, recipientId })
-      span.end()
-    })
+    const { amount, userId, recipientId } = options.opts()
+    const seed = new SeedSession()
+    await seed.tipAudioIdentity({ amount, userId, recipientId })
     process.exit(0)
   })
 
@@ -188,80 +179,74 @@ const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
       params.forEach(addParamAsOption)
 
       configuredProgram.action(async opts => {
-        await getTracer().startActiveSpan(
-          `seed.libs[${api}][${method}]`,
-          async span => {
-            const { userId, ...options } = opts.opts()
-            const seed = new SeedSession()
-            console.log(
-              `Running seed ${cliCommand} with options: ${JSON.stringify(
-                options
-              )}`
-            )
-            let userIdToSet = userId
-            if (!userIdToSet) {
-              // try to set from cache
-              console.log(
-                'No user ID for action specified; trying to get active user from seed local cache...'
-                  .info
-              )
-              const activeUser = seed.cache.getActiveUser()
-              if (!activeUser.hedgehogEntropyKey) {
-                throw new Error(
-                  `There is no active user in seed local cache. Please rerun the 'seed ${cliCommand}' command with --user-id or -id flag or run 'seed set-user' with alias or id flag first to set active user.`.error
-                )
-              }
-              userIdToSet = activeUser.userId
-            }
-            await seed.setUser({ userId: userIdToSet })
-            console.log(`Calling libs.${api}.${method} to seed...`.info)
-
-            const convertUserInputToApiMethodArguments = async (
-              options,
-              params
-            ) => {
-              for (const option of Object.entries(options)) {
-                const [optionName, userProvidedValue] = option
-                const match = param => param.name === optionName
-                const defaultHandler =
-                  params.find(match).defaultHandler || passThroughUserInput
-                options[optionName] = await defaultHandler(
-                  userProvidedValue,
-                  seed
-                )
-              }
-              const args = userIdInLibsApiMethodParams
-                ? [userId, ...Object.values(options)]
-                : [...Object.values(options)]
-
-              return args
-            }
-
-            const args = await convertUserInputToApiMethodArguments(
-              options,
-              params
-            )
-
-            console.log(`the args ${args}`)
-            const response = await seed.libs[api][method](...args)
-            if (typeof onSuccess === 'function') {
-              onSuccess(response, seed)
-            }
-            console.log(`Successfully executed action ${cliCommand}`.happy)
-            console.log(
-              `Options: ${JSON.stringify(
-                options,
-                null,
-                4
-              )}: \n\nResponse: ${JSON.stringify(response, null, 4)}`
-            )
-            span.end()
-          }
+        const { userId, ...options } = opts.opts()
+        const seed = new SeedSession()
+        console.log(
+          `Running seed ${cliCommand} with options: ${JSON.stringify(
+            options
+          )}`
         )
-        process.exit(0)
-      })
-    }
-  )
+        let userIdToSet = userId
+        if (!userIdToSet) {
+          // try to set from cache
+          console.log(
+            'No user ID for action specified; trying to get active user from seed local cache...'
+              .info
+          )
+          const activeUser = seed.cache.getActiveUser()
+          if (!activeUser.hedgehogEntropyKey) {
+            throw new Error(
+              `There is no active user in seed local cache. Please rerun the 'seed ${cliCommand}' command with --user-id or -id flag or run 'seed set-user' with alias or id flag first to set active user.`.error
+            )
+          }
+          userIdToSet = activeUser.userId
+        }
+        await seed.setUser({ userId: userIdToSet })
+        console.log(`Calling libs.${api}.${method} to seed...`.info)
+
+        const convertUserInputToApiMethodArguments = async (
+          options,
+          params
+        ) => {
+          for (const option of Object.entries(options)) {
+            const [optionName, userProvidedValue] = option
+            const match = param => param.name === optionName
+            const defaultHandler =
+              params.find(match).defaultHandler || passThroughUserInput
+            options[optionName] = await defaultHandler(
+              userProvidedValue,
+              seed
+            )
+          }
+          const args = userIdInLibsApiMethodParams
+            ? [userId, ...Object.values(options)]
+            : [...Object.values(options)]
+
+          return args
+        }
+
+        const args = await convertUserInputToApiMethodArguments(
+          options,
+          params
+        )
+
+        console.log(`the args ${args}`)
+        const response = await seed.libs[api][method](...args)
+        if (typeof onSuccess === 'function') {
+          onSuccess(response, seed)
+        }
+        console.log(`Successfully executed action ${cliCommand}`.happy)
+        console.log(
+          `Options: ${JSON.stringify(
+            options,
+            null,
+            4
+          )}: \n\nResponse: ${JSON.stringify(response, null, 4)}`
+        )
+      }
+      )
+      process.exit(0)
+    })
 }
 
 // entrypoint

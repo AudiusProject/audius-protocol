@@ -18,9 +18,6 @@ import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
 
-import { JaegerExporter } from '@opentelemetry/exporter-jaeger'
-import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
-
 // Not functionally required but gives some insight what happens behind the scenes
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
 
@@ -49,18 +46,6 @@ export const setupTracing = () => {
       })
     ]
   })
-
-  const exporter = new JaegerExporter({
-    tags: [], // optional
-    // You can use the default UDPSender
-    host: 'jaeger', // optional
-    port: 6832, // optional
-    // OR you can use the HTTPSender as follows
-    // endpoint: 'http://localhost:14268/api/traces',
-    maxPacketSize: 65000 // optional
-  })
-
-  provider.addSpanProcessor(new SimpleSpanProcessor(exporter))
 
   // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
   provider.register()

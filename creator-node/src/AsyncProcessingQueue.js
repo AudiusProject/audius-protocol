@@ -4,6 +4,7 @@ const config = require('./config')
 const redisClient = require('./redis')
 const { getTracer } = require('./tracer')
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
+const { SpanStatusCode } = require('@opentelemetry/api')
 
 // Processing fns
 const {
@@ -79,13 +80,14 @@ class AsyncProcessingQueue {
         }
       ],
       attributes: {
+        task: task,
         requestID: logContext.requestID,
         [SemanticAttributes.CODE_FUNCTION]: 'AyncProcessingQueue.processTask',
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
     getTracer().startActiveSpan(
-      'process task on AsyncProcessingQueue',
+      'AsyncProcessingQueue.processTask',
       options,
       async (span) => {
         if (task === PROCESS_NAMES.transcodeHandOff) {
@@ -118,6 +120,8 @@ class AsyncProcessingQueue {
             const response = await this.monitorProgress(task, func, job.data)
             done(null, { response })
           } catch (e) {
+            span.recordException(e)
+            span.setStatus({ code: SpanStatusCode.ERROR })
             this.logError(
               `Could not process taskType=${task} uuid=${
                 logContext.requestID

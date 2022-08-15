@@ -5,12 +5,13 @@ import type {
 } from './types'
 import type { Span } from '@opentelemetry/api'
 
-const initAudiusLibs = require('../../initAudiusLibs')
-const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+import { SpanStatusCode } from '@opentelemetry/api'
 
-const { SpanStatusCode } = require('@opentelemetry/api')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { getTracer } = require('../../../tracer')
+import { getTracer } from '../../../tracer'
+
+import initAudiusLibs from '../../initAudiusLibs'
+import NodeToSpIdManager from '../CNodeToSpIdMapManager'
 
 /**
  * Processes a job to update the cNodeEndpoint->spId map by reading the chain.
@@ -43,7 +44,7 @@ module.exports = async function ({
     async (span: Span) => {
       let errorMsg = ''
       try {
-        span.addEvent('init libs')
+        span.addEvent('init AudiusLibs')
         const audiusLibs = await initAudiusLibs({
           enableEthContracts: true,
           enableContracts: false,

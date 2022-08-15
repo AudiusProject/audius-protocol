@@ -1,5 +1,7 @@
 const promiseAny = require('promise.any')
+const { SpanStatusCode } = require('@opentelemetry/api')
 
+const { getTracer } = require('./tracer')
 const {
   sendResponse,
   errorResponse,
@@ -18,8 +20,6 @@ const BlacklistManager = require('./blacklistManager')
 const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
-const { getTracer } = require('./tracer')
-const { SpanStatusCode } = require('@opentelemetry/api')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -265,8 +265,15 @@ async function issueAndWaitForSecondarySyncRequests(
   req,
   ignoreWriteQuorum = false
 ) {
+    const options = {
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: 'issueAndWaitForSecnodarySyncRequests',
+        [SemanticAttributes.CODE_FILEPATH]: __filename
+      }
+    }
   return getTracer().startActiveSpan(
     'issueAndWaitForSecondarySyncRequest',
+    options,
     async (span) => {
       const route = req.url.split('?')[0]
       const serviceRegistry = req.app.get('serviceRegistry')
@@ -301,7 +308,6 @@ async function issueAndWaitForSecondarySyncRequests(
 
       // This sync request uses the manual sync queue, so we can't proceed if manual syncs are disabled
       if (config.get('manualSyncsDisabled')) {
-        span.addEvent('manual sync queue disabled')
         endHistogramTimer({
           enforceWriteQuorum: String(enforceWriteQuorum),
           ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -312,30 +318,29 @@ async function issueAndWaitForSecondarySyncRequests(
           'manualSyncsDisabled'
         )})`
         req.logger.error(errorMsg)
+        span.addEvent(errorMsg)
+        span.end()
         if (enforceWriteQuorum) {
-          span.end()
           throw new Error(errorMsg)
         }
-        span.end()
         return
       }
 
       // Wallet is required and should've been set in auth middleware
       if (!req.session || !req.session.wallet) {
         const errorMsg = `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
-        span.addEvent(errorMsg)
         endHistogramTimer({
           enforceWriteQuorum: String(enforceWriteQuorum),
           ignoreWriteQuorum: String(ignoreWriteQuorum),
           route,
           result: 'failed_short_circuit'
         })
+        span.addEvent(errorMsg)
+        span.end()
         req.logger.error(errorMsg)
         if (enforceWriteQuorum) {
-          span.end()
           throw new Error(errorMsg)
         }
-        span.end()
         return
       }
       const wallet = req.session.wallet
@@ -354,11 +359,13 @@ async function issueAndWaitForSecondarySyncRequests(
           })
           const errorMsg =
             'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
+          
+          span.addEvent(errorMsg)
+          span.end()
           req.logger.error(errorMsg)
           if (enforceWriteQuorum) {
             throw new Error(errorMsg)
           }
-          span.end()
           return
         }
 
@@ -384,9 +391,6 @@ async function issueAndWaitForSecondarySyncRequests(
           where: { walletPublicKey: wallet }
         })
         if (!cnodeUser || !cnodeUser.clock) {
-          span.addEvent(
-            `issueAndWaitForSecondarySyncRequests Error - Failed to retrieve current clock value for user ${wallet} on current node.`
-          )
           endHistogramTimer({
             enforceWriteQuorum: String(enforceWriteQuorum),
             ignoreWriteQuorum: String(ignoreWriteQuorum),

@@ -1,6 +1,7 @@
 const express = require('express')
 const { SpanStatusCode } = require('@opentelemetry/api')
 
+const { getTracer } = require('../tracer')
 const models = require('../models')
 const {
   handleResponse,
@@ -11,7 +12,6 @@ const {
 const config = require('../config')
 const retry = require('async-retry')
 const exportComponentService = require('../components/replicaSet/exportComponentService')
-const { getTracer } = require('../tracer')
 
 const router = express.Router()
 
@@ -27,7 +27,13 @@ const router = express.Router()
 router.get(
   '/export',
   handleResponse(async (req, res) => {
-    return getTracer().startActiveSpan('time to export', async (span) => {
+    const options = {
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: 'handleResponse',
+        [SemanticAttributes.CODE_FILEPATH]: __filename
+      }
+    }
+    return getTracer().startActiveSpan('/export', options, async (span) => {
       const start = Date.now()
 
       const walletPublicKeys = req.query.wallet_public_key // array
@@ -65,6 +71,7 @@ router.get(
           } ms`
         )
 
+        span.addAttribute('cnodeUsersDict', JSON.stringify(cnodeUsersDict))
         span.end()
         return successResponse({ cnodeUsers: cnodeUsersDict })
       } catch (e) {

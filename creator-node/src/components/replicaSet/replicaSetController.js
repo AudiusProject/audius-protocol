@@ -64,12 +64,19 @@ const respondToURSMRequestForProposalController = async (req) => {
  * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
 const syncRouteController = async (req, res) => {
-  return getTracer().startActiveSpan('sync', async (span) => {
+  const options = {
+    attributes: {
+      [SemanticAttributes.CODE_FUNCTION]: 'syncRouteController',
+      [SemanticAttributes.CODE_FILEPATH]: __filename
+    }
+  }
+  return getTracer().startActiveSpan('syncRouteController', options, async (span) => {
     const serviceRegistry = req.app.get('serviceRegistry')
     if (
       _.isEmpty(serviceRegistry?.syncQueue) ||
       _.isEmpty(serviceRegistry?.syncImmediateQueue)
     ) {
+      span.setStatus({ code: SpanStatusCode.ERROR })
       span.end()
       return errorResponseServerError('Sync Queue is not up and running yet')
     }
@@ -85,9 +92,11 @@ const syncRouteController = async (req, res) => {
 
     // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
     if (walletPublicKeys.length === 0) {
+      span.setStatus({ code: SpanStatusCode.ERROR })
       span.end()
       return errorResponseBadRequest(`Must provide one wallet param`)
     } else if (walletPublicKeys.length > 1) {
+      span.setStatus({ code: SpanStatusCode.ERROR })
       span.end()
       return errorResponseBadRequest(
         `Multi wallet syncs are temporarily disabled`
