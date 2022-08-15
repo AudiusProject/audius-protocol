@@ -13,7 +13,7 @@ You can build your own queries using a [GraphQL Explorer](https://graphiql-onlin
 
 Description: Gathers the streams created by an account as well as the stream's most recent withdrawal
 
-```
+```graphql
 query SenderStreams($Sender: Bytes = "0x3d8115998bc6dd73dbc2686a0f1640bbdf802a5c") {
   streams(where: {sender: $Sender}) {
     id
@@ -37,7 +37,7 @@ query SenderStreams($Sender: Bytes = "0x3d8115998bc6dd73dbc2686a0f1640bbdf802a5c
 
 Description: Gathers the streams an account receives as well as the stream's most recent withdrawal
 
-```
+```graphql
 query RecipientStreams($Recipient: Bytes = "0x6484a2514aee516ddac6f67dd2322f23e0a4a7d6") {
   streams(where: {recipient: $Recipient}) {
     id
