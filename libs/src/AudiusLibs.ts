@@ -47,7 +47,6 @@ import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
 import { EntityManager } from './api/entityManager'
 
-
 type LibsIdentityServiceConfig = {
   url: string
   useHedgehogLocalStorage: boolean
@@ -203,7 +202,7 @@ export class AudiusLibs {
   /**
    * Configures an eth web3
    */
-  static configEthWeb3 (
+  static configEthWeb3(
     tokenAddress,
     registryAddress,
     providers,
@@ -603,7 +602,7 @@ export class AudiusLibs {
     if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
       const creatorNodeEndpoint = currentUser
-        ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ||
+        ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ??
           this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 

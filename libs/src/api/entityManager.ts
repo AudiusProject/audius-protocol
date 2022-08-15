@@ -33,12 +33,6 @@ export interface PlaylistOperationResponse {
 
 const { encodeHashId, decodeHashId } = Utils
 
-type PlaylistTrackId = { time: number; track: number; metadata_time?: number }
-
-type PlaylistContents = {
-  track_ids: PlaylistTrackId[]
-}
-
 /*
   API surface for updated data contract interactions.
   Provides simplified entity management in a generic fashion
@@ -119,7 +113,6 @@ export class EntityManager extends Base {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
     try {
-
       const currentUserId: string | null =
         this.userStateManager.getCurrentUserId()
       if (!currentUserId) {

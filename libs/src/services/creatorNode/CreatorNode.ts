@@ -8,7 +8,6 @@ import {
   playlistSchemaType,
   Schemas
 } from '../schemaValidator/SchemaValidator'
-import type { Nullable } from '../../utils'
 import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type { MonitoringCallbacks } from '../types'
@@ -19,19 +18,10 @@ const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const POLL_STATUS_INTERVAL = 3000 // 3s
 const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
 
-type Metadata = {
-  track_segments: unknown
-  download?: {
-    is_downloadable: boolean
-    cid: string
-  }
-  cover_art_sizes: string
-}
-
-type PlaylistTrackId = { time: number; track: number; }
+type PlaylistTrackId = { time: number; track: number }
 
 type PlaylistContents = {
-  track_ids: Array<PlaylistTrackId>
+  track_ids: PlaylistTrackId[]
 }
 
 export type PlaylistMetadata = {
@@ -345,7 +335,7 @@ export class CreatorNode {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: ProgressCB = () => { }
+    onProgress: ProgressCB = () => {}
   ) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
@@ -990,7 +980,7 @@ export class CreatorNode {
   async _uploadFile(
     file: File,
     route: string,
-    onProgress: ProgressCB = () => { },
+    onProgress: ProgressCB = () => {},
     extraFormDataOptions: Record<string, unknown> = {},
     retries = 2,
     timeoutMs: number | null = null
@@ -1100,8 +1090,9 @@ export class CreatorNode {
     if ('response' in e && e.response?.data?.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
-      const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error
-        }] for request: [${cnRequestID}, ${requestId}]`
+      const errMessage = `Server returned error: [${e.response.status.toString()}] [${
+        e.response.data.error
+      }] for request: [${cnRequestID}, ${requestId}]`
 
       console.error(errMessage)
       throw new Error(errMessage)
