@@ -89,11 +89,6 @@ module.exports = async function ({
 }: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
   DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
 > {
-  logger.info(
-    `SIDTEST issuesyncrequest: ${syncType} ${syncMode} ${JSON.stringify(
-      syncRequestParameters
-    )}`
-  )
   let jobsToEnqueue: JobsToEnqueue = {}
   let metricsToRecord = []
   let error: any = {}

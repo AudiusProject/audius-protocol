@@ -53,12 +53,20 @@ module.exports = async function primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    const userReplicaSet = await getUserReplicaSet({
+    let userReplicaSet = await getUserReplicaSet({
       wallet,
       selfEndpoint,
       logger,
       libs
     })
+
+    // Error if this node is not primary for user
+    if (userReplicaSet[0] !== selfEndpoint) {
+      throw new Error(`Failure - this node is not primary for user`)
+    }
+
+    // filter out current node from user's replica set
+    userReplicaSet = userReplicaSet.filter((url) => url !== selfEndpoint)
 
     // Keep importing data from secondary until full clock range has been retrieved
     let completed = false
@@ -448,7 +456,7 @@ async function filterOutAlreadyPresentDBEntries({
   return filteredEntries
 }
 
-async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
+async function getUserReplicaSet({ wallet, libs, logger }) {
   try {
     let userReplicaSet = await getCreatorNodeEndpoints({
       libs,
@@ -458,9 +466,6 @@ async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
       ensurePrimary: false,
       myCnodeEndpoint: null
     })
-
-    // filter out current node from user's replica set
-    userReplicaSet = userReplicaSet.filter((url) => url !== selfEndpoint)
 
     // Spread + set uniq's the array
     userReplicaSet = [...new Set(userReplicaSet)]
