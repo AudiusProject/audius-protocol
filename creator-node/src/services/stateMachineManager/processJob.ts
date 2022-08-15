@@ -15,8 +15,6 @@ import { createChildLogger } from '../../logging'
 import redis from '../../redis'
 import { QUEUE_NAMES } from './stateMachineConstants'
 
-
-
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
  *

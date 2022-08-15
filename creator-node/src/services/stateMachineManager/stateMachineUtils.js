@@ -124,8 +124,8 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
 const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
   const options = {
     attributes: {
-      jobId: jobId,
-      [SemanticAttributes.CODE_FUNCTION]: 'retrieveClockValueForUserFromReplica',
+      [SemanticAttributes.CODE_FUNCTION]:
+        'retrieveClockValueForUserFromReplica',
       [SemanticAttributes.CODE_FILEPATH]: __filename
     }
   }

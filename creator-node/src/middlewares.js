@@ -1,4 +1,5 @@
 const promiseAny = require('promise.any')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { SpanStatusCode } = require('@opentelemetry/api')
 
 const { getTracer } = require('./tracer')
@@ -265,12 +266,13 @@ async function issueAndWaitForSecondarySyncRequests(
   req,
   ignoreWriteQuorum = false
 ) {
-    const options = {
-      attributes: {
-        [SemanticAttributes.CODE_FUNCTION]: 'issueAndWaitForSecnodarySyncRequests',
-        [SemanticAttributes.CODE_FILEPATH]: __filename
-      }
+  const options = {
+    attributes: {
+      [SemanticAttributes.CODE_FUNCTION]:
+        'issueAndWaitForSecnodarySyncRequests',
+      [SemanticAttributes.CODE_FILEPATH]: __filename
     }
+  }
   return getTracer().startActiveSpan(
     'issueAndWaitForSecondarySyncRequest',
     options,
@@ -359,7 +361,7 @@ async function issueAndWaitForSecondarySyncRequests(
           })
           const errorMsg =
             'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
-          
+
           span.addEvent(errorMsg)
           span.end()
           req.logger.error(errorMsg)

@@ -1,5 +1,4 @@
 import type Logger from 'bunyan'
-import type { LoDashStatic } from 'lodash'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 import type {
   UpdateReplicaSetUser,
@@ -25,7 +24,6 @@ import {
 import CNodeHealthManager from '../CNodeHealthManager'
 import CNodeToSpIdMapManager from '../CNodeToSpIdMapManager'
 import config from '../../../config'
-
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const minSecondaryUserSyncSuccessPercent =
@@ -240,14 +238,23 @@ const _findReplicaSetUpdatesForUser = async (
 
           // Error case 1 - mismatched spID
           if (
-            (CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[secondary] !==
-            secondaryInfo.spId
+            (
+              CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<
+                string,
+                number
+              >
+            )[secondary] !== secondaryInfo.spId
           ) {
             logger.error(
               `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${
                 secondaryInfo.spId
               }, found ${
-                (CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[secondary]
+                (
+                  CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<
+                    string,
+                    number
+                  >
+                )[secondary]
               }. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
                 CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
               )}`
@@ -295,9 +302,12 @@ const _findReplicaSetUpdatesForUser = async (
           // If the map's spId does not match the query's spId, then regardless
           // of the relationship of the node to the user, issue a reconfig for that node
           if (
-            (CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[
-              replica.endpoint as string
-            ] !== replica.spId
+            (
+              CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<
+                string,
+                number
+              >
+            )[replica.endpoint as string] !== replica.spId
           ) {
             unhealthyReplicas.add(replica.endpoint)
           } else if (unhealthyPeersSet.has(replica.endpoint)) {
