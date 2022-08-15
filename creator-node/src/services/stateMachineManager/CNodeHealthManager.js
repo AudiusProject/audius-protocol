@@ -2,11 +2,11 @@ const axios = require('axios')
 
 const config = require('../../config')
 const { logger } = require('../../logging')
+const { hasEnoughStorageSpace } = require('../../fileManager')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
 )
-const MINIMUM_STORAGE_PATH_SIZE = config.get('minimumStoragePathSize')
 const MINIMUM_MEMORY_AVAILABLE = config.get('minimumMemoryAvailable')
 const MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE =
   config.get('maxFileDescriptorsAllocatedPercentage') / 100
@@ -14,6 +14,7 @@ const MINIMUM_DAILY_SYNC_COUNT = config.get('minimumDailySyncCount')
 const MINIMUM_ROLLING_SYNC_COUNT = config.get('minimumRollingSyncCount')
 const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE =
   config.get('minimumSuccessfulSyncCountPercentage') / 100
+const MAX_STORAGE_USED_PERCENT = config.get('maxStorageUsedPercent')
 
 // Max number of seconds a primary may be unhealthy for since the first time it was seen as unhealthy
 const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
@@ -134,14 +135,16 @@ class CNodeHealthManager {
     // Check for sufficient minimum storage size
     const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
     if (
-      storagePathSize &&
-      storagePathUsed &&
-      storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE
+      !hasEnoughStorageSpace(
+        storagePathSize,
+        storagePathUsed,
+        MAX_STORAGE_USED_PERCENT
+      )
     ) {
       throw new Error(
         `Almost out of storage=${
           storagePathSize - storagePathUsed
-        }bytes remaining. Minimum storage required=${MINIMUM_STORAGE_PATH_SIZE}bytes`
+        }bytes remaining out of ${storagePathSize}. Max storage % used=${MAX_STORAGE_USED_PERCENT}%`
       )
     }
 
