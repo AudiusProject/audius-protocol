@@ -180,7 +180,7 @@ const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
  * makeGaugeIncToRecord('test_gauge', 1, { status: 'success' })
  * @param {string} metricName the name of the metric from prometheus.constants
  * @param {number} incBy the metric value to increment by in Metric#inc for the prometheus gauge
- * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ * @param {Record<string, any>} [metricLabels] the optional mapping of metric label name => metric label value
  */
 const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
   return makeMetricToRecord(
@@ -197,7 +197,7 @@ const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
  * @param {string} metricType the type of metric being recorded -- HISTOGRAM or GAUGE_INC
  * @param {string} metricName the name of the metric from prometheus.constants
  * @param {number} metricValue the value to observe
- * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ * @param {Record<string, any>} [metricLabels] the optional mapping of metric label name => metric label value
  */
 const makeMetricToRecord = (
   metricType,

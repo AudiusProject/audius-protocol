@@ -1,4 +1,3 @@
-import type { LoDashStatic } from 'lodash'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 import type {
   FindSyncRequestsJobParams,
@@ -14,22 +13,22 @@ import type { Span } from '@opentelemetry/api'
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
 
-const _: LoDashStatic = require('lodash')
+import _ = require('lodash')
 
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { getTracer } = require('../../../tracer')
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
+import { getTracer } from '../../../tracer'
 
-const config = require('../../../config')
-const {
+import config from '../../../config'
+import {
   METRIC_NAMES
-} = require('../../prometheusMonitoring/prometheus.constants')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
-const { makeGaugeIncToRecord } = require('../stateMachineUtils')
-const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
-const {
+} from '../../prometheusMonitoring/prometheus.constants'
+import CNodeToSpIdMapManager from '../CNodeToSpIdMapManager'
+import { makeGaugeIncToRecord } from '../stateMachineUtils'
+import { SyncType, SYNC_MODES } from '../stateMachineConstants'
+import {
   getNewOrExistingSyncReq
-} = require('../stateReconciliation/stateReconciliationUtils')
-const { computeSyncModeForUserAndReplica } = require('./stateMonitoringUtils')
+} from '../stateReconciliation/stateReconciliationUtils'
+import { computeSyncModeForUserAndReplica } from './stateMonitoringUtils'
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const minSecondaryUserSyncSuccessPercent =
@@ -260,7 +259,7 @@ async function _findSyncsForUser(
 
         // Secondary is unhealthy if its spID is mismatched -- don't sync to it
         if (
-          CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
+          (CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[secondary] !==
           secondaryInfo.spId
         ) {
           outcomesBySecondary[secondary].result = 'no_sync_sp_id_mismatch'
@@ -277,7 +276,7 @@ async function _findSyncsForUser(
         }
 
         // Determine if secondary requires a sync by comparing its user data against primary (this node)
-        let syncMode
+        let syncMode: string
         const { clock: primaryClock, filesHash: primaryFilesHash } =
           replicaToAllUserInfoMaps[primary][wallet]
         const { clock: secondaryClock, filesHash: secondaryFilesHash } =
@@ -318,10 +317,10 @@ async function _findSyncsForUser(
 
             if (!_.isEmpty(syncReqToEnqueue)) {
               result = 'new_sync_request_enqueued'
-              syncReqsToEnqueue.push(syncReqToEnqueue)
+              syncReqsToEnqueue.push(syncReqToEnqueue!)
             } else if (!_.isEmpty(duplicateSyncReq)) {
               result = 'sync_request_already_enqueued'
-              duplicateSyncReqs.push(duplicateSyncReq)
+              duplicateSyncReqs.push(duplicateSyncReq!)
             } else {
               result = 'new_sync_request_unable_to_enqueue'
             }
