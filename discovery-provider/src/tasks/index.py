@@ -31,7 +31,7 @@ from src.queries.get_skipped_transactions import (
 )
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
-from src.tasks.entity_manager import entity_manager_update
+from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.sort_block_transactions import sort_block_transactions

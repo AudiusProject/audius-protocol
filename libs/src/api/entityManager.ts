@@ -67,8 +67,8 @@ export class EntityManager extends Base {
     return playlist
   }
 
-  mapAddedTimestamps(added_timestamps: any) {
-    const trackIds = added_timestamps.map(
+  mapAddedTimestamps(addedTimestamps: any) {
+    const trackIds = addedTimestamps.map(
       (trackObj: {
         track_id: string
         metadata_timestamp?: number
