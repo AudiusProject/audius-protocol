@@ -31,6 +31,10 @@ const Environment = Object.freeze({
 const args = process.argv.slice(2)
 const appVersion = require('../package.json').version
 
+const appDataPath = (relativePath) => {
+  return path.resolve(app.getPath('appData'), app.getName(), relativePath)
+}
+
 let appEnvironment,
   buildName,
   localhostPort,
@@ -141,8 +145,8 @@ const registerBuild = (directory) => {
 }
 
 const downloadWebUpdateAndNotify = async (newVersion) => {
-  const newBuildPath = path.resolve(app.getAppPath(), `${buildName}.tar.gz`)
-  const webUpdateDir = path.resolve(app.getAppPath(), `web-update`)
+  const newBuildPath = appDataPath(`${buildName}.tar.gz`)
+  const webUpdateDir = appDataPath('web-update')
   const fileStream = fs.createWriteStream(newBuildPath)
 
   // Fetch the build tar.gz file and write to file
@@ -158,7 +162,7 @@ const downloadWebUpdateAndNotify = async (newVersion) => {
   // Create web-update directory and untar the build inside
   if (!fs.existsSync(webUpdateDir)) fs.mkdirSync(webUpdateDir)
   tar.x({
-    cwd: path.resolve(app.getAppPath(), `web-update`),
+    cwd: webUpdateDir,
     file: newBuildPath
   })
 
@@ -178,19 +182,13 @@ const checkForWebUpdate = () => {
     const newVersion = packageJson.version
 
     let currentVersion = appVersion
+    const packageJsonPath = appDataPath(`${buildName}/package.json`)
 
     // Additional check for the version from the build package.json
     // Needed after web updates because the local package.json version is not updated
-    if (
-      fs.existsSync(path.resolve(app.getAppPath(), `${buildName}/package.json`))
-    ) {
-      const buidlPackageJson = JSON.parse(
-        fs.readFileSync(
-          path.resolve(app.getAppPath(), `${buildName}/package.json`)
-        )
-      )
-
-      currentVersion = buidlPackageJson.version
+    if (fs.existsSync(packageJsonPath)) {
+      const buildPackageJson = JSON.parse(fs.readFileSync(packageJsonPath))
+      currentVersion = buildPackageJson.version
     }
 
     // If there is a patch version update, download it and notify the user
@@ -258,7 +256,14 @@ const createWindow = () => {
     mainWindow.loadURL(`http://localhost:${localhostPort}`)
   } else {
     const buildDirectory = path.resolve(app.getAppPath(), buildName)
-    registerBuild(buildDirectory)
+    const updateBuildDirectory = appDataPath(buildName)
+
+    // Register the updated build if it exists, otherwise use the default build found via `getAppPath`
+    registerBuild(
+      fs.existsSync(updateBuildDirectory)
+        ? updateBuildDirectory
+        : buildDirectory
+    )
     checkForWebUpdate()
 
     // Win protocol handler
@@ -431,34 +436,25 @@ ipcMain.on('update', async (event, arg) => {
 })
 
 ipcMain.on('web-update', async (event, arg) => {
-  if (
-    fs.existsSync(path.resolve(app.getAppPath(), `web-update/${buildName}`))
-  ) {
+  const buildPath = appDataPath(`web-update/packages/web/${buildName}`)
+  if (fs.existsSync(buildPath)) {
     try {
-      // Rename web-update dir and move to base folder
-      fs.renameSync(
-        path.resolve(app.getAppPath(), `web-update/${buildName}`),
-        path.resolve(app.getAppPath(), `${buildName}-new`)
-      )
-      // Remove the web-update dir
-      fs.rmdirSync(path.resolve(app.getAppPath(), 'web-update'))
-      // Rename old dir to old
-      fs.renameSync(
-        path.resolve(app.getAppPath(), buildName),
-        path.resolve(app.getAppPath(), `${buildName}-old`)
-      )
-      // Rename new dir to current name
-      fs.renameSync(
-        path.resolve(app.getAppPath(), `${buildName}-new`),
-        path.resolve(app.getAppPath(), buildName)
-      )
-      // Remove old dir
-      fs.rmdirSync(path.resolve(app.getAppPath(), `${buildName}-old`), {
+      // Remove the existing build
+      fs.rmdirSync(appDataPath(buildName), {
         recursive: true,
         force: true
       })
 
-      registerBuild(path.resolve(app.getAppPath(), buildName))
+      // Rename web-update dir and move to base folder
+      fs.renameSync(buildPath, appDataPath(buildName))
+
+      // Remove the web-update dir
+      fs.rmdirSync(appDataPath('web-update'), {
+        recursive: true,
+        force: true
+      })
+
+      registerBuild(appDataPath(buildName))
     } catch (error) {
       console.error(error)
     }
