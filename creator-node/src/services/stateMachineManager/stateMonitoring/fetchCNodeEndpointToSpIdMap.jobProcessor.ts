@@ -56,6 +56,7 @@ module.exports = ({ parentSpanContext }: {
   parentSpanContext: SpanContext
 }) => {
   return instrumentTracing({
+    name: 'fetchCNodeEndpointToSpIdMap.jobProcessor',
     fn: fetchCNodeEndpointToSpIdMap,
     options: {
       links: [
@@ -64,8 +65,6 @@ module.exports = ({ parentSpanContext }: {
         }
       ],
       attributes: {
-        [SemanticAttributes.CODE_FUNCTION]:
-          'fetchCNodeEndpointToSpIdMap.jobProcessor',
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }

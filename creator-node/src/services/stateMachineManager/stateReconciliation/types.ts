@@ -5,7 +5,7 @@ import { Method } from 'axios'
 export type SyncRequestAxiosParams = {
   baseURL: string
   url: string
-  method: Method
+  method: string
   data: {
     wallet: string[]
     creator_node_endpoint?: string
