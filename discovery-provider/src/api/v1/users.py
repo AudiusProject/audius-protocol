@@ -278,12 +278,15 @@ class FullTrackList(Resource):
 
         current_user_id = get_current_user_id(args)
 
-        sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
+
+        sort = args.get("sort", None)  # Deprecated
         sort_method = format_sort_method(args)
         sort_direction = format_sort_direction(args)
+        if sort_method:
+            sort = None
 
         args = GetTrackArgs(
             user_id=decoded_id,

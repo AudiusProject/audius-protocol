@@ -439,15 +439,17 @@ def populate_track_metadata(
         track_id = track["track_id"]
 
         if track_has_aggregates:
-            track[response_name_constants.repost_count] = track.get("aggregate_track")[
-                0
-            ].get("repost_count", 0)
-            track[response_name_constants.save_count] = track.get("aggregate_track")[
-                0
-            ].get("save_count", 0)
-            track[response_name_constants.play_count] = track.get("aggregate_play")[
-                0
-            ].get("count", 0)
+            aggregate_track = track.get("aggregate_track")
+            track[response_name_constants.repost_count] = (
+                aggregate_track[0].get("repost_count", 0) if aggregate_track else 0
+            )
+            track[response_name_constants.save_count] = (
+                aggregate_track[0].get("save_count", 0) if aggregate_track else 0
+            )
+            aggregate_play = track.get("aggregate_play")
+            track[response_name_constants.play_count] = (
+                aggregate_play[0].get("count", 0) if aggregate_play else 0
+            )
         else:
             track[response_name_constants.repost_count] = count_dict.get(
                 track_id, {}

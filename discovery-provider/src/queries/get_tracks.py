@@ -60,7 +60,7 @@ def _get_tracks(session, args):
         TrackWithAggregates.is_current == True, TrackWithAggregates.stem_of == None
     )
 
-    if "routes" in args:
+    if "routes" in args and args.get("routes") is not None:
         routes = args.get("routes")
         # Join the routes table
         base_query = base_query.join(
@@ -90,7 +90,7 @@ def _get_tracks(session, args):
             base_query = base_query.filter(TrackWithAggregates.is_unlisted == False)
 
     # Conditionally process an array of tracks
-    if "id" in args:
+    if "id" in args and args.get("id") is not None:
         track_id_list = args.get("id")
         try:
             # Update query with track_id list
@@ -102,23 +102,23 @@ def _get_tracks(session, args):
             raise e
 
     # Allow filtering of tracks by a certain creator
-    if "user_id" in args:
+    if "user_id" in args and args.get("user_id") is not None:
         user_id = args.get("user_id")
         base_query = base_query.filter(TrackWithAggregates.owner_id == user_id)
 
     # Allow filtering of deletes
-    if "filter_deleted" in args:
+    if "filter_deleted" in args and args.get("filter_deleted") is not None:
         filter_deleted = args.get("filter_deleted")
         if filter_deleted:
             base_query = base_query.filter(TrackWithAggregates.is_delete == False)
 
-    if "min_block_number" in args:
+    if "min_block_number" in args and args.get("min_block_number") is not None:
         min_block_number = args.get("min_block_number")
         base_query = base_query.filter(
             TrackWithAggregates.blocknumber >= min_block_number
         )
 
-    if "query" in args:
+    if "query" in args and args.get("query") is not None:
         query = args.get("query")
         base_query = base_query.join(TrackWithAggregates.user, aliased=True).filter(
             or_(
@@ -127,38 +127,9 @@ def _get_tracks(session, args):
             )
         )
 
-    if "sort" in args:
-        if args["sort"] == "date":
-            base_query = base_query.order_by(
-                coalesce(
-                    # This func is defined in alembic migrations
-                    func.to_date_safe(
-                        TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
-                    ),
-                    TrackWithAggregates.created_at,
-                ).desc(),
-                TrackWithAggregates.track_id.desc(),
-            )
-        elif args["sort"] == "plays":
-            base_query = base_query.join(
-                AggregatePlay,
-                AggregatePlay.play_item_id == TrackWithAggregates.track_id,
-            ).order_by(AggregatePlay.count.desc())
-        else:
-            whitelist_params = [
-                "created_at",
-                "create_date",
-                "release_date",
-                "blocknumber",
-                "track_id",
-            ]
-            base_query = parse_sort_param(
-                base_query, TrackWithAggregates, whitelist_params
-            )
-
-    if "sort_method" in args:
-        sort_method = args["sort_method"]
-        sort_direction = args["sort_direction"]
+    if "sort_method" in args and args.get("sort_method") is not None:
+        sort_method = args.get("sort_method")
+        sort_direction = args.get("sort_direction")
         sort_fn = desc if sort_direction == SortDirection.desc else asc
         if sort_method == SortMethod.title:
             base_query = base_query.order_by(sort_fn(TrackWithAggregates.title))
@@ -189,6 +160,36 @@ def _get_tracks(session, args):
                 sort_fn(AggregateTrack.save_count)
             )
 
+    # Deprecated, use sort_method and sort_direction
+    if "sort" in args and args.get("sort") is not None:
+        if args["sort"] == "date":
+            base_query = base_query.order_by(
+                coalesce(
+                    # This func is defined in alembic migrations
+                    func.to_date_safe(
+                        TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
+                    ),
+                    TrackWithAggregates.created_at,
+                ).desc(),
+                TrackWithAggregates.track_id.desc(),
+            )
+        elif args["sort"] == "plays":
+            base_query = base_query.join(
+                AggregatePlay,
+                AggregatePlay.play_item_id == TrackWithAggregates.track_id,
+            ).order_by(AggregatePlay.count.desc())
+        else:
+            whitelist_params = [
+                "created_at",
+                "create_date",
+                "release_date",
+                "blocknumber",
+                "track_id",
+            ]
+            base_query = parse_sort_param(
+                base_query, TrackWithAggregates, whitelist_params
+            )
+
     query_results = add_query_pagination(base_query, args["limit"], args["offset"])
     tracks = helpers.query_result_to_list(query_results.all())
     return tracks
@@ -212,7 +213,7 @@ def get_tracks(args: GetTrackArgs):
     with db.scoped_session() as session:
 
         def get_tracks_and_ids():
-            if "handle" in args:
+            if "handle" in args and args.get("handle") is not None:
                 handle = args.get("handle")
                 user = (
                     session.query(User.user_id)
@@ -221,7 +222,7 @@ def get_tracks(args: GetTrackArgs):
                 )
                 args["user_id"] = user.user_id
 
-            if "routes" in args:
+            if "routes" in args and args.get("route") is not None:
                 # Convert the handles to user_ids
                 routes = args.get("routes")
                 handles = [route["handle"].lower() for route in routes]
@@ -248,6 +249,7 @@ def get_tracks(args: GetTrackArgs):
                 "id" in args
                 and "min_block_number" not in args
                 and "sort" not in args
+                and "sort_method" not in args
                 and "user_id" not in args
             )
 
