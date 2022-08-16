@@ -6,6 +6,7 @@ const { getTracer } = require('../../tracer')
 
 const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
+const { instrumentTracing } = require('utils/tracing')
 
 const SYNC_QUEUE_HISTORY = 500
 const LOCK_DURATION = 1000 * 60 * 30 // 30 minutes
@@ -54,51 +55,55 @@ class SyncQueue {
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
       const {
-        walletPublicKeys,
-        creatorNodeEndpoint,
-        forceResync,
         parentSpanContext
       } = job.data
 
-      const options = {
-        links: [
-          {
-            context: parentSpanContext
+      const processTask = instrumentTracing({
+        name: 'syncQueue.process',
+        fn: this.processTask,
+        options: {
+          links: [
+            {
+              context: parentSpanContext
+            }
+          ],
+          attributes: {
+            [SemanticAttributes.CODE_FILEPATH]: __filename
           }
-        ],
-        attributes: {
-          [SemanticAttributes.CODE_FUNCTION]: 'syncQueue.process',
-          [SemanticAttributes.CODE_FILEPATH]: __filename
         }
-      }
-      return getTracer().startActiveSpan(
-        'syncQueue.process',
-        options,
-        async (span) => {
-          let result = {}
-          try {
-            result = await secondarySyncFromPrimary(
-              this.serviceRegistry,
-              walletPublicKeys,
-              creatorNodeEndpoint,
-              null, // blockNumber
-              forceResync
-            )
-          } catch (e) {
-            span.recordException(e)
-            span.setStatus({ code: SpanStatusCode.ERROR })
-            logger.error(
-              `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
-              e.message
-            )
-            result = { error: e.message }
-          }
+      })
 
-          span.end()
-          return result
-        }
-      )
+      return await processTask(job)
     })
+
+    processTask = async (job) => {
+      const {
+        walletPublicKeys,
+        creatorNodeEndpoint,
+        forceResync,
+      } = job.data
+
+      let result
+      try {
+        result = await secondarySyncFromPrimary(
+          this.serviceRegistry,
+          walletPublicKeys,
+          creatorNodeEndpoint,
+          null, // blockNumber
+          forceResync
+        )
+      } catch (e) {
+        span.recordException(e)
+        span.setStatus({ code: SpanStatusCode.ERROR })
+        logger.error(
+          `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
+          e.message
+        )
+        result = { error: e.message }
+      }
+
+      return result
+    }
   }
 
   async enqueueSync({

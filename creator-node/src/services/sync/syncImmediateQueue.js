@@ -65,7 +65,7 @@ class SyncImmediateQueue {
         }
       })
 
-      await processTask(job)
+      return await processTask(job)
     })
 
     processTask = async (job) => {
