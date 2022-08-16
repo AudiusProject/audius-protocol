@@ -17,6 +17,7 @@ const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
 const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
 const fetchCNodeEndpointToSpIdMapJobProcessor = require('./fetchCNodeEndpointToSpIdMap.jobProcessor')
 const { getTracer } = require('../../../tracer')
+const { instrumentTracing, getActiveSpan } = require('utils/tracing')
 
 const monitorStateLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.MONITOR_STATE
@@ -232,15 +233,19 @@ class StateMonitoringManager {
    * @param {Object} queue the StateMonitoringQueue to consume jobs from
    * @param {string} discoveryNodeEndpoint the IP address or URL of a Discovery Node
    */
-  async startMonitorStateQueue(queue, discoveryNodeEndpoint) {
-    // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
-    // pausing the queue and not enqueuing the first job
-    if (config.get('stateMonitoringQueueRateLimitJobsPerInterval') === 0) {
-      await queue.pause()
-      return
-    }
+  startMonitorStateQueue = instrumentTracing({
+    name: 'startMonitorStateQueue',
+    fn: (queue, discoveryNodeEndpoint) => {
 
-    getTracer().startActiveSpan('stateMonitoringQueue', async (span) => {
+      const span = getActiveSpan()
+
+      // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
+      // pausing the queue and not enqueuing the first job
+      if (config.get('stateMonitoringQueueRateLimitJobsPerInterval') === 0) {
+        await queue.pause()
+        return
+      }
+
       // Start at a random userId to avoid biased processing of early users
       const latestUserId = await getLatestUserIdFromDiscovery(
         discoveryNodeEndpoint
@@ -253,12 +258,12 @@ class StateMonitoringManager {
         {
           lastProcessedUserId,
           discoveryNodeEndpoint,
-          parentSpanContext: span.spanContext()
+          parentSpanContext: span?.spanContext()
         },
         /** opts */ { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
       )
-    })
-  }
+    }
+  })
 
   /**
    * Clears the cNodeEndpoint->spId map queue and adds an initial job.
