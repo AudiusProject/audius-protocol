@@ -100,9 +100,8 @@ const updateReplicaSetJobProcessor = async function ({
         )
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
-      const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}. Logging stack...`
+      const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(errorMsg)
-      logger.error(e.stack)
       return {
         errorMsg,
         issuedReconfig,
@@ -137,9 +136,10 @@ const updateReplicaSetJobProcessor = async function ({
       ))
   } catch (e: any) {
     logger.error(
-      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}`
+      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
+        e.stack
+      }`
     )
-    logger.error(e.stack)
     errorMsg = e.toString()
   }
 
