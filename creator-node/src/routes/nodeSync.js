@@ -2,7 +2,6 @@ const express = require('express')
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { SpanStatusCode } = require('@opentelemetry/api')
 
-const { getTracer } = require('../tracer')
 const models = require('../models')
 const {
   handleResponse,
