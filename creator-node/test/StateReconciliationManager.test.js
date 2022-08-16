@@ -79,12 +79,16 @@ describe('test StateReconciliationManager initialization, events, and job proces
       stateReconciliationManager,
       'registerQueueEventHandlersAndJobProcessors'
     )
+    const discoveryNodeEndpoint = 'https://dn1.co'
     const {
       manualSyncQueue,
       recurringSyncQueue,
       updateReplicaSetQueue,
       recoverOrphanedDataQueue
-    } = await stateReconciliationManager.init(getPrometheusRegistry())
+    } = await stateReconciliationManager.init(
+      discoveryNodeEndpoint,
+      getPrometheusRegistry()
+    )
 
     // Verify that the queues were successfully initialized and that their event listeners were registered
     expect(manualSyncQueue).to.exist.and.to.be.instanceOf(BullQueue)

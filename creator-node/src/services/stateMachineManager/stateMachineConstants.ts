@@ -151,7 +151,10 @@ export const SYNC_MODES = Object.freeze({
   SyncSecondaryFromPrimary: 'SYNC_SECONDARY_FROM_PRIMARY',
 
   // Edge case - secondary has state that primary needs: primary should merge its local state with secondary's state, and have secondary re-sync its entire local state
-  MergePrimaryAndSecondary: 'MERGE_PRIMARY_AND_SECONDARY'
+  MergePrimaryAndSecondary: 'MERGE_PRIMARY_AND_SECONDARY',
+
+  // Edge case - same as MergePrimaryAndSecondary but wipes secondary's state instead of re-syncing from primary
+  MergePrimaryThenWipeSecondary: 'MERGE_PRIMARY_THEN_WIPE_SECONDARY'
 })
 
 export const FETCH_FILES_HASH_NUM_RETRIES = 3

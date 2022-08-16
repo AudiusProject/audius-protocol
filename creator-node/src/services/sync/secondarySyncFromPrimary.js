@@ -15,6 +15,7 @@ const handleSyncFromPrimary = async ({
   wallet,
   creatorNodeEndpoint,
   forceResyncConfig,
+  forceWipe,
   logContext,
   blockNumber = null
 }) => {
@@ -65,7 +66,7 @@ const handleSyncFromPrimary = async ({
   let returnValue = {}
   try {
     let localMaxClockVal
-    if (forceResync) {
+    if (forceResync || forceWipe) {
       genericLogger.warn(`${logPrefix} Forcing resync..`)
 
       /**
@@ -89,6 +90,12 @@ const handleSyncFromPrimary = async ({
           result: 'failure_delete_db_data'
         }
         throw returnValue.error
+      }
+
+      if (forceWipe) {
+        return {
+          result: 'success'
+        }
       }
     } else {
       // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
@@ -687,6 +694,7 @@ async function secondarySyncFromPrimary({
   creatorNodeEndpoint,
   forceResyncConfig,
   logContext,
+  forceWipe,
   blockNumber = null
 }) {
   const { prometheusRegistry } = serviceRegistry
@@ -704,6 +712,7 @@ async function secondarySyncFromPrimary({
     creatorNodeEndpoint,
     blockNumber,
     forceResyncConfig,
+    forceWipe,
     logContext
   })
   metricEndTimerFn({ result, mode })

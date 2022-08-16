@@ -207,7 +207,10 @@ async function _handleIssueSyncRequest({
    * For now, if primarySyncFromSecondary fails, we just log & error without any retries
    * Eventually should make this more robust, but proceeding with caution
    */
-  if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+  if (
+    syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
+    syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
+  ) {
     // Short-circuit if this syncMode is disabled
     if (!mergePrimaryAndSecondaryEnabled) {
       return { result: 'success_mode_disabled' }
@@ -247,6 +250,14 @@ async function _handleIssueSyncRequest({
           forceResync: true,
           timestamp,
           signature
+        }
+      })
+    } else if (syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary) {
+      await axios({
+        ...syncRequestParameters,
+        data: {
+          ...syncRequestParameters.data,
+          forceWipe: true
         }
       })
     } else {

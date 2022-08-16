@@ -118,6 +118,7 @@ const syncRouteController = async (req, res) => {
           },
           wallet
         },
+        forceWipe: req.body.forceWipe,
         logContext: req.logContext
       })
     } catch (e) {
@@ -147,6 +148,7 @@ const syncRouteController = async (req, res) => {
           },
           wallet
         },
+        forceWipe: req.body.forceWipe,
         logContext: req.logContext
       })
       delete syncDebounceQueue[wallet]

@@ -31,7 +31,7 @@ const recoverOrphanedDataLogger = createChildLogger(baseLogger, {
  * - updating user's replica sets when one or more nodes in their replica set becomes unhealthy
  */
 class StateReconciliationManager {
-  async init(prometheusRegistry) {
+  async init(discoveryNodeEndpoint, prometheusRegistry) {
     const manualSyncQueue = makeQueue({
       name: QUEUE_NAMES.MANUAL_SYNC,
       removeOnComplete: QUEUE_HISTORY.MANUAL_SYNC,
@@ -77,7 +77,10 @@ class StateReconciliationManager {
     await recoverOrphanedDataQueue.obliterate({ force: true })
 
     // Queue the first recoverOrphanedData job, which will re-enqueue itself
-    await this.startRecoverOrphanedDataQueue(recoverOrphanedDataQueue)
+    await this.startRecoverOrphanedDataQueue(
+      recoverOrphanedDataQueue,
+      discoveryNodeEndpoint
+    )
 
     this.registerQueueEventHandlersAndJobProcessors({
       manualSyncQueue,
@@ -155,7 +158,10 @@ class StateReconciliationManager {
       })
       logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
       // This is a recurring job that re-enqueues itself on success, so we want to also re-enqueue on failure
-      recoverOrphanedDataQueue.add({})
+      const {
+        data: { discoveryNodeEndpoint }
+      } = job
+      recoverOrphanedDataQueue.add({ discoveryNodeEndpoint })
     })
 
     // Register the logic that gets executed to process each new job from the queues
@@ -177,9 +183,10 @@ class StateReconciliationManager {
   /**
    * Adds a job that will find+reconcile data on nodes outside of a user's replica set.
    * Future jobs are added to the queue as a result of this initial job succeeding or failing to complete.
-   * @param queue the queue that processes jobs to recover orphaned data
+   * @param {BullQueue} queue the queue that processes jobs to recover orphaned data
+   * @param {string} discoveryNodeEndpoint the IP address or URL of a Discovery Node
    */
-  async startRecoverOrphanedDataQueue(queue) {
+  async startRecoverOrphanedDataQueue(queue, discoveryNodeEndpoint) {
     // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
     // pausing the queue and not enqueuing the first job
     if (config.get('recoverOrphanedDataQueueRateLimitJobsPerInterval') === 0) {
@@ -188,7 +195,7 @@ class StateReconciliationManager {
     }
 
     // Enqueue first recoverOrphanedData job after a delay. This job requeues itself upon completion or failure
-    await queue.add({})
+    await queue.add({ discoveryNodeEndpoint })
   }
 
   /*
