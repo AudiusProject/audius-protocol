@@ -1,5 +1,4 @@
 const { instrumentTracing } = require('utils/tracing')
-const { getTracer } = require('../../../tracer')
 
 /**
  * Ensure a sync request for (syncType, userWallet, secondaryEndpoint) can only be enqueued once
