@@ -35,13 +35,9 @@ async function primarySyncFromSecondary({
 
   const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
   const logger = genericLogger.child(logContext)
-<<<<<<< HEAD
 
   info(`[primarySyncFromSecondary] [Wallet: ${wallet}]`)
-  logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
-=======
   logger.info(`${logPrefix} Beginning...`)
->>>>>>> master
   const start = Date.now()
 
   // This is used only for logging record endpoint of requesting node
@@ -494,26 +490,7 @@ async function filterOutAlreadyPresentDBEntries({
   return filteredEntries
 }
 
-<<<<<<< HEAD
-async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
-  return getTracer().startActiveSpan('getUserReplicaSet', async (span) => {
-    try {
-      let userReplicaSet = await getCreatorNodeEndpoints({
-        libs,
-        logger,
-        wallet,
-        blockNumber: null,
-        ensurePrimary: false,
-        myCnodeEndpoint: null
-      })
-
-      // filter out current node from user's replica set
-      userReplicaSet = userReplicaSet.filter((url) => url !== selfEndpoint)
-
-      // Spread + set uniq's the array
-      userReplicaSet = [...new Set(userReplicaSet)]
-=======
-async function getUserReplicaSet({ wallet, libs, logger }) {
+async function _getUserReplicaSet({ wallet, libs, logger }) {
   try {
     let userReplicaSet = await getCreatorNodeEndpoints({
       libs,
@@ -526,15 +503,17 @@ async function getUserReplicaSet({ wallet, libs, logger }) {
 
     // Spread + set uniq's the array
     userReplicaSet = [...new Set(userReplicaSet)]
->>>>>>> master
 
-      return userReplicaSet
-    } catch (e) {
-      recordException(e)
-      throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
-    }
-  })
+    return userReplicaSet
+  } catch (e) {
+    recordException(e)
+    throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
+  }
 }
+
+const getUserReplicaSet = instrumentTracing({
+  fn: _getUserReplicaSet,
+})
 
 module.exports = instrumentTracing({
   fn: primarySyncFromSecondary,
