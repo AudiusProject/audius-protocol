@@ -39,7 +39,7 @@ export type CNodeEndpointToSpIdMap = {
   [endpoint: string]: number
 }
 export type FetchCNodeEndpointToSpIdMapJobParams = {
-  parentSpanContext: SpanContext
+  parentSpanContext?: SpanContext
 }
 export type FetchCNodeEndpointToSpIdMapJobReturnValue = {
   cNodeEndpointToSpIdMap: any
@@ -48,7 +48,7 @@ export type FetchCNodeEndpointToSpIdMapJobReturnValue = {
 
 // Monitor State job
 export type MonitorStateJobParams = {
-  parentSpanContext: SpanContext
+  parentSpanContext?: SpanContext
   lastProcessedUserId: number
   discoveryNodeEndpoint: string
 }
@@ -56,7 +56,7 @@ export type MonitorStateJobReturnValue = {}
 
 // Find Sync Requests job
 export type FindSyncRequestsJobParams = {
-  parentSpanContext: SpanContext
+  parentSpanContext?: SpanContext
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
@@ -74,7 +74,7 @@ export type OutcomeCountsMap = {
 
 // Find Replica Set Updates job
 export type FindReplicaSetUpdateJobParams = {
-  parentSpanContext: SpanContext
+  parentSpanContext?: SpanContext
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
