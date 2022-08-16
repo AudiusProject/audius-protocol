@@ -17,7 +17,7 @@ const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
 const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
 const fetchCNodeEndpointToSpIdMapJobProcessor = require('./fetchCNodeEndpointToSpIdMap.jobProcessor')
 const { getTracer } = require('../../../tracer')
-const { instrumentTracing, getActiveSpan } = require('utils/tracing')
+const { instrumentTracing, getActiveSpan } = require('../../../utils/tracing')
 
 const monitorStateLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.MONITOR_STATE
