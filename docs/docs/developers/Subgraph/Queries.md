@@ -42,12 +42,13 @@ Description: Get users balance of claimable stake and delegation information.
   }
 }
 
-
+```
 ### Audius Network
 
 Description: Find minimum stake and maximum on delegation
 
 ```graphql
+
 {
   audiusNetworks(first: 5) {
     id
@@ -62,7 +63,8 @@ Description: Find minimum stake and maximum on delegation
     maxStake
   }
 }
+
 ```
 
 
-```
+
