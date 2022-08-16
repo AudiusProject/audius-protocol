@@ -235,7 +235,7 @@ class StateMonitoringManager {
    */
   startMonitorStateQueue = instrumentTracing({
     name: 'startMonitorStateQueue',
-    fn: (queue, discoveryNodeEndpoint) => {
+    fn: async (queue, discoveryNodeEndpoint) => {
       const span = getActiveSpan()
 
       // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
