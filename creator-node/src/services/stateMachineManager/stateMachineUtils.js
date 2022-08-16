@@ -5,7 +5,6 @@ const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { getTracer } = require('../../tracer')
 
 const {
   METRIC_RECORD_TYPE,
@@ -20,6 +19,7 @@ const {
   CLOCK_STATUS_REQUEST_TIMEOUT_MS,
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
 } = require('./stateMachineConstants')
+const { instrumentTracing, getActiveSpan } = require('../../utils/tracing')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
@@ -121,41 +121,34 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
  * Make request to given replica to get its clock value for given user
  * Signs request with spID to bypass rate limits
  */
-const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
-  const options = {
-    attributes: {
-      [SemanticAttributes.CODE_FUNCTION]:
-        'retrieveClockValueForUserFromReplica',
-      [SemanticAttributes.CODE_FILEPATH]: __filename
-    }
-  }
-  return getTracer().startActiveSpan(
-    'retrieveClockValueForUserFromReplica',
-    options,
-    async (span) => {
-      const spID = config.get('spID')
+const _retrieveClockValueForUserFromReplica = async (replica, wallet) => {
+  const spID = config.get('spID')
 
-      const { timestamp, signature } = generateTimestampAndSignature(
-        { spID },
-        DELEGATE_PRIVATE_KEY
-      )
+  const { timestamp, signature } = generateTimestampAndSignature(
+    { spID },
+    DELEGATE_PRIVATE_KEY
+  )
 
-      const clockValue = await CreatorNode.getClockValue(
-        replica,
-        wallet,
-        CLOCK_STATUS_REQUEST_TIMEOUT_MS,
-        {
-          spID,
-          timestamp,
-          signature
-        }
-      )
-
-      span.end()
-      return clockValue
+  const clockValue = await CreatorNode.getClockValue(
+    replica,
+    wallet,
+    CLOCK_STATUS_REQUEST_TIMEOUT_MS,
+    {
+      spID,
+      timestamp,
+      signature
     }
   )
+
+  return clockValue
 }
+
+const retrieveClockValueForUserFromReplica = instrumentTracing({
+  fn: _retrieveClockValueForUserFromReplica,
+  options: {
+    [SemanticAttributes.CODE_FILEPATH]: __filename
+  }
+})
 
 /**
  * Returns an object that can be returned from any state machine job to record a histogram metric being observed.
