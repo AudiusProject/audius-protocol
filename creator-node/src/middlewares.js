@@ -2,7 +2,6 @@ const promiseAny = require('promise.any')
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { SpanStatusCode } = require('@opentelemetry/api')
 
-const { getTracer } = require('./tracer')
 const {
   sendResponse,
   errorResponse,
@@ -21,6 +20,7 @@ const BlacklistManager = require('./blacklistManager')
 const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
+const { instrumentTracing, getActiveSpan } = require('./utils/tracing')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -194,8 +194,7 @@ async function ensurePrimaryMiddleware(req, res, next) {
   req.session.creatorNodeEndpoints = replicaSetEndpoints.filter(Boolean)
 
   req.logger.info(
-    `${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${
-      req.session.creatorNodeEndpoints
+    `${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${req.session.creatorNodeEndpoints
     }`
   )
   next()
@@ -262,226 +261,216 @@ async function ensureStorageMiddleware(req, res, next) {
  * @dev TODO - move out of middlewares layer because it's not used as middleware -- just as a function some routes call
  * @param ignoreWriteQuorum true if write quorum should not be enforced (don't fail the request if write quorum fails)
  */
-async function issueAndWaitForSecondarySyncRequests(
+async function _issueAndWaitForSecondarySyncRequests(
   req,
   ignoreWriteQuorum = false
 ) {
-  const options = {
+  const span = getActiveSpan()
+  const route = req.url.split('?')[0]
+  const serviceRegistry = req.app.get('serviceRegistry')
+  const { manualSyncQueue, prometheusRegistry } = serviceRegistry
+
+  const histogram = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM
+  )
+  const endHistogramTimer = histogram.startTimer()
+
+  // Parse request headers
+  const pollingDurationMs =
+    req.header('Polling-Duration-ms') ||
+    config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
+  const enforceWriteQuorumHeader = req.header('Enforce-Write-Quorum')
+  const writeQuorumHeaderTrue =
+    enforceWriteQuorumHeader === true || enforceWriteQuorumHeader === 'true'
+  const writeQuorumHeaderFalse =
+    enforceWriteQuorumHeader === false ||
+    enforceWriteQuorumHeader === 'false'
+  const writeQuorumHeaderEmpty =
+    !writeQuorumHeaderFalse || enforceWriteQuorumHeader === 'null'
+  let enforceWriteQuorum = false
+
+  if (!ignoreWriteQuorum) {
+    if (writeQuorumHeaderTrue) enforceWriteQuorum = true
+    // writeQuorumHeaderEmpty is for undefined/null/empty values where it's not explicitly false
+    else if (writeQuorumHeaderEmpty && config.get('enforceWriteQuorum')) {
+      enforceWriteQuorum = true
+    }
+  }
+
+  // This sync request uses the manual sync queue, so we can't proceed if manual syncs are disabled
+  if (config.get('manualSyncsDisabled')) {
+    endHistogramTimer({
+      enforceWriteQuorum: String(enforceWriteQuorum),
+      ignoreWriteQuorum: String(ignoreWriteQuorum),
+      route,
+      result: 'failed_short_circuit'
+    })
+    const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Cannot proceed due to manualSyncsDisabled ${config.get(
+      'manualSyncsDisabled'
+    )})`
+    req.logger.error(errorMsg)
+    span?.addEvent(errorMsg)
+    if (enforceWriteQuorum) {
+      throw new Error(errorMsg)
+    }
+    return
+  }
+
+  // Wallet is required and should've been set in auth middleware
+  if (!req.session || !req.session.wallet) {
+    const errorMsg = `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
+    endHistogramTimer({
+      enforceWriteQuorum: String(enforceWriteQuorum),
+      ignoreWriteQuorum: String(ignoreWriteQuorum),
+      route,
+      result: 'failed_short_circuit'
+    })
+    span?.addEvent(errorMsg)
+    req.logger.error(errorMsg)
+    if (enforceWriteQuorum) {
+      throw new Error(errorMsg)
+    }
+    return
+  }
+  const wallet = req.session.wallet
+
+  try {
+    if (
+      !req.session.nodeIsPrimary ||
+      !req.session.creatorNodeEndpoints ||
+      !Array.isArray(req.session.creatorNodeEndpoints)
+    ) {
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'failed_short_circuit'
+      })
+      const errorMsg =
+        'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
+
+      span?.addEvent(errorMsg)
+      req.logger.error(errorMsg)
+      if (enforceWriteQuorum) {
+        throw new Error(errorMsg)
+      }
+      return
+    }
+
+    let [primary, ...secondaries] = req.session.creatorNodeEndpoints
+    secondaries = secondaries.filter(
+      (secondary) => !!secondary && _isFQDN(secondary)
+    )
+
+    if (primary !== config.get('creatorNodeEndpoint')) {
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'failed_short_circuit'
+      })
+      throw new Error(
+        `issueAndWaitForSecondarySyncRequests Error - Cannot process sync op since this node is not the primary for user ${wallet}. Instead found ${primary}.`
+      )
+    }
+
+    // Fetch current clock val on primary
+    const cnodeUser = await models.CNodeUser.findOne({
+      where: { walletPublicKey: wallet }
+    })
+    if (!cnodeUser || !cnodeUser.clock) {
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'failed_short_circuit'
+      })
+      throw new Error(
+        `issueAndWaitForSecondarySyncRequests Error - Failed to retrieve current clock value for user ${wallet} on current node.`
+      )
+    }
+    const primaryClockVal = cnodeUser.clock
+
+    const replicationStart = Date.now()
+    try {
+      const secondaryPromises = secondaries.map((secondary) => {
+        return issueSyncRequestsUntilSynced(
+          primary,
+          secondary,
+          wallet,
+          primaryClockVal,
+          pollingDurationMs,
+          manualSyncQueue
+        )
+      })
+
+      // Resolve as soon as first promise resolves, or reject if all promises reject
+      await promiseAny(secondaryPromises)
+
+      req.logger.info(
+        `issueAndWaitForSecondarySyncRequests - At least one secondary successfully replicated content for user ${wallet} in ${Date.now() - replicationStart
+        }ms`
+      )
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'succeeded'
+      })
+    } catch (e) {
+      span?.recordException(e)
+      span?.setStatus({ code: SpanStatusCode.ERROR })
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'failed_sync'
+      })
+      const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${Date.now() - replicationStart
+        }ms`
+      span?.addEvent(errorMsg)
+      req.logger.error(`${errorMsg}: ${e.message}`)
+
+      // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
+      if (enforceWriteQuorum) {
+        throw new Error(`${errorMsg}: ${e.message}`)
+      }
+      // else do nothing
+    }
+
+    // If any error during replication, error if quorum is enforced
+  } catch (e) {
+    span?.recordException(e)
+    span?.setStatus({ code: SpanStatusCode.ERROR })
+    endHistogramTimer({
+      enforceWriteQuorum: String(enforceWriteQuorum),
+      ignoreWriteQuorum: String(ignoreWriteQuorum),
+      route,
+      result: 'failed_uncaught_error'
+    })
+    req.logger.error(
+      `issueAndWaitForSecondarySyncRequests Error - wallet ${wallet} ||`,
+      e.message
+    )
+    if (enforceWriteQuorum) {
+      span?.addEvent(
+        `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
+      )
+      throw new Error(
+        `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
+      )
+    }
+  }
+}
+
+const issueSyncRequestsUntilSynced = instrumentTracing({
+  fn: _issueAndWaitForSecondarySyncRequests,
+  options: {
     attributes: {
-      [SemanticAttributes.CODE_FUNCTION]:
-        'issueAndWaitForSecnodarySyncRequests',
       [SemanticAttributes.CODE_FILEPATH]: __filename
     }
   }
-  return getTracer().startActiveSpan(
-    'issueAndWaitForSecondarySyncRequest',
-    options,
-    async (span) => {
-      const route = req.url.split('?')[0]
-      const serviceRegistry = req.app.get('serviceRegistry')
-      const { manualSyncQueue, prometheusRegistry } = serviceRegistry
-
-      const histogram = prometheusRegistry.getMetric(
-        prometheusRegistry.metricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM
-      )
-      const endHistogramTimer = histogram.startTimer()
-
-      // Parse request headers
-      const pollingDurationMs =
-        req.header('Polling-Duration-ms') ||
-        config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
-      const enforceWriteQuorumHeader = req.header('Enforce-Write-Quorum')
-      const writeQuorumHeaderTrue =
-        enforceWriteQuorumHeader === true || enforceWriteQuorumHeader === 'true'
-      const writeQuorumHeaderFalse =
-        enforceWriteQuorumHeader === false ||
-        enforceWriteQuorumHeader === 'false'
-      const writeQuorumHeaderEmpty =
-        !writeQuorumHeaderFalse || enforceWriteQuorumHeader === 'null'
-      let enforceWriteQuorum = false
-
-      if (!ignoreWriteQuorum) {
-        if (writeQuorumHeaderTrue) enforceWriteQuorum = true
-        // writeQuorumHeaderEmpty is for undefined/null/empty values where it's not explicitly false
-        else if (writeQuorumHeaderEmpty && config.get('enforceWriteQuorum')) {
-          enforceWriteQuorum = true
-        }
-      }
-
-      // This sync request uses the manual sync queue, so we can't proceed if manual syncs are disabled
-      if (config.get('manualSyncsDisabled')) {
-        endHistogramTimer({
-          enforceWriteQuorum: String(enforceWriteQuorum),
-          ignoreWriteQuorum: String(ignoreWriteQuorum),
-          route,
-          result: 'failed_short_circuit'
-        })
-        const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Cannot proceed due to manualSyncsDisabled ${config.get(
-          'manualSyncsDisabled'
-        )})`
-        req.logger.error(errorMsg)
-        span.addEvent(errorMsg)
-        span.end()
-        if (enforceWriteQuorum) {
-          throw new Error(errorMsg)
-        }
-        return
-      }
-
-      // Wallet is required and should've been set in auth middleware
-      if (!req.session || !req.session.wallet) {
-        const errorMsg = `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
-        endHistogramTimer({
-          enforceWriteQuorum: String(enforceWriteQuorum),
-          ignoreWriteQuorum: String(ignoreWriteQuorum),
-          route,
-          result: 'failed_short_circuit'
-        })
-        span.addEvent(errorMsg)
-        span.end()
-        req.logger.error(errorMsg)
-        if (enforceWriteQuorum) {
-          throw new Error(errorMsg)
-        }
-        return
-      }
-      const wallet = req.session.wallet
-
-      try {
-        if (
-          !req.session.nodeIsPrimary ||
-          !req.session.creatorNodeEndpoints ||
-          !Array.isArray(req.session.creatorNodeEndpoints)
-        ) {
-          endHistogramTimer({
-            enforceWriteQuorum: String(enforceWriteQuorum),
-            ignoreWriteQuorum: String(ignoreWriteQuorum),
-            route,
-            result: 'failed_short_circuit'
-          })
-          const errorMsg =
-            'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
-
-          span.addEvent(errorMsg)
-          span.end()
-          req.logger.error(errorMsg)
-          if (enforceWriteQuorum) {
-            throw new Error(errorMsg)
-          }
-          return
-        }
-
-        let [primary, ...secondaries] = req.session.creatorNodeEndpoints
-        secondaries = secondaries.filter(
-          (secondary) => !!secondary && _isFQDN(secondary)
-        )
-
-        if (primary !== config.get('creatorNodeEndpoint')) {
-          endHistogramTimer({
-            enforceWriteQuorum: String(enforceWriteQuorum),
-            ignoreWriteQuorum: String(ignoreWriteQuorum),
-            route,
-            result: 'failed_short_circuit'
-          })
-          throw new Error(
-            `issueAndWaitForSecondarySyncRequests Error - Cannot process sync op since this node is not the primary for user ${wallet}. Instead found ${primary}.`
-          )
-        }
-
-        // Fetch current clock val on primary
-        const cnodeUser = await models.CNodeUser.findOne({
-          where: { walletPublicKey: wallet }
-        })
-        if (!cnodeUser || !cnodeUser.clock) {
-          endHistogramTimer({
-            enforceWriteQuorum: String(enforceWriteQuorum),
-            ignoreWriteQuorum: String(ignoreWriteQuorum),
-            route,
-            result: 'failed_short_circuit'
-          })
-          throw new Error(
-            `issueAndWaitForSecondarySyncRequests Error - Failed to retrieve current clock value for user ${wallet} on current node.`
-          )
-        }
-        const primaryClockVal = cnodeUser.clock
-
-        const replicationStart = Date.now()
-        try {
-          const secondaryPromises = secondaries.map((secondary) => {
-            return issueSyncRequestsUntilSynced(
-              primary,
-              secondary,
-              wallet,
-              primaryClockVal,
-              pollingDurationMs,
-              manualSyncQueue
-            )
-          })
-
-          // Resolve as soon as first promise resolves, or reject if all promises reject
-          await promiseAny(secondaryPromises)
-
-          req.logger.info(
-            `issueAndWaitForSecondarySyncRequests - At least one secondary successfully replicated content for user ${wallet} in ${
-              Date.now() - replicationStart
-            }ms`
-          )
-          endHistogramTimer({
-            enforceWriteQuorum: String(enforceWriteQuorum),
-            ignoreWriteQuorum: String(ignoreWriteQuorum),
-            route,
-            result: 'succeeded'
-          })
-        } catch (e) {
-          span.recordException(e)
-          span.setStatus({ code: SpanStatusCode.ERROR })
-          endHistogramTimer({
-            enforceWriteQuorum: String(enforceWriteQuorum),
-            ignoreWriteQuorum: String(ignoreWriteQuorum),
-            route,
-            result: 'failed_sync'
-          })
-          const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
-            Date.now() - replicationStart
-          }ms`
-          span.addEvent(errorMsg)
-          req.logger.error(`${errorMsg}: ${e.message}`)
-
-          // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
-          if (enforceWriteQuorum) {
-            throw new Error(`${errorMsg}: ${e.message}`)
-          }
-          // else do nothing
-        }
-
-        // If any error during replication, error if quorum is enforced
-      } catch (e) {
-        span.recordException(e)
-        span.setStatus({ code: SpanStatusCode.ERROR })
-        endHistogramTimer({
-          enforceWriteQuorum: String(enforceWriteQuorum),
-          ignoreWriteQuorum: String(ignoreWriteQuorum),
-          route,
-          result: 'failed_uncaught_error'
-        })
-        req.logger.error(
-          `issueAndWaitForSecondarySyncRequests Error - wallet ${wallet} ||`,
-          e.message
-        )
-        if (enforceWriteQuorum) {
-          span.addEvent(
-            `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
-          )
-          span.end()
-          throw new Error(
-            `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
-          )
-        }
-      }
-      span.end()
-    }
-  )
-}
+})
 
 /**
  * Retrieves current FQDN registered on-chain with node's owner wallet
@@ -524,7 +513,7 @@ async function getOwnEndpoint({ libs }) {
     !spInfo.hasOwnProperty('endpoint') ||
     spInfo.owner.toLowerCase() !== config.get('spOwnerWallet').toLowerCase() ||
     spInfo.delegateOwnerWallet.toLowerCase() !==
-      config.get('delegateOwnerWallet').toLowerCase() ||
+    config.get('delegateOwnerWallet').toLowerCase() ||
     (spInfo.endpoint && !_isFQDN(spInfo.endpoint)) ||
     spInfo.endpoint !== creatorNodeEndpoint
   ) {
@@ -585,8 +574,7 @@ async function getCreatorNodeEndpoints({
     let discprovBlockNumber = -1
     for (let retry = 1; retry <= MaxRetries; retry++) {
       logger.info(
-        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${
-          Date.now() - start2
+        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2
         } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
       )
 
@@ -618,8 +606,7 @@ async function getCreatorNodeEndpoints({
 
       await utils.timeout(RetryTimeout)
       logger.info(
-        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
-          Date.now() - start2
+        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2
         } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
       )
     }
@@ -655,8 +642,7 @@ async function getCreatorNodeEndpoints({
     let returnedPrimaryEndpoint = null
     for (let retry = 1; retry <= MaxRetries; retry++) {
       logger.info(
-        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${
-          Date.now() - start2
+        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2
         } myCnodeEndpoint ${myCnodeEndpoint}`
       )
 
@@ -684,8 +670,7 @@ async function getCreatorNodeEndpoints({
 
       await utils.timeout(RetryTimeout)
       logger.info(
-        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
-          Date.now() - start2
+        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2
         } myCnodeEndpoint ${myCnodeEndpoint}`
       )
     }
@@ -775,8 +760,7 @@ async function getReplicaSetSpIDs({
     let blockNumberIndexed = false
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(
-        `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${
-          Date.now() - start
+        `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start
         }. Polling until blockNumber ${blockNumber}.`
       )
 
@@ -828,8 +812,7 @@ async function getReplicaSetSpIDs({
     let errorMsg = null
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(
-        `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${
-          Date.now() - start
+        `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start
         }. Polling until primaryEnsured.`
       )
 
@@ -905,8 +888,7 @@ async function getReplicaSetSpIDs({
   const userReplicaSetSpIDs = [replicaSet.primaryId, ...replicaSet.secondaryIds]
 
   logger.info(
-    `${logPrefix} completed in ${
-      Date.now() - start
+    `${logPrefix} completed in ${Date.now() - start
     }. userReplicaSetSpIDs = [${userReplicaSetSpIDs}]`
   )
   return userReplicaSetSpIDs
