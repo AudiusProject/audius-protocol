@@ -19,6 +19,9 @@ type RecordStageParams = {
   log: boolean
 }
 
+/**
+ * Class for recording and logging multi-stage processes
+ */
 module.exports = class DecisionTree {
   name: string
   logger: Logger
