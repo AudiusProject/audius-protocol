@@ -2,9 +2,7 @@ const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
-const { getTracer } = require('./tracer')
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { SpanStatusCode } = require('@opentelemetry/api')
 
 // Processing fns
 const {
@@ -15,6 +13,7 @@ const {
 const {
   processTranscodeAndSegments
 } = require('./components/tracks/trackContentUploadManager')
+const { instrumentTracing } = require('./utils/tracing')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
@@ -57,7 +56,28 @@ class AsyncProcessingQueue {
     this.libs = libs
 
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
-      await this.processTask(job, done)
+      const { parentSpanContext } = job.data
+      const processTask = instrumentTracing({
+        name: 'AsyncProcessingQueue.process',
+        fn: async (_job, _done) => {
+          job.data.parentSpanContext = span.spanContext()
+          await this.processTask(_job, _done)
+        },
+        options: {
+          links: [
+            {
+              context: parentSpanContext
+            }
+          ],
+          attributes: {
+            task: task,
+            requestID: logContext.requestID,
+            [SemanticAttributes.CODE_FILEPATH]: __filename
+          }
+        }
+      })
+
+      await processTask(job, done)
     })
 
     this.PROCESS_NAMES = PROCESS_NAMES
@@ -73,67 +93,44 @@ class AsyncProcessingQueue {
 
     const func = this.getFn(task)
 
-    const options = {
-      links: [
-        {
-          context: parentSpanContext
-        }
-      ],
-      attributes: {
-        task: task,
-        requestID: logContext.requestID,
-        [SemanticAttributes.CODE_FUNCTION]: 'AyncProcessingQueue.processTask',
-        [SemanticAttributes.CODE_FILEPATH]: __filename
+    if (task === PROCESS_NAMES.transcodeHandOff) {
+      const { transcodeFilePath, segmentFileNames, sp } =
+        await this.monitorProgress(task, transcodeHandOff, job.data)
+
+      if (!transcodeFilePath || !segmentFileNames) {
+        this.logStatus(
+          'Failed to hand off transcode. Retrying upload to current node...'
+        )
+        await this.addTrackContentUploadTask({
+          parentSpanContext: parentSpanContext,
+          logContext,
+          req: job.data.req
+        })
+        done(null, {})
+      } else {
+        this.logStatus(
+          `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
+        )
+        await this.addProcessTranscodeAndSegmentTask({
+          parentSpanContext: span.spanContext(),
+          logContext,
+          req: { ...job.data.req, transcodeFilePath, segmentFileNames }
+        })
+        done(null, { response: { transcodeFilePath, segmentFileNames } })
+      }
+    } else {
+      try {
+        const response = await this.monitorProgress(task, func, job.data)
+        done(null, { response })
+      } catch (e) {
+        this.logError(
+          `Could not process taskType=${task} uuid=${logContext.requestID
+          }: ${e.toString()}`,
+          logContext
+        )
+        done(e.toString())
       }
     }
-    getTracer().startActiveSpan(
-      'AsyncProcessingQueue.processTask',
-      options,
-      async (span) => {
-        if (task === PROCESS_NAMES.transcodeHandOff) {
-          const { transcodeFilePath, segmentFileNames, sp } =
-            await this.monitorProgress(task, transcodeHandOff, job.data)
-
-          if (!transcodeFilePath || !segmentFileNames) {
-            this.logStatus(
-              'Failed to hand off transcode. Retrying upload to current node...'
-            )
-            await this.addTrackContentUploadTask({
-              parentSpanContext: span.spanContext(),
-              logContext,
-              req: job.data.req
-            })
-            done(null, {})
-          } else {
-            this.logStatus(
-              `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
-            )
-            await this.addProcessTranscodeAndSegmentTask({
-              parentSpanContext: span.spanContext(),
-              logContext,
-              req: { ...job.data.req, transcodeFilePath, segmentFileNames }
-            })
-            done(null, { response: { transcodeFilePath, segmentFileNames } })
-          }
-        } else {
-          try {
-            const response = await this.monitorProgress(task, func, job.data)
-            done(null, { response })
-          } catch (e) {
-            span.recordException(e)
-            span.setStatus({ code: SpanStatusCode.ERROR })
-            this.logError(
-              `Could not process taskType=${task} uuid=${
-                logContext.requestID
-              }: ${e.toString()}`,
-              logContext
-            )
-            done(e.toString())
-          }
-        }
-        span.end()
-      }
-    )
   }
 
   async logStatus(message, logContext = {}) {
