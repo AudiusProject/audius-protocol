@@ -3,19 +3,20 @@ import { trace, context, SpanStatusCode } from '@opentelemetry/api'
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { getTracer } from '../tracer'
 
-type Fn<TArgs extends any[], TResult> = (...args: TArgs) => TResult;
-
-export const instrumentTracing = <TArgs extends any[], TResult extends any>({ name, fn, options }: {
+/**
+ * Higher-order function that adds opentelemtry tracing to a function
+ */
+export const instrumentTracing = <TFunction extends (...args: any[]) => any>({ name, fn, options }: {
     name?: string,
-    fn: Fn<TArgs, TResult>,
+    fn: TFunction,
     options?: SpanOptions,
 }) => {
-    return (...args: TArgs): TResult => {
+    return (...args: Parameters<TFunction>): ReturnType<TFunction> => {
         const spanName = name || fn.name
         const spanOptions = options || {}
         return getTracer().startActiveSpan(spanName,
             spanOptions,
-            span => {
+            (span: Span) => {
                 try {
                     span.setAttribute(SemanticAttributes.CODE_FUNCTION, fn.name);
                     span.setAttribute('args', JSON.stringify(args))
@@ -32,8 +33,28 @@ export const instrumentTracing = <TArgs extends any[], TResult extends any>({ na
     }
 }
 
+/**
+ * Helper function that adds tracing to an entire file's exports
+ */
+export const instrumentTracingAll = (obj: Record<string, CallableFunction>): Record<string, CallableFunction> => {
+    for (const key in obj) {
+        if (typeof obj[key] === 'function') {
+            obj[key] = instrumentTracing({ fn: obj[key] } as any)
+        }
+    }
+
+    return obj
+}
+
+/**
+ * Helper function that gets the current active span or return `undefined` if there is no active span
+ */
 export const getActiveSpan = (): Span | undefined => {
     return trace.getSpan(context.active())
 }
 
-module.exports = { instrumentTracing }
+module.exports = { 
+    instrumentTracing, 
+    instrumentTracingAll, 
+    getActiveSpan 
+}

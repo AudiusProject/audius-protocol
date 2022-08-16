@@ -9,11 +9,12 @@ import _ from 'lodash'
 
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { SpanStatusCode } from '@opentelemetry/api'
-import { getTracer } from '../../tracer'
 
 import { createChildLogger } from '../../logging'
 import redis from '../../redis'
 import { QUEUE_NAMES } from './stateMachineConstants'
+import { getActiveSpan, instrumentTracing } from 'utils/tracing'
+
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -24,12 +25,14 @@ import { QUEUE_NAMES } from './stateMachineConstants'
  * @param {Object} prometheusRegistry the registry for prometheus to log metrics
  * @returns the result of the completed job, or an object with an error property if the job throws
  */
-module.exports = async function (
+const processJob = async function (
   job: { id: string; data: AnyJobParams },
   jobProcessor: (job: AnyDecoratedJobParams) => AnyDecoratedJobReturnValue,
   parentLogger: Logger,
   prometheusRegistry: any
 ) {
+  const span = getActiveSpan()
+
   // Make sure logger has `queue` property
   const queueName = parentLogger?.fields?.queue
   if (!queueName) {
@@ -40,54 +43,36 @@ module.exports = async function (
   }
 
   const { id: jobId, data: jobData } = job
+  span?.setAttribute('jobId', jobId)
 
-  const options = {
-    links: [
-      {
-        context: jobData.parentSpanContext
-      }
-    ],
-    attributes: {
-      jobId: jobId,
-      [SemanticAttributes.CODE_FUNCTION]: 'processJob',
-      [SemanticAttributes.CODE_FILEPATH]: __filename
-    }
-  }
-  return getTracer().startActiveSpan(
-    'processJob',
-    options,
-    async (span: Span) => {
-      const jobLogger = createChildLogger(parentLogger, { jobId }) as Logger
-      jobLogger.info(`New job: ${JSON.stringify(job)}`)
+  const jobLogger = createChildLogger(parentLogger, { jobId }) as Logger
+  jobLogger.info(`New job: ${JSON.stringify(job)}`)
 
-      let result
-      const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
-        prometheusRegistry.metricNames[
-          `STATE_MACHINE_${queueName}_JOB_DURATION_SECONDS_HISTOGRAM`
-        ]
-      )
-      const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
-      try {
-        await redis.set(`latestJobStart_${queueName}`, Date.now())
-        result = await jobProcessor({ logger: jobLogger, ...jobData })
-        metricEndTimerFn({
-          uncaughtError: false,
-          ...getLabels(queueName, result)
-        })
-        await redis.set(`latestJobSuccess_${queueName}`, Date.now())
-      } catch (error) {
-        span.recordException(error as Error)
-        span.setStatus({ code: SpanStatusCode.ERROR })
-        jobLogger.error(`Error processing job: ${error}`)
-        jobLogger.error((error as Error).stack)
-        result = { error: (error as Error).message || `${error}` }
-        metricEndTimerFn({ uncaughtError: true })
-      }
-
-      span.end()
-      return result
-    }
+  let result
+  const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames[
+    `STATE_MACHINE_${queueName}_JOB_DURATION_SECONDS_HISTOGRAM`
+    ]
   )
+  const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
+  try {
+    await redis.set(`latestJobStart_${queueName}`, Date.now())
+    result = await jobProcessor({ logger: jobLogger, ...jobData })
+    metricEndTimerFn({
+      uncaughtError: false,
+      ...getLabels(queueName, result)
+    })
+    await redis.set(`latestJobSuccess_${queueName}`, Date.now())
+  } catch (error) {
+    span?.recordException(error as Error)
+    span?.setStatus({ code: SpanStatusCode.ERROR })
+    jobLogger.error(`Error processing job: ${error}`)
+    jobLogger.error((error as Error).stack)
+    result = { error: (error as Error).message || `${error}` }
+    metricEndTimerFn({ uncaughtError: true })
+  }
+
+  return result
 }
 
 /**
@@ -105,3 +90,12 @@ const getLabels = (jobName: string, jobResult: any) => {
   }
   return {}
 }
+
+module.exports = instrumentTracing({
+  fn: processJob,
+  options: {
+    attributes: {
+      [SemanticAttributes.CODE_FILEPATH]: __filename
+    }
+  }
+})
