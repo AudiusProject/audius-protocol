@@ -21,10 +21,8 @@ from src.api.v1.helpers import (
     success_response,
     trending_parser,
 )
-from src.api.v1.models.common import id_occupied
 from src.api.v1.models.playlists import full_playlist_model, playlist_model
 from src.api.v1.models.users import user_model_full
-from src.queries.get_playlist_is_occupied import get_playlist_is_occupied
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_playlists import get_playlists
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
@@ -409,25 +407,3 @@ class FullTrendingPlaylists(Resource):
         )
         playlists = get_full_trending_playlists(request, args, strategy)
         return success_response(playlists)
-
-
-occupied_response = make_response("occupied_response", ns, fields.Nested(id_occupied))
-PLAYLIST_OCCUPIED_ROUTE = "/<string:playlist_id>/occupied"
-
-
-@ns.route(PLAYLIST_OCCUPIED_ROUTE)
-class GetPlaylistIsOccupied(Resource):
-    @record_metrics
-    @ns.doc(
-        id="""Check if Playlist ID is occupied""",
-        description="""Check if Playlist ID is occupied""",
-        params={"playlist_id": "A Playlist ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @ns.marshal_with(occupied_response)
-    @cache(ttl_sec=5)
-    def get(self, playlist_id):
-        playlist_id = decode_with_abort(playlist_id, ns)
-        is_occupied = get_playlist_is_occupied(playlist_id)
-        response = success_response({"is_occupied": is_occupied})
-        return response
