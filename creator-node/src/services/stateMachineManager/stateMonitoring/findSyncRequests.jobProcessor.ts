@@ -10,9 +10,6 @@ import type {
 import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 import type { SpanContext } from '@opentelemetry/api'
 
-// eslint-disable-next-line import/no-unresolved
-import { QUEUE_NAMES } from '../stateMachineConstants'
-
 import _ = require('lodash')
 
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
@@ -20,7 +17,7 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import config from '../../../config'
 import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
 import { makeGaugeIncToRecord } from '../stateMachineUtils'
-import { SyncType, SYNC_MODES } from '../stateMachineConstants'
+import { SyncType, SYNC_MODES, QUEUE_NAMES } from '../stateMachineConstants'
 import { getNewOrExistingSyncReq } from '../stateReconciliation/stateReconciliationUtils'
 import { computeSyncModeForUserAndReplica } from './stateMonitoringUtils'
 import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'

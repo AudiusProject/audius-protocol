@@ -4,7 +4,6 @@ import type {
   AnyDecoratedJobReturnValue,
   AnyJobParams
 } from './types'
-import type { Span } from '@opentelemetry/api'
 import _ from 'lodash'
 
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
@@ -13,7 +12,7 @@ import { SpanStatusCode } from '@opentelemetry/api'
 import { createChildLogger } from '../../logging'
 import redis from '../../redis'
 import { QUEUE_NAMES } from './stateMachineConstants'
-import { getActiveSpan, instrumentTracing } from 'utils/tracing'
+import { getActiveSpan, instrumentTracing } from '../../utils/tracing'
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.

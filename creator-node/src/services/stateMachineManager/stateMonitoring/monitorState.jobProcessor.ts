@@ -24,7 +24,7 @@ import {
   computeUserSecondarySyncSuccessRatesMap
 } from './stateMonitoringUtils'
 import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
-import { getActiveSpan, instrumentTracing } from 'utils/tracing'
+import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
