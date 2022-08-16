@@ -4,7 +4,7 @@ import { select, call, put } from 'typed-redux-saga/macro'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { getContext } from 'common/store/effects'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { getTrack } from '../selectors'
 
@@ -21,6 +21,7 @@ const INITIAL_FETCH_LIMIT = 6
  */
 export function* fetchAndProcessRemixes(trackId: ID) {
   const apiClient = yield* getContext('apiClient')
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   const {
     tracks: remixes,
@@ -73,6 +74,7 @@ export function* fetchAndProcessRemixes(trackId: ID) {
  */
 export function* fetchAndProcessRemixParents(trackId: ID) {
   const apiClient = yield* getContext('apiClient')
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   const remixParents = (yield* call([apiClient, 'getRemixing'], {
     trackId,

@@ -29,6 +29,7 @@ import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import DownloadApp from 'services/download-app/DownloadApp'
+import { localStorage } from 'services/local-storage'
 import { isMobile, isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { signOut } from 'utils/signOut'
@@ -133,7 +134,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
   }
 
   onSignOut = () => {
-    this.props.recordSignOut(() => signOut(audiusBackendInstance))
+    this.props.recordSignOut(() => signOut(audiusBackendInstance, localStorage))
   }
 
   showEmailToast = async () => {

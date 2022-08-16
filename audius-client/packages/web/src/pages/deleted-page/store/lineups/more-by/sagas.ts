@@ -8,6 +8,7 @@ import {
 } from 'pages/deleted-page/store/lineups/more-by/actions'
 import { getLineup } from 'pages/deleted-page/store/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 function* getTracks({
   payload
@@ -17,6 +18,8 @@ function* getTracks({
   payload: { handle: string }
 }) {
   const { handle } = payload
+
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   const processed = yield* call(retrieveUserTracks, {
     handle,

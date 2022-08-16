@@ -249,9 +249,12 @@ export class ArtistDashboardPage extends Component<
   }
 
   componentDidUpdate() {
-    const trackCount = this.props.account?.track_count || 0
-    if (!(trackCount > 0)) {
-      this.props.goToRoute(TRENDING_PAGE)
+    const { account } = this.props
+    if (account) {
+      const { track_count = 0 } = account
+      if (!(track_count > 0)) {
+        this.props.goToRoute(TRENDING_PAGE)
+      }
     }
   }
 

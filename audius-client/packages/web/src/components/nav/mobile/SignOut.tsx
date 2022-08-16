@@ -6,6 +6,7 @@ import cn from 'classnames'
 
 import { disablePushNotifications } from 'pages/settings-page/store/mobileSagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { localStorage } from 'services/local-storage'
 import { make, useRecord } from 'store/analytics/actions'
 import { signOut } from 'utils/signOut'
 
@@ -28,11 +29,11 @@ const SignOutPage = ({ onClickBack }: { onClickBack: () => void }) => {
     if (NATIVE_MOBILE) {
       await disablePushNotifications(audiusBackendInstance)
       record(make(Name.SETTINGS_LOG_OUT, {}))
-      await signOut(audiusBackendInstance)
+      await signOut(audiusBackendInstance, localStorage)
     } else {
       record(
         make(Name.SETTINGS_LOG_OUT, {
-          callback: () => signOut(audiusBackendInstance)
+          callback: () => signOut(audiusBackendInstance, localStorage)
         })
       )
     }

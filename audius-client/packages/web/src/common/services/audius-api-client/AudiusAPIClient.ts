@@ -1404,7 +1404,7 @@ export class AudiusAPIClient {
     return adapted
   }
 
-  init() {
+  async init() {
     if (this.initializationState.state === 'initialized') return
 
     // If override passed, use that and return

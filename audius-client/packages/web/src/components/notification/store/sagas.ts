@@ -51,7 +51,7 @@ import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/n
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { make } from 'store/analytics/actions'
 import { isElectron } from 'utils/clientUtil'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 
 import { watchNotificationError } from './errorSagas'
 import mobileSagas from './mobileSagas'
@@ -308,6 +308,7 @@ export function* parseAndProcessNotifications(
    * Attach a `timeLabel` to each notification as well to be displayed ie. 2 Hours Ago
    */
   const now = moment()
+  yield* waitForAccount()
   const userId = yield* select(getUserId)
   if (!userId) return []
   const remixTrackParents: Array<ID> = []

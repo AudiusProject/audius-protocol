@@ -60,6 +60,7 @@ function* createPlaylistAsync(action) {
   }
 
   yield call(waitForBackendSetup)
+  yield waitForAccount()
   const userId = yield select(getUserId)
   const uid = action.tempId
   if (!userId) {
@@ -268,6 +269,7 @@ function* editPlaylistAsync(action) {
   yield call(waitForBackendSetup)
   action.formFields.description = squashNewLines(action.formFields.description)
 
+  yield waitForAccount()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -377,6 +379,7 @@ function* watchAddTrackToPlaylist() {
 
 function* addTrackToPlaylistAsync(action) {
   yield call(waitForBackendSetup)
+  yield waitForAccount()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -532,6 +535,7 @@ function* watchRemoveTrackFromPlaylist() {
 
 function* removeTrackFromPlaylistAsync(action) {
   yield call(waitForBackendSetup)
+  yield waitForAccount()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -592,6 +596,7 @@ function* fixInvalidTracksInPlaylist(playlistId, userId, invalidTrackIds) {
   )
   if (error) throw error
 
+  yield waitForAccount()
   const currentUserId = yield select(getUserId)
   const playlists = yield apiClient.getPlaylist({
     playlistId,
@@ -705,6 +710,7 @@ function* watchOrderPlaylist() {
 
 function* orderPlaylistAsync(action) {
   yield call(waitForBackendSetup)
+  yield waitForAccount()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -828,6 +834,7 @@ function* watchPublishPlaylist() {
 
 function* publishPlaylistAsync(action) {
   yield call(waitForBackendSetup)
+  yield waitForAccount()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -908,6 +915,7 @@ function* watchDeletePlaylist() {
 
 function* deletePlaylistAsync(action) {
   yield call(waitForBackendSetup)
+  yield waitForAccount()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))

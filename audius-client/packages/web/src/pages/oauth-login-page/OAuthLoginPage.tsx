@@ -22,6 +22,7 @@ import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ProfileInfo } from 'components/profile-info/ProfileInfo'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { localStorage } from 'services/local-storage'
 import { make, useRecord } from 'store/analytics/actions'
 import { ERROR_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { signOut } from 'utils/signOut'
@@ -531,7 +532,7 @@ export const OAuthLoginPage = () => {
             <div className={styles.signOutButtonContainer}>
               <button
                 className={styles.linkButton}
-                onClick={() => signOut(audiusBackendInstance)}
+                onClick={() => signOut(audiusBackendInstance, localStorage)}
               >
                 {messages.signOut}
               </button>

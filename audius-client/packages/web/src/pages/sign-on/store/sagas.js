@@ -44,6 +44,7 @@ import { isValidEmailString } from 'utils/email'
 import { withTimeout } from 'utils/network'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 import { MAX_HANDLE_LENGTH } from '../utils/formatSocialProfile'
 
@@ -151,6 +152,8 @@ function* fetchReferrer(action) {
 
       // Check if the user is already signed in
       // If so, apply retroactive referrals
+
+      yield waitForAccount()
       const currentUser = yield select(getAccountUser)
       if (
         currentUser &&

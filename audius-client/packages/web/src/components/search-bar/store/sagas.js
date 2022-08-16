@@ -15,6 +15,7 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { setTracksIsBlocked } from 'common/store/cache/tracks/utils/blocklist'
 import * as searchActions from 'components/search-bar/store/actions'
 import { make } from 'store/analytics/actions'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 import mobileSagas from './mobileSagas'
 import { getSearch } from './selectors'
@@ -22,6 +23,7 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export function* getSearchResults(searchText) {
   const apiClient = yield getContext('apiClient')
+  yield waitForAccount()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const userId = yield select(getUserId)
   const results = yield apiClient.getSearchAutocomplete({

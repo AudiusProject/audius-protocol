@@ -11,6 +11,7 @@ import { getTrackId, getLineup } from 'common/store/pages/remixes/selectors'
 import { setCount } from 'common/store/pages/remixes/slice'
 import { LineupSagas } from 'store/lineup/sagas'
 import { AppState } from 'store/types'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 function* getTracks({
   offset,
@@ -25,6 +26,7 @@ function* getTracks({
   const { trackId } = payload
   if (!trackId) return []
 
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   const { tracks, count } = yield* call([apiClient, 'getRemixes'], {
     trackId,

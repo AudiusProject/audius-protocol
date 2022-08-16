@@ -21,7 +21,11 @@ import {
 import Explore from 'services/audius-backend/Explore'
 import { getLuckyTracks } from 'store/recommendation/sagas'
 import { EXPLORE_PAGE } from 'utils/route'
-import { requiresAccount, waitForValue } from 'utils/sagaHelpers'
+import {
+  requiresAccount,
+  waitForAccount,
+  waitForValue
+} from 'utils/sagaHelpers'
 
 import {
   HEAVY_ROTATION,
@@ -64,6 +68,7 @@ function* fetchHeavyRotation() {
 }
 
 function* fetchBestNewReleases() {
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -118,6 +123,7 @@ function* fetchUnderTheRadar() {
 }
 
 function* fetchMostLoved() {
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -160,6 +166,7 @@ function* fetchFeelingLucky() {
 
 function* fetchRemixables() {
   const apiClient = yield* getContext('apiClient')
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return

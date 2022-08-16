@@ -1,7 +1,9 @@
 import { Suspense, useState, useEffect, useCallback, lazy } from 'react'
 
-import { getCurrentUserExists } from 'services/LocalStorage'
+import { useAsync } from 'react-use'
+
 import { setupMobileLogging } from 'services/Logging'
+import { localStorage } from 'services/local-storage'
 import { BackendDidSetup } from 'services/native-mobile-interface/lifecycle'
 import { useIsMobile, isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
@@ -28,13 +30,15 @@ const isPublicSiteSubRoute = (location = window.location) => {
 
 const clientIsElectron = isElectron()
 
-const foundUser = getCurrentUserExists()
-
 const Root = () => {
   const [dappReady, setDappReady] = useState(false)
   const [connectivityFailure, setConnectivityFailure] = useState(false)
   const [renderPublicSite, setRenderPublicSite] = useState(isPublicSiteRoute())
   const isMobileClient = useIsMobile()
+
+  const { value: foundUser } = useAsync(() =>
+    localStorage.getCurrentUserExists()
+  )
 
   useEffect(() => {
     // TODO: listen to history and change routes based on history...
