@@ -20,7 +20,7 @@ import { getActiveSpan, instrumentTracing } from 'utils/tracing'
  * @return {Object} the updated mapping, which will be used to update the enabled reconfig modes in stateMachineManager/index.js, and any error message that occurred
  */
 const fetchCNodeEndpointToSpIdMap = async ({
-  logger,
+  logger
 }: DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>): Promise<
   DecoratedJobReturnValue<FetchCNodeEndpointToSpIdMapJobReturnValue>
 > => {
