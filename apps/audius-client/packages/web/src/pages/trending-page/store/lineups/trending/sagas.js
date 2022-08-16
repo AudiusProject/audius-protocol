@@ -13,10 +13,12 @@ import {
 import { getTrendingGenre } from 'common/store/pages/trending/selectors'
 import { retrieveTrending } from 'pages/track-page/store/retrieveTrending'
 import { LineupSagas } from 'store/lineup/sagas'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 function getTracks(timeRange) {
   return function* ({ offset, limit }) {
     const genreAtStart = yield select(getTrendingGenre)
+    yield waitForAccount()
     const userId = yield select(getUserId)
     try {
       const tracks = yield retrieveTrending({

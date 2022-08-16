@@ -11,7 +11,7 @@ const internalGetAccountCollections = (state: CommonState) =>
   state.account.collections
 const internalGetUserPlaylists = (state: CommonState) =>
   Object.values(state.account.collections)
-const internalGetAccountUser = (state: CommonState) =>
+export const internalGetAccountUser = (state: CommonState) =>
   getUser(state, { id: getUserId(state) })
 
 export const getHasAccount = (state: CommonState) => !!state.account.userId

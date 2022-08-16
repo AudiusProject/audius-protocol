@@ -15,12 +15,15 @@ import {
 } from 'common/store/pages/profile/selectors'
 import { getConfirmCalls } from 'store/confirmer/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 import { retrieveUserReposts } from './retrieveUserReposts'
 
 function* getReposts({ offset, limit, payload }) {
   const handle = yield select(getProfileUserHandle)
   const profileId = yield select(getProfileUserId)
+
+  yield waitForAccount()
   const currentUserId = yield select(getUserId)
   let reposts = yield call(retrieveUserReposts, {
     handle,

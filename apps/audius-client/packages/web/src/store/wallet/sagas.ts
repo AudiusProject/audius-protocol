@@ -27,6 +27,7 @@ import { getErrorMessage } from 'common/utils/error'
 import { stringWeiToBN, weiToString } from 'common/utils/wallet'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { make } from 'store/analytics/actions'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 // TODO: handle errors
 const errors = {
@@ -50,6 +51,8 @@ function* sendAsync({
   payload: { recipientWallet, amount: weiAudioAmount, chain }
 }: ReturnType<typeof send>) {
   const walletClient = yield* getContext('walletClient')
+
+  yield* waitForAccount()
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
@@ -152,6 +155,7 @@ function* getWalletBalanceAndWallets() {
 function* fetchBalanceAsync() {
   const walletClient = yield* getContext('walletClient')
 
+  yield* waitForAccount()
   const account = yield* select(getAccountUser)
   if (!account) return
 

@@ -37,7 +37,7 @@ import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { dominantColor } from 'utils/imageProcessingUtil'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -126,6 +126,7 @@ function* watchAdd() {
 }
 
 export function* trackNewRemixEvent(remixTrack) {
+  yield waitForAccount()
   const account = yield select(getAccountUser)
   const remixParentTrack = remixTrack.remix_of.tracks[0]
   const parentTrack = yield select(getTrack, {
@@ -239,6 +240,7 @@ function* confirmEditTrack(
           )
         }
 
+        yield waitForAccount()
         // Need to poll with the new track name in case it changed
         const userId = yield select(getUserId)
         const handle = yield select(getUserHandle)
@@ -302,6 +304,7 @@ function* watchEditTrack() {
 function* deleteTrackAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
+  yield waitForAccount()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -357,6 +360,7 @@ function* confirmDeleteTrack(trackId) {
 
         const track = yield select(getTrack, { id: trackId })
         const handle = yield select(getUserHandle)
+        yield waitForAccount()
         const userId = yield select(getUserId)
 
         return yield apiClient.getTrack(
@@ -497,6 +501,7 @@ function* watchCheckIsDownloadable() {
       ])
     )
 
+    yield waitForAccount()
     const currentUserId = yield select(getUserId)
     if (currentUserId === user.user_id) {
       yield call(

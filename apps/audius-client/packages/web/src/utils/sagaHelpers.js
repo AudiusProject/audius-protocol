@@ -1,5 +1,6 @@
 /** Helper Sagas */
 
+import { Status } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { eventChannel, END } from 'redux-saga'
 import {
@@ -104,6 +105,15 @@ export function* doEvery(millis, fn, times = null) {
   return chan
 }
 
+export function* waitForAccount() {
+  yield call(
+    waitForValue,
+    (state) => state.account.status,
+    null,
+    (status) => status !== Status.LOADING
+  )
+}
+
 /**
  * Checks if the user is signed in with an account.
  * If they are signed in, `fn` is invoked, otherwise, the
@@ -113,6 +123,7 @@ export function* doEvery(millis, fn, times = null) {
  */
 export function requiresAccount(fn, route) {
   return function* (...args) {
+    yield* waitForAccount()
     const account = yield select(getAccountUser)
     if (!account) {
       if (route) yield put(updateRouteOnExit(route))

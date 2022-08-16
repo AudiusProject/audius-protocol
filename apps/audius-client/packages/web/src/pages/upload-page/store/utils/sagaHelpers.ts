@@ -1,9 +1,10 @@
 import { Name } from '@audius/common'
 import { range } from 'lodash'
-import { all, put, select } from 'redux-saga/effects'
+import { all, put, select } from 'typed-redux-saga'
 
 import { getAccountUser } from 'common/store/account/selectors'
 import { make } from 'store/analytics/actions'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 export function* reportSuccessAndFailureEvents({
   numSuccess,
@@ -16,9 +17,8 @@ export function* reportSuccessAndFailureEvents({
   uploadType: 'single_track' | 'multi_track' | 'album' | 'playlist'
   errors: string[]
 }) {
-  const accountUser: ReturnType<typeof getAccountUser> = yield select(
-    getAccountUser
-  )
+  yield* waitForAccount()
+  const accountUser = yield* select(getAccountUser)
   if (!accountUser) return
   const primary = accountUser.creator_node_endpoint?.split(',')[0]
   if (!primary) return
@@ -37,5 +37,5 @@ export function* reportSuccessAndFailureEvents({
     })
   )
 
-  yield all([...successEvents, ...failureEvents].map((e) => put(e)))
+  yield* all([...successEvents, ...failureEvents].map((e) => put(e)))
 }

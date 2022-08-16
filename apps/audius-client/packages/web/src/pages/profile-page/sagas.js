@@ -39,7 +39,6 @@ import { getIsReachable } from 'common/store/reachability/selectors'
 import { refreshSupport } from 'common/store/tipping/slice'
 import * as artistRecommendationsActions from 'common/store/ui/artist-recommendations/slice'
 import { squashNewLines } from 'common/utils/formatUtil'
-import { setAudiusAccountUser } from 'services/LocalStorage'
 import { fetchCID } from 'services/audius-backend'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
 import SolanaClient from 'services/solana-client/SolanaClient'
@@ -52,6 +51,7 @@ import {
   MAX_PROFILE_TOP_SUPPORTERS
 } from 'utils/constants'
 import { dataURLtoFile } from 'utils/fileUtils'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 function* watchFetchProfile() {
   yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)
@@ -159,6 +159,7 @@ export function* fetchSolanaCollectibles(user) {
 function* fetchSupportersAndSupporting(userId) {
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
+  yield waitForAccount()
 
   /**
    * If the profile is that of the logged in user, then
@@ -340,6 +341,7 @@ function* fetchFolloweeFollows(action) {
 }
 
 function* cacheUsers(users) {
+  yield waitForAccount()
   const currentUserId = yield select(getUserId)
   // Filter out the current user from the list to cache
   yield processAndCacheUsers(
@@ -358,6 +360,7 @@ export function* updateProfileAsync(action) {
   let metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
 
+  yield waitForAccount()
   const accountUserId = yield select(getUserId)
   yield put(
     cacheActions.update(Kind.USERS, [
@@ -431,6 +434,7 @@ export function* updateProfileAsync(action) {
 function* confirmUpdateProfile(userId, metadata) {
   const apiClient = yield getContext('apiClient')
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const localStorage = yield getContext('localStorage')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
@@ -457,6 +461,7 @@ function* confirmUpdateProfile(userId, metadata) {
             `Could not confirm update profile for user id ${userId}`
           )
         }
+        yield waitForAccount()
         const currentUserId = yield select(getUserId)
         const users = yield apiClient.getUser({
           userId,
@@ -466,7 +471,7 @@ function* confirmUpdateProfile(userId, metadata) {
       },
       function* (confirmedUser) {
         // Store the update in local storage so it is correct upon reload
-        yield setAudiusAccountUser(confirmedUser)
+        yield call([localStorage, 'setAudiusAccountUser'], confirmedUser)
         // Update the cached user so it no longer contains image upload artifacts
         // and contains updated profile picture / cover photo sizes if any
         const newMetadata = {
@@ -507,6 +512,7 @@ function* watchUpdateCurrentUserFollows() {
 }
 
 function* updateCurrentUserFollows(action) {
+  yield waitForAccount()
   const userId = yield select(getUserId)
   const { userIds, status } = yield select(getProfileFollowers)
   let updatedUserIds = userIds

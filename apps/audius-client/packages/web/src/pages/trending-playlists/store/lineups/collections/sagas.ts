@@ -1,5 +1,5 @@
-import { Collection, UserCollectionMetadata, StringKeys } from '@audius/common'
-import { call, select } from 'redux-saga/effects'
+import { UserCollectionMetadata, StringKeys } from '@audius/common'
+import { call, select } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
@@ -10,18 +10,20 @@ import {
 } from 'common/store/pages/trending-playlists/lineups/actions'
 import { getLineup } from 'common/store/pages/trending-playlists/lineups/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  yield call(remoteConfigInstance.waitForRemoteConfig)
+  yield* call(remoteConfigInstance.waitForRemoteConfig)
   const TF = new Set(
     remoteConfigInstance.getRemoteVar(StringKeys.TPF)?.split(',') ?? []
   )
 
   const time = 'week' as const
-  const currentUserId: ReturnType<typeof getUserId> = yield select(getUserId)
-  let playlists: UserCollectionMetadata[] = yield call(
+  yield* waitForAccount()
+  const currentUserId = yield* select(getUserId)
+  let playlists: UserCollectionMetadata[] = yield* call(
     (args) => apiClient.getTrendingPlaylists(args),
     {
       currentUserId,
@@ -49,10 +51,7 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
     (playlist) => !userIdsToOmit.has(`${playlist.playlist_owner_id}`)
   )
 
-  const processed: Collection[] = yield processAndCacheCollections(
-    trendingPlaylists,
-    false
-  )
+  const processed = yield* processAndCacheCollections(trendingPlaylists, false)
 
   return processed
 }

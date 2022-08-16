@@ -65,7 +65,7 @@ import { show as showMusicConfetti } from 'components/music-confetti/store/slice
 import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
 import { getCognitoExists } from 'services/audius-backend/Cognito'
 import { AUDIO_PAGE } from 'utils/route'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
@@ -420,6 +420,8 @@ function* watchClaimChallengeReward() {
 function* fetchUserChallengesAsync() {
   const apiClient = yield* getContext('apiClient')
   yield* call(waitForBackendSetup)
+
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 

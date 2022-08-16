@@ -6,7 +6,7 @@ import { getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { watchServiceSelectionErrors } from './errorSagas'
 import { getSecondaries, getSelectedServices } from './selectors'
@@ -25,6 +25,7 @@ export function* watchFetchServices() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(fetchServices.type, function* () {
     yield* call(waitForBackendSetup)
+    yield* waitForAccount()
     const currentUser = yield* call(waitForValue, getAccountUser)
 
     try {
@@ -108,6 +109,7 @@ function* watchSetSelected() {
   yield* takeEvery(
     setSelected.type,
     function* (action: ReturnType<typeof setSelected>) {
+      yield* waitForAccount()
       const user = yield* call(waitForValue, getAccountUser)
 
       const currentSecondaries = yield* select(getSecondaries)

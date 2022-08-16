@@ -2,35 +2,42 @@
  * Utilities to assist in eager pre-fetching content from the
  * protocol before libs has initialized.
  */
-import {
-  getAudiusAccountUser,
-  getCachedDiscoveryProvider
-} from 'services/LocalStorage'
+
+import { localStorage } from 'services/local-storage'
 
 export const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
 
-const user = getAudiusAccountUser()
-const cachedDiscprov = getCachedDiscoveryProvider()
+const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-node-timestamp'
 
-const EAGER_DISCOVERY_NODES = process.env.REACT_APP_EAGER_DISCOVERY_NODES
-  ? process.env.REACT_APP_EAGER_DISCOVERY_NODES.split(',')
-  : []
+export const getEagerDiscprov = () => {
+  const cachedDiscProvData = window.localStorage.getItem(
+    DISCOVERY_PROVIDER_TIMESTAMP
+  )
+  if (!cachedDiscProvData) {
+    return null
+  }
 
-// Set the eager discprov to use to either
-// 1. local storage discprov if available
-// 2. dapp whitelist
-// Note: This discovery provider is only used on intial paint
-let eagerDiscprov: string
-if (cachedDiscprov) {
-  eagerDiscprov = cachedDiscprov.endpoint
-} else {
-  eagerDiscprov =
-    EAGER_DISCOVERY_NODES[
-      Math.floor(Math.random() * EAGER_DISCOVERY_NODES.length)
-    ]
+  const cachedDiscprov = JSON.parse(cachedDiscProvData)
+
+  const EAGER_DISCOVERY_NODES = process.env.REACT_APP_EAGER_DISCOVERY_NODES
+    ? process.env.REACT_APP_EAGER_DISCOVERY_NODES.split(',')
+    : []
+
+  // Set the eager discprov to use to either
+  // 1. local storage discprov if available
+  // 2. dapp whitelist
+  // Note: This discovery provider is only used on intial paint
+  let eagerDiscprov: string
+  if (cachedDiscprov) {
+    eagerDiscprov = cachedDiscprov.endpoint
+  } else {
+    eagerDiscprov =
+      EAGER_DISCOVERY_NODES[
+        Math.floor(Math.random() * EAGER_DISCOVERY_NODES.length)
+      ]
+  }
+  return eagerDiscprov
 }
-
-export const getEagerDiscprov = () => eagerDiscprov
 
 /**
  * Wait for the `LIBS_INITTED_EVENT` or pass through if there
@@ -59,7 +66,7 @@ export const withEagerOption = async (
   {
     normal,
     eager,
-    endpoint = eagerDiscprov,
+    endpoint,
     requiresUser = false
   }: {
     normal: (libs: any) => any
@@ -69,6 +76,7 @@ export const withEagerOption = async (
   },
   ...args: any
 ) => {
+  const disprovEndpoint = endpoint ?? getEagerDiscprov()
   // @ts-ignore
   if (window.audiusLibs) {
     // @ts-ignore
@@ -76,7 +84,11 @@ export const withEagerOption = async (
   } else {
     try {
       const req = eager(...args)
-      const res = await makeRequest(req, endpoint, requiresUser)
+      const res = await makeRequest(
+        req,
+        disprovEndpoint as string,
+        requiresUser
+      )
       return res
     } catch (e) {
       await waitForLibsInit()
@@ -118,9 +130,12 @@ const parmsToQS = (
  */
 const makeRequest = async (
   req: any,
-  endpoint: string = eagerDiscprov,
+  endpoint: string,
   requiresUser = false
 ) => {
+  const eagerDiscprov = getEagerDiscprov()
+  const discprovEndpoint = endpoint ?? eagerDiscprov
+  const user = await localStorage.getAudiusAccountUser()
   if (!user && requiresUser) throw new Error('User required to continue')
 
   const headers: { [key: string]: string } = {}
@@ -128,7 +143,7 @@ const makeRequest = async (
     headers['X-User-ID'] = user.user_id
   }
 
-  let baseUrl = `${endpoint}/${req.endpoint}`
+  let baseUrl = `${discprovEndpoint}/${req.endpoint}`
   if (req.urlParams) {
     baseUrl = `${baseUrl}${req.urlParams}`
   }
@@ -138,7 +153,7 @@ const makeRequest = async (
     headers['Content-Type'] = 'application/json'
     const url = `${baseUrl}?${parmsToQS(
       req.queryParams,
-      endpoint === eagerDiscprov
+      discprovEndpoint === eagerDiscprov
     )}`
     res = await fetch(url, {
       method: 'POST',
@@ -148,7 +163,7 @@ const makeRequest = async (
   } else {
     const url = `${baseUrl}?${parmsToQS(
       req.queryParams,
-      endpoint === eagerDiscprov
+      discprovEndpoint === eagerDiscprov
     )}`
     res = await fetch(url, {
       headers

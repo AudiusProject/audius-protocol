@@ -10,6 +10,7 @@ import * as searchPageActions from 'common/store/pages/search-results/actions'
 import { tracksActions as tracksLineupActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import { trimToAlphaNumeric } from 'common/utils/formatUtil'
 import tracksSagas from 'pages/search-page/store/lineups/tracks/sagas'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 export function* getTagSearchResults(tag, kind, limit, offset) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
@@ -62,6 +63,7 @@ export function* fetchSearchPageTags(action) {
 
 export function* getSearchResults(searchText, kind, limit, offset) {
   const apiClient = yield getContext('apiClient')
+  yield waitForAccount()
   const userId = yield select(getUserId)
   const results = yield apiClient.getSearchFull({
     currentUserId: userId,

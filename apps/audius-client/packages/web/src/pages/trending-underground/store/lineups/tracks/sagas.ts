@@ -1,5 +1,5 @@
-import { Track, UserTrackMetadata, StringKeys } from '@audius/common'
-import { call, select } from 'redux-saga/effects'
+import { StringKeys } from '@audius/common'
+import { call, select } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
@@ -10,6 +10,7 @@ import {
 } from 'common/store/pages/trending-underground/lineup/actions'
 import { getLineup } from 'common/store/pages/trending-underground/lineup/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 function* getTrendingUnderground({
   limit,
@@ -25,15 +26,13 @@ function* getTrendingUnderground({
     remoteConfigInstance.getRemoteVar(StringKeys.UTF)?.split(',') ?? []
   )
 
-  const currentUserId: ReturnType<typeof getUserId> = yield select(getUserId)
-  let tracks: UserTrackMetadata[] = yield call(
-    (args) => apiClient.getTrendingUnderground(args),
-    {
-      currentUserId,
-      limit,
-      offset
-    }
-  )
+  yield* waitForAccount()
+  const currentUserId = yield* select(getUserId)
+  let tracks = yield* call((args) => apiClient.getTrendingUnderground(args), {
+    currentUserId,
+    limit,
+    offset
+  })
   if (TF.size > 0) {
     tracks = tracks.filter((t) => {
       const shaId = window.Web3.utils.sha3(t.track_id.toString())
@@ -41,7 +40,7 @@ function* getTrendingUnderground({
     })
   }
 
-  const processed: Track[] = yield processAndCacheTracks(tracks)
+  const processed = yield* processAndCacheTracks(tracks)
   return processed
 }
 

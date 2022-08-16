@@ -13,6 +13,7 @@ import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { profilePage } from 'utils/route'
+import { waitForAccount } from 'utils/sagaHelpers'
 import { share } from 'utils/share'
 
 import errorSagas from './errorSagas'
@@ -28,6 +29,7 @@ export function* followUser(
 ) {
   /* Make Async Backend Call */
   yield* call(waitForBackendSetup)
+  yield* waitForAccount()
   const accountId = yield* select(getUserId)
   if (!accountId) {
     yield* put(signOnActions.openSignOn(false))
@@ -134,6 +136,7 @@ export function* unfollowUser(
 ) {
   /* Make Async Backend Call */
   yield* call(waitForBackendSetup)
+  yield* waitForAccount()
   const accountId = yield* select(getUserId)
   if (!accountId) {
     yield* put(signOnActions.openSignOn(false))

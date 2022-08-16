@@ -18,7 +18,7 @@ import {
 } from 'common/store/pages/profile/selectors'
 import { SET_ARTIST_PICK } from 'common/store/social/tracks/actions'
 import { LineupSagas } from 'store/lineup/sagas'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 
 import { TracksSortMode } from '../../types'
 
@@ -26,6 +26,7 @@ import { retrieveUserTracks } from './retrieveUserTracks'
 
 function* getTracks({ offset, limit, payload }) {
   const handle = yield select(getProfileUserHandle)
+  yield waitForAccount()
   const currentUserId = yield select(getUserId)
 
   // Wait for user to receive social handles

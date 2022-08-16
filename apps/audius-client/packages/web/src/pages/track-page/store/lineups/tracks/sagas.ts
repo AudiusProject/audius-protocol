@@ -9,7 +9,7 @@ import {
   getSourceSelector as sourceSelector
 } from 'common/store/pages/track/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 
 function* getTracks({
   payload,
@@ -25,6 +25,7 @@ function* getTracks({
   limit?: number
 }) {
   const { ownerHandle, heroTrackPermalink } = payload
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
 
   const lineup = []

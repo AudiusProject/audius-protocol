@@ -17,7 +17,7 @@ import TrackDownload from 'services/audius-backend/TrackDownload'
 import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 import { share } from 'utils/share'
 
 import watchTrackErrors from './errorSagas'
@@ -33,6 +33,7 @@ export function* repostTrackAsync(
   action: ReturnType<typeof socialActions.repostTrack>
 ) {
   yield* call(waitForBackendSetup)
+  yield* waitForAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -188,6 +189,7 @@ export function* undoRepostTrackAsync(
   action: ReturnType<typeof socialActions.undoRepostTrack>
 ) {
   yield* call(waitForBackendSetup)
+  yield* waitForAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -301,6 +303,7 @@ export function* saveTrackAsync(
   action: ReturnType<typeof socialActions.saveTrack>
 ) {
   yield* call(waitForBackendSetup)
+  yield* waitForAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())
@@ -425,6 +428,7 @@ export function* unsaveTrackAsync(
   action: ReturnType<typeof socialActions.unsaveTrack>
 ) {
   yield* call(waitForBackendSetup)
+  yield* waitForAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -525,6 +529,7 @@ export function* watchSetArtistPick() {
   yield* takeEvery(
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
+      yield* waitForAccount()
       const userId = yield* select(getUserId)
       yield* put(
         cacheActions.update(Kind.USERS, [
@@ -545,6 +550,7 @@ export function* watchSetArtistPick() {
 export function* watchUnsetArtistPick() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
+    yield* waitForAccount()
     const userId = yield* select(getUserId)
     yield* put(
       cacheActions.update(Kind.USERS, [
@@ -571,6 +577,7 @@ export function* watchRecordListen() {
       if (NATIVE_MOBILE) return
       console.debug('Listen recorded for track', action.trackId)
 
+      yield* waitForAccount()
       const userId = yield* select(getUserId)
       const track = yield* select(getTrack, { id: action.trackId })
       if (!userId || !track) return

@@ -14,6 +14,7 @@ import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import * as trackActions from 'common/store/cache/tracks/actions'
 import { getTracks as getTracksSelector } from 'common/store/cache/tracks/selectors'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 import { setTracksIsBlocked } from './blocklist'
 import {
@@ -62,6 +63,7 @@ export function* retrieveTrackByHandleAndSlug({
       },
       retrieveFromSource: function* (permalinks: string[]) {
         const apiClient = yield* getContext('apiClient')
+        yield* waitForAccount()
         const userId = yield* select(getUserId)
         const track = yield* call((args) => {
           const split = args[0].split('/')
@@ -154,7 +156,8 @@ export function* retrieveTracks({
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
-  const currentUserId: number | null = yield* select(getUserId)
+  yield* waitForAccount()
+  const currentUserId = yield* select(getUserId)
 
   // In the case of unlisted tracks, trackIds contains metadata used to fetch tracks
   const ids = canBeUnlisted
