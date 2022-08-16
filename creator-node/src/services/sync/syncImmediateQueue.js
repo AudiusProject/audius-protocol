@@ -46,7 +46,6 @@ class SyncImmediateQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-<<<<<<< HEAD
       const {
         parentSpanContext
       } = job.data
@@ -70,15 +69,8 @@ class SyncImmediateQueue {
     })
 
     processTask = async (job) => {
-      const {
-        walletPublicKeys,
-        creatorNodeEndpoint,
-        forceResync,
-      } = job.data
-=======
       const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
         job.data
->>>>>>> master
 
       try {
         await secondarySyncFromPrimary({
@@ -89,12 +81,8 @@ class SyncImmediateQueue {
           logContext
         })
       } catch (e) {
-<<<<<<< HEAD
         recordException(e)
-        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
-=======
         const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}: ${e.message}`
->>>>>>> master
         logger.error(msg)
         throw e
       }
@@ -108,28 +96,17 @@ class SyncImmediateQueue {
   async processManualImmediateSync({
     wallet,
     creatorNodeEndpoint,
-<<<<<<< HEAD
-    forceResync,
-    parentSpanContext
-  }) {
-    const jobProps = {
-      walletPublicKeys,
-      creatorNodeEndpoint,
-      forceResync,
-      parentSpanContext
-    }
-    const job = await this.queue.add(jobProps)
-=======
     forceResyncConfig,
-    logContext
+    logContext,
+    parentSpanContext
   }) {
     const job = await this.queue.add({
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
-      logContext
+      logContext,
+      parentSpanContext
     })
->>>>>>> master
     const result = await job.finished()
     return result
   }

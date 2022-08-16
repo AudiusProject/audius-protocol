@@ -9,14 +9,9 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
-
-<<<<<<< HEAD
 const { instrumentTracing, recordException } = require('../../utils/tracing')
 
-const _handleSyncFromPrimary = async (
-=======
-const handleSyncFromPrimary = async ({
->>>>>>> master
+const _handleSyncFromPrimary = async ({
   serviceRegistry,
   wallet,
   creatorNodeEndpoint,
@@ -36,28 +31,6 @@ const handleSyncFromPrimary = async ({
 
   genericLogger.info('begin nodesync for ', wallet, 'time', start)
 
-<<<<<<< HEAD
-  /**
-   * Ensure access to each wallet, then acquire redis lock for duration of sync
-   * @notice - there's a bug where logPrefix is set to the last element of `walletPublicKeys` - this code only works when `walletPublicKeys.length === 1` 🤦‍♂️
-   */
-  let logPrefix
-  for (const wallet of walletPublicKeys) {
-    logPrefix = `[secondarySyncFromPrimary][wallet=${wallet}]`
-    try {
-      await redis.WalletWriteLock.acquire(
-        wallet,
-        redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
-      )
-    } catch (e) {
-      recordException(e)
-      return {
-        error: new Error(
-          `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
-        ),
-        result: 'failure_sync_in_progress'
-      }
-=======
   const logPrefix = `[secondarySyncFromPrimary][wallet=${wallet}]`
   try {
     await redis.WalletWriteLock.acquire(
@@ -65,12 +38,12 @@ const handleSyncFromPrimary = async ({
       redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
     )
   } catch (e) {
+    recordException(e)
     return {
       error: new Error(
         `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
       ),
       result: 'failure_sync_in_progress'
->>>>>>> master
     }
   }
 
@@ -194,12 +167,8 @@ const handleSyncFromPrimary = async ({
 
     genericLogger.info(
       logPrefix,
-<<<<<<< HEAD
-      `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1
-=======
       `Successful export from ${creatorNodeEndpoint} for wallet ${wallet} and requested min clock ${
         localMaxClockVal + 1
->>>>>>> master
       }`
     )
 
@@ -246,12 +215,8 @@ const handleSyncFromPrimary = async ({
         // Spread + set uniq's the array
         userReplicaSet = [...new Set(userReplicaSet)]
       } catch (e) {
-<<<<<<< HEAD
         recordException(e)
-        logger.error(
-=======
         genericLogger.error(
->>>>>>> master
           logPrefix,
           `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
         )
@@ -683,16 +648,10 @@ const handleSyncFromPrimary = async ({
     await SyncHistoryAggregator.recordSyncFail(wallet)
     genericLogger.error(
       logPrefix,
-<<<<<<< HEAD
-      `Sync complete for wallets: ${walletPublicKeys.join(
-        ','
-      )}. Status: Error, message: ${e.message}. Duration sync: ${Date.now() - start
-=======
       `Sync complete for wallet: ${wallet}. Status: Error, message: ${
         e.message
       }. Duration sync: ${
         Date.now() - start
->>>>>>> master
       }. From endpoint ${creatorNodeEndpoint}.`
     )
 
@@ -716,14 +675,8 @@ const handleSyncFromPrimary = async ({
 
   genericLogger.info(
     logPrefix,
-<<<<<<< HEAD
-    `Sync complete for wallets: ${walletPublicKeys.join(
-      ','
-    )}. Status: Success. Duration sync: ${Date.now() - start
-=======
     `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
       Date.now() - start
->>>>>>> master
     }. From endpoint ${creatorNodeEndpoint}.`
   )
 
@@ -746,24 +699,14 @@ const handleSyncFromPrimary = instrumentTracing({
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-<<<<<<< HEAD
-const secondarySyncFromPrmary = async (
-=======
-async function secondarySyncFromPrimary({
->>>>>>> master
+const secondarySyncFromPrmary = async ({
   serviceRegistry,
   wallet,
   creatorNodeEndpoint,
-<<<<<<< HEAD
-  blockNumber = null,
-  forceResync = false
-) => {
-=======
   forceResyncConfig,
   logContext,
   blockNumber = null
-}) {
->>>>>>> master
+}) => {
   const { prometheusRegistry } = serviceRegistry
   const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames
@@ -790,10 +733,6 @@ async function secondarySyncFromPrimary({
   return { result }
 }
 
-<<<<<<< HEAD
 module.exports = instrumentTracing({
   fn: secondarySyncFromPrmary
 })
-=======
-module.exports = secondarySyncFromPrimary
->>>>>>> master

@@ -12,7 +12,12 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const asyncRetry = require('../../utils/asyncRetry')
-const { instrumentTracing, recordException, getActiveSpan, info } = require('../../utils/tracing')
+const {
+  instrumentTracing,
+  recordException,
+  getActiveSpan,
+  info
+} = require('../../utils/tracing')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
@@ -29,7 +34,6 @@ async function primarySyncFromSecondary({
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
-
   const span = getActiveSpan()
   span?.setAttribute('wallet', wallet)
 
@@ -119,13 +123,12 @@ async function primarySyncFromSecondary({
 
     if (error) {
       logger.error(
-        `${logPrefix} Error ${error.message} [Duration: ${Date.now() - start
+        `${logPrefix} Error ${error.message} [Duration: ${
+          Date.now() - start
         }ms]`
       )
     } else {
-      logger.info(
-        `${logPrefix} Complete [Duration: ${Date.now() - start}ms]`
-      )
+      logger.info(`${logPrefix} Complete [Duration: ${Date.now() - start}ms]`)
     }
   }
 
@@ -188,7 +191,6 @@ async function _fetchExportFromSecondary({
     throw new Error(`[fetchExportFromSecondary] ERROR: ${e.message}`)
   }
 }
-
 
 const fetchExportFromSecondary = instrumentTracing({
   fn: _fetchExportFromSecondary
@@ -265,10 +267,7 @@ async function _saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
           // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
           // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
           let succeeded
-          if (
-            nonTrackFile.type === 'image' &&
-            nonTrackFile.fileName !== null
-          ) {
+          if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
             succeeded = await saveFileForMultihashToFS(
               libs,
               logger,
@@ -299,7 +298,6 @@ async function _saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
     recordException(e)
     throw new Error(`[saveFilesToDisk] ERROR: ${e.message}`)
   }
-
 }
 
 const saveFilesToDisk = instrumentTracing({
@@ -512,9 +510,9 @@ async function _getUserReplicaSet({ wallet, libs, logger }) {
 }
 
 const getUserReplicaSet = instrumentTracing({
-  fn: _getUserReplicaSet,
+  fn: _getUserReplicaSet
 })
 
 module.exports = instrumentTracing({
-  fn: primarySyncFromSecondary,
+  fn: primarySyncFromSecondary
 })

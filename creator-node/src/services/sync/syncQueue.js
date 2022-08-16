@@ -2,7 +2,6 @@ const Bull = require('bull')
 
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { SpanStatusCode } = require('@opentelemetry/api')
-const { getTracer } = require('../../tracer')
 
 const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
@@ -55,15 +54,7 @@ class SyncQueue {
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
       const {
-<<<<<<< HEAD
-        parentSpanContext
-=======
-        wallet,
-        creatorNodeEndpoint,
-        forceResyncConfig,
-        blockNumber,
-        logContext
->>>>>>> master
+        parentSpanContext,
       } = job.data
 
       const processTask = instrumentTracing({
@@ -86,9 +77,11 @@ class SyncQueue {
 
     processTask = async (job) => {
       const {
-        walletPublicKeys,
+        wallet,
         creatorNodeEndpoint,
-        forceResync,
+        forceResyncConfig,
+        blockNumber,
+        logContext
       } = job.data
 
       let result
@@ -116,34 +109,21 @@ class SyncQueue {
   }
 
   async enqueueSync({
-<<<<<<< HEAD
-    walletPublicKeys,
-    creatorNodeEndpoint,
-    forceResync,
-    parentSpanContext
-  }) {
-    const jobProps = {
-      walletPublicKeys,
-      creatorNodeEndpoint,
-      forceResync,
-      parentSpanContext
-    }
-    const job = await this.queue.add(jobProps)
-=======
     wallet,
     creatorNodeEndpoint,
     blockNumber,
     forceResyncConfig,
-    logContext
+    logContext,
+    parentSpanContext
   }) {
     const job = await this.queue.add({
       wallet,
       creatorNodeEndpoint,
       blockNumber,
       forceResyncConfig,
-      logContext
+      logContext,
+      parentSpanContext
     })
->>>>>>> master
     return job
   }
 }
