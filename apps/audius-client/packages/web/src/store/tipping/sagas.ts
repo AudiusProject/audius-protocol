@@ -250,9 +250,7 @@ function* sendTipAsync() {
       yield cancel(showConvertingMessage)
     }
 
-    yield call(() =>
-      walletClient.sendWAudioTokens(recipientWallet, weiBNAmount)
-    )
+    yield call([walletClient, 'sendWAudioTokens'], recipientWallet, weiBNAmount)
 
     // Only decrease store balance if we haven't already changed
     const newBalance: ReturnType<typeof getAccountBalance> = yield select(
