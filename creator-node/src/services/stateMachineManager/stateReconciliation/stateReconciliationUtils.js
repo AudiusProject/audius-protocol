@@ -11,7 +11,7 @@ const {
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const { SpanStatusCode } = require('@opentelemetry/api')
-const { getTracer } = require('../../../tracer')
+const { instrumentTracingAll, getActiveSpan } = require('utils/tracing')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
@@ -31,85 +31,83 @@ const getNewOrExistingSyncReq = ({
   syncMode,
   immediate = false
 }) => {
-  return getTracer().startActiveSpan('getNewOrExistingSyncReq', (span) => {
-    if (
-      !userWallet ||
-      !primaryEndpoint ||
-      !secondaryEndpoint ||
-      !syncType ||
-      !syncMode
-    ) {
-      span.addEvent(
-        `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
-      )
-      span.setStatus({ code: SpanStatusCode.ERROR })
-      span.end()
-      throw new Error(
-        `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
-      )
-    }
-    /**
-     * If duplicate sync already exists, do not add and instead return existing sync job info
-     * Ignore syncMode when checking for duplicates, since it doesn't matter
-     */
-    const duplicateSyncJobInfo =
-      SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
-        syncType,
-        userWallet,
-        secondaryEndpoint,
-        immediate
-      )
-    if (duplicateSyncJobInfo) {
-      span.addEvent(
-        `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
-      )
-      logger.info(
-        `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
-      )
 
-      span.end()
-      return {
-        duplicateSyncReq: {
-          ...duplicateSyncJobInfo,
-          parentSpanContext: span.spanContext()
-        }
-      }
-    }
+  const span = getActiveSpan()
 
-    // Define axios params for sync request to secondary
-    const syncRequestParameters = {
-      baseURL: secondaryEndpoint,
-      url: '/sync',
-      method: 'post',
-      data: {
-        wallet: [userWallet],
-        creator_node_endpoint: primaryEndpoint,
-        // Note - `sync_type` param is only used for logging by nodeSync.js
-        sync_type: syncType,
-        // immediate = true will ensure secondary skips debounce and evaluates sync immediately
-        immediate
-      }
-    }
-
-    // Add job to issue manual or recurring sync request based on `syncType` param
-    const syncReqToEnqueue = {
-      syncType,
-      syncMode,
-      syncRequestParameters,
-      parentSpanContext: span.context()
-    }
-
-    SyncRequestDeDuplicator.recordSync(
+  if (
+    !userWallet ||
+    !primaryEndpoint ||
+    !secondaryEndpoint ||
+    !syncType ||
+    !syncMode
+  ) {
+    span?.addEvent(
+      `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
+    )
+    span?.setStatus({ code: SpanStatusCode.ERROR })
+    throw new Error(
+      `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
+    )
+  }
+  /**
+   * If duplicate sync already exists, do not add and instead return existing sync job info
+   * Ignore syncMode when checking for duplicates, since it doesn't matter
+   */
+  const duplicateSyncJobInfo =
+    SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
       syncType,
       userWallet,
       secondaryEndpoint,
       immediate
     )
+  if (duplicateSyncJobInfo) {
+    span?.addEvent(
+      `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
+    )
+    logger.info(
+      `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
+    )
 
-    span.addEvent(JSON.stringify(syncReqToEnqueue))
-    span.end()
-    return { syncReqToEnqueue }
-  })
+    return {
+      duplicateSyncReq: {
+        ...duplicateSyncJobInfo,
+        parentSpanContext: span?.spanContext()
+      }
+    }
+  }
+
+  // Define axios params for sync request to secondary
+  const syncRequestParameters = {
+    baseURL: secondaryEndpoint,
+    url: '/sync',
+    method: 'post',
+    data: {
+      wallet: [userWallet],
+      creator_node_endpoint: primaryEndpoint,
+      // Note - `sync_type` param is only used for logging by nodeSync.js
+      sync_type: syncType,
+      // immediate = true will ensure secondary skips debounce and evaluates sync immediately
+      immediate
+    }
+  }
+
+  // Add job to issue manual or recurring sync request based on `syncType` param
+  const syncReqToEnqueue = {
+    syncType,
+    syncMode,
+    syncRequestParameters,
+    parentSpanContext: span?.context()
+  }
+
+  SyncRequestDeDuplicator.recordSync(
+    syncType,
+    userWallet,
+    secondaryEndpoint,
+    immediate
+  )
+
+  span?.addEvent(JSON.stringify(syncReqToEnqueue))
+  return { syncReqToEnqueue }
 }
 
 /**
@@ -124,111 +122,99 @@ const issueSyncRequestsUntilSynced = async (
   timeoutMs,
   queue
 ) => {
-  return getTracer().startActiveSpan(
-    'issueSyncRequestsUntilSynced',
-    async (span) => {
-      // Issue syncRequest before polling secondary for replication
-      const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-        userWallet: wallet,
-        secondaryEndpoint: secondaryUrl,
-        primaryEndpoint: primaryUrl,
-        syncType: SyncType.Manual,
-        syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-        immediate: true
+
+  const span = getActiveSpan()
+
+  // Issue syncRequest before polling secondary for replication
+  const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+    userWallet: wallet,
+    secondaryEndpoint: secondaryUrl,
+    primaryEndpoint: primaryUrl,
+    syncType: SyncType.Manual,
+    syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+    immediate: true
+  })
+
+  if (!_.isEmpty(duplicateSyncReq)) {
+    // Log duplicate and return
+    logger.warn(
+      `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
+    )
+    span?.addEvent(
+      `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
+    )
+    return
+  } else if (!_.isEmpty(syncReqToEnqueue)) {
+    span?.addEvent(JSON.stringify(syncReqToEnqueue))
+    await queue.add({
+      enqueuedBy: 'issueSyncRequestsUntilSynced',
+      parentSpanContext: span?.spanContext(),
+      ...syncReqToEnqueue
+    })
+  } else {
+    // Log error that the sync request couldn't be created and return
+    logger.error(`Failed to create manual sync request`)
+    span?.addEvent(`Failed to create manual sync request`)
+    return
+  }
+
+  // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    try {
+      // Retrieve secondary clock status for user
+      const secondaryClockStatusResp = await axios({
+        method: 'get',
+        baseURL: secondaryUrl,
+        url: `/users/clock_status/${wallet}`,
+        responseType: 'json',
+        timeout: 1000 // 1000ms = 1s
       })
+      const { clockValue: secondaryClockVal, syncInProgress } =
+        secondaryClockStatusResp.data.data
 
-      if (!_.isEmpty(duplicateSyncReq)) {
-        // Log duplicate and return
-        logger.warn(
-          `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
-        )
-        span.addEvent(
-          `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
-        )
-        span.end()
-        return
-      } else if (!_.isEmpty(syncReqToEnqueue)) {
-        span.addEvent(JSON.stringify(syncReqToEnqueue))
-        await queue.add({
-          enqueuedBy: 'issueSyncRequestsUntilSynced',
-          parentSpanContext: span.spanContext(),
-          ...syncReqToEnqueue
-        })
-      } else {
-        // Log error that the sync request couldn't be created and return
-        logger.error(`Failed to create manual sync request`)
-        span.addEvent(`Failed to create manual sync request`)
-        span.end()
+      // If secondary is synced, return successfully
+      if (secondaryClockVal >= primaryClockVal) {
         return
       }
 
-      // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
-      const start = Date.now()
-      while (Date.now() - start < timeoutMs) {
-        try {
-          // Retrieve secondary clock status for user
-          const secondaryClockStatusResp = await axios({
-            method: 'get',
-            baseURL: secondaryUrl,
-            url: `/users/clock_status/${wallet}`,
-            responseType: 'json',
-            timeout: 1000 // 1000ms = 1s
-          })
-          const { clockValue: secondaryClockVal, syncInProgress } =
-            secondaryClockStatusResp.data.data
-
-          // If secondary is synced, return successfully
-          if (secondaryClockVal >= primaryClockVal) {
-            span.end()
-            return
-          }
-
-          // Give secondary some time to process ongoing sync
-          // NOTE - we might want to make this timeout longer
-          await Utils.timeout(500)
-        } catch (e) {
-          span.recordException(e)
-          span.setStatus({ code: SpanStatusCode.ERROR })
-          // do nothing and let while loop continue
-        }
-      }
-
-      // This condition will only be hit if the secondary has failed to sync within timeoutMs
-      span.end()
-      throw new Error(
-        `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
-      )
+      // Give secondary some time to process ongoing sync
+      // NOTE - we might want to make this timeout longer
+      await Utils.timeout(500)
+    } catch (e) {
+      span?.recordException(e)
+      span?.setStatus({ code: SpanStatusCode.ERROR })
+      // do nothing and let while loop continue
     }
+  }
+
+  // This condition will only be hit if the secondary has failed to sync within timeoutMs
+  throw new Error(
+    `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
   )
 }
 
 const getCachedHealthyNodes = async () => {
-  return getTracer().startActiveSpan('getCachedHealthyNodes', async (span) => {
-    const healthyNodes = await redisClient.lrange(
-      HEALTHY_NODES_CACHE_KEY,
-      0,
-      -1
-    )
-    span.end()
-    return healthyNodes
-  })
+  const healthyNodes = await redisClient.lrange(
+    HEALTHY_NODES_CACHE_KEY,
+    0,
+    -1
+  )
+  return healthyNodes
 }
 
 const cacheHealthyNodes = async (healthyNodes) => {
-  getTracer().startActiveSpan('cacheHealthNodes', async (span) => {
-    const pipeline = redisClient.pipeline()
-    await pipeline
-      .del(HEALTHY_NODES_CACHE_KEY)
-      .rpush(HEALTHY_NODES_CACHE_KEY, ...(healthyNodes || []))
-      .expire(HEALTHY_NODES_CACHE_KEY, HEALTHY_SERVICES_TTL_SEC)
-      .exec()
-    span.end()
-  })
+  const pipeline = redisClient.pipeline()
+  await pipeline
+    .del(HEALTHY_NODES_CACHE_KEY)
+    .rpush(HEALTHY_NODES_CACHE_KEY, ...(healthyNodes || []))
+    .expire(HEALTHY_NODES_CACHE_KEY, HEALTHY_SERVICES_TTL_SEC)
+    .exec()
 }
 
-module.exports = {
+module.exports = instrumentTracingAll({
   getNewOrExistingSyncReq,
   issueSyncRequestsUntilSynced,
   getCachedHealthyNodes,
   cacheHealthyNodes
-}
+})
