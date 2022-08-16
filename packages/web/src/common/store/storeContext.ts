@@ -3,6 +3,7 @@ import { RemoteConfigInstance } from '@audius/common'
 import { AudiusAPIClient } from 'common/services/audius-api-client'
 import { AudiusBackend } from 'common/services/audius-backend'
 import { FingerprintClient } from 'common/services/fingerprint'
+import { LocalStorage } from 'common/services/local-storage'
 import { WalletClient } from 'common/services/wallet-client'
 
 export type CommonStoreContext = {
@@ -13,4 +14,5 @@ export type CommonStoreContext = {
   apiClient: AudiusAPIClient
   fingerprintClient: FingerprintClient
   walletClient: WalletClient
+  localStorage: LocalStorage
 }

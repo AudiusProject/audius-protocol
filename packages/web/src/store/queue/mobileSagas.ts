@@ -29,6 +29,7 @@ import {
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import * as playerActions from 'store/player/slice'
 import { generateM3U8Variants } from 'utils/hlsUtil'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 const PUBLIC_IPFS_GATEWAY = 'http://cloudflare-ipfs.com/ipfs/'
 const DEFAULT_IMAGE_URL =
@@ -41,6 +42,8 @@ const getImageUrl = (cid: string, gateway: string | null): string => {
 
 function* getTrackInfo(id: ID, uid: UID) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
+  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return null
 
@@ -196,6 +199,8 @@ export function* watchRequestQueueAutoplay() {
     MessageType.REQUEST_QUEUE_AUTOPLAY,
     function* (action: Message) {
       const { genre, trackId } = action
+
+      yield* waitForAccount()
       const userId = yield* select(getUserId)
       yield* put(
         queueAutoplay({

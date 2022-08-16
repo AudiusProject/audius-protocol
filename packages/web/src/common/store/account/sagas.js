@@ -30,15 +30,6 @@ import {
 import { getFeePayer } from 'common/store/solana/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
-import {
-  getAudiusAccount,
-  getAudiusAccountUser,
-  getCurrentUserExists,
-  setAudiusAccount,
-  setAudiusAccountUser,
-  clearAudiusAccount,
-  clearAudiusAccountUser
-} from 'services/LocalStorage'
 import { fetchCID } from 'services/audius-backend'
 import { recordIP } from 'services/audius-backend/RecordIP'
 import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
@@ -61,7 +52,7 @@ import {
   shouldRequestBrowserPermission
 } from 'utils/browserNotifications'
 import { isMobile, isElectron } from 'utils/clientUtil'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import disconnectedWallets from './disconnected_wallet_fix.json'
 import mobileSagas, { setHasSignedInOnMobile } from './mobileSagas'
@@ -172,6 +163,8 @@ function* onFetchAccount(account) {
 export function* fetchAccountAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
+  const localStorage = yield getContext('localStorage')
+
   let fromSource = false
   if (action) {
     fromSource = action.fromSource
@@ -179,8 +172,9 @@ export function* fetchAccountAsync(action) {
   yield put(accountActions.fetchAccountRequested())
 
   if (!fromSource) {
-    const cachedAccount = getAudiusAccount()
-    const cachedAccountUser = getAudiusAccountUser()
+    const cachedAccount = yield call([localStorage, 'getAudiusAccount'])
+    const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
+    const currentUserExists = yield call([localStorage, 'getCurrentUserExists'])
     if (
       cachedAccount &&
       cachedAccountUser &&
@@ -192,7 +186,7 @@ export function* fetchAccountAsync(action) {
         cachedAccountUser.orderedPlaylists
       )
       yield put(accountActions.fetchAccountSucceeded(cachedAccount))
-    } else if (!getCurrentUserExists()) {
+    } else if (!currentUserExists) {
       yield put(
         accountActions.fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND' })
       )
@@ -207,8 +201,8 @@ export function* fetchAccountAsync(action) {
       })
     )
     // Clear local storage users if present
-    clearAudiusAccount()
-    clearAudiusAccountUser()
+    yield call([localStorage, 'clearAudiusAccount'])
+    yield call([localStorage, 'clearAudiusAccountUser'])
     // If the user is not signed in
     // Remove browser has requested push notifications.
     removeHasRequestedBrowserPermission()
@@ -255,6 +249,7 @@ export function* fetchAccountAsync(action) {
 }
 
 function* cacheAccount(account) {
+  const localStorage = yield getContext('localStorage')
   const collections = account.playlists || []
 
   yield put(
@@ -271,18 +266,21 @@ function* cacheAccount(account) {
     collections,
     hasFavoritedItem
   }
-  setAudiusAccount(formattedAccount)
-  setAudiusAccountUser(account)
+
+  yield call([localStorage, 'setAudiusAccount'], formattedAccount)
+  yield call([localStorage, 'setAudiusAccountUser'], account)
 
   yield put(accountActions.fetchAccountSucceeded(formattedAccount))
 }
 
 // Pull from redux cache and persist to local storage cache
-export function* reCacheAccount(action) {
+export function* reCacheAccount() {
+  const localStorage = yield getContext('localStorage')
   const account = yield select(getAccountToCache)
   const accountUser = yield select(getAccountUser)
-  setAudiusAccount(account)
-  setAudiusAccountUser(accountUser)
+
+  yield call([localStorage, 'setAudiusAccount'], account)
+  yield call([localStorage, 'setAudiusAccountUser'], accountUser)
 }
 
 const setBrowerPushPermissionConfirmationModal = setVisibility({
@@ -410,6 +408,7 @@ function* associateTwitterAccount(action) {
   const { uuid, profile } = action.payload
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   try {
+    yield waitForAccount()
     const userId = yield select(getUserId)
     const handle = yield select(getUserHandle)
     yield call(

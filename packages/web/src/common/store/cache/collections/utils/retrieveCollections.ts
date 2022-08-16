@@ -15,6 +15,7 @@ import { getCollections } from 'common/store/cache/collections/selectors'
 import { retrieve } from 'common/store/cache/sagas'
 import { getEntryTimestamp } from 'common/store/cache/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
@@ -85,6 +86,7 @@ export function* retrieveTracksForCollections(
  */
 export function* retrieveCollection(playlistId: ID) {
   const apiClient = yield* getContext('apiClient')
+  yield* waitForAccount()
   const userId = yield* select(getUserId)
   const playlists = yield* call([apiClient, 'getPlaylist'], {
     playlistId,

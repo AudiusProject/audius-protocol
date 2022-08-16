@@ -78,7 +78,7 @@ export function* setupBackend() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   // Init APICLient
-  yield* call(() => apiClient.init())
+  apiClient.init()
   // Fire-and-forget init fp
   fingerprintClient.init()
   yield* put(accountActions.fetchAccount())

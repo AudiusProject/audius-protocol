@@ -1,8 +1,4 @@
 import { IS_MOBILE_USER_KEY } from 'common/store/account/mobileSagas'
-import {
-  clearAudiusAccount,
-  clearAudiusAccountUser
-} from 'services/LocalStorage'
 import { SignedOut } from 'services/native-mobile-interface/lifecycle'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { removeHasRequestedBrowserPermission } from 'utils/browserNotifications'
@@ -14,20 +10,20 @@ const AUDIUS_EVENTS = 'events'
 const AUDIUS_USE_METAMASK = 'useMetaMask'
 const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
 
-const removeLocalStorageItems = () => {
+const removeLocalStorageItems = async (localStorage) => {
   const items = [
     AUDIUS_EVENTS,
     AUDIUS_USE_METAMASK,
     BADGE_LOCAL_STORAGE_KEY,
     IS_MOBILE_USER_KEY
   ]
-  items.map((k) => localStorage.removeItem(k))
+  return await Promise.all(items.map((k) => localStorage.removeItem(k)))
 }
 
-export const signOut = async (audiusBackendInstance) => {
-  removeLocalStorageItems()
-  clearAudiusAccount()
-  clearAudiusAccountUser()
+export const signOut = async (audiusBackendInstance, localStorage) => {
+  await removeLocalStorageItems(localStorage)
+  await localStorage.clearAudiusAccount()
+  await localStorage.clearAudiusAccountUser()
   removeHasRequestedBrowserPermission()
   await audiusBackendInstance.signOut()
   clearTheme()

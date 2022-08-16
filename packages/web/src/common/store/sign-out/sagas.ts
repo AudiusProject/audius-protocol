@@ -13,15 +13,16 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* watchSignOut() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const localStorage = yield* getContext('localStorage')
   yield takeLatest(signOutAction.type, function* () {
     if (NATIVE_MOBILE) {
       disablePushNotifications(audiusBackendInstance)
       yield put(make(Name.SETTINGS_LOG_OUT, {}))
-      yield call(signOut, audiusBackendInstance)
+      yield call(signOut, audiusBackendInstance, localStorage)
     } else {
       yield put(
         make(Name.SETTINGS_LOG_OUT, {
-          callback: () => signOut(audiusBackendInstance)
+          callback: () => signOut(audiusBackendInstance, localStorage)
         })
       )
     }

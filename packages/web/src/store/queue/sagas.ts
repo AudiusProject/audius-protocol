@@ -57,6 +57,7 @@ import {
   getUid as getPlayerUid
 } from 'store/player/selectors'
 import * as playerActions from 'store/player/slice'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 import { getRecommendedTracks } from '../recommendation/sagas'
 
@@ -135,6 +136,7 @@ function* handleQueueAutoplay({
     isNotRepeating &&
     (isCloseToEndOfQueue || isOnlySongInQueue)
   ) {
+    yield* waitForAccount()
     const userId = yield* select(getUserId)
     yield* put(
       queueAutoplay({

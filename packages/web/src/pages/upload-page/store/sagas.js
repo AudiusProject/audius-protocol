@@ -40,7 +40,11 @@ import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { ERROR_PAGE } from 'utils/route'
-import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
+import {
+  waitForAccount,
+  actionChannelDispatcher,
+  waitForValue
+} from 'utils/sagaHelpers'
 
 import * as uploadActions from './actions'
 import { watchUploadErrors } from './errorSagas'
@@ -873,6 +877,7 @@ function* uploadSingleTrack(track) {
           throw new Error(error)
         }
 
+        yield waitForAccount()
         const userId = yield select(getUserId)
         const handle = yield select(getUserHandle)
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
@@ -950,6 +955,8 @@ function* uploadSingleTrack(track) {
       kind: 'tracks'
     })
   )
+
+  yield waitForAccount()
   const account = yield select(getAccountUser)
   yield put(cacheActions.setExpired(Kind.USERS, account.user_id))
 
@@ -1029,6 +1036,8 @@ function* uploadMultipleTracks(tracks) {
       kind: 'tracks'
     })
   )
+
+  yield waitForAccount()
   const account = yield select(getAccountUser)
 
   // If the hide remixes is turned on, send analytics event
@@ -1064,6 +1073,7 @@ function* uploadMultipleTracks(tracks) {
 
 function* uploadTracksAsync(action) {
   yield call(waitForBackendSetup)
+  yield waitForAccount()
   const user = yield select(getAccountUser)
   yield put(
     uploadActions.uploadTracksRequested(

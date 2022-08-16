@@ -12,7 +12,7 @@ import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
 
 import * as dashboardActions from './actions'
 
-function* fetchDashboardAsync(action) {
+function* fetchDashboardAsync() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
 

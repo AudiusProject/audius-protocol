@@ -7,6 +7,7 @@ import { getContext } from 'common/store'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 export type UserListProviderArgs<T, U = void> = {
   // Gets the track or playlist we're referencing.
@@ -74,6 +75,7 @@ export function createUserListProvider<T, U = void>({
     const subsetIds = extractUserIDSubsetFromEntity(existingEntity)
     const subsetIdSet = new Set(subsetIds)
 
+    yield* waitForAccount()
     const userId = yield* select(getUserId)
     // Get the next page of users
     const offset = currentPage * pageSize

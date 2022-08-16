@@ -6,6 +6,7 @@ import { getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { reformat as reformatUser } from 'common/store/cache/users/utils'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 /**
  * Adds users from track metadata to cache.
@@ -16,6 +17,7 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   metadataArray: T[]
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  yield* waitForAccount()
   const accountUser = yield* select(getAccountUser)
   const currentUserId = accountUser?.user_id
   let users = metadataArray

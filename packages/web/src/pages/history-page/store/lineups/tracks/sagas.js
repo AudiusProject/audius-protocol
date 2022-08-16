@@ -9,10 +9,12 @@ import {
   tracksActions
 } from 'common/store/pages/history-page/lineups/tracks/actions'
 import { LineupSagas } from 'store/lineup/sagas'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 function* getHistoryTracks() {
   const apiClient = yield getContext('apiClient')
   try {
+    yield waitForAccount()
     const currentUserId = yield select(getUserId)
     const activity = yield apiClient.getUserTrackHistory({
       currentUserId,

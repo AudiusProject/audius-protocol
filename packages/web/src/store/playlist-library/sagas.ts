@@ -35,7 +35,7 @@ import {
 } from 'common/store/playlist-library/helpers'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
 import { getResult } from 'store/confirmer/selectors'
-import { waitForValue } from 'utils/sagaHelpers'
+import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { update } from './slice'
 
@@ -74,6 +74,7 @@ function* watchUpdatePlaylistLibrary() {
     function* updatePlaylistLibrary(action: ReturnType<typeof update>) {
       const { playlistLibrary } = action.payload
       yield call(waitForBackendSetup)
+      yield* waitForAccount()
 
       const account: User = yield select(getAccountUser)
       account.playlist_library =
@@ -116,6 +117,8 @@ function* watchUpdatePlaylistLibraryWithTempPlaylist() {
       const { playlistLibrary: rawPlaylistLibrary } = action.payload
       const playlistLibrary =
         removePlaylistLibraryDuplicates(rawPlaylistLibrary)
+
+      yield* waitForAccount()
       const account: User = yield select(getAccountUser)
 
       // Map over playlist library contents and resolve each temp id playlist
