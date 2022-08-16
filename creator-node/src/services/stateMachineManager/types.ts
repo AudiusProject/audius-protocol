@@ -62,7 +62,7 @@ export type JobsToEnqueue = Partial<
 export type DecoratedJobReturnValue<JobReturnValue> = JobReturnValue & {
   jobsToEnqueue?: JobsToEnqueue
   metricsToRecord?: any
-  spanContext: SpanContext
+  spanContext?: SpanContext
 }
 export type AnyDecoratedJobReturnValue =
   | DecoratedJobReturnValue<MonitorStateJobReturnValue>
