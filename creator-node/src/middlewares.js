@@ -463,7 +463,7 @@ async function _issueAndWaitForSecondarySyncRequests(
   }
 }
 
-const issueSyncRequestsUntilSynced = instrumentTracing({
+const issueAndWaitForSecondarySyncRequests = instrumentTracing({
   fn: _issueAndWaitForSecondarySyncRequests,
   options: {
     attributes: {
