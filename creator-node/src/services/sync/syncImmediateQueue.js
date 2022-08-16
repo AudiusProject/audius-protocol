@@ -4,8 +4,7 @@ const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { SpanStatusCode } = require('@opentelemetry/api')
-const { getTracer } = require('../../tracer')
+const { instrumentTracing, recordException } = require('utils/tracing')
 
 const SYNC_QUEUE_HISTORY = 500
 const LOCK_DURATION = 1000 * 60 * 5 // 5 minutes
@@ -48,47 +47,49 @@ class SyncImmediateQueue {
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
       const {
-        walletPublicKeys,
-        creatorNodeEndpoint,
-        forceResync,
         parentSpanContext
       } = job.data
 
-      const options = {
-        links: [
-          {
-            context: parentSpanContext
-          }
-        ],
-        attributes: {
-          [SemanticAttributes.CODE_FUNCTION]: 'syncImmediateQueue.process',
-          [SemanticAttributes.CODE_FILEPATH]: __filename
-        }
-      }
-      getTracer().startActiveSpan(
-        'syncImmediateQueue.process',
-        options,
-        async (span) => {
-          try {
-            await secondarySyncFromPrimary(
-              this.serviceRegistry,
-              walletPublicKeys,
-              creatorNodeEndpoint,
-              null, // blockNumber
-              forceResync
-            )
-          } catch (e) {
-            span.recordException(e)
-            span.setStatus({ code: SpanStatusCode.ERROR })
-            const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
-            logger.error(msg)
-            throw e
-          } finally {
-            span.end()
+      const processTask = instrumentTracing({
+        name: 'syncImmediateQueue.process',
+        fn: this.processTask,
+        options: {
+          links: [
+            {
+              context: parentSpanContext
+            }
+          ],
+          attributes: {
+            [SemanticAttributes.CODE_FILEPATH]: __filename
           }
         }
-      )
+      })
+
+      await processTask(job)
     })
+
+    processTask = async (job) => {
+      const {
+        walletPublicKeys,
+        creatorNodeEndpoint,
+        forceResync,
+      } = job.data
+
+      try {
+        await secondarySyncFromPrimary(
+          this.serviceRegistry,
+          walletPublicKeys,
+          creatorNodeEndpoint,
+          null, // blockNumber
+          forceResync
+        )
+      } catch (e) {
+        recordException(e)
+        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
+        logger.error(msg)
+        throw e
+      }
+    }
   }
 
   async processImmediateSync({
