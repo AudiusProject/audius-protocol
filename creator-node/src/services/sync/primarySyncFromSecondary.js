@@ -209,13 +209,18 @@ async function fetchExportFromSecondary({
   // Validate export response
   if (
     !_.has(exportResp, 'data.data') ||
-    !_.has(exportResp.data.data, 'cnodeUsers') ||
-    Object.keys(exportResp.data.data.cnodeUsers).length !== 1
+    !_.has(exportResp.data.data, 'cnodeUsers')
   ) {
     throw new Error('Malformatted export response data')
   }
 
   const { cnodeUsers } = exportResp.data.data
+
+  if (!cnodeUsers.length === 0) {
+    throw new Error('No cnodeUser returned from export')
+  } else if (cnodeUsers.length > 1) {
+    throw new Error('Multiple cnodeUsers returned from export')
+  }
 
   const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
   if (fetchedCNodeUser.walletPublicKey !== wallet) {
