@@ -42,7 +42,6 @@ Description: Get users balance of claimable stake and delegation information.
   }
 }
 
-```graphql
 
 ### Audius Network
 
