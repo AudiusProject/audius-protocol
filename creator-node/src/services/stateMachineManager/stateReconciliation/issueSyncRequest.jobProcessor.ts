@@ -207,20 +207,14 @@ async function _handleIssueSyncRequest({
    * For now, if primarySyncFromSecondary fails, we just log & error without any retries
    * Eventually should make this more robust, but proceeding with caution
    */
-<<<<<<< HEAD
   if (
     syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
     syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
   ) {
-    // Short-circuit if this syncMode is disabled
-    if (!mergePrimaryAndSecondaryEnabled) {
-=======
-  if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
     const fromManualRoute = syncRequestParameters.data.from_manual_route
 
     // Short-circuit if this syncMode is disabled or if manual route override not provided
     if (!mergePrimaryAndSecondaryEnabled && !fromManualRoute) {
->>>>>>> origin
       return { result: 'success_mode_disabled' }
     }
 
