@@ -4,7 +4,7 @@ const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { instrumentTracing, recordException } = require('utils/tracing')
+const { instrumentTracing, recordException } = require('../../utils/tracing')
 
 const SYNC_QUEUE_HISTORY = 500
 const LOCK_DURATION = 1000 * 60 * 5 // 5 minutes
