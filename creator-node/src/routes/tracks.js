@@ -38,7 +38,6 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
-const { getTracer } = require('../tracer')
 const { instrumentTracing, getActiveSpan } = require('../utils/tracing')
 
 const readFile = promisify(fs.readFile)
@@ -47,20 +46,17 @@ const router = express.Router()
 
 const handleTrackContentAsync = async (req, res) => {
   const span = getActiveSpan()
-  span?.setAttribute(requestID, req.logContext.requestID)
+  span?.setAttribute('requestID', req.logContext.requestID)
   if (req.fileSizeError || req.fileFilterError) {
     removeTrackFolder({ logContext: req.logContext }, req.fileDir)
-    return errorResponseBadRequest(
-      req.fileSizeError || req.fileFilterError
-    )
+    return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
   }
 
   const AsyncProcessingQueue =
     req.app.get('serviceRegistry').asyncProcessingQueue
 
   const selfTranscode = currentNodeShouldHandleTranscode({
-    transcodingQueueCanAcceptMoreJobs:
-      await TranscodingQueue.isAvailable(),
+    transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
     spID: config.get('spID')
   })
 
@@ -167,7 +163,7 @@ router.post(
           }
         })
         return successResponse({ uuid: req.logContext.requestID })
-      },
+      }
     })
   })
 )

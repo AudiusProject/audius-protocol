@@ -60,11 +60,10 @@ const _findSyncRequests = async ({
   unhealthyPeers,
   replicaToAllUserInfoMaps,
   userSecondarySyncMetricsMap,
-  logger,
+  logger
 }: DecoratedJobParams<FindSyncRequestsJobParams>): Promise<
   DecoratedJobReturnValue<FindSyncRequestsJobReturnValue>
 > => {
-
   const span = getActiveSpan()
 
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
@@ -80,9 +79,7 @@ const _findSyncRequests = async ({
   for (const user of users) {
     const { wallet, primary, secondary1, secondary2 } = user
 
-    const userSecondarySyncMetrics = userSecondarySyncMetricsMap[
-      wallet
-    ] || {
+    const userSecondarySyncMetrics = userSecondarySyncMetricsMap[wallet] || {
       [secondary1]: { successRate: 1, failureCount: 0 },
       [secondary2]: { successRate: 1, failureCount: 0 }
     }
@@ -136,9 +133,7 @@ const _findSyncRequests = async ({
   }
 
   // Report aggregate metrics
-  for (const [syncMode, resultCountsMap] of Object.entries(
-    outcomeCountsMap
-  )) {
+  for (const [syncMode, resultCountsMap] of Object.entries(outcomeCountsMap)) {
     for (const [result, count] of Object.entries(resultCountsMap)) {
       metricsToRecord.push(
         makeGaugeIncToRecord(
@@ -225,13 +220,11 @@ async function _findSyncsForUser(
   for (const secondaryInfo of secondariesInfo) {
     const secondary = secondaryInfo.endpoint
 
-    const { successRate, failureCount } =
-      userSecondarySyncMetricsMap[secondary]
+    const { successRate, failureCount } = userSecondarySyncMetricsMap[secondary]
 
     // Secondary is unhealthy if we already marked it as unhealthy previously -- don't sync to it
     if (unhealthyPeers.has(secondary)) {
-      outcomesBySecondary[secondary].result =
-        'no_sync_already_marked_unhealthy'
+      outcomesBySecondary[secondary].result = 'no_sync_already_marked_unhealthy'
       continue
     }
 
@@ -289,14 +282,13 @@ async function _findSyncsForUser(
       syncMode === SYNC_MODES.MergePrimaryAndSecondary
     ) {
       try {
-        const { duplicateSyncReq, syncReqToEnqueue } =
-          getNewOrExistingSyncReq({
-            userWallet: wallet,
-            primaryEndpoint: thisContentNodeEndpoint,
-            secondaryEndpoint: secondary,
-            syncType: SyncType.Recurring,
-            syncMode
-          })
+        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+          userWallet: wallet,
+          primaryEndpoint: thisContentNodeEndpoint,
+          secondaryEndpoint: secondary,
+          syncType: SyncType.Recurring,
+          syncMode
+        })
 
         if (!_.isEmpty(syncReqToEnqueue)) {
           result = 'new_sync_request_enqueued'
@@ -331,11 +323,12 @@ async function _findSyncsForUser(
 }
 
 const findSyncsForUser = instrumentTracing({
-  fn: _findSyncsForUser,
+  fn: _findSyncsForUser
 })
 
-
-module.exports = async ({ parentSpanContext }: {
+module.exports = async ({
+  parentSpanContext
+}: {
   parentSpanContext: SpanContext
 }) => {
   return instrumentTracing({

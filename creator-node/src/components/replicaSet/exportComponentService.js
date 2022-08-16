@@ -1,4 +1,5 @@
 const _ = require('lodash')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 
 const models = require('../../models')
 const { Transaction } = require('sequelize')
@@ -175,4 +176,4 @@ module.exports = instrumentTracing({
       [SemanticAttributes.CODE_FILEPATH]: __filename
     }
   }
-}) 
+})

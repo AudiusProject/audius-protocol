@@ -56,7 +56,7 @@ class AsyncProcessingQueue {
     this.libs = libs
 
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
-      const { parentSpanContext } = job.data
+      const { task, logContext, parentSpanContext } = job.data
       const processTask = instrumentTracing({
         name: 'AsyncProcessingQueue.process',
         fn: this.processTask,
@@ -122,7 +122,8 @@ class AsyncProcessingQueue {
         done(null, { response })
       } catch (e) {
         this.logError(
-          `Could not process taskType=${task} uuid=${logContext.requestID
+          `Could not process taskType=${task} uuid=${
+            logContext.requestID
           }: ${e.toString()}`,
           logContext
         )

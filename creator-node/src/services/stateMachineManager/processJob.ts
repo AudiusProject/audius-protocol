@@ -15,7 +15,6 @@ import redis from '../../redis'
 import { QUEUE_NAMES } from './stateMachineConstants'
 import { getActiveSpan, instrumentTracing } from 'utils/tracing'
 
-
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
  *
@@ -51,7 +50,7 @@ const processJob = async function (
   let result
   const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames[
-    `STATE_MACHINE_${queueName}_JOB_DURATION_SECONDS_HISTOGRAM`
+      `STATE_MACHINE_${queueName}_JOB_DURATION_SECONDS_HISTOGRAM`
     ]
   )
   const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()

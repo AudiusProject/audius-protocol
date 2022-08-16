@@ -16,7 +16,7 @@ const { instrumentTracing, getActiveSpan } = require('./utils/tracing')
 
 const router = express.Router()
 
-handleExport = async (req, res) => {
+const handleExport = async (req, res) => {
   const span = getActiveSpan()
   const start = Date.now()
 
@@ -48,8 +48,10 @@ handleExport = async (req, res) => {
     )
 
     req.logger.info(
-      `Successful export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint || '(not provided)'
-      } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start
+      `Successful export for wallets ${walletPublicKeys} to source endpoint ${
+        sourceEndpoint || '(not provided)'
+      } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${
+        Date.now() - start
       } ms`
     )
 
@@ -59,8 +61,10 @@ handleExport = async (req, res) => {
     span?.recordException(e)
     span?.setStatus({ code: SpanStatusCode.ERROR })
     req.logger.error(
-      `Error in /export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint || '(not provided)'
-      } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start
+      `Error in /export for wallets ${walletPublicKeys} to source endpoint ${
+        sourceEndpoint || '(not provided)'
+      } for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${
+        Date.now() - start
       } ms ||`,
       e
     )

@@ -10,7 +10,7 @@ import { SpanStatusCode } from '@opentelemetry/api'
 
 import initAudiusLibs from '../../initAudiusLibs'
 import NodeToSpIdManager from '../CNodeToSpIdMapManager'
-import { getActiveSpan, instrumentTracing } from 'utils/tracing'
+import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
 
 /**
  * Processes a job to update the cNodeEndpoint->spId map by reading the chain.
@@ -52,7 +52,9 @@ const fetchCNodeEndpointToSpIdMap = async ({
 }
 
 // Different from other `instrumentTracing` calls because of the need to link the parentSpanContext
-module.exports = ({ parentSpanContext }: {
+module.exports = ({
+  parentSpanContext
+}: {
   parentSpanContext: SpanContext
 }) => {
   return instrumentTracing({

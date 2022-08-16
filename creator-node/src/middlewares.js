@@ -194,7 +194,8 @@ async function ensurePrimaryMiddleware(req, res, next) {
   req.session.creatorNodeEndpoints = replicaSetEndpoints.filter(Boolean)
 
   req.logger.info(
-    `${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${req.session.creatorNodeEndpoints
+    `${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${
+      req.session.creatorNodeEndpoints
     }`
   )
   next()
@@ -283,8 +284,7 @@ async function _issueAndWaitForSecondarySyncRequests(
   const writeQuorumHeaderTrue =
     enforceWriteQuorumHeader === true || enforceWriteQuorumHeader === 'true'
   const writeQuorumHeaderFalse =
-    enforceWriteQuorumHeader === false ||
-    enforceWriteQuorumHeader === 'false'
+    enforceWriteQuorumHeader === false || enforceWriteQuorumHeader === 'false'
   const writeQuorumHeaderEmpty =
     !writeQuorumHeaderFalse || enforceWriteQuorumHeader === 'null'
   let enforceWriteQuorum = false
@@ -408,7 +408,8 @@ async function _issueAndWaitForSecondarySyncRequests(
       await promiseAny(secondaryPromises)
 
       req.logger.info(
-        `issueAndWaitForSecondarySyncRequests - At least one secondary successfully replicated content for user ${wallet} in ${Date.now() - replicationStart
+        `issueAndWaitForSecondarySyncRequests - At least one secondary successfully replicated content for user ${wallet} in ${
+          Date.now() - replicationStart
         }ms`
       )
       endHistogramTimer({
@@ -426,8 +427,9 @@ async function _issueAndWaitForSecondarySyncRequests(
         route,
         result: 'failed_sync'
       })
-      const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${Date.now() - replicationStart
-        }ms`
+      const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
+        Date.now() - replicationStart
+      }ms`
       span?.addEvent(errorMsg)
       req.logger.error(`${errorMsg}: ${e.message}`)
 
@@ -513,7 +515,7 @@ async function getOwnEndpoint({ libs }) {
     !spInfo.hasOwnProperty('endpoint') ||
     spInfo.owner.toLowerCase() !== config.get('spOwnerWallet').toLowerCase() ||
     spInfo.delegateOwnerWallet.toLowerCase() !==
-    config.get('delegateOwnerWallet').toLowerCase() ||
+      config.get('delegateOwnerWallet').toLowerCase() ||
     (spInfo.endpoint && !_isFQDN(spInfo.endpoint)) ||
     spInfo.endpoint !== creatorNodeEndpoint
   ) {
@@ -574,7 +576,8 @@ async function getCreatorNodeEndpoints({
     let discprovBlockNumber = -1
     for (let retry = 1; retry <= MaxRetries; retry++) {
       logger.info(
-        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2
+        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${
+          Date.now() - start2
         } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
       )
 
@@ -606,7 +609,8 @@ async function getCreatorNodeEndpoints({
 
       await utils.timeout(RetryTimeout)
       logger.info(
-        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2
+        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
+          Date.now() - start2
         } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
       )
     }
@@ -642,7 +646,8 @@ async function getCreatorNodeEndpoints({
     let returnedPrimaryEndpoint = null
     for (let retry = 1; retry <= MaxRetries; retry++) {
       logger.info(
-        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2
+        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${
+          Date.now() - start2
         } myCnodeEndpoint ${myCnodeEndpoint}`
       )
 
@@ -670,7 +675,8 @@ async function getCreatorNodeEndpoints({
 
       await utils.timeout(RetryTimeout)
       logger.info(
-        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2
+        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
+          Date.now() - start2
         } myCnodeEndpoint ${myCnodeEndpoint}`
       )
     }
@@ -760,7 +766,8 @@ async function getReplicaSetSpIDs({
     let blockNumberIndexed = false
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(
-        `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start
+        `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${
+          Date.now() - start
         }. Polling until blockNumber ${blockNumber}.`
       )
 
@@ -812,7 +819,8 @@ async function getReplicaSetSpIDs({
     let errorMsg = null
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(
-        `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start
+        `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${
+          Date.now() - start
         }. Polling until primaryEnsured.`
       )
 
@@ -888,7 +896,8 @@ async function getReplicaSetSpIDs({
   const userReplicaSetSpIDs = [replicaSet.primaryId, ...replicaSet.secondaryIds]
 
   logger.info(
-    `${logPrefix} completed in ${Date.now() - start
+    `${logPrefix} completed in ${
+      Date.now() - start
     }. userReplicaSetSpIDs = [${userReplicaSetSpIDs}]`
   )
   return userReplicaSetSpIDs
