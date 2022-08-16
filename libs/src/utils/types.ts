@@ -133,7 +133,12 @@ export type CollectionMetadata = {
   is_delete: boolean
   is_private: boolean
   playlist_contents: {
-    track_ids: Array<{ time: number; track: ID; uid?: UID }>
+    track_ids: Array<{
+      metadata_time: number
+      time: number
+      track: ID
+      uid?: UID
+    }>
   }
   tracks?: TrackMetadata[]
   track_count: number

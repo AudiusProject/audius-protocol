@@ -9,6 +9,7 @@ from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
+from src.queries.query_helpers import SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
 from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
@@ -66,7 +67,11 @@ def add_playlist_added_timestamps(playlist):
     added_timestamps = []
     for track in playlist["playlist_contents"]["track_ids"]:
         added_timestamps.append(
-            {"track_id": encode_int_id(track["track"]), "timestamp": track["time"]}
+            {
+                "track_id": encode_int_id(track["track"]),
+                "timestamp": track["time"],
+                "metadata_timestamp": track.get("metadata_time"),
+            }
         )
     return added_timestamps
 
@@ -490,10 +495,38 @@ track_history_parser = pagination_with_current_user_parser.copy()
 track_history_parser.add_argument(
     "query", required=False, description="The filter query"
 )
+track_history_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+track_history_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
 
 user_favorited_tracks_parser = pagination_with_current_user_parser.copy()
 user_favorited_tracks_parser.add_argument(
     "query", required=False, description="The filter query"
+)
+user_favorited_tracks_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+user_favorited_tracks_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
 )
 
 user_tracks_route_parser = pagination_with_current_user_parser.copy()
@@ -503,10 +536,24 @@ user_tracks_route_parser.add_argument(
     type=str,
     default="date",
     choices=("date", "plays"),
-    description="Field to sort by",
+    description="[Deprecated] Field to sort by",
 )
 user_tracks_route_parser.add_argument(
     "query", required=False, description="The filter query"
+)
+user_tracks_route_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+user_tracks_route_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()
@@ -576,6 +623,14 @@ def format_offset(args, max_offset=MAX_LIMIT):
 
 def format_query(args):
     return args.get("query", None)
+
+
+def format_sort_method(args):
+    return args.get("sort_method", None)
+
+
+def format_sort_direction(args):
+    return args.get("sort_direction", None)
 
 
 def get_default_max(value, default, max=None):

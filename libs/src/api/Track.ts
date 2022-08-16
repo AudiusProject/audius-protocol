@@ -408,7 +408,6 @@ export class Track extends Base {
           }
         }
       )
-
       phase = phases.ADDING_TRACK
 
       // Write metadata to chain

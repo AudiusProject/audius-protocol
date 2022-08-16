@@ -35,3 +35,7 @@ user_replica_set_manager_event_types_arr = [
     user_replica_set_manager_event_types_lookup["update_replica_set"],
     user_replica_set_manager_event_types_lookup["add_or_update_content_node"],
 ]
+
+entity_manager_event_types_lookup = {"manage_entity": "ManageEntity"}
+
+entity_manager_event_types_arr = [entity_manager_event_types_lookup["manage_entity"]]
