@@ -63,38 +63,6 @@ const updateReplicaSet = async function ({
 }: DecoratedJobParams<UpdateReplicaSetJobParams>): Promise<
   DecoratedJobReturnValue<UpdateReplicaSetJobReturnValue>
 > {
-  /**
-   * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
-   * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
-   * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
-   * There will be an explicit clock value check on the newly selected replica set nodes instead.
-   */
-  let audiusLibs = null
-  let healthyNodes = []
-  healthyNodes = await getCachedHealthyNodes()
-  if (healthyNodes.length === 0) {
-    info('init libs')
-    audiusLibs = await initAudiusLibs({
-      enableEthContracts: true,
-      enableContracts: true,
-      enableDiscovery: false,
-      enableIdentity: true,
-      logger
-    })
-    const { services: healthyServicesMap } =
-      await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-        performSyncCheck: false,
-        whitelist: reconfigNodeWhitelist,
-        log: true
-      })
-    healthyNodes = Object.keys(healthyServicesMap || {})
-    if (healthyNodes.length === 0)
-      throw new Error(
-        'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
-      )
-    await cacheHealthyNodes(healthyNodes)
-  }
-
   let errorMsg = ''
   let issuedReconfig = false
   let syncJobsToEnqueue: IssueSyncRequestJobParams[] = []
@@ -105,6 +73,51 @@ const updateReplicaSet = async function ({
     issueReconfig: false,
     reconfigType: null
   }
+
+  /**
+   * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
+   * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+   * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+   * There will be an explicit clock value check on the newly selected replica set nodes instead.
+   */
+  let audiusLibs = null
+  let healthyNodes = []
+  healthyNodes = await getCachedHealthyNodes()
+  if (healthyNodes.length === 0) {
+
+    try {
+      info('init libs')
+      audiusLibs = await initAudiusLibs({
+        enableEthContracts: true,
+        enableContracts: true,
+        enableDiscovery: false,
+        enableIdentity: true,
+        logger
+      })
+      const { services: healthyServicesMap } =
+        await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+          performSyncCheck: false,
+          whitelist: reconfigNodeWhitelist,
+          log: true
+        })
+      healthyNodes = Object.keys(healthyServicesMap || {})
+      if (healthyNodes.length === 0)
+        throw new Error(
+          'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
+        )
+      await cacheHealthyNodes(healthyNodes)
+    } catch (e: any) {
+      const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
+      logger.error(errorMsg)
+      return {
+        errorMsg,
+        issuedReconfig,
+        newReplicaSet,
+        healthyNodes
+      }
+    }
+  }
+
   try {
     newReplicaSet = await _determineNewReplicaSet({
       logger,
@@ -131,7 +144,9 @@ const updateReplicaSet = async function ({
   } catch (e: any) {
     recordException(e)
     logger.error(
-      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}`
+      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
+        e.stack
+      }`
     )
     errorMsg = e.toString()
   }
