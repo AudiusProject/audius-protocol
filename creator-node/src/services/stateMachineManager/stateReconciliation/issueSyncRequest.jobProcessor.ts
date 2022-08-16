@@ -12,11 +12,9 @@ import type {
 import type { SpanContext } from '@opentelemetry/api'
 import type { AxiosRequestConfig } from 'axios'
 
-import { SpanStatusCode } from '@opentelemetry/api'
 import axios from 'axios'
 import _ from 'lodash'
 
-import { getTracer } from '../../../tracer'
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 
 import config from '../../../config'
@@ -38,7 +36,7 @@ import {
 } from '../stateMachineConstants'
 import primarySyncFromSecondary from '../../sync/primarySyncFromSecondary'
 import SyncRequestDeDuplicator from './SyncRequestDeDuplicator'
-import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
+import { getActiveSpan, instrumentTracing, recordException, currentSpanContext } from '../../../utils/tracing'
 import { generateDataForSignatureRecovery } from '../../sync/secondarySyncFromPrimaryUtils'
 import { generateTimestampAndSignature } from '../../../apiSigning'
 const models = require('../../../models')
@@ -152,7 +150,7 @@ const issueSyncRequest = async ({
   return {
     jobsToEnqueue,
     metricsToRecord,
-    spanContext: span?.spanContext(),
+    spanContext: currentSpanContext(),
     error
   }
 }
@@ -268,7 +266,7 @@ async function _handleIssueSyncRequest({
         message: `${logMsgString} || Error issuing sync request: ${e.message}`
       },
       syncReqToEnqueue: {
-        parentSpanContext: span?.spanContext(),
+        parentSpanContext: currentSpanContext(),
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
         syncRequestParameters
@@ -277,12 +275,12 @@ async function _handleIssueSyncRequest({
   }
 
   // primaryClockValue is used in additionalSyncIsRequired() call below
-  const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
+  const primaryClockValue = (await getUserPrimaryClockValues([userWallet]))[
     userWallet
   ]
 
   // Wait until has sync has completed (within time threshold)
-  const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
+  const { outcome, syncReqToEnqueue } = await additionalSyncIsRequired(
     primaryClockValue,
     syncType,
     syncMode,
@@ -307,34 +305,32 @@ const handleIssueSyncRequest = instrumentTracing({
  * @returns map(wallet -> clock val)
  */
 const _getUserPrimaryClockValues = async (wallets: string[]) => {
-  return getTracer().startActiveSpan(
-    '_getUserPrimaryClockValues',
-    async (span) => {
-      // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
-      const cnodeUsersFromDB = await models.CNodeUser.findAll({
-        where: {
-          walletPublicKey: {
-            [models.Sequelize.Op.in]: wallets
-          }
-        }
-      })
-
-      // Initialize clock values for all users to -1
-      const cnodeUserClockValuesMap: { [wallet: string]: number } = {}
-      wallets.forEach((wallet: string) => {
-        cnodeUserClockValuesMap[wallet] = -1
-      })
-
-      // Populate clock values into map with DB data
-      cnodeUsersFromDB.forEach((cnodeUser: any) => {
-        cnodeUserClockValuesMap[cnodeUser.walletPublicKey] = cnodeUser.clock
-      })
-
-      span.end()
-      return cnodeUserClockValuesMap
+  // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
+  const cnodeUsersFromDB = await models.CNodeUser.findAll({
+    where: {
+      walletPublicKey: {
+        [models.Sequelize.Op.in]: wallets
+      }
     }
-  )
+  })
+
+  // Initialize clock values for all users to -1
+  const cnodeUserClockValuesMap: { [wallet: string]: number } = {}
+  wallets.forEach((wallet: string) => {
+    cnodeUserClockValuesMap[wallet] = -1
+  })
+
+  // Populate clock values into map with DB data
+  cnodeUsersFromDB.forEach((cnodeUser: any) => {
+    cnodeUserClockValuesMap[cnodeUser.walletPublicKey] = cnodeUser.clock
+  })
+
+  return cnodeUserClockValuesMap
 }
+
+const getUserPrimaryClockValues = instrumentTracing({
+  fn: _getUserPrimaryClockValues
+})
 
 /**
  * Monitor an ongoing sync operation for a given secondaryUrl and user wallet
@@ -348,124 +344,121 @@ const _additionalSyncIsRequired = async (
   syncRequestParameters: SyncRequestAxiosParams,
   logger: any
 ): Promise<AdditionalSyncIsRequiredResponse> => {
-  return getTracer().startActiveSpan(
-    '_addtionalSyncIsRequired',
-    async (span) => {
-      const userWallet = syncRequestParameters.data.wallet[0]
-      const secondaryUrl = syncRequestParameters.baseURL
-      const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
+  const userWallet = syncRequestParameters.data.wallet[0]
+  const secondaryUrl = syncRequestParameters.baseURL
+  const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
-      const startTimeMs = Date.now()
-      const maxMonitoringTimeMs =
-        startTimeMs +
-        (syncType === SyncType.Manual
-          ? maxManualSyncMonitoringDurationInMs
-          : maxSyncMonitoringDurationInMs)
+  const startTimeMs = Date.now()
+  const maxMonitoringTimeMs =
+    startTimeMs +
+    (syncType === SyncType.Manual
+      ? maxManualSyncMonitoringDurationInMs
+      : maxSyncMonitoringDurationInMs)
+
+  /**
+   * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
+   */
+
+  let secondaryCaughtUpToPrimary = false
+  let initialSecondaryClock = null
+  let finalSecondaryClock = null
+
+  while (Date.now() < maxMonitoringTimeMs) {
+    try {
+      const secondaryClockValue =
+        await retrieveClockValueForUserFromReplica(secondaryUrl, userWallet)
+      logger.info(`${logMsgString} secondaryClock ${secondaryClockValue}`)
+
+      // Record starting and current clock values for secondary to determine future action
+      if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+        initialSecondaryClock = -1
+      } else if (initialSecondaryClock === null) {
+        initialSecondaryClock = secondaryClockValue
+      }
+      finalSecondaryClock = secondaryClockValue
 
       /**
-       * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
+       * Stop monitoring if secondary has caught up to primary
+       * Note - secondaryClockValue can be greater than primaryClockValue if additional
+       *    data was written to primary after primaryClockValue was computed
        */
-
-      let secondaryCaughtUpToPrimary = false
-      let initialSecondaryClock = null
-      let finalSecondaryClock = null
-
-      while (Date.now() < maxMonitoringTimeMs) {
-        try {
-          const secondaryClockValue =
-            await retrieveClockValueForUserFromReplica(secondaryUrl, userWallet)
-          logger.info(`${logMsgString} secondaryClock ${secondaryClockValue}`)
-
-          // Record starting and current clock values for secondary to determine future action
-          if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-            initialSecondaryClock = -1
-          } else if (initialSecondaryClock === null) {
-            initialSecondaryClock = secondaryClockValue
-          }
-          finalSecondaryClock = secondaryClockValue
-
-          /**
-           * Stop monitoring if secondary has caught up to primary
-           * Note - secondaryClockValue can be greater than primaryClockValue if additional
-           *    data was written to primary after primaryClockValue was computed
-           */
-          if (secondaryClockValue >= primaryClockValue) {
-            secondaryCaughtUpToPrimary = true
-            break
-          }
-        } catch (e: any) {
-          span.recordException(e)
-          span.setStatus({ code: SpanStatusCode.ERROR })
-          logger.warn(`${logMsgString} || Error: ${e.message}`)
-        }
-
-        // Delay between retries
-        await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
+      if (secondaryClockValue >= primaryClockValue) {
+        secondaryCaughtUpToPrimary = true
+        break
       }
-
-      const monitoringTimeMs = Date.now() - startTimeMs
-
-      /**
-       * As Primary for user, record SyncRequest outcomes to all secondaries
-       * Also check whether additional sync is required
-       */
-      let additionalSyncIsRequired
-      let outcome
-      if (secondaryCaughtUpToPrimary) {
-        await SecondarySyncHealthTracker.recordSuccess(
-          secondaryUrl,
-          userWallet,
-          syncType
-        )
-        outcome = 'success_secondary_caught_up'
-        additionalSyncIsRequired = false
-        logger.info(
-          `${logMsgString} || Sync completed in ${monitoringTimeMs}ms`
-        )
-
-        // Secondary completed sync but is still behind primary since it was behind by more than max export range
-        // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
-      } else if (finalSecondaryClock > initialSecondaryClock) {
-        await SecondarySyncHealthTracker.recordSuccess(
-          secondaryUrl,
-          userWallet,
-          syncType
-        )
-        additionalSyncIsRequired = true
-        outcome = 'success_secondary_partially_caught_up'
-        logger.info(
-          `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest.`
-        )
-
-        // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
-      } else {
-        await SecondarySyncHealthTracker.recordFailure(
-          secondaryUrl,
-          userWallet,
-          syncType
-        )
-        additionalSyncIsRequired = true
-        outcome = 'failure_secondary_failed_to_progress'
-        logger.error(
-          `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`
-        )
-      }
-
-      const response: AdditionalSyncIsRequiredResponse = { outcome }
-      if (additionalSyncIsRequired) {
-        response.syncReqToEnqueue = {
-          parentSpanContext: span.spanContext(),
-          syncType,
-          syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-          syncRequestParameters
-        }
-      }
-
-      span.end()
-      return response
+    } catch (e: any) {
+      recordException(e)
+      logger.warn(`${logMsgString} || Error: ${e.message}`)
     }
-  )
+
+    // Delay between retries
+    await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
+  }
+
+  const monitoringTimeMs = Date.now() - startTimeMs
+
+  /**
+   * As Primary for user, record SyncRequest outcomes to all secondaries
+   * Also check whether additional sync is required
+   */
+  let additionalSyncIsRequired
+  let outcome
+  if (secondaryCaughtUpToPrimary) {
+    await SecondarySyncHealthTracker.recordSuccess(
+      secondaryUrl,
+      userWallet,
+      syncType
+    )
+    outcome = 'success_secondary_caught_up'
+    additionalSyncIsRequired = false
+    logger.info(
+      `${logMsgString} || Sync completed in ${monitoringTimeMs}ms`
+    )
+
+    // Secondary completed sync but is still behind primary since it was behind by more than max export range
+    // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
+  } else if (finalSecondaryClock > initialSecondaryClock) {
+    await SecondarySyncHealthTracker.recordSuccess(
+      secondaryUrl,
+      userWallet,
+      syncType
+    )
+    additionalSyncIsRequired = true
+    outcome = 'success_secondary_partially_caught_up'
+    logger.info(
+      `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest.`
+    )
+
+    // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
+  } else {
+    await SecondarySyncHealthTracker.recordFailure(
+      secondaryUrl,
+      userWallet,
+      syncType
+    )
+    additionalSyncIsRequired = true
+    outcome = 'failure_secondary_failed_to_progress'
+    logger.error(
+      `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`
+    )
+  }
+
+  const response: AdditionalSyncIsRequiredResponse = { outcome }
+  if (additionalSyncIsRequired) {
+    response.syncReqToEnqueue = {
+      parentSpanContext: currentSpanContext(),
+      syncType,
+      syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+      syncRequestParameters
+    }
+  }
+
+  return response
 }
+
+const additionalSyncIsRequired = instrumentTracing({
+  fn: _additionalSyncIsRequired,
+})
 
 module.exports = async ({
   parentSpanContext
