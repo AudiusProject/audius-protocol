@@ -8,12 +8,13 @@ type Fn<TArgs extends any[], TResult> = (...args: TArgs) => TResult;
 export const instrumentTracing = <TArgs extends any[], TResult extends any>({ name, fn, options }: {
     name?: string,
     fn: Fn<TArgs, TResult>,
-    options: SpanOptions
+    options?: SpanOptions,
 }) => {
     return (...args: TArgs): TResult => {
         const spanName = name || fn.name
+        const spanOptions = options || {}
         return getTracer().startActiveSpan(spanName,
-            options,
+            spanOptions,
             span => {
                 try {
                     span.setAttribute(SemanticAttributes.CODE_FUNCTION, fn.name);
