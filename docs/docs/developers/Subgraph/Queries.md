@@ -5,53 +5,62 @@ title: Sample Queries
 
 ## Sample Queries
 
-Below are some sample queries you can use to gather information from the Sablier contracts. 
+Below are some sample queries you can use to gather information from the Audius contracts.
 
 You can build your own queries using a [GraphQL Explorer](https://graphiql-online.com/graphiql) and enter your endpoint to limit the data to exactly what you need.
 
-### Sender Streams
+### User
 
-Description: Gathers the streams created by an account as well as the stream's most recent withdrawal
+Description: Get users balance of claimable stake and delegation information.
 
 ```graphql
-query SenderStreams($Sender: Bytes = "0x3d8115998bc6dd73dbc2686a0f1640bbdf802a5c") {
-  streams(where: {sender: $Sender}) {
-    id
-    sender {id}
-    startTime
-    stopTime
-    ratePerSecond
-    recipient
-    deposit
-    withdrawals(first: 1, orderBy: timestamp, orderDirection: desc) {
+{
+  user(id: "0x8c860adb28ca8a33db5571536bfcf7d6522181e5") {
+    balance
+    totalClaimableAmount
+    claimableStakeAmount
+    claimableDelegationSentAmount
+    claimableDelegationReceivedAmount
+    stakeAmount
+    delegationSentAmount
+    delegationReceivedAmount
+    deployerCut
+    delegateTo(orderBy: claimableAmount, orderDirection: desc) {
       amount
-      timestamp
-      txhash
+      claimableAmount
+      toUser {
+        id
+      }
+    }
+    delegateFrom(orderBy: claimableAmount, orderDirection: desc) {
+      amount
+      claimableAmount
+      fromUser {
+        id
+      }
     }
   }
 }
 
-```
+```graphql
 
-### Receiver Streams
+### Audius Network
 
-Description: Gathers the streams an account receives as well as the stream's most recent withdrawal
+Description: Find minimum stake and maximum on delegation
 
 ```graphql
-query RecipientStreams($Recipient: Bytes = "0x6484a2514aee516ddac6f67dd2322f23e0a4a7d6") {
-  streams(where: {recipient: $Recipient}) {
+{
+  audiusNetworks(first: 5) {
     id
-    sender {id}
-    startTime
-    stopTime
-    ratePerSecond
-    recipient
-    deposit
-    withdrawals(first: 1, orderBy: timestamp, orderDirection: desc) {
-      amount
-      timestamp
-      txhash
-    }
+    audiusTokenAddress
+    claimsManagerAddress
+    delegateManagerAddress
+  }
+  serviceTypes(first: 5) {
+    id
+    isValid
+    minStake
+    maxStake
   }
 }
 ```
