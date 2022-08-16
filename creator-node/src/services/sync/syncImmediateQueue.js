@@ -46,9 +46,7 @@ class SyncImmediateQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const {
-        parentSpanContext
-      } = job.data
+      const { parentSpanContext } = job.data
 
       const processTask = instrumentTracing({
         name: 'syncImmediateQueue.process',
@@ -67,25 +65,25 @@ class SyncImmediateQueue {
 
       return await processTask(job)
     })
+  }
 
-    processTask = async (job) => {
-      const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
-        job.data
+  processTask = async (job) => {
+    const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
+      job.data
 
-      try {
-        await secondarySyncFromPrimary({
-          serviceRegistry: this.serviceRegistry,
-          wallet,
-          creatorNodeEndpoint,
-          forceResyncConfig,
-          logContext
-        })
-      } catch (e) {
-        recordException(e)
-        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}: ${e.message}`
-        logger.error(msg)
-        throw e
-      }
+    try {
+      await secondarySyncFromPrimary({
+        serviceRegistry: this.serviceRegistry,
+        wallet,
+        creatorNodeEndpoint,
+        forceResyncConfig,
+        logContext
+      })
+    } catch (e) {
+      recordException(e)
+      const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}: ${e.message}`
+      logger.error(msg)
+      throw e
     }
   }
 

@@ -1,11 +1,10 @@
 const Bull = require('bull')
 
 const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { SpanStatusCode } = require('@opentelemetry/api')
 
 const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
-const { instrumentTracing } = require('utils/tracing')
+const { instrumentTracing, recordException } = require('../../utils/tracing')
 
 const SYNC_QUEUE_HISTORY = 500
 const LOCK_DURATION = 1000 * 60 * 30 // 30 minutes
@@ -53,9 +52,7 @@ class SyncQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const {
-        parentSpanContext,
-      } = job.data
+      const { parentSpanContext } = job.data
 
       const processTask = instrumentTracing({
         name: 'syncQueue.process',
@@ -74,38 +71,37 @@ class SyncQueue {
 
       return await processTask(job)
     })
+  }
 
-    processTask = async (job) => {
-      const {
+  processTask = async (job) => {
+    const {
+      wallet,
+      creatorNodeEndpoint,
+      forceResyncConfig,
+      blockNumber,
+      logContext
+    } = job.data
+
+    let result
+    try {
+      result = await secondarySyncFromPrimary({
+        serviceRegistry: this.serviceRegistry,
         wallet,
         creatorNodeEndpoint,
-        forceResyncConfig,
         blockNumber,
+        forceResyncConfig,
         logContext
-      } = job.data
-
-      let result
-      try {
-        result = await secondarySyncFromPrimary({
-          serviceRegistry: this.serviceRegistry,
-          wallet,
-          creatorNodeEndpoint,
-          blockNumber,
-          forceResyncConfig,
-          logContext
-        })
-      } catch (e) {
-        span.recordException(e)
-        span.setStatus({ code: SpanStatusCode.ERROR })
-        logger.error(
-          `secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}`,
-          e.message
-        )
-        result = { error: e.message }
-      }
-
-      return result
+      })
+    } catch (e) {
+      recordException(e)
+      logger.error(
+        `secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}`,
+        e.message
+      )
+      result = { error: e.message }
     }
+
+    return result
   }
 
   async enqueueSync({

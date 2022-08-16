@@ -115,9 +115,7 @@ const _handleSyncFromPrimary = async ({
 
     // This is used only for logging by primary to record endpoint of requesting node
     if (nodeConfig.get('creatorNodeEndpoint')) {
-      exportQueryParams.source_endpoint = nodeConfig.get(
-        'creatorNodeEndpoint'
-      )
+      exportQueryParams.source_endpoint = nodeConfig.get('creatorNodeEndpoint')
     }
 
     const resp = await axios({
@@ -208,9 +206,7 @@ const _handleSyncFromPrimary = async ({
         })
 
         // filter out current node from user's replica set
-        userReplicaSet = userReplicaSet.filter(
-          (url) => url !== myCnodeEndpoint
-        )
+        userReplicaSet = userReplicaSet.filter((url) => url !== myCnodeEndpoint)
 
         // Spread + set uniq's the array
         userReplicaSet = [...new Set(userReplicaSet)]
@@ -413,7 +409,8 @@ const _handleSyncFromPrimary = async ({
           )
           genericLogger.info(
             logPrefix,
-            `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency
+            `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
+              i + FileSaveMaxConcurrency
             } out of total ${trackFiles.length}...`
           )
 
@@ -444,18 +441,15 @@ const _handleSyncFromPrimary = async ({
         genericLogger.info(logPrefix, 'Saved all track files to disk.')
 
         // Save all non-track files to disk in batches (to limit concurrent load)
-        for (
-          let i = 0;
-          i < nonTrackFiles.length;
-          i += FileSaveMaxConcurrency
-        ) {
+        for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
           const nonTrackFilesSlice = nonTrackFiles.slice(
             i,
             i + FileSaveMaxConcurrency
           )
           genericLogger.info(
             logPrefix,
-            `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + FileSaveMaxConcurrency
+            `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
+              i + FileSaveMaxConcurrency
             } out of total ${nonTrackFiles.length}...`
           )
           await Promise.all(
@@ -513,9 +507,7 @@ const _handleSyncFromPrimary = async ({
             )
 
           // Throw error if failure threshold not yet reached
-          if (
-            userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip
-          ) {
+          if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
             const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
             genericLogger.error(logPrefix, errorMsg)
             returnValue = {
@@ -538,9 +530,7 @@ const _handleSyncFromPrimary = async ({
           }
         } else {
           // Reset failure count if all files were successfully saved
-          UserSyncFailureCountManager.resetFailureCount(
-            fetchedWalletPublicKey
-          )
+          UserSyncFailureCountManager.resetFailureCount(fetchedWalletPublicKey)
         }
 
         /**
@@ -638,9 +628,9 @@ const _handleSyncFromPrimary = async ({
 
         return _.isEmpty(returnValue)
           ? {
-            error: new Error(e),
-            result: 'failure_db_transaction'
-          }
+              error: new Error(e),
+              result: 'failure_db_transaction'
+            }
           : returnValue
       }
     }
@@ -657,9 +647,9 @@ const _handleSyncFromPrimary = async ({
 
     return _.isEmpty(returnValue)
       ? {
-        error: new Error(e),
-        result: 'failure_sync_secondary_from_primary'
-      }
+          error: new Error(e),
+          result: 'failure_sync_secondary_from_primary'
+        }
       : returnValue
   } finally {
     try {
@@ -670,7 +660,6 @@ const _handleSyncFromPrimary = async ({
         `Failure to release write lock for ${wallet} with error ${e.message}`
       )
     }
-
   }
 
   genericLogger.info(
@@ -684,7 +673,7 @@ const _handleSyncFromPrimary = async ({
 }
 
 const handleSyncFromPrimary = instrumentTracing({
-  fn: _handleSyncFromPrimary,
+  fn: _handleSyncFromPrimary
 })
 
 /**
