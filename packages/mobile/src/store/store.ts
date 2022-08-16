@@ -26,6 +26,7 @@ import type { SearchState } from './search/reducer'
 import search from './search/reducer'
 import type { SignonState } from './signon/reducer'
 import signon from './signon/reducer'
+import { storeContext } from './storeContext'
 import type { WebState } from './web/reducer'
 import web from './web/reducer'
 
@@ -61,7 +62,7 @@ const createRootReducer = () =>
     web
   })
 
-const sagaMiddleware = createSagaMiddleware()
+const sagaMiddleware = createSagaMiddleware({ context: storeContext })
 const middlewares = applyMiddleware(sagaMiddleware)
 const composeEnhancers = composeWithDevTools({ trace: true, traceLimit: 25 })
 export const store = createStore(
