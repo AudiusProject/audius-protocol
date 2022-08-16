@@ -9,6 +9,8 @@ import type {
   IssueSyncRequestJobReturnValue,
   SyncRequestAxiosParams
 } from './types'
+import type { SpanContext } from '@opentelemetry/api'
+import type { AxiosRequestConfig } from 'axios'
 
 import { SpanStatusCode } from '@opentelemetry/api'
 import axios from 'axios'
@@ -36,6 +38,7 @@ import {
 } from '../stateMachineConstants'
 import primarySyncFromSecondary from '../../sync/primarySyncFromSecondary'
 import SyncRequestDeDuplicator from './SyncRequestDeDuplicator'
+import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
 const models = require('../../../models')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
@@ -78,100 +81,82 @@ type AdditionalSyncIsRequiredResponse = {
  * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
  * @param {number} [param.attemptNumber] optional number of times this job has been run. It will be a no-op if it exceeds MAX_ISSUE_SYNC_JOB_ATTEMPTS
  */
-module.exports = async function ({
+const issueSyncRequest = async ({
   syncType,
   syncMode,
   syncRequestParameters,
   logger,
-  parentSpanContext,
   attemptNumber = 1
 }: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
   DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
-> {
-  const options = {
-    links: [
-      {
-        context: parentSpanContext
+> => {
+  const span = getActiveSpan()
+  let jobsToEnqueue: JobsToEnqueue = {}
+  let metricsToRecord = []
+  let error: any = {}
+
+  const startTimeMs = Date.now()
+
+  const {
+    syncReqToEnqueue,
+    result,
+    error: errorResp
+  } = await handleIssueSyncRequest({
+    syncType,
+    syncMode,
+    syncRequestParameters,
+    logger
+  })
+  if (errorResp) {
+    error = errorResp
+    logger.error(error.message)
+  }
+
+  // Enqueue a new sync request if one needs to be enqueued and we haven't retried too many times yet
+  const maxRetries =
+    syncReqToEnqueue?.syncType === SyncType.Manual
+      ? MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS
+      : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
+  if (!_.isEmpty(syncReqToEnqueue)) {
+    if (attemptNumber < maxRetries) {
+      logger.info(
+        `Retrying issue-sync-request after attempt #${attemptNumber}`
+      )
+      const queueName =
+        syncReqToEnqueue?.syncType === SyncType.Manual
+          ? QUEUE_NAMES.MANUAL_SYNC
+          : QUEUE_NAMES.RECURRING_SYNC
+      jobsToEnqueue = {
+        [queueName]: [
+          { ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }
+        ]
       }
-    ],
-    attributes: {
-      [SemanticAttributes.CODE_FUNCTION]: 'issueSyncRequest.jobProcessor',
-      [SemanticAttributes.CODE_FILEPATH]: __filename
+    } else {
+      logger.info(
+        `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
+      )
     }
   }
-  return getTracer().startActiveSpan(
-    'issueSyncRequest.jobProcessor',
-    options,
-    async (span) => {
-      let jobsToEnqueue: JobsToEnqueue = {}
-      let metricsToRecord = []
-      let error: any = {}
 
-      const startTimeMs = Date.now()
-
-      const {
-        syncReqToEnqueue,
-        result,
-        error: errorResp
-      } = await _handleIssueSyncRequest({
-        syncType,
-        syncMode,
-        syncRequestParameters,
-        logger
-      })
-      if (errorResp) {
-        error = errorResp
-        logger.error(error.message)
+  // Make metrics to record
+  metricsToRecord = [
+    makeHistogramToRecord(
+      METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM,
+      (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+      {
+        sync_type: _.snakeCase(syncType),
+        sync_mode: _.snakeCase(syncMode),
+        result: _.snakeCase(result)
       }
+    )
+  ]
 
-      // Enqueue a new sync request if one needs to be enqueued and we haven't retried too many times yet
-      const maxRetries =
-        syncReqToEnqueue?.syncType === SyncType.Manual
-          ? MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS
-          : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-      if (!_.isEmpty(syncReqToEnqueue)) {
-        if (attemptNumber < maxRetries) {
-          logger.info(
-            `Retrying issue-sync-request after attempt #${attemptNumber}`
-          )
-          const queueName =
-            syncReqToEnqueue?.syncType === SyncType.Manual
-              ? QUEUE_NAMES.MANUAL_SYNC
-              : QUEUE_NAMES.RECURRING_SYNC
-          jobsToEnqueue = {
-            [queueName]: [
-              { ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }
-            ]
-          }
-        } else {
-          logger.info(
-            `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
-          )
-        }
-      }
-
-      // Make metrics to record
-      metricsToRecord = [
-        makeHistogramToRecord(
-          METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM,
-          (Date.now() - startTimeMs) / 1000, // Metric is in seconds
-          {
-            sync_type: _.snakeCase(syncType),
-            sync_mode: _.snakeCase(syncMode),
-            result: _.snakeCase(result)
-          }
-        )
-      ]
-
-      span.end()
-      return {
-        jobsToEnqueue,
-        metricsToRecord,
-        spanContext: span.spanContext(),
-        error
-      }
-    }
-  )
+  return {
+    jobsToEnqueue,
+    metricsToRecord,
+    spanContext: span?.spanContext(),
+    error
+  }
 }
 
 async function _handleIssueSyncRequest({
@@ -180,136 +165,131 @@ async function _handleIssueSyncRequest({
   syncRequestParameters,
   logger
 }: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
-  return getTracer().startActiveSpan(
-    '_handleIssueSyncRequest',
-    async (span) => {
-      if (!syncRequestParameters?.data?.wallet?.length) {
-        span.end()
-        return { result: 'failure_missing_wallet' }
-      }
-      if (syncMode === SYNC_MODES.None) {
-        span.end()
-        return { result: 'success' }
-      }
 
-      const userWallet = syncRequestParameters.data.wallet[0]
-      const secondaryEndpoint = syncRequestParameters.baseURL
-      const immediate = syncRequestParameters.data.immediate
+  const span = getActiveSpan()
 
-      const logMsgString = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
+  if (!syncRequestParameters?.data?.wallet?.length) {
+    return { result: 'failure_missing_wallet' }
+  }
+  if (syncMode === SYNC_MODES.None) {
+    return { result: 'success' }
+  }
 
-      /**
-       * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
-       * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
-       */
-      SyncRequestDeDuplicator.removeSync(
-        syncType,
-        userWallet,
-        secondaryEndpoint,
-        immediate
-      )
+  const userWallet = syncRequestParameters.data.wallet[0]
+  const secondaryEndpoint = syncRequestParameters.baseURL
+  const immediate = syncRequestParameters.data.immediate
 
-      /**
-       * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
-       */
-      const secondaryUserSyncFailureCountForToday =
-        await SecondarySyncHealthTracker.getSecondaryUserSyncFailureCountForToday(
-          secondaryEndpoint,
-          userWallet,
-          syncType
-        )
-      if (
-        secondaryUserSyncFailureCountForToday >
-        secondaryUserSyncDailyFailureCountThreshold
-      ) {
-        span.end()
-        return {
-          result: 'failure_secondary_failure_count_threshold_met',
-          error: {
-            message: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
-          }
-        }
-      }
+  const logMsgString = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
 
-      /**
-       * For now, if primarySyncFromSecondary fails, we just log & error without any retries
-       * Eventually should make this more robust, but proceeding with caution
-       */
-      if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-        // Short-circuit if this syncMode is disabled
-        if (!mergePrimaryAndSecondaryEnabled) {
-          span.end()
-          return { result: 'success_mode_disabled' }
-        }
+  /**
+   * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
+   * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
+   */
+  SyncRequestDeDuplicator.removeSync(
+    syncType,
+    userWallet,
+    secondaryEndpoint,
+    immediate
+  )
 
-        const error = await primarySyncFromSecondary({
-          wallet: userWallet,
-          secondary: secondaryEndpoint
-        })
-
-        if (error) {
-          span.end()
-          return {
-            result: 'failure_primary_sync_from_secondary',
-            error
-          }
-        }
-      }
-
-      /**
-       * Issue sync request to secondary
-       * - If SyncMode = MergePrimaryAndSecondary - issue sync request with forceResync = true
-       *    - above call to primarySyncFromSecondary must have succeeded to get here
-       *    - Only apply forceResync flag to this initial sync request, any future syncs proceed as usual
-       */
-      try {
-        if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-          const syncRequestParametersForceResync = {
-            ...syncRequestParameters,
-            data: { ...syncRequestParameters.data, forceResync: true }
-          }
-          await axios(syncRequestParametersForceResync)
-        } else {
-          await axios(syncRequestParameters)
-        }
-      } catch (e: any) {
-        span.end()
-        return {
-          result: 'failure_issue_sync_request',
-          error: {
-            message: `${logMsgString} || Error issuing sync request: ${e.message}`
-          },
-          syncReqToEnqueue: {
-            parentSpanContext: span.spanContext(),
-            syncType,
-            syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-            syncRequestParameters
-          }
-        }
-      }
-
-      // primaryClockValue is used in additionalSyncIsRequired() call below
-      const primaryClockValue = (
-        await _getUserPrimaryClockValues([userWallet])
-      )[userWallet]
-
-      // Wait until has sync has completed (within time threshold)
-      const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
-        primaryClockValue,
-        syncType,
-        syncMode,
-        syncRequestParameters,
-        logger
-      )
-
-      span.end()
-      return {
-        result: outcome,
-        syncReqToEnqueue
+  /**
+   * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
+   */
+  const secondaryUserSyncFailureCountForToday =
+    await SecondarySyncHealthTracker.getSecondaryUserSyncFailureCountForToday(
+      secondaryEndpoint,
+      userWallet,
+      syncType
+    )
+  if (
+    secondaryUserSyncFailureCountForToday >
+    secondaryUserSyncDailyFailureCountThreshold
+  ) {
+    return {
+      result: 'failure_secondary_failure_count_threshold_met',
+      error: {
+        message: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
       }
     }
+  }
+
+  /**
+   * For now, if primarySyncFromSecondary fails, we just log & error without any retries
+   * Eventually should make this more robust, but proceeding with caution
+   */
+  if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+    // Short-circuit if this syncMode is disabled
+    if (!mergePrimaryAndSecondaryEnabled) {
+      return { result: 'success_mode_disabled' }
+    }
+
+    const error = await primarySyncFromSecondary({
+      wallet: userWallet,
+      secondary: secondaryEndpoint
+    })
+
+    if (error) {
+      return {
+        result: 'failure_primary_sync_from_secondary',
+        error
+      }
+    }
+  }
+
+  /**
+   * Issue sync request to secondary
+   * - If SyncMode = MergePrimaryAndSecondary - issue sync request with forceResync = true
+   *    - above call to primarySyncFromSecondary must have succeeded to get here
+   *    - Only apply forceResync flag to this initial sync request, any future syncs proceed as usual
+   */
+  try {
+    if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+      const syncRequestParametersForceResync = {
+        ...syncRequestParameters,
+        data: { ...syncRequestParameters.data, forceResync: true }
+      }
+      await axios(syncRequestParametersForceResync as AxiosRequestConfig)
+    } else {
+      await axios(syncRequestParameters as AxiosRequestConfig)
+    }
+  } catch (e: any) {
+    return {
+      result: 'failure_issue_sync_request',
+      error: {
+        message: `${logMsgString} || Error issuing sync request: ${e.message}`
+      },
+      syncReqToEnqueue: {
+        parentSpanContext: span?.spanContext(),
+        syncType,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+        syncRequestParameters
+      }
+    }
+  }
+
+  // primaryClockValue is used in additionalSyncIsRequired() call below
+  const primaryClockValue = (
+    await _getUserPrimaryClockValues([userWallet])
+  )[userWallet]
+
+  // Wait until has sync has completed (within time threshold)
+  const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
+    primaryClockValue,
+    syncType,
+    syncMode,
+    syncRequestParameters,
+    logger
   )
+
+  return {
+    result: outcome,
+    syncReqToEnqueue
+  }
 }
+
+const handleIssueSyncRequest = instrumentTracing({
+  fn: _handleIssueSyncRequest,
+})
 
 /**
  * Given wallets array, queries DB and returns a map of all users with
@@ -477,3 +457,20 @@ const _additionalSyncIsRequired = async (
     }
   )
 }
+
+module.exports = async ({ parentSpanContext }: {
+  parentSpanContext: SpanContext
+}) => instrumentTracing({
+  name: 'issueSyncRequest.jobProcessor',
+  fn: issueSyncRequest,
+  options: {
+    links: [
+      {
+        context: parentSpanContext
+      }
+    ],
+    attributes: {
+      [SemanticAttributes.CODE_FILEPATH]: __filename
+    }
+  }
+})

@@ -14,7 +14,7 @@ export type SyncRequestAxiosParams = {
   }
 }
 export type IssueSyncRequestJobParams = {
-  parentSpanContext: SpanContext
+  parentSpanContext?: SpanContext
   syncType: string
   syncMode: string
   syncRequestParameters: SyncRequestAxiosParams
