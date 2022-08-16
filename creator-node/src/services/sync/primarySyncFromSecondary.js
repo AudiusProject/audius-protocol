@@ -7,7 +7,7 @@ const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
-const { getCreatorNodeEndpoints } = require('../../middlewares')
+const { getUserReplicaSetEndpointsFromDiscovery } = require('../../middlewares')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
@@ -16,8 +16,7 @@ const asyncRetry = require('../../utils/asyncRetry')
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
 const DEFAULT_LOG_CONTEXT = {}
-const devMode = config.get('devMode')
-const DB_QUERY_LIMIT = devMode ? 5 : 10000
+const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
 
 /**
  * Export data for user from secondary and save locally, until complete
@@ -458,7 +457,7 @@ async function filterOutAlreadyPresentDBEntries({
 
 async function getUserReplicaSet({ wallet, libs, logger }) {
   try {
-    let userReplicaSet = await getCreatorNodeEndpoints({
+    let userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
       libs,
       logger,
       wallet,
