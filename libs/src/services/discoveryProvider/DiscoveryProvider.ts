@@ -380,7 +380,7 @@ export class DiscoveryProvider {
     idsArray: Nullable<number[]> = null,
     targetUserId: Nullable<number> = null,
     withUsers = false
-  ) {
+  ): Promise<unknown> {
     const req = Requests.getPlaylists(
       limit,
       offset,
@@ -389,6 +389,11 @@ export class DiscoveryProvider {
       withUsers
     )
     return await this._makeRequest<CollectionMetadata[]>(req)
+  }
+
+  async getFullPlaylist(encodedPlaylistId: string, encodedUserId: string) {
+    const req = Requests.getFullPlaylist(encodedPlaylistId, encodedUserId)
+    return await this._makeRequest(req)
   }
 
   /**

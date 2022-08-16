@@ -78,7 +78,7 @@ const outputJsonConfigFile = async (outputPath) => {
     let addressInfo = require(migrationOutputPath)
     let outputDictionary = {}
     outputDictionary['registryAddress'] = addressInfo.registryAddress
-    outputDictionary['audiusDataAddress'] = addressInfo.audiusDataProxyAddress
+    outputDictionary['entityManagerProxyAddress'] = addressInfo.entityManagerProxyAddress
     outputDictionary['ursmAddress'] = addressInfo.ursmAddress
     outputDictionary['ownerWallet'] = await getDefaultAccount()
     outputDictionary['allWallets'] = await web3.eth.getAccounts()

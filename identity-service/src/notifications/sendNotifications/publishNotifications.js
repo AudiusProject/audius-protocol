@@ -145,7 +145,7 @@ const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
     return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.TIPPING_ENABLED)
   }
   if (notificationType === notificationTypes.SupporterDethroned) {
-    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SUPPORTER_DETHRONED_ENABLED)
+    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED)
   }
   return false
 }

@@ -13,7 +13,8 @@
     "test:coverage": "nyc --reporter=lcov --reporter=text npm run test",
     "test:coverage:ci": "nyc --reporter=lcov --reporter=text npm run test:ci && nyc report --reporter=text-lcov | coveralls",
     "lint:fix": "eslint --fix --ext=js,ts src",
-    "lint": "eslint --ext=js,ts src"
+    "lint": "eslint --ext=js,ts src",
+    "build": "./node_modules/.bin/tsc --project ./"
   },
   "keywords": [],
   "author": "",

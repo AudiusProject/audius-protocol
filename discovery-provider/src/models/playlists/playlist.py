@@ -33,6 +33,7 @@ class Playlist(Base, RepresentableMixin):
     )
     last_added_to = Column(DateTime)
     slot = Column(Integer)
+    metadata_multihash = Column(String)
 
     block = relationship(  # type: ignore
         "Block", primaryjoin="Playlist.blockhash == Block.blockhash"

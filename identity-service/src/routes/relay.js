@@ -39,6 +39,12 @@ module.exports = function (app) {
       user.isAbusiveErrorCode &&
       blockRelayAbuseErrorCodes.has(user.isAbusiveErrorCode)
     ) {
+      // allow previously abusive users to redeem themselves for next relays
+      if (detectAbuseOnRelay) {
+        const reqIP = req.get('X-Forwarded-For') || req.ip
+        detectAbuse(user, 'relay', reqIP) // fired & forgotten
+      }
+
       return errorResponseForbidden(
         `Forbidden ${user.isAbusiveErrorCode}`
       )

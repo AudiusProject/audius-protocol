@@ -241,6 +241,19 @@ export const getPlaylists = (
   }
 }
 
+export const getFullPlaylist = (
+  encodedPlaylistId: string,
+  encodedUserId: string
+) => {
+  return {
+    endpoint: 'v1/full/playlists',
+    urlParams: '/' + encodedPlaylistId,
+    queryParams: {
+      user_id: encodedUserId
+    }
+  }
+}
+
 export const getSocialFeed = (
   filter: string,
   limit = 100,

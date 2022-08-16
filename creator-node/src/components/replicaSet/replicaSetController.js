@@ -13,6 +13,10 @@ const {
 } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
 const {
+  SyncType,
+  SYNC_MODES
+} = require('../../services/stateMachineManager/stateMachineConstants')
+const {
   enqueueSync,
   processManualImmediateSync
 } = require('./syncQueueComponentService')
@@ -161,6 +165,50 @@ const syncRouteController = async (req, res) => {
   return successResponse()
 }
 
+/**
+ * Adds a job to manualSyncQueue to issue a sync to secondary with syncMode MergePrimaryAndSecondary
+ * @notice This will only work if called on a primary for a user
+ */
+const mergePrimaryAndSecondaryController = async (req, res) => {
+  const serviceRegistry = req.app.get('serviceRegistry')
+  const manualSyncQueue = serviceRegistry.manualSyncQueue
+  const config = serviceRegistry.nodeConfig
+
+  const selfEndpoint = config.get('creatorNodeEndpoint')
+
+  const wallet = req.query.wallet
+  const endpoint = req.query.endpoint
+
+  if (!wallet || !endpoint) {
+    return errorResponseBadRequest(`Must provide wallet and endpoint params`)
+  }
+
+  const syncType = SyncType.Manual
+  const syncMode = SYNC_MODES.MergePrimaryAndSecondary
+  const immediate = true
+
+  const syncRequestParameters = {
+    baseURL: endpoint,
+    url: '/sync',
+    method: 'post',
+    data: {
+      wallet: [wallet],
+      creator_node_endpoint: selfEndpoint,
+      sync_type: syncType,
+      immediate,
+      from_manual_route: true
+    }
+  }
+
+  await manualSyncQueue.add({
+    syncType,
+    syncMode,
+    syncRequestParameters
+  })
+
+  return successResponse()
+}
+
 // Routes
 
 router.get(
@@ -171,6 +219,10 @@ router.post(
   '/sync',
   ensureStorageMiddleware,
   handleResponse(syncRouteController)
+)
+router.post(
+  '/merge_primary_and_secondary',
+  handleResponse(mergePrimaryAndSecondaryController)
 )
 
 module.exports = router
