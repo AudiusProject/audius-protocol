@@ -35,9 +35,13 @@ async function primarySyncFromSecondary({
 
   const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
   const logger = genericLogger.child(logContext)
+<<<<<<< HEAD
 
   info(`[primarySyncFromSecondary] [Wallet: ${wallet}]`)
   logger.info(`[primarySyncFromSecondary] [Wallet: ${wallet}] Beginning...`)
+=======
+  logger.info(`${logPrefix} Beginning...`)
+>>>>>>> master
   const start = Date.now()
 
   // This is used only for logging record endpoint of requesting node
@@ -62,12 +66,20 @@ async function primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    const userReplicaSet = await getUserReplicaSet({
+    let userReplicaSet = await getUserReplicaSet({
       wallet,
       selfEndpoint,
       logger,
       libs
     })
+
+    // Error if this node is not primary for user
+    if (userReplicaSet[0] !== selfEndpoint) {
+      throw new Error(`Failure - this node is not primary for user`)
+    }
+
+    // filter out current node from user's replica set
+    userReplicaSet = userReplicaSet.filter((url) => url !== selfEndpoint)
 
     // Keep importing data from secondary until full clock range has been retrieved
     let completed = false
@@ -104,8 +116,6 @@ async function primarySyncFromSecondary({
   } catch (e) {
     recordException(e)
     error = e
-
-    logger.error(`${logPrefix} Sync error ${e.message}`)
 
     await SyncHistoryAggregator.recordSyncFail(wallet)
   } finally {
@@ -484,6 +494,7 @@ async function filterOutAlreadyPresentDBEntries({
   return filteredEntries
 }
 
+<<<<<<< HEAD
 async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
   return getTracer().startActiveSpan('getUserReplicaSet', async (span) => {
     try {
@@ -501,6 +512,21 @@ async function getUserReplicaSet({ wallet, selfEndpoint, libs, logger }) {
 
       // Spread + set uniq's the array
       userReplicaSet = [...new Set(userReplicaSet)]
+=======
+async function getUserReplicaSet({ wallet, libs, logger }) {
+  try {
+    let userReplicaSet = await getCreatorNodeEndpoints({
+      libs,
+      logger,
+      wallet,
+      blockNumber: null,
+      ensurePrimary: false,
+      myCnodeEndpoint: null
+    })
+
+    // Spread + set uniq's the array
+    userReplicaSet = [...new Set(userReplicaSet)]
+>>>>>>> master
 
       return userReplicaSet
     } catch (e) {

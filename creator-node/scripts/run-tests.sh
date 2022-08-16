@@ -45,7 +45,7 @@ tear_down () {
 
 run_unit_tests () {
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha --require ts-node/register --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' --exit
+  ./node_modules/mocha/bin/mocha --require ts-node/register --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' 'src/**/*.test.ts' --exit
 }
 
 run_integration_tests () {

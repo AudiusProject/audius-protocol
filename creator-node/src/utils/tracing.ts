@@ -1,4 +1,4 @@
-import type { Span, SpanOptions } from '@opentelemetry/api'
+import type { Span, SpanOptions, SpanContext } from '@opentelemetry/api'
 import { trace, context, SpanStatusCode } from '@opentelemetry/api'
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { getTracer } from '../tracer'
@@ -67,6 +67,11 @@ export const recordException = (error: Error) => {
     const span = getActiveSpan()
     span?.recordException(error)
     span?.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+}
+
+export const currentSpanContext = (): SpanContext | undefined => {
+    const span = getActiveSpan()
+    return span?.spanContext()
 }
 
 module.exports = {

@@ -445,6 +445,22 @@ router.post(
           throw new Error('Cannot create track without transcodedTrackUUID.')
         }
 
+        // Verify that blockchain track id is owned by user attempting to upload it
+        const serviceRegistry = req.app.get('serviceRegistry')
+        const { libs } = serviceRegistry
+        const trackResp = await libs.contracts.TrackFactoryClient.getTrack(
+          blockchainTrackId
+        )
+        if (
+          !trackResp?.trackOwnerId ||
+          parseInt(trackResp.trackOwnerId, 10) !==
+            parseInt(req.session.userId, 10)
+        ) {
+          throw new Error(
+            `Owner ID ${trackResp.trackOwnerId} of blockchainTrackId ${blockchainTrackId} does not match the ID of the user attempting to write this track: ${req.session.userId}`
+          )
+        }
+
         // Associate the transcode file db record with trackUUID
         const transcodedFile = await models.File.findOne({
           where: {

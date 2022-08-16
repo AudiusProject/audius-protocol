@@ -9,7 +9,7 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { SpanStatusCode } from '@opentelemetry/api'
 
 import initAudiusLibs from '../../initAudiusLibs'
-import NodeToSpIdManager from '../CNodeToSpIdMapManager'
+import ContentNodeInfoManager from '../ContentNodeInfoManager'
 import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
 
 /**
@@ -35,7 +35,7 @@ const fetchCNodeEndpointToSpIdMap = async ({
       enableIdentity: false,
       logger
     })
-    await NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
+    await ContentNodeInfoManager.updateContentNodeChainInfo(
       audiusLibs.ethContracts
     )
   } catch (e: any) {
@@ -45,7 +45,7 @@ const fetchCNodeEndpointToSpIdMap = async ({
     logger.error(`updateEndpointToSpIdMap Error: ${errorMsg}`)
   }
   return {
-    cNodeEndpointToSpIdMap: NodeToSpIdManager.getCNodeEndpointToSpIdMap(),
+    cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
     spanContext: span?.spanContext(),
     errorMsg
   }

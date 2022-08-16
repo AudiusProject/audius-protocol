@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import List
 
 from integration_tests.utils import populate_mock_db
@@ -10,10 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 # ========================================== Start Tests ==========================================
-def test_repost_notification(app):
+def test_reaction_notification(app):
     with app.app_context():
         db = get_db()
 
+    now = datetime.now()
     # Insert a reaction and check that a notificaiton is created
     entities = {
         "users": [{"user_id": i + 1, "wallet": "0x" + str(i)} for i in range(3)],
@@ -25,6 +27,7 @@ def test_repost_notification(app):
                 "id": i + 1,
                 "sender_wallet": "0x" + str(i),
                 "reacted_to": "react_" + str(i),
+                "timestamp": now,
             }
             for i in range(3)
         ],
@@ -37,9 +40,24 @@ def test_repost_notification(app):
             session.query(Notification).order_by(asc(Notification.slot)).all()
         )
         assert len(notifications) == 3
-        assert notifications[0].specifier == "reaction:reaction_to:react_0:slot:0"
-        assert notifications[1].specifier == "reaction:reaction_to:react_1:slot:1"
-        assert notifications[2].specifier == "reaction:reaction_to:react_2:slot:2"
+        assert notifications[0].specifier == "1"
+        assert notifications[
+            0
+        ].group_id == "reaction:reaction_to:react_0:reaction_type:type:reaction_value:1:timestamp:" + now.strftime(
+            "%Y-%m-%d %H:%M:%S.%f"
+        )
+        assert notifications[1].specifier == "2"
+        assert notifications[
+            1
+        ].group_id == "reaction:reaction_to:react_1:reaction_type:type:reaction_value:1:timestamp:" + now.strftime(
+            "%Y-%m-%d %H:%M:%S.%f"
+        )
+        assert notifications[2].specifier == "3"
+        assert notifications[
+            2
+        ].group_id == "reaction:reaction_to:react_2:reaction_type:type:reaction_value:1:timestamp:" + now.strftime(
+            "%Y-%m-%d %H:%M:%S.%f"
+        )
         assert notifications[0].notification_group_id == None
         assert notifications[0].type == "reaction"
         assert notifications[0].slot == 0

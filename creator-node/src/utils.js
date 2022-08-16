@@ -120,6 +120,7 @@ async function findCIDInNetwork(
   trackId = null,
   excludeList = []
 ) {
+  if (!config.get('findCIDInNetworkEnabled')) return
   let found = false
 
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)

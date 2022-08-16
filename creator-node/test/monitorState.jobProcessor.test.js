@@ -123,7 +123,7 @@ describe('test monitorState job processor', function () {
         '../CNodeHealthManager': {
           getUnhealthyPeers: getUnhealthyPeersStub
         },
-        '../CNodeToSpIdMapManager': {
+        '../ContentNodeInfoManager': {
           getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
         },
         '../stateMachineUtils': {

@@ -455,7 +455,7 @@ const config = convict({
     default: 3_600_000 // 1hr
   },
   stateMonitoringQueueRateLimitInterval: {
-    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval jobs will run',
+    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval monitor-state jobs will run',
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitInterval',
     default: 60_000 // 1m
@@ -465,6 +465,18 @@ const config = convict({
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitJobsPerInterval',
     default: 3
+  },
+  recoverOrphanedDataQueueRateLimitInterval: {
+    doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
+    format: 'nat',
+    env: 'recoverOrphanedDataQueueRateLimitInterval',
+    default: 60_000 // 1m
+  },
+  recoverOrphanedDataQueueRateLimitJobsPerInterval: {
+    doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
+    format: 'nat',
+    env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
+    default: 1
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -713,6 +725,12 @@ const config = convict({
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
     default: false
+  },
+  findCIDInNetworkEnabled: {
+    doc: 'enable findCIDInNetwork lookups',
+    format: Boolean,
+    env: 'findCIDInNetworkEnabled',
+    default: true
   }
   /**
    * unsupported options at the moment

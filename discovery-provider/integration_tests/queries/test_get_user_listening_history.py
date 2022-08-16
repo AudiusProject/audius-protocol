@@ -6,6 +6,7 @@ from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     _get_user_listening_history,
 )
+from src.queries.query_helpers import SortDirection, SortMethod
 from src.tasks.user_listening_history.index_user_listening_history import (
     _index_user_listening_history,
 )
@@ -51,7 +52,13 @@ def test_get_user_listening_history_multiple_plays(app):
         track_history = _get_user_listening_history(
             session,
             GetUserListeningHistoryArgs(
-                user_id=1, current_user_id=1, limit=10, offset=0, query=None
+                user_id=1,
+                current_user_id=1,
+                limit=10,
+                offset=0,
+                query=None,
+                sort_method=None,
+                sort_direction=None,
             ),
         )
 
@@ -95,7 +102,13 @@ def test_get_user_listening_history_no_plays(app):
         track_history = _get_user_listening_history(
             session,
             GetUserListeningHistoryArgs(
-                user_id=3, current_user_id=3, limit=10, offset=0, query=None
+                user_id=3,
+                current_user_id=3,
+                limit=10,
+                offset=0,
+                query=None,
+                sort_method=None,
+                sort_direction=None,
             ),
         )
 
@@ -115,7 +128,13 @@ def test_get_user_listening_history_single_play(app):
         track_history = _get_user_listening_history(
             session,
             GetUserListeningHistoryArgs(
-                user_id=2, current_user_id=2, limit=10, offset=0, query=None
+                user_id=2,
+                current_user_id=2,
+                limit=10,
+                offset=0,
+                query=None,
+                sort_method=None,
+                sort_direction=None,
             ),
         )
 
@@ -143,7 +162,13 @@ def test_get_user_listening_history_pagination(app):
         track_history = _get_user_listening_history(
             session,
             GetUserListeningHistoryArgs(
-                user_id=1, current_user_id=1, limit=1, offset=1, query=None
+                user_id=1,
+                current_user_id=1,
+                limit=1,
+                offset=1,
+                query=None,
+                sort_method=None,
+                sort_direction=None,
             ),
         )
 
@@ -171,7 +196,13 @@ def test_get_user_listening_history_mismatch_user_id(app):
         track_history = _get_user_listening_history(
             session,
             GetUserListeningHistoryArgs(
-                user_id=1, current_user_id=2, limit=10, offset=0, query=None
+                user_id=1,
+                current_user_id=2,
+                limit=10,
+                offset=0,
+                query=None,
+                sort_method=None,
+                sort_direction=None,
             ),
         )
 
@@ -191,7 +222,13 @@ def test_get_user_listening_history_with_query(app):
         track_history = _get_user_listening_history(
             session,
             GetUserListeningHistoryArgs(
-                user_id=1, current_user_id=1, limit=10, offset=0, query="track 2"
+                user_id=1,
+                current_user_id=1,
+                limit=10,
+                offset=0,
+                query="track 2",
+                sort_method=None,
+                sort_direction=None,
             ),
         )
 
@@ -201,4 +238,54 @@ def test_get_user_listening_history_with_query(app):
     assert track_history[0][response_name_constants.track_id] == 2
     assert track_history[0][response_name_constants.activity_timestamp] == str(
         TIMESTAMP + timedelta(minutes=3)
+    )
+
+
+def test_get_user_listening_history_custom_sort(app):
+    """Tests listening history from user with multiple plays"""
+    with app.app_context():
+        db = get_db()
+
+    populate_mock_db(db, test_entities)
+
+    with db.scoped_session() as session:
+        _index_user_listening_history(session)
+
+        track_history = _get_user_listening_history(
+            session,
+            GetUserListeningHistoryArgs(
+                user_id=1,
+                current_user_id=1,
+                limit=10,
+                offset=0,
+                query=None,
+                sort_method=SortMethod.title,
+                sort_direction=SortDirection.asc,
+            ),
+        )
+
+    assert len(track_history) == 3
+    assert (
+        track_history[2][response_name_constants.user][response_name_constants.balance]
+        is not None
+    )
+    assert track_history[2][response_name_constants.track_id] == 3
+    assert track_history[2][response_name_constants.activity_timestamp] == str(
+        TIMESTAMP + timedelta(minutes=4)
+    )
+    assert (
+        track_history[1][response_name_constants.user][response_name_constants.balance]
+        is not None
+    )
+    assert track_history[1][response_name_constants.track_id] == 2
+    assert track_history[1][response_name_constants.activity_timestamp] == str(
+        TIMESTAMP + timedelta(minutes=3)
+    )
+    assert (
+        track_history[0][response_name_constants.user][response_name_constants.balance]
+        is not None
+    )
+    assert track_history[0][response_name_constants.track_id] == 1
+    assert track_history[0][response_name_constants.activity_timestamp] == str(
+        TIMESTAMP + timedelta(minutes=2)
     )

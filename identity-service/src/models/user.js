@@ -45,6 +45,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false
     },
+    isAbusiveErrorCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
     isEmailDeliverable: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

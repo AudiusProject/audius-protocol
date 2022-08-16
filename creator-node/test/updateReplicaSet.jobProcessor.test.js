@@ -85,7 +85,8 @@ describe('test updateReplicaSet job processor', function () {
       },
       contracts: {
         UserReplicaSetManagerClient: {
-          updateReplicaSet: updateReplicaSetStub
+          updateReplicaSet: updateReplicaSetStub,
+          _updateReplicaSet: updateReplicaSetStub
         }
       }
     }
@@ -107,7 +108,7 @@ describe('test updateReplicaSet job processor', function () {
           MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: maxSelectNewReplicaSetAttempts,
           QUEUE_NAMES
         },
-        '../CNodeToSpIdMapManager': {
+        '../ContentNodeInfoManager': {
           getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
         }
       }

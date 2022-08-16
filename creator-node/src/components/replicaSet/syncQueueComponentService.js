@@ -1,37 +1,22 @@
 /**
  * Enqueues sync operation into syncQueue for provided walletPublicKeys against provided creatorNodeEndpoint
+ * @param {Object} params See the SyncQueue for explicit params
  */
-const enqueueSync = async ({
-  serviceRegistry,
-  walletPublicKeys,
-  creatorNodeEndpoint,
-  forceResync,
-  parentSpanContext
-}) => {
-  await serviceRegistry.syncQueue.enqueueSync({
-    walletPublicKeys,
-    creatorNodeEndpoint,
-    forceResync,
-    parentSpanContext
-  })
+const enqueueSync = async (params) => {
+  const { serviceRegistry } = params
+  await serviceRegistry.syncQueue.enqueueSync(params)
 }
 
-const processImmediateSync = async ({
-  serviceRegistry,
-  walletPublicKeys,
-  creatorNodeEndpoint,
-  forceResync,
-  parentSpanContext
-}) => {
-  await serviceRegistry.syncImmediateQueue.processImmediateSync({
-    walletPublicKeys,
-    creatorNodeEndpoint,
-    forceResync,
-    parentSpanContext
-  })
+/**
+ * Enqueues an sync of MANUAL that will operate immediately
+ * @param {Object} params See the SyncImmediateQueue for explicit params
+ */
+const processManualImmediateSync = async (params) => {
+  const { serviceRegistry } = params
+  await serviceRegistry.syncImmediateQueue.processManualImmediateSync(params)
 }
 
 module.exports = {
   enqueueSync,
-  processImmediateSync
+  processManualImmediateSync
 }

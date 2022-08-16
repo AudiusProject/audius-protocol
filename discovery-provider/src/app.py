@@ -64,6 +64,7 @@ social_feature_factory = None
 playlist_factory = None
 user_library_factory = None
 user_replica_set_manager = None
+entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
 logger = logging.getLogger(__name__)
@@ -127,6 +128,16 @@ def init_contracts():
         abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
+    entity_manager_address = None
+    entity_manager_inst = None
+    if shared_config["contracts"]["entity_manager_address"]:
+        entity_manager_address = web3.toChecksumAddress(
+            shared_config["contracts"]["entity_manager_address"]
+        )
+        entity_manager_inst = web3.eth.contract(
+            address=entity_manager_address, abi=abi_values["EntityManager"]["abi"]
+        )
+
     contract_address_dict = {
         "registry": registry_address,
         "user_factory": user_factory_address,
@@ -135,6 +146,7 @@ def init_contracts():
         "playlist_factory": playlist_factory_address,
         "user_library_factory": user_library_factory_address,
         "user_replica_set_manager": user_replica_set_manager_address,
+        "entity_manager": entity_manager_address,
     }
 
     return (
@@ -145,6 +157,7 @@ def init_contracts():
         playlist_factory_inst,
         user_library_factory_inst,
         user_replica_set_manager_inst,
+        entity_manager_inst,
         contract_address_dict,
     )
 
@@ -177,6 +190,7 @@ def create_celery(test_config=None):
     global playlist_factory
     global user_library_factory
     global user_replica_set_manager
+    global entity_manager
     global contract_addresses
     # pylint: enable=W0603
 
@@ -188,6 +202,7 @@ def create_celery(test_config=None):
         playlist_factory,
         user_library_factory,
         user_replica_set_manager,
+        entity_manager,
         contract_addresses,
     ) = init_contracts()
 

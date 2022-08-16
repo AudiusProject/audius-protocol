@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "0.0.32",
+  "version": "0.0.34",
   "audius": {
-    "releaseSHA": "21fc91b10563fb51f934142f065a0ea7c5803828"
+    "releaseSHA": "c38a6a8f425386cc254501ac0b0d01235b44d36f"
   },
   "description": "",
   "main": "dist/index.cjs.js",
@@ -44,7 +44,7 @@
     "@ethersproject/solidity": "5.0.5",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
     "@project-serum/anchor": "0.24.1",
-    "@solana/spl-token": "0.1.6",
+    "@solana/spl-token": "0.1.8",
     "@solana/web3.js": "1.37.1",
     "abi-decoder": "2.4.0",
     "ajv": "6.12.2",

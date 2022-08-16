@@ -55,7 +55,15 @@ class SyncQueue {
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
       const {
+<<<<<<< HEAD
         parentSpanContext
+=======
+        wallet,
+        creatorNodeEndpoint,
+        forceResyncConfig,
+        blockNumber,
+        logContext
+>>>>>>> master
       } = job.data
 
       const processTask = instrumentTracing({
@@ -85,18 +93,19 @@ class SyncQueue {
 
       let result
       try {
-        result = await secondarySyncFromPrimary(
-          this.serviceRegistry,
-          walletPublicKeys,
+        result = await secondarySyncFromPrimary({
+          serviceRegistry: this.serviceRegistry,
+          wallet,
           creatorNodeEndpoint,
-          null, // blockNumber
-          forceResync
-        )
+          blockNumber,
+          forceResyncConfig,
+          logContext
+        })
       } catch (e) {
         span.recordException(e)
         span.setStatus({ code: SpanStatusCode.ERROR })
         logger.error(
-          `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
+          `secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}`,
           e.message
         )
         result = { error: e.message }
@@ -107,6 +116,7 @@ class SyncQueue {
   }
 
   async enqueueSync({
+<<<<<<< HEAD
     walletPublicKeys,
     creatorNodeEndpoint,
     forceResync,
@@ -119,6 +129,21 @@ class SyncQueue {
       parentSpanContext
     }
     const job = await this.queue.add(jobProps)
+=======
+    wallet,
+    creatorNodeEndpoint,
+    blockNumber,
+    forceResyncConfig,
+    logContext
+  }) {
+    const job = await this.queue.add({
+      wallet,
+      creatorNodeEndpoint,
+      blockNumber,
+      forceResyncConfig,
+      logContext
+    })
+>>>>>>> master
     return job
   }
 }

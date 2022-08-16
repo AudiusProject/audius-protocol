@@ -140,7 +140,6 @@ class FullPlaylist(Resource):
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
-
         playlist = get_playlist(playlist_id, current_user_id)
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)

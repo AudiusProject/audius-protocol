@@ -20,7 +20,7 @@ import _ from 'lodash'
 import { logger as baseLogger, createChildLogger } from '../../logging'
 import { QUEUE_NAMES } from './stateMachineConstants'
 import { METRIC_RECORD_TYPE } from '../prometheusMonitoring/prometheus.constants'
-import { getActiveSpan, instrumentTracing } from '../../utils/tracing'
+import { getActiveSpan, instrumentTracing, recordException } from '../../utils/tracing'
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take
@@ -59,10 +59,11 @@ const makeOnCompleteCallback = (
   prometheusRegistry: any
 ) => {
   return async function (jobId: string, resultString: string) {
-    const span = getActiveSpan()
-
-    // Create a logger so that we can filter logs by the tag `jobId` = <id of the job that successfully completed>
-    const logger = createChildLogger(baseLogger, { jobId }) as Logger
+    // Create a logger so that we can filter logs by the tags `queue` and `jobId` = <id of the job that successfully completed>
+    const logger = createChildLogger(baseLogger, {
+      queue: nameOfQueueWithCompletedJob,
+      jobId
+    }) as Logger
 
     // update-replica-set jobs need enabledReconfigModes as an array.
     // `this` comes from the function being bound via .bind() to ./index.js
@@ -82,8 +83,7 @@ const makeOnCompleteCallback = (
       logger.info(`Job successfully completed. Parsing result: ${resultString}`)
       jobResult = JSON.parse(resultString) || {}
     } catch (e: any) {
-      span?.recordException(e)
-      span?.setStatus({ code: SpanStatusCode.ERROR })
+      recordException(e)
       logger.error(`Failed to parse job result string: ${e.message}`)
       return
     }
@@ -142,7 +142,6 @@ const _enqueueJobs = async (
   triggeredByJobId: string,
   logger: Logger
 ) => {
-  const span = getActiveSpan()
   logger.info(
     `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueNameToAddTo}`
   )
@@ -163,8 +162,7 @@ const _enqueueJobs = async (
       `Added ${bulkAddResult.length} jobs to ${queueNameToAddTo} in bulk after successful completion`
     )
   } catch (e: any) {
-    span?.recordException(e)
-    span?.setStatus({ code: SpanStatusCode.ERROR })
+    recordException(e)
     logger.error(
       `Failed to bulk-add jobs to ${queueNameToAddTo} after successful completion: ${e}`
     )
@@ -195,7 +193,7 @@ const injectEnabledReconfigModes = (
 // Injects spanContext into jobs
 const injectSpanContext = (
   jobs: AnyJobParams[],
-  spanContext: SpanContext
+  spanContext?: SpanContext
 ): AnyJobParams[] => {
   return jobs.map((job) => {
     return { ...job, parentSpanContext: spanContext }

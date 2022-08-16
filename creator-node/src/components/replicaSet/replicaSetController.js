@@ -16,10 +16,17 @@ const {
 } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
 const {
+  SyncType,
+  SYNC_MODES
+} = require('../../services/stateMachineManager/stateMachineConstants')
+const {
   enqueueSync,
-  processImmediateSync
+  processManualImmediateSync
 } = require('./syncQueueComponentService')
 const { instrumentTracing, getActiveSpan } = require('../utils/tracing')
+const {
+  generateDataForSignatureRecovery
+} = require('../../services/sync/secondarySyncFromPrimaryUtils')
 
 const router = express.Router()
 
@@ -78,11 +85,9 @@ const syncRouteController = async (req, res) => {
   const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
-  const creatorNodeEndpoint = req.body.creator_node_endpoint // string
+  const primaryEndpoint = req.body.creator_node_endpoint // string
   const immediate = req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
   const blockNumber = req.body.blockNumber // integer
-  const forceResync =
-    req.body.forceResync === true || req.body.forceResync === 'true' // boolean - default false
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -93,11 +98,13 @@ const syncRouteController = async (req, res) => {
     )
   }
 
+  const wallet = walletPublicKeys[0]
+
   // If sync_type body param provided, log it (param is currently only used for logging)
   const syncType = req.body.sync_type
   if (syncType) {
     req.logger.info(
-      `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`
+      `SyncRouteController - sync of type: ${syncType} initiated for ${wallet} from ${primaryEndpoint}`
     )
   }
 
@@ -105,13 +112,24 @@ const syncRouteController = async (req, res) => {
    * If immediate sync requested, enqueue immediately and return response
    * Else, debounce + add sync to queue
    */
+  const data = generateDataForSignatureRecovery(req.body)
+
   if (immediate) {
     try {
-      await processImmediateSync({
+      await processManualImmediateSync({
         serviceRegistry,
-        walletPublicKeys,
-        creatorNodeEndpoint,
-        forceResync,
+        wallet,
+        creatorNodeEndpoint: primaryEndpoint,
+        forceResyncConfig: {
+          forceResync: req.body.forceResync,
+          signatureData: {
+            timestamp: req.body.timestamp,
+            signature: req.body.signature,
+            data
+          },
+          wallet
+        },
+        logContext: req.logContext,
         parentSpanContext: span?.spanContext()
       })
     } catch (e) {
@@ -120,28 +138,81 @@ const syncRouteController = async (req, res) => {
   } else {
     const debounceTime = nodeConfig.get('debounceTime')
 
-    for (const wallet of walletPublicKeys) {
-      if (wallet in syncDebounceQueue) {
-        clearTimeout(syncDebounceQueue[wallet])
-        req.logger.info(
-          `SyncRouteController - clear timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
-        )
-      }
-      syncDebounceQueue[wallet] = setTimeout(async function () {
-        await enqueueSync({
-          serviceRegistry,
-          walletPublicKeys: [wallet],
-          creatorNodeEndpoint,
-          forceResync,
-          parentSpanContext: span?.spanContext()
-        })
-        delete syncDebounceQueue[wallet]
-      }, debounceTime)
+
+    if (wallet in syncDebounceQueue) {
+      clearTimeout(syncDebounceQueue[wallet])
       req.logger.info(
-        `SyncRouteController - set timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
+        `SyncRouteController - clear timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
       )
     }
+    syncDebounceQueue[wallet] = setTimeout(async function () {
+      await enqueueSync({
+        serviceRegistry,
+        wallet,
+        creatorNodeEndpoint: primaryEndpoint,
+        blockNumber,
+        forceResyncConfig: {
+          forceResync: req.body.forceResync,
+          signatureData: {
+            timestamp: req.body.timestamp,
+            signature: req.body.signature,
+            data
+          },
+          wallet
+        },
+        logContext: req.logContext,
+        parentSpanContext: span?.spanContext()
+      })
+      delete syncDebounceQueue[wallet]
+    }, debounceTime)
+    req.logger.info(
+      `SyncRouteController - set timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
+    )
   }
+
+  return successResponse()
+}
+
+/**
+ * Adds a job to manualSyncQueue to issue a sync to secondary with syncMode MergePrimaryAndSecondary
+ * @notice This will only work if called on a primary for a user
+ */
+const mergePrimaryAndSecondaryController = async (req, res) => {
+  const serviceRegistry = req.app.get('serviceRegistry')
+  const manualSyncQueue = serviceRegistry.manualSyncQueue
+  const config = serviceRegistry.nodeConfig
+
+  const selfEndpoint = config.get('creatorNodeEndpoint')
+
+  const wallet = req.query.wallet
+  const endpoint = req.query.endpoint
+
+  if (!wallet || !endpoint) {
+    return errorResponseBadRequest(`Must provide wallet and endpoint params`)
+  }
+
+  const syncType = SyncType.Manual
+  const syncMode = SYNC_MODES.MergePrimaryAndSecondary
+  const immediate = true
+
+  const syncRequestParameters = {
+    baseURL: endpoint,
+    url: '/sync',
+    method: 'post',
+    data: {
+      wallet: [wallet],
+      creator_node_endpoint: selfEndpoint,
+      sync_type: syncType,
+      immediate,
+      from_manual_route: true
+    }
+  }
+
+  await manualSyncQueue.add({
+    syncType,
+    syncMode,
+    syncRequestParameters
+  })
 
   return successResponse()
 }
@@ -165,6 +236,10 @@ router.post(
       }
     })
   )
+)
+router.post(
+  '/merge_primary_and_secondary',
+  handleResponse(mergePrimaryAndSecondaryController)
 )
 
 module.exports = router

@@ -13,7 +13,8 @@
     "test:coverage": "nyc --reporter=lcov --reporter=text npm run test",
     "test:coverage:ci": "nyc --reporter=lcov --reporter=text npm run test:ci && nyc report --reporter=text-lcov | coveralls",
     "lint:fix": "eslint --fix --ext=js,ts src",
-    "lint": "eslint --ext=js,ts src"
+    "lint": "eslint --ext=js,ts src",
+    "build": "./node_modules/.bin/tsc --project ./"
   },
   "keywords": [],
   "author": "",
@@ -86,7 +87,9 @@
   "devDependencies": {
     "@types/bull": "^3.15.8",
     "@types/bunyan": "^1.8.8",
+    "@types/express": "4.17.12",
     "@types/lodash": "^4.14.182",
+    "@types/mocha": "^9.1.1",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.5.0",
     "chai": "4.3.6",

@@ -1,0 +1,41 @@
+from datetime import datetime
+from typing import Literal, TypedDict, cast
+
+from src.api_helpers import generate_signature
+
+PremiumContentType = Literal["track"]
+
+
+class PremiumContentSignatureData(TypedDict):
+    premium_content_id: int
+    premium_content_type: PremiumContentType
+    user_wallet: str
+    timestamp: int
+
+
+class PremiumContentSignatureArgs(TypedDict):
+    id: int
+    type: PremiumContentType
+    user_wallet: str
+
+
+class PremiumContentSignature(TypedDict):
+    data: PremiumContentSignatureData
+    signature: str
+
+
+def _get_current_utc_timestamp_ms():
+    return int(datetime.utcnow().timestamp() * 1000)
+
+
+def get_premium_content_signature(
+    args: PremiumContentSignatureArgs,
+) -> PremiumContentSignature:
+    data: PremiumContentSignatureData = {
+        "premium_content_id": args["id"],
+        "premium_content_type": args["type"],
+        "user_wallet": args["user_wallet"],
+        "timestamp": _get_current_utc_timestamp_ms(),
+    }
+    signature = generate_signature(data)
+    return {"data": cast(PremiumContentSignatureData, data), "signature": signature}
