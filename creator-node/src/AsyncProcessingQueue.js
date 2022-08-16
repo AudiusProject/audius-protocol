@@ -112,7 +112,7 @@ class AsyncProcessingQueue {
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
         )
         await this.addProcessTranscodeAndSegmentTask({
-          parentSpanContext: span.spanContext(),
+          parentSpanContext: parentSpanContext,
           logContext,
           req: { ...job.data.req, transcodeFilePath, segmentFileNames }
         })
