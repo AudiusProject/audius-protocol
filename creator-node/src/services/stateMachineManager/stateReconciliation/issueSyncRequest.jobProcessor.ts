@@ -39,9 +39,7 @@ import {
 import primarySyncFromSecondary from '../../sync/primarySyncFromSecondary'
 import SyncRequestDeDuplicator from './SyncRequestDeDuplicator'
 import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
-import {
-  generateDataForSignatureRecovery
-} from '../../sync/secondarySyncFromPrimaryUtils'
+import { generateDataForSignatureRecovery } from '../../sync/secondarySyncFromPrimaryUtils'
 import { generateTimestampAndSignature } from '../../../apiSigning'
 const models = require('../../../models')
 
@@ -123,17 +121,13 @@ const issueSyncRequest = async ({
       : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
   if (!_.isEmpty(syncReqToEnqueue)) {
     if (attemptNumber < maxRetries) {
-      logger.info(
-        `Retrying issue-sync-request after attempt #${attemptNumber}`
-      )
+      logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
       const queueName =
         syncReqToEnqueue?.syncType === SyncType.Manual
           ? QUEUE_NAMES.MANUAL_SYNC
           : QUEUE_NAMES.RECURRING_SYNC
       jobsToEnqueue = {
-        [queueName]: [
-          { ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }
-        ]
+        [queueName]: [{ ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }]
       }
     } else {
       logger.info(
@@ -169,7 +163,6 @@ async function _handleIssueSyncRequest({
   syncRequestParameters,
   logger
 }: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
-
   const span = getActiveSpan()
 
   if (!syncRequestParameters?.data?.wallet?.length) {
@@ -284,9 +277,9 @@ async function _handleIssueSyncRequest({
   }
 
   // primaryClockValue is used in additionalSyncIsRequired() call below
-  const primaryClockValue = (
-    await _getUserPrimaryClockValues([userWallet])
-  )[userWallet]
+  const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
+    userWallet
+  ]
 
   // Wait until has sync has completed (within time threshold)
   const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
@@ -304,7 +297,7 @@ async function _handleIssueSyncRequest({
 }
 
 const handleIssueSyncRequest = instrumentTracing({
-  fn: _handleIssueSyncRequest,
+  fn: _handleIssueSyncRequest
 })
 
 /**
@@ -474,19 +467,22 @@ const _additionalSyncIsRequired = async (
   )
 }
 
-module.exports = async ({ parentSpanContext }: {
+module.exports = async ({
+  parentSpanContext
+}: {
   parentSpanContext: SpanContext
-}) => instrumentTracing({
-  name: 'issueSyncRequest.jobProcessor',
-  fn: issueSyncRequest,
-  options: {
-    links: [
-      {
-        context: parentSpanContext
+}) =>
+  instrumentTracing({
+    name: 'issueSyncRequest.jobProcessor',
+    fn: issueSyncRequest,
+    options: {
+      links: [
+        {
+          context: parentSpanContext
+        }
+      ],
+      attributes: {
+        [SemanticAttributes.CODE_FILEPATH]: __filename
       }
-    ],
-    attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
     }
-  }
-})
+  })

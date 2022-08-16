@@ -12,7 +12,7 @@ class ContentNodeInfoManager {
   }
 
   /**
-   * 
+   *
    * @returns {Record<string, number} - mapping of <endpoint : spid info on chain>
    */
   getCNodeEndpointToSpIdMap() {

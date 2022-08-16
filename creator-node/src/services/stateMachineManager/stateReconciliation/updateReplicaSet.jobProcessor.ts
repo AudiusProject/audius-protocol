@@ -28,7 +28,13 @@ import { retrieveClockValueForUserFromReplica } from '../stateMachineUtils'
 import initAudiusLibs from '../../initAudiusLibs'
 
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-import { getActiveSpan, instrumentTracing, recordException, info, currentSpanContext } from '../../../utils/tracing'
+import {
+  getActiveSpan,
+  instrumentTracing,
+  recordException,
+  info,
+  currentSpanContext
+} from '../../../utils/tracing'
 
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
 
@@ -59,7 +65,7 @@ const updateReplicaSet = async function ({
   secondary2,
   unhealthyReplicas,
   replicaToUserInfoMap,
-  enabledReconfigModes,
+  enabledReconfigModes
 }: DecoratedJobParams<UpdateReplicaSetJobParams>): Promise<
   DecoratedJobReturnValue<UpdateReplicaSetJobReturnValue>
 > {
@@ -84,7 +90,6 @@ const updateReplicaSet = async function ({
   let healthyNodes = []
   healthyNodes = await getCachedHealthyNodes()
   if (healthyNodes.length === 0) {
-
     try {
       info('init libs')
       audiusLibs = await initAudiusLibs({
@@ -130,17 +135,17 @@ const updateReplicaSet = async function ({
       replicaToUserInfoMap,
       enabledReconfigModes
     })
-      ; ({ errorMsg, issuedReconfig, syncJobsToEnqueue } =
-        await issueUpdateReplicaSetOp(
-          userId,
-          wallet,
-          primary,
-          secondary1,
-          secondary2,
-          newReplicaSet,
-          audiusLibs,
-          logger
-        ))
+    ;({ errorMsg, issuedReconfig, syncJobsToEnqueue } =
+      await issueUpdateReplicaSetOp(
+        userId,
+        wallet,
+        primary,
+        secondary1,
+        secondary2,
+        newReplicaSet,
+        audiusLibs,
+        logger
+      ))
   } catch (e: any) {
     recordException(e)
     logger.error(
@@ -159,8 +164,8 @@ const updateReplicaSet = async function ({
     spanContext: currentSpanContext(),
     jobsToEnqueue: syncJobsToEnqueue?.length
       ? {
-        [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
-      }
+          [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
+        }
       : undefined
   }
 }
@@ -472,7 +477,6 @@ const _issueUpdateReplicaSetOp = async (
   audiusLibs: any,
   logger: Logger
 ): Promise<IssueUpdateReplicaSetResult> => {
-
   const span = getActiveSpan()
 
   const response: IssueUpdateReplicaSetResult = {
@@ -509,7 +513,14 @@ const _issueUpdateReplicaSetOp = async (
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
 
-      if (!((ContentNodeInfoManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[endpt])) {
+      if (
+        !(
+          ContentNodeInfoManager.getCNodeEndpointToSpIdMap() as Record<
+            string,
+            number
+          >
+        )[endpt]
+      ) {
         response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
           ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
         )} | endpt=${endpt}. Skipping reconfig.`
@@ -517,7 +528,12 @@ const _issueUpdateReplicaSetOp = async (
         return response
       }
       newReplicaSetSPIds.push(
-        (ContentNodeInfoManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[endpt]
+        (
+          ContentNodeInfoManager.getCNodeEndpointToSpIdMap() as Record<
+            string,
+            number
+          >
+        )[endpt]
       )
     }
 
@@ -539,7 +555,10 @@ const _issueUpdateReplicaSetOp = async (
         [primary]: oldPrimarySpId,
         [secondary1]: oldSecondary1SpId,
         [secondary2]: oldSecondary2SpId
-      } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap() as Record<string, number>
+      } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap() as Record<
+        string,
+        number
+      >
 
       const canReconfig = await _canReconfig({
         libs: audiusLibs,
@@ -581,16 +600,14 @@ const _issueUpdateReplicaSetOp = async (
     }
 
     // Enqueue a sync from new primary to new secondary1. If there is no diff, then this is a no-op.
-    const {
-      duplicateSyncReq,
-      syncReqToEnqueue: syncToEnqueueToSecondary1
-    } = getNewOrExistingSyncReq({
-      userWallet: wallet,
-      primaryEndpoint: newPrimary,
-      secondaryEndpoint: newSecondary1,
-      syncType: SyncType.Recurring,
-      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
-    })
+    const { duplicateSyncReq, syncReqToEnqueue: syncToEnqueueToSecondary1 } =
+      getNewOrExistingSyncReq({
+        userWallet: wallet,
+        primaryEndpoint: newPrimary,
+        secondaryEndpoint: newSecondary1,
+        syncType: SyncType.Recurring,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary
+      })
     if (!_.isEmpty(duplicateSyncReq)) {
       logger.warn(
         `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary1: ${duplicateSyncReq}`
@@ -636,7 +653,7 @@ const _issueUpdateReplicaSetOp = async (
 }
 
 const issueUpdateReplicaSetOp = instrumentTracing({
-  fn: _issueUpdateReplicaSetOp,
+  fn: _issueUpdateReplicaSetOp
 })
 
 /**
@@ -700,19 +717,22 @@ const _canReconfig = async ({
   return canReconfig
 }
 
-module.exports = async ({ parentSpanContext }: {
+module.exports = async ({
+  parentSpanContext
+}: {
   parentSpanContext: SpanContext
-}) => instrumentTracing({
-  name: 'updateReplicaSet.jobProcessor',
-  fn: updateReplicaSet,
-  options: {
-    links: [
-      {
-        context: parentSpanContext
+}) =>
+  instrumentTracing({
+    name: 'updateReplicaSet.jobProcessor',
+    fn: updateReplicaSet,
+    options: {
+      links: [
+        {
+          context: parentSpanContext
+        }
+      ],
+      attributes: {
+        [SemanticAttributes.CODE_FILEPATH]: __filename
       }
-    ],
-    attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
     }
-  }
-})
+  })

@@ -236,8 +236,12 @@ async function _findSyncsForUser(
 
     // Secondary is unhealthy if its spID is mismatched -- don't sync to it
     if (
-      (ContentNodeInfoManager.getCNodeEndpointToSpIdMap() as Record<string, number>)[secondary] !==
-      secondaryInfo.spId
+      (
+        ContentNodeInfoManager.getCNodeEndpointToSpIdMap() as Record<
+          string,
+          number
+        >
+      )[secondary] !== secondaryInfo.spId
     ) {
       outcomesBySecondary[secondary].result = 'no_sync_sp_id_mismatch'
       continue

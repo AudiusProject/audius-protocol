@@ -138,7 +138,6 @@ const syncRouteController = async (req, res) => {
   } else {
     const debounceTime = nodeConfig.get('debounceTime')
 
-
     if (wallet in syncDebounceQueue) {
       clearTimeout(syncDebounceQueue[wallet])
       req.logger.info(

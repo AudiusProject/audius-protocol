@@ -116,15 +116,10 @@ const monitorState = async ({
 
     try {
       unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
-      _addToDecisionTree(
-        decisionTree,
-        'getUnhealthyPeers Success',
-        logger,
-        {
-          unhealthyPeerSetLength: unhealthyPeers?.size,
-          unhealthyPeers: Array.from(unhealthyPeers)
-        }
-      )
+      _addToDecisionTree(decisionTree, 'getUnhealthyPeers Success', logger, {
+        unhealthyPeerSetLength: unhealthyPeers?.size,
+        unhealthyPeers: Array.from(unhealthyPeers)
+      })
     } catch (e: any) {
       span?.recordException(e)
       logger.error(e.stack)
@@ -147,8 +142,7 @@ const monitorState = async ({
       'buildReplicaSetNodesToUserWalletsMap Success',
       logger,
       {
-        numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap)
-          ?.length
+        numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap)?.length
       }
     )
 
@@ -157,8 +151,7 @@ const monitorState = async ({
       const retrieveUserInfoResp = await retrieveUserInfoFromReplicaSet(
         replicaSetNodesToUserWalletsMap
       )
-      replicaToAllUserInfoMaps =
-        retrieveUserInfoResp.replicaToAllUserInfoMaps
+      replicaToAllUserInfoMaps = retrieveUserInfoResp.replicaToAllUserInfoMaps
 
       // Mark peers as unhealthy if they were healthy before but failed to return a clock value
       unhealthyPeers = new Set([
@@ -219,20 +212,14 @@ const monitorState = async ({
     span?.setStatus({ code: SpanStatusCode.ERROR })
     logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
   } finally {
-    _addToDecisionTree(
-      decisionTree,
-      'END monitor-state job processor',
-      logger
-    )
+    _addToDecisionTree(decisionTree, 'END monitor-state job processor', logger)
 
     // Log decision tree
     _printDecisionTree(decisionTree, logger)
   }
 
   // The next job should start processing where this one ended or loop back around to the first user
-  const lastProcessedUser: { user_id: number } = users[
-    users.length - 1
-  ] || {
+  const lastProcessedUser: { user_id: number } = users[users.length - 1] || {
     user_id: 0
   }
   const findSyncRequestsJob: FindSyncRequestsJobParams = {
@@ -269,12 +256,7 @@ const monitorState = async ({
 }
 
 const _addToDecisionTree = instrumentTracing({
-  fn: (
-    decisionTree: Decision[],
-    stage: string,
-    logger: Logger,
-    data = {}
-  ) => {
+  fn: (decisionTree: Decision[], stage: string, logger: Logger, data = {}) => {
     const obj: Decision = { stage, data, time: Date.now() }
 
     let logStr = `monitor-state job processor ${stage} - Data ${JSON.stringify(
@@ -317,19 +299,22 @@ const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
   }
 }
 
-module.exports = async ({ parentSpanContext }: {
+module.exports = async ({
+  parentSpanContext
+}: {
   parentSpanContext: SpanContext
-}) => instrumentTracing({
-  name: 'monitorState.jobProcessor',
-  fn: monitorState,
-  options: {
-    links: [
-      {
-        context: parentSpanContext
+}) =>
+  instrumentTracing({
+    name: 'monitorState.jobProcessor',
+    fn: monitorState,
+    options: {
+      links: [
+        {
+          context: parentSpanContext
+        }
+      ],
+      attributes: {
+        [SemanticAttributes.CODE_FILEPATH]: __filename
       }
-    ],
-    attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
     }
-  }
-})
+  })

@@ -31,7 +31,6 @@ const getNewOrExistingSyncReq = ({
   syncMode,
   immediate = false
 }) => {
-
   const span = getActiveSpan()
 
   if (
@@ -53,13 +52,12 @@ const getNewOrExistingSyncReq = ({
    * If duplicate sync already exists, do not add and instead return existing sync job info
    * Ignore syncMode when checking for duplicates, since it doesn't matter
    */
-  const duplicateSyncJobInfo =
-    SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
-      syncType,
-      userWallet,
-      secondaryEndpoint,
-      immediate
-    )
+  const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
+    syncType,
+    userWallet,
+    secondaryEndpoint,
+    immediate
+  )
   if (duplicateSyncJobInfo) {
     span?.addEvent(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
@@ -122,7 +120,6 @@ const issueSyncRequestsUntilSynced = async (
   timeoutMs,
   queue
 ) => {
-
   const span = getActiveSpan()
 
   // Issue syncRequest before polling secondary for replication
@@ -137,9 +134,7 @@ const issueSyncRequestsUntilSynced = async (
 
   if (!_.isEmpty(duplicateSyncReq)) {
     // Log duplicate and return
-    logger.warn(
-      `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
-    )
+    logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     span?.addEvent(
       `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
     )
@@ -195,11 +190,7 @@ const issueSyncRequestsUntilSynced = async (
 }
 
 const getCachedHealthyNodes = async () => {
-  const healthyNodes = await redisClient.lrange(
-    HEALTHY_NODES_CACHE_KEY,
-    0,
-    -1
-  )
+  const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)
   return healthyNodes
 }
 
@@ -213,8 +204,10 @@ const cacheHealthyNodes = async (healthyNodes) => {
 }
 
 module.exports = {
-  getNewOrExistingSyncReq: instrumentTracing({ fn: getNewOrExistingSyncReq}),
-  issueSyncRequestsUntilSynced: instrumentTracing({ fn: issueSyncRequestsUntilSynced }),
+  getNewOrExistingSyncReq: instrumentTracing({ fn: getNewOrExistingSyncReq }),
+  issueSyncRequestsUntilSynced: instrumentTracing({
+    fn: issueSyncRequestsUntilSynced
+  }),
   getCachedHealthyNodes: instrumentTracing({ fn: getCachedHealthyNodes }),
   cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes })
 }

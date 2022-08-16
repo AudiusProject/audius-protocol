@@ -48,7 +48,7 @@ const findReplicaSetUpdates = async ({
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
-  userSecondarySyncMetricsMap,
+  userSecondarySyncMetricsMap
 }: DecoratedJobParams<FindReplicaSetUpdateJobParams>): Promise<
   DecoratedJobReturnValue<FindReplicaSetUpdatesJobReturnValue>
 > => {
@@ -101,7 +101,8 @@ const findReplicaSetUpdates = async ({
     if (promiseStatus === 'rejected') {
       const { reason } = promiseResult
       logger.error(
-        `_findReplicaSetUpdatesForUser() encountered unexpected failure: ${reason.message || reason
+        `_findReplicaSetUpdatesForUser() encountered unexpected failure: ${
+          reason.message || reason
         }`
       )
       continue
@@ -117,9 +118,7 @@ const findReplicaSetUpdates = async ({
           primary: updateReplicaSetOp.primary,
           secondary1: updateReplicaSetOp.secondary1,
           secondary2: updateReplicaSetOp.secondary2,
-          unhealthyReplicas: Array.from(
-            updateReplicaSetOp.unhealthyReplicas
-          ),
+          unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
           replicaToUserInfoMap: _transformAndFilterReplicaToUserInfoMap(
             replicaToAllUserInfoMaps,
             wallet,
@@ -143,8 +142,8 @@ const findReplicaSetUpdates = async ({
     cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
-        [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs
-      }
+          [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs
+        }
       : undefined
   }
 }
@@ -164,7 +163,7 @@ type UpdateReplicaSetOp = UpdateReplicaSetUser & {
  * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
  * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  */
- const _findReplicaSetUpdatesForUser = async (
+const _findReplicaSetUpdatesForUser = async (
   user: StateMonitoringUser,
   thisContentNodeEndpoint: string,
   unhealthyPeersSet: Set<string>,
@@ -339,19 +338,18 @@ const _transformAndFilterReplicaToUserInfoMap = (
   )
 }
 
-module.exports = ({ parentSpanContext }: {
-  parentSpanContext: SpanContext
-}) => instrumentTracing({
-  name: 'findReplicaSetUpdates.jobProcessor',
-  fn: findReplicaSetUpdates,
-  options: {
-    links: [
-      {
-        context: parentSpanContext
+module.exports = ({ parentSpanContext }: { parentSpanContext: SpanContext }) =>
+  instrumentTracing({
+    name: 'findReplicaSetUpdates.jobProcessor',
+    fn: findReplicaSetUpdates,
+    options: {
+      links: [
+        {
+          context: parentSpanContext
+        }
+      ],
+      attributes: {
+        [SemanticAttributes.CODE_FILEPATH]: __filename
       }
-    ],
-    attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
     }
-  }
-})
+  })
