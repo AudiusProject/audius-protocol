@@ -1,3 +1,4 @@
+const { instrumentTracing } = require('utils/tracing')
 const { getTracer } = require('../../../tracer')
 
 /**
@@ -25,18 +26,25 @@ class SyncRequestDeDuplicator {
     secondaryEndpoint,
     immediate = false
   ) {
-    return getTracer().startActiveSpan('getDuplicateSyncJobInfo', (span) => {
-      const syncKey = this._getSyncKey(
-        syncType,
-        userWallet,
-        secondaryEndpoint,
-        immediate
-      )
+    return instrumentTracing({
+      name: 'getDuplicateSyncJobInfo',
+      fn: () => {
+        const syncKey = this._getSyncKey(
+          syncType,
+          userWallet,
+          secondaryEndpoint,
+          immediate
+        )
 
-      const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
-      span.end()
-      return duplicateSyncJobInfo || null
-    })
+        const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
+        return duplicateSyncJobInfo || null
+      }
+    })(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate
+    )
   }
 
   /** Record job info for sync with given properties */
@@ -47,18 +55,26 @@ class SyncRequestDeDuplicator {
     immediate = false,
     jobProps
   ) {
-    getTracer().startActiveSpan('recordSync', (span) => {
-      const syncKey = this._getSyncKey(
-        syncType,
-        userWallet,
-        secondaryEndpoint,
-        immediate
-      )
-      span.setAttribute('syncKey', syncKey)
+    instrumentTracing({
+      name: 'recordSync',
+      fn: () => {
+        const syncKey = this._getSyncKey(
+          syncType,
+          userWallet,
+          secondaryEndpoint,
+          immediate
+        )
+        span.setAttribute('syncKey', syncKey)
 
-      this.waitingSyncsByUserWalletMap[syncKey] = jobProps
-      span.end()
-    })
+        this.waitingSyncsByUserWalletMap[syncKey] = jobProps
+      }
+    })(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate,
+      jobProps
+    )
   }
 
   /** Remove sync with given properties */
