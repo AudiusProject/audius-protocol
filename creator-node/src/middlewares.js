@@ -533,7 +533,9 @@ async function getUserReplicaSetEndpointsFromDiscovery({
   ensurePrimary,
   myCnodeEndpoint
 }) {
-  logger.info(`Starting getUserReplicaSetEndpointsFromDiscovery for wallet ${wallet}`)
+  logger.info(
+    `Starting getUserReplicaSetEndpointsFromDiscovery for wallet ${wallet}`
+  )
   const start = Date.now()
 
   let user = null
@@ -692,7 +694,9 @@ async function getUserReplicaSetEndpointsFromDiscovery({
   const endpoint = user[0].creator_node_endpoint
   const userReplicaSet = endpoint ? endpoint.split(',') : []
 
-  logger.info(`getUserReplicaSetEndpointsFromDiscovery route time ${Date.now() - start}`)
+  logger.info(
+    `getUserReplicaSetEndpointsFromDiscovery route time ${Date.now() - start}`
+  )
   return userReplicaSet
 }
 

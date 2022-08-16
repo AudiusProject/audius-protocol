@@ -4,7 +4,10 @@ const axios = require('axios')
 const { logger: genericLogger } = require('../../logging')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
-const { getOwnEndpoint, getUserReplicaSetEndpointsFromDiscovery } = require('../../middlewares')
+const {
+  getOwnEndpoint,
+  getUserReplicaSetEndpointsFromDiscovery
+} = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
