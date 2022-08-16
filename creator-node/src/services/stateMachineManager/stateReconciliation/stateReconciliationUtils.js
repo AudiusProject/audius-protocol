@@ -11,7 +11,7 @@ const {
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const { SpanStatusCode } = require('@opentelemetry/api')
-const { instrumentTracingAll, getActiveSpan } = require('utils/tracing')
+const { instrumentTracing, getActiveSpan } = require('../../../utils/tracing')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
@@ -212,9 +212,9 @@ const cacheHealthyNodes = async (healthyNodes) => {
     .exec()
 }
 
-module.exports = instrumentTracingAll({
-  getNewOrExistingSyncReq,
-  issueSyncRequestsUntilSynced,
-  getCachedHealthyNodes,
-  cacheHealthyNodes
-})
+module.exports = {
+  getNewOrExistingSyncReq: instrumentTracing({ fn: getNewOrExistingSyncReq}),
+  issueSyncRequestsUntilSynced: instrumentTracing({ fn: issueSyncRequestsUntilSynced }),
+  getCachedHealthyNodes: instrumentTracing({ fn: getCachedHealthyNodes }),
+  cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes })
+}

@@ -1,5 +1,4 @@
 import type { SpanContext } from '@opentelemetry/api'
-import { Method } from 'axios'
 
 // Issue sync request job
 export type SyncRequestAxiosParams = {
