@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { program } from "commander";
-import { Connection } from "@solana/web3.js";
-import { mintTo } from "@solana/spl-token";
+import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { mintTo, getAssociatedTokenAddress } from "@solana/spl-token";
 import { default as axios } from "axios";
 
 program.command("mint-audio")
@@ -14,6 +14,9 @@ program.command("mint-audio")
     }
 
     const connection = new Connection(process.env.SOLANA_ENDPOINT);
+    const feePayer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_FEEPAYER_SECRET_KEY)));
+    const tokenMint = new PublicKey(process.env.SOLANA_TOKEN_MINT_PUBLIC_KEY);
+    const mintAuthority = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SOLANA_OWNER_SECRET_KEY)));
 
     let address;
     if (account.startsWith("@")) { // handle
@@ -38,5 +41,17 @@ program.command("mint-audio")
       address = account;
     }
 
-    console.log(address);
+    const destination = new PublicKey(address);
+    const destinationTokenAccount = await getAssociatedTokenAddress(tokenMint, destination);
+
+    try {
+      const tx = await mintTo(connection, feePayer, tokenMint, destinationTokenAccount, mintAuthority, amount);
+      console.log(chalk.green("Successfully minted audio"));
+      console.log(chalk.yellow("Transaction Signature:"), tx);
+    } catch (err) {
+      program.error(`Failed to mint audio ${err.message}`);
+    }
+
+    process.exit(0);
   });
+  
