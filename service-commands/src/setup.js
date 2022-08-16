@@ -256,9 +256,8 @@ const runSetupCommand = async (
       }
       const durationSeconds = Math.abs((Date.now() - start) / 1000)
       console.log(
-        `${service} ${
-          serviceNumber || ''
-        } - ${setupCommand} | executed in ${durationSeconds}s`.info
+        `${service} ${serviceNumber || ''
+          } - ${setupCommand} | executed in ${durationSeconds}s`.info
       )
       return outputs
     } catch (err) {
@@ -291,9 +290,8 @@ const getServiceURL = (service, serviceNumber) => {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
     }
-    return `http://${getContentNodeContainerName(serviceNumber)}:${
-      4000 + parseInt(serviceNumber) - 1
-    }/${healthCheckEndpoint}`
+    return `http://${getContentNodeContainerName(serviceNumber)}:${4000 + parseInt(serviceNumber) - 1
+      }/${healthCheckEndpoint}`
   }
   return `${protocol}://${host}:${port}/${healthCheckEndpoint}`
 }
@@ -393,14 +391,13 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK_RETRY]
+    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.UP, { waitSec: 3 }],
+    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
   const inParallel = [
-    [Service.CONTRACTS, SetupCommand.UP],
-    [Service.ETH_CONTRACTS, SetupCommand.UP],
-    [Service.SOLANA_PROGRAMS, SetupCommand.UP]
+    [Service.CONTRACTS_PREDEPLOYED, SetupCommand.UP],
+    [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.UP]
   ]
 
   const sequential = [
