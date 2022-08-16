@@ -1,12 +1,12 @@
-import type { SpanOptions } from '@opentelemetry/api'
-import { SpanStatusCode } from '@opentelemetry/api'
+import type { Span, SpanOptions } from '@opentelemetry/api'
+import { trace, context, SpanStatusCode } from '@opentelemetry/api'
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { getTracer } from '../tracer'
 
 type Fn<TArgs extends any[], TResult> = (...args: TArgs) => TResult;
 
 export const instrumentTracing = <TArgs extends any[], TResult extends any>({ name, fn, options }: {
-    name: string | undefined,
+    name?: string,
     fn: Fn<TArgs, TResult>,
     options: SpanOptions
 }) => {
@@ -29,6 +29,10 @@ export const instrumentTracing = <TArgs extends any[], TResult extends any>({ na
             }
         )
     }
+}
+
+export const getActiveSpan = (): Span | undefined => {
+    return trace.getSpan(context.active())
 }
 
 module.exports = { instrumentTracing }

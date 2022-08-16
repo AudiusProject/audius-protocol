@@ -1,9 +1,8 @@
 const express = require('express')
 const _ = require('lodash')
 
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const { SpanStatusCode } = require('@opentelemetry/api')
-const { getTracer } = require('../../tracer')
+const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 
 const {
   successResponse,
@@ -20,6 +19,7 @@ const {
   enqueueSync,
   processImmediateSync
 } = require('./syncQueueComponentService')
+const { instrumentTracing, getActiveSpan } = require('../utils/tracing')
 
 const router = express.Router()
 
@@ -65,105 +65,86 @@ const respondToURSMRequestForProposalController = async (req) => {
  * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
 const syncRouteController = async (req, res) => {
-  const options = {
-    attributes: {
-      [SemanticAttributes.CODE_FUNCTION]: 'syncRouteController',
-      [SemanticAttributes.CODE_FILEPATH]: __filename
+  const span = getActiveSpan()
+
+  const serviceRegistry = req.app.get('serviceRegistry')
+  if (
+    _.isEmpty(serviceRegistry?.syncQueue) ||
+    _.isEmpty(serviceRegistry?.syncImmediateQueue)
+  ) {
+    span?.setStatus({ code: SpanStatusCode.ERROR })
+    return errorResponseServerError('Sync Queue is not up and running yet')
+  }
+  const nodeConfig = serviceRegistry.nodeConfig
+
+  const walletPublicKeys = req.body.wallet // array
+  const creatorNodeEndpoint = req.body.creator_node_endpoint // string
+  const immediate =
+    req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
+  const blockNumber = req.body.blockNumber // integer
+  const forceResync =
+    req.body.forceResync === true || req.body.forceResync === 'true' // boolean - default false
+
+  // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
+  if (walletPublicKeys.length === 0) {
+    return errorResponseBadRequest(`Must provide one wallet param`)
+  } else if (walletPublicKeys.length > 1) {
+    return errorResponseBadRequest(
+      `Multi wallet syncs are temporarily disabled`
+    )
+  }
+
+  // If sync_type body param provided, log it (param is currently only used for logging)
+  const syncType = req.body.sync_type
+  if (syncType) {
+    req.logger.info(
+      `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`
+    )
+  }
+
+  /**
+   * If immediate sync requested, enqueue immediately and return response
+   * Else, debounce + add sync to queue
+   */
+  if (immediate) {
+    try {
+      await processImmediateSync({
+        serviceRegistry,
+        walletPublicKeys,
+        creatorNodeEndpoint,
+        forceResync,
+        parentSpanContext: span?.spanContext()
+      })
+    } catch (e) {
+      return errorResponseServerError(e)
+    }
+  } else {
+    const debounceTime = nodeConfig.get('debounceTime')
+
+    for (const wallet of walletPublicKeys) {
+      if (wallet in syncDebounceQueue) {
+        clearTimeout(syncDebounceQueue[wallet])
+        req.logger.info(
+          `SyncRouteController - clear timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
+        )
+      }
+      syncDebounceQueue[wallet] = setTimeout(async function () {
+        await enqueueSync({
+          serviceRegistry,
+          walletPublicKeys: [wallet],
+          creatorNodeEndpoint,
+          forceResync,
+          parentSpanContext: span?.spanContext()
+        })
+        delete syncDebounceQueue[wallet]
+      }, debounceTime)
+      req.logger.info(
+        `SyncRouteController - set timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
+      )
     }
   }
-  return getTracer().startActiveSpan(
-    'syncRouteController',
-    options,
-    async (span) => {
-      const serviceRegistry = req.app.get('serviceRegistry')
-      if (
-        _.isEmpty(serviceRegistry?.syncQueue) ||
-        _.isEmpty(serviceRegistry?.syncImmediateQueue)
-      ) {
-        span.setStatus({ code: SpanStatusCode.ERROR })
-        span.end()
-        return errorResponseServerError('Sync Queue is not up and running yet')
-      }
-      const nodeConfig = serviceRegistry.nodeConfig
 
-      const walletPublicKeys = req.body.wallet // array
-      const creatorNodeEndpoint = req.body.creator_node_endpoint // string
-      const immediate =
-        req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
-      const blockNumber = req.body.blockNumber // integer
-      const forceResync =
-        req.body.forceResync === true || req.body.forceResync === 'true' // boolean - default false
-
-      // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
-      if (walletPublicKeys.length === 0) {
-        span.setStatus({ code: SpanStatusCode.ERROR })
-        span.end()
-        return errorResponseBadRequest(`Must provide one wallet param`)
-      } else if (walletPublicKeys.length > 1) {
-        span.setStatus({ code: SpanStatusCode.ERROR })
-        span.end()
-        return errorResponseBadRequest(
-          `Multi wallet syncs are temporarily disabled`
-        )
-      }
-
-      // If sync_type body param provided, log it (param is currently only used for logging)
-      const syncType = req.body.sync_type
-      if (syncType) {
-        req.logger.info(
-          `SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`
-        )
-      }
-
-      /**
-       * If immediate sync requested, enqueue immediately and return response
-       * Else, debounce + add sync to queue
-       */
-      if (immediate) {
-        try {
-          await processImmediateSync({
-            serviceRegistry,
-            walletPublicKeys,
-            creatorNodeEndpoint,
-            forceResync,
-            parentSpanContext: span.spanContext()
-          })
-        } catch (e) {
-          span.recordException(e)
-          span.setStatus({ code: SpanStatusCode.ERROR })
-          span.end()
-          return errorResponseServerError(e)
-        }
-      } else {
-        const debounceTime = nodeConfig.get('debounceTime')
-
-        for (const wallet of walletPublicKeys) {
-          if (wallet in syncDebounceQueue) {
-            clearTimeout(syncDebounceQueue[wallet])
-            req.logger.info(
-              `SyncRouteController - clear timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
-            )
-          }
-          syncDebounceQueue[wallet] = setTimeout(async function () {
-            await enqueueSync({
-              serviceRegistry,
-              walletPublicKeys: [wallet],
-              creatorNodeEndpoint,
-              forceResync,
-              parentSpanContext: span.spanContext()
-            })
-            delete syncDebounceQueue[wallet]
-          }, debounceTime)
-          req.logger.info(
-            `SyncRouteController - set timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`
-          )
-        }
-      }
-
-      span.end()
-      return successResponse()
-    }
-  )
+  return successResponse()
 }
 
 // Routes
@@ -175,7 +156,16 @@ router.get(
 router.post(
   '/sync',
   ensureStorageMiddleware,
-  handleResponse(syncRouteController)
+  handleResponse(
+    instrumentTracing({
+      fn: syncRouteController,
+      options: {
+        attributes: {
+          [SemanticAttributes.CODE_FILEPATH]: __filename
+        }
+      }
+    })
+  )
 )
 
 module.exports = router
