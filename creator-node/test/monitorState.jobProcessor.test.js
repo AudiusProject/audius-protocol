@@ -161,11 +161,27 @@ describe('test monitorState job processor', function () {
     replicaToAllUserInfoMaps = REPLICA_TO_USER_INFO_MAP,
     userSecondarySyncMetricsMap = USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
   }) {
-    const monitorJobs = jobResult.jobsToEnqueue[QUEUE_NAMES.MONITOR_STATE]
-    const findSyncRequestsJobs =
-      jobResult.jobsToEnqueue[QUEUE_NAMES.FIND_SYNC_REQUESTS]
-    const findReplicaSetUpdatesJobs =
-      jobResult.jobsToEnqueue[QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]
+    const monitorJobs = jobResult.jobsToEnqueue[QUEUE_NAMES.MONITOR_STATE].map(
+      (job) => {
+        const { parentSpanContext, ...rest } = job
+        expect(parentSpanContext).to.exist
+        return rest
+      }
+    )
+    const findSyncRequestsJobs = jobResult.jobsToEnqueue[
+      QUEUE_NAMES.FIND_SYNC_REQUESTS
+    ].map((job) => {
+      const { parentSpanContext, ...rest } = job
+      expect(parentSpanContext).to.exist
+      return rest
+    })
+    const findReplicaSetUpdatesJobs = jobResult.jobsToEnqueue[
+      QUEUE_NAMES.FIND_REPLICA_SET_UPDATES
+    ].map((job) => {
+      const { parentSpanContext, ...rest } = job
+      expect(parentSpanContext).to.exist
+      return rest
+    })
 
     // Verify jobResult enqueues the correct monitorState job starting at the expected userId
     expect(monitorJobs).to.have.lengthOf(1)
