@@ -37,7 +37,6 @@ import {
 import primarySyncFromSecondary from '../../sync/primarySyncFromSecondary'
 import SyncRequestDeDuplicator from './SyncRequestDeDuplicator'
 import {
-  getActiveSpan,
   instrumentTracing,
   recordException,
   currentSpanContext
@@ -95,7 +94,6 @@ const issueSyncRequest = async ({
 }: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
   DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
 > => {
-  const span = getActiveSpan()
   let jobsToEnqueue: JobsToEnqueue = {}
   let metricsToRecord = []
   let error: any = {}
