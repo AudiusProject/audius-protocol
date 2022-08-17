@@ -135,6 +135,8 @@ class CNodeHealthManager {
     // Check for sufficient minimum storage size
     const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
     if (
+      storagePathSize &&
+      storagePathUsed &&
       !hasEnoughStorageSpace(
         storagePathSize,
         storagePathUsed,
