@@ -166,8 +166,6 @@ async function _handleIssueSyncRequest({
   syncRequestParameters,
   logger
 }: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
-  const span = getActiveSpan()
-
   if (!syncRequestParameters?.data?.wallet?.length) {
     return { result: 'failure_missing_wallet' }
   }
