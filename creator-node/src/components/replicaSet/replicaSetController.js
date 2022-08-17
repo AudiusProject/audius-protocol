@@ -23,7 +23,7 @@ const {
   enqueueSync,
   processManualImmediateSync
 } = require('./syncQueueComponentService')
-const { instrumentTracing, getActiveSpan } = require('../utils/tracing')
+const { instrumentTracing, getActiveSpan } = require('../../utils/tracing')
 const {
   generateDataForSignatureRecovery
 } = require('../../services/sync/secondarySyncFromPrimaryUtils')
