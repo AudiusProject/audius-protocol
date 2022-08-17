@@ -778,6 +778,12 @@ const allUp = async ({
     }
   }
 
+  // Add Centralized Logging
+  nodeUpCommands.push([[Service.LOGGING, SetupCommand.UP]])
+
+  // Spin up local exporters, as well as standalone Prometheus/Grafana
+  nodeUpCommands.push([[Service.MONITORING, SetupCommand.UP]])
+
   const start = Date.now()
 
   // Start up the docker network `audius_dev` and the Solana test validator
