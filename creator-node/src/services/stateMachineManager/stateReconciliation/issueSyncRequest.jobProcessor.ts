@@ -234,11 +234,15 @@ async function _handleIssueSyncRequest({
   /**
    * Issue sync request to secondary
    * - If SyncMode = MergePrimaryAndSecondary - issue sync request with forceResync = true
+   *   or if SyncMode = MergePrimaryThenWipeSecondary - issue sync request with forceWipe = true
    *    - above call to primarySyncFromSecondary must have succeeded to get here
    *    - Only apply forceResync flag to this initial sync request, any future syncs proceed as usual
    */
   try {
-    if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+    if (
+      syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
+      syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
+    ) {
       const data = generateDataForSignatureRecovery(syncRequestParameters.data)
       const { timestamp, signature } = generateTimestampAndSignature(
         data,
@@ -249,17 +253,10 @@ async function _handleIssueSyncRequest({
         ...syncRequestParameters,
         data: {
           ...syncRequestParameters.data,
-          forceResync: true,
+          forceResync: syncMode === SYNC_MODES.MergePrimaryAndSecondary,
+          forceWipe: syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary,
           timestamp,
           signature
-        }
-      })
-    } else if (syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary) {
-      await axios({
-        ...syncRequestParameters,
-        data: {
-          ...syncRequestParameters.data,
-          forceWipe: true
         }
       })
     } else {
@@ -271,11 +268,14 @@ async function _handleIssueSyncRequest({
       error: {
         message: `${logMsgString} || Error issuing sync request: ${e.message}`
       },
-      syncReqToEnqueue: {
-        syncType,
-        syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-        syncRequestParameters
-      }
+      syncReqToEnqueue:
+        syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
+          ? undefined
+          : {
+              syncType,
+              syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+              syncRequestParameters
+            }
     }
   }
 
@@ -376,6 +376,13 @@ const _additionalSyncIsRequired = async (
       }
       finalSecondaryClock = secondaryClockValue
 
+      // Stop monitoring if the orphaned node successfully wiped the user's state
+      if (syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary) {
+        return {
+          outcome: 'success_orphan_wiped'
+        }
+      }
+
       /**
        * Stop monitoring if secondary has caught up to primary
        * Note - secondaryClockValue can be greater than primaryClockValue if additional
@@ -391,6 +398,13 @@ const _additionalSyncIsRequired = async (
 
     // Delay between retries
     await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
+  }
+
+  // Orphaned data sync failed to wipe the orphan node if we reach this far
+  if (syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary) {
+    return {
+      outcome: 'failure_orphan_not_wiped'
+    }
   }
 
   const monitoringTimeMs = Date.now() - startTimeMs
