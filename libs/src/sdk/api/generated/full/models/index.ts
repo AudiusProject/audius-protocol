@@ -13,6 +13,7 @@ export * from './FullGetSupporter';
 export * from './FullGetSupporters';
 export * from './FullGetSupporting';
 export * from './FullPlaylistResponse';
+export * from './FullPlaylistTracksResponse';
 export * from './FullRemix';
 export * from './FullRemixParent';
 export * from './FullReposts';

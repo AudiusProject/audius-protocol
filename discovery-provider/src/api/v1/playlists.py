@@ -21,10 +21,8 @@ from src.api.v1.helpers import (
     success_response,
     trending_parser,
 )
-from src.api.v1.models.common import id_occupied
 from src.api.v1.models.playlists import full_playlist_model, playlist_model
 from src.api.v1.models.users import user_model_full
-from src.queries.get_playlist_is_occupied import get_playlist_is_occupied
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_playlists import get_playlists
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
@@ -46,7 +44,7 @@ from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
-from .models.tracks import track
+from .models.tracks import track, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -123,11 +121,6 @@ class Playlist(Resource):
         return response
 
 
-playlist_tracks_response = make_response(
-    "playlist_tracks_response", ns, fields.List(fields.Nested(track))
-)
-
-
 @full_ns.route(PLAYLIST_ROUTE)
 class FullPlaylist(Resource):
     @ns.doc(
@@ -150,6 +143,14 @@ class FullPlaylist(Resource):
         return response
 
 
+playlist_tracks_response = make_response(
+    "playlist_tracks_response", ns, fields.List(fields.Nested(track))
+)
+full_playlist_tracks_response = make_full_response(
+    "full_playlist_tracks_response", full_ns, fields.List(fields.Nested(track_full))
+)
+
+
 @ns.route("/<string:playlist_id>/tracks")
 class PlaylistTracks(Resource):
     @record_metrics
@@ -160,6 +161,23 @@ class PlaylistTracks(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(playlist_tracks_response)
+    @cache(ttl_sec=5)
+    def get(self, playlist_id):
+        decoded_id = decode_with_abort(playlist_id, ns)
+        tracks = get_tracks_for_playlist(decoded_id)
+        return success_response(tracks)
+
+
+@full_ns.route("/<string:playlist_id>/tracks")
+class FullPlaylistTracks(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Playlist Tracks""",
+        description="""Fetch tracks within a playlist.""",
+        params={"playlist_id": "A Playlist ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(full_playlist_tracks_response)
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         decoded_id = decode_with_abort(playlist_id, ns)
@@ -409,25 +427,3 @@ class FullTrendingPlaylists(Resource):
         )
         playlists = get_full_trending_playlists(request, args, strategy)
         return success_response(playlists)
-
-
-occupied_response = make_response("occupied_response", ns, fields.Nested(id_occupied))
-PLAYLIST_OCCUPIED_ROUTE = "/<string:playlist_id>/occupied"
-
-
-@ns.route(PLAYLIST_OCCUPIED_ROUTE)
-class GetPlaylistIsOccupied(Resource):
-    @record_metrics
-    @ns.doc(
-        id="""Check if Playlist ID is occupied""",
-        description="""Check if Playlist ID is occupied""",
-        params={"playlist_id": "A Playlist ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @ns.marshal_with(occupied_response)
-    @cache(ttl_sec=5)
-    def get(self, playlist_id):
-        playlist_id = decode_with_abort(playlist_id, ns)
-        is_occupied = get_playlist_is_occupied(playlist_id)
-        response = success_response({"is_occupied": is_occupied})
-        return response
