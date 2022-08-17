@@ -47,7 +47,7 @@ do
         done
 done
 
-# update all alerts
+# update all alerts, matching on uid and id
 for json_alert in ${json_alerts}
 do
     cat ${json_alert} \

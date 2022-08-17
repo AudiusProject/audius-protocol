@@ -30,7 +30,13 @@ def generate_filename_from_title(title):
 @click.help_option("-h", "--help")
 @click.argument("filename")
 def main(filename):
-    """Convert all dashboard thresholds into alerts."""
+    """
+    Convert all dashboard thresholds into alerts.
+
+    Iterate over the dashboard keys to extract threshold values.
+    Use these values in combination with alert.template.json to generate new alerts.
+    Output all alerts from a panel into individual alerts/*.json files.
+    """
     click.echo(filename)
     with open("grafana/alerts/alert.template.json") as f:
         template = f.read()
@@ -170,11 +176,9 @@ def main(filename):
                 alert_uid = f"{dashboard_uid}_{panel_id:03}_{title_level}"
                 title = sanatize_text(panel["title"])
                 title = f"{title} ({title_level})"
+                alert_id = (dashboard_id * 10000) + (panel_id * 10) + level_id + 100000
                 formatted_text = template.format(
-                    alert_id=(dashboard_id * 10000)
-                    + (panel_id * 10)
-                    + level_id
-                    + 100000,
+                    alert_id=alert_id,
                     alert_uid=alert_uid,
                     dashboard_uid=dashboard_uid,
                     panel_id=panel_id,
