@@ -36,7 +36,12 @@ import {
 } from '../stateMachineConstants'
 import primarySyncFromSecondary from '../../sync/primarySyncFromSecondary'
 import SyncRequestDeDuplicator from './SyncRequestDeDuplicator'
-import { getActiveSpan, instrumentTracing, recordException, currentSpanContext } from '../../../utils/tracing'
+import {
+  getActiveSpan,
+  instrumentTracing,
+  recordException,
+  currentSpanContext
+} from '../../../utils/tracing'
 import { generateDataForSignatureRecovery } from '../../sync/secondarySyncFromPrimaryUtils'
 import { generateTimestampAndSignature } from '../../../apiSigning'
 const models = require('../../../models')
@@ -365,8 +370,10 @@ const _additionalSyncIsRequired = async (
 
   while (Date.now() < maxMonitoringTimeMs) {
     try {
-      const secondaryClockValue =
-        await retrieveClockValueForUserFromReplica(secondaryUrl, userWallet)
+      const secondaryClockValue = await retrieveClockValueForUserFromReplica(
+        secondaryUrl,
+        userWallet
+      )
       logger.info(`${logMsgString} secondaryClock ${secondaryClockValue}`)
 
       // Record starting and current clock values for secondary to determine future action
@@ -411,9 +418,7 @@ const _additionalSyncIsRequired = async (
     )
     outcome = 'success_secondary_caught_up'
     additionalSyncIsRequired = false
-    logger.info(
-      `${logMsgString} || Sync completed in ${monitoringTimeMs}ms`
-    )
+    logger.info(`${logMsgString} || Sync completed in ${monitoringTimeMs}ms`)
 
     // Secondary completed sync but is still behind primary since it was behind by more than max export range
     // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
@@ -457,7 +462,7 @@ const _additionalSyncIsRequired = async (
 }
 
 const additionalSyncIsRequired = instrumentTracing({
-  fn: _additionalSyncIsRequired,
+  fn: _additionalSyncIsRequired
 })
 
 module.exports = async ({
