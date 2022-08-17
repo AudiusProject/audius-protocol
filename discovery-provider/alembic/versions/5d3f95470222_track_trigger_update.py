@@ -19,11 +19,16 @@ def upgrade():
     connection.execute(sa.text('''
     begin;
 
-    drop trigger on_track on tracks;
+    drop trigger if exists on_track on tracks;
 
     create trigger on_track
     after insert or update on tracks
     for each row execute procedure handle_track();
+
+    -- trigger trigger for unlisted tracks
+    update tracks
+        set is_unlisted=is_unlisted
+        where is_current=true and is_unlisted=true;
 
     commit;
     '''))
@@ -34,7 +39,7 @@ def downgrade():
     connection.execute(sa.text('''
     begin;
 
-    drop trigger on_track on tracks;
+    drop trigger if exists on_track on tracks;
 
     create trigger on_track
     after insert or update on tracks
