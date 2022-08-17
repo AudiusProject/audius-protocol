@@ -5,34 +5,33 @@ title: Subgraph Entities
 
 # Entities
 
-- AudiusNetwork
-- ServiceType
-- ServiceTypeVersion
-- ServiceNode
-- User
-- Delegate
-- DecreaseStakeEvent
-- UpdateDeployerCutEvent
-- RemoveDelegatorEvent
-- UndelegateStakeEvent
-- IncreasedStakeEvent
-- IncreaseDelegatedStakeEvent
-- ClaimEvent
-- SlashEvent
-- ClaimRound
-- ClaimProcessedEvent
-- RegisteredServiceProviderEvent
-- DeregisteredServiceProviderEvent
-- Proposal
-- Vote
-- ProposalSubmittedEvent
-- ProposalVoteSubmittedEvent
-- ProposalVoteUpdatedEvent
-- ProposalOutcomeEvaluatedEvent
-- ProposalTransactionExecutedEvent
-- GuardianTransactionExecutedEvent
-- ProposalVetoedEvent
-- LockupEvent
+- ['AudiusNetwork'](#audiusnetwork)
+- ['ServiceType'](#ServiceType)
+- ['ServiceTypeVersion'](#servicetypeversion)
+- ['ServiceNode'](#servicenode)
+- ['User'](#user)
+- ['Delegate'](#delegate)
+- ['DecreaseStakeEvent'](#decreasestakeevent)
+- ['UpdateDeployerCutEvent'](#updatedeployercutevent)
+- ['RemoveDelegatorEvent'](#removedelegatorevent)
+- ['UndelegateStakeEvent'](#undelegatestakeevent)
+- ['IncreasedStakeEvent'](#increasedstakeevent)
+- ['IncreaseDelegatedStakeEvent'](#increaseddelegatedstakeevent)
+- ['ClaimEvent'](#claimevent)
+- ['SlashEvent'](#slashevent)
+- ['ClaimRound'](#claimround)
+- ['ClaimProcessedEvent'](#claimprocessedevent)
+- ['RegisteredServiceProviderEvent'](#registerproviderservicerevent)
+- ['DeregisteredServiceProviderEvent'](#deregisterproviderservicerevent)
+- ['Proposal'](#proposal)
+- ['Vote'](#vote)
+- ['ProposalSubmittedEvent'](#propotalsubmittedevent)
+- ['ProposalVoteSubmittedEvent'](#propotalvotesubmittedevent)
+- ['ProposalVoteUpdatedEvent'](#propotalvoteupdatedevent)
+- ['ProposalOutcomeEvaluatedEvent'](#propotaloutcomeevaluatedevent)
+- ['ProposalTransactionExecutedEvent'](#proposaltransactionexecutedevent)
+- ['GuardianTransactionExecutedEvent'](#guardiantransactionexecutedevent)
+- ['ProposalVetoedEvent'](#proposalvetoedevent)
 
 # AudiusNetwork
 
@@ -409,7 +408,7 @@ Description:
 | numVotes:        | BigInt!   |             |
 | blockNumber      | BigInt!   |             |
 
-# PropotalTransactionExecutedEvent
+# ProposalTransactionExecutedEvent
 
 Description:
 
