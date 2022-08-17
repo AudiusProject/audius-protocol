@@ -22,20 +22,26 @@ json_alerts=$(find "${GRAFANA_ALERTS_DIR}" -name '*.json' -not -name 'alert.temp
 # delete alert json files
 for json_alert in ${json_alerts}
 do
-    echo "Removing: $json_alert"
+    echo "Removing all alerts for: ${json_alert}"
     echo -n "Press any key to continue..."
     read _
 
-    uid=$(jq -r '.uid' ${json_alert})
+    cat ${json_alert} \
+        | jq -cr '.[]' \
+        | while read -r alert;
+        do
+            uid=$(echo ${alert} | jq -r .uid)
+            echo "Updating: ${json_alert}:${uid}"
 
-    curl \
-        -s \
-        -H "Authorization: Bearer ${BEARER_TOKEN}" \
-        -u ${GRAFANA_USER}:${GRAFANA_PASS} \
-        -X DELETE \
-        -H "Content-Type: application/json" \
-        -H "Accept: application/json" \
-        -d "@${json_alert}" \
-        ${BASE_URL}/api/v1/provisioning/alert-rules/${uid} \
-    | jq .
+            curl \
+                -s \
+                -H "Authorization: Bearer ${BEARER_TOKEN}" \
+                -u ${GRAFANA_USER}:${GRAFANA_PASS} \
+                -X DELETE \
+                -H "Content-Type: application/json" \
+                -H "Accept: application/json" \
+                -d "${alert}" \
+                ${BASE_URL}/api/v1/provisioning/alert-rules/${uid} \
+            | jq .
+        done
 done
