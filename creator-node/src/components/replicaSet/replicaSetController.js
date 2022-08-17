@@ -178,13 +178,16 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
 
   const wallet = req.query.wallet
   const endpoint = req.query.endpoint
+  const forceWipe = req.query.forceWipe
 
   if (!wallet || !endpoint) {
     return errorResponseBadRequest(`Must provide wallet and endpoint params`)
   }
 
   const syncType = SyncType.Manual
-  const syncMode = SYNC_MODES.MergePrimaryAndSecondary
+  const syncMode = forceWipe
+    ? SYNC_MODES.MergePrimaryThenWipeSecondary
+    : SYNC_MODES.MergePrimaryAndSecondary
   const immediate = true
 
   const syncRequestParameters = {
@@ -196,7 +199,8 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
       creator_node_endpoint: selfEndpoint,
       sync_type: syncType,
       immediate,
-      from_manual_route: true
+      from_manual_route: true,
+      forceWipe: !!forceWipe
     }
   }
 

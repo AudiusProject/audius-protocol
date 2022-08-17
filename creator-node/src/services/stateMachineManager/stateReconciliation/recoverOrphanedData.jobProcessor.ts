@@ -1,3 +1,4 @@
+import axios from 'axios'
 import type Logger from 'bunyan'
 import { SyncType, SYNC_MODES } from '../stateMachineConstants'
 import { StateMonitoringUser } from '../stateMonitoring/types'
@@ -28,6 +29,7 @@ const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
  * This means their data is "orphaned,"" so the job also merges this data back into the primary of the user's replica set and then wipes it from this node.
  *
  * @param {Object} param job data
+ * @param {string} param.discoveryNodeEndpoint the endpoint of a Discovery Node to query
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  */
 module.exports = async function ({
@@ -51,13 +53,12 @@ module.exports = async function ({
   //       Could use SSCAN but that's O(N). Alternatively, when enqueuing the sync we could check which set the wallet is in and not wipe if the node is in the user's replica set
   const walletsWithOrphanedData = walletsWithOrphanedOrUnsyncedData
 
-  // TODO: Filter wallets that were just checked in the previous job since their syncs won't have been processed yet?
-
   // Get sync requests that will be issued to sync orphaned data from this node back to each user's primary
   const syncReqsToEnqueue: IssueSyncRequestJobParams[] = []
   for (const wallet of walletsWithOrphanedData) {
     const syncReqToEnqueue = await _getSyncReqToRecoverOrphanedData(
       wallet,
+      discoveryNodeEndpoint,
       logger
     )
     if (!_.isEmpty(syncReqToEnqueue)) {
@@ -120,10 +121,9 @@ const _storeWalletsOnThisNode = async () => {
   )
 
   // Save the wallets as a redis set and return the set cardinality
-  const numWalletsOnNode = await redisClient.sadd(
-    WALLETS_ON_NODE_KEY,
-    walletsOnThisNodeArr
-  )
+  const numWalletsOnNode = walletsOnThisNodeArr.length
+    ? await redisClient.sadd(WALLETS_ON_NODE_KEY, walletsOnThisNodeArr)
+    : 0
   return numWalletsOnNode
 }
 
@@ -159,10 +159,12 @@ const _storeWalletsWithThisNodeInReplica = async (
   } while (batchOfUsers?.length === NUM_USERS_PER_QUERY && prevUserId !== 0)
 
   // Save the wallets as a redis set and return the set cardinality
-  const numWalletsWithNodeInReplicaSet = await redisClient.sadd(
-    WALLETS_WITH_NODE_IN_REPLICA_SET_KEY,
-    walletsWithNodeInReplicaSetArr
-  )
+  const numWalletsWithNodeInReplicaSet = walletsWithNodeInReplicaSetArr.length
+    ? await redisClient.sadd(
+        WALLETS_WITH_NODE_IN_REPLICA_SET_KEY,
+        walletsWithNodeInReplicaSetArr
+      )
+    : 0
   return numWalletsWithNodeInReplicaSet
 }
 
@@ -175,9 +177,14 @@ const _storeWalletsWithThisNodeInReplica = async (
  */
 const _getSyncReqToRecoverOrphanedData = async (
   wallet: string,
+  discoveryNodeEndpoint: string,
   logger: Logger
 ): Promise<IssueSyncRequestJobParams | undefined> => {
-  const primaryEndpoint = await _getPrimaryForWallet(wallet, logger)
+  const primaryEndpoint = await _getPrimaryForWallet(
+    wallet,
+    discoveryNodeEndpoint,
+    logger
+  )
   if (!primaryEndpoint) return undefined
 
   try {
@@ -200,9 +207,34 @@ const _getSyncReqToRecoverOrphanedData = async (
 
 const _getPrimaryForWallet = async (
   wallet: string,
+  discoveryNodeEndpoint: string,
   logger: Logger
 ): Promise<string> => {
-  return 'primaryEndpoint'
-  // TODO: The issue here is that there's no route to get the user's RS from their wallet.
-  //       The `users` table on Discovery has creator_node_endpoint+wallet, so we could make a route if needed.
+  let user
+  try {
+    const resp = await axios({
+      method: 'get',
+      baseURL: discoveryNodeEndpoint,
+      url: 'users',
+      params: {
+        wallet
+      },
+      timeout: 2000
+    })
+    user = resp?.data?.data?.[0]
+  } catch (e: any) {
+    logger.error(
+      `Error fetching user data for orphaned wallet ${wallet}: ${e.message}`
+    )
+  }
+  const replicaSet = user?.creator_node_endpoint?.split(',')
+  if (!replicaSet) {
+    logger.error(
+      `Couldn't find primary endpoint for wallet ${wallet}. User: ${JSON.stringify(
+        user || {}
+      )}`
+    )
+    return ''
+  }
+  return replicaSet[0]
 }

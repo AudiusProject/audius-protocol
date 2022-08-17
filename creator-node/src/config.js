@@ -470,7 +470,7 @@ const config = convict({
     doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitInterval',
-    default: 60_000 // 1m
+    default: 3_600_000 // 1hr
   },
   recoverOrphanedDataQueueRateLimitJobsPerInterval: {
     doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
