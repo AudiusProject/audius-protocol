@@ -430,7 +430,6 @@ export class AudiusLibs {
         localStorage: this.localStorage,
         ...this.hedgehogConfig
       })
-      console.log('hedgehog service?', hedgehogService)
       this.hedgehog = hedgehogService.instance
       await this.hedgehog.waitUntilReady()
     } else if (this.web3Config && !this.web3Config.useExternalWeb3) {
@@ -463,9 +462,7 @@ export class AudiusLibs {
         this.identityService,
         this.web3Manager
       )
-      console.log('creating manager', this.solanaWeb3Manager)
       await this.solanaWeb3Manager.init()
-      console.log('and the init worked?', this.solanaWeb3Manager)
     }
 
     /** Contracts - Eth and Data Contracts */
