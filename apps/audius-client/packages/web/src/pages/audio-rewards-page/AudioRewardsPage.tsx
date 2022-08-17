@@ -26,6 +26,7 @@ import { BalanceTile, WalletTile } from './Tiles'
 import TrendingRewardsTile from './TrendingRewardsTile'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
+import { WalletManagementTile } from './components/WalletManagementTile'
 
 const messages = {
   title: '$AUDIO & Rewards',
@@ -37,14 +38,23 @@ const RewardsContent = () => {
   const { isEnabled: isChallengeRewardsEnabled } = useFlag(
     FeatureFlags.CHALLENGE_REWARDS_UI
   )
+  const { isEnabled: isBuyAudioEnabled } = useFlag(
+    FeatureFlags.BUY_AUDIO_ENABLED
+  )
   useRequiresAccount(TRENDING_PAGE)
   return (
     <>
       <WalletModal />
-      <div className={wm(styles.cryptoContentContainer)}>
-        <BalanceTile className={wm(styles.balanceTile)} />
-        <WalletTile className={styles.walletTile} />
-      </div>
+      {isBuyAudioEnabled ? (
+        <WalletManagementTile />
+      ) : (
+        <>
+          <div className={wm(styles.cryptoContentContainer)}>
+            <BalanceTile className={wm(styles.balanceTile)} />
+            <WalletTile className={styles.walletTile} />
+          </div>
+        </>
+      )}
       {isChallengeRewardsEnabled && (
         <ChallengeRewardsTile className={styles.mobile} />
       )}
