@@ -21,7 +21,8 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
     return getTracer().startActiveSpan(spanName, spanOptions, (span: Span) => {
       try {
         span.setAttribute(SemanticAttributes.CODE_FUNCTION, fn.name)
-        span.setAttribute('args', JSON.stringify(args))
+        // TODO: add skip parameter to instrument testing function to NOT logo certain args
+        // span.setAttribute('args', JSON.stringify(args))
         return fn(...args)
       } catch (e) {
         span.recordException(e as Error)
