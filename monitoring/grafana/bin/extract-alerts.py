@@ -64,7 +64,7 @@ def main(filename):
             panel_alerts = []
             for step in panel["fieldConfig"]["defaults"]["thresholds"]["steps"]:
                 # skip the base case when value is not set, nor visible
-                if not "value" in step or step["value"]:
+                if "value" not in step or step["value"]:
                     continue
 
                 # ensure thresholds are visible
