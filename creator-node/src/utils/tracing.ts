@@ -77,6 +77,9 @@ export const currentSpanContext = (): SpanContext | undefined => {
 module.exports = {
   instrumentTracing,
   getActiveSpan,
+  recordException,
+  currentSpanContext,
   info,
+  warn,
   error
 }
