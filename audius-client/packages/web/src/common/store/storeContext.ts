@@ -16,4 +16,5 @@ export type CommonStoreContext = {
   fingerprintClient: FingerprintClient
   walletClient: WalletClient
   localStorage: LocalStorage
+  isNativeMobile: boolean
 }

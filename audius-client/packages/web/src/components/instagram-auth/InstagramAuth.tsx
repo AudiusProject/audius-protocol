@@ -6,6 +6,7 @@ import cn from 'classnames'
 import 'url-search-params-polyfill'
 
 import { InstagramProfile } from 'common/store/account/reducer'
+import { getIGUserUrl } from 'common/store/pages/signon/sagas'
 import { RequestInstagramAuthMessage } from 'services/native-mobile-interface/oauth'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
@@ -17,12 +18,6 @@ const INSTAGRAM_REDIRECT_URL =
 const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(
   INSTAGRAM_REDIRECT_URL
 )}&scope=user_profile,user_media&response_type=code`
-
-// Route to fetch instagram user data w/ the username
-export const getIGUserUrl = (endpoint: string, username: string) => {
-  const url = endpoint.replace('$USERNAME$', username)
-  return url
-}
 
 // Instagram User profile fields to capture
 const igUserFields = [

@@ -8,11 +8,11 @@ import { Dispatch } from 'redux'
 import { getUserHandle } from 'common/store/account/selectors'
 import { setTab } from 'common/store/pages/explore/slice'
 import { Tabs } from 'common/store/pages/explore/types'
-import BottomBar from 'components/bottom-bar/BottomBar'
 import {
   openSignOn,
   showRequiresAccountModal
-} from 'pages/sign-on/store/actions'
+} from 'common/store/pages/signon/actions'
+import BottomBar from 'components/bottom-bar/BottomBar'
 import { AppState } from 'store/types'
 import {
   FEED_PAGE,

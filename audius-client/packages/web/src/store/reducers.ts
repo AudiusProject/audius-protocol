@@ -17,7 +17,6 @@ import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/r
 import dashboard from 'pages/artist-dashboard-page/store/reducer'
 import deactivateAccount from 'pages/deactivate-account-page/store/slice'
 import deleted from 'pages/deleted-page/store/slice'
-import signOn from 'pages/sign-on/store/reducer'
 import upload from 'pages/upload-page/store/reducer'
 import visualizer from 'pages/visualizer/store/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
@@ -58,7 +57,6 @@ const createRootReducer = (routeHistory: History) =>
     upload,
     profile,
     dashboard,
-    signOn,
     searchBar,
     serviceSelection,
 

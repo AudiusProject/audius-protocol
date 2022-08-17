@@ -2,7 +2,7 @@ import { createSelector } from 'reselect'
 
 import type { AppState } from '../'
 
-export const getBaseState = (state: AppState) => state.signon
+export const getBaseState = (state: AppState) => state.signOnLegacy
 
 export const getIsSigninError = (state: AppState) => getBaseState(state).isError
 export const getEmailIsAvailable = (state: AppState) =>

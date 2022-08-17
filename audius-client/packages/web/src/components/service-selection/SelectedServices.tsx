@@ -4,14 +4,10 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconInfo } from 'assets/img/iconInfo.svg'
+import { getSelectedServices } from 'common/store/service-selection/selectors'
+import { openModal, fetchServices } from 'common/store/service-selection/slice'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useSelector } from 'utils/reducer'
-
-import { getSelectedServices } from '../../common/store/service-selection/selectors'
-import {
-  openModal,
-  fetchServices
-} from '../../common/store/service-selection/slice'
 
 import styles from './SelectedServices.module.css'
 import { trimServiceName } from './utils'

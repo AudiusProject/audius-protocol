@@ -1,10 +1,9 @@
 import { SmartCollection } from '@audius/common'
 import { connect } from 'react-redux'
 
+import { CollectionsPageType } from 'common/store/pages/collection/types'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
-
-import { CollectionsPageType } from '../../common/store/pages/collection/types'
 
 import CollectionPageProvider from './CollectionPageProvider'
 import DesktopCollectionPage from './components/desktop/CollectionPage'

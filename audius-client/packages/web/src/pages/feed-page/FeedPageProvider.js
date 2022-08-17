@@ -17,8 +17,8 @@ import {
   makeGetSuggestedFollows,
   getFeedFilter
 } from 'common/store/pages/feed/selectors'
+import { openSignOn } from 'common/store/pages/signon/actions'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import { openSignOn } from 'pages/sign-on/store/actions'
 import { make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { isMobile } from 'utils/clientUtil'

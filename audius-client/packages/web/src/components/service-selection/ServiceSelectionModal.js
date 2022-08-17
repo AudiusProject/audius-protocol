@@ -7,18 +7,14 @@ import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { connect } from 'react-redux'
 
-import SearchBar from 'components/search-bar/SearchBar'
-
 import {
   getShowModal,
   getServices,
   getPrimary,
   getSecondaries
-} from '../../common/store/service-selection/selectors'
-import {
-  setSelected,
-  closeModal
-} from '../../common/store/service-selection/slice'
+} from 'common/store/service-selection/selectors'
+import { setSelected, closeModal } from 'common/store/service-selection/slice'
+import SearchBar from 'components/search-bar/SearchBar'
 
 import styles from './ServiceSelectionModal.module.css'
 import Service from './components/Service'

@@ -14,6 +14,7 @@ import {
 } from 'common/store/account/reducer'
 import * as settingPageActions from 'common/store/pages/settings/actions'
 import { PushNotificationSetting } from 'common/store/pages/settings/types'
+import { Pages, FollowArtistsCategory } from 'common/store/pages/signon/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import FollowPage, {
   BottomSection as FollowPageBottom
@@ -23,7 +24,6 @@ import InitialPage from 'pages/sign-on/components/mobile/InitialPage'
 import NotificationPermissionsPage from 'pages/sign-on/components/mobile/NotificationPermissionsPage'
 import PasswordPage from 'pages/sign-on/components/mobile/PasswordPage'
 import ProfilePage from 'pages/sign-on/components/mobile/ProfilePage'
-import { Pages, FollowArtistsCategory } from 'pages/sign-on/store/types'
 import { PromptPushNotificationPermissions } from 'services/native-mobile-interface/notifications'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 
