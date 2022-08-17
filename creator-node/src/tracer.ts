@@ -22,7 +22,7 @@ const SERVICE_NAME = 'content-node'
 
 export const setupTracing = () => {
   // Not functionally required but gives some insight what happens behind the scenes
-  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
+  // diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
 
   const provider = new NodeTracerProvider({
     resource: new Resource({
