@@ -26,6 +26,7 @@ import { make } from 'store/analytics/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { dataURLtoFile } from 'utils/fileUtils'
+import { waitForAccount } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { PlaylistOperations } from './types'

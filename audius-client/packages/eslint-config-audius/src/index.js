@@ -50,13 +50,12 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     'no-redeclare': 'off',
     '@typescript-eslint/no-redeclare': ['error'],
-    'no-undef': 'off',
 
     'no-use-before-define': 'off',
-    'camelcase': 'off',
+    camelcase: 'off',
     'no-unused-vars': 'off',
     'func-call-spacing': 'off',
-    'semi': ['error', 'never'],
+    semi: ['error', 'never'],
     'no-empty': 'off',
     'arrow-parens': 'off',
     'padded-blocks': 'off',
@@ -71,10 +70,7 @@ module.exports = {
     'react/jsx-uses-react': 'off',
     'react/react-in-jsx-scope': 'off',
 
-    'prettier/prettier': [
-      'error',
-      require('../.prettierrc')
-    ],
+    'prettier/prettier': ['error', require('../.prettierrc')],
 
     'space-before-function-paren': 'off',
     'generator-star-spacing': 'off',
@@ -83,10 +79,10 @@ module.exports = {
     'import/order': [
       'error',
       {
-        'alphabetize': {
+        alphabetize: {
           order: 'asc'
         },
-        'groups': [
+        groups: [
           'builtin',
           'external',
           'internal',
@@ -95,14 +91,14 @@ module.exports = {
           'index'
         ],
         'newlines-between': 'always',
-        'pathGroups': [
+        pathGroups: [
           {
             pattern: 'react',
             group: 'builtin',
             position: 'before'
           }
         ],
-        'pathGroupsExcludedImportTypes': ['builtin']
+        pathGroupsExcludedImportTypes: ['builtin']
       }
     ]
   },
