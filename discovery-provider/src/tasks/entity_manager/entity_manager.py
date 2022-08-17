@@ -84,6 +84,8 @@ def entity_manager_update(
                     event_blockhash,
                     txhash,
                 )
+                logger.info(f"entity_manager params {params}")
+
                 if (
                     params.action == Action.CREATE
                     and params.entity_type == EntityType.PLAYLIST
@@ -136,7 +138,7 @@ def entity_manager_update(
 
     except Exception as e:
         logger.error(f"Exception occurred {e}", exc_info=True)
-        raise e
+        logger.info(f"entity_manager failed with ipfs_metadata {ipfs_metadata}")
     return num_total_changes, changed_entity_ids
 
 
