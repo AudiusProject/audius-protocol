@@ -14,6 +14,7 @@ const {
   QUEUE_NAMES,
   SYNC_MODES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
+const { assert } = require('chai')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -145,48 +146,51 @@ describe('test updateReplicaSet job processor', function () {
     })
 
     // Verify job outputs the correct results: update secondary1 to randomHealthyNode
-    return expect(
-      updateReplicaSetJobProcessor({
-        logger,
-        wallet,
-        userId,
-        primary,
-        secondary1,
-        secondary2,
-        unhealthyReplicas,
-        replicaToUserInfoMap,
-        enabledReconfigModes: [RECONFIG_MODES.ONE_SECONDARY.key]
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      errorMsg: '',
-      issuedReconfig: true,
-      newReplicaSet: {
-        newPrimary: primary,
-        newSecondary1: secondary2,
-        newSecondary2: fourthHealthyNode,
-        issueReconfig: true,
-        reconfigType: RECONFIG_MODES.ONE_SECONDARY.key
-      },
-      healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: {
-        [QUEUE_NAMES.RECURRING_SYNC]: [
-          {
-            primaryEndpoint: primary,
-            secondaryEndpoint: secondary2,
-            syncType: SyncType.Recurring,
-            syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-            userWallet: wallet
-          },
-          {
-            primaryEndpoint: primary,
-            secondaryEndpoint: fourthHealthyNode,
-            syncType: SyncType.Recurring,
-            syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-            userWallet: wallet
-          }
-        ]
-      }
+    const jobOutput = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.ONE_SECONDARY.key]
     })
+
+    expect(jobOutput.errorMsg).to.equal('')
+    expect(jobOutput.issuedReconfig).to.be.true
+    expect(jobOutput.newReplicaSet).to.deep.equal({
+      newPrimary: primary,
+      newSecondary1: secondary2,
+      newSecondary2: fourthHealthyNode,
+      issueReconfig: true,
+      reconfigType: RECONFIG_MODES.ONE_SECONDARY.key
+    })
+    expect(jobOutput.healthyNodes).to.eql([
+      primary,
+      secondary2,
+      fourthHealthyNode
+    ])
+    expect(jobOutput.jobsToEnqueue).to.deep.equal({
+      [QUEUE_NAMES.RECURRING_SYNC]: [
+        {
+          primaryEndpoint: primary,
+          secondaryEndpoint: secondary2,
+          syncType: SyncType.Recurring,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+          userWallet: wallet
+        },
+        {
+          primaryEndpoint: primary,
+          secondaryEndpoint: fourthHealthyNode,
+          syncType: SyncType.Recurring,
+          syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+          userWallet: wallet
+        }
+      ]
+    })
+    expect(jobOutput.spanContext).to.exist
   })
 
   it('reconfigs one secondary when one secondary is unhealthy but reconfigs are disabled', async function () {
@@ -218,32 +222,35 @@ describe('test updateReplicaSet job processor', function () {
       retrieveClockValueForUserFromReplicaStub
     })
 
-    // Verify job outputs the correct results: find update from secondary1 to randomHealthyNode but don't issue it
-    return expect(
-      updateReplicaSetJobProcessor({
-        logger,
-        wallet,
-        userId,
-        primary,
-        secondary1,
-        secondary2,
-        unhealthyReplicas,
-        replicaToUserInfoMap,
-        enabledReconfigModes: [RECONFIG_MODES.RECONFIG_DISABLED.key] // Disable reconfigs
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      errorMsg: '',
-      issuedReconfig: false,
-      newReplicaSet: {
-        newPrimary: primary,
-        newSecondary1: secondary2,
-        newSecondary2: fourthHealthyNode,
-        issueReconfig: false,
-        reconfigType: RECONFIG_MODES.ONE_SECONDARY.key
-      },
-      healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: undefined
+    const jobOutput = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.RECONFIG_DISABLED.key] // Disable reconfigs
     })
+
+    // Verify job outputs the correct results: entire replica set is falsy because we can't sync if all nodes in the RS are unhealthy
+    expect(jobOutput.errorMsg).to.equal('')
+    expect(jobOutput.issuedReconfig).to.be.false
+    expect(jobOutput.newReplicaSet).to.deep.equal({
+      newPrimary: primary,
+      newSecondary1: secondary2,
+      newSecondary2: fourthHealthyNode,
+      issueReconfig: false,
+      reconfigType: RECONFIG_MODES.ONE_SECONDARY.key
+    })
+    expect(jobOutput.healthyNodes).to.eql([
+      primary,
+      secondary2,
+      fourthHealthyNode
+    ])
+    expect(jobOutput.jobsToEnqueue).to.not.exist
+    expect(jobOutput.spanContext).to.exist
   })
 
   it('returns falsy replica set when the whole replica set is unhealthy', async function () {
@@ -275,31 +282,36 @@ describe('test updateReplicaSet job processor', function () {
       retrieveClockValueForUserFromReplicaStub
     })
 
-    // Verify job outputs the correct results: entire replica set is falsy because we can't sync if all nodes in the RS are unhealthy
-    return expect(
-      updateReplicaSetJobProcessor({
-        logger,
-        wallet,
-        userId,
-        primary,
-        secondary1,
-        secondary2,
-        unhealthyReplicas,
-        replicaToUserInfoMap,
-        enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      errorMsg: `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfUnhealthyReplicas=3 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`,
-      issuedReconfig: false,
-      newReplicaSet: {
-        newPrimary: null,
-        newSecondary1: null,
-        newSecondary2: null,
-        issueReconfig: false,
-        reconfigType: null
-      },
-      healthyNodes: [primary, secondary2, fourthHealthyNode],
-      jobsToEnqueue: undefined
+    const jobOutput = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
     })
+
+    // Verify job outputs the correct results: entire replica set is falsy because we can't sync if all nodes in the RS are unhealthy
+    expect(jobOutput.errorMsg).to.equal(
+      `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfUnhealthyReplicas=3 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`
+    )
+    expect(jobOutput.issuedReconfig).to.be.false
+    expect(jobOutput.newReplicaSet).to.deep.equal({
+      newPrimary: null,
+      newSecondary1: null,
+      newSecondary2: null,
+      issueReconfig: false,
+      reconfigType: null
+    })
+    expect(jobOutput.healthyNodes).to.eql([
+      primary,
+      secondary2,
+      fourthHealthyNode
+    ])
+    expect(jobOutput.jobsToEnqueue).to.not.exist
+    expect(jobOutput.spanContext).to.exist
   })
 })

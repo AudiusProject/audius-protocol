@@ -7,12 +7,15 @@ import type {
 import _ from 'lodash'
 
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-import { SpanStatusCode } from '@opentelemetry/api'
 
 import { createChildLogger } from '../../logging'
 import redis from '../../redis'
 import { QUEUE_NAMES } from './stateMachineConstants'
-import { getActiveSpan, instrumentTracing } from '../../utils/tracing'
+import {
+  getActiveSpan,
+  instrumentTracing,
+  recordException
+} from '../../utils/tracing'
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -62,8 +65,7 @@ const processJob = async function (
     })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error) {
-    span?.recordException(error as Error)
-    span?.setStatus({ code: SpanStatusCode.ERROR })
+    recordException(error as Error)
     jobLogger.error(`Error processing job: ${error}`)
     jobLogger.error((error as Error).stack)
     result = { error: (error as Error).message || `${error}` }
