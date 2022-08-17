@@ -1,7 +1,8 @@
-import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import * as solanaWeb3 from '@solana/web3.js'
+import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
-import anchor, { Address, Idl, Program } from '@project-serum/anchor'
+import anchor, { Address, Idl, Program, Wallet } from '@project-serum/anchor'
 import { idl } from '@audius/anchor-audius-data'
 
 import { transferWAudioBalance } from './transfer'
@@ -166,7 +167,7 @@ export class SolanaWeb3Manager {
     } = this.solanaWeb3Config
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
-    this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
+    this.connection = new Connection(this.solanaClusterEndpoint, {
       confirmTransactionInitialTimeout:
         confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
     })
@@ -230,14 +231,13 @@ export class SolanaWeb3Manager {
       this.audiusDataAdminStorageKeypairPublicKey &&
       this.audiusDataIdl
     ) {
-      const connection = new solanaWeb3.Connection(
+      const connection = new Connection(
         this.solanaClusterEndpoint,
         anchor.AnchorProvider.defaultOptions()
       )
       const anchorProvider = new anchor.AnchorProvider(
         connection,
-        // @ts-expect-error weirdness with 3rd party types
-        solanaWeb3.Keypair.generate(),
+        Keypair.generate() as unknown as Wallet,
         anchor.AnchorProvider.defaultOptions()
       )
       this.anchorProgram = new anchor.Program(
