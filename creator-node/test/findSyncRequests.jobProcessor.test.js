@@ -257,7 +257,19 @@ describe('test findSyncRequests job processor', function () {
       userSecondarySyncMetricsMap,
       logger
     })
-    expect(actualOutput).to.deep.equal(expectedOutput)
+
+    const { spanContext, ...rest } = actualOutput
+    expect(spanContext).to.exist
+    expect(rest.duplicateSyncReqs).to.eql(expectedOutput.duplicateSyncReqs)
+    expect(rest.errors).to.eql(expectedOutput.errors)
+    expect(rest.metricsToRecord).to.eql(expectedOutput.metricsToRecord)
+
+    expect(rest.jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]?.length).to.equal(1)
+
+    expect(rest.jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]).to.eql([
+      expectedSyncReqToEnqueue
+    ])
+
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly(
       getNewOrExistingSyncReqExpectedConditionsArr[0].input
     )
@@ -400,7 +412,9 @@ describe('test findSyncRequests job processor', function () {
       userSecondarySyncMetricsMap,
       logger
     })
-    expect(actualOutput).to.deep.equal(expectedOutput)
+
+    const { spanContext, ...rest } = actualOutput
+    expect(rest).to.deep.equal(expectedOutput)
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly(
       getNewOrExistingSyncReqExpectedConditionsArr[0].input
     )
@@ -521,7 +535,13 @@ describe('test findSyncRequests job processor', function () {
       userSecondarySyncMetricsMap,
       logger
     })
-    expect(actualOutput).to.deep.equal(expectedOutput)
+
+    const { spanContext, ...rest } = actualOutput
+    expect(spanContext).to.exist
+    expect(rest.duplicateSyncReqs).to.eql(expectedOutput.duplicateSyncReqs)
+    expect(rest.errors).to.eql(expectedOutput.errors)
+    expect(rest.metricsToRecord).to.eql(expectedOutput.metricsToRecord)
+
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     expect(
       computeSyncModeForUserAndReplicaStub
@@ -638,7 +658,12 @@ describe('test findSyncRequests job processor', function () {
       userSecondarySyncMetricsMap,
       logger
     })
-    expect(actualOutput).to.deep.equal(expectedOutput)
+    const { spanContext, ...rest } = actualOutput
+    expect(spanContext).to.exist
+    expect(rest.duplicateSyncReqs).to.eql(expectedOutput.duplicateSyncReqs)
+    expect(rest.errors).to.eql(expectedOutput.errors)
+    expect(rest.metricsToRecord).to.eql(expectedOutput.metricsToRecord)
+
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     expect(
       computeSyncModeForUserAndReplicaStub
@@ -760,7 +785,12 @@ describe('test findSyncRequests job processor', function () {
       userSecondarySyncMetricsMap,
       logger
     })
-    expect(actualOutput).to.deep.equal(expectedOutput)
+    const { spanContext, ...rest } = actualOutput
+    expect(spanContext).to.exist
+    expect(rest.duplicateSyncReqs).to.eql(expectedOutput.duplicateSyncReqs)
+    expect(rest.errors).to.eql(expectedOutput.errors)
+    expect(rest.metricsToRecord).to.eql(expectedOutput.metricsToRecord)
+
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     expect(
       computeSyncModeForUserAndReplicaStub
@@ -895,7 +925,12 @@ describe('test findSyncRequests job processor', function () {
       userSecondarySyncMetricsMap,
       logger
     })
-    expect(actualOutput).to.deep.equal(expectedOutput)
+    const { spanContext, ...rest } = actualOutput
+    expect(spanContext).to.exist
+    expect(rest.duplicateSyncReqs).to.eql(expectedOutput.duplicateSyncReqs)
+    expect(rest.errors).to.eql(expectedOutput.errors)
+    expect(rest.metricsToRecord).to.eql(expectedOutput.metricsToRecord)
+
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly(
       getNewOrExistingSyncReqExpectedInput
     )
@@ -1051,7 +1086,18 @@ describe('test findSyncRequests job processor', function () {
       userSecondarySyncMetricsMap,
       logger
     })
-    expect(actualOutput).to.deep.equal(expectedOutput)
+    const { spanContext, ...rest } = actualOutput
+    expect(spanContext).to.exist
+    expect(rest.duplicateSyncReqs).to.eql(expectedOutput.duplicateSyncReqs)
+    expect(rest.errors).to.eql(expectedOutput.errors)
+    expect(rest.metricsToRecord).to.eql(expectedOutput.metricsToRecord)
+
+    expect(rest.jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]?.length).to.equal(1)
+
+    expect(rest.jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]).to.eql([
+      expectedSyncReqToEnqueue
+    ])
+
     expect(getNewOrExistingSyncReqStub)
       .to.have.been.calledWithExactly(
         getNewOrExistingSyncReqExpectedConditionsArr[0].input
@@ -1283,7 +1329,19 @@ describe('test findSyncRequests job processor', function () {
       userSecondarySyncMetricsMap,
       logger
     })
-    expect(actualOutput).to.deep.equal(expectedOutput)
+    const { spanContext, ...rest } = actualOutput
+    expect(spanContext).to.exist
+    expect(rest.duplicateSyncReqs).to.eql(expectedOutput.duplicateSyncReqs)
+    expect(rest.errors).to.eql(expectedOutput.errors)
+    expect(rest.metricsToRecord).to.eql(expectedOutput.metricsToRecord)
+
+    expect(rest.jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]?.length).to.equal(2)
+
+    expect(rest.jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]).to.eql([
+      expectedSyncReqToEnqueueWallet1,
+      expectedSyncReqToEnqueueWallet2
+    ])
+
     expect(computeSyncModeForUserAndReplicaStub)
       .to.have.been.calledWithExactly(
         computeSyncModeForUserAndReplicaExpectedConditionsArr[0].input
