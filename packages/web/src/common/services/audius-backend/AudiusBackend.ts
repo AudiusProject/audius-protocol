@@ -691,7 +691,6 @@ export const audiusBackend = ({
       !rewardsManagerProgramPda ||
       !rewardsManagerTokenPda
     ) {
-      console.error('Missing solana configs')
       return {
         error: true
       }

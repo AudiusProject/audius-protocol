@@ -164,6 +164,7 @@ export function* fetchAccountAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
   const localStorage = yield getContext('localStorage')
+  const isNativeMobile = yield getContext('isNativeMobile')
 
   let fromSource = false
   if (action) {
@@ -205,28 +206,30 @@ export function* fetchAccountAsync(action) {
     yield call([localStorage, 'clearAudiusAccountUser'])
     // If the user is not signed in
     // Remove browser has requested push notifications.
-    removeHasRequestedBrowserPermission()
-    const browserPushSubscriptionStatus = yield call(
-      fetchBrowserPushNotifcationStatus
-    )
-    if (
-      browserPushSubscriptionStatus === Permission.GRANTED &&
-      isPushManagerAvailable
-    ) {
-      const subscription = yield call(getPushManagerBrowserSubscription)
-      yield call(audiusBackendInstance.disableBrowserNotifications, {
-        subscription
-      })
-    } else if (
-      browserPushSubscriptionStatus === Permission.GRANTED &&
-      isSafariPushAvailable
-    ) {
-      const safariSubscription = yield call(getSafariPushBrowser)
-      if (safariSubscription.permission === Permission.GRANTED) {
-        yield call(
-          audiusBackendInstance.deregisterDeviceToken,
-          safariSubscription.deviceToken
-        )
+    if (!isNativeMobile) {
+      removeHasRequestedBrowserPermission()
+      const browserPushSubscriptionStatus = yield call(
+        fetchBrowserPushNotifcationStatus
+      )
+      if (
+        browserPushSubscriptionStatus === Permission.GRANTED &&
+        isPushManagerAvailable
+      ) {
+        const subscription = yield call(getPushManagerBrowserSubscription)
+        yield call(audiusBackendInstance.disableBrowserNotifications, {
+          subscription
+        })
+      } else if (
+        browserPushSubscriptionStatus === Permission.GRANTED &&
+        isSafariPushAvailable
+      ) {
+        const safariSubscription = yield call(getSafariPushBrowser)
+        if (safariSubscription.permission === Permission.GRANTED) {
+          yield call(
+            audiusBackendInstance.deregisterDeviceToken,
+            safariSubscription.deviceToken
+          )
+        }
       }
     }
     return

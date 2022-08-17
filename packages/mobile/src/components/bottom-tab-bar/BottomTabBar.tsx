@@ -10,7 +10,7 @@ import { Tabs } from 'audius-client/src/common/store/pages/explore/types'
 import {
   openSignOn as _openSignOn,
   showRequiresAccountModal
-} from 'audius-client/src/pages/sign-on/store/actions'
+} from 'audius-client/src/common/store/pages/signon/actions'
 import {
   FEED_PAGE,
   TRENDING_PAGE,

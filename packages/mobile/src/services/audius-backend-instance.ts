@@ -57,8 +57,6 @@ function bufferFromHexString(hexString: string) {
  * @param ivHex hex string iv value
  */
 const createKey = async (encryptStr: string, ivHex: string) => {
-  // const result = await scrypt(passwd, salt[, N=16384, r=8, p=1, dkLen=64, encoding='legacy'])
-
   const N = 32768
   const r = 8
   const p = 1

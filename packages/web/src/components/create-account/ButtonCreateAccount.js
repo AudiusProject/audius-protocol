@@ -4,7 +4,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 
 import icon from 'assets/img/iconCreateAccount.svg'
-import { openSignOn } from 'pages/sign-on/store/actions'
+import { openSignOn } from 'common/store/pages/signon/actions'
 
 import styles from './ButtonCreateAccount.module.css'
 

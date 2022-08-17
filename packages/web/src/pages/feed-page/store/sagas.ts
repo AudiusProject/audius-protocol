@@ -5,9 +5,9 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as discoverActions from 'common/store/pages/feed/actions'
 import { feedActions } from 'common/store/pages/feed/lineup/actions'
+import { fetchSuggestedFollowUserIds } from 'common/store/pages/signon/sagas'
 import * as socialActions from 'common/store/social/users/actions'
 import { getErrorMessage } from 'common/utils/error'
-import { fetchSuggestedFollowUserIds } from 'pages/sign-on/store/sagas'
 
 import feedSagas from './lineups/feed/sagas'
 

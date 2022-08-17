@@ -19,7 +19,15 @@ import {
   TwitterProfile
 } from 'common/store/account/reducer'
 import { getHasAccount } from 'common/store/account/selectors'
-import { Pages, FollowArtistsCategory } from 'pages/sign-on/store/types'
+import * as signOnAction from 'common/store/pages/signon/actions'
+import {
+  getSignOn,
+  getIsMobileSignOnVisible,
+  getToastText,
+  makeGetFollowArtists,
+  getRouteOnExit
+} from 'common/store/pages/signon/selectors'
+import { Pages, FollowArtistsCategory } from 'common/store/pages/signon/types'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import { isElectron } from 'utils/clientUtil'
@@ -40,14 +48,6 @@ import {
   SignOnProps as MobileSignOnProps,
   MobilePages
 } from './components/mobile/SignOnPage'
-import * as signOnAction from './store/actions'
-import {
-  getSignOn,
-  getIsMobileSignOnVisible,
-  getToastText,
-  makeGetFollowArtists,
-  getRouteOnExit
-} from './store/selectors'
 
 const messages = {
   title: 'Sign Up',

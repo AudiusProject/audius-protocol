@@ -23,6 +23,12 @@ import {
 } from 'common/store/account/selectors'
 import { getWeb3Error } from 'common/store/backend/selectors'
 import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
+import {
+  openSignOn,
+  updateRouteOnCompletion as updateRouteOnSignUpCompletion
+} from 'common/store/pages/signon/actions'
+import { getStatus as getSignOnStatus } from 'common/store/pages/signon/selectors'
+import { Pages as SignOnPages } from 'common/store/pages/signon/types'
 import { setTheme } from 'common/store/ui/theme/actions'
 import { getTheme } from 'common/store/ui/theme/selectors'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
@@ -63,12 +69,6 @@ import RepostsPage from 'pages/reposts-page/RepostsPage'
 import RequiresUpdate from 'pages/requires-update/RequiresUpdate'
 import SavedPage from 'pages/saved-page/SavedPage'
 import SearchPage from 'pages/search-page/SearchPage'
-import {
-  openSignOn,
-  updateRouteOnCompletion as updateRouteOnSignUpCompletion
-} from 'pages/sign-on/store/actions'
-import { getStatus as getSignOnStatus } from 'pages/sign-on/store/selectors'
-import { Pages as SignOnPages } from 'pages/sign-on/store/types'
 import TrackPage from 'pages/track-page/TrackPage'
 import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
