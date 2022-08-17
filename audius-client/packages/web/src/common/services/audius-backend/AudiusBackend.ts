@@ -209,7 +209,7 @@ type AudiusBackendParams = {
   ethProviderUrls: Maybe<string[]>
   ethRegistryAddress: Maybe<string>
   ethTokenAddress: Maybe<string>
-  getFeatureEnabled: (flag: FeatureFlags) => any
+  getFeatureEnabled: (flag: FeatureFlags) => Promise<boolean | null>
   getHostUrl: () => Nullable<string>
   getLibs: () => Promise<any>
   getWeb3Config: (
@@ -630,7 +630,7 @@ export const audiusBackend = ({
           /* passList */ null,
           contentNodeBlockList,
           monitoringCallbacks.contentNode,
-          /* writeQuorumEnabled */ getFeatureEnabled(
+          /* writeQuorumEnabled */ await getFeatureEnabled(
             FeatureFlags.WRITE_QUORUM_ENABLED
           )
         ),
@@ -639,10 +639,10 @@ export const audiusBackend = ({
         // i.e. there is no way to instruct captcha that the domain is "file://"
         captchaConfig: isElectron ? undefined : { siteKey: recaptchaSiteKey },
         isServer: false,
-        preferHigherPatchForPrimary: getFeatureEnabled(
+        preferHigherPatchForPrimary: await getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY
         ),
-        preferHigherPatchForSecondaries: getFeatureEnabled(
+        preferHigherPatchForSecondaries: await getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
         )
       })
@@ -1079,7 +1079,7 @@ export const audiusBackend = ({
       const listen = await audiusLibs.Track.logTrackListen(
         trackId,
         unauthenticatedUuid,
-        getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
+        await getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
       )
       return listen
     } catch (err) {
@@ -2563,7 +2563,8 @@ export const audiusBackend = ({
    * @param {playlistId} playlistId playlist id or folder id
    */
   async function updatePlaylistLastViewedAt(playlistId: ID) {
-    if (!getFeatureEnabled(FeatureFlags.PLAYLIST_UPDATES_ENABLED)) return
+    if (!(await getFeatureEnabled(FeatureFlags.PLAYLIST_UPDATES_ENABLED)))
+      return
 
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()

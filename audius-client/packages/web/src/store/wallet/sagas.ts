@@ -25,7 +25,6 @@ import {
 } from 'common/store/wallet/slice'
 import { getErrorMessage } from 'common/utils/error'
 import { stringWeiToBN, weiToString } from 'common/utils/wallet'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { make } from 'store/analytics/actions'
 import { waitForAccount } from 'utils/sagaHelpers'
 
@@ -154,6 +153,7 @@ function* getWalletBalanceAndWallets() {
 
 function* fetchBalanceAsync() {
   const walletClient = yield* getContext('walletClient')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   yield* waitForAccount()
   const account = yield* select(getAccountUser)
@@ -185,7 +185,10 @@ function* fetchBalanceAsync() {
     currentSolAudioWeiBalance
   ) as BNWei
 
-  const useSolAudio = getFeatureEnabled(FeatureFlags.ENABLE_SPL_AUDIO)
+  const useSolAudio = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.ENABLE_SPL_AUDIO
+  )
   if (useSolAudio) {
     const totalBalance = audioWeiBalance.add(associatedWalletBalance) as BNWei
     yield* put(
