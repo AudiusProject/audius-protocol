@@ -1,8 +1,11 @@
+import EventEmitter from 'events'
+
 import * as nativeLibs from '@audius/sdk/dist/native-libs'
 import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { audiusBackend } from 'audius-client/src/common/services/audius-backend'
 import Config from 'react-native-config'
+import scrypt from 'react-native-scrypt'
 
 import { track } from 'app/utils/analytics'
 
@@ -17,7 +20,67 @@ declare global {
   }
 }
 
+const libsInitEventEmitter = new EventEmitter()
+
 export let audiusLibs: AudiusLibs
+
+const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
+
+/**
+ * Wait for the `LIBS_INITTED_EVENT` or pass through if there
+ * already exists a mounted `window.audiusLibs` object.
+ */
+const waitForLibsInit = async () => {
+  // If libs is already defined, it has already loaded & initted
+  // so do nothing
+  if (audiusLibs) return
+  // Add an event listener and resolve when that returns
+  return new Promise<void>((resolve) => {
+    if (audiusLibs) {
+      resolve()
+    } else {
+      libsInitEventEmitter.addListener(LIBS_INITTED_EVENT, resolve)
+    }
+  })
+}
+
+function bufferFromHexString(hexString: string) {
+  const byteArray = hexString
+    .match(/.{1,2}/g)
+    ?.map((byte) => parseInt(byte, 16))
+  return new Uint8Array(byteArray as number[])
+}
+
+/**
+ * Given a user encryptStr and initialization vector, generate a private key
+ * @param encryptStr String to encrypt (can be user password or some kind of lookup key)
+ * @param ivHex hex string iv value
+ */
+const createKey = async (encryptStr: string, ivHex: string) => {
+  // const result = await scrypt(passwd, salt[, N=16384, r=8, p=1, dkLen=64, encoding='legacy'])
+
+  const N = 32768
+  const r = 8
+  const p = 1
+  const dkLen = 32
+  const encryptStrBuffer = Buffer.from(encryptStr)
+  const ivBuffer = Buffer.from(ivHex)
+
+  const derivedKey = await scrypt(
+    encryptStrBuffer,
+    ivBuffer,
+    N,
+    r,
+    p,
+    dkLen,
+    'buffer'
+  )
+  const keyHex = derivedKey.toString('hex')
+
+  // This is the private key
+  const keyBuffer = bufferFromHexString(keyHex)
+  return { keyHex, keyBuffer }
+}
 
 /**
  * audiusBackend initialized for a mobile environment
@@ -39,6 +102,9 @@ export const audiusBackendInstance = audiusBackend({
       web3Config: libs.configInternalWeb3(registryAddress, web3ProviderUrls)
     }
   },
+  hedgehogConfig: {
+    createKey
+  },
   identityServiceUrl: Config.IDENTITY_SERVICE,
   isElectron: false,
   isMobile: true,
@@ -48,6 +114,7 @@ export const audiusBackendInstance = audiusBackend({
   nativeMobile: Config.NATIVE_MOBILE === 'true',
   onLibsInit: (libs) => {
     audiusLibs = libs
+    libsInitEventEmitter.emit(LIBS_INITTED_EVENT)
   },
   recaptchaSiteKey: Config.RECAPTCHA_SITE_KEY,
   recordAnalytics: (event: any, properties: any) =>
@@ -81,7 +148,7 @@ export const audiusBackendInstance = audiusBackend({
     wormholeRpcHosts: Config.WORMHOLE_RPC_HOSTS
   },
   getLibs: async () => nativeLibs,
-  waitForLibsInit: async () => {},
+  waitForLibsInit,
   withEagerOption: ({ normal }, ...args) => {
     if (audiusLibs) {
       return normal(audiusLibs)(...args)
