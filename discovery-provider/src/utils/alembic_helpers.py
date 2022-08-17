@@ -23,7 +23,9 @@ def _load_sql_file(name):
         return f.read()
 
 
-def build_sql(file_names):
+def build_sql(file_names, raw_sql=False):
     files = [_load_sql_file(f) for f in file_names]
     inner_sql = "\n;\n".join(files)
+    if raw_sql:
+        return inner_sql
     return sqlalchemy.text("begin; \n\n " + inner_sql + " \n\n commit;")

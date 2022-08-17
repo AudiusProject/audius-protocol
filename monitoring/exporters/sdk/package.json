@@ -1,0 +1,20 @@
+{
+    "name": "audius-exporters-sdk",
+    "version": "1.0.0",
+    "description": "",
+    "main": "main.js",
+    "scripts": {
+      "exporter": "nodemon --watch . main.js",
+      "lint": "eslint main.js --fix"
+    },
+    "keywords": [],
+    "author": "",
+    "dependencies": {
+      "@audius/sdk": "0.0.32",
+      "prom-client": "14.0.1",
+      "web3": "1.7.5"
+    },
+    "devDependencies": {
+      "nodemon": "2.0.19"
+    }
+  }
