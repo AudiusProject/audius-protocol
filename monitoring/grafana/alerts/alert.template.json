@@ -1,0 +1,23 @@
+{{
+  "uid": "{alert_id}",
+  "orgID": 1,
+  "folderUID": "ARwYXYzVk",
+  "ruleGroup": "group",
+  "title": "{title}",
+  "condition": "B",
+  "data": {data},
+  "noDataState": "NoData",
+  "execErrState": "Alerting",
+  "for": 0,
+  "annotations": {{
+    "__alertId__": "{alert_id}",
+    "__dashboardUid__": "{dashboard_uid}",
+    "__panelId__": "{panel_id}",
+    "description": "{description}",
+    "runbook_url": "{runbook_url}",
+    "summary": "{summary}"
+  }},
+  "labels": {{
+    "channel": "{level}"
+  }}
+}}
