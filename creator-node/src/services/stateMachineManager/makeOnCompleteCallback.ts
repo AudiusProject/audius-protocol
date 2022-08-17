@@ -185,6 +185,8 @@ const recordMetrics = (
         metric.observe(metricLabels, metricValue)
       } else if (metricType === METRIC_RECORD_TYPE.GAUGE_INC) {
         metric.inc(metricLabels, metricValue)
+      } else if (metricType === METRIC_RECORD_TYPE.GAUGE_SET) {
+        metric.set(metricLabels, metricValue)
       } else {
         logger.error(`Unexpected metric type: ${metricType}`)
       }

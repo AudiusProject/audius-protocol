@@ -1,16 +1,20 @@
-import axios from 'axios'
 import type Logger from 'bunyan'
-import { SyncType, SYNC_MODES } from '../stateMachineConstants'
-import { StateMonitoringUser } from '../stateMonitoring/types'
-import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
-import { getNewOrExistingSyncReq } from './stateReconciliationUtils'
+import type { LoDashStatic } from 'lodash'
 import type {
   IssueSyncRequestJobParams,
   RecoverOrphanedDataJobParams,
   RecoverOrphanedDataJobReturnValue
 } from './types'
+import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 
-const _ = require('lodash')
+import axios from 'axios'
+import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
+import { SyncType, SYNC_MODES } from '../stateMachineConstants'
+import { makeGaugeSetToRecord } from '../stateMachineUtils'
+import { StateMonitoringUser } from '../stateMonitoring/types'
+import { getNewOrExistingSyncReq } from './stateReconciliationUtils'
+
+const _: LoDashStatic = require('lodash')
 const { QUEUE_NAMES } = require('../stateMachineConstants')
 const { getNodeUsers } = require('../stateMonitoring/stateMonitoringUtils')
 const config = require('../../../config')
@@ -74,7 +78,16 @@ module.exports = async function ({
         }
       ]
     },
-    metricsToRecord: [] // TODO
+    metricsToRecord: [
+      makeGaugeSetToRecord(
+        METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE,
+        walletsWithOrphanedData.length
+      ),
+      makeGaugeSetToRecord(
+        METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE,
+        syncReqsToEnqueue.length
+      )
+    ]
   }
 }
 
