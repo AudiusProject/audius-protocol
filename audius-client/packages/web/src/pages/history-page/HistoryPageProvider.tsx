@@ -17,6 +17,7 @@ import {
   Status
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
+import { isEqual } from 'lodash'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -111,7 +112,7 @@ const HistoryPage = g((props) => {
       const filteredIndex = filteredMetadata.findIndex(
         (metadata: any) => metadata.uid === currentQueueItem.uid
       )
-      return [filteredMetadata, filteredIndex]
+      return [filteredMetadata, filteredIndex] as const
     },
     [currentQueueItem, filterText]
   )
@@ -312,16 +313,29 @@ const HistoryPage = g((props) => {
   )
 })
 
+type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
+let tracksRef: LineupData
+
 const makeMapStateToProps = () => {
   const getLineupMetadatas = makeGetTableMetadatas(getHistoryTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
-  const mapStateToProps = (state: AppState) => ({
-    userId: getUserId(state),
-    tracks: getLineupMetadatas(state),
-    currentQueueItem: getCurrentQueueItem(state),
-    playing: getPlaying(state),
-    buffering: getBuffering(state)
-  })
+  const mapStateToProps = (state: AppState) => {
+    const tracks = getLineupMetadatas(state)
+
+    if (!isEqual(tracksRef, tracks)) {
+      tracksRef = tracks
+    }
+
+    const output = {
+      userId: getUserId(state),
+      tracks: tracksRef,
+      currentQueueItem: getCurrentQueueItem(state),
+      playing: getPlaying(state),
+      buffering: getBuffering(state)
+    }
+
+    return output
+  }
   return mapStateToProps
 }
 

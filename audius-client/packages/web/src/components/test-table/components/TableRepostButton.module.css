@@ -1,0 +1,37 @@
+.tableRepostButton {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.tableRepostButton.reposted {
+  opacity: 1;
+}
+.icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+  transition: all 0.07s ease-in-out !important;
+}
+
+.icon g path {
+  fill: var(--neutral-light-5);
+}
+.icon.reposted g path {
+  fill: var(--primary);
+}
+.tableRepostButton:hover .icon {
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+.tableRepostButton:hover .icon g path {
+  fill: var(--primary);
+}
+.tableRepostButton:active .icon {
+  transform: scale(0.95);
+}
+
+.iconContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

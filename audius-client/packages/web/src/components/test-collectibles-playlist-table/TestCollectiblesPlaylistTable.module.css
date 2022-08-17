@@ -1,0 +1,31 @@
+.textContainer {
+  position: relative;
+  display: inline-flex;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.textCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.collectibleName:hover {
+  transition: color 0.07s ease-out;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-light-2);
+}
+
+.tablePlayButton {
+  opacity: 0;
+}
+.tablePlayButton.active {
+  opacity: 1;
+}
+
+.tableRow:hover .tablePlayButton {
+  opacity: 1;
+}
