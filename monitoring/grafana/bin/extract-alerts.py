@@ -91,9 +91,6 @@ def main(filename):
                 elif "yellow" in step["color"]:
                     level = "low-alert"
                     level_id = 3
-                elif "green" in step["color"]:
-                    level = "notification"
-                    level_id = 4
                 else:
                     break
 

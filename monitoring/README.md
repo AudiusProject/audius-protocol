@@ -342,13 +342,17 @@ Matching Panel `Description`s should provide runbooks for each Alert level.
 
 Alert extraction uses the following color / Grafana Contact Point mapping:
 
-| Color       | Slack | PagerDuty Notification | PagerDuty Alert |
-| ----------- | ----- | ---------------------- | --------------- |
-| Purple      | #eng: @here |                  |   Secondaries   |
-| Red         |       |                        |     On-Call     |
-| Orange      |       |        On-Call         |                 |
-| Yellow      | #eng-incidents-prod |          |                 |
-| Green       | #eng-notifications |           |                 |
+| Color       | Notification `channel` Label |
+| ----------- | ---------------------------- |
+| Red         |         `high-alert`         |
+| Orange      |         `medium-alert`       |
+| Yellow      |         `low-alert`          |
+
+| Color       | Slack                     | PagerDuty Notification | PagerDuty Alert |
+| ----------- | ------------------------- | ---------------------- | --------------- |
+| Red         | #eng-incidents-prod/stage |                        |     On-Call     |
+| Orange      | #eng-incidents-prod/stage |        On-Call         |                 |
+| Yellow      | #eng-grafana-alerts       |                        |                 |
 
 The largest color dot in the center creates an alert that will fire when the value is **greater than or equal to** the threshold.
 
