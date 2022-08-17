@@ -28,6 +28,7 @@ import {
   RemoteConfigInstance
 } from '@audius/common'
 import { IdentityAPI, DiscoveryAPI } from '@audius/sdk/dist/core'
+import type { HedgehogConfig } from '@audius/sdk/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk/dist/utils/localStorage'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
@@ -219,6 +220,10 @@ type AudiusBackendParams = {
     web3NetworkId: Maybe<string>
   ) => Promise<any>
   fetchCID: FetchCID
+  // Not required on web
+  hedgehogConfig?: {
+    createKey: HedgehogConfig['createKey']
+  }
   identityServiceUrl: Maybe<string>
   isElectron: Maybe<boolean>
   isMobile: Maybe<boolean>
@@ -258,6 +263,7 @@ export const audiusBackend = ({
   getLibs,
   getWeb3Config,
   fetchCID,
+  hedgehogConfig,
   identityServiceUrl,
   isElectron,
   isMobile,
@@ -644,7 +650,8 @@ export const audiusBackend = ({
         ),
         preferHigherPatchForSecondaries: await getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
-        )
+        ),
+        hedgehogConfig
       })
       await audiusLibs.init()
       onLibsInit(audiusLibs)

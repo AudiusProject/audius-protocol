@@ -534,6 +534,8 @@ PODS:
   - RNScreens (3.13.0):
     - React-Core
     - React-RCTImage
+  - RNScrypt (1.2.1):
+    - React
   - RNSentry (3.2.8):
     - React-Core
     - Sentry (= 7.5.4)
@@ -635,6 +637,7 @@ DEPENDENCIES:
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNScrypt (from `../node_modules/react-native-scrypt`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - SRSRadialGradient (from `../node_modules/react-native-radial-gradient/ios`)
@@ -800,6 +803,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNScrypt:
+    :path: "../node_modules/react-native-scrypt"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
   RNSVG:
@@ -901,6 +906,7 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: c1b56d030d1616239861534d9adb531f8cffab68
   RNScreens: aa12070b21c1d6011b3627a0b1d09b627232b070
+  RNScrypt: 5090216bbf2ebb7baea2f42fdd26011dc2c4c7b1
   RNSentry: fe878ca3982d7871e502ccbb90072fe764c8d07d
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   Sentry: 5c5dd4005f3b7b9765d5a8871232cddbd0d888b7
