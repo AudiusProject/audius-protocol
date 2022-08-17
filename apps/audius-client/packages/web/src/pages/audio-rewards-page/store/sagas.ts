@@ -297,15 +297,18 @@ function* claimChallengeRewardAsync(
             break
           case FailureReason.UNKNOWN_ERROR:
           default:
+            // If there is an AAO error code, then the AAO must have
+            // rejected this user so don't retry.
+            aaoErrorCode = response.aaoErrorCode
+            if (aaoErrorCode !== undefined) {
+              yield put(claimChallengeRewardFailed({ aaoErrorCode }))
+              break
+            }
+
             // If this was an aggregate challenges with multiple specifiers,
             // then libs handles the retries and we shouldn't retry here.
             if (specifiers.length > 1) {
-              aaoErrorCode = response.aaoErrorCode
-              if (aaoErrorCode !== undefined) {
-                yield put(claimChallengeRewardFailed({ aaoErrorCode }))
-              } else {
-                yield put(claimChallengeRewardFailed())
-              }
+              yield put(claimChallengeRewardFailed())
               break
             }
             yield delay(getBackoff(retryCount))
