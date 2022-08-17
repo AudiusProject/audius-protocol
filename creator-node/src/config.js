@@ -431,7 +431,7 @@ const config = convict({
     doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
     format: 'nat',
     env: 'maxStorageUsedPercent',
-    default: 98
+    default: 95
   },
   pinAddCIDs: {
     doc: 'Array of comma separated CIDs to pin',
@@ -555,12 +555,6 @@ const config = convict({
     format: 'nat',
     env: 'peerHealthCheckRequestTimeout',
     default: 2000
-  },
-  minimumStoragePathSize: {
-    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set; 100gb',
-    format: 'nat',
-    env: 'minimumStoragePathSize',
-    default: 100000000000
   },
   minimumMemoryAvailable: {
     doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
