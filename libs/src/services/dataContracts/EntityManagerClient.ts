@@ -1,6 +1,21 @@
+import type { TransactionReceipt } from 'web3-core'
+
 import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../data-contracts/signatureSchemas'
 import type { Web3Manager } from '../web3Manager'
+
+
+export enum Action {
+  CREATE = 'Create',
+  UPDATE = 'Update',
+  DELETE = 'Delete'
+}
+
+export enum EntityType {
+  PLAYLIST = 'Playlist',
+  TRACK = 'Track',
+  USER = 'User'
+}
 
 /**
  * Generic management of Audius Data entities
@@ -8,13 +23,16 @@ import type { Web3Manager } from '../web3Manager'
 export class EntityManagerClient extends ContractClient {
   override web3Manager!: Web3Manager
 
+  static Action = Action
+  static EntityType = EntityType
+
   async manageEntity(
     userId: number,
-    entityType: string,
+    entityType: EntityType,
     entityId: number,
-    action: string,
-    metadata: string
-  ): Promise<{ txReceipt: any }> {
+    action: Action,
+    metadataMultihash: string
+  ): Promise<{ txReceipt: TransactionReceipt }> {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
@@ -25,7 +43,7 @@ export class EntityManagerClient extends ContractClient {
       entityType,
       entityId,
       action,
-      metadata,
+      metadataMultihash,
       nonce
     )
     const sig = await this.web3Manager.signTypedData(signatureData)
@@ -35,7 +53,7 @@ export class EntityManagerClient extends ContractClient {
       entityType,
       entityId,
       action,
-      metadata,
+      metadataMultihash,
       nonce,
       sig
     )
