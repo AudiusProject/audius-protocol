@@ -67,12 +67,8 @@ def main(filename):
                 # ensure thresholds are visible
                 visible_threshold = False
                 if "custom" in panel["fieldConfig"]["defaults"]:
-                    visible_threshold = (
-                        panel["fieldConfig"]["defaults"]["custom"]["thresholdsStyle"][
-                            "mode"
-                        ]
-                        == "line"
-                    )
+                    custom_key = panel["fieldConfig"]["defaults"]["custom"]
+                    visible_threshold = custom_key["thresholdsStyle"]["mode"] == "line"
                 if not visible_threshold:
                     continue
 
@@ -189,10 +185,12 @@ def main(filename):
                     data=json.dumps(data),
                 )
                 panel_alerts.append(json.loads(formatted_text))
-            dashboard = generate_filename_from_title(dashboard_title)
-            title = generate_filename_from_title(panel["title"])
-            with open(f"grafana/alerts/{dashboard}_{title}.json", "w") as f:
-                f.write(json.dumps(panel_alerts, indent=2, sort_keys=True))
+
+            if panel_alerts:
+                dashboard = generate_filename_from_title(dashboard_title)
+                title = generate_filename_from_title(panel["title"])
+                with open(f"grafana/alerts/{dashboard}_{title}.json", "w") as f:
+                    f.write(json.dumps(panel_alerts, indent=2, sort_keys=True))
     return
 
 
