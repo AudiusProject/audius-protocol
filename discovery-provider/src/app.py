@@ -12,9 +12,7 @@ from celery.schedules import crontab, timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
-
-# type: ignore
-from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.instrumentation.flask import FlaskInstrumentor  # type: ignore
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
 from src import api_helpers, exceptions, tracer
