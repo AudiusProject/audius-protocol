@@ -5,10 +5,12 @@ import { Button, ButtonType, IconArrow, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconWand } from 'assets/img/iconWand.svg'
+import {
+  FollowArtistsCategory,
+  artistCategories
+} from 'common/store/pages/signon/types'
 import UserCard from 'components/card/UserCard'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
-
-import { FollowArtistsCategory, artistCategories } from '../../store/types'
 
 import styles from './FollowPage.module.css'
 

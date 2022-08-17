@@ -33,6 +33,7 @@ import searchResults from 'common/store/pages/search-results/reducer'
 import { SearchPageState } from 'common/store/pages/search-results/types'
 import settings from 'common/store/pages/settings/reducer'
 import { SettingsPageState } from 'common/store/pages/settings/types'
+import signOnReducer from 'common/store/pages/signon/reducer'
 import smartCollection from 'common/store/pages/smart-collection/slice'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import track from 'common/store/pages/track/reducer'
@@ -94,6 +95,7 @@ import wallet from 'common/store/wallet/slice'
  */
 export const reducers = () => ({
   account: accountSlice.reducer,
+  signOn: signOnReducer,
 
   // Config
   backend,
@@ -176,6 +178,7 @@ export const reducers = () => ({
 
 export type CommonState = {
   account: ReturnType<typeof accountSlice.reducer>
+  signOn: ReturnType<typeof signOnReducer>
 
   // Config
   backend: BackendState
