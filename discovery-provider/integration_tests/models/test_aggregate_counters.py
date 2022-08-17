@@ -128,17 +128,19 @@ def test_aggregate_counters(app):
             agg_tracks[1], AggregateTrack(track_id=2, repost_count=0, save_count=0)
         )
 
-        # is_unlisted is update in place
+        # is_available is update in place
         track: Track = (
             session.query(Track)
             .filter(Track.track_id == 2)
             .filter(Track.is_current == True)
             .first()
         )
-        track.is_unlisted = True
+        assert track.is_available == True
+        track.is_available = False
         session.add(track)
         session.flush()
-        assert track.is_unlisted == True
+        session.refresh(track)
+        assert track.is_available == False
 
         # check that agg_user track count is updated
         # must call refresh to avoid sqlalchemy object cache
