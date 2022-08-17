@@ -1,0 +1,33 @@
+.tableOptionsButton {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.tableOptionsButton > div {
+  display: flex;
+  align-items: center;
+}
+.icon {
+  width: 14px;
+  height: 14px;
+  position: relative;
+  transition: all 0.07s ease-in-out !important;
+}
+
+.iconHidden {
+  opacity: 0;
+}
+
+.icon g path {
+  fill: var(--neutral-light-5);
+}
+.tableOptionsButton:hover .icon {
+  transform: scale3d(1.05, 1.05, 1.05);
+}
+.tableOptionsButton:hover .icon g path {
+  fill: var(--neutral-light-3);
+}
+.tableOptionsButton:active .icon {
+  transform: scale(0.95);
+}

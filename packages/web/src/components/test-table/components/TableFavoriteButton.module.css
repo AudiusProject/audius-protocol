@@ -1,0 +1,15 @@
+.tableFavoriteButton {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.tableFavoriteButton.favorited {
+  opacity: 1;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+}

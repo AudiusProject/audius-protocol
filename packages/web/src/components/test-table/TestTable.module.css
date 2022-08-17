@@ -1,0 +1,166 @@
+.tableWrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
+  background-color: var(--white);
+  margin-bottom: 35px;
+  padding-top: 24px;
+  padding-bottom: 5px;
+  overflow: hidden;
+}
+
+.table {
+  position: relative;
+  /* overflow: auto hidden; */
+  overflow: hidden;
+  width: 100%;
+  background-color: var(--white);
+
+  display: flex;
+  flex-direction: column;
+}
+.animatedTable {
+  transition: all 0.18s ease-in-out;
+}
+
+.tableHead {
+  position: relative;
+  display: block;
+  background-color: var(--white);
+  color: var(--neutral);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.tableHeadRow {
+  position: relative;
+}
+
+.tableHeader {
+  position: relative;
+  background-color: var(--white);
+  padding-left: 12px;
+  padding-right: 12px;
+  line-height: 41px;
+  user-select: none;
+}
+.tableHeader.hasSorter {
+  padding-right: 20px;
+}
+.titleHeader + .titleHeader::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 1px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  background-color: var(--neutral-light-8);
+}
+
+.textCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sortCaretContainer {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+.sortCaret {
+  height: 8px;
+  width: 8px;
+}
+
+.tableBody {
+  display: block;
+  overflow: auto;
+}
+
+.tableRow {
+  position: relative;
+  background: var(--white);
+  color: var(--neutral);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tableRow.active {
+  color: var(--primary);
+}
+.tableRow:hover {
+  z-index: 1;
+  box-shadow: 0 1px 0 0 var(--neutral-light-8),
+    0 -1px 0 0 var(--neutral-light-8);
+  transition: all 0.07s ease-in-out;
+  background-color: var(--neutral-light-9);
+}
+.tableRow.disabled {
+  cursor: default;
+  color: var(--neutral-light-4);
+  background-color: var(--neutral-light-9);
+}
+.tableRow.disabled:hover {
+  box-shadow: none;
+  background-color: var(--neutral-light-9);
+}
+
+.tableCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  vertical-align: middle;
+  justify-content: center;
+  padding: 10px 12px;
+  background: transparent;
+  user-select: none;
+  transition: all 0.05s ease-in-out;
+}
+
+.textContainer {
+  position: relative;
+  max-width: 100%;
+  height: 18px;
+  display: inline-flex;
+}
+
+.textCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resizer {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  right: -2px;
+  width: 6px;
+}
+
+.leftAlign {
+  text-align: left;
+  justify-content: left;
+}
+
+.rightAlign {
+  text-align: right;
+  justify-content: right;
+}
+
+.loader {
+  position: relative;
+  height: 32px;
+  width: 32px;
+  margin: 24px auto;
+}
