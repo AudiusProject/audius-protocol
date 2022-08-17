@@ -48,7 +48,6 @@ import { fetchReactionValues } from 'common/store/ui/reactions/slice'
 import { getBalance } from 'common/store/wallet/slice'
 import { getErrorMessage } from 'common/utils/error'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { make } from 'store/analytics/actions'
 import { isElectron } from 'utils/clientUtil'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
@@ -127,6 +126,7 @@ export function* fetchNotifications(
   action: notificationActions.FetchNotifications
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   try {
     yield* put(notificationActions.fetchNotificationsRequested())
     const limit = action.limit || NOTIFICATION_LIMIT_DEFAULT
@@ -135,7 +135,10 @@ export function* fetchNotifications(
       ? lastNotification.timestamp
       : moment().toISOString()
     const withDethroned =
-      getFeatureEnabled(FeatureFlags.SUPPORTER_DETHRONED_ENABLED) ?? false
+      (yield* call(
+        getFeatureEnabled,
+        FeatureFlags.SUPPORTER_DETHRONED_ENABLED
+      )) ?? false
 
     const notificationsResponse: NotificationsResponse = yield* call(
       audiusBackendInstance.getNotifications,
@@ -502,6 +505,7 @@ const checkIfNotificationsChanged = (
 export function* getNotifications(isFirstFetch: boolean) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   try {
     const isOpen: ReturnType<typeof getNotificationPanelIsOpen> = yield* select(
       getNotificationPanelIsOpen
@@ -521,7 +525,10 @@ export function* getNotifications(isFirstFetch: boolean) {
       if (!hasAccount) return
       const timeOffset = moment().toISOString()
       const withDethroned =
-        getFeatureEnabled(FeatureFlags.SUPPORTER_DETHRONED_ENABLED) ?? false
+        (yield* call(
+          getFeatureEnabled,
+          FeatureFlags.SUPPORTER_DETHRONED_ENABLED
+        )) ?? false
 
       const notificationsResponse: NotificationsResponse | undefined =
         yield* call(audiusBackendInstance.getNotifications, {
