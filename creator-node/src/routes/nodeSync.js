@@ -12,7 +12,7 @@ const {
 const config = require('../config')
 const retry = require('async-retry')
 const exportComponentService = require('../components/replicaSet/exportComponentService')
-const { instrumentTracing, getActiveSpan } = require('./utils/tracing')
+const { instrumentTracing, getActiveSpan } = require('../utils/tracing')
 
 const router = express.Router()
 
