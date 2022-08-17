@@ -4,7 +4,7 @@ const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 const models = require('../../models')
 const { Transaction } = require('sequelize')
 const DBManager = require('../../dbManager')
-const { instrumentTracing } = require('./utils/tracing')
+const { instrumentTracing } = require('../../utils/tracing')
 
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
