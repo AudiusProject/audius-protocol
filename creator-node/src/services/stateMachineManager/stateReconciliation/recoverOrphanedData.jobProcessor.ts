@@ -20,6 +20,7 @@ const models = require('../../../models')
 const WALLETS_ON_NODE_KEY = 'orphanedDataWalletsWithStateOnNode'
 const WALLETS_WITH_NODE_IN_REPLICA_SET_KEY =
   'orphanedDataWalletsWithNodeInReplicaSet'
+const WALLETS_ORPHANED_OR_UNSYNCED_KEY = 'oprhanedDataWalletsOrphanedOrUnsynced'
 const NUM_USERS_PER_QUERY = 10_000
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -39,19 +40,10 @@ module.exports = async function ({
   DecoratedJobReturnValue<RecoverOrphanedDataJobReturnValue>
 > {
   const numWalletsOnNode = await _storeWalletsOnThisNode()
-  const numUsersWithNodeInReplicaSet = await _storeWalletsWithThisNodeInReplica(
-    discoveryNodeEndpoint
-  )
-
-  // Wallets with orphaned data = set difference between walletsOnThisNode and walletsWithThisNodeInReplicaSet
-  const walletsWithOrphanedOrUnsyncedData: string[] = await redisClient.sdiff(
-    WALLETS_ON_NODE_KEY,
-    WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
-  )
-
-  // TODO: Filter wallets that had this node in RS but didn't have data on this node (these are just unsynced users).
-  //       Could use SSCAN but that's O(N). Alternatively, when enqueuing the sync we could check which set the wallet is in and not wipe if the node is in the user's replica set
-  const walletsWithOrphanedData = walletsWithOrphanedOrUnsyncedData
+  const numWalletsWithNodeInReplicaSet =
+    await _storeWalletsWithThisNodeInReplica(discoveryNodeEndpoint)
+  const numWalletsOrphanedOrUnsynced = await _storeWalletsOrphanedOrUnsynced()
+  const walletsWithOrphanedData = await _getWalletsWithOrphanedData()
 
   // Get sync requests that will be issued to sync orphaned data from this node back to each user's primary
   const syncReqsToEnqueue: IssueSyncRequestJobParams[] = []
@@ -68,7 +60,8 @@ module.exports = async function ({
 
   return {
     numWalletsOnNode,
-    numUsersWithNodeInReplicaSet,
+    numWalletsWithNodeInReplicaSet,
+    numWalletsOrphanedOrUnsynced,
     walletsWithOrphanedData,
     jobsToEnqueue: {
       // Enqueue jobs to recover orphaned data by syncing primary from this node and then wiping this node's data for the user
@@ -172,7 +165,7 @@ const _storeWalletsWithThisNodeInReplica = async (
  * Gets a sync request that can be issued to "force wipe" (modified forceResync=true flag):
  *  1. Merges orphaned data from this node into the user's primary.
  *  2. Wipes the user's data from this node.
- *  3. *DON'T* resync from the primary to this node -- this is what non-modified forceResync would do.
+ *  3. *DON'T* resync from the primary to this node -- this is what non-modified forceResync would do -- and instead set forceWipe=true.
  * @param wallet the wallet of the user with data orphaned on this node
  */
 const _getSyncReqToRecoverOrphanedData = async (
@@ -203,6 +196,36 @@ const _getSyncReqToRecoverOrphanedData = async (
     )
     return undefined
   }
+}
+
+/**
+ * Adds wallets that are orphaned or unsynced to a redis set.
+ * This is the same as the set difference between walletsOnThisNode and walletsWithThisNodeInReplicaSet.
+ * @returns number of wallets that either:
+ *          * have data on this node but don't have this node in their replica set (they're orphaned)
+ *          * have this node in their Replica Set but don't have data on this node (they're unsynced)
+ */
+const _storeWalletsOrphanedOrUnsynced = async () => {
+  await redisClient.del(WALLETS_ORPHANED_OR_UNSYNCED_KEY)
+  const numWalletsOrphanedOrUnsynced = await redisClient.sdiffstore(
+    WALLETS_ORPHANED_OR_UNSYNCED_KEY,
+    WALLETS_ON_NODE_KEY,
+    WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
+  )
+  return numWalletsOrphanedOrUnsynced
+}
+
+/**
+ * @returns string[] of wallets with data orphaned on this node by taking the set intersection of
+ *          wallets with data on this node and wallets with orphaned data or unsynced data (this filters
+ *          out wallets that only have this node in their ReplicaSet but no data on this node)
+ */
+const _getWalletsWithOrphanedData = async () => {
+  const walletsWithOrphanedData: string[] = await redisClient.sinter(
+    WALLETS_ON_NODE_KEY,
+    WALLETS_ORPHANED_OR_UNSYNCED_KEY
+  )
+  return walletsWithOrphanedData
 }
 
 const _getPrimaryForWallet = async (
