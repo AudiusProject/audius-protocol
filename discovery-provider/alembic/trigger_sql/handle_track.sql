@@ -53,7 +53,7 @@ $$ language plpgsql;
 
 do $$ begin
   create trigger on_track
-  after insert on tracks
+  after insert or update on tracks
   for each row execute procedure handle_track();
 exception
   when others then null;

@@ -4,6 +4,7 @@ from typing import List
 from integration_tests.utils import populate_mock_db
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
+from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.utils.db_session import get_db
 
@@ -126,6 +127,24 @@ def test_aggregate_counters(app):
         compare_rows(
             agg_tracks[1], AggregateTrack(track_id=2, repost_count=0, save_count=0)
         )
+
+        # is_unlisted is update in place
+        track: Track = (
+            session.query(Track)
+            .filter(Track.track_id == 2)
+            .filter(Track.is_current == True)
+            .first()
+        )
+        track.is_unlisted = True
+        session.add(track)
+        session.flush()
+        assert track.is_unlisted == True
+
+        # check that agg_user track count is updated
+        # must call refresh to avoid sqlalchemy object cache
+        owner_agg: AggregateUser = session.query(AggregateUser).get(track.owner_id)
+        session.refresh(owner_agg)
+        assert owner_agg.track_count == 1
 
         # playlists
         agg_playlists: List[AggregatePlaylist] = (
