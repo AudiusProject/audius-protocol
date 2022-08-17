@@ -340,19 +340,15 @@ Setting `Show Thresholds` to `As Lines` will activate Alerts the next time [Aler
 
 Matching Panel `Description`s should provide runbooks for each Alert level.
 
-Alert extraction uses the following color / Grafana Contact Point mapping:
+Alert extraction uses the following Threshold Color / Alert Label mapping:
 
-| Color       | Notification `channel` Label |
-| ----------- | ---------------------------- |
-| Red         |         `high-alert`         |
-| Orange      |         `medium-alert`       |
-| Yellow      |         `low-alert`          |
+| Threshold Color | Alert Labels                |
+| --------------- | --------------------------- |
+| Red             | {`channel`: `high-alert`}   |
+| Orange          | {`channel`: `medium-alert`} |
+| Yellow          | {`channel`: `low-alert`}    |
 
-| Color       | Slack                     | PagerDuty Notification | PagerDuty Alert |
-| ----------- | ------------------------- | ---------------------- | --------------- |
-| Red         | #eng-incidents-prod/stage |                        |     On-Call     |
-| Orange      | #eng-incidents-prod/stage |        On-Call         |                 |
-| Yellow      | #eng-grafana-alerts       |                        |                 |
+Based on the `channel` label, each Alert will be routed to a different Grafana Contact Point.
 
 The largest color dot in the center creates an alert that will fire when the value is **greater than or equal to** the threshold.
 
