@@ -70,7 +70,7 @@ export const METRIC_NAMES = Object.freeze(
 
 export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
-    mode: ['force_resync', 'default'],
+    mode: ['force_resync', 'default', 'force_wipe'],
     result: [
       'success',
       'failure_force_resync_check',
