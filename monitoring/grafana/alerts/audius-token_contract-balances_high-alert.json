@@ -1,0 +1,174 @@
+{
+  "annotations": {
+    "__alertId__": "jPaB_Yk4k_004_High",
+    "__dashboardUid__": "jPaB_Yk4k",
+    "__panelId__": "4",
+    "description": "\n\nIf this number dips, we may have lost a service provider.",
+    "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=4",
+    "summary": "The number of tokens held by the staking contract.\n\n"
+  },
+  "condition": "D",
+  "data": [
+    {
+      "datasourceUid": "r2_nnDL7z",
+      "model": {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "r2_nnDL7z"
+        },
+        "expr": "audius_exporters_alchemy_balance{address_name=\"NotStaking\"}",
+        "hide": false,
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "A"
+      },
+      "queryType": "",
+      "refId": "A",
+      "relativeTimeRange": {
+        "from": 600,
+        "to": 0
+      }
+    },
+    {
+      "datasourceUid": "r2_nnDL7z",
+      "model": {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "r2_nnDL7z"
+        },
+        "expr": "audius_exporters_alchemy_balance{address_name=\"Staking\"}",
+        "hide": false,
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "B"
+      },
+      "queryType": "",
+      "refId": "B",
+      "relativeTimeRange": {
+        "from": 600,
+        "to": 0
+      }
+    },
+    {
+      "datasourceUid": "r2_nnDL7z",
+      "model": {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "r2_nnDL7z"
+        },
+        "expr": "audius_exporters_alchemy_balance{address_name!=\"Staking\"}",
+        "hide": false,
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "C"
+      },
+      "queryType": "",
+      "refId": "C",
+      "relativeTimeRange": {
+        "from": 600,
+        "to": 0
+      }
+    },
+    {
+      "datasourceUid": "-100",
+      "model": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                70,
+                0
+              ],
+              "type": "lt"
+            },
+            "operator": {
+              "type": "or"
+            },
+            "query": {
+              "params": [
+                "A"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          },
+          {
+            "evaluator": {
+              "params": [
+                70,
+                0
+              ],
+              "type": "lt"
+            },
+            "operator": {
+              "type": "or"
+            },
+            "query": {
+              "params": [
+                "B"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          },
+          {
+            "evaluator": {
+              "params": [
+                70,
+                0
+              ],
+              "type": "lt"
+            },
+            "operator": {
+              "type": "or"
+            },
+            "query": {
+              "params": [
+                "C"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          }
+        ],
+        "datasource": {
+          "name": "Expression",
+          "type": "__expr__",
+          "uid": "__expr__"
+        },
+        "hide": false,
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "D",
+        "type": "classic_conditions"
+      },
+      "queryType": "",
+      "refId": "D",
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
+    }
+  ],
+  "execErrState": "Alerting",
+  "folderUID": "ARwYXYzVk",
+  "for": "0",
+  "id": 200041,
+  "labels": {
+    "channel": "high-alert"
+  },
+  "noDataState": "OK",
+  "orgID": 1,
+  "ruleGroup": "group",
+  "title": "Contract Balances (High)",
+  "uid": "jPaB_Yk4k_004_High"
+}

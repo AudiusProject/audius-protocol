@@ -468,7 +468,7 @@ rm grafana/alerts/
 
 # remove all disabled alerts
 git status
-# TODO: ./grafana/bin/remove-alert.sh ${filename}
+# bash ./grafana/bin/delete-alerts.sh ${filename}
 
 # confirm changes
 # git checkout -b grafana-alerts-$(date "+%F-%H-%M-%S")
