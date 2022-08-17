@@ -1,4 +1,4 @@
-# type: ignore
+# mypy: ignore-errors
 from opentelemetry import trace
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
