@@ -1,0 +1,67 @@
+.textContainer {
+  position: relative;
+  display: inline-flex;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.textCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.trackName:hover {
+  transition: color 0.07s ease-out;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-light-2);
+}
+
+.artistCellContainer {
+  width: 100%;
+}
+
+.badges {
+  display: inline-flex;
+  align-items: center;
+}
+
+.trackActionsContainer {
+  display: inline-flex;
+  gap: 16px;
+}
+.trackActionsContainer .tableActionButton {
+  opacity: 0;
+}
+
+.tableActionButton.active {
+  opacity: 1;
+}
+
+.tablePlayButton {
+  opacity: 0;
+}
+.tablePlayButton.active {
+  opacity: 1;
+}
+
+.tableRow:hover .tablePlayButton,
+.tableRow:hover .trackActionsContainer .tableActionButton {
+  opacity: 1;
+}
+
+.tableRow.disabled {
+  cursor: default;
+  color: var(--neutral-light-4);
+  background-color: var(--neutral-light-9);
+}
+.tableRow.disabled:hover {
+  box-shadow: none;
+  background-color: var(--neutral-light-9);
+}
+.tableRow.disabled:hover .tablePlayButton {
+  opacity: 0;
+  pointer-events: none;
+}

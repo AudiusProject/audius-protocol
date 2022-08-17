@@ -1,4 +1,4 @@
-import { ID, UID, Lineup, Status, User } from '@audius/common'
+import { ID, UID, Lineup, Status, User, FeatureFlags } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
@@ -15,9 +15,11 @@ import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import Page from 'components/page/Page'
+import { TestTracksTable } from 'components/test-tracks-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
+import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
 import { albumPage } from 'utils/route'
 
@@ -92,6 +94,7 @@ const SavedPage = ({
   onSortTracks,
   onReorderTracks
 }: SavedPageProps) => {
+  const { isEnabled: isNewTablesEnabled } = useFlag(FeatureFlags.NEW_TABLES)
   const [dataSource, playingIndex] =
     status === Status.SUCCESS ? getFilteredData(entries) : [[], -1]
   const { isLoading: isLoadingAlbums, setDidLoad: setDidLoadAlbums } =
@@ -205,6 +208,24 @@ const SavedPage = ({
           secondaryText='Once you have, this is where you’ll find them!'
           buttonLabel='Go to Trending'
           onClick={() => goToRoute('/trending')}
+        />
+      ) : isNewTablesEnabled ? (
+        <TestTracksTable
+          key='favorites'
+          userId={account ? account.user_id : 0}
+          loading={tracksLoading}
+          maxRowNum={10}
+          playing={queuedAndPlaying}
+          playingIndex={playingIndex}
+          data={dataSource}
+          onClickRow={onClickRow}
+          onClickFavorite={onClickSave}
+          onClickTrackName={onClickTrackName}
+          onClickArtistName={onClickArtistName}
+          onClickRepost={onClickRepost}
+          onSortTracks={onSortTracks}
+          // onReorderTracks={onReorderTracks}
+          // onClickRemove={onClickRemove}
         />
       ) : (
         <div className={styles.tableWrapper}>

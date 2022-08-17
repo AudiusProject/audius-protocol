@@ -1,14 +1,17 @@
-import { ChangeEvent, memo } from 'react'
+import { ChangeEvent, memo, useMemo } from 'react'
 
-import { ID } from '@audius/common'
+import { FeatureFlags, ID } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
+import { dateSorter } from 'components/test-table'
+import { TestTracksTable } from 'components/test-tracks-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './HistoryPage.module.css'
 
@@ -55,6 +58,7 @@ const HistoryPage = ({
   onFilterChange,
   filterText
 }: HistoryPageProps) => {
+  const { isEnabled: isNewTablesEnabled } = useFlag(FeatureFlags.NEW_TABLES)
   const tableLoading = !dataSource.every((track: any) => track.play_count > -1)
 
   const playAllButton = !loading ? (
@@ -97,6 +101,8 @@ const HistoryPage = ({
     />
   )
 
+  const defaultSorter = useMemo(() => dateSorter('dateListened'), [])
+
   return (
     <Page
       title={title}
@@ -113,6 +119,19 @@ const HistoryPage = ({
             secondaryText='Once you have, this is where you’ll find them!'
             buttonLabel='Start Listening'
             onClick={() => goToRoute('/trending')}
+          />
+        ) : isNewTablesEnabled ? (
+          <TestTracksTable
+            key='history'
+            data={dataSource}
+            userId={userId}
+            loading={tableLoading}
+            playing={queuedAndPlaying}
+            playingIndex={playingIndex}
+            maxRowNum={10}
+            isVirtualized
+            defaultSorter={defaultSorter}
+            {...trackTableActions}
           />
         ) : (
           <div className={styles.tableWrapper}>

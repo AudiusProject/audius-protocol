@@ -38,6 +38,11 @@
 }
 
 /* Track Table */
+.tracksTableWrapper {
+  border-radius: 0;
+  margin: 0;
+}
+
 .bodyWrapper .tableWrapper {
   background-color: var(--neutral-light-10);
   width: 100%;

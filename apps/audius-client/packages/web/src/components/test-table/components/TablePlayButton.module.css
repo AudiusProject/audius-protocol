@@ -1,0 +1,45 @@
+.tablePlayButton {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.tablePlayButton > div {
+  display: flex;
+  align-items: center;
+}
+.icon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  transition: all 0.07s ease-in-out !important;
+}
+.hideDefault {
+  opacity: 0;
+}
+:global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row)) .icon {
+  opacity: 1;
+}
+
+.tablePlayButton :global(#primaryBG) path,
+.tablePlayButton :global(#Primary) path {
+  fill: var(--primary);
+}
+
+.icon g path,
+.icon g rect {
+  fill: var(--primary);
+}
+.tablePlayButton:hover .icon {
+  transform: scale3d(1.1, 1.1, 1.1);
+  /* using scale3d:
+     https://stackoverflow.com/questions/27825098/image-shifting-jumping-after-css-transition-effect-with-scale-transform-in-firef */
+}
+.tablePlayButton:active .icon {
+  /*  transition: all .98s ease-in-out !important;*/
+  transform: scale(0.95);
+}
+
+.tablePlayButton :global(#Oval) {
+  fill: var(--play-button-triangle);
+}
