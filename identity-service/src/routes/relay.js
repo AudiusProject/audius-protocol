@@ -7,7 +7,7 @@ const { detectAbuse } = require('../utils/antiAbuse')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const models = require('../models')
 
-const blockRelayAbuseErrorCodes = new Set(['0', '3', '8', '9', '10', '11'])
+const blockRelayAbuseErrorCodes = new Set(['0', '8', '9', '10'])
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
