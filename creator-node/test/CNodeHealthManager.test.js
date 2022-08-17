@@ -276,13 +276,11 @@ describe('test CNodeHealthManager -- queryVerboseHealthCheck()', function () {
 
 describe('test CNodeHealthManager -- determinePeerHealth()', function () {
   // Set config vars for health thresholds
-  const minimumStoragePathSize = 100
   const minimumMemoryAvailable = 100
   const maxFileDescriptorsAllocatedPercentage = 50
   const minimumDailySyncCount = 3
   const minimumRollingSyncCount = 5
   const minimumSuccessfulSyncCountPercentage = 50
-  config.set('minimumStoragePathSize', minimumStoragePathSize)
   config.set('minimumMemoryAvailable', minimumMemoryAvailable)
   config.set(
     'maxFileDescriptorsAllocatedPercentage',
@@ -312,6 +310,7 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
   it('throws when low on storage space', function () {
     const storagePathSize = 1000
     const storagePathUsed = 990
+    const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
     const verboseHealthCheckResp = {
       storagePathSize,
       storagePathUsed
@@ -319,7 +318,7 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
     expect(() => determinePeerHealth(verboseHealthCheckResp)).to.throw(
       `Almost out of storage=${
         storagePathSize - storagePathUsed
-      }bytes remaining. Minimum storage required=${minimumStoragePathSize}bytes`
+      }bytes remaining out of ${storagePathSize}. Requires less than ${maxStorageUsedPercent}% used`
     )
   })
 

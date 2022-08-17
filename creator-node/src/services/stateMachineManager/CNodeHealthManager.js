@@ -144,7 +144,7 @@ class CNodeHealthManager {
       throw new Error(
         `Almost out of storage=${
           storagePathSize - storagePathUsed
-        }bytes remaining out of ${storagePathSize}. Max storage % used=${MAX_STORAGE_USED_PERCENT}%`
+        }bytes remaining out of ${storagePathSize}. Requires less than ${MAX_STORAGE_USED_PERCENT}% used`
       )
     }
 
