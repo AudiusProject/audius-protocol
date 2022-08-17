@@ -16,6 +16,7 @@ import { UndisbursedUserChallenge } from 'common/store/pages/audio-rewards/slice
 import { CommonState } from '../..'
 
 import { getCompletionStages } from './profile-progress'
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 /**
  * Gets the state of a user challenge, with the most progress dominating
@@ -86,6 +87,13 @@ const toOptimisticChallenge = (
     challengeOverridden.current_step_count = currentStepCountOverride
     challengeOverridden.is_complete =
       currentStepCountOverride >= challengeOverridden.max_steps
+  }
+
+  // If we're on native mobile, we might not yet have the is_mobile user_event
+  // on DN, so optimistically mark this challenge as complete so the client
+  // can start claiming
+  if (challenge.challenge_id === 'mobile-install' && NATIVE_MOBILE) {
+    challengeOverridden.is_complete = true
   }
 
   const state = getUserChallengeState(challengeOverridden)
