@@ -32,7 +32,7 @@ module.exports = async function primarySyncFromSecondary({
   const logger = genericLogger.child(logContext)
 
   const decisionTree = new DecisionTree({ name: logPrefix, logger })
-  decisionTree.recordStage({ name: 'Begin' })
+  decisionTree.recordStage({ name: 'Begin', log: true })
 
   // object to track if the function errored, returned at the end of the function
   let error = null
@@ -48,12 +48,11 @@ module.exports = async function primarySyncFromSecondary({
     let libs
     try {
       libs = await initAudiusLibs({})
-      decisionTree.recordStage({ name: 'initAudiusLibs() success' })
+      decisionTree.recordStage({ name: 'initAudiusLibs() success', log: true })
     } catch (e) {
       decisionTree.recordStage({
         name: 'initAudiusLibs() Error',
-        data: { errorMsg: e.message },
-        log: false
+        data: { errorMsg: e.message }
       })
       throw new Error(`InitAudiusLibs Error - ${e.message}`)
     }
@@ -70,14 +69,13 @@ module.exports = async function primarySyncFromSecondary({
       logger,
       libs
     })
-    decisionTree.recordStage({ name: 'getUserReplicaSet() success ' })
+    decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
     // Error if this node is not primary for user
     if (userReplicaSet[0] !== selfEndpoint) {
       decisionTree.recordState({
         name: 'Error - Node is not primary for user',
-        data: { userReplicaSet },
-        log: false
+        data: { userReplicaSet }
       })
       throw new Error(`Node is not primary for user`)
     }
@@ -101,13 +99,13 @@ module.exports = async function primarySyncFromSecondary({
         })
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Success',
-          data: decisionTreeData
+          data: decisionTreeData,
+          log: true
         })
       } catch (e) {
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Error',
-          data: { ...decisionTreeData, errorMsg: e.message },
-          log: false
+          data: { ...decisionTreeData, errorMsg: e.message }
         })
         throw e
       }
@@ -122,13 +120,13 @@ module.exports = async function primarySyncFromSecondary({
         })
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Success',
-          data: decisionTreeData
+          data: decisionTreeData,
+          log: true
         })
       } catch (e) {
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Error',
-          data: { ...decisionTreeData, errorMsg: e.message },
-          log: false
+          data: { ...decisionTreeData, errorMsg: e.message }
         })
         throw e
       }
@@ -141,13 +139,13 @@ module.exports = async function primarySyncFromSecondary({
         })
         decisionTree.recordStage({
           name: 'saveEntriesToDB() Success',
-          data: decisionTreeData
+          data: decisionTreeData,
+          log: true
         })
       } catch (e) {
         decisionTree.recordStage({
           name: 'saveEntriesToDB() Error',
-          data: { ...decisionTreeData, errorMsg: e.message },
-          log: false
+          data: { ...decisionTreeData, errorMsg: e.message }
         })
         throw e
       }
