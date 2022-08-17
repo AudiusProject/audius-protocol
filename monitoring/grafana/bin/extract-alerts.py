@@ -58,10 +58,13 @@ def main(filename):
                 description = description.strip()
 
         if "fieldConfig" in panel:
+            if panel["type"] != "timeseries":
+                continue
+
             panel_alerts = []
             for step in panel["fieldConfig"]["defaults"]["thresholds"]["steps"]:
                 # skip the base case when value is not set, nor visible
-                if not step["value"]:
+                if not "value" in step or step["value"]:
                     continue
 
                 # ensure thresholds are visible

@@ -1,7 +1,7 @@
 [
   {
     "annotations": {
-      "__alertId__": "jPaB_Yk4k_017_Low",
+      "__alertId__": "jPaB_Yk4k_017_Notification",
       "__dashboardUid__": "jPaB_Yk4k",
       "__panelId__": "17",
       "description": "\n\nIf this number dips, we may have lost a service provider.",
@@ -37,10 +37,10 @@
             {
               "evaluator": {
                 "params": [
-                  355000000,
+                  null,
                   0
                 ],
-                "type": "lt"
+                "type": "gt"
               },
               "operator": {
                 "type": "or"
@@ -79,14 +79,14 @@
     "execErrState": "Alerting",
     "folderUID": "ARwYXYzVk",
     "for": "0",
-    "id": 200173,
+    "id": 200174,
     "labels": {
-      "channel": "low-alert"
+      "channel": "notification"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Contract Balances (Staking) (Low)",
-    "uid": "jPaB_Yk4k_017_Low"
+    "title": "Contract Balances (Staking) (Notification)",
+    "uid": "jPaB_Yk4k_017_Notification"
   }
 ]

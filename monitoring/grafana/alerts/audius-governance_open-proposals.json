@@ -1,12 +1,12 @@
 [
   {
     "annotations": {
-      "__alertId__": "jPaB_Yk4k_015_Notification",
-      "__dashboardUid__": "jPaB_Yk4k",
-      "__panelId__": "15",
-      "description": "\n\nOccasional huge transfers are routine. Many large transfers may indicate a mass exodus.\n\nThis panel does not differentiate between a whale and many individuals moving the same amount of tokens.",
-      "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=15",
-      "summary": "The number of tokens transferred within a rolling 5 minute window.\n\n"
+      "__alertId__": "YCgu57m4z_020_Notification",
+      "__dashboardUid__": "YCgu57m4z",
+      "__panelId__": "20",
+      "description": "\n\nThe number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
+      "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=20",
+      "summary": "The number of open proposals at the moment.\n\n"
     },
     "condition": "B",
     "data": [
@@ -17,7 +17,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "increase(audius_exporters_alchemy_token_transfer_sum[5m])",
+          "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
           "hide": false,
           "intervalMs": 1000,
           "maxDataPoints": 43200,
@@ -79,14 +79,14 @@
     "execErrState": "Alerting",
     "folderUID": "ARwYXYzVk",
     "for": "0",
-    "id": 200154,
+    "id": 220204,
     "labels": {
       "channel": "notification"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Token Transfers Amount (increase over 5m) (Notification)",
-    "uid": "jPaB_Yk4k_015_Notification"
+    "title": "Open Proposals (Notification)",
+    "uid": "YCgu57m4z_020_Notification"
   }
 ]
