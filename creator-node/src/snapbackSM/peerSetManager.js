@@ -258,11 +258,13 @@ class PeerSetManager {
     // Check for sufficient minimum storage size
     const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
     if (
-      !hasEnoughStorageSpace(
+      storagePathSize &&
+      storagePathUsed &&
+      !hasEnoughStorageSpace({
         storagePathSize,
         storagePathUsed,
-        MAX_STORAGE_USED_PERCENT
-      )
+        maxStorageUsedPercent: MAX_STORAGE_USED_PERCENT
+      })
     ) {
       throw new Error(
         `Almost out of storage=${

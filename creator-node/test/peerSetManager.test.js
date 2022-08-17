@@ -16,41 +16,7 @@ chai.use(require('chai-as-promised'))
 describe('test peerSetManager -- determinePeerHealth', () => {
   let peerSetManager
 
-  const baseVerboseHealthCheckResp = {
-    version: '0.3.37',
-    service: 'content-node',
-    healthy: true,
-    git: '',
-    selectedDiscoveryProvider: 'http://audius-disc-prov_web-server_1:5000',
-    creatorNodeEndpoint: 'http://cn1_creator-node_1:4000',
-    spID: 1,
-    spOwnerWallet: '0xf7316fe994bb92556dcfd998038618ce1227aeea',
-    sRegisteredOnURSM: true,
-    country: 'US',
-    latitude: '41.2619',
-    longitude: '-95.8608',
-    databaseConnections: 5,
-    databaseSize: 8956927,
-    usedTCPMemory: 166,
-    receivedBytesPerSec: 756.3444159135626,
-    transferredBytesPerSec: 186363.63636363638,
-    maxStorageUsedPercent: 95,
-    numberOfCPUs: 12,
-    latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
-    latestSyncFailTimestamp: '',
-
-    // Fields to consider in this test
-    thirtyDayRollingSyncSuccessCount: 50,
-    thirtyDayRollingSyncFailCount: 10,
-    dailySyncSuccessCount: 5,
-    dailySyncFailCount: 0,
-    totalMemory: 25219547136,
-    usedMemory: 16559153152,
-    maxFileDescriptors: 9223372036854776000,
-    allocatedFileDescriptors: 15456,
-    storagePathSize: 259975987200,
-    storagePathUsed: 59253436416
-  }
+  let baseVerboseHealthCheckResp
 
   beforeEach(() => {
     nock.disableNetConnect()
@@ -58,6 +24,41 @@ describe('test peerSetManager -- determinePeerHealth', () => {
       discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
       creatorNodeEndpoint: 'https://content_node_endpoint.audius.co'
     })
+    baseVerboseHealthCheckResp = {
+      version: '0.3.37',
+      service: 'content-node',
+      healthy: true,
+      git: '',
+      selectedDiscoveryProvider: 'http://audius-disc-prov_web-server_1:5000',
+      creatorNodeEndpoint: 'http://cn1_creator-node_1:4000',
+      spID: 1,
+      spOwnerWallet: '0xf7316fe994bb92556dcfd998038618ce1227aeea',
+      sRegisteredOnURSM: true,
+      country: 'US',
+      latitude: '41.2619',
+      longitude: '-95.8608',
+      databaseConnections: 5,
+      databaseSize: 8956927,
+      usedTCPMemory: 166,
+      receivedBytesPerSec: 756.3444159135626,
+      transferredBytesPerSec: 186363.63636363638,
+      maxStorageUsedPercent: 95,
+      numberOfCPUs: 12,
+      latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
+      latestSyncFailTimestamp: '',
+  
+      // Fields to consider in this test
+      thirtyDayRollingSyncSuccessCount: 50,
+      thirtyDayRollingSyncFailCount: 10,
+      dailySyncSuccessCount: 5,
+      dailySyncFailCount: 0,
+      totalMemory: 25219547136,
+      usedMemory: 16559153152,
+      maxFileDescriptors: 9223372036854776000,
+      allocatedFileDescriptors: 15456,
+      storagePathSize: 259975987200,
+      storagePathUsed: 59253436416
+    }
   })
 
   afterEach(() => {

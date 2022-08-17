@@ -137,11 +137,11 @@ class CNodeHealthManager {
     if (
       storagePathSize &&
       storagePathUsed &&
-      !hasEnoughStorageSpace(
+      !hasEnoughStorageSpace({
         storagePathSize,
         storagePathUsed,
-        MAX_STORAGE_USED_PERCENT
-      )
+        maxStorageUsedPercent: MAX_STORAGE_USED_PERCENT
+      })
     ) {
       throw new Error(
         `Almost out of storage=${

@@ -292,6 +292,7 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
     'minimumSuccessfulSyncCountPercentage',
     minimumSuccessfulSyncCountPercentage
   )
+  config.set('maxStorageUsedPercent', 95)
 
   function determinePeerHealth(verboseHealthCheckResp) {
     const CNodeHealthManagerMock = proxyquire(
@@ -304,7 +305,42 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
   }
 
   it("doesn't throw if all data is healthy (empty data counts as healthy)", function () {
-    expect(() => determinePeerHealth({})).to.not.throw()
+    const baseVerboseHealthCheckResp = {
+      version: '0.3.37',
+      service: 'content-node',
+      healthy: true,
+      git: '',
+      selectedDiscoveryProvider: 'http://audius-disc-prov_web-server_1:5000',
+      creatorNodeEndpoint: 'http://cn1_creator-node_1:4000',
+      spID: 1,
+      spOwnerWallet: '0xf7316fe994bb92556dcfd998038618ce1227aeea',
+      sRegisteredOnURSM: true,
+      country: 'US',
+      latitude: '41.2619',
+      longitude: '-95.8608',
+      databaseConnections: 5,
+      databaseSize: 8956927,
+      usedTCPMemory: 166,
+      receivedBytesPerSec: 756.3444159135626,
+      transferredBytesPerSec: 186363.63636363638,
+      maxStorageUsedPercent: 95,
+      numberOfCPUs: 12,
+      latestSyncSuccessTimestamp: '2022-06-08T21:29:34.231Z',
+      latestSyncFailTimestamp: '',
+  
+      // Fields to consider in this test
+      thirtyDayRollingSyncSuccessCount: 50,
+      thirtyDayRollingSyncFailCount: 10,
+      dailySyncSuccessCount: 5,
+      dailySyncFailCount: 0,
+      totalMemory: 25219547136,
+      usedMemory: 16559153152,
+      maxFileDescriptors: 9223372036854776000,
+      allocatedFileDescriptors: 15456,
+      storagePathSize: 259975987200,
+      storagePathUsed: 59253436416
+    }
+    expect(() => determinePeerHealth(baseVerboseHealthCheckResp)).to.not.throw()
   })
 
   it('throws when low on storage space', function () {
