@@ -51,24 +51,24 @@ const fetchCNodeEndpointToSpIdMap = async ({
   }
 }
 
-// Different from other `instrumentTracing` calls because of the need to link the parentSpanContext
-module.exports = ({
-  parentSpanContext
-}: {
-  parentSpanContext: SpanContext
-}) => {
+module.exports = async (
+  params: DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>
+) => {
+  const { parentSpanContext } = params
   return instrumentTracing({
     name: 'fetchCNodeEndpointToSpIdMap.jobProcessor',
     fn: fetchCNodeEndpointToSpIdMap,
     options: {
-      links: [
-        {
-          context: parentSpanContext
-        }
-      ],
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
       attributes: {
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
-  })
+  })(params)
 }

@@ -338,18 +338,24 @@ const _transformAndFilterReplicaToUserInfoMap = (
   )
 }
 
-module.exports = ({ parentSpanContext }: { parentSpanContext: SpanContext }) =>
-  instrumentTracing({
+module.exports = async (
+  params: DecoratedJobParams<FindReplicaSetUpdateJobParams>
+) => {
+  const { parentSpanContext } = params
+  return instrumentTracing({
     name: 'findReplicaSetUpdates.jobProcessor',
     fn: findReplicaSetUpdates,
     options: {
-      links: [
-        {
-          context: parentSpanContext
-        }
-      ],
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
       attributes: {
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
-  })
+  })(params)
+}

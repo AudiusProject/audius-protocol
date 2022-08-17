@@ -717,22 +717,24 @@ const _canReconfig = async ({
   return canReconfig
 }
 
-module.exports = async ({
-  parentSpanContext
-}: {
-  parentSpanContext: SpanContext
-}) =>
-  instrumentTracing({
+module.exports = async (
+  params: DecoratedJobParams<UpdateReplicaSetJobParams>
+) => {
+  const { parentSpanContext } = params
+  return instrumentTracing({
     name: 'updateReplicaSet.jobProcessor',
     fn: updateReplicaSet,
     options: {
-      links: [
-        {
-          context: parentSpanContext
-        }
-      ],
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
       attributes: {
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
-  })
+  })(params)
+}

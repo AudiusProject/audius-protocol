@@ -461,22 +461,24 @@ const additionalSyncIsRequired = instrumentTracing({
   fn: _additionalSyncIsRequired
 })
 
-module.exports = async ({
-  parentSpanContext
-}: {
-  parentSpanContext: SpanContext
-}) =>
-  instrumentTracing({
+module.exports = async (
+  params: DecoratedJobParams<IssueSyncRequestJobParams>
+) => {
+  const { parentSpanContext } = params
+  return instrumentTracing({
     name: 'issueSyncRequest.jobProcessor',
     fn: issueSyncRequest,
     options: {
-      links: [
-        {
-          context: parentSpanContext
-        }
-      ],
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
       attributes: {
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
-  })
+  })(params)
+}

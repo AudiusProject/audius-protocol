@@ -52,7 +52,7 @@ type FindSyncsForUserResult = {
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
  */
-const _findSyncRequests = async ({
+const findSyncRequests = async ({
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
@@ -329,24 +329,24 @@ const findSyncsForUser = instrumentTracing({
   fn: _findSyncsForUser
 })
 
-module.exports = async ({
-  parentSpanContext
-}: {
-  parentSpanContext: SpanContext
-}) => {
+module.exports = async (
+  params: DecoratedJobParams<FindSyncRequestsJobParams>
+) => {
+  const { parentSpanContext } = params
   return instrumentTracing({
-    name: 'updateReplicaSet.jobProcessor',
-    fn: _findSyncRequests,
+    name: 'findSyncRequests.jobProcessor',
+    fn: findSyncRequests,
     options: {
-      links: [
-        {
-          context: parentSpanContext
-        }
-      ],
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
       attributes: {
-        [SemanticAttributes.CODE_FUNCTION]: 'findSyncRequests.jobProcessor',
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
-  })
+  })(params)
 }

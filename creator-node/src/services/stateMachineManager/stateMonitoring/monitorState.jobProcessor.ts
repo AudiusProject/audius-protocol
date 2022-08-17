@@ -299,22 +299,22 @@ const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
   }
 }
 
-module.exports = async ({
-  parentSpanContext
-}: {
-  parentSpanContext: SpanContext
-}) =>
-  instrumentTracing({
+module.exports = async (params: DecoratedJobParams<MonitorStateJobParams>) => {
+  const { parentSpanContext } = params
+  return instrumentTracing({
     name: 'monitorState.jobProcessor',
     fn: monitorState,
     options: {
-      links: [
-        {
-          context: parentSpanContext
-        }
-      ],
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
       attributes: {
         [SemanticAttributes.CODE_FILEPATH]: __filename
       }
     }
-  })
+  })(params)
+}
