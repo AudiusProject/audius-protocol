@@ -1,7 +1,7 @@
 import { call, delay, put, race, select, takeEvery } from 'redux-saga/effects'
 
 import { getContext } from 'common/store'
-import * as confirmerActions from 'store/confirmer/actions'
+import * as confirmerActions from 'common/store/confirmer/actions'
 import {
   getResult,
   getCommandChain,
@@ -11,7 +11,7 @@ import {
   getLatestResult,
   getShouldCancelCurrentCall,
   getAreRequisiteCallsComplete
-} from 'store/confirmer/selectors'
+} from 'common/store/confirmer/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
 
 enum BlockConfirmation {

@@ -3,8 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 
+import { getIsConfirming } from 'common/store/confirmer/selectors'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
-import { getIsConfirming } from 'store/confirmer/selectors'
 import { isElectron } from 'utils/clientUtil'
 import { setupHotkeys, removeHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
 

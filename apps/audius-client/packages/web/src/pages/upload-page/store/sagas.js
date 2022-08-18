@@ -27,6 +27,8 @@ import { reformat } from 'common/store/cache/collections/utils'
 import * as tracksActions from 'common/store/cache/tracks/actions'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
+import * as confirmerActions from 'common/store/confirmer/actions'
+import { confirmTransaction } from 'common/store/confirmer/sagas'
 import {
   getSelectedServices,
   getStatus
@@ -37,8 +39,6 @@ import UploadType from 'pages/upload-page/components/uploadType'
 import { getStems } from 'pages/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import { make } from 'store/analytics/actions'
-import * as confirmerActions from 'store/confirmer/actions'
-import { confirmTransaction } from 'store/confirmer/sagas'
 import { ERROR_PAGE } from 'utils/route'
 import {
   waitForAccount,
