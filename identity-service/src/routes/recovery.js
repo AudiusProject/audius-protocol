@@ -55,6 +55,10 @@ module.exports = function (app) {
     if (!existingUser) {
       return errorResponseBadRequest('Invalid signature provided, no user found')
     }
+    if (!existingUser.isEmailDeliverable) {
+      req.logger.info(`Unable to deliver recovery email to ${existingUser.handle} ${existingUser.email}`)
+      return successResponse({ msg: 'Recovery email forbidden', status: true })
+    }
 
     const email = existingUser.email
     const recoveryParams = {

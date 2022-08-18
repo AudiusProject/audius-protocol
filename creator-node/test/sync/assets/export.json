@@ -963,17 +963,6 @@
           "localClockMax": 37
         }
       }
-    },
-    "ipfsIDObj": {
-      "id": "Qmbg2iXM4SeMn9CiALonDt9ejFUosEF9rkT38CcCpAVqxs",
-      "publicKey": "CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCuwbUXm0VdPWKFcCftIZsTmoRSpgGhSL/+RtsAys7+SoUzx/1IOqTu0apq1eH9hpjm0s/m92MIiifSohk9vv5OIoxarlQjxAIumG9dxGntquv2X9p3INjTm5gD2Zafl6xnf36EUHi4lyuJtMSOCt2O1nVHOBoTZ5q2oZoQTsO8pI3qZvNZwsFSJzgH3GOBJlVDXTTgNmoMN1INKEWDmsQiTRXfVq+m4l1eOpxthkXg2tlkxxRm3kcOzHuQrGCln3AFnMgom2X1Xcm4eG0zWKLvlOgX88zHYuguf6YTTfqxNHSo33NtflZxZI+CQq0RxvkWKiJKqbpmlK+shJnv9Z3zAgMBAAE=",
-      "addresses": [
-        "/ip4/127.0.0.1/tcp/4001/ipfs/Qmbg2iXM4SeMn9CiALonDt9ejFUosEF9rkT38CcCpAVqxs",
-        "/ip4/172.17.0.2/tcp/4001/ipfs/Qmbg2iXM4SeMn9CiALonDt9ejFUosEF9rkT38CcCpAVqxs",
-        "/ip4/35.238.168.173/tcp/4001/ipfs/Qmbg2iXM4SeMn9CiALonDt9ejFUosEF9rkT38CcCpAVqxs"
-      ],
-      "agentVersion": "go-ipfs/0.4.23/6ce9a35",
-      "protocolVersion": "ipfs/0.1.0"
     }
   },
   "signer": "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25",

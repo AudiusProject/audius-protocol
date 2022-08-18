@@ -4,6 +4,7 @@ import subprocess
 
 from elasticsearch import Elasticsearch
 from integration_tests.utils import populate_mock_db
+from src.queries.get_feed_es import get_feed_es
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -37,16 +38,18 @@ basic_entities = {
     ],
     "reposts": [
         {"repost_item_id": 1, "repost_type": "track", "user_id": 2},
+        {"repost_item_id": 1, "repost_type": "playlist", "user_id": 2},
     ],
     "saves": [
         {"save_item_id": 1, "save_type": "track", "user_id": 2},
+        {"save_item_id": 1, "save_type": "playlist", "user_id": 2},
     ],
 }
 
 
-def test_es_indexer_catchup(app):
+def test_get_feed_es(app):
     """
-    Tests initial catchup.
+    Tests es-indexer catchup + get_feed_es
     """
 
     with app.app_context():
@@ -65,4 +68,12 @@ def test_es_indexer_catchup(app):
     )
     esclient.indices.refresh(index="*")
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
-    assert len(search_res) == 6
+    assert len(search_res) == 8
+
+    # test feed
+    feed_results = get_feed_es({"user_id": "1"})
+    assert feed_results[0]["playlist_id"] == 1
+    assert feed_results[0]["save_count"] == 1
+
+    assert feed_results[1]["track_id"] == 1
+    assert feed_results[0]["save_count"] == 1

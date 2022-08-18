@@ -165,6 +165,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       left join aggregate_user on users.user_id = aggregate_user.user_id
       left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
     WHERE tracks.is_current = true 
+      AND tracks.is_available = true
       AND users.is_current = true
     `
   }

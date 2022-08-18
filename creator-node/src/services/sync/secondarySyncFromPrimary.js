@@ -4,7 +4,10 @@ const axios = require('axios')
 const { logger: genericLogger } = require('../../logging')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
-const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
+const {
+  getOwnEndpoint,
+  getUserReplicaSetEndpointsFromDiscovery
+} = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
@@ -194,7 +197,7 @@ const handleSyncFromPrimary = async ({
       let userReplicaSet = []
       try {
         const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
-        userReplicaSet = await getCreatorNodeEndpoints({
+        userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
           libs,
           logger: genericLogger,
           wallet: fetchedWalletPublicKey,

@@ -39,6 +39,10 @@ module.exports = function (app) {
     if (!existingUser) {
       return errorResponseBadRequest('Invalid signature provided, no user found')
     }
+    if (!existingUser.isEmailDeliverable) {
+      req.logger.info(`Unable to deliver welcome email to ${existingUser.handle} ${existingUser.email}`)
+      return successResponse({ msg: 'Welcome email forbidden', status: true })
+    }
 
     const walletAddress = existingUser.walletAddress
     const htmlTemplate = isNativeMobile ? welcomeTemplate : welcomeDownloadTemplate
