@@ -264,7 +264,14 @@ export enum Name {
   // Social Proof
   SOCIAL_PROOF_OPEN = 'Social Proof: Open',
   SOCIAL_PROOF_SUCCESS = 'Social Proof: Success',
-  SOCIAL_PROOF_ERROR = 'Social Proof: Error'
+  SOCIAL_PROOF_ERROR = 'Social Proof: Error',
+
+  // Buy Audio
+  BUY_AUDIO_ON_RAMP_OPENED = 'Buy Audio: On Ramp Opened',
+  BUY_AUDIO_ON_RAMP_CANCELED = 'Buy Audio: On Ramp Canceled',
+  BUY_AUDIO_ON_RAMP_SUCCESS = 'Buy Audio: On Ramp Success',
+  BUY_AUDIO_SUCCESS = 'Buy Audio: Success',
+  BUY_AUDIO_FAILURE = 'Buy Audio: Failure'
 }
 
 type PageView = {
@@ -1261,6 +1268,37 @@ type AudiusOauthError = {
   error: string
 }
 
+type BuyAudioOnRampOpened = {
+  eventName: Name.BUY_AUDIO_ON_RAMP_OPENED
+  provider: string
+}
+
+type BuyAudioOnRampCanceled = {
+  eventName: Name.BUY_AUDIO_ON_RAMP_CANCELED
+  provider: string
+}
+
+type BuyAudioOnRampSuccess = {
+  eventName: Name.BUY_AUDIO_ON_RAMP_SUCCESS
+  provider: string
+}
+
+type BuyAudioSuccess = {
+  eventName: Name.BUY_AUDIO_SUCCESS
+  provider: string
+  requestedAudio: number
+  actualAudio: number
+  surplusAudio: number
+}
+
+type BuyAudioFailure = {
+  eventName: Name.BUY_AUDIO_FAILURE
+  provider: string
+  requestedAudio: number
+  stage: string
+  error: string
+}
+
 type RewardsClaimStartCognitoFlow = {
   eventName: Name.REWARDS_CLAIM_START_COGNITO_FLOW
   handle: string | null
@@ -1442,5 +1480,10 @@ export type AllTrackingEvents =
   | AudiusOauthComplete
   | AudiusOauthSubmit
   | AudiusOauthError
+  | BuyAudioOnRampOpened
+  | BuyAudioOnRampSuccess
+  | BuyAudioOnRampCanceled
+  | BuyAudioSuccess
+  | BuyAudioFailure
   | RewardsClaimStartCognitoFlow
   | RewardsClaimFinishCognitoFlow
