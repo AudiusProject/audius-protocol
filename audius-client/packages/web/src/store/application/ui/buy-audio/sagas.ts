@@ -1,3 +1,4 @@
+import { Name } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { Jupiter, SwapMode, RouteInfo } from '@jup-ag/core'
 import { u64 } from '@solana/spl-token'
@@ -21,6 +22,7 @@ import {
   fork
 } from 'typed-redux-saga/macro'
 
+import { make } from 'common/store/analytics/actions'
 import {
   JupiterTokenSymbol,
   TOKEN_LISTING_MAP
@@ -47,6 +49,7 @@ import { increaseBalance } from 'common/store/wallet/slice'
 import {
   convertJSBIToAmountObject,
   convertWAudioToWei,
+  formatWei,
   weiToString
 } from 'common/utils/wallet'
 import {
@@ -491,6 +494,13 @@ function* startBuyAudioFlow({
   payload: { desiredAudioAmount, estimatedSOL }
 }: ReturnType<typeof onRampOpened>) {
   try {
+    // Record start
+    yield* put(
+      make(Name.BUY_AUDIO_ON_RAMP_OPENED, {
+        provider: 'coinbase'
+      })
+    )
+
     // Setup
     const rootAccount: Keypair = yield* call(getRootSolanaAccount)
     const connection = yield* call(getSolanaConnection)
@@ -521,8 +531,12 @@ function* startBuyAudioFlow({
 
     // If the user didn't complete the on ramp flow, return early
     if (result.canceled) {
+      yield* put(
+        make(Name.BUY_AUDIO_ON_RAMP_CANCELED, { provider: 'coinbase' })
+      )
       return
     }
+    yield* put(make(Name.BUY_AUDIO_ON_RAMP_SUCCESS, { provider: 'coinbase' }))
 
     // Wait for the SOL funds to come through
     const newBalance = yield* call(pollForSolBalanceChange, {
@@ -627,15 +641,40 @@ function* startBuyAudioFlow({
     yield* put(transferCompleted())
 
     // Update wallet balance optimistically
-    const outputAmount = weiToString(convertWAudioToWei(transferAmount))
+    const outputAmount = convertWAudioToWei(transferAmount)
     yield* put(
       increaseBalance({
-        amount: outputAmount
+        amount: weiToString(outputAmount)
+      })
+    )
+
+    // Record success
+    yield* put(
+      make(Name.BUY_AUDIO_SUCCESS, {
+        provider: 'coinbase',
+        requestedAudio: desiredAudioAmount.uiAmount,
+        actualAudio: parseFloat(formatWei(outputAmount).replaceAll(',', '')),
+        surplusAudio: parseFloat(
+          formatWei(
+            convertWAudioToWei(
+              // eslint-disable-next-line new-cap
+              transferAmount.sub(new u64(desiredAudioAmount.amount))
+            )
+          ).replaceAll(',', '')
+        )
       })
     )
   } catch (e) {
     const stage = yield* select(getBuyAudioFlowStage)
-    console.error('BuyAudioFlow failed at stage', stage, 'with error:', e)
+    console.error('BuyAudio failed at stage', stage, 'with error:', e)
+    yield* put(
+      make(Name.BUY_AUDIO_FAILURE, {
+        provider: 'coinbase',
+        stage,
+        requestedAudio: desiredAudioAmount.uiAmount,
+        error: (e as Error).message
+      })
+    )
   }
 }
 
