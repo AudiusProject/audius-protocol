@@ -37,6 +37,7 @@ import PlayerReducer from 'store/player/slice'
 import PlaylistLibraryReducer from 'store/playlist-library/slice'
 
 import { BackendState } from '../common/store/backend/types'
+import { ConfirmerState } from '../common/store/confirmer/types'
 
 import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
@@ -46,7 +47,6 @@ import { MobileKeyboardState } from './application/ui/mobileKeyboard/types'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { UserListModalState } from './application/ui/userListModal/types'
-import { ConfirmerState } from './confirmer/types'
 import { DragNDropState } from './dragndrop/types'
 
 export type AppState = CommonState & {

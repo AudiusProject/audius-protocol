@@ -5,7 +5,7 @@ import { all, call, put, select, takeEvery } from 'redux-saga/effects'
 import * as cacheActions from 'common/store/cache/actions'
 import { CACHE_PRUNE_MIN } from 'common/store/cache/config'
 import { getCache } from 'common/store/cache/selectors'
-import { getConfirmCalls } from 'store/confirmer/selectors'
+import { getConfirmCalls } from 'common/store/confirmer/selectors'
 
 const DEFAULT_ENTRY_TTL = 5 /* min */ * 60 /* seconds */ * 1000 /* ms */
 

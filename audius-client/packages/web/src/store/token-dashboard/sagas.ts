@@ -23,6 +23,8 @@ import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { upgradeToCreator } from 'common/store/cache/users/sagas'
+import { requestConfirmation } from 'common/store/confirmer/actions'
+import { confirmTransaction } from 'common/store/confirmer/sagas'
 import {
   getSendData,
   getAssociatedWallets
@@ -68,8 +70,6 @@ import {
   loadWalletConnect,
   createSession
 } from 'services/web3-modal'
-import { requestConfirmation } from 'store/confirmer/actions'
-import { confirmTransaction } from 'store/confirmer/sagas'
 import { waitForAccount } from 'utils/sagaHelpers'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'

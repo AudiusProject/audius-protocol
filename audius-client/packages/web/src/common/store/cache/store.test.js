@@ -7,7 +7,7 @@ import * as actions from 'common/store/cache/actions'
 import * as config from 'common/store/cache/config'
 import { asCache, initialCacheState } from 'common/store/cache/reducer'
 import sagas from 'common/store/cache/sagas'
-import { initialState as initialConfirmerState } from 'store/confirmer/reducer'
+import { initialState as initialConfirmerState } from 'common/store/confirmer/reducer'
 import {
   allSagas,
   noopReducer,

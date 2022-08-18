@@ -1,6 +1,8 @@
-import { ID, Status } from '@audius/common'
+import { Nullable, ID, Status } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
+
+type FailureReason = 'ACCOUNT_DEACTIVATED' | 'ACCOUNT_NOT_FOUND' | 'LIBS_ERROR'
 
 const initialState = {
   collections: {} as { [id: number]: AccountCollection },
@@ -9,6 +11,7 @@ const initialState = {
   orderedPlaylists: [] as string[],
   userId: null as number | null,
   status: Status.LOADING,
+  reason: null as Nullable<FailureReason>,
   hasFavoritedItem: false,
   connectivityFailure: false, // Did we fail from no internet connectivity?
   needsAccountRecovery: false
@@ -29,7 +32,7 @@ type FetchAccountSucceededPayload = {
 }
 
 type FetchAccountFailedPayload = {
-  reason: 'ACCOUNT_DEACTIVATED' | 'ACCOUNT_NOT_FOUND' | 'LIBS_ERROR'
+  reason: FailureReason
 }
 
 type RenameAccountPlaylistPayload = {
@@ -92,12 +95,14 @@ const slice = createSlice({
       state.collections = keyBy(collections, 'id')
       state.status = Status.SUCCESS
       state.hasFavoritedItem = hasFavoritedItem
+      state.reason = null
     },
     fetchAccountFailed: (
       state,
-      _action: PayloadAction<FetchAccountFailedPayload>
+      action: PayloadAction<FetchAccountFailedPayload>
     ) => {
       state.status = Status.ERROR
+      state.reason = action.payload.reason
     },
     fetchAccountNoInternet: (state) => {
       state.connectivityFailure = true
