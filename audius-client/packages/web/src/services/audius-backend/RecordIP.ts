@@ -1,14 +1,11 @@
 import { AudiusBackend, AuthHeaders } from 'common/services/audius-backend'
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
-
-// @ts-ignore
-const libs = () => window.audiusLibs
+import { getErrorMessage } from 'common/utils/error'
 
 export const recordIP = async (
   audiusBackendInstance: AudiusBackend
 ): Promise<{ userIP: string } | { error: boolean }> => {
-  await waitForLibsInit()
-  const account = libs().Account.getCurrentUser()
+  const audiusLibs = await audiusBackendInstance.getAudiusLibs()
+  const account = audiusLibs.Account.getCurrentUser()
   if (!account) return { error: true }
 
   try {
@@ -32,7 +29,7 @@ export const recordIP = async (
     }
     return response.json()
   } catch (err) {
-    console.error((err as any).message)
+    console.error(getErrorMessage(err))
     return { error: true }
   }
 }

@@ -13,21 +13,21 @@ import {
   FeedFilter,
   ID,
   IntKeys,
+  Maybe,
   Name,
   Nullable,
   PlaylistTrackId,
   ProfilePictureSizes,
+  RemoteConfigInstance,
   StringKeys,
   Track,
   TrackMetadata,
   User,
   UserMetadata,
   UserTrack,
-  uuid,
-  Maybe,
-  RemoteConfigInstance
+  uuid
 } from '@audius/common'
-import { IdentityAPI, DiscoveryAPI } from '@audius/sdk/dist/core'
+import { DiscoveryAPI, IdentityAPI } from '@audius/sdk/dist/core'
 import type { HedgehogConfig } from '@audius/sdk/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk/dist/utils/localStorage'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
@@ -2971,9 +2971,15 @@ export const audiusBackend = ({
     }
   }
 
+  async function getAudiusLibs() {
+    await waitForLibsInit()
+    return audiusLibs
+  }
+
   return {
     addDiscoveryProviderSelectionListener,
     addPlaylistTrack,
+    audiusLibs,
     associateAudiusUserForAuth,
     associateInstagramAccount,
     associateTwitterAccount,
@@ -3003,6 +3009,7 @@ export const audiusBackend = ({
     getAddressWAudioBalance,
     getAllTracks,
     getArtistTracks,
+    getAudiusLibs,
     getBalance,
     getBrowserPushNotificationSettings,
     getBrowserPushSubscription,
@@ -3095,6 +3102,7 @@ export const audiusBackend = ({
     uploadTrackToCreatorNode,
     userNodeUrl,
     validateTracksInPlaylist,
+    waitForLibsInit,
     waitForWeb3
   }
 }

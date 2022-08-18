@@ -399,6 +399,8 @@ PODS:
     - react-native-config/App (= 1.4.5)
   - react-native-config/App (1.4.5):
     - React-Core
+  - react-native-get-random-values (1.8.0):
+    - React-Core
   - react-native-google-cast (4.2.4):
     - React
     - react-native-google-cast/NoBluetooth (= 4.2.4)
@@ -599,6 +601,7 @@ DEPENDENCIES:
   - react-native-android-navbar-height (from `../node_modules/react-native-android-navbar-height`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-config (from `../node_modules/react-native-config`)
+  - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-google-cast (from `../node_modules/react-native-google-cast/ios`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-music-control (from `../node_modules/react-native-music-control`)
@@ -727,6 +730,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/blur"
   react-native-config:
     :path: "../node_modules/react-native-config"
+  react-native-get-random-values:
+    :path: "../node_modules/react-native-get-random-values"
   react-native-google-cast:
     :path: "../node_modules/react-native-google-cast/ios"
   react-native-image-picker:
@@ -868,6 +873,7 @@ SPEC CHECKSUMS:
   react-native-android-navbar-height: f975207ac8c2a5cfa885a01447851bf3b491c951
   react-native-blur: cad4d93b364f91e7b7931b3fa935455487e5c33c
   react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
+  react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-google-cast: 553c31d49840e2f357fde9a3dd0977fbe28d79ba
   react-native-image-picker: ae1202414bd5c37c00b2a701daa5b6194a06b7d9
   react-native-music-control: 0eef94942456152af21316afd53923e1dd6360b0
