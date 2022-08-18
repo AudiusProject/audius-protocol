@@ -230,7 +230,7 @@ export class SolanaWeb3Manager {
       this.audiusDataAdminStorageKeypairPublicKey &&
       this.audiusDataIdl
     ) {
-      const connection = new solanaWeb3.Connection(
+      const connection = new Connection(
         this.solanaClusterEndpoint,
         anchor.AnchorProvider.defaultOptions()
       )
