@@ -169,7 +169,10 @@ const slice = createSlice({
       state,
       action: PayloadAction<InstagramAccountPayload>
     ) => {},
-    showPushNotificationConfirmation: () => {}
+    showPushNotificationConfirmation: () => {},
+    resetAccount: () => {
+      return initialState
+    }
   }
 })
 
@@ -195,7 +198,8 @@ export const {
   unsubscribeBrowserPushNotifications,
   instagramLogin,
   twitterLogin,
-  showPushNotificationConfirmation
+  showPushNotificationConfirmation,
+  resetAccount
 } = slice.actions
 
 export default slice

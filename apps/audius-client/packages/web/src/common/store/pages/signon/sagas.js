@@ -395,8 +395,11 @@ function* signUp() {
 
         yield put(signOnActions.signUpSucceededWithId(userId))
 
-        // Set the has request browser permission to true as the signon provider will open it
-        setHasRequestedBrowserPermission()
+        const isNativeMobile = yield getContext('isNativeMobile')
+        if (!isNativeMobile) {
+          // Set the has request browser permission to true as the signon provider will open it
+          setHasRequestedBrowserPermission()
+        }
 
         yield call(waitForRemoteConfig)
 
@@ -489,8 +492,11 @@ function* signIn(action) {
       // Reset the sign on in the background after page load as to relieve the UI loading
       yield delay(1000)
       yield put(signOnActions.resetSignOn())
-      setHasRequestedBrowserPermission()
-      yield put(accountActions.showPushNotificationConfirmation())
+      const isNativeMobile = yield getContext('isNativeMobile')
+      if (!isNativeMobile) {
+        setHasRequestedBrowserPermission()
+        yield put(accountActions.showPushNotificationConfirmation())
+      }
     } else if (
       !signInResponse.error &&
       signInResponse.user &&

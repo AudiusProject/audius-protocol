@@ -2,7 +2,13 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import * as signOnActions from 'audius-client/src/common/store/pages/signon/actions'
+import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
+import * as signOnActions from 'common/store/pages/signon/actions'
+import {
+  getPasswordField,
+  getEmailField,
+  getStatus
+} from 'common/store/pages/signon/selectors'
 import querystring from 'query-string'
 import {
   Animated,
@@ -36,14 +42,8 @@ import { MessageType } from 'app/message/types'
 import { track, make } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
-import { getIsSignedIn, getDappLoaded } from 'app/store/lifecycle/selectors'
+import { getDappLoaded, getIsSignedIn } from 'app/store/lifecycle/selectors'
 import * as signOnActionsLegacy from 'app/store/signon/actions'
-import {
-  getEmailIsAvailable,
-  getEmailIsValid,
-  getEmailStatus,
-  getIsSigninError
-} from 'app/store/signon/selectors'
 import { EventNames } from 'app/types/analytics'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -336,13 +336,25 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const [showEmptyPasswordError, setShowEmptyPasswordError] = useState(false)
   const [showDefaultError, setShowDefaultError] = useState(false)
 
-  const isSigninError = useSelector(getIsSigninError)
-  const dappLoaded = useSelector(getDappLoaded)
-  const signedIn = useSelector(getIsSignedIn)
-  const emailIsAvailable = useSelector(getEmailIsAvailable)
-  const emailIsValid = useSelector(getEmailIsValid)
-  const emailStatus = useSelector(getEmailStatus)
   const isKeyboardOpen = useSelector(getIsKeyboardOpen)
+
+  // TODO: Remove when fully on react native store
+  const dappLoaded = useSelector(getDappLoaded)
+  const lifecycleSignIn = useSelector(getIsSignedIn)
+
+  const signOnStatus = useSelector(getStatus)
+  const passwordFieldValue: { error: string } = useSelector(getPasswordField)
+  const emailFieldValue: {
+    error: '' | 'inUse' | 'characters'
+    status: 'success' | 'failure'
+  } = useSelector(getEmailField)
+  const accountUser = useSelector(getAccountUser)
+
+  const signedIn = signOnStatus === 'success'
+  const isSigninError = passwordFieldValue.error
+  const emailIsAvailable = emailFieldValue.error !== 'inUse'
+  const emailIsValid = emailFieldValue.error !== 'characters'
+  const emailStatus = emailFieldValue.status
 
   const topDrawer = useRef(new Animated.Value(-800)).current
   const animateDrawer = useCallback(() => {
@@ -380,14 +392,14 @@ const SignOn = ({ navigation }: SignOnProps) => {
   }, [isSigninError, isWorking])
 
   useEffect(() => {
-    if (signedIn) {
+    if (signedIn && accountUser && lifecycleSignIn) {
       setIsWorking(false)
       setEmail('')
       setPassword('')
 
       remindUserToTurnOnNotifications(dispatch)
     }
-  }, [signedIn, dispatch])
+  }, [signedIn, accountUser, lifecycleSignIn, dispatch])
 
   useEffect(() => {
     if (dappLoaded) {
@@ -637,7 +649,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
                   // in case email is what was wrong with the credentials
                   setShowDefaultError(true)
                 }
-              } else if (emailIsAvailable && emailStatus === 'done') {
+              } else if (emailIsAvailable && emailStatus === 'success') {
                 dispatch(signOnActionsLegacy.signinFailedReset())
                 setIsWorking(false)
                 navigation.replace('CreatePassword', { email })

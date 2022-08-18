@@ -67,7 +67,7 @@ const createRootReducer = () =>
 
 const sagaMiddleware = createSagaMiddleware({ context: storeContext })
 const middlewares = applyMiddleware(sagaMiddleware)
-const composeEnhancers = composeWithDevTools({ trace: true, traceLimit: 25 })
+const composeEnhancers = composeWithDevTools({ trace: true, traceLimit: 250 })
 export const store = createStore(
   createRootReducer(),
   composeEnhancers(middlewares)
