@@ -527,14 +527,15 @@ const _issueUpdateReplicaSetOp = async (
         [secondary2]: oldSecondary2SpId
       } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
 
-      const canReconfig = await _canReconfig({
-        libs: audiusLibs,
-        oldPrimarySpId,
-        oldSecondary1SpId,
-        oldSecondary2SpId,
-        userId,
-        logger
-      })
+      const { canReconfig, currentPrimarySpId, currentSecondarySpIds } =
+        await _canReconfig({
+          libs: audiusLibs,
+          oldPrimarySpId,
+          oldSecondary1SpId,
+          oldSecondary2SpId,
+          userId,
+          logger
+        })
 
       if (!canReconfig) {
         logger.info(
@@ -547,8 +548,12 @@ const _issueUpdateReplicaSetOp = async (
         userId,
         newReplicaSetSPIds[0], // new primary
         newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
-        oldPrimarySpId,
-        [oldSecondary1SpId, oldSecondary2SpId]
+        // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+        oldPrimarySpId || currentPrimarySpId,
+        [
+          oldSecondary1SpId || currentSecondarySpIds?.[0],
+          oldSecondary2SpId || currentSecondarySpIds?.[1]
+        ]
       )
 
       response.issuedReconfig = true
@@ -632,6 +637,11 @@ type CanReconfigParams = {
   userId: number
   logger: Logger
 }
+type CanReconfigReturnValue = {
+  canReconfig: boolean
+  currentPrimarySpId?: number
+  currentSecondarySpIds?: number[]
+}
 const _canReconfig = async ({
   libs,
   oldPrimarySpId,
@@ -639,7 +649,7 @@ const _canReconfig = async ({
   oldSecondary2SpId,
   userId,
   logger
-}: CanReconfigParams): Promise<boolean> => {
+}: CanReconfigParams): Promise<CanReconfigReturnValue> => {
   try {
     const {
       primaryId: currentPrimarySpId,
@@ -661,14 +671,22 @@ const _canReconfig = async ({
     // Reconfig is necessary if endpoint doesn't exist in mapping because this means the node was deregistered
     const isAnyNodeInReplicaSetDeregistered =
       !oldPrimarySpId || !oldSecondary1SpId || !oldSecondary2SpId
-    if (isAnyNodeInReplicaSetDeregistered) return true
+    if (isAnyNodeInReplicaSetDeregistered) {
+      return {
+        canReconfig: true,
+        currentPrimarySpId,
+        currentSecondarySpIds
+      }
+    }
 
     // Reconfig should only happen when the replica set that triggered the reconfig matches the chain
     const isReplicaSetCurrent =
       currentPrimarySpId === oldPrimarySpId &&
       currentSecondarySpIds[0] === oldSecondary1SpId &&
       currentSecondarySpIds[1] === oldSecondary2SpId
-    return isReplicaSetCurrent
+    return {
+      canReconfig: isReplicaSetCurrent
+    }
   } catch (e: any) {
     logger.error(
       `[_issueUpdateReplicaSetOp] error in _canReconfig. : ${e.message}`
@@ -677,7 +695,9 @@ const _canReconfig = async ({
 
   // If any error occurs in determining if a reconfig event can happen, default to issuing
   // a reconfig event anyway just to prevent users from keeping an unhealthy replica set
-  return true
+  return {
+    canReconfig: true
+  }
 }
 
 module.exports = updateReplicaSetJobProcessor
