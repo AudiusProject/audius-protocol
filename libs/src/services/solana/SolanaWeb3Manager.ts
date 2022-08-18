@@ -1,5 +1,4 @@
-import * as solanaWeb3 from '@solana/web3.js'
-import { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
 import anchor, { Address, Idl, Program, Wallet } from '@project-serum/anchor'

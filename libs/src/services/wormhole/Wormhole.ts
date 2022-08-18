@@ -1,5 +1,4 @@
 import type { Hedgehog } from '@audius/hedgehog'
-import { Keypair } from '@solana/web3.js'
 import type { EthContracts } from '../ethContracts'
 import type { ContractReceipt } from 'ethers'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
@@ -270,9 +269,10 @@ export class Wormhole {
       const wAudioAmount = wAudioFromWeiAudio(amount)
       // Generate a solana keypair derived from the hedgehog private key
       // NOTE: The into to fromSeed is a 32 bytes Uint8Array
-      const rootSolanaAccount = Keypair.fromSeed(
-        this.hedgehog.wallet?.getPrivateKey() as Uint8Array
-      )
+      const rootSolanaAccount =
+        this.solanaWeb3Manager.solanaWeb3.Keypair.fromSeed(
+          this.hedgehog.wallet?.getPrivateKey() as Uint8Array
+        )
 
       const solanaAddress = rootSolanaAccount.publicKey.toString()
       logs.push(`Root Solana Account: ${solanaAddress}`)
