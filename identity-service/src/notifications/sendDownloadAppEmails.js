@@ -39,13 +39,18 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
     }).map(x => x.walletAddress)
 
     const emailUsers = await models.User.findAll({
-      attributes: ['walletAddress', 'email'],
+      attributes: ['handle', 'walletAddress', 'email', 'isEmailDeliverable'],
       where: { walletAddress: emailUsersWalletAddress }
     })
 
     logger.info(`processDownloadAppEmail - ${emailUsers.length} 2 day old users who have not signed in mobile`)
 
     for (let userToEmail of emailUsers) {
+      if (!existingUser.isEmailDeliverable) {
+        logger.info(`Unable to deliver download app email to ${userToEmail.handle} ${userToEmail.email}`)
+        continue
+      }
+
       let userEmail = userToEmail.email
 
       let sent = await renderAndSendDownloadAppEmail(
