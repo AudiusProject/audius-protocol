@@ -1,0 +1,92 @@
+[
+  {
+    "annotations": {
+      "__alertId__": "YCgu57m4z_017_Notification",
+      "__dashboardUid__": "YCgu57m4z",
+      "__panelId__": "17",
+      "description": "\n\nWe ignore any previous one-off proposers to keep this metric at 0. Anything greater than 0 should be considered to be created by an attacker.",
+      "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=17",
+      "summary": "The number of proposals opened by unknown proposers.\n\n"
+    },
+    "condition": "B",
+    "data": [
+      {
+        "datasourceUid": "r2_nnDL7z",
+        "model": {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "expr": "audius_exporters_sdk_proposals_by_unknown_proposers",
+          "hide": false,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        },
+        "queryType": "",
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        }
+      },
+      {
+        "datasourceUid": "-100",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  null,
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "or"
+              },
+              "query": {
+                "params": [
+                  "A"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "hide": false,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "B",
+          "type": "classic_conditions"
+        },
+        "queryType": "",
+        "refId": "B",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        }
+      }
+    ],
+    "execErrState": "Alerting",
+    "folderUID": "ARwYXYzVk",
+    "for": "0",
+    "id": 220174,
+    "labels": {
+      "channel": "notification"
+    },
+    "noDataState": "OK",
+    "orgID": 1,
+    "ruleGroup": "group",
+    "title": "Proposals by Unknown Proposers (Notification)",
+    "uid": "YCgu57m4z_017_Notification"
+  }
+]

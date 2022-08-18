@@ -23,7 +23,7 @@ CLEAR_ITERATION='del(.iteration)'
 # CLEAR VERSION TO AVOID CONFLICTS
 # reset .versions to null
 CLEAR_VERSION='.version = null'
-CLEAR_DASHBOARD_ID='.id = null'
+: "${CLEAR_DASHBOARD_ID:=.id = null}"
 
 # CLEAR PROMETHEUS UID
 # clears prometheus uid since each deployment is unique

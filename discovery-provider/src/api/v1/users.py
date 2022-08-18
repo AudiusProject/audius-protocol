@@ -20,6 +20,8 @@ from src.api.v1.helpers import (
     format_limit,
     format_offset,
     format_query,
+    format_sort_direction,
+    format_sort_method,
     get_current_user_id,
     get_default_max,
     make_full_response,
@@ -61,7 +63,7 @@ from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
-from src.queries.get_save_tracks import get_save_tracks
+from src.queries.get_save_tracks import GetSaveTracksArgs, get_save_tracks
 from src.queries.get_saves import get_saves
 from src.queries.get_support_for_user import (
     get_support_received_by_user,
@@ -70,7 +72,7 @@ from src.queries.get_support_for_user import (
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
-from src.queries.get_tracks import get_tracks
+from src.queries.get_tracks import GetTrackArgs, get_tracks
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
@@ -221,22 +223,30 @@ class TrackList(Resource):
 
         current_user_id = get_current_user_id(args)
 
-        sort = args.get("sort", None)
+        sort = args.get("sort", None)  # Deprecated
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
 
-        args = {
-            "user_id": decoded_id,
-            "authed_user_id": authed_user_id,
-            "current_user_id": current_user_id,
-            "with_users": True,
-            "filter_deleted": True,
-            "sort": sort,
-            "limit": limit,
-            "offset": offset,
-            "query": query,
-        }
+        args = GetTrackArgs(
+            user_id=decoded_id,
+            authed_user_id=authed_user_id,
+            current_user_id=current_user_id,
+            filter_deleted=True,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+            query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+            # Unused
+            handle=None,
+            id=None,
+            min_block_number=None,
+            routes=None,
+        )
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
@@ -268,22 +278,33 @@ class FullTrackList(Resource):
 
         current_user_id = get_current_user_id(args)
 
-        sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
 
-        args = {
-            "user_id": decoded_id,
-            "current_user_id": current_user_id,
-            "authed_user_id": authed_user_id,
-            "with_users": True,
-            "filter_deleted": True,
-            "sort": sort,
-            "limit": limit,
-            "offset": offset,
-            "query": query,
-        }
+        sort = args.get("sort", None)  # Deprecated
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
+        if sort_method:
+            sort = None
+
+        args = GetTrackArgs(
+            user_id=decoded_id,
+            authed_user_id=authed_user_id,
+            current_user_id=current_user_id,
+            filter_deleted=True,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+            query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+            # Unused
+            handle=None,
+            id=None,
+            min_block_number=None,
+            routes=None,
+        )
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
@@ -570,14 +591,18 @@ class UserFavoritedTracksFull(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
-        get_tracks_args = {
-            "filter_deleted": False,
-            "user_id": decoded_id,
-            "current_user_id": current_user_id,
-            "limit": limit,
-            "offset": offset,
-            "query": query,
-        }
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
+        get_tracks_args = GetSaveTracksArgs(
+            filter_deleted=False,
+            user_id=decoded_id,
+            current_user_id=current_user_id,
+            limit=limit,
+            offset=offset,
+            query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+        )
         track_saves = get_save_tracks(get_tracks_args)
         tracks = list(map(extend_activity, track_saves))
         return success_response(tracks)
@@ -615,12 +640,16 @@ class TrackHistoryFull(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
         get_tracks_args = GetUserListeningHistoryArgs(
             user_id=decoded_id,
             current_user_id=current_user_id,
             limit=limit,
             offset=offset,
             query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
         )
         track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
