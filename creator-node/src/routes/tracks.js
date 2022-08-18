@@ -37,6 +37,7 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
+const { Utils } = require('@audius/sdk')
 
 const readFile = promisify(fs.readFile)
 
@@ -306,6 +307,43 @@ router.post(
   })
 )
 
+// In total, will try for 60 seconds.
+const DEEFAULT_MAX_RETRIES = 60
+const DEFAULT_RETRY_TIMEOUT = 1000 // 1 seconds
+
+const validateTrackOwner = async ({
+  libs,
+  logger,
+  trackId,
+  userId,
+  blockNumber,
+  maxRetries = DEEFAULT_MAX_RETRIES,
+  retryTimeout = DEFAULT_RETRY_TIMEOUT
+}) => {
+  const stateDate = Date.now()
+  for (let retry = 1; retry <= maxRetries; retry++) {
+    try {
+      const discoveryTrackResponse = await libs.Track.getTracks(1, 0, [trackId])
+
+      if (
+        !Array.isArray(discoveryTrackResponse) ||
+        discoveryTrackResponse.length === 0 ||
+        !discoveryTrackResponse[0].hasOwnProperty('blocknumber')
+      ) {
+        throw new Error('Missing or malformatted track fetched from discprov.')
+      }
+      const track = discoveryTrackResponse[0]
+      if (track.blocknumber >= blockNumber) {
+        return parseInt(userId) === track.owner_id
+      }
+    } catch (e) {
+      // Ignore all errors until MaxRetries exceeded.
+      logger.info(e)
+    }
+    await new Promise((resolve) => setTimeout(resolve, retryTimeout))
+  }
+}
+
 /**
  * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
  * and associates segment & image file entries with track. Ends track creation/update process.
@@ -421,19 +459,18 @@ router.post(
           throw new Error('Cannot create track without transcodedTrackUUID.')
         }
 
-        // Verify that blockchain track id is owned by user attempting to upload it
-        const serviceRegistry = req.app.get('serviceRegistry')
-        const { libs } = serviceRegistry
-        const trackResp = await libs.contracts.TrackFactoryClient.getTrack(
-          blockchainTrackId
-        )
-        if (
-          !trackResp?.trackOwnerId ||
-          parseInt(trackResp.trackOwnerId, 10) !==
-            parseInt(req.session.userId, 10)
-        ) {
+        // Verify that track id is owned by user attempting to upload it
+        const libs = req.app.get('audiusLibs')
+        const isValidTrackOwner = await validateTrackOwner({
+          libs,
+          trackId: blockchainTrackId,
+          userId: req.session.userId,
+          logger: req.logger,
+          blockNumber
+        })
+        if (!isValidTrackOwner) {
           throw new Error(
-            `Owner ID ${trackResp.trackOwnerId} of blockchainTrackId ${blockchainTrackId} does not match the ID of the user attempting to write this track: ${req.session.userId}`
+            `Owner ID of track ${blockchainTrackId} does not match ${req.session.userId}`
           )
         }
 
