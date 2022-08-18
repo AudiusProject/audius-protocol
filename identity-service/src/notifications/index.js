@@ -116,7 +116,7 @@ class NotificationProcessor {
     await this.emailQueue.empty()
     await this.downloadEmailQueue.empty()
     this.redis = redis
-    this.mg = expressApp.get('mailgun')
+    this.mg = expressApp.get('sendgrid')
 
     // Index all blockchain ids
     this.idUpdateTask = updateBlockchainIds()

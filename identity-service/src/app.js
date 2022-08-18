@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const mailgun = require('mailgun-js')
+const sgMail = require('@sendgrid/mail')
 const { redisClient, Lock } = require('./redis')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
 const Sentry = require('@sentry/node')
@@ -40,7 +40,7 @@ class App {
     this.express = express()
     this.redisClient = redisClient
     this.configureSentry()
-    this.configureMailgun()
+    this.configureSendGrid()
 
     this.optimizelyPromise = null
     this.optimizelyClientInstance = this.configureOptimizely()
@@ -168,13 +168,12 @@ class App {
     }
   }
 
-  configureMailgun () {
-    // Configure mailgun instance
-    let mg = null
-    if (config.get('mailgunApiKey')) {
-      mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
+  configureSendGrid () {
+    // Configure sendgrid instance
+    if (config.get('sendgridApiKey')) {
+      sgMail.setApiKey(config.get('sendgridApiKey'))
     }
-    this.express.set('mailgun', mg)
+    this.express.set('sendgrid', config.get('sendgridApiKey') ? sgMail : null)
   }
 
   configureSentry () {

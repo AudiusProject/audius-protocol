@@ -146,13 +146,11 @@ describe('Test Send Notification Emails', function () {
           case 'announcements': {
             return []
           }
-          case 'mailgun': {
+          case 'sendgrid': {
             return {
-              messages: () => ({
-                send: (_, cb) => {
-                  cb(new Error('failed to send email'), null)
-                }
-              })
+              send: async (_) => {
+                throw new Error('failed to send email')
+              }
             }
           }
           default:

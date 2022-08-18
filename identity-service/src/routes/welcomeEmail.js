@@ -20,11 +20,11 @@ module.exports = function (app) {
    * Send the welcome email information to the requested account
    */
   app.post('/email/welcome', authMiddleware, handleResponse(async (req, res, next) => {
-    let mg = req.app.get('mailgun')
-    if (!mg) {
-      req.logger.error('Missing api key')
+    let sg = req.app.get('sendgrid')
+    if (!sg) {
+      req.logger.error('Missing sendgrid api key')
       // Short-circuit if no api key provided, but do not error
-      return successResponse({ msg: 'No mailgun API Key found', status: true })
+      return successResponse({ msg: 'No sendgrid API Key found', status: true })
     }
 
     let { name, isNativeMobile = false } = req.body
@@ -55,19 +55,12 @@ module.exports = function (app) {
     const emailParams = {
       from: 'The Audius Team <team@audius.co>',
       to: existingUser.email,
-      bcc: 'forrest@audius.co',
+      bcc: ['forrest@audius.co'],
       subject: 'The Automated Welcome Email',
       html: welcomeHtml
     }
     try {
-      await new Promise((resolve, reject) => {
-        mg.messages().send(emailParams, (error, body) => {
-          if (error) {
-            reject(error)
-          }
-          resolve(body)
-        })
-      })
+      await sg.send(emailParams)
       if (isNativeMobile) {
         await models.UserEvents.upsert({
           walletAddress,
