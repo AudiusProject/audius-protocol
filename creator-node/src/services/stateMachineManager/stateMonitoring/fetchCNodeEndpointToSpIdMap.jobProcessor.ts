@@ -12,8 +12,9 @@ import initAudiusLibs from '../../initAudiusLibs'
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
 import {
   currentSpanContext,
-  getActiveSpan,
-  instrumentTracing
+  instrumentTracing,
+  info,
+  recordException
 } from '../../../utils/tracing'
 
 /**
@@ -28,10 +29,9 @@ const fetchCNodeEndpointToSpIdMap = async ({
 }: DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>): Promise<
   DecoratedJobReturnValue<FetchCNodeEndpointToSpIdMapJobReturnValue>
 > => {
-  const span = getActiveSpan()
   let errorMsg = ''
   try {
-    span?.addEvent('init AudiusLibs')
+    info('init AudiusLibs')
     const audiusLibs = await initAudiusLibs({
       enableEthContracts: true,
       enableContracts: false,
@@ -43,8 +43,7 @@ const fetchCNodeEndpointToSpIdMap = async ({
       audiusLibs.ethContracts
     )
   } catch (e: any) {
-    span?.recordException(e)
-    span?.setStatus({ code: SpanStatusCode.ERROR })
+    recordException(e)
     errorMsg = e.message || e.toString()
     logger.error(`updateEndpointToSpIdMap Error: ${errorMsg}`)
   }

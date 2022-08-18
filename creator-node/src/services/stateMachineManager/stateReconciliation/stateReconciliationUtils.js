@@ -10,7 +10,6 @@ const {
   HEALTHY_SERVICES_TTL_SEC
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-const { SpanStatusCode } = require('@opentelemetry/api')
 const {
   instrumentTracing,
   currentSpanContext,

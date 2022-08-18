@@ -12,7 +12,6 @@ import type {
   UpdateReplicaSetJobParams,
   UpdateReplicaSetJobReturnValue
 } from './types'
-import type { SpanContext } from '@opentelemetry/api'
 
 import _ = require('lodash')
 
@@ -29,7 +28,6 @@ import initAudiusLibs from '../../initAudiusLibs'
 
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import {
-  getActiveSpan,
   instrumentTracing,
   recordException,
   info,
@@ -477,8 +475,6 @@ const _issueUpdateReplicaSetOp = async (
   audiusLibs: any,
   logger: Logger
 ): Promise<IssueUpdateReplicaSetResult> => {
-  const span = getActiveSpan()
-
   const response: IssueUpdateReplicaSetResult = {
     errorMsg: '',
     issuedReconfig: false,
@@ -541,7 +537,7 @@ const _issueUpdateReplicaSetOp = async (
     const startTimeMs = Date.now()
     try {
       if (!audiusLibs) {
-        span?.addEvent('init libs')
+        info('init libs')
         audiusLibs = await initAudiusLibs({
           enableEthContracts: false,
           enableContracts: true,

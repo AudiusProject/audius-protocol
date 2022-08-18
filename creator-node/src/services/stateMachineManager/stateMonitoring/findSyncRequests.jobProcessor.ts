@@ -8,7 +8,6 @@ import type {
   UserSecondarySyncMetrics
 } from './types'
 import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
-import type { SpanContext } from '@opentelemetry/api'
 
 import _ = require('lodash')
 
@@ -22,8 +21,8 @@ import { getNewOrExistingSyncReq } from '../stateReconciliation/stateReconciliat
 import { computeSyncModeForUserAndReplica } from './stateMonitoringUtils'
 import {
   currentSpanContext,
-  getActiveSpan,
-  instrumentTracing
+  instrumentTracing,
+  recordException
 } from '../../../utils/tracing'
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
 
@@ -181,8 +180,6 @@ async function _findSyncsForUser(
   minFailedSyncRequestsBeforeReconfig: number,
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
 ): Promise<FindSyncsForUserResult> {
-  const span = getActiveSpan()
-
   const {
     wallet,
     primary,
@@ -270,7 +267,7 @@ async function _findSyncsForUser(
         secondaryFilesHash
       })
     } catch (e: any) {
-      span?.recordException(e)
+      recordException(e)
       outcomesBySecondary[secondary].result =
         'no_sync_error_computing_sync_mode'
       errors.push(
@@ -305,7 +302,7 @@ async function _findSyncsForUser(
           result = 'new_sync_request_unable_to_enqueue'
         }
       } catch (e: any) {
-        span?.recordException(e)
+        recordException(e)
         result = 'no_sync_unexpected_error'
         errors.push(
           `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary} - ${e.message}`

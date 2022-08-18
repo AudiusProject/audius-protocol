@@ -20,7 +20,7 @@ const BlacklistManager = require('./blacklistManager')
 const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
-const { instrumentTracing, getActiveSpan } = require('./utils/tracing')
+const { instrumentTracing, getActiveSpan, error, recordException } = require('./utils/tracing')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -266,7 +266,6 @@ async function _issueAndWaitForSecondarySyncRequests(
   req,
   ignoreWriteQuorum = false
 ) {
-  const span = getActiveSpan()
   const route = req.url.split('?')[0]
   const serviceRegistry = req.app.get('serviceRegistry')
   const { manualSyncQueue, prometheusRegistry } = serviceRegistry
@@ -309,7 +308,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       'manualSyncsDisabled'
     )})`
     req.logger.error(errorMsg)
-    span?.addEvent(errorMsg)
+    error(errorMsg)
     if (enforceWriteQuorum) {
       throw new Error(errorMsg)
     }
@@ -325,7 +324,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       route,
       result: 'failed_short_circuit'
     })
-    span?.addEvent(errorMsg)
+    error(errorMsg)
     req.logger.error(errorMsg)
     if (enforceWriteQuorum) {
       throw new Error(errorMsg)
@@ -349,7 +348,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       const errorMsg =
         'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
 
-      span?.addEvent(errorMsg)
+      error(errorMsg)
       req.logger.error(errorMsg)
       if (enforceWriteQuorum) {
         throw new Error(errorMsg)
@@ -419,8 +418,7 @@ async function _issueAndWaitForSecondarySyncRequests(
         result: 'succeeded'
       })
     } catch (e) {
-      span?.recordException(e)
-      span?.setStatus({ code: SpanStatusCode.ERROR })
+      recordException(e)
       endHistogramTimer({
         enforceWriteQuorum: String(enforceWriteQuorum),
         ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -430,7 +428,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
         Date.now() - replicationStart
       }ms`
-      span?.addEvent(errorMsg)
+      error(errorMsg)
       req.logger.error(`${errorMsg}: ${e.message}`)
 
       // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
@@ -442,8 +440,7 @@ async function _issueAndWaitForSecondarySyncRequests(
 
     // If any error during replication, error if quorum is enforced
   } catch (e) {
-    span?.recordException(e)
-    span?.setStatus({ code: SpanStatusCode.ERROR })
+    recordException(e)
     endHistogramTimer({
       enforceWriteQuorum: String(enforceWriteQuorum),
       ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -455,7 +452,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       e.message
     )
     if (enforceWriteQuorum) {
-      span?.addEvent(
+      error(
         `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
       )
       throw new Error(

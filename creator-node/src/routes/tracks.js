@@ -41,7 +41,8 @@ const TranscodingQueue = require('../TranscodingQueue')
 const {
   instrumentTracing,
   getActiveSpan,
-  currentSpanContext
+  currentSpanContext,
+  info
 } = require('../utils/tracing')
 
 const readFile = promisify(fs.readFile)
@@ -65,7 +66,7 @@ const handleTrackContentAsync = async (req, res) => {
   })
 
   if (selfTranscode) {
-    span?.addEvent('adding track content upload task')
+    info('adding track content upload task')
     await AsyncProcessingQueue.addTrackContentUploadTask({
       parentSpanContext: currentSpanContext(),
       logContext: req.logContext,
@@ -77,7 +78,7 @@ const handleTrackContentAsync = async (req, res) => {
       }
     })
   } else {
-    span?.addEvent('adding trancode hand off task')
+    info('adding trancode hand off task')
     await AsyncProcessingQueue.addTranscodeHandOffTask({
       parentSpanContext: currentSpanContext(),
       logContext: req.logContext,
