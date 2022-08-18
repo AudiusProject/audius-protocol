@@ -11,10 +11,12 @@ import {
   User,
   UserResolvers,
   QueryResolvers,
+  FeedItem,
 } from './generated/graphql'
 import { UserRow, TrackRow } from '../src/types/db'
 import { PlaylistDoc, RepostDoc, TrackDoc, UserDoc } from '../src/types/docs'
 import { typeDefs } from './schema'
+import { SearchResponse } from '@elastic/elasticsearch/lib/api/types'
 
 //
 // DataLoaders
@@ -228,53 +230,136 @@ const queryResolvers: QueryResolvers<Ctx> = {
     const me = await ctx.me
     if (!me) throw new Error(`feed requires current user`)
 
-    const repostBuilder = bodybuilder()
-      .filter('range', 'created_at', { gte: 'now-90d' })
-      .filter('term', 'is_delete', false)
-      .filter('terms', 'user_id', {
-        index: indexNames.users,
-        id: me.user_id.toString(),
-        path: 'following_ids',
-      })
-      // .filter('term', 'repost_type', 'playlist')
-      .size(0)
-      .agg('terms', 'item_key', { size: 100 }, 'by_id', (a) => {
-        return a.agg('min', 'created_at', 'by_date')
-      })
+    const loadReposts = args.reposts
+    const loadOrig = args.original
+    const mdsl = []
 
-    const found = await esc.search({
-      index: indexNames.reposts,
-      ...repostBuilder.build(),
-    })
-
-    type FirstRepost = {
-      key: string
-      ts: number
+    if (loadReposts) {
+      mdsl.push({ index: indexNames.reposts })
+      mdsl.push(
+        bodybuilder()
+          .filter('range', 'created_at', { gte: 'now-90d' })
+          .filter('term', 'is_delete', false)
+          .filter('terms', 'user_id', {
+            index: indexNames.users,
+            id: me.user_id.toString(),
+            path: 'following_ids',
+          })
+          .size(0)
+          .agg('terms', 'item_key', { size: 100 }, 'by_id', (a) => {
+            return a.agg('min', 'created_at', 'by_date')
+          })
+          .build()
+      )
     }
 
-    // @ts-ignore
-    const repostBuckets: FirstRepost[] = found.aggregations!.by_id.buckets.map(
-      (b: any) => {
-        return {
-          key: b.key,
-          ts: b.by_date.value_as_string,
-        }
+    if (loadOrig) {
+      mdsl.push({ index: indexNames.tracks })
+      mdsl.push(
+        bodybuilder()
+          .filter('terms', 'owner_id', {
+            index: indexNames.users,
+            id: me.user_id.toString(),
+            path: 'following_ids',
+          })
+          .filter('term', 'is_unlisted', false)
+          .filter('term', 'is_delete', false)
+          .sort('created_at', 'desc')
+          .size(args.limit)
+          .build()
+      )
+
+      mdsl.push({ index: indexNames.playlists })
+      mdsl.push(
+        bodybuilder()
+          .filter('terms', 'playlist_owner_id', {
+            index: indexNames.users,
+            id: me.user_id.toString(),
+            path: 'following_ids',
+          })
+          .filter('term', 'is_private', false)
+          .filter('term', 'is_delete', false)
+          .sort('created_at', 'desc')
+          .size(args.limit)
+          .build()
+      )
+    }
+
+    // user wants nothing I guess
+    if (!mdsl.length) return []
+
+    const mfound = await esc.msearch({
+      searches: mdsl,
+    })
+
+    const sortedFeed: FeedItem[] = []
+    const seenItemKeys = new Set<string>()
+
+    if (loadReposts) {
+      const found = mfound.responses.shift() as SearchResponse
+
+      type FirstRepost = {
+        key: string
+        ts: string
       }
+
+      const repostBuckets: FirstRepost[] =
+        // @ts-ignore
+        found.aggregations!.by_id.buckets.map((b: any) => {
+          return {
+            key: b.key,
+            ts: b.by_date.value_as_string,
+          }
+        })
+
+      repostBuckets.sort((a, b) => (a.ts > b.ts ? -1 : 1))
+
+      const ops = repostBuckets.slice(0, args.limit).map((r) => {
+        const [kind, _id] = r.key.split(':')
+        const _index =
+          kind == 'track' ? indexNames.tracks : indexNames.playlists
+        return { _index, _id }
+      })
+      const docs = await esc.mget({ docs: ops })
+
+      docs.docs.forEach((d: any, idx) => {
+        const item = d._source as FeedItem
+        const bucket = repostBuckets[idx]
+        item.activity_timestamp = bucket.ts
+        seenItemKeys.add(bucket.key)
+        sortedFeed.push(item)
+      })
+    }
+
+    if (loadOrig) {
+      const playlistResp = mfound.responses.shift() as SearchResponse
+
+      playlistResp.hits.hits.forEach((h) => {
+        const playlist = h._source as PlaylistDoc & FeedItem
+        const key = playlist.is_album ? `album:${h._id}` : `playlist:${h._id}`
+        if (seenItemKeys.has(key)) return
+        seenItemKeys.add(key)
+        playlist.activity_timestamp = playlist.created_at
+        sortedFeed.push(playlist)
+      })
+
+      const trackResp = mfound.responses.shift() as SearchResponse
+
+      trackResp.hits.hits.forEach((h) => {
+        const track = h._source as TrackDoc & FeedItem
+        const key = `track:${h._id}`
+        if (seenItemKeys.has(key)) return
+        seenItemKeys.add(key)
+        track.activity_timestamp = track.created_at
+        sortedFeed.push(track)
+      })
+    }
+
+    sortedFeed.sort((a, b) =>
+      b.activity_timestamp! < a.activity_timestamp! ? -1 : 1
     )
 
-    repostBuckets.sort((a, b) => (a.ts > b.ts ? -1 : 1))
-
-    const ops = repostBuckets.slice(0, args.limit).map((r) => {
-      const [kind, _id] = r.key.split(':')
-      const _index = kind == 'track' ? indexNames.tracks : indexNames.playlists
-      return { _index, _id }
-    })
-    const docs = await esc.mget({ docs: ops })
-    const reposted = docs.docs.map((d: any) => d._source)
-
-    // TODO: orig. tracks + playlists
-
-    return reposted as any
+    return sortedFeed.slice(0, args.limit)
   },
 }
 

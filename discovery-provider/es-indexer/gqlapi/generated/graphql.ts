@@ -20,6 +20,7 @@ export type FeedItem = Playlist | Track;
 
 export type Playlist = {
   __typename?: 'Playlist';
+  activity_timestamp?: Maybe<Scalars['String']>;
   created_at: Scalars['String'];
   description?: Maybe<Scalars['String']>;
   favorite_count: Scalars['Int'];
@@ -65,6 +66,8 @@ export type Query = {
 
 export type QueryFeedArgs = {
   limit?: InputMaybe<Scalars['Int']>;
+  original?: InputMaybe<Scalars['Boolean']>;
+  reposts?: InputMaybe<Scalars['Boolean']>;
 };
 
 
@@ -79,6 +82,7 @@ export enum SortDirection {
 
 export type Track = {
   __typename?: 'Track';
+  activity_timestamp?: Maybe<Scalars['String']>;
   created_at: Scalars['String'];
   favorite_count: Scalars['Int'];
   favorited_by: Array<User>;
@@ -282,6 +286,7 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 }
 
 export type PlaylistResolvers<ContextType = any, ParentType extends ResolversParentTypes['Playlist'] = ResolversParentTypes['Playlist']> = {
+  activity_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   favorite_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -297,11 +302,12 @@ export type PlaylistResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  feed?: Resolver<Array<ResolversTypes['FeedItem']>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'limit'>>;
+  feed?: Resolver<Array<ResolversTypes['FeedItem']>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'limit' | 'original' | 'reposts'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
 };
 
 export type TrackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Track'] = ResolversParentTypes['Track']> = {
+  activity_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   favorite_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   favorited_by?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<TrackFavorited_ByArgs, 'limit' | 'offset'>>;

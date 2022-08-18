@@ -44,6 +44,9 @@ export const typeDefs = gql`
 
     is_reposted: Boolean!
     is_saved: Boolean!
+
+    # populated in feed query
+    activity_timestamp: String
   }
 
   type User {
@@ -107,12 +110,19 @@ export const typeDefs = gql`
 
     is_reposted: Boolean!
     is_saved: Boolean!
+
+    # populated in feed query
+    activity_timestamp: String
   }
 
   union FeedItem = Track | Playlist
 
   type Query {
     users(handle: String): [User!]!
-    feed(limit: Int = 11): [FeedItem!]!
+    feed(
+      reposts: Boolean = true
+      original: Boolean = true
+      limit: Int = 11
+    ): [FeedItem!]!
   }
 `
