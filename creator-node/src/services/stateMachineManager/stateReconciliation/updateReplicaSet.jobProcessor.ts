@@ -640,9 +640,6 @@ const _canReconfig = async ({
   userId,
   logger
 }: CanReconfigParams): Promise<boolean> => {
-  // If any error occurs in determining if a reconfig event can happen, default to issuing
-  // a reconfig event anyway just to prevent users from keeping an unhealthy replica set
-  let canReconfig = true
   try {
     const {
       primaryId: currentPrimarySpId,
@@ -661,17 +658,26 @@ const _canReconfig = async ({
       )
     }
 
-    canReconfig =
+    // Reconfig is necessary if endpoint doesn't exist in mapping because this means the node was deregistered
+    const isAnyNodeInReplicaSetDeregistered =
+      !oldPrimarySpId || !oldSecondary1SpId || !oldSecondary2SpId
+    if (isAnyNodeInReplicaSetDeregistered) return true
+
+    // Reconfig should only happen when the replica set that triggered the reconfig matches the chain
+    const isReplicaSetCurrent =
       currentPrimarySpId === oldPrimarySpId &&
       currentSecondarySpIds[0] === oldSecondary1SpId &&
       currentSecondarySpIds[1] === oldSecondary2SpId
+    return isReplicaSetCurrent
   } catch (e: any) {
     logger.error(
       `[_issueUpdateReplicaSetOp] error in _canReconfig. : ${e.message}`
     )
   }
 
-  return canReconfig
+  // If any error occurs in determining if a reconfig event can happen, default to issuing
+  // a reconfig event anyway just to prevent users from keeping an unhealthy replica set
+  return true
 }
 
 module.exports = updateReplicaSetJobProcessor
