@@ -44,6 +44,10 @@ export const useGetFirstOrTopSupporter = ({
     useState<Nullable<StringWei>>(null)
   const [shouldFetchUserSupporter, setShouldFetchUserSupporter] =
     useState(false)
+  const [
+    shouldFetchSupportersForReceiver,
+    setShouldFetchSupportersForReceiver
+  ] = useState(false)
   const [topSupporter, setTopSupporter] = useState<Nullable<Supporter>>(null)
   const [isFirstSupporter, setIsFirstSupporter] = useState(false)
   const tipAmountWei = parseToBNWei(tipAmount)
@@ -75,7 +79,18 @@ export const useGetFirstOrTopSupporter = ({
   useEffect(() => {
     if (!receiver) return
 
-    const supportersForReceiver = supportersMap[receiver.user_id] ?? {}
+    const supportersForReceiver = supportersMap[receiver.user_id]
+
+    // It's possible that the receiver's supporters have not yet
+    // been fetched, in this case we prompt to fetch that data.
+    // E.g. for a user whose top supporter changed, clicking on
+    // the dethroned notification will go to the send tip modal/drawer
+    // but that user's supporters may not have been fetched yet.
+    if (!supportersForReceiver) {
+      setShouldFetchSupportersForReceiver(true)
+      return
+    }
+
     const rankedSupportersList = (
       Object.keys(supportersForReceiver) as unknown as ID[]
     )
@@ -131,6 +146,7 @@ export const useGetFirstOrTopSupporter = ({
   return {
     amountToTipToBecomeTopSupporter,
     shouldFetchUserSupporter,
+    shouldFetchSupportersForReceiver,
     isFirstSupporter,
     tipAmountWei,
     hasInsufficientBalance
