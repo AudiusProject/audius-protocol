@@ -2,9 +2,9 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import { call } from 'redux-saga/effects'
 
-import * as actions from 'store/confirmer/actions'
-import reducer from 'store/confirmer/reducer'
-import * as sagas from 'store/confirmer/sagas'
+import * as actions from 'common/store/confirmer/actions'
+import reducer from 'common/store/confirmer/reducer'
+import * as sagas from 'common/store/confirmer/sagas'
 
 import { ConfirmationOptions } from './types'
 

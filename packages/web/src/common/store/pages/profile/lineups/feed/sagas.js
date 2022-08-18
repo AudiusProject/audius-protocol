@@ -4,6 +4,7 @@ import { select, call } from 'redux-saga/effects'
 import { getUserId } from 'common/store/account/selectors'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getTracks } from 'common/store/cache/tracks/selectors'
+import { getConfirmCalls } from 'common/store/confirmer/selectors'
 import {
   PREFIX,
   feedActions
@@ -13,7 +14,6 @@ import {
   getProfileFeedLineup,
   getProfileUserHandle
 } from 'common/store/pages/profile/selectors'
-import { getConfirmCalls } from 'store/confirmer/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForAccount } from 'utils/sagaHelpers'
 

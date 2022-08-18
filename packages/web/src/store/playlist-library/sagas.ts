@@ -26,6 +26,7 @@ import {
 } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
+import { getResult } from 'common/store/confirmer/selectors'
 import {
   containsTempPlaylist,
   extractTempPlaylistsFromLibrary,
@@ -34,7 +35,6 @@ import {
   replaceTempWithResolvedPlaylists
 } from 'common/store/playlist-library/helpers'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
-import { getResult } from 'store/confirmer/selectors'
 import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { update } from './slice'
