@@ -14,7 +14,6 @@ const {
   QUEUE_NAMES,
   SYNC_MODES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
-const { assert } = require('chai')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))

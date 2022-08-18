@@ -334,9 +334,10 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     )
 
     // Verify that the queue has the correct initial job in it
-    expect(queueAdd).to.have.been.calledOnceWithExactly({
+    expect(queueAdd).to.have.been.calledOnceWith({
       lastProcessedUserId: prevJobProcessedUserId,
-      discoveryNodeEndpoint: discoveryNodeEndpoint
+      discoveryNodeEndpoint: discoveryNodeEndpoint,
+      parentSpanContext: undefined
     })
   })
 })

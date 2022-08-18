@@ -464,7 +464,7 @@ module.exports = async (
   params: DecoratedJobParams<IssueSyncRequestJobParams>
 ) => {
   const { parentSpanContext } = params
-  return await instrumentTracing({
+  const output = await instrumentTracing({
     name: 'issueSyncRequest.jobProcessor',
     fn: issueSyncRequest,
     options: {
@@ -480,4 +480,6 @@ module.exports = async (
       }
     }
   })(params)
+  console.log(JSON.stringify(output))
+  return output
 }

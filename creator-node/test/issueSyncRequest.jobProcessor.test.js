@@ -271,9 +271,14 @@ describe('test issueSyncRequest job processor', function () {
       syncRequestParameters
     })
     expect(result).to.have.deep.property('error', {})
-    expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue]
-    })
+    const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
+      (job) => {
+        const { parentSpanContext, ...rest } = job
+        expect(parentSpanContext).to.exist
+        return rest
+      }
+    )
+    expect(jobsToEnqueueRest).to.eql([expectedSyncReqToEnqueue])
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
@@ -347,10 +352,16 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
+
     expect(result).to.have.deep.property('error', {})
-    expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue]
-    })
+    const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
+      (job) => {
+        const { parentSpanContext, ...rest } = job
+        expect(parentSpanContext).to.exist
+        return rest
+      }
+    )
+    expect(jobsToEnqueueRest).to.eql([expectedSyncReqToEnqueue])
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
@@ -366,6 +377,7 @@ describe('test issueSyncRequest job processor', function () {
       'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
+    expect(result.spanContext).to.exist
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
