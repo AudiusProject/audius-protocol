@@ -7,7 +7,7 @@ export type SyncRequestAxiosData = {
   forceWipe?: boolean
   timestamp?: string
   signature?: string
-  from_manual_route?: boolean
+  sync_even_if_disabled?: boolean
 }
 
 export type SyncRequestAxiosParams = {

@@ -211,10 +211,10 @@ async function _handleIssueSyncRequest({
     syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
     syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
   ) {
-    const fromManualRoute = syncRequestParameters.data.from_manual_route
+    const syncEvenIfDisabled = syncRequestParameters.data.sync_even_if_disabled
 
     // Short-circuit if this syncMode is disabled or if manual route override not provided
-    if (!mergePrimaryAndSecondaryEnabled && !fromManualRoute) {
+    if (!mergePrimaryAndSecondaryEnabled && !syncEvenIfDisabled) {
       return { result: 'success_mode_disabled' }
     }
 
@@ -263,19 +263,22 @@ async function _handleIssueSyncRequest({
       await axios(syncRequestParameters)
     }
   } catch (e: any) {
+    // Retry a failed sync in all scenarios except recovering orphaned data
+    let syncReqToEnqueue
+    if (syncMode !== SYNC_MODES.MergePrimaryThenWipeSecondary) {
+      syncReqToEnqueue = {
+        syncType,
+        syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+        syncRequestParameters
+      }
+    }
+
     return {
       result: 'failure_issue_sync_request',
       error: {
         message: `${logMsgString} || Error issuing sync request: ${e.message}`
       },
-      syncReqToEnqueue:
-        syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
-          ? undefined
-          : {
-              syncType,
-              syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-              syncRequestParameters
-            }
+      syncReqToEnqueue
     }
   }
 
@@ -368,6 +371,16 @@ const _additionalSyncIsRequired = async (
       )
       logger.info(`${logMsgString} secondaryClock ${secondaryClockValue}`)
 
+      // Stop monitoring if the orphaned node successfully wiped the user's state
+      if (
+        syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary &&
+        secondaryClockValue === -1
+      ) {
+        return {
+          outcome: 'success_orphan_wiped'
+        }
+      }
+
       // Record starting and current clock values for secondary to determine future action
       if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
         initialSecondaryClock = -1
@@ -375,13 +388,6 @@ const _additionalSyncIsRequired = async (
         initialSecondaryClock = secondaryClockValue
       }
       finalSecondaryClock = secondaryClockValue
-
-      // Stop monitoring if the orphaned node successfully wiped the user's state
-      if (syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary) {
-        return {
-          outcome: 'success_orphan_wiped'
-        }
-      }
 
       /**
        * Stop monitoring if secondary has caught up to primary

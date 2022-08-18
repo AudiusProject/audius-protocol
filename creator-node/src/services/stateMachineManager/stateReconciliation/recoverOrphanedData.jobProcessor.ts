@@ -1,7 +1,5 @@
 import type Logger from 'bunyan'
-import type { LoDashStatic } from 'lodash'
 import type {
-  IssueSyncRequestJobParams,
   RecoverOrphanedDataJobParams,
   RecoverOrphanedDataJobReturnValue
 } from './types'
@@ -9,12 +7,9 @@ import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 
 import axios from 'axios'
 import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
-import { SyncType, SYNC_MODES } from '../stateMachineConstants'
 import { makeGaugeSetToRecord } from '../stateMachineUtils'
 import { StateMonitoringUser } from '../stateMonitoring/types'
-import { getNewOrExistingSyncReq } from './stateReconciliationUtils'
 
-const _: LoDashStatic = require('lodash')
 const { QUEUE_NAMES } = require('../stateMachineConstants')
 const { getNodeUsers } = require('../stateMonitoring/stateMonitoringUtils')
 const config = require('../../../config')
@@ -31,7 +26,8 @@ const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 
 /**
  * Processes a job to find users who have data on this node but who do not have this node in their replica set.
- * This means their data is "orphaned,"" so the job also merges this data back into the primary of the user's replica set and then wipes it from this node.
+ * This means their data is "orphaned,"" so the job also issues a request to each user's primary to
+ * merges their data back into the primary and then wipe it from this node.
  *
  * @param {Object} param job data
  * @param {string} param.discoveryNodeEndpoint the endpoint of a Discovery Node to query
@@ -48,19 +44,11 @@ module.exports = async function ({
     await _storeWalletsWithThisNodeInReplica(discoveryNodeEndpoint)
   const numWalletsOrphanedOrUnsynced = await _storeWalletsOrphanedOrUnsynced()
   const walletsWithOrphanedData = await _getWalletsWithOrphanedData()
-
-  // Get sync requests that will be issued to sync orphaned data from this node back to each user's primary
-  const syncReqsToEnqueue: IssueSyncRequestJobParams[] = []
-  for (const wallet of walletsWithOrphanedData) {
-    const syncReqToEnqueue = await _getSyncReqToRecoverOrphanedData(
-      wallet,
-      discoveryNodeEndpoint,
-      logger
-    )
-    if (!_.isEmpty(syncReqToEnqueue)) {
-      syncReqsToEnqueue.push(syncReqToEnqueue as IssueSyncRequestJobParams)
-    }
-  }
+  const requestsIssued = await _issueReqsToRecoverOrphanedData(
+    walletsWithOrphanedData,
+    discoveryNodeEndpoint,
+    logger
+  )
 
   return {
     numWalletsOnNode,
@@ -68,9 +56,6 @@ module.exports = async function ({
     numWalletsOrphanedOrUnsynced,
     walletsWithOrphanedData,
     jobsToEnqueue: {
-      // Enqueue jobs to recover orphaned data by syncing primary from this node and then wiping this node's data for the user
-      [QUEUE_NAMES.RECURRING_SYNC]: syncReqsToEnqueue,
-
       // Enqueue another job to search for any new data that gets orphaned after this job finishes
       [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: [
         {
@@ -85,7 +70,7 @@ module.exports = async function ({
       ),
       makeGaugeSetToRecord(
         METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE,
-        syncReqsToEnqueue.length
+        requestsIssued
       )
     ]
   }
@@ -175,43 +160,6 @@ const _storeWalletsWithThisNodeInReplica = async (
 }
 
 /**
- * Gets a sync request that can be issued to "force wipe" (modified forceResync=true flag):
- *  1. Merges orphaned data from this node into the user's primary.
- *  2. Wipes the user's data from this node.
- *  3. *DON'T* resync from the primary to this node -- this is what non-modified forceResync would do -- and instead set forceWipe=true.
- * @param wallet the wallet of the user with data orphaned on this node
- */
-const _getSyncReqToRecoverOrphanedData = async (
-  wallet: string,
-  discoveryNodeEndpoint: string,
-  logger: Logger
-): Promise<IssueSyncRequestJobParams | undefined> => {
-  const primaryEndpoint = await _getPrimaryForWallet(
-    wallet,
-    discoveryNodeEndpoint,
-    logger
-  )
-  if (!primaryEndpoint) return undefined
-
-  try {
-    const { syncReqToEnqueue } = getNewOrExistingSyncReq({
-      userWallet: wallet,
-      primaryEndpoint,
-      secondaryEndpoint: thisContentNodeEndpoint,
-      syncType: SyncType.Recurring,
-      syncMode: SYNC_MODES.MergePrimaryThenWipeSecondary
-    })
-
-    return syncReqToEnqueue
-  } catch (e: any) {
-    logger.error(
-      `Error getting sync request to recover orphaned data for user ${wallet} with primary ${primaryEndpoint} - ${e.message}`
-    )
-    return undefined
-  }
-}
-
-/**
  * Adds wallets that are orphaned or unsynced to a redis set.
  * This is the same as the set difference between walletsOnThisNode and walletsWithThisNodeInReplicaSet.
  * @returns number of wallets that either:
@@ -239,6 +187,85 @@ const _getWalletsWithOrphanedData = async () => {
     WALLETS_ORPHANED_OR_UNSYNCED_KEY
   )
   return walletsWithOrphanedData
+}
+
+/**
+ * Issues requests to move data that's orphaned on this node back to each user's primary.
+ * Each request will sync from this node to a primary and then "force wipe" this node:
+ *  1. Merge orphaned data from this node into the user's primary.
+ *  2. Wipe the user's data from this node.
+ *  3. *DON'T* resync from the primary to this node -- this is what non-modified forceResync would do -- and instead set forceWipe=true.
+ * @param {string[]} walletsWithOrphanedData users to issue requests to recover orphaned data for
+ * @param {string} discoveryNodeEndpoint the endpoint of a discovery node to make queries to
+ * @param {Logger} logger logger
+ * @return {number} number of requests successfully issued
+ */
+const _issueReqsToRecoverOrphanedData = async (
+  walletsWithOrphanedData: string[],
+  discoveryNodeEndpoint: string,
+  logger: Logger
+): Promise<number> => {
+  let requestsIssued = 0
+  for (const wallet of walletsWithOrphanedData) {
+    const primaryEndpoint = await _getPrimaryForWallet(
+      wallet,
+      discoveryNodeEndpoint,
+      logger
+    )
+    if (!primaryEndpoint) continue
+
+    try {
+      await axios({
+        baseURL: primaryEndpoint,
+        url: '/merge_primary_and_secondary',
+        method: 'post',
+        params: {
+          wallet,
+          endpoint: thisContentNodeEndpoint,
+          forceWipe: true
+        }
+      })
+      requestsIssued++
+    } catch (e: any) {
+      logger.error(
+        `Error issuing request to recover orphaned data: ${e.message}`
+      )
+    }
+  }
+  return requestsIssued
+}
+
+/**
+ * Gets a POST request that can be issued to "force wipe" (modified forceResync=true flag):
+ *  1. Merges orphaned data from this node into the user's primary.
+ *  2. Wipes the user's data from this node.
+ *  3. *DON'T* resync from the primary to this node -- this is what non-modified forceResync would do -- and instead set forceWipe=true.
+ * @param wallet the wallet of the user with data orphaned on this node
+ */
+const _getReqToRecoverOrphanedData = async (
+  wallet: string,
+  discoveryNodeEndpoint: string,
+  logger: Logger
+): Promise<any> => {
+  const primaryEndpoint = await _getPrimaryForWallet(
+    wallet,
+    discoveryNodeEndpoint,
+    logger
+  )
+  if (!primaryEndpoint) return undefined
+
+  const syncRequestParameters = {
+    baseURL: primaryEndpoint,
+    url: '/merge_primary_and_secondary',
+    method: 'post',
+    params: {
+      wallet,
+      endpoint: thisContentNodeEndpoint,
+      forceWipe: true
+    }
+  }
+
+  return syncRequestParameters
 }
 
 const _getPrimaryForWallet = async (
