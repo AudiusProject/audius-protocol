@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = False
 
+
 def entity_manager_update(
     _,  # main indexing task
     update_task: DatabaseTask,
