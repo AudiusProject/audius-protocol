@@ -32,6 +32,7 @@ from src.queries.get_skipped_transactions import (
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.tasks.entity_manager.utils import EntityType
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.sort_block_transactions import sort_block_transactions
@@ -332,7 +333,12 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_t
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
-                    cid_type[cid] = "playlist_data"
+                    if event_args._entityType == EntityType.PLAYLIST:
+                        cid_type[cid] = "playlist_data"
+                    elif event_args._entityType == EntityType.TRACK:
+                        cid_type[cid] = "track"
+                    elif event_args._entityType == EntityType.USER:
+                        cid_type[cid] = "user"
 
         # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
         user_to_replica_set = dict(
