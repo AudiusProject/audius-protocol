@@ -54,9 +54,9 @@ export class EntityManager extends Base {
     return Math.floor(Math.random() * (max - min) + min)
   }
 
-  mapTimestamps(addedTimestamps: any) {
+  mapTimestamps(addedTimestamps: PlaylistTrack[]) {
     const trackIds = addedTimestamps.map(
-      (trackObj: { track: string; metadata_time?: number; time: number }) => ({
+      (trackObj) => ({
         track: trackObj.track,
         time: trackObj.metadata_time ?? trackObj.time // default to time for legacy playlists
       })
@@ -202,7 +202,7 @@ export class EntityManager extends Base {
         dirCID = updatedPlaylistImage.dirCID
       }
 
-      const trackIds = this.mapTimestamps(playlist.playlist_contents.track_ids)
+      const trackIds = this.mapTimestamps(playlist.playlist_contents.track_ids as PlaylistTrack[])
 
       const metadata: PlaylistMetadata = {
         playlist_id: playlist.playlist_id,
