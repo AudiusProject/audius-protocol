@@ -32,7 +32,7 @@ type PlaylistParam = {
   playlist_id: number
   playlist_name: string
   artwork?: { file?: File; url?: string }
-  playlist_contents: { track_ids: PlaylistTrack[] | number[] }
+  playlist_contents: { track_ids: PlaylistTrack[] | number[] } // number[] for playlist upload flow
   cover_art_sizes: string
   description: string
   is_private: boolean
