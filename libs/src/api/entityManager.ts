@@ -32,7 +32,7 @@ type PlaylistParam = {
   playlist_id: number
   playlist_name: string
   artwork?: { file?: File; url?: string }
-  playlist_contents: { track_ids: PlaylistTrack[] | number[] } // number[] for playlist upload flow
+  playlist_contents: { track_ids: PlaylistTrack[] } // number[] for playlist upload flow
   cover_art_sizes: string
   description: string
   is_private: boolean
@@ -101,14 +101,7 @@ export class EntityManager extends Base {
         )
         dirCID = updatedPlaylistImage.dirCID
       }
-
-      const web3 = this.web3Manager.getWeb3()
-      const currentBlockNumber = await web3.eth.getBlockNumber()
-      const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-      const tracks = playlist.playlist_contents.track_ids.map((trackId) => ({
-        track: trackId as number,
-        time: currentBlock.timestamp as number
-      }))
+      const tracks = this.mapTimestamps(playlist.playlist_contents.track_ids)
 
       const metadata: PlaylistMetadata = {
         playlist_id: playlist.playlist_id,
@@ -202,7 +195,7 @@ export class EntityManager extends Base {
         dirCID = updatedPlaylistImage.dirCID
       }
 
-      const trackIds = this.mapTimestamps(playlist.playlist_contents.track_ids as PlaylistTrack[])
+      const trackIds = this.mapTimestamps(playlist.playlist_contents.track_ids)
 
       const metadata: PlaylistMetadata = {
         playlist_id: playlist.playlist_id,
