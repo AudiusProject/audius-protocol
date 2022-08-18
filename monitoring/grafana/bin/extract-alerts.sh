@@ -19,7 +19,7 @@ set -x
 # refresh all dashboards and do not strip the dashboard ID
 CLEAR_DASHBOARD_ID=. ./grafana/bin/save-dashboards.sh
 
-json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json' -not -name 'library.json')
+json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json' -not -name 'library.json' -not -name 'folders.json')
 
 for json_dashboard in ${json_dashboards}
 do

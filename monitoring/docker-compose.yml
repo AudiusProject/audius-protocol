@@ -24,7 +24,6 @@ services:
     build:
       context: grafana
       args:
-        - GRAFANA_VERSION=latest
         - GF_INSTALL_IMAGE_RENDERER_PLUGIN=true
     user: 0:0
     env_file:

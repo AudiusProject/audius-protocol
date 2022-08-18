@@ -70,7 +70,7 @@ def main(filename):
             panel_alerts = []
             for step in panel["fieldConfig"]["defaults"]["thresholds"]["steps"]:
                 # skip the base case when value is not set, nor visible
-                if "value" not in step or step["value"]:
+                if "value" not in step or not step["value"]:
                     continue
 
                 # ensure thresholds are visible
@@ -92,7 +92,7 @@ def main(filename):
                     level = "low-alert"
                     level_id = 3
                 else:
-                    break
+                    continue
 
                 # UI Ordering: dark, semi-dark, base, light, super-light
                 # Conditional:          <=       >=

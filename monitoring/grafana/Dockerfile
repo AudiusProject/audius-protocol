@@ -1,7 +1,7 @@
 # Docs: https://grafana.com/docs/grafana/latest/installation/docker/#build-and-run-a-docker-image-with-pre-installed-plugins
 # Original: https://github.com/grafana/grafana/blob/a51c2774b8e77cafc0100a3882d77039c189e301/packaging/docker/custom/ubuntu.Dockerfile 
 
-ARG GRAFANA_VERSION="latest"
+ARG GRAFANA_VERSION="9.1.0"
 
 FROM grafana/grafana:${GRAFANA_VERSION}
 
