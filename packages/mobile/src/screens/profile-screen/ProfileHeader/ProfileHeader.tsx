@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import type { Animated } from 'react-native'
@@ -6,6 +6,7 @@ import { LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
 import { Divider } from 'app/components/core'
+import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
@@ -16,7 +17,7 @@ import { ProfileMetrics } from '../ProfileMetrics'
 import { ProfilePicture } from '../ProfilePicture'
 import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
-import { useSelectProfileRoot } from '../selectors'
+import { useSelectProfile } from '../selectors'
 
 import { CollapsedSection } from './CollapsedSection'
 import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
@@ -46,18 +47,57 @@ type ProfileHeaderProps = {
 export const ProfileHeader = (props: ProfileHeaderProps) => {
   const { scrollY } = props
   const styles = useStyles()
-  const profile = useSelectProfileRoot(['user_id', 'does_current_user_follow'])
   const accountId = useSelectorWeb(getUserId)
-  const isOwner = profile?.user_id === accountId
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
+  const [isExpansible, setIsExpansible] = useState(false)
+
+  const {
+    user_id: userId,
+    does_current_user_follow: doesCurrentUserFollow,
+    current_user_followee_follow_count: currentUserFolloweeFollowCount,
+    website,
+    donation,
+    twitter_handle: twitterHandle,
+    instagram_handle: instagramHandle,
+    tiktok_handle: tikTokHandle,
+    supporting_count: supportingCount
+  } = useSelectProfile([
+    'user_id',
+    'does_current_user_follow',
+    'current_user_followee_follow_count',
+    'website',
+    'donation',
+    'twitter_handle',
+    'instagram_handle',
+    'tiktok_handle',
+    'supporting_count'
+  ])
+  const { tier = 'none' } = useSelectTierInfo(userId)
+  const hasTier = tier !== 'none'
+  const isOwner = userId === accountId
+  const hasMutuals = !isOwner && currentUserFolloweeFollowCount > 0
+  const hasMultipleSocials =
+    [website, donation, twitterHandle, instagramHandle, tikTokHandle].filter(
+      Boolean
+    ).length > 1
+  const isSupporting = supportingCount > 0
+  // Note: we also if the profile bio is longer than 3 lines, but that's handled in the Bio component.
+  const shouldExpand =
+    hasTier || hasMutuals || hasMultipleSocials || isSupporting
+
+  useEffect(() => {
+    if (!isExpansible && shouldExpand) {
+      setIsExpansible(true)
+    }
+  }, [shouldExpand, isExpansible, setIsExpansible])
 
   const handleFollow = useCallback(() => {
-    if (!profile?.does_current_user_follow) {
+    if (!doesCurrentUserFollow) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
       setHasUserFollowed(true)
     }
-  }, [setHasUserFollowed, profile])
+  }, [setHasUserFollowed, doesCurrentUserFollow])
 
   const handleCloseArtistRecs = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -76,11 +116,20 @@ export const ProfileHeader = (props: ProfileHeaderProps) => {
       <View pointerEvents='box-none' style={styles.header}>
         <ProfileInfo onFollow={handleFollow} />
         <ProfileMetrics />
-        {isExpanded ? <ExpandedSection /> : <CollapsedSection />}
-        <ExpandHeaderToggleButton
-          isExpanded={isExpanded}
-          onPress={handleToggleExpand}
-        />
+        {isExpanded ? (
+          <ExpandedSection />
+        ) : (
+          <CollapsedSection
+            isExpansible={isExpansible}
+            setIsExpansible={setIsExpansible}
+          />
+        )}
+        {isExpansible ? (
+          <ExpandHeaderToggleButton
+            isExpanded={isExpanded}
+            onPress={handleToggleExpand}
+          />
+        ) : null}
         <Divider style={styles.divider} />
         {!hasUserFollowed ? null : (
           <ArtistRecommendations onClose={handleCloseArtistRecs} />
