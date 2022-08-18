@@ -3,10 +3,8 @@ import type {
   FetchCNodeEndpointToSpIdMapJobParams,
   FetchCNodeEndpointToSpIdMapJobReturnValue
 } from './types'
-import type { SpanContext } from '@opentelemetry/api'
 
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-import { SpanStatusCode } from '@opentelemetry/api'
 
 import initAudiusLibs from '../../initAudiusLibs'
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
