@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const SecondarySyncHealthTracker = require('../src/services/stateMachineManager/stateReconciliation/secondarySyncHealthTracker')
+const SecondarySyncHealthTracker = require('../src/services/stateMachineManager/stateReconciliation/SecondarySyncHealthTracker')
 const { getLibsMock } = require('./lib/libsMock')
 const { getApp } = require('./lib/app')
 
