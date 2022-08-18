@@ -23,7 +23,11 @@ import {
   computeUserSecondarySyncSuccessRatesMap
 } from './stateMonitoringUtils'
 import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
-import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
+import {
+  instrumentTracing,
+  recordException,
+  currentSpanContext
+} from '../../../utils/tracing'
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -55,8 +59,6 @@ const monitorState = async ({
 }: DecoratedJobParams<MonitorStateJobParams>): Promise<
   DecoratedJobReturnValue<MonitorStateJobReturnValue>
 > => {
-  const span = getActiveSpan()
-
   // Record all stages of this function along with associated information for use in logging
   const decisionTree: Decision[] = []
   _addToDecisionTree(
@@ -88,7 +90,7 @@ const monitorState = async ({
         usersLength: users?.length
       })
     } catch (e: any) {
-      span?.recordException(e)
+      recordException(e)
       // Make the next job try again instead of looping back to userId 0
       users = [
         {
@@ -107,7 +109,6 @@ const monitorState = async ({
       _addToDecisionTree(decisionTree, 'getNodeUsers Error', logger, {
         error: e.message
       })
-      span?.end()
       throw new Error(
         `monitor-state job processor getNodeUsers Error: ${e.toString()}`
       )
@@ -120,7 +121,7 @@ const monitorState = async ({
         unhealthyPeers: Array.from(unhealthyPeers)
       })
     } catch (e: any) {
-      span?.recordException(e)
+      recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -164,8 +165,7 @@ const monitorState = async ({
         logger
       )
     } catch (e: any) {
-      span?.recordException(e)
-      span?.setStatus({ code: SpanStatusCode.ERROR })
+      recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -193,8 +193,7 @@ const monitorState = async ({
         }
       )
     } catch (e: any) {
-      span?.recordException(e)
-      span?.setStatus({ code: SpanStatusCode.ERROR })
+      recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -207,8 +206,7 @@ const monitorState = async ({
       )
     }
   } catch (e: any) {
-    span?.recordException(e)
-    span?.setStatus({ code: SpanStatusCode.ERROR })
+    recordException(e)
     logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
   } finally {
     _addToDecisionTree(decisionTree, 'END monitor-state job processor', logger)
@@ -226,23 +224,23 @@ const monitorState = async ({
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
     userSecondarySyncMetricsMap,
-    parentSpanContext: span?.spanContext()
+    parentSpanContext: currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
     userSecondarySyncMetricsMap,
-    parentSpanContext: span?.spanContext()
+    parentSpanContext: currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {
     lastProcessedUserId: lastProcessedUser?.user_id || 0,
     discoveryNodeEndpoint,
-    parentSpanContext: span?.spanContext()
+    parentSpanContext: currentSpanContext()
   }
 
   return {
-    spanContext: span?.spanContext(),
+    spanContext: currentSpanContext(),
     jobsToEnqueue: {
       // Enqueue a job to find sync requests that need to be issued for the slice of users we just monitored
       [QUEUE_NAMES.FIND_SYNC_REQUESTS]: [findSyncRequestsJob],

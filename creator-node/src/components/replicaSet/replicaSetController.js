@@ -23,7 +23,11 @@ const {
   enqueueSync,
   processManualImmediateSync
 } = require('./syncQueueComponentService')
-const { instrumentTracing, getActiveSpan } = require('../../utils/tracing')
+const {
+  instrumentTracing,
+  getActiveSpan,
+  currentSpanContext
+} = require('../../utils/tracing')
 const {
   generateDataForSignatureRecovery
 } = require('../../services/sync/secondarySyncFromPrimaryUtils')
@@ -72,14 +76,11 @@ const respondToURSMRequestForProposalController = async (req) => {
  * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
 const syncRouteController = async (req, res) => {
-  const span = getActiveSpan()
-
   const serviceRegistry = req.app.get('serviceRegistry')
   if (
     _.isEmpty(serviceRegistry?.syncQueue) ||
     _.isEmpty(serviceRegistry?.syncImmediateQueue)
   ) {
-    span?.setStatus({ code: SpanStatusCode.ERROR })
     return errorResponseServerError('Sync Queue is not up and running yet')
   }
   const nodeConfig = serviceRegistry.nodeConfig
@@ -130,7 +131,7 @@ const syncRouteController = async (req, res) => {
           wallet
         },
         logContext: req.logContext,
-        parentSpanContext: span?.spanContext()
+        parentSpanContext: currentSpanContext()
       })
     } catch (e) {
       return errorResponseServerError(e)
@@ -160,7 +161,7 @@ const syncRouteController = async (req, res) => {
           wallet
         },
         logContext: req.logContext,
-        parentSpanContext: span?.spanContext()
+        parentSpanContext: currentSpanContext()
       })
       delete syncDebounceQueue[wallet]
     }, debounceTime)

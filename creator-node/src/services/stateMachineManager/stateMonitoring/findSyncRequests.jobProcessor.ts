@@ -20,7 +20,11 @@ import { makeGaugeIncToRecord } from '../stateMachineUtils'
 import { SyncType, SYNC_MODES, QUEUE_NAMES } from '../stateMachineConstants'
 import { getNewOrExistingSyncReq } from '../stateReconciliation/stateReconciliationUtils'
 import { computeSyncModeForUserAndReplica } from './stateMonitoringUtils'
-import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
+import {
+  currentSpanContext,
+  getActiveSpan,
+  instrumentTracing
+} from '../../../utils/tracing'
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -61,8 +65,6 @@ const findSyncRequests = async ({
 }: DecoratedJobParams<FindSyncRequestsJobParams>): Promise<
   DecoratedJobReturnValue<FindSyncRequestsJobReturnValue>
 > => {
-  const span = getActiveSpan()
-
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
   const metricsToRecord = []
 
@@ -149,7 +151,7 @@ const findSyncRequests = async ({
   }
 
   return {
-    spanContext: span?.spanContext(),
+    spanContext: currentSpanContext(),
     duplicateSyncReqs,
     errors,
     jobsToEnqueue: syncReqsToEnqueue?.length

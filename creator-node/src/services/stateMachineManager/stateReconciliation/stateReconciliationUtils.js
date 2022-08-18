@@ -13,9 +13,11 @@ const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const { SpanStatusCode } = require('@opentelemetry/api')
 const {
   instrumentTracing,
-  getActiveSpan,
   currentSpanContext,
-  info
+  info,
+  warn,
+  error,
+  recordException
 } = require('../../../utils/tracing')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
@@ -122,8 +124,6 @@ const issueSyncRequestsUntilSynced = async (
   timeoutMs,
   queue
 ) => {
-  const span = getActiveSpan()
-
   // Issue syncRequest before polling secondary for replication
   const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
     userWallet: wallet,
@@ -137,21 +137,19 @@ const issueSyncRequestsUntilSynced = async (
   if (!_.isEmpty(duplicateSyncReq)) {
     // Log duplicate and return
     logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
-    span?.addEvent(
-      `Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`
-    )
+    warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
-    span?.addEvent(JSON.stringify(syncReqToEnqueue))
+    info(JSON.stringify(syncReqToEnqueue))
     await queue.add({
       enqueuedBy: 'issueSyncRequestsUntilSynced',
-      parentSpanContext: span?.spanContext(),
+      parentSpanContext: currentSpanContext(),
       ...syncReqToEnqueue
     })
   } else {
     // Log error that the sync request couldn't be created and return
     logger.error(`Failed to create manual sync request`)
-    span?.addEvent(`Failed to create manual sync request`)
+    error(`Failed to create manual sync request`)
     return
   }
 
@@ -179,9 +177,8 @@ const issueSyncRequestsUntilSynced = async (
       // NOTE - we might want to make this timeout longer
       await Utils.timeout(500)
     } catch (e) {
-      span?.recordException(e)
-      span?.setStatus({ code: SpanStatusCode.ERROR })
       // do nothing and let while loop continue
+      recordException(e)
     }
   }
 

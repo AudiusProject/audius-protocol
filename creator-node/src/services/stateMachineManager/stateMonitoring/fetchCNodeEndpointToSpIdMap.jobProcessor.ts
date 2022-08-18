@@ -10,7 +10,11 @@ import { SpanStatusCode } from '@opentelemetry/api'
 
 import initAudiusLibs from '../../initAudiusLibs'
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
-import { getActiveSpan, instrumentTracing } from '../../../utils/tracing'
+import {
+  currentSpanContext,
+  getActiveSpan,
+  instrumentTracing
+} from '../../../utils/tracing'
 
 /**
  * Processes a job to update the cNodeEndpoint->spId map by reading the chain.
@@ -46,7 +50,7 @@ const fetchCNodeEndpointToSpIdMap = async ({
   }
   return {
     cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
-    spanContext: span?.spanContext(),
+    spanContext: currentSpanContext(),
     errorMsg
   }
 }

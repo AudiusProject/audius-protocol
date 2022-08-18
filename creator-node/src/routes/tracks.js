@@ -38,7 +38,11 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
-const { instrumentTracing, getActiveSpan } = require('../utils/tracing')
+const {
+  instrumentTracing,
+  getActiveSpan,
+  currentSpanContext
+} = require('../utils/tracing')
 
 const readFile = promisify(fs.readFile)
 
@@ -63,7 +67,7 @@ const handleTrackContentAsync = async (req, res) => {
   if (selfTranscode) {
     span?.addEvent('adding track content upload task')
     await AsyncProcessingQueue.addTrackContentUploadTask({
-      parentSpanContext: span?.spanContext(),
+      parentSpanContext: currentSpanContext(),
       logContext: req.logContext,
       req: {
         fileName: req.fileName,
@@ -75,7 +79,7 @@ const handleTrackContentAsync = async (req, res) => {
   } else {
     span?.addEvent('adding trancode hand off task')
     await AsyncProcessingQueue.addTranscodeHandOffTask({
-      parentSpanContext: span?.spanContext(),
+      parentSpanContext: currentSpanContext(),
       logContext: req.logContext,
       req: {
         fileName: req.fileName,
@@ -149,12 +153,11 @@ router.post(
   handleResponse(async (req, res) => {
     return await instrumentTracing({
       fn: async () => {
-        const span = getActiveSpan()
         const AsyncProcessingQueue =
           req.app.get('serviceRegistry').asyncProcessingQueue
 
         await AsyncProcessingQueue.addTranscodeAndSegmentTask({
-          parentSpanContext: span?.spanContext(),
+          parentSpanContext: currentSpanContext(),
           logContext: req.logContext,
           req: {
             fileName: req.fileName,
