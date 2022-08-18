@@ -66,8 +66,6 @@ services:
     command:
       - '--es.uri=http://dn1_elasticsearch_1:9200'
     restart: always
-    networks:
-      - audius_dev
     logging: *default-logging
 
   ## Postgres Exporters
@@ -79,8 +77,6 @@ services:
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@dn1_discovery-provider-db_1:5432/postgres?sslmode=disable
     restart: always
-    networks:
-      - audius_dev
     logging: *default-logging
 
   exporter_postgres_cn1:
@@ -90,8 +86,6 @@ services:
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@cn1_creator-node-db_1:5432/postgres?sslmode=disable
     restart: always
-    networks:
-      - audius_dev
     logging: *default-logging
 
   exporter_postgres_cn2:
@@ -101,8 +95,6 @@ services:
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@cn2_creator-node-db_1:5432/postgres?sslmode=disable
     restart: always
-    networks:
-      - audius_dev
     logging: *default-logging
 
   exporter_postgres_cn3:
@@ -112,8 +104,6 @@ services:
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@cn3_creator-node-db_1:5432/postgres?sslmode=disable
     restart: always
-    networks:
-      - audius_dev
     logging: *default-logging
 
   exporter_postgres_cn4:
@@ -123,8 +113,6 @@ services:
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@cn4_creator-node-db_1:5432/postgres?sslmode=disable
     restart: always
-    networks:
-      - audius_dev
     logging: *default-logging
 
   exporter_postgres_is:
@@ -134,10 +122,4 @@ services:
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@audius-identity-service_identity-db_1:5432/postgres?sslmode=disable
     restart: always
-    networks:
-      - audius_dev
     logging: *default-logging
-
-networks:
-  audius_dev:
-    external: true
