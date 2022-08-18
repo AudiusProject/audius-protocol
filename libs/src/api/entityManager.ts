@@ -1,6 +1,6 @@
 import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
-import { Nullable, Utils } from '../utils'
+import type { Nullable } from '../utils'
 
 export enum Action {
   CREATE = 'Create',
@@ -22,16 +22,22 @@ export interface PlaylistOperationResponse {
    */
   blockNumber: Nullable<number>
   /**
-   * ID of playlist being modified
-   */
-  playlistId: Nullable<number>
-  /**
    * String error message returned
    */
   error: Nullable<string>
 }
+type PlaylistTrack = { time: number; metadata_time?: number; track: number }
 
-const { encodeHashId, decodeHashId } = Utils
+type PlaylistParam = {
+  playlist_id: number;
+  playlist_name: string;
+  artwork?: { file?: File; url?: string }  
+  playlist_contents: { track_ids: PlaylistTrack[] | number[] } 
+  cover_art_sizes: string;
+  description: string;
+  is_private: boolean;
+  is_album: boolean;
+};
 
 /*
   API surface for updated data contract interactions.
@@ -48,20 +54,7 @@ export class EntityManager extends Base {
     return Math.floor(Math.random() * (max - min) + min)
   }
 
-  async getFullPlaylist(playlistId: number, userId: number) {
-    const encodedPlaylistId = encodeHashId(playlistId) as string
-    const encodedUserId = encodeHashId(userId) as string
-
-    const playlist: any = (
-      await this.discoveryProvider.getFullPlaylist(
-        encodedPlaylistId,
-        encodedUserId
-      )
-    )[0]
-    return playlist
-  }
-
-  mapAddedTimestamps(addedTimestamps: any) {
+  mapTimestamps(addedTimestamps: any) {
     const trackIds = addedTimestamps.map(
       (trackObj: {
         track: string
@@ -69,7 +62,7 @@ export class EntityManager extends Base {
         time: number
       }) => ({
         track: trackObj.track,
-        time: trackObj.metadata_time ?? trackObj.time // use metadata_timestamp
+        time: trackObj.metadata_time ?? trackObj.time // default to time for legacy playlists
       })
     )
 
@@ -83,85 +76,65 @@ export class EntityManager extends Base {
     return {
       blockHash: null,
       blockNumber: null,
-      playlistId: null,
       error: null
     }
   }
-
+    
   /**
    * Create a playlist using updated data contracts flow
    */
-  async createPlaylist({
-    playlistId,
-    playlistName,
-    trackIds,
-    description,
-    isAlbum,
-    isPrivate,
-    coverArt,
-    coverArtSizes,
-    logger = console
-  }: {
-    playlistId: number
-    playlistName: string
-    trackIds: number[]
-    description: string
-    isAlbum: boolean
-    isPrivate: boolean
-    coverArt: string
-    coverArtSizes: string
-    logger: Console
-  }): Promise<PlaylistOperationResponse> {
+  async createPlaylist(playlist: PlaylistParam): Promise<PlaylistOperationResponse> {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
     try {
-      const currentUserId: string | null =
+      const userId: number | null =
         this.userStateManager.getCurrentUserId()
-      if (!currentUserId) {
+      if (!userId) {
         responseValues.error = 'Missing current user ID'
         return responseValues
       }
-      const userId: number = parseInt(currentUserId)
       const createAction = Action.CREATE
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
-      if (coverArt) {
+      if (playlist.artwork && playlist.artwork.file) {
         const updatedPlaylistImage = await this.creatorNode.uploadImage(
-          coverArt,
+          playlist.artwork.file,
           true // square
         )
         dirCID = updatedPlaylistImage.dirCID
       }
+
       const web3 = this.web3Manager.getWeb3()
       const currentBlockNumber = await web3.eth.getBlockNumber()
       const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-      const tracks = trackIds.map((trackId) => ({
-        track: trackId,
+      const tracks = playlist.playlist_contents.track_ids.map((trackId) => ({
+        track: trackId as number ,
         time: currentBlock.timestamp as number
       }))
+
       const metadata: PlaylistMetadata = {
-        playlist_id: playlistId,
+        playlist_id: playlist.playlist_id,
         playlist_contents: { track_ids: tracks },
-        playlist_name: playlistName,
-        playlist_image_sizes_multihash: dirCID ?? coverArtSizes,
-        description,
-        is_album: isAlbum,
-        is_private: isPrivate
+        playlist_name: playlist.playlist_name,
+        playlist_image_sizes_multihash: dirCID ?? playlist.cover_art_sizes, // default to cover_art_sizes for new playlists from tracks
+        description: playlist.description,
+        is_album: playlist.is_album,
+        is_private: playlist.is_private
       }
+
       const { metadataMultihash } =
         await this.creatorNode.uploadPlaylistMetadata(metadata)
       const manageEntityResponse = await this.manageEntity({
         userId: userId,
         entityType,
-        entityId: playlistId,
+        entityId: playlist.playlist_id,
         action: createAction,
         metadataMultihash
       })
       const txReceipt = manageEntityResponse.txReceipt
       responseValues.blockHash = txReceipt.blockHash
       responseValues.blockNumber = txReceipt.blockNumber
-      responseValues.playlistId = playlistId
       return responseValues
     } catch (e) {
       const error = (e as Error).message
@@ -173,22 +146,15 @@ export class EntityManager extends Base {
   /**
    * Delete a playlist using updated data contracts flow
    */
-  async deletePlaylist({
-    playlistId,
-    logger = console
-  }: {
-    playlistId: number
-    logger: any
-  }): Promise<{ blockHash: any; blockNumber: any }> {
+  async deletePlaylist(playlistId: number): Promise<PlaylistOperationResponse> {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
-    const currentUserId: string | null =
+    const userId: number | null =
       this.userStateManager.getCurrentUserId()
-    if (!currentUserId) {
+    if (!userId) {
       responseValues.error = 'Missing current user ID'
       return responseValues
     }
-    const userId: number = parseInt(currentUserId)
     try {
       const resp = await this.manageEntity({
         userId,
@@ -200,7 +166,6 @@ export class EntityManager extends Base {
       const txReceipt = resp.txReceipt
       responseValues.blockHash = txReceipt.blockHash
       responseValues.blockNumber = txReceipt.blockNumber
-      responseValues.playlistId = playlistId
       return responseValues
     } catch (e) {
       const error = (e as Error).message
@@ -211,106 +176,20 @@ export class EntityManager extends Base {
 
   /**
    * Update a playlist using updated data contracts flow
-   **/
-  async editPlaylist({
-    playlistId,
-    playlistName,
-    description,
-    isAlbum,
-    isPrivate,
-    coverArt,
-    logger = console
-  }: {
-    playlistId: number
-    playlistName: Nullable<string>
-    description: Nullable<string>
-    isAlbum: Nullable<boolean>
-    isPrivate: Nullable<boolean>
-    coverArt: Nullable<string>
-    logger: Console
-  }): Promise<PlaylistOperationResponse> {
+   */
+  async updatePlaylist(playlist: PlaylistParam): Promise<PlaylistOperationResponse> {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
 
     try {
-      const currentUserId: string | null =
+      const userId: number | null =
         this.userStateManager.getCurrentUserId()
-      if (!playlistId || playlistId === undefined) {
-        responseValues.error = 'Missing current playlistId'
-        return responseValues
-      }
-      if (!currentUserId) {
-        responseValues.error = 'Missing current user ID'
-        return responseValues
-      }
-      const userId: number = parseInt(currentUserId)
-      const updateAction = Action.UPDATE
-      const entityType = EntityType.PLAYLIST
-      this.REQUIRES(Services.CREATOR_NODE)
-      let dirCID
-      if (coverArt) {
-        // @ts-expect-error
-        const updatedPlaylistImage = await this.creatorNode.uploadImage(
-          coverArt,
-          true // square
-        )
-        dirCID = updatedPlaylistImage.dirCID
-      }
-      const playlist = await this.getFullPlaylist(playlistId, userId)
-      const existingPlaylistTracks = this.mapAddedTimestamps(
-        playlist.added_timestamps
-      )
-      const metadata: PlaylistMetadata = {
-        playlist_id: playlistId,
-        playlist_contents: { track_ids: existingPlaylistTracks },
-        playlist_name: playlistName ?? playlist.playlist_name,
-        playlist_image_sizes_multihash: dirCID ?? playlist.cover_art,
-        description: description ?? playlist.description,
-        is_album: isAlbum ?? playlist.is_album,
-        is_private: isPrivate ?? playlist.is_private
-      }
-      const { metadataMultihash } =
-        await this.creatorNode.uploadPlaylistMetadata(metadata)
-      const resp = await this.manageEntity({
-        userId,
-        entityType,
-        entityId: playlistId,
-        action: updateAction,
-        metadataMultihash
-      })
-      const txReceipt = resp.txReceipt
-      responseValues.blockHash = txReceipt.blockHash
-      responseValues.blockNumber = txReceipt.blockNumber
-      responseValues.playlistId = playlistId
-      return responseValues
-    } catch (e) {
-      const error = (e as Error).message
-      responseValues.error = error
-      return responseValues
-    }
-  }
-
-  async updatePlaylist({
-    playlist,
-    logger = console
-  }: {
-    playlist: any
-    logger: Console
-  }): Promise<PlaylistOperationResponse> {
-    const responseValues: PlaylistOperationResponse =
-      this.getDefaultPlaylistReponseValues()
-
-    try {
-      console.log('asdf playlist', playlist)
-      const currentUserId: string | null =
-        this.userStateManager.getCurrentUserId()
-      const userId: number = parseInt(currentUserId)
 
       if (!playlist || playlist === undefined) {
         responseValues.error = 'Missing current playlist'
         return responseValues
       }
-      if (!currentUserId) {
+      if (!userId) {
         responseValues.error = 'Missing current user ID'
         return responseValues
       }
@@ -318,7 +197,7 @@ export class EntityManager extends Base {
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
-      if (playlist.artwork) {
+      if (playlist.artwork && playlist.artwork.file) {
         const updatedPlaylistImage = await this.creatorNode.uploadImage(
           playlist.artwork.file,
           true // square
@@ -326,7 +205,7 @@ export class EntityManager extends Base {
         dirCID = updatedPlaylistImage.dirCID
       }
 
-      const trackIds = this.mapAddedTimestamps(
+      const trackIds = this.mapTimestamps(
         playlist.playlist_contents.track_ids
       )
 
@@ -335,7 +214,7 @@ export class EntityManager extends Base {
         playlist_id: playlist.playlist_id,
         playlist_contents: { track_ids: trackIds },
         playlist_name: playlist.playlist_name,
-        playlist_image_sizes_multihash: playlist.cover_art ?? dirCID,
+        playlist_image_sizes_multihash: dirCID ?? playlist.cover_art_sizes,
         description: playlist.description,
         is_album: playlist.is_album,
         is_private: playlist.is_private
@@ -352,165 +231,6 @@ export class EntityManager extends Base {
       const txReceipt = resp.txReceipt
       responseValues.blockHash = txReceipt.blockHash
       responseValues.blockNumber = txReceipt.blockNumber
-      responseValues.playlistId = playlist.playlistId
-      return responseValues
-    } catch (e) {
-      const error = (e as Error).message
-      responseValues.error = error
-      return responseValues
-    }
-  }
-
-  async deletePlaylistTrack({
-    playlistId,
-    trackId,
-    timestamp,
-    logger = console
-  }: {
-    playlistId: number
-    trackId: number
-    timestamp: number
-    logger: Console
-  }): Promise<PlaylistOperationResponse> {
-    const responseValues: PlaylistOperationResponse =
-      this.getDefaultPlaylistReponseValues()
-
-    try {
-      const currentUserId: string | null =
-        this.userStateManager.getCurrentUserId()
-      if (!playlistId || playlistId === undefined) {
-        responseValues.error = 'Missing current playlistId'
-        return responseValues
-      }
-      if (!currentUserId) {
-        responseValues.error = 'Missing current user ID'
-        return responseValues
-      }
-      const userId: number = parseInt(currentUserId)
-      const updateAction = Action.UPDATE
-      const entityType = EntityType.PLAYLIST
-      this.REQUIRES(Services.CREATOR_NODE)
-      const playlist = await this.getFullPlaylist(playlistId, userId)
-
-      const existingPlaylistTracks = this.mapAddedTimestamps(
-        playlist.added_timestamps
-      )
-
-      const updatedTrackIds = existingPlaylistTracks.filter(
-        (trackObj: { track: number; metadata_time?: number; time: number }) =>
-          (trackObj.track !== trackId &&
-            timestamp !== trackObj.metadata_time) ??
-          trackObj.time
-      )
-
-      const metadata: PlaylistMetadata = {
-        playlist_id: playlistId,
-        playlist_contents: { track_ids: updatedTrackIds },
-        playlist_name: playlist.playlist_name,
-        playlist_image_sizes_multihash: playlist.cover_art,
-        description: playlist.description,
-        is_album: playlist.is_album,
-        is_private: playlist.is_private
-      }
-      const { metadataMultihash } =
-        await this.creatorNode.uploadPlaylistMetadata(metadata)
-      const resp = await this.manageEntity({
-        userId,
-        entityType,
-        entityId: playlistId,
-        action: updateAction,
-        metadataMultihash
-      })
-      const txReceipt = resp.txReceipt
-      responseValues.blockHash = txReceipt.blockHash
-      responseValues.blockNumber = txReceipt.blockNumber
-      responseValues.playlistId = playlistId
-      return responseValues
-    } catch (e) {
-      const error = (e as Error).message
-      responseValues.error = error
-      return responseValues
-    }
-  }
-
-  /**
-   * Update a playlist using updated data contracts flow
-   **/
-  async orderPlaylist({
-    playlistId,
-    trackIds,
-    logger = console
-  }: {
-    playlistId: number
-    trackIds: number[]
-    logger: Console
-  }): Promise<PlaylistOperationResponse> {
-    const responseValues: PlaylistOperationResponse =
-      this.getDefaultPlaylistReponseValues()
-
-    try {
-      const currentUserId: string | null =
-        this.userStateManager.getCurrentUserId()
-      if (!playlistId || playlistId === undefined) {
-        responseValues.error = 'Missing current playlistId'
-        return responseValues
-      }
-      if (!currentUserId) {
-        responseValues.error = 'Missing current user ID'
-        return responseValues
-      }
-      const userId: number = parseInt(currentUserId)
-      const updateAction = Action.UPDATE
-      const entityType = EntityType.PLAYLIST
-      this.REQUIRES(Services.CREATOR_NODE)
-      const playlist = await this.getFullPlaylist(playlistId, userId)
-
-      const existingPlaylistTracks = this.mapAddedTimestamps(
-        playlist.added_timestamps
-      )
-
-      let trackIdsWithTimes = []
-      const trackIdTimes = {}
-      existingPlaylistTracks.forEach(
-        (trackObj: { track: number; metadata_time?: number; time: number }) => {
-          const trackId = trackObj.track
-          const timestamp = trackObj.metadata_time ?? trackObj.time
-          if (trackId in trackIdTimes) {
-            trackIdTimes[trackId].push(timestamp)
-          } else {
-            trackIdTimes[trackId] = [timestamp]
-          }
-        }
-      )
-
-      // new tracks default to currentBlock timestamp
-      trackIdsWithTimes = trackIds.map((trackId: number) => ({
-        track: trackId,
-        time: trackIdTimes[trackId].pop()
-      }))
-      const metadata: PlaylistMetadata = {
-        playlist_id: playlistId,
-        playlist_contents: { track_ids: trackIdsWithTimes },
-        playlist_name: playlist.playlist_name,
-        playlist_image_sizes_multihash: playlist.cover_art,
-        description: playlist.description,
-        is_album: playlist.is_album,
-        is_private: playlist.is_private
-      }
-      const { metadataMultihash } =
-        await this.creatorNode.uploadPlaylistMetadata(metadata)
-
-      const resp = await this.manageEntity({
-        userId,
-        entityType,
-        entityId: playlistId,
-        action: updateAction,
-        metadataMultihash
-      })
-      const txReceipt = resp.txReceipt
-      responseValues.blockHash = txReceipt.blockHash
-      responseValues.blockNumber = txReceipt.blockNumber
-      responseValues.playlistId = playlistId
       return responseValues
     } catch (e) {
       const error = (e as Error).message
@@ -541,12 +261,6 @@ export class EntityManager extends Base {
     let error = null
     let resp: any
     try {
-      console.log('asdf manageEntity', {        userId,
-        entityType,
-        entityId,
-        action,
-        metadataMultihash
-})
       resp = await this.contracts.EntityManagerClient?.manageEntity(
         userId,
         entityType,
@@ -554,7 +268,6 @@ export class EntityManager extends Base {
         action,
         metadataMultihash
       )
-      console.log('asdf manageEntity resp', {resp})
 
       return { txReceipt: resp.txReceipt, error }
     } catch (e) {
