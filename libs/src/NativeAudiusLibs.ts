@@ -1,6 +1,7 @@
 import type { provider } from 'web3-core'
 import Web3 from './LibsWeb3'
 import { version } from './version'
+import type { SolanaWeb3Config } from './services/solana'
 import { Hedgehog, HedgehogConfig } from './services/hedgehog'
 import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
 import { CreatorNode, CreatorNodeConfig } from './services/creatorNode'
@@ -13,19 +14,12 @@ import { UserStateManager } from './userStateManager'
 import type { Logger, CaptchaConfig, Nullable } from './utils'
 import { Captcha, Utils } from './utils'
 
-import { Keypair, PublicKey } from '@solana/web3.js'
-
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import { Web3Config, Web3Manager } from './services/web3Manager'
 import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
 import { Comstock } from './services/comstock'
 import { IdentityService } from './services/identity'
 import { EthContracts } from './services/ethContracts'
-import {
-  SolanaWeb3Manager,
-  SolanaUtils,
-  SolanaWeb3Config
-} from './services/solana'
 import { AudiusContracts } from './services/dataContracts'
 import { Account } from './api/Account'
 import { Users } from './api/Users'
@@ -47,11 +41,6 @@ type LibsHedgehogConfig = Omit<
   HedgehogConfig,
   'identityService' | 'localStorage'
 >
-
-type LibsSolanaWeb3Config = SolanaWeb3Config & {
-  // fee payer secret keys, if client wants to switch between different fee payers during relay
-  feePayerSecretKeys?: Uint8Array[]
-}
 
 type LibsDiscoveryProviderConfig = Omit<
   DiscoveryProviderConfig,
@@ -228,51 +217,10 @@ export class AudiusLibs {
 
   /**
    * Configures a solana web3
+   * This is a stubbed version for native
    */
-  static configSolanaWeb3({
-    solanaClusterEndpoint,
-    mintAddress,
-    solanaTokenAddress,
-    claimableTokenPDA,
-    feePayerAddress,
-    claimableTokenProgramAddress,
-    rewardsManagerProgramId,
-    rewardsManagerProgramPDA,
-    rewardsManagerTokenPDA,
-    useRelay,
-    feePayerSecretKeys,
-    confirmationTimeout,
-    audiusDataAdminStorageKeypairPublicKey,
-    audiusDataProgramId,
-    audiusDataIdl
-  }: LibsSolanaWeb3Config): SolanaWeb3Config {
-    if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
-      audiusDataAdminStorageKeypairPublicKey = new PublicKey(
-        audiusDataAdminStorageKeypairPublicKey
-      )
-    }
-    if (audiusDataProgramId instanceof String) {
-      audiusDataProgramId = new PublicKey(audiusDataProgramId)
-    }
-    return {
-      solanaClusterEndpoint,
-      mintAddress,
-      solanaTokenAddress,
-      claimableTokenPDA,
-      feePayerAddress,
-      claimableTokenProgramAddress,
-      rewardsManagerProgramId,
-      rewardsManagerProgramPDA,
-      rewardsManagerTokenPDA,
-      useRelay,
-      feePayerKeypairs: feePayerSecretKeys?.map((key) =>
-        Keypair.fromSecretKey(key)
-      ),
-      confirmationTimeout,
-      audiusDataAdminStorageKeypairPublicKey,
-      audiusDataProgramId,
-      audiusDataIdl
-    }
+  static configSolanaWeb3() {
+    return {}
   }
 
   /**
@@ -306,7 +254,7 @@ export class AudiusLibs {
   ethWeb3Manager: Nullable<EthWeb3Manager>
   ethContracts: Nullable<EthContracts>
   web3Manager: Nullable<Web3Manager>
-  solanaWeb3Manager: Nullable<SolanaWeb3Manager>
+  // solanaWeb3Manager: Nullable<SolanaWeb3Manager>
   contracts: Nullable<AudiusContracts>
   creatorNode: Nullable<CreatorNode>
   captcha: Nullable<Captcha>
@@ -379,7 +327,7 @@ export class AudiusLibs {
     this.ethWeb3Manager = null
     this.ethContracts = null
     this.web3Manager = null
-    this.solanaWeb3Manager = null
+    // this.solanaWeb3Manager = null
     this.contracts = null
     this.creatorNode = null
     this.captcha = null
@@ -455,14 +403,6 @@ export class AudiusLibs {
       if (this.identityService) {
         this.identityService.setWeb3Manager(this.web3Manager)
       }
-    }
-    if (this.solanaWeb3Config) {
-      this.solanaWeb3Manager = new SolanaWeb3Manager(
-        this.solanaWeb3Config,
-        this.identityService,
-        this.web3Manager
-      )
-      await this.solanaWeb3Manager.init()
     }
 
     /** Contracts - Eth and Data Contracts */
@@ -549,7 +489,7 @@ export class AudiusLibs {
       this.contracts,
       this.ethWeb3Manager,
       this.ethContracts,
-      this.solanaWeb3Manager,
+      null as any,
       null as any,
       null as any,
       this.creatorNode,
@@ -574,8 +514,6 @@ export class AudiusLibs {
     this.Reactions = new Reactions(...services)
   }
 }
-
-export { SolanaUtils }
 
 export { Utils } from './utils'
 export { SanityChecks } from './sanityChecks'
