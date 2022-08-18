@@ -1,4 +1,4 @@
-import { Name } from '@audius/common'
+import { IntKeys, Name } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { Jupiter, SwapMode, RouteInfo } from '@jup-ag/core'
 import { u64 } from '@solana/spl-token'
@@ -22,6 +22,7 @@ import {
   fork
 } from 'typed-redux-saga/macro'
 
+import { getContext } from 'common/store'
 import { make } from 'common/store/analytics/actions'
 import {
   JupiterTokenSymbol,
@@ -43,7 +44,9 @@ import {
   swapStarted,
   transferStarted,
   transferCompleted,
-  clearFeesCache
+  clearFeesCache,
+  calculateAudioPurchaseInfoFailed,
+  PurchaseInfoErrorType
 } from 'common/store/buy-audio/slice'
 import { increaseBalance } from 'common/store/wallet/slice'
 import {
@@ -392,10 +395,46 @@ function* getSwapFees({ route }: { route: RouteInfo }) {
   return { transactionFees, associatedAccountCreationFees }
 }
 
+function* getAudioPurchaseBounds() {
+  const DEFAULT_MIN_AUDIO_PURCHASE_AMOUNT = 5
+  const DEFAULT_MAX_AUDIO_PURCHASE_AMOUNT = 999
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  yield* call([remoteConfigInstance, remoteConfigInstance.waitForRemoteConfig])
+  const minAudioAmount =
+    remoteConfigInstance.getRemoteVar(IntKeys.MIN_AUDIO_PURCHASE_AMOUNT) ??
+    DEFAULT_MIN_AUDIO_PURCHASE_AMOUNT
+  const maxAudioAmount =
+    remoteConfigInstance.getRemoteVar(IntKeys.MAX_AUDIO_PURCHASE_AMOUNT) ??
+    DEFAULT_MAX_AUDIO_PURCHASE_AMOUNT
+  return { minAudioAmount, maxAudioAmount }
+}
+
 function* getAudioPurchaseInfo({
   payload: { audioAmount }
 }: ReturnType<typeof calculateAudioPurchaseInfo>) {
   try {
+    // Fail early if audioAmount is too small/large
+    const { minAudioAmount, maxAudioAmount } = yield* call(
+      getAudioPurchaseBounds
+    )
+    if (audioAmount > maxAudioAmount) {
+      yield* put(
+        calculateAudioPurchaseInfoFailed({
+          errorType: PurchaseInfoErrorType.MAX_AUDIO_EXCEEDED,
+          maxAudio: maxAudioAmount
+        })
+      )
+      return
+    } else if (audioAmount < minAudioAmount) {
+      yield* put(
+        calculateAudioPurchaseInfoFailed({
+          errorType: PurchaseInfoErrorType.MIN_AUDIO_EXCEEDED,
+          minAudio: minAudioAmount
+        })
+      )
+      return
+    }
+
     // Ensure userbank is created
     yield* fork(function* () {
       yield* call(createUserBankIfNeeded)

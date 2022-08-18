@@ -117,7 +117,17 @@ export enum IntKeys {
   /**
    * The interval between polls to DN for updates to the challenge being claimed to check if it has been indexed as complete.
    */
-  CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS = 'CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS'
+  CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS = 'CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS',
+
+  /**
+   * Minimum AUDIO required to purchase in the BuyAudio modal
+   */
+  MIN_AUDIO_PURCHASE_AMOUNT = 'MIN_AUDIO_PURCHASE_AMOUNT',
+
+  /**
+   * Maximum AUDIO required to purchase in the BuyAudio modal
+   */
+  MAX_AUDIO_PURCHASE_AMOUNT = 'MAX_AUDIO_PURCHASE_AMOUNT'
 }
 
 export enum BooleanKeys {
