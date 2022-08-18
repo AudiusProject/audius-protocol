@@ -9,7 +9,6 @@ import type {
   StateMonitoringUser,
   UserSecondarySyncMetricsMap
 } from './types'
-import type { SpanContext } from '@opentelemetry/api'
 import { SpanStatusCode } from '@opentelemetry/api'
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 
@@ -301,7 +300,7 @@ const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
 
 module.exports = async (params: DecoratedJobParams<MonitorStateJobParams>) => {
   const { parentSpanContext } = params
-  return instrumentTracing({
+  return await instrumentTracing({
     name: 'monitorState.jobProcessor',
     fn: monitorState,
     options: {

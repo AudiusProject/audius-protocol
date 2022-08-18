@@ -85,8 +85,8 @@ const handleExport = async (req, res) => {
  */
 router.get(
   '/export',
-  handleResponse(async (req, res) => {
-    const exportFunc = instrumentTracing({
+  handleResponse(
+    instrumentTracing({
       fn: handleExport,
       options: {
         attributes: {
@@ -95,10 +95,7 @@ router.get(
         }
       }
     })
-
-    const response = await exportFunc(req, res)
-    return response
-  })
+  )
 )
 
 /** Checks if node sync is in progress for wallet. */

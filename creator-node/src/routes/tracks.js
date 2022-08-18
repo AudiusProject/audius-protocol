@@ -147,7 +147,7 @@ router.post(
   ensureStorageMiddleware,
   handleTrackContentUpload,
   handleResponse(async (req, res) => {
-    instrumentTracing({
+    return await instrumentTracing({
       fn: async () => {
         const span = getActiveSpan()
         const AsyncProcessingQueue =

@@ -333,7 +333,7 @@ module.exports = async (
   params: DecoratedJobParams<FindSyncRequestsJobParams>
 ) => {
   const { parentSpanContext } = params
-  return instrumentTracing({
+  return await instrumentTracing({
     name: 'findSyncRequests.jobProcessor',
     fn: findSyncRequests,
     options: {

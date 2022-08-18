@@ -20,11 +20,7 @@ import _ from 'lodash'
 import { logger as baseLogger, createChildLogger } from '../../logging'
 import { QUEUE_NAMES } from './stateMachineConstants'
 import { METRIC_RECORD_TYPE } from '../prometheusMonitoring/prometheus.constants'
-import {
-  getActiveSpan,
-  instrumentTracing,
-  recordException
-} from '../../utils/tracing'
+import { instrumentTracing, recordException } from '../../utils/tracing'
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take

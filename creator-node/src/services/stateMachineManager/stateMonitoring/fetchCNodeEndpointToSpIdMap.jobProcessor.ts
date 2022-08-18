@@ -55,7 +55,7 @@ module.exports = async (
   params: DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>
 ) => {
   const { parentSpanContext } = params
-  return instrumentTracing({
+  return await instrumentTracing({
     name: 'fetchCNodeEndpointToSpIdMap.jobProcessor',
     fn: fetchCNodeEndpointToSpIdMap,
     options: {

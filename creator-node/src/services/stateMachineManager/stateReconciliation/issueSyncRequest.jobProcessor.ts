@@ -9,7 +9,6 @@ import type {
   IssueSyncRequestJobReturnValue,
   SyncRequestAxiosParams
 } from './types'
-import type { SpanContext } from '@opentelemetry/api'
 import type { AxiosRequestConfig } from 'axios'
 
 import axios from 'axios'
@@ -465,7 +464,7 @@ module.exports = async (
   params: DecoratedJobParams<IssueSyncRequestJobParams>
 ) => {
   const { parentSpanContext } = params
-  return instrumentTracing({
+  return await instrumentTracing({
     name: 'issueSyncRequest.jobProcessor',
     fn: issueSyncRequest,
     options: {

@@ -19,7 +19,7 @@ const {
   CLOCK_STATUS_REQUEST_TIMEOUT_MS,
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
 } = require('./stateMachineConstants')
-const { instrumentTracing, getActiveSpan } = require('../../utils/tracing')
+const { instrumentTracing } = require('../../utils/tracing')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
