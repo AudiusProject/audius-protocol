@@ -137,3 +137,7 @@ services:
     networks:
       - audius_dev
     logging: *default-logging
+
+networks:
+  audius_dev:
+    external: true
