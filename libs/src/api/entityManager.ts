@@ -29,15 +29,15 @@ export interface PlaylistOperationResponse {
 type PlaylistTrack = { time: number; metadata_time?: number; track: number }
 
 type PlaylistParam = {
-  playlist_id: number;
-  playlist_name: string;
-  artwork?: { file?: File; url?: string }  
-  playlist_contents: { track_ids: PlaylistTrack[] | number[] } 
-  cover_art_sizes: string;
-  description: string;
-  is_private: boolean;
-  is_album: boolean;
-};
+  playlist_id: number
+  playlist_name: string
+  artwork?: { file?: File; url?: string }
+  playlist_contents: { track_ids: PlaylistTrack[] | number[] }
+  cover_art_sizes: string
+  description: string
+  is_private: boolean
+  is_album: boolean
+}
 
 /*
   API surface for updated data contract interactions.
@@ -56,11 +56,7 @@ export class EntityManager extends Base {
 
   mapTimestamps(addedTimestamps: any) {
     const trackIds = addedTimestamps.map(
-      (trackObj: {
-        track: string
-        metadata_time?: number
-        time: number
-      }) => ({
+      (trackObj: { track: string; metadata_time?: number; time: number }) => ({
         track: trackObj.track,
         time: trackObj.metadata_time ?? trackObj.time // default to time for legacy playlists
       })
@@ -79,16 +75,17 @@ export class EntityManager extends Base {
       error: null
     }
   }
-    
+
   /**
    * Create a playlist using updated data contracts flow
    */
-  async createPlaylist(playlist: PlaylistParam): Promise<PlaylistOperationResponse> {
+  async createPlaylist(
+    playlist: PlaylistParam
+  ): Promise<PlaylistOperationResponse> {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
     try {
-      const userId: number | null =
-        this.userStateManager.getCurrentUserId()
+      const userId: number | null = this.userStateManager.getCurrentUserId()
       if (!userId) {
         responseValues.error = 'Missing current user ID'
         return responseValues
@@ -97,7 +94,7 @@ export class EntityManager extends Base {
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
-      if (playlist.artwork && playlist.artwork.file) {
+      if (playlist?.artwork?.file) {
         const updatedPlaylistImage = await this.creatorNode.uploadImage(
           playlist.artwork.file,
           true // square
@@ -109,7 +106,7 @@ export class EntityManager extends Base {
       const currentBlockNumber = await web3.eth.getBlockNumber()
       const currentBlock = await web3.eth.getBlock(currentBlockNumber)
       const tracks = playlist.playlist_contents.track_ids.map((trackId) => ({
-        track: trackId as number ,
+        track: trackId as number,
         time: currentBlock.timestamp as number
       }))
 
@@ -149,8 +146,7 @@ export class EntityManager extends Base {
   async deletePlaylist(playlistId: number): Promise<PlaylistOperationResponse> {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
-    const userId: number | null =
-      this.userStateManager.getCurrentUserId()
+    const userId: number | null = this.userStateManager.getCurrentUserId()
     if (!userId) {
       responseValues.error = 'Missing current user ID'
       return responseValues
@@ -177,13 +173,14 @@ export class EntityManager extends Base {
   /**
    * Update a playlist using updated data contracts flow
    */
-  async updatePlaylist(playlist: PlaylistParam): Promise<PlaylistOperationResponse> {
+  async updatePlaylist(
+    playlist: PlaylistParam
+  ): Promise<PlaylistOperationResponse> {
     const responseValues: PlaylistOperationResponse =
       this.getDefaultPlaylistReponseValues()
 
     try {
-      const userId: number | null =
-        this.userStateManager.getCurrentUserId()
+      const userId: number | null = this.userStateManager.getCurrentUserId()
 
       if (!playlist || playlist === undefined) {
         responseValues.error = 'Missing current playlist'
@@ -197,7 +194,7 @@ export class EntityManager extends Base {
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
-      if (playlist.artwork && playlist.artwork.file) {
+      if (playlist?.artwork?.file) {
         const updatedPlaylistImage = await this.creatorNode.uploadImage(
           playlist.artwork.file,
           true // square
@@ -205,10 +202,7 @@ export class EntityManager extends Base {
         dirCID = updatedPlaylistImage.dirCID
       }
 
-      const trackIds = this.mapTimestamps(
-        playlist.playlist_contents.track_ids
-      )
-
+      const trackIds = this.mapTimestamps(playlist.playlist_contents.track_ids)
 
       const metadata: PlaylistMetadata = {
         playlist_id: playlist.playlist_id,
