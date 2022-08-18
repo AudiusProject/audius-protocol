@@ -258,9 +258,6 @@ async function saveFileForMultihashToFS(
               break
             }
           } catch (e) {
-            if (e.message.includes('status code 403')) {
-            }
-
             decisionTree.recordStage({
               name: 'Error - Could not retrieve file from gateway',
               data: { url, errorMsg: e.message },
