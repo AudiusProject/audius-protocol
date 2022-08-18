@@ -224,7 +224,7 @@ describe('test issueSyncRequest job processor', function () {
     const initialSecondaryClockValue = 2
     const finalSecondaryClockValue = 3
 
-    config.set('maxSyncMonitoringDurationInMs', 100)
+    config.set('maxManualSyncMonitoringDurationInMs', 100)
 
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
@@ -304,11 +304,11 @@ describe('test issueSyncRequest job processor', function () {
     expect(recordFailureStub).to.have.not.been.called
   })
 
-  it.only("requires additional sync when secondary doesn't update clock during sync", async function () {
+  it("requires additional sync when secondary doesn't update clock during sync", async function () {
     const primaryClockValue = 5
     const finalSecondaryClockValue = 3
 
-    config.set('maxSyncMonitoringDurationInMs', 100)
+    config.set('maxManualSyncMonitoringDurationInMs', 100)
 
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,

@@ -388,9 +388,9 @@ const _additionalSyncIsRequired = async (
         secondaryCaughtUpToPrimary = true
         break
       }
-    } catch (e: any) {
-      recordException(e)
-      logger.warn(`${logMsgString} || Error: ${e.message}`)
+    } catch (e) {
+      recordException(e as Error)
+      logger.warn(`${logMsgString} || Error: ${(e as Error).message}`)
     }
 
     // Delay between retries
@@ -464,7 +464,7 @@ module.exports = async (
   params: DecoratedJobParams<IssueSyncRequestJobParams>
 ) => {
   const { parentSpanContext } = params
-  const output = await instrumentTracing({
+  return await instrumentTracing({
     name: 'issueSyncRequest.jobProcessor',
     fn: issueSyncRequest,
     options: {
@@ -480,6 +480,4 @@ module.exports = async (
       }
     }
   })(params)
-  console.log(JSON.stringify(output))
-  return output
 }
