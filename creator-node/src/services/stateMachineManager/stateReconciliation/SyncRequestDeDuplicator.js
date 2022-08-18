@@ -59,7 +59,7 @@ class SyncRequestDeDuplicator {
           immediate
         )
         const span = getActiveSpan()
-        span.setAttribute('syncKey', syncKey)
+        span?.setAttribute('syncKey', syncKey)
 
         this.waitingSyncsByUserWalletMap[syncKey] = jobProps
       }
