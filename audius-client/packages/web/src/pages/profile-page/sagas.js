@@ -64,7 +64,7 @@ function* fetchProfileCustomizedCollectibles(user) {
   )
   const cid = user?.metadata_multihash ?? null
   if (cid) {
-    const metadata = yield call(
+    const { is_verified: ignored_is_verified, ...metadata } = yield call(
       fetchCID,
       cid,
       gateways,
@@ -85,7 +85,10 @@ function* fetchProfileCustomizedCollectibles(user) {
         cacheActions.update(Kind.USERS, [
           {
             id: user.user_id,
-            metadata: { ...metadata, collectiblesOrderUnset: true }
+            metadata: {
+              ...metadata,
+              collectiblesOrderUnset: true
+            }
           }
         ])
       )
