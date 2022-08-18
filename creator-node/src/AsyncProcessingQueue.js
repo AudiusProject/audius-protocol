@@ -13,7 +13,11 @@ const {
 const {
   processTranscodeAndSegments
 } = require('./components/tracks/trackContentUploadManager')
-const { instrumentTracing, getActiveSpan } = require('./utils/tracing')
+const {
+  instrumentTracing,
+  getActiveSpan,
+  currentSpanContext
+} = require('./utils/tracing')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
@@ -87,7 +91,6 @@ class AsyncProcessingQueue {
 
   async processTask(job, done) {
     const { logContext, task } = job.data
-    const span = getActiveSpan()
 
     const func = this.getFn(task)
 
@@ -100,7 +103,7 @@ class AsyncProcessingQueue {
           'Failed to hand off transcode. Retrying upload to current node...'
         )
         await this.addTrackContentUploadTask({
-          parentSpanContext: span?.spanContext(),
+          parentSpanContext: currentSpanContext(),
           logContext,
           req: job.data.req
         })
@@ -110,7 +113,7 @@ class AsyncProcessingQueue {
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
         )
         await this.addProcessTranscodeAndSegmentTask({
-          parentSpanContext: span?.spanContext(),
+          parentSpanContext: currentSpanContext(),
           logContext,
           req: { ...job.data.req, transcodeFilePath, segmentFileNames }
         })
