@@ -5,7 +5,6 @@ const { ExpressAdapter } = require('@bull-board/express')
 
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
-const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
@@ -29,8 +28,7 @@ const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRe
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
- * services for use throughout CreatorNode.
- *
+ * services for use throughout Creator Node.
  */
 class ServiceRegistry {
   constructor() {
@@ -44,7 +42,6 @@ class ServiceRegistry {
     this.libs = null // instance of Audius Libs
     this.blacklistManager = BlacklistManager // Service that handles blacklisted content
     this.stateMachineManager = null // Service that manages user states
-    this.snapbackSM = null // Responsible for recurring sync and reconfig operations
     this.URSMRegistrationManager = null // Registers node on L2 URSM contract, no-ops afterward
     this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
 
@@ -289,7 +286,6 @@ class ServiceRegistry {
    * Some services require the node server to be running in order to initialize. Run those here.
    * Specifically:
    *  - recover node L1 identity (requires node health check from server to return success)
-   *  - initialize SnapbackSM service (requires node L1 identity)
    *  - construct SyncQueue (requires node L1 identity)
    *  - register node on L2 URSM contract (requires node L1 identity)
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
@@ -301,10 +297,6 @@ class ServiceRegistry {
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
-
-    // SnapbackSM init (requires L1 identity)
-    // Retries indefinitely
-    await this._initSnapbackSM()
 
     // Init StateMachineManager
     this.stateMachineManager = new StateMachineManager()
@@ -462,40 +454,6 @@ class ServiceRegistry {
     }
 
     this.logInfo('URSM Registration completed')
-  }
-
-  /**
-   * Initialize SnapbackSM
-   * Requires L1 identity
-   */
-  async _initSnapbackSM() {
-    this.snapbackSM = new SnapbackSM(config, this.libs)
-    const { stateMachineQueue } = this.snapbackSM
-    this.stateMachineQueue = stateMachineQueue
-
-    let isInitialized = false
-    const retryTimeoutMs = 10000 // ms
-    while (!isInitialized) {
-      try {
-        this.logInfo(
-          `Attempting to init SnapbackSM on ${retryTimeoutMs}ms interval...`
-        )
-
-        await this.snapbackSM.init()
-
-        isInitialized = true
-        // Short circuit earlier instead of waiting for another timeout and loop iteration
-        break
-
-        // Swallow all init errors
-      } catch (e) {
-        this.logError(`_initSnapbackSM Error ${e}`)
-      }
-
-      await utils.timeout(retryTimeoutMs, false)
-    }
-
-    this.logInfo(`SnapbackSM Init completed`)
   }
 
   logInfo(msg) {

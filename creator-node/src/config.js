@@ -416,7 +416,7 @@ const config = convict({
     default: false
   },
   snapbackHighestReconfigMode: {
-    doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
+    doc: 'Depending on the reconfig op, issue a reconfig or not. See stateMachineConstants for the modes.',
     format: String,
     env: 'snapbackHighestReconfigMode',
     default: 'RECONFIG_DISABLED'
@@ -527,7 +527,7 @@ const config = convict({
     default: 48
   },
   snapbackUsersPerJob: {
-    doc: 'Maximum number of users to process in each SnapbackSM job',
+    doc: 'Maximum number of users to process in each stateMachineManager.stateMonitoring job',
     format: 'nat',
     env: 'snapbackUsersPerJob',
     default: 1000

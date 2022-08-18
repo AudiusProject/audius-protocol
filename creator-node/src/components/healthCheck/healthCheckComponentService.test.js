@@ -25,7 +25,7 @@ const SOL_SECRET_KEY_BUFFER = Buffer.from(SOL_SECRET_KEY_BASE64, 'base64')
 // Ed25519 public key (base58 encoded) when ETH_PRIV_KEY is the seed
 const SOL_PUBLIC_KEY_BASE58 = 'GMQMUsxnCKjnDVKG9UfYtQdkLVxDsHyZ9z3sLtLS6Unq'
 
-const snapbackSMMock = {
+const stateMachineManagerMock = {
   highestEnabledReconfigMode: 'RECONFIG_DISABLED'
 }
 
@@ -162,7 +162,7 @@ describe('Test Health Check', function () {
     const res = await healthCheck(
       {
         libs: libsMock,
-        snapbackSM: snapbackSMMock,
+        stateMachineManager: stateMachineManagerMock,
         asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
@@ -279,7 +279,7 @@ describe('Test Health Check', function () {
 
     const res = await healthCheck(
       {
-        snapbackSM: snapbackSMMock,
+        stateMachineManager: stateMachineManagerMock,
         asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
@@ -383,7 +383,7 @@ describe('Test Health Check', function () {
   it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
     const res = await healthCheck(
       {
-        snapbackSM: snapbackSMMock,
+        stateMachineManager: stateMachineManagerMock,
         asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
@@ -530,7 +530,7 @@ describe('Test Health Check Verbose', function () {
 
     const res = await healthCheckVerbose(
       {
-        snapbackSM: snapbackSMMock,
+        stateMachineManager: stateMachineManagerMock,
         asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
@@ -647,7 +647,7 @@ describe('Test Health Check Verbose', function () {
     const verboseRes = await healthCheckVerbose(
       {
         libs: libsMock,
-        snapbackSM: snapbackSMMock,
+        stateMachineManager: stateMachineManagerMock,
         asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
@@ -662,7 +662,7 @@ describe('Test Health Check Verbose', function () {
     const defaultRes = await healthCheck(
       {
         libs: libsMock,
-        snapbackSM: snapbackSMMock,
+        stateMachineManager: stateMachineManagerMock,
         asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },

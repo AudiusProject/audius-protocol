@@ -1,7 +1,9 @@
 const redis = require('../redis')
 
-const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
-const { SYNC_STATES } = require('../snapbackSM/syncHistoryAggregator')
+const SyncHistoryAggregator = require('../services/stateMachineManager/syncHistoryAggregator')
+const {
+  SYNC_STATES
+} = require('../services/stateMachineManager/syncHistoryAggregator')
 const {
   QUEUE_NAMES
 } = require('../services/stateMachineManager/stateMachineConstants')

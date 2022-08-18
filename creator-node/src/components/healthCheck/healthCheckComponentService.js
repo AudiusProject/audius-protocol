@@ -25,9 +25,8 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  *    and used in signature generation
  */
 const healthCheck = async (
-  { libs, snapbackSM, trustedNotifierManager } = {},
+  { libs, stateMachineManager, trustedNotifierManager } = {},
   logger,
-  sequelize,
   getMonitors,
   getTranscodeQueueJobs,
   transcodingQueueIsAvailable,
@@ -103,8 +102,8 @@ const healthCheck = async (
   ])
 
   let currentSnapbackReconfigMode
-  if (snapbackSM) {
-    currentSnapbackReconfigMode = snapbackSM.highestEnabledReconfigMode
+  if (stateMachineManager) {
+    currentSnapbackReconfigMode = stateMachineManager.highestEnabledReconfigMode
   }
 
   const { active: transcodeActive, waiting: transcodeWaiting } =
@@ -244,9 +243,8 @@ const parseDateOrNull = (date) => {
 
 // TODO remove verbose health check after fully deprecated
 const healthCheckVerbose = async (
-  { libs, snapbackSM, trustedNotifierManager } = {},
+  { libs, stateMachineManager, trustedNotifierManager } = {},
   logger,
-  sequelize,
   getMonitors,
   numberOfCPUs,
   getTranscodeQueueJobs,
@@ -254,9 +252,8 @@ const healthCheckVerbose = async (
   getAsyncProcessingQueueJobs
 ) => {
   return healthCheck(
-    { libs, snapbackSM, trustedNotifierManager },
+    { libs, stateMachineManager, trustedNotifierManager },
     logger,
-    sequelize,
     getMonitors,
     getTranscodeQueueJobs,
     transcodingQueueIsAvailable,

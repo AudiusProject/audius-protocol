@@ -8,7 +8,7 @@ const {
   getOwnEndpoint,
   getUserReplicaSetEndpointsFromDiscovery
 } = require('../../middlewares')
-const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
+const SyncHistoryAggregator = require('../stateMachineManager/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')

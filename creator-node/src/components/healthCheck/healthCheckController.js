@@ -11,9 +11,7 @@ const {
   healthCheckVerbose,
   healthCheckDuration
 } = require('./healthCheckComponentService')
-const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
-const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
 
@@ -52,7 +50,6 @@ const healthCheckController = async (req) => {
   const response = await healthCheck(
     serviceRegistry,
     logger,
-    sequelize,
     getMonitors,
     TranscodingQueue.getTranscodeQueueJobs,
     TranscodingQueue.isAvailable,
@@ -127,29 +124,6 @@ const healthCheckController = async (req) => {
 }
 
 /**
- * Controller for `health_check/sync` route, calls
- * syncHealthCheckController
- */
-const syncHealthCheckController = async (req) => {
-  const response = await syncHealthCheck(serviceRegistry)
-
-  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
-  const syncQueueJobsTotalMetric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE
-  )
-  syncQueueJobsTotalMetric.set(
-    { status: 'manual_waiting' },
-    response.manualWaitingCount
-  )
-  syncQueueJobsTotalMetric.set(
-    { status: 'recurring_waiting' },
-    response.recurringWaitingCount
-  )
-
-  return successResponse(response)
-}
-
-/**
  * Controller for health_check/duration route
  * Calls healthCheckComponentService
  */
@@ -177,7 +151,6 @@ const healthCheckVerboseController = async (req) => {
   const healthCheckResponse = await healthCheckVerbose(
     serviceRegistry,
     logger,
-    sequelize,
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
@@ -193,7 +166,6 @@ const healthCheckVerboseController = async (req) => {
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
-router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get(
   '/health_check/duration',
   ensureValidSPMiddleware,
