@@ -115,7 +115,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
- * @return {Boolean} true if success, false if error
+ * @return {Error?} error object or null
  */
 async function saveFileForMultihashToFS(
   libs,
@@ -296,7 +296,7 @@ async function saveFileForMultihashToFS(
       }
     }
 
-    // If file is not found on on any gateway, check nodes on the rest of the network
+    // If file is not found in replica set, check network (remaining registered nodes)
     if (!fileFound) {
       try {
         const found = await findCIDInNetwork(
@@ -304,8 +304,8 @@ async function saveFileForMultihashToFS(
           multihash,
           logger,
           libs,
-          null,
-          gatewaysToTry
+          /** trackId */ null,
+          /** excludeList */ gatewaysToTry
         )
         if (found) {
           decisionTree.recordStage({

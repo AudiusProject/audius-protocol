@@ -7,14 +7,14 @@ const HSetKey = 'UserSyncFailureCounts'
  */
 module.exports = class UserSyncFailureCountService {
   static async resetFailureCount(wallet: string) {
-    await redis.hSet(HSetKey, wallet, 0)
+    await redis.hset(HSetKey, wallet, 0)
   }
 
   static async incrementFailureCount(wallet: string) {
-    return await redis.hIncrBy(HSetKey, wallet, 1)
+    return await redis.hincrby(HSetKey, wallet, 1)
   }
 
   static async getFailureCount(wallet: string) {
-    return (await redis.hGet(wallet)) || 0
+    return (await redis.hget(wallet)) || 0
   }
 }
