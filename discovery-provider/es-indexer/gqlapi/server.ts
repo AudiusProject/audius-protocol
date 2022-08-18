@@ -67,6 +67,10 @@ const trackResolvers: TrackResolvers<Ctx, Track & TrackDoc> = {
     return track.track_id.toString()
   },
 
+  owner: async (track, args, ctx) => {
+    return ctx.es.user.load(track.owner_id)
+  },
+
   async reposted_by(track, args) {
     return usersLoadMany(track.reposted_by, args) as any
   },
@@ -104,6 +108,10 @@ const playlistResolvers: PlaylistResolvers<Ctx, Playlist & PlaylistDoc> = {
 
   tracks: (playlist, args) => {
     return fetchTracks(playlist, args) as any
+  },
+
+  owner: async (playlist, args, ctx) => {
+    return ctx.es.user.load(playlist.playlist_owner_id)
   },
 
   favorite_count: (playlist) => playlist.save_count,
@@ -456,7 +464,7 @@ export function buildStreamUrls(user: UserRow, track: TrackRow) {
 
 type Ctx = {
   es: {
-    user: DataLoader<number | string, UserDoc>
+    user: DataLoader<number | string, User & UserDoc>
     track: DataLoader<number | string, TrackDoc>
     playlist: DataLoader<number | string, PlaylistDoc>
   }

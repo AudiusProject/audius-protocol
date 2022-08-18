@@ -29,6 +29,7 @@ export type Playlist = {
   is_reposted: Scalars['Boolean'];
   is_saved: Scalars['Boolean'];
   name: Scalars['String'];
+  owner: User;
   repost_count: Scalars['Int'];
   reposted_by: Array<User>;
   tracks: Array<Track>;
@@ -90,6 +91,7 @@ export type Track = {
   is_reposted: Scalars['Boolean'];
   is_saved: Scalars['Boolean'];
   length: Scalars['Int'];
+  owner: User;
   repost_count: Scalars['Int'];
   reposted_by: Array<User>;
   stream_urls: Array<Scalars['String']>;
@@ -295,6 +297,7 @@ export type PlaylistResolvers<ContextType = any, ParentType extends ResolversPar
   is_reposted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_saved?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  owner?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   repost_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   reposted_by?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<PlaylistReposted_ByArgs, 'limit' | 'offset'>>;
   tracks?: Resolver<Array<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<PlaylistTracksArgs, 'limit' | 'offset'>>;
@@ -315,6 +318,7 @@ export type TrackResolvers<ContextType = any, ParentType extends ResolversParent
   is_reposted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_saved?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   length?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  owner?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   repost_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   reposted_by?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<TrackReposted_ByArgs, 'limit' | 'offset'>>;
   stream_urls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

@@ -34,6 +34,7 @@ export const typeDefs = gql`
     title: String!
     length: Int!
     created_at: String!
+    owner: User!
 
     favorite_count: Int!
     repost_count: Int!
@@ -100,6 +101,7 @@ export const typeDefs = gql`
     name: String!
     description: String
     created_at: String!
+    owner: User!
 
     favorite_count: Int!
     repost_count: Int!
