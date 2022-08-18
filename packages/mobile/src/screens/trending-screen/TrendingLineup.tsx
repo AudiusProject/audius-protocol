@@ -19,7 +19,7 @@ import { Lineup } from 'app/components/lineup'
 import type { LineupProps } from 'app/components/lineup/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { make, track } from 'app/utils/analytics'
+import { make, track } from 'app/services/analytics'
 
 const getTrendingWeekLineup = makeGetLineupMetadatas(
   getDiscoverTrendingWeekLineup

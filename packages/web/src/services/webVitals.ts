@@ -1,7 +1,7 @@
 import { Name } from '@audius/common'
 import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'web-vitals'
 
-import { track } from 'store/analytics/providers/amplitude'
+import { track } from 'services/analytics/amplitude'
 import { findRoute, getPathname } from 'utils/route'
 
 // Establish the "initial load" route

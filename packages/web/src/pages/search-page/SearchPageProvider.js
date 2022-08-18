@@ -7,6 +7,7 @@ import { Redirect } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
 import { getUserId } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import * as searchPageActions from 'common/store/pages/search-results/actions'
 import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
@@ -19,7 +20,6 @@ import {
 } from 'common/store/pages/search-results/selectors'
 import { SearchKind } from 'common/store/pages/search-results/types'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import { make } from 'store/analytics/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import {
   NOT_FOUND_PAGE,

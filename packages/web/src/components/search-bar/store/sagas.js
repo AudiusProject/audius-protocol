@@ -11,10 +11,10 @@ import {
 } from 'redux-saga/effects'
 
 import { getUserId } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { setTracksIsBlocked } from 'common/store/cache/tracks/utils/blocklist'
 import * as searchActions from 'components/search-bar/store/actions'
-import { make } from 'store/analytics/actions'
 import { waitForAccount } from 'utils/sagaHelpers'
 
 import mobileSagas from './mobileSagas'

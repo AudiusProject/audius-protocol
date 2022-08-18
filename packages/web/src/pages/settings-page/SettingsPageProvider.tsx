@@ -14,6 +14,7 @@ import {
   getUserHandle,
   getUserName
 } from 'common/store/account/selectors'
+import { make, TrackEvent } from 'common/store/analytics/actions'
 import { getMethod as getCastMethod } from 'common/store/cast/selectors'
 import { CastMethod, updateMethod } from 'common/store/cast/slice'
 import * as settingPageActions from 'common/store/pages/settings/actions'
@@ -33,7 +34,6 @@ import { getTheme } from 'common/store/ui/theme/selectors'
 import { makeGetTierAndVerifiedForUser } from 'common/store/wallet/utils'
 import { show } from 'components/music-confetti/store/slice'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { make, TrackEvent } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import {
   isPushManagerAvailable,

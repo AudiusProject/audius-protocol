@@ -15,7 +15,7 @@ import { MountPlacement, ComponentPlacement } from 'components/types'
 import { getTheme } from 'common/store/ui/theme/selectors'
 import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
-import { make, TrackEvent } from 'store/analytics/actions'
+import { make, TrackEvent } from 'common/store/analytics/actions'
 import { Name } from '@audius/common'
 import { Track } from '@audius/common'
 import { SquareSizes } from '@audius/common'
@@ -182,7 +182,8 @@ const Visualizer = ({
       className={cn(styles.visualizer, {
         [styles.fade]: fadeVisualizer,
         [styles.show]: showVisualizer
-      })}>
+      })}
+    >
       <div className='visualizer' />
       <div className={styles.logoWrapper}>
         <AudiusLogoHorizontal className={styles.logo} />
@@ -197,7 +198,8 @@ const Visualizer = ({
           onClick={() => {
             goToTrackPage()
             onClose()
-          }}>
+          }}
+        >
           <Artwork track={track} />
         </div>
         {renderTrackInfo()}

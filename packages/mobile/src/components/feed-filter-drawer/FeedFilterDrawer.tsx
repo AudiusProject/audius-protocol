@@ -7,8 +7,8 @@ import { Text } from 'react-native'
 
 import ActionDrawer from 'app/components/action-drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
-import { make, track } from 'app/utils/analytics'
 
 const MODAL_NAME = 'FeedFilter'
 

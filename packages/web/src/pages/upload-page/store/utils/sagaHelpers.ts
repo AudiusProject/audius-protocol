@@ -3,7 +3,7 @@ import { range } from 'lodash'
 import { all, put, select } from 'typed-redux-saga'
 
 import { getAccountUser } from 'common/store/account/selectors'
-import { make } from 'store/analytics/actions'
+import { make } from 'common/store/analytics/actions'
 import { waitForAccount } from 'utils/sagaHelpers'
 
 export function* reportSuccessAndFailureEvents({

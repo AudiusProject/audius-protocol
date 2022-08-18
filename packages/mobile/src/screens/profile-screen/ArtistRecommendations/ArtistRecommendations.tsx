@@ -18,9 +18,9 @@ import { ProfilePicture } from 'app/components/user'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { track, make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import { track, make } from 'app/utils/analytics'
 
 import { useSelectProfile } from '../selectors'
 

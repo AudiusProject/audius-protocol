@@ -20,6 +20,7 @@ import {
   getAccountUser,
   getPlaylistLibrary
 } from 'common/store/account/selectors'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { addTrackToPlaylist } from 'common/store/cache/collections/actions'
 import { getPlaylistUpdates } from 'common/store/notifications/selectors'
 import {
@@ -38,7 +39,6 @@ import {
   AUDIO_NFT_PLAYLIST,
   SMART_COLLECTION_MAP
 } from 'pages/smart-collection/smartCollections'
-import { make, useRecord } from 'store/analytics/actions'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'

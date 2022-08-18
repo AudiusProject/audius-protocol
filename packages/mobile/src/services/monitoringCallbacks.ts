@@ -1,8 +1,8 @@
 import type { MonitorPayload, ServiceMonitorType } from '@audius/common'
 import { IntKeys } from '@audius/common'
 
+import { track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
-import { track } from 'app/utils/analytics'
 
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
 

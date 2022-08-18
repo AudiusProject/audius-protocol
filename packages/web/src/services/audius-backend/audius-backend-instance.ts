@@ -1,6 +1,7 @@
 import type { AudiusLibs } from '@audius/sdk'
 
 import { audiusBackend } from 'common/services/audius-backend'
+import { track } from 'services/analytics'
 import {
   LIBS_INITTED_EVENT,
   waitForLibsInit,
@@ -9,7 +10,6 @@ import {
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { monitoringCallbacks } from 'services/serviceMonitoring'
-import { track } from 'store/analytics/providers'
 import { isElectron, isMobile } from 'utils/clientUtil'
 
 import { fetchCID } from './fetchCID'

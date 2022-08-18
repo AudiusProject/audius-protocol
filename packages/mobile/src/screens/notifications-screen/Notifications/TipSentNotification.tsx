@@ -7,8 +7,8 @@ import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
-import { make } from 'app/utils/analytics'
 
 import {
   NotificationHeader,

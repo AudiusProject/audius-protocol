@@ -4,6 +4,7 @@ import { Name, FeatureFlags } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { getAccountUser } from 'common/store/account/selectors'
+import { make, useRecord } from 'common/store/analytics/actions'
 import {
   shareAudioNftPlaylist,
   shareCollection
@@ -15,7 +16,6 @@ import { requestOpen as requestOpenTikTokModal } from 'common/store/ui/share-sou
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useModalState } from 'pages/modals/useModalState'
-import { make, useRecord } from 'store/analytics/actions'
 import { isMobile } from 'utils/clientUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'

@@ -4,9 +4,9 @@ import { Name } from '@audius/common'
 import ReactMarkdown from 'react-markdown'
 import { useDispatch } from 'react-redux'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import { setNotificationModal } from 'common/store/notifications/actions'
 import { Announcement } from 'common/store/notifications/types'
-import { make, useRecord } from 'store/analytics/actions'
 
 import styles from './AnnouncementNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'

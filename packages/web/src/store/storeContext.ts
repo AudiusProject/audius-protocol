@@ -1,4 +1,5 @@
 import { CommonStoreContext } from 'common/store'
+import * as analytics from 'services/analytics'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { fingerprintClient } from 'services/fingerprint'
@@ -12,6 +13,7 @@ export const storeContext: CommonStoreContext = {
   setLocalStorageItem: async (key, value) =>
     window.localStorage.setItem(key, value),
   getFeatureEnabled,
+  analytics,
   remoteConfigInstance,
   audiusBackendInstance,
   apiClient,

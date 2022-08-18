@@ -13,8 +13,8 @@ import { View } from 'react-native'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
-import { make } from 'app/utils/analytics'
 import { getTrackRoute } from 'app/utils/routes'
 
 import {

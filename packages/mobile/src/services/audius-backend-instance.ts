@@ -7,7 +7,7 @@ import { audiusBackend } from 'audius-client/src/common/services/audius-backend'
 import Config from 'react-native-config'
 import scrypt from 'react-native-scrypt'
 
-import { track } from 'app/utils/analytics'
+import { track } from 'app/services/analytics'
 
 import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'

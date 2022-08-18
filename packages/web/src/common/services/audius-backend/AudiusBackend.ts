@@ -25,6 +25,7 @@ import {
   User,
   UserMetadata,
   UserTrack,
+  AnalyticsEvent,
   uuid
 } from '@audius/common'
 import { DiscoveryAPI, IdentityAPI } from '@audius/sdk/dist/core'
@@ -233,11 +234,7 @@ type AudiusBackendParams = {
   nativeMobile: Maybe<boolean>
   onLibsInit: (libs: any) => void
   recaptchaSiteKey: Maybe<string>
-  recordAnalytics: (
-    event: string,
-    properties?: Record<string, any>,
-    callback?: () => void
-  ) => void
+  recordAnalytics: (event: AnalyticsEvent, callback?: () => void) => void
   registryAddress: Maybe<string>
   remoteConfigInstance: RemoteConfigInstance
   setLocalStorageItem: (key: string, value: string) => Promise<void>
@@ -362,9 +359,12 @@ export const audiusBackend = ({
         },
         ({ name, duration }) => {
           console.info(`Recorded event ${name} with duration ${duration}`)
-          recordAnalytics(Name.PERFORMANCE, {
-            metric: name,
-            value: duration
+          recordAnalytics({
+            eventName: Name.PERFORMANCE,
+            properties: {
+              metric: name,
+              value: duration
+            }
           })
         }
       )
@@ -527,9 +527,12 @@ export const audiusBackend = ({
     endpoint: string,
     decisionTree: { stage: string }[]
   ) {
-    recordAnalytics(Name.DISCOVERY_PROVIDER_SELECTION, {
-      endpoint,
-      reason: decisionTree.map((reason) => reason.stage).join(' -> ')
+    recordAnalytics({
+      eventName: Name.DISCOVERY_PROVIDER_SELECTION,
+      properties: {
+        endpoint,
+        reason: decisionTree.map((reason) => reason.stage).join(' -> ')
+      }
     })
     didSelectDiscoveryProviderListeners.forEach((listener) =>
       listener(endpoint)
@@ -541,16 +544,22 @@ export const audiusBackend = ({
     secondaries: string[],
     reason: string
   ) {
-    recordAnalytics(Name.CREATOR_NODE_SELECTION, {
-      endpoint: primary,
-      selectedAs: 'primary',
-      reason
+    recordAnalytics({
+      eventName: Name.CREATOR_NODE_SELECTION,
+      properties: {
+        endpoint: primary,
+        selectedAs: 'primary',
+        reason
+      }
     })
     secondaries.forEach((secondary) => {
-      recordAnalytics(Name.CREATOR_NODE_SELECTION, {
-        endpoint: secondary,
-        selectedAs: 'secondary',
-        reason
+      recordAnalytics({
+        eventName: Name.CREATOR_NODE_SELECTION,
+        properties: {
+          endpoint: secondary,
+          selectedAs: 'secondary',
+          reason
+        }
       })
     })
   }
@@ -1932,7 +1941,8 @@ export const audiusBackend = ({
       formFields.coverPhoto,
       hasWallet,
       getHostUrl(),
-      recordAnalytics,
+      (eventName: string, properties: Record<string, unknown>) =>
+        recordAnalytics({ eventName, properties }),
       {
         Request: Name.CREATE_USER_BANK_REQUEST,
         Success: Name.CREATE_USER_BANK_SUCCESS,

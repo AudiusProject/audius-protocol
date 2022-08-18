@@ -15,6 +15,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { getUserId } from 'common/store/account/selectors'
+import { useRecord, make } from 'common/store/analytics/actions'
 import {
   getCollection,
   getTracksFromCollection
@@ -37,7 +38,6 @@ import { setFavorite } from 'common/store/user-list/favorites/actions'
 import { setRepost } from 'common/store/user-list/reposts/actions'
 import { RepostType } from 'common/store/user-list/reposts/types'
 import { PlaylistTileProps } from 'components/track/types'
-import { useRecord, make } from 'store/analytics/actions'
 import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import {

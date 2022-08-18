@@ -10,9 +10,9 @@ import IconRemove from 'app/assets/images/iconRemove.svg'
 import { TextButton } from 'app/components/core'
 import { TwitterButton } from 'app/components/twitter-button'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import { make } from 'app/utils/analytics'
 
 import { TopBarIconButton } from '../app-screen'
 

@@ -12,12 +12,12 @@ import {
   twitterLogin as twitterLoginAction
 } from 'common/store/account/reducer'
 import { getUserHandle } from 'common/store/account/selectors'
+import { make, TrackEvent, useRecord } from 'common/store/analytics/actions'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import InstagramAccountVerification from 'pages/settings-page/components/InstagramAccountVerified'
 import TwitterAccountVerification from 'pages/settings-page/components/TwitterAccountVerified'
-import { make, TrackEvent, useRecord } from 'store/analytics/actions'
 
 import styles from './SocialProof.module.css'
 

@@ -16,6 +16,7 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
 import { getUserId } from 'common/store/account/selectors'
+import { useRecord, make } from 'common/store/analytics/actions'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import { getIsCasting, getMethod } from 'common/store/cast/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
@@ -53,7 +54,6 @@ import { PlayButtonStatus } from 'components/play-bar/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
-import { useRecord, make } from 'store/analytics/actions'
 import {
   getAudio,
   getBuffering,

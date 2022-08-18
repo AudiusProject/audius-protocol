@@ -11,13 +11,13 @@ import { Dispatch } from 'redux'
 
 import notFoundAnimation from 'assets/animations/404.json'
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
+import { useRecord, make } from 'common/store/analytics/actions'
 import { getTheme } from 'common/store/ui/theme/selectors'
 import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/store/context'
 import Page from 'components/page/Page'
-import { useRecord, make } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'

@@ -29,6 +29,7 @@ import {
   getAccountUser,
   getPlaylistLibrary
 } from 'common/store/account/selectors'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { getDominantColorsByTrack } from 'common/store/average-color/slice'
 import {
   addTrackToPlaylist,
@@ -71,7 +72,6 @@ import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { resetState as resetUploadState } from 'pages/upload-page/store/actions'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
-import { make, useRecord } from 'store/analytics/actions'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { makeGetCurrent as makeGetCurrentPlayer } from 'store/player/selectors'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'

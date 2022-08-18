@@ -22,6 +22,7 @@ import {
   getUserId,
   getUserHandle
 } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { setDominantColors } from 'common/store/average-color/slice'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
@@ -35,7 +36,6 @@ import * as signOnActions from 'common/store/pages/signon/actions'
 import { squashNewLines, formatUrlName } from 'common/utils/formatUtil'
 import { fetchCID } from 'services/audius-backend'
 import TrackDownload from 'services/audius-backend/TrackDownload'
-import { make } from 'store/analytics/actions'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 

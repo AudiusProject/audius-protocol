@@ -16,7 +16,7 @@ import {
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { make, track } from 'app/utils/analytics'
+import { make, track } from 'app/services/analytics'
 
 import { FeedTipTile } from '../feed-tip-tile/FeedTipTile'
 

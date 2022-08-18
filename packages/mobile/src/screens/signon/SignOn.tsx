@@ -33,6 +33,7 @@ import { remindUserToTurnOnNotifications } from 'app/components/notification-rem
 import useAppState from 'app/hooks/useAppState'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { MessageType } from 'app/message/types'
+import { track, make } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
 import { getIsSignedIn, getDappLoaded } from 'app/store/lifecycle/selectors'
@@ -44,7 +45,6 @@ import {
   getIsSigninError
 } from 'app/store/signon/selectors'
 import { EventNames } from 'app/types/analytics'
-import { track, make } from 'app/utils/analytics'
 import { useThemeColors } from 'app/utils/theme'
 
 import type { SignOnStackParamList } from './types'

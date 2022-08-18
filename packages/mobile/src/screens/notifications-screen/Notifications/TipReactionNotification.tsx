@@ -9,9 +9,9 @@ import { View } from 'react-native'
 import IconTip from 'app/assets/images/iconTip.svg'
 import UserBadges from 'app/components/user-badges'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import { make } from 'app/utils/analytics'
 
 import {
   NotificationHeader,

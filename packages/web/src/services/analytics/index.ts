@@ -1,4 +1,4 @@
-import { Nullable, BooleanKeys } from '@audius/common'
+import { AnalyticsEvent, Nullable, BooleanKeys } from '@audius/common'
 
 import {
   SetAnalyticsUser,
@@ -6,7 +6,7 @@ import {
 } from 'services/native-mobile-interface/analytics'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
-import packageInfo from '../../../../package.json'
+import packageInfo from '../../../package.json'
 
 import * as amplitude from './amplitude'
 import * as segment from './segment'
@@ -49,8 +49,7 @@ let trackCounter = 0
 const TRACK_LIMIT = 10000
 
 export const track = async (
-  event: string,
-  properties?: Record<string, any>,
+  { eventName, properties }: AnalyticsEvent,
   callback?: () => void
 ) => {
   try {
@@ -61,7 +60,7 @@ export const track = async (
     if (!IS_PRODUCTION_BUILD) {
       console.info(
         `${useAmplitude ? 'Amplitude' : 'Segment'} | track`,
-        event,
+        eventName,
         properties
       )
     }
@@ -74,14 +73,15 @@ export const track = async (
       clientVersion: version
     }
 
+    // TODO: This can be removed when the the web layer is removed from mobile
     if (NATIVE_MOBILE) {
-      const message = new TrackAnalyticsEvent(event, propertiesWithContext)
+      const message = new TrackAnalyticsEvent(eventName, propertiesWithContext)
       message.send()
     } else {
       await didInit
       if (useAmplitude)
-        return amplitude.track(event, propertiesWithContext, callback)
-      return segment.track(event, propertiesWithContext, {}, callback)
+        return amplitude.track(eventName, propertiesWithContext, callback)
+      return segment.track(eventName, propertiesWithContext, {}, callback)
     }
   } catch (err) {
     console.error(err)

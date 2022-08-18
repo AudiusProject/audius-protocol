@@ -6,6 +6,7 @@ import cn from 'classnames'
 import { ReactComponent as IconAllTime } from 'assets/img/iconAllTime.svg'
 import { ReactComponent as IconDay } from 'assets/img/iconDay.svg'
 import { ReactComponent as IconMonth } from 'assets/img/iconMonth.svg'
+import { make, useRecord } from 'common/store/analytics/actions'
 import {
   trendingAllTimeActions,
   trendingMonthActions,
@@ -26,7 +27,6 @@ import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
 import useAsyncPoll from 'hooks/useAsyncPoll'
 import useTabs from 'hooks/useTabs/useTabs'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
-import { make, useRecord } from 'store/analytics/actions'
 import { BASE_URL, TRENDING_PAGE } from 'utils/route'
 import { scrollWindowToTop } from 'utils/scroll'
 

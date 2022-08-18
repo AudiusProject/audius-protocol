@@ -24,6 +24,7 @@ import {
 
 import { getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { update } from 'common/store/cache/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import {
@@ -68,7 +69,6 @@ import {
   UserTipRequest
 } from 'services/audius-backend/Tipping'
 import { UpdateTipsStorageMessage } from 'services/native-mobile-interface/tipping'
-import { make } from 'store/analytics/actions'
 import mobileSagas from 'store/tipping/mobileSagas'
 import {
   FEED_TIP_DISMISSAL_TIME_LIMIT,

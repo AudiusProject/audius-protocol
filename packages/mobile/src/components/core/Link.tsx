@@ -4,8 +4,8 @@ import type { GestureResponderEvent, PressableProps } from 'react-native'
 import { Linking, Pressable } from 'react-native'
 
 import { ToastContext } from 'app/components/toast/ToastContext'
+import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
-import { make, track } from 'app/utils/analytics'
 
 const messages = {
   error: 'Unable to open this URL'
