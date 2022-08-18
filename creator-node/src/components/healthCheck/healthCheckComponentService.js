@@ -102,7 +102,8 @@ const healthCheck = async (
 
   let currentStateMachineReconfigMode
   if (stateMachineManager) {
-    currentStateMachineReconfigMode = stateMachineManager.highestEnabledReconfigMode
+    currentStateMachineReconfigMode =
+      stateMachineManager.highestEnabledReconfigMode
   }
 
   const { active: transcodeActive, waiting: transcodeWaiting } =
