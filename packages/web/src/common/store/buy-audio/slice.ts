@@ -18,17 +18,39 @@ type AmountObject = {
 }
 
 type PurchaseInfo = {
+  isError: false
   estimatedSOL: AmountObject
   estimatedUSD: AmountObject
   desiredAudioAmount: AmountObject
 }
-type CalculateAudioPurchaseInfoPayload = { audioAmount: number }
-type CalculateAudioPurchaseInfoSucceededPayload = PurchaseInfo
+export enum PurchaseInfoErrorType {
+  MAX_AUDIO_EXCEEDED = 'max_audio_exceeded',
+  MIN_AUDIO_EXCEEDED = 'min_audio_exceeded',
+  UNKNOWN = 'unknown'
+}
+type PurchaseInfoMaxAudioExceededError = {
+  errorType: PurchaseInfoErrorType.MAX_AUDIO_EXCEEDED
+  maxAudio: number
+}
+type PurchaseInfoMinAudioExceededError = {
+  errorType: PurchaseInfoErrorType.MIN_AUDIO_EXCEEDED
+  minAudio: number
+}
+type PurchaseInfoUnknownError = {
+  errorType: PurchaseInfoErrorType.UNKNOWN
+}
+type PurchaseInfoError =
+  | PurchaseInfoMaxAudioExceededError
+  | PurchaseInfoMinAudioExceededError
+  | PurchaseInfoUnknownError
 
+type CalculateAudioPurchaseInfoPayload = { audioAmount: number }
+type CalculateAudioPurchaseInfoSucceededPayload = Omit<PurchaseInfo, 'isError'>
+type CalculateAudioPurchaseInfoFailedPayload = PurchaseInfoError
 type BuyAudioState = {
   stage: BuyAudioStage
   purchaseInfoStatus: Status
-  purchaseInfo?: PurchaseInfo
+  purchaseInfo?: PurchaseInfo | (PurchaseInfoError & { isError: true })
   feesCache: {
     associatedTokenAccountCache: Record<string, boolean>
     transactionFees: number
@@ -58,8 +80,18 @@ const slice = createSlice({
       state,
       action: PayloadAction<CalculateAudioPurchaseInfoSucceededPayload>
     ) => {
-      state.purchaseInfo = action.payload
+      state.purchaseInfo = { isError: false, ...action.payload }
       state.purchaseInfoStatus = Status.SUCCESS
+    },
+    calculateAudioPurchaseInfoFailed: (
+      state,
+      action: PayloadAction<CalculateAudioPurchaseInfoFailedPayload>
+    ) => {
+      state.purchaseInfo = {
+        isError: true,
+        ...action.payload
+      }
+      state.purchaseInfoStatus = Status.ERROR
     },
     cacheAssociatedTokenAccount: (
       state,
@@ -110,6 +142,7 @@ const slice = createSlice({
 export const {
   calculateAudioPurchaseInfo,
   calculateAudioPurchaseInfoSucceeded,
+  calculateAudioPurchaseInfoFailed,
   cacheAssociatedTokenAccount,
   cacheTransactionFees,
   clearFeesCache,

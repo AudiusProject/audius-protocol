@@ -24,7 +24,9 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.MAX_CLAIM_RETRIES]: 5,
   [IntKeys.CLIENT_ATTESTATION_PARALLELIZATION]: 20,
   [IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS]: 1000,
-  [IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_TIMEOUT_MS]: 10000
+  [IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_TIMEOUT_MS]: 10000,
+  [IntKeys.MIN_AUDIO_PURCHASE_AMOUNT]: 5,
+  [IntKeys.MAX_AUDIO_PURCHASE_AMOUNT]: 999
 }
 
 export const remoteConfigStringDefaults: {
