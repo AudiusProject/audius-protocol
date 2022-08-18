@@ -25,7 +25,11 @@ export class LocalStorage {
     this.localStorage = config.localStorage
   }
 
-  async getValue(key: string) {
+  getItem = async (key: string) => {
+    return await this.localStorage.getItem(key)
+  }
+
+  getValue = async (key: string) => {
     return await this.localStorage.getItem(key)
   }
 
@@ -42,7 +46,11 @@ export class LocalStorage {
     return null
   }
 
-  async setValue(key: string, value: string) {
+  setItem = async (key: string, value: string) => {
+    return await this.localStorage.setItem(key, value)
+  }
+
+  setValue = async (key: string, value: string) => {
     return await this.localStorage.setItem(key, value)
   }
 
