@@ -5,6 +5,10 @@
 ```bash
 A run monitoring up
 
+# on first start, wait a few minutes, then upload the dashboards again
+# this will fix a recent regression with missing Library panels
+# ./grafana/bin/upload-dashboards.sh
+
 # A run monitoring down
 
 # optionally remove all grafana and prometheus data
