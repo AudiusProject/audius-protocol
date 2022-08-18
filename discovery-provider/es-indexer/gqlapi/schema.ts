@@ -33,6 +33,7 @@ export const typeDefs = gql`
     id: String!
     title: String!
     length: Int!
+    created_at: String!
 
     favorite_count: Int!
     repost_count: Int!
@@ -108,8 +109,10 @@ export const typeDefs = gql`
     is_saved: Boolean!
   }
 
+  union FeedItem = Track | Playlist
+
   type Query {
     users(handle: String): [User!]!
-    feed: JSON!
+    feed(limit: Int = 11): [FeedItem!]!
   }
 `

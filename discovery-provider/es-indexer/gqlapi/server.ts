@@ -1,5 +1,4 @@
 import { Client } from '@elastic/elasticsearch'
-import { GetGetResult } from '@elastic/elasticsearch/lib/api/types'
 import { ApolloServer, gql } from 'apollo-server'
 import bodybuilder, { Bodybuilder } from 'bodybuilder'
 import DataLoader from 'dataloader'
@@ -228,42 +227,54 @@ const queryResolvers: QueryResolvers<Ctx> = {
   feed: async (root, args, ctx) => {
     const me = await ctx.me
     if (!me) throw new Error(`feed requires current user`)
-    const bb = bodybuilder()
+
+    const repostBuilder = bodybuilder()
+      .filter('range', 'created_at', { gte: 'now-90d' })
+      .filter('term', 'is_delete', false)
       .filter('terms', 'user_id', {
         index: indexNames.users,
         id: me.user_id.toString(),
         path: 'following_ids',
       })
       // .filter('term', 'repost_type', 'playlist')
-      .sort('created_at', 'desc')
-      .size(30)
+      .size(0)
+      .agg('terms', 'item_key', { size: 100 }, 'by_id', (a) => {
+        return a.agg('min', 'created_at', 'by_date')
+      })
 
-    const reposts = await bbSearch<RepostDoc>(indexNames.reposts, bb)
+    const found = await esc.search({
+      index: indexNames.reposts,
+      ...repostBuilder.build(),
+    })
 
-    const ops = reposts.map((r) => {
-      const _index =
-        r.repost_type == 'track' ? indexNames.tracks : indexNames.playlists
-      return { _index, _id: r.repost_item_id.toString() }
+    type FirstRepost = {
+      key: string
+      ts: number
+    }
+
+    // @ts-ignore
+    const repostBuckets: FirstRepost[] = found.aggregations!.by_id.buckets.map(
+      (b: any) => {
+        return {
+          key: b.key,
+          ts: b.by_date.value_as_string,
+        }
+      }
+    )
+
+    repostBuckets.sort((a, b) => (a.ts > b.ts ? -1 : 1))
+
+    const ops = repostBuckets.slice(0, args.limit).map((r) => {
+      const [kind, _id] = r.key.split(':')
+      const _index = kind == 'track' ? indexNames.tracks : indexNames.playlists
+      return { _index, _id }
     })
     const docs = await esc.mget({ docs: ops })
+    const reposted = docs.docs.map((d: any) => d._source)
 
-    const stuff = reposts
-      .map((r, idx) => {
-        const { found, _source } = docs.docs[idx] as GetGetResult
-        if (!found) {
-          console.warn(`repost item not found`, r)
-        }
-        if (r.repost_type === 'track') {
-          const track = _source as TrackDoc
-          return { ...r, track_title: track.title }
-        } else {
-          const playlist = _source as PlaylistDoc
-          return { ...r, playlist_name: playlist.playlist_name }
-        }
-      })
-      .filter(Boolean)
+    // TODO: orig. tracks + playlists
 
-    return stuff
+    return reposted as any
   },
 }
 
@@ -272,6 +283,18 @@ const resolvers = {
   Playlist: playlistResolvers,
   User: userResolvers,
   Query: queryResolvers,
+
+  FeedItem: {
+    __resolveType(item: any) {
+      if (item.track_id) {
+        return 'Track'
+      }
+      if (item.playlist_id) {
+        return 'Playlist'
+      }
+      return null // GraphQLError is thrown
+    },
+  },
 }
 
 async function fetchTracks(parent: UserDoc | PlaylistDoc, args: any) {

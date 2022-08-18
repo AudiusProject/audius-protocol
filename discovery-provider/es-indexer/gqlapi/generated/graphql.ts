@@ -16,6 +16,8 @@ export type Scalars = {
   JSON: any;
 };
 
+export type FeedItem = Playlist | Track;
+
 export type Playlist = {
   __typename?: 'Playlist';
   created_at: Scalars['String'];
@@ -56,8 +58,13 @@ export enum PlaylistSort {
 
 export type Query = {
   __typename?: 'Query';
-  feed: Scalars['JSON'];
+  feed: Array<FeedItem>;
   users: Array<User>;
+};
+
+
+export type QueryFeedArgs = {
+  limit?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -72,6 +79,7 @@ export enum SortDirection {
 
 export type Track = {
   __typename?: 'Track';
+  created_at: Scalars['String'];
   favorite_count: Scalars['Int'];
   favorited_by: Array<User>;
   id: Scalars['String'];
@@ -233,6 +241,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
+  FeedItem: ResolversTypes['Playlist'] | ResolversTypes['Track'];
   Int: ResolverTypeWrapper<Scalars['Int']>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
   Playlist: ResolverTypeWrapper<Playlist>;
@@ -250,6 +259,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   Date: Scalars['Date'];
+  FeedItem: ResolversParentTypes['Playlist'] | ResolversParentTypes['Track'];
   Int: Scalars['Int'];
   JSON: Scalars['JSON'];
   Playlist: Playlist;
@@ -262,6 +272,10 @@ export type ResolversParentTypes = {
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
+
+export type FeedItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedItem'] = ResolversParentTypes['FeedItem']> = {
+  __resolveType: TypeResolveFn<'Playlist' | 'Track', ParentType, ContextType>;
+};
 
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
   name: 'JSON';
@@ -283,11 +297,12 @@ export type PlaylistResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  feed?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>;
+  feed?: Resolver<Array<ResolversTypes['FeedItem']>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'limit'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
 };
 
 export type TrackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Track'] = ResolversParentTypes['Track']> = {
+  created_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   favorite_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   favorited_by?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<TrackFavorited_ByArgs, 'limit' | 'offset'>>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -320,6 +335,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type Resolvers<ContextType = any> = {
   Date?: GraphQLScalarType;
+  FeedItem?: FeedItemResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   Playlist?: PlaylistResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
