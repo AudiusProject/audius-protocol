@@ -529,7 +529,9 @@ const handleSyncFromPrimary = async ({
           }
         } else {
           // Reset failure count if all files were successfully saved
-          await UserSyncFailureCountService.resetFailureCount(fetchedWalletPublicKey)
+          await UserSyncFailureCountService.resetFailureCount(
+            fetchedWalletPublicKey
+          )
         }
 
         /**

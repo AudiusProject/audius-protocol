@@ -127,7 +127,10 @@ async function saveFileForMultihashToFS(
   trackId = null,
   numRetries = 5
 ) {
-  const decisionTree = new DecisionTree({ name: `saveFileForMultihashToFS() [multihash: ${multihash}]`, logger })
+  const decisionTree = new DecisionTree({
+    name: `saveFileForMultihashToFS() [multihash: ${multihash}]`,
+    logger
+  })
 
   try {
     // will be modified to directory compatible route later if directory
@@ -143,22 +146,28 @@ async function saveFileForMultihashToFS(
 
     const parsedStoragePath = path.parse(expectedStoragePath).dir
 
-    decisionTree.recordStage({ name: 'About to start running saveFileForMultihashToFS()', data: {
-      multihash,
-      gatewaysToTry,
-      gatewayUrlsMapped,
-      expectedStoragePath,
-      parsedStoragePath
-    } })
+    decisionTree.recordStage({
+      name: 'About to start running saveFileForMultihashToFS()',
+      data: {
+        multihash,
+        gatewaysToTry,
+        gatewayUrlsMapped,
+        expectedStoragePath,
+        parsedStoragePath
+      }
+    })
 
     // Create dir at expected storage path in which to store retrieved data
     try {
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
       await fs.mkdir(parsedStoragePath, { recursive: true })
-      decisionTree.recordStage({ name: 'Successfully called mkdir on local file system', data: {
-        parsedStoragePath
-      } })
+      decisionTree.recordStage({
+        name: 'Successfully called mkdir on local file system',
+        data: {
+          parsedStoragePath
+        }
+      })
     } catch (e) {
       decisionTree.recordStage({
         name: 'Error calling mkdir on local file system',
@@ -189,7 +198,7 @@ async function saveFileForMultihashToFS(
       )
       decisionTree.recordStage({
         name: 'Updated gatewayUrlsMapped',
-        data: {gatewayUrlsMapped}
+        data: { gatewayUrlsMapped }
       })
     }
 
@@ -204,7 +213,7 @@ async function saveFileForMultihashToFS(
     if (await fs.pathExists(expectedStoragePath)) {
       decisionTree.recordStage({
         name: 'Success - File already stored on disk',
-        data:  { expectedStoragePath },
+        data: { expectedStoragePath },
         log: true
       })
 
@@ -230,7 +239,7 @@ async function saveFileForMultihashToFS(
 
           decisionTree.recordStage({
             name: 'Fetching from gateway',
-            data: {url}
+            data: { url }
           })
 
           try {
@@ -244,13 +253,12 @@ async function saveFileForMultihashToFS(
               response = resp
               decisionTree.recordStage({
                 name: 'Retrieved file from gateway',
-                data: {url}
+                data: { url }
               })
               break
             }
           } catch (e) {
             if (e.message.includes('status code 403')) {
-
             }
 
             decisionTree.recordStage({
@@ -285,7 +293,7 @@ async function saveFileForMultihashToFS(
         const errorMsg = `Failed to retrieve file for multihash ${multihash} from other creator node gateways`
         decisionTree.recordStage({
           name: errorMsg,
-          data: { errorMsg: e.message},
+          data: { errorMsg: e.message },
           log: true
         })
       }
@@ -352,7 +360,7 @@ async function saveFileForMultihashToFS(
       if (multihash !== expectedCid) {
         decisionTree.recordStage({
           name: `File contents don't match their expected CID`,
-          data: {expectedCid}
+          data: { expectedCid }
         })
         throw new Error(
           `File contents don't match their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
@@ -360,7 +368,7 @@ async function saveFileForMultihashToFS(
       }
       decisionTree.recordStage({
         name: 'Successfully verified the file contents for the CID',
-        data: {multihash}
+        data: { multihash }
       })
     } catch (e) {
       // On error, delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
@@ -388,11 +396,11 @@ async function saveFileForMultihashToFS(
   } catch (e) {
     decisionTree.recordStage({
       name: `Uncaught Error`,
-      data: {errorMsg: e.message},
+      data: { errorMsg: e.message },
       log: true
     })
 
-    return error
+    return e
   }
 
   // Else return nothing

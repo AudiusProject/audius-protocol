@@ -19,7 +19,7 @@ const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
 const DEFAULT_LOG_CONTEXT = {}
 const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
-const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
+const SyncRequestMaxUserFailureCountBeforeSkip = config.get(
   'syncRequestMaxUserFailureCountBeforeSkip'
 )
 
@@ -239,7 +239,13 @@ async function fetchExportFromSecondary({
  * - `saveFileForMultihashToFS` will exit early if files already exist on disk
  * - Performed in batches to limit concurrent load
  */
-async function saveFilesToDisk({ files, userReplicaSet, wallet, libs, logger }) {
+async function saveFilesToDisk({
+  files,
+  userReplicaSet,
+  wallet,
+  libs,
+  logger
+}) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
   const trackFiles = files.filter((file) =>
@@ -337,7 +343,8 @@ async function saveFilesToDisk({ files, userReplicaSet, wallet, libs, logger }) 
    * Reject whole operation until threshold reached, then proceed and mark those CIDs as skipped
    */
   if (CIDsThatFailedSaveFileOp.size > 0) {
-    const userSyncFailureCount = await UserSyncFailureCountService.incrementFailureCount(wallet)
+    const userSyncFailureCount =
+      await UserSyncFailureCountService.incrementFailureCount(wallet)
 
     // Throw error if failure threshold not yet reached
     if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
