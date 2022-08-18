@@ -4,12 +4,12 @@ import { Name, Nullable } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import {
   getNotificationEntities,
   getNotificationUser
 } from 'common/store/notifications/selectors'
 import { RemixCreate, TrackEntity } from 'common/store/notifications/types'
-import { make } from 'store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'

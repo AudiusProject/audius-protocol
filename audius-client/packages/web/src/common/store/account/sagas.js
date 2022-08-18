@@ -18,6 +18,7 @@ import {
   getAccountOwnedPlaylistIds,
   getAccountToCache
 } from 'common/store/account/selectors'
+import { identify } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
@@ -36,7 +37,6 @@ import { createUserBankIfNeeded } from 'services/audius-backend/waudio'
 import { fingerprintClient } from 'services/fingerprint'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
 import { setSentryUser } from 'services/sentry'
-import { identify } from 'store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'store/playlist-library/sagas'
 import {
   Permission,

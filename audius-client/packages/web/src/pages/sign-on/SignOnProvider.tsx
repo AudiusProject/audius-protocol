@@ -19,6 +19,7 @@ import {
   TwitterProfile
 } from 'common/store/account/reducer'
 import { getHasAccount } from 'common/store/account/selectors'
+import { make, TrackEvent } from 'common/store/analytics/actions'
 import * as signOnAction from 'common/store/pages/signon/actions'
 import {
   getSignOn,
@@ -28,7 +29,6 @@ import {
   getRouteOnExit
 } from 'common/store/pages/signon/selectors'
 import { Pages, FollowArtistsCategory } from 'common/store/pages/signon/types'
-import { make, TrackEvent } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import { isElectron } from 'utils/clientUtil'
 import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'

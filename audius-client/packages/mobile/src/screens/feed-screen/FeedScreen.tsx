@@ -17,8 +17,8 @@ import { Lineup } from 'app/components/lineup'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
+import { make, track } from 'app/services/analytics'
 import { getIsSignedIn } from 'app/store/lifecycle/selectors'
-import { make, track } from 'app/utils/analytics'
 
 import { FeedFilterButton } from './FeedFilterButton'
 

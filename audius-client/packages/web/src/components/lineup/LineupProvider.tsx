@@ -16,6 +16,7 @@ import { connect } from 'react-redux'
 import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 
+import { TrackEvent, make } from 'common/store/analytics/actions'
 import { LineupActions } from 'common/store/lineup/actions'
 import { getShowTip } from 'common/store/tipping/selectors'
 import { FeedTipTile } from 'components/tipping/feed-tip-tile/FeedTipTile'
@@ -25,7 +26,6 @@ import {
   TrackTileSize,
   TileProps
 } from 'components/track/types'
-import { TrackEvent, make } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 

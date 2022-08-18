@@ -20,6 +20,7 @@ import {
 } from 'typed-redux-saga/macro'
 
 import { getUserId } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import * as cacheActions from 'common/store/cache/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getId } from 'common/store/cache/selectors'
@@ -50,7 +51,6 @@ import {
   remove
 } from 'common/store/queue/slice'
 import { RepeatMode, Source } from 'common/store/queue/types'
-import { make } from 'store/analytics/actions'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import {
   getTrackId as getPlayerTrackId,

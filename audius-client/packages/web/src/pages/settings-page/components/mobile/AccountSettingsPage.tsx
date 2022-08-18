@@ -6,6 +6,7 @@ import cn from 'classnames'
 import { debounce } from 'lodash'
 
 import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
+import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
@@ -15,7 +16,6 @@ import SignOutPage from 'components/nav/mobile/SignOut'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { make, useRecord } from 'store/analytics/actions'
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
   CHANGE_PASSWORD_SETTINGS_PAGE

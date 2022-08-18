@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
+import { track, make } from 'app/services/analytics'
 import { getOnSignUp } from 'app/store/lifecycle/selectors'
 import {
   getAccountAvailable,
@@ -11,7 +12,6 @@ import {
   getFinalHandle
 } from 'app/store/signon/selectors'
 import { EventNames } from 'app/types/analytics'
-import { track, make } from 'app/utils/analytics'
 
 import CreatePassword from './CreatePassword'
 import FirstFollows from './FirstFollows'

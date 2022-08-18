@@ -5,8 +5,8 @@ import {
   IntKeys
 } from '@audius/common'
 
+import { track } from 'services/analytics'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import { track } from 'store/analytics/providers'
 
 /**
  * Given an integer-percent value (e.g. 45), whether or not based on random chance,
@@ -24,7 +24,7 @@ const healthCheck = (payload: MonitorPayload, type: ServiceMonitorType) => {
     ) || 0
   if (shouldRecord(sampleRate)) {
     payload.type = type
-    track(Name.SERVICE_MONITOR_HEALTH_CHECK, payload)
+    track({ eventName: Name.SERVICE_MONITOR_HEALTH_CHECK, properties: payload })
   }
 }
 
@@ -35,7 +35,7 @@ const request = (payload: MonitorPayload, type: ServiceMonitorType) => {
     ) || 0
   if (shouldRecord(sampleRate)) {
     payload.type = type
-    track(Name.SERVICE_MONITOR_REQUEST, payload)
+    track({ eventName: Name.SERVICE_MONITOR_REQUEST, properties: payload })
   }
 }
 

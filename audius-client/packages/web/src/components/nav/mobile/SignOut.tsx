@@ -4,10 +4,10 @@ import { Name } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import { disablePushNotifications } from 'pages/settings-page/store/mobileSagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { localStorage } from 'services/local-storage'
-import { make, useRecord } from 'store/analytics/actions'
 import { signOut } from 'utils/signOut'
 
 import styles from './SignOut.module.css'

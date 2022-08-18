@@ -15,13 +15,13 @@ import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
+import { make, track } from 'app/services/analytics'
 import {
   dismissRecentTip,
   getRecentTipsStorage
 } from 'app/store/tipping/storageUtils'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import { make, track } from 'app/utils/analytics'
 
 import { LineupTileSkeleton } from '../lineup-tile'
 

@@ -4,8 +4,8 @@ import { getNotificationUser } from 'audius-client/src/common/store/notification
 import type { SupportingRankUp } from 'common/store/notifications/types'
 
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
-import { make } from 'app/utils/analytics'
 
 import { NotificationTile, NotificationTwitterButton } from '../Notification'
 

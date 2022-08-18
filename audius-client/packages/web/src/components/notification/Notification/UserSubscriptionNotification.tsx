@@ -4,12 +4,12 @@ import { Name } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import {
   getNotificationEntities,
   getNotificationUser
 } from 'common/store/notifications/selectors'
 import { Entity, UserSubscription } from 'common/store/notifications/types'
-import { make, useRecord } from 'store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 

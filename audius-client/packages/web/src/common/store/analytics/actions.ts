@@ -13,6 +13,18 @@ export const identify = (handle: string, traits?: Record<string, any>) => ({
   traits
 })
 
+export type IdentifyEvent = {
+  type: typeof IDENTIFY
+  handle: string
+  traits: Record<string, any>
+}
+
+export type TrackEvent = AllTrackingEvents & {
+  type: typeof TRACK
+  callback?: () => void
+  options?: Record<string, any>
+}
+
 export const make = <U extends Name, T>(
   eventName: U,
   m: T
@@ -25,14 +37,11 @@ export const make = <U extends Name, T>(
   ...m
 })
 
-export type TrackEvent = AllTrackingEvents & {
-  type: typeof TRACK
-  callback?: () => void
-  options?: Record<string, any>
-}
-
 export const useRecord = () => {
   const dispatch = useDispatchRedux()
-  const record = useCallback((event: TrackEvent) => dispatch(event), [dispatch])
+  const record = useCallback(
+    (action: TrackEvent) => dispatch(action),
+    [dispatch]
+  )
   return record
 }

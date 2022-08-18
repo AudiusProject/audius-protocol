@@ -2,12 +2,12 @@ import { Name } from '@audius/common'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
+import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as actions from 'common/store/pages/settings/actions'
 import { getBrowserNotificationSettings } from 'common/store/pages/settings/selectors'
 import { BrowserNotificationSetting } from 'common/store/pages/settings/types'
 import { getErrorMessage } from 'common/utils/error'
-import { make } from 'store/analytics/actions'
 import {
   Permission,
   isPushManagerAvailable,

@@ -8,10 +8,10 @@ import { animated } from 'react-spring'
 
 import { ReactComponent as IconCaretDownLine } from 'assets/img/iconCaretDownLine.svg'
 import { ReactComponent as IconCaretUpLine } from 'assets/img/iconCaretUpLine.svg'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import { useSize } from 'hooks/useSize'
-import { make, useRecord } from 'store/analytics/actions'
 
 import SocialLink, { Type } from '../SocialLink'
 

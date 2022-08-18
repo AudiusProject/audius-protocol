@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 
 import { Name, Status, TimeRange } from '@audius/common'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import {
   trendingAllTimeActions,
   trendingMonthActions,
@@ -15,7 +16,6 @@ import { LineupVariant } from 'components/lineup/types'
 import Page from 'components/page/Page'
 import useTabs from 'hooks/useTabs/useTabs'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
-import { make, useRecord } from 'store/analytics/actions'
 
 import RewardsBanner from '../RewardsBanner'
 

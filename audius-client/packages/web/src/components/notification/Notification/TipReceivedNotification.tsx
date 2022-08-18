@@ -4,6 +4,7 @@ import { Name, Nullable } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { useUIAudio } from 'common/hooks/useUIAudio'
+import { make } from 'common/store/analytics/actions'
 import { getNotificationUser } from 'common/store/notifications/selectors'
 import { TipReceive } from 'common/store/notifications/types'
 import {
@@ -12,7 +13,6 @@ import {
   ReactionTypes,
   writeReactionValue
 } from 'common/store/ui/reactions/slice'
-import { make } from 'store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TipReceivedNotification.module.css'

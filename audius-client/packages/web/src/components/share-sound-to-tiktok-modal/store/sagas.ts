@@ -2,6 +2,7 @@ import { Name } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
 
 import { getContext } from 'common/store'
+import { make } from 'common/store/analytics/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
 import {
@@ -23,7 +24,6 @@ import { Status } from 'common/store/ui/share-sound-to-tiktok-modal/types'
 import { getErrorMessage } from 'common/utils/error'
 import { encodeHashId } from 'common/utils/hashIds'
 import { show as showConfetti } from 'components/music-confetti/store/slice'
-import { make } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 
 const TIKTOK_SHARE_SOUND_ENDPOINT =

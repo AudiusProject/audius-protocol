@@ -1,3 +1,4 @@
+import analyticsSagas from 'audius-client/src/common/store/analytics/sagas'
 // import signOnSagas from 'audius-client/src/common/store/pages/signon/sagas'
 // import accountSagas from 'common/store/account/sagas'
 import backendSagas, { setupBackend } from 'common/store/backend/sagas'
@@ -17,6 +18,7 @@ export default function* rootSaga() {
   const sagas = [
     // config
     ...backendSagas(),
+    ...analyticsSagas(),
     // ...accountSagas(),
     ...confirmerSagas(),
 

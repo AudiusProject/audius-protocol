@@ -20,6 +20,7 @@ import Button from 'app/components/button'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { MessageType } from 'app/message/types'
+import { track, make } from 'app/services/analytics'
 import {
   setFollowArtistsCategory,
   setFollowedArtists
@@ -31,7 +32,6 @@ import {
 import type { FollowArtistsCategory } from 'app/store/signon/types'
 import { artistCategories } from 'app/store/signon/types'
 import { EventNames } from 'app/types/analytics'
-import { track, make } from 'app/utils/analytics'
 
 import UserImage from '../../components/image/UserImage'
 import UserBadges from '../../components/user-badges/UserBadges'

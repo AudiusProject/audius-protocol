@@ -21,11 +21,6 @@ export type AllEvents = CommonTrackingEvents | MobileTrackingEvents
 
 export type JsonMap = Record<string, unknown>
 
-export type Identify = {
-  handle: string
-  traits?: JsonMap
-}
-
 export type Track = {
   eventName: string
   properties?: JsonMap
@@ -36,7 +31,7 @@ export type Screen = {
   properties?: JsonMap
 }
 
-export type AnalyticsMessage = Message & (Identify | Track | Screen)
+export type AnalyticsMessage = Message & (Track | Screen)
 
 export {
   PlaybackSource,

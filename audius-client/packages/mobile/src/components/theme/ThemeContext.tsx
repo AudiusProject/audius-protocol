@@ -8,7 +8,7 @@ import { useDarkMode } from 'react-native-dark-mode'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { make, track } from 'app/utils/analytics'
+import { make, track } from 'app/services/analytics'
 import { Theme } from 'app/utils/theme'
 
 type ThemeContextProps = {

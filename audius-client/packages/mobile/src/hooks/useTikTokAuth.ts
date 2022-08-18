@@ -7,10 +7,10 @@ import { createUseTikTokAuthHook } from 'audius-client/src/common/hooks/useTikTo
 import Config from 'react-native-config'
 import { useDispatch } from 'react-redux'
 
+import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 import { EventNames } from 'app/types/analytics'
-import { track, make } from 'app/utils/analytics'
 
 export const useTikTokAuth = (args: UseTikTokAuthArguments) => {
   const dispatch = useDispatch()

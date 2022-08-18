@@ -3,6 +3,7 @@ import { useCallback, useContext, useEffect } from 'react'
 import { Name } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { make, TrackEvent } from 'common/store/analytics/actions'
 import { getCurrentPage } from 'common/store/change-password/selectors'
 import { changePage, Page } from 'common/store/change-password/slice'
 import { ChangePassword } from 'components/change-password/ChangePassword'
@@ -10,7 +11,6 @@ import NavContext, {
   CenterPreset,
   LeftPreset
 } from 'components/nav/store/context'
-import { make, TrackEvent } from 'store/analytics/actions'
 
 import styles from './ChangePasswordPage.module.css'
 import { SettingsPageProps } from './SettingsPage'

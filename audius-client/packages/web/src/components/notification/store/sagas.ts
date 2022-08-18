@@ -24,6 +24,7 @@ import {
 
 import { getContext } from 'common/store'
 import { getUserId, getHasAccount } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
@@ -48,7 +49,6 @@ import { fetchReactionValues } from 'common/store/ui/reactions/slice'
 import { getBalance } from 'common/store/wallet/slice'
 import { getErrorMessage } from 'common/utils/error'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
-import { make } from 'store/analytics/actions'
 import { isElectron } from 'utils/clientUtil'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 

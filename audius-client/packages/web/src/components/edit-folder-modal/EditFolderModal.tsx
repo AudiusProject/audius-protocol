@@ -12,13 +12,13 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { getPlaylistLibrary } from 'common/store/account/selectors'
+import { make, useRecord } from 'common/store/analytics/actions'
 import {
   removePlaylistFolderInLibrary,
   renamePlaylistFolderInLibrary
 } from 'common/store/playlist-library/helpers'
 import FolderForm from 'components/create-playlist/FolderForm'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import { make, useRecord } from 'store/analytics/actions'
 import { getFolderId } from 'store/application/ui/editFolderModal/selectors'
 import { setFolderId } from 'store/application/ui/editFolderModal/slice'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'

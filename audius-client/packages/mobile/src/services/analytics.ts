@@ -2,7 +2,7 @@ import { Amplitude } from '@amplitude/react-native'
 import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
-import type { Identify, Track, Screen, AllEvents } from '../types/analytics'
+import type { Track, Screen, AllEvents } from '../types/analytics'
 import { EventNames } from '../types/analytics'
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
@@ -10,7 +10,7 @@ let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 const AmplitudeWriteKey = Config.AMPLITUDE_WRITE_KEY
 const ampInstance = Amplitude.getInstance()
 
-export const setup = async () => {
+export const init = async () => {
   try {
     console.info('Analytics setup')
     if (AmplitudeWriteKey) {
@@ -55,7 +55,10 @@ export const make = (event: AllEvents) => {
 
 // Identify User
 // Docs: https://segment.com/docs/connections/spec/identify
-export const identify = async ({ handle, traits = {} }: Identify) => {
+export const identify = async (
+  handle: string,
+  traits: Record<string, any> = {}
+) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
   console.info('Analytics identify', handle, traits)

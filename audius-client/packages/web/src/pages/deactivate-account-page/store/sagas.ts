@@ -3,11 +3,11 @@ import { call, delay, put, select, takeEvery } from 'typed-redux-saga/macro'
 
 import { getContext } from 'common/store'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
-import { make } from 'store/analytics/actions'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 import { signOut } from 'utils/signOut'
 

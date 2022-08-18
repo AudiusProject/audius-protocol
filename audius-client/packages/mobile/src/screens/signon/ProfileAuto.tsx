@@ -20,6 +20,7 @@ import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { MessageType } from 'app/message/types'
+import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import {
   getInstagramError,
@@ -29,7 +30,6 @@ import {
 } from 'app/store/oauth/selectors'
 import { getHandleError, getHandleIsValid } from 'app/store/signon/selectors'
 import { EventNames } from 'app/types/analytics'
-import { track, make } from 'app/utils/analytics'
 import { useColor } from 'app/utils/theme'
 
 import SignupHeader from './SignupHeader'

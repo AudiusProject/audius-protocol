@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import { Name } from '@audius/common'
 
 import { useUIAudio } from 'common/hooks/useUIAudio'
+import { make } from 'common/store/analytics/actions'
 import { getNotificationUser } from 'common/store/notifications/selectors'
 import { Reaction } from 'common/store/notifications/types'
 import { getReactionFromRawValue } from 'common/store/ui/reactions/slice'
-import { make } from 'store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TipReactionNotification.module.css'

@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import { Name } from '@audius/common'
 
 import { useUIAudio } from 'common/hooks/useUIAudio'
+import { make } from 'common/store/analytics/actions'
 import { getNotificationUser } from 'common/store/notifications/selectors'
 import { TipSend } from 'common/store/notifications/types'
-import { make } from 'store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TipSentNotification.module.css'

@@ -8,6 +8,7 @@ import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
+import { make, useRecord } from 'common/store/analytics/actions'
 import {
   Tabs,
   SavedPageTrack,
@@ -24,7 +25,6 @@ import { useMainPageHeader } from 'components/nav/store/context'
 import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import useTabs from 'hooks/useTabs/useTabs'
-import { make, useRecord } from 'store/analytics/actions'
 import { albumPage, TRENDING_PAGE, playlistPage } from 'utils/route'
 
 import NewPlaylistButton from './NewPlaylistButton'
