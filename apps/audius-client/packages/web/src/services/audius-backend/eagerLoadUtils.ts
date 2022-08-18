@@ -13,24 +13,19 @@ export const getEagerDiscprov = () => {
   const cachedDiscProvData = window.localStorage.getItem(
     DISCOVERY_PROVIDER_TIMESTAMP
   )
-  if (!cachedDiscProvData) {
-    return null
-  }
-
-  const cachedDiscprov = JSON.parse(cachedDiscProvData)
-
-  const EAGER_DISCOVERY_NODES = process.env.REACT_APP_EAGER_DISCOVERY_NODES
-    ? process.env.REACT_APP_EAGER_DISCOVERY_NODES.split(',')
-    : []
 
   // Set the eager discprov to use to either
   // 1. local storage discprov if available
   // 2. dapp whitelist
   // Note: This discovery provider is only used on intial paint
   let eagerDiscprov: string
-  if (cachedDiscprov) {
+  if (cachedDiscProvData) {
+    const cachedDiscprov = JSON.parse(cachedDiscProvData)
     eagerDiscprov = cachedDiscprov.endpoint
   } else {
+    const EAGER_DISCOVERY_NODES = process.env.REACT_APP_EAGER_DISCOVERY_NODES
+      ? process.env.REACT_APP_EAGER_DISCOVERY_NODES.split(',')
+      : []
     eagerDiscprov =
       EAGER_DISCOVERY_NODES[
         Math.floor(Math.random() * EAGER_DISCOVERY_NODES.length)
