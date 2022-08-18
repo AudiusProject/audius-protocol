@@ -4,6 +4,8 @@ const _ = require('lodash')
 /**
  * Queries to periodically keep the mapping of (Content Node endpoint -> SP ID)
  * up to date.
+ *
+ * @dev Since this class holds all state in memory, it is not concurrency-compatible
  */
 class ContentNodeInfoManager {
   constructor() {

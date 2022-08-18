@@ -99,6 +99,7 @@ export class EntityManager extends Base {
     isAlbum,
     isPrivate,
     coverArt,
+    coverArtSizes,
     logger = console
   }: {
     playlistId: number
@@ -108,6 +109,7 @@ export class EntityManager extends Base {
     isAlbum: boolean
     isPrivate: boolean
     coverArt: string
+    coverArtSizes: string
     logger: Console
   }): Promise<PlaylistOperationResponse> {
     const responseValues: PlaylistOperationResponse =
@@ -123,10 +125,14 @@ export class EntityManager extends Base {
       const createAction = Action.CREATE
       const entityType = EntityType.PLAYLIST
       this.REQUIRES(Services.CREATOR_NODE)
-      const updatedPlaylistImage = await this.creatorNode.uploadImage(
-        coverArt,
-        true // square
-      )
+      let dirCID
+      if (coverArt) {
+        const updatedPlaylistImage = await this.creatorNode.uploadImage(
+          coverArt,
+          true // square
+        )
+        dirCID = updatedPlaylistImage.dirCID
+      }
       const web3 = this.web3Manager.getWeb3()
       const currentBlockNumber = await web3.eth.getBlockNumber()
       const currentBlock = await web3.eth.getBlock(currentBlockNumber)
@@ -134,12 +140,11 @@ export class EntityManager extends Base {
         track: trackId,
         time: currentBlock.timestamp as number
       }))
-      const dirCID = updatedPlaylistImage.dirCID
       const metadata: PlaylistMetadata = {
         playlist_id: playlistId,
         playlist_contents: { track_ids: tracks },
         playlist_name: playlistName,
-        playlist_image_sizes_multihash: dirCID,
+        playlist_image_sizes_multihash: dirCID ?? coverArtSizes,
         description,
         is_album: isAlbum,
         is_private: isPrivate

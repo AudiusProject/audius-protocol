@@ -7,7 +7,7 @@ const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
-const { getCreatorNodeEndpoints } = require('../../middlewares')
+const { getUserReplicaSetEndpointsFromDiscovery } = require('../../middlewares')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
@@ -18,12 +18,12 @@ const {
   getActiveSpan,
   info
 } = require('../../utils/tracing')
+const DecisionTree = require('../../utils/decisionTree')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
 const DEFAULT_LOG_CONTEXT = {}
-const devMode = config.get('devMode')
-const DB_QUERY_LIMIT = devMode ? 5 : 10000
+const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
 
 /**
  * Export data for user from secondary and save locally, until complete
@@ -39,24 +39,32 @@ async function primarySyncFromSecondary({
 
   const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
   const logger = genericLogger.child(logContext)
-
-  info(`[primarySyncFromSecondary] [Wallet: ${wallet}]`)
-  logger.info(`${logPrefix} Beginning...`)
-  const start = Date.now()
-
-  // This is used only for logging record endpoint of requesting node
-  const selfEndpoint = config.get('creatorNodeEndpoint') || null
+  const decisionTree = new DecisionTree({ name: logPrefix, logger })
+  decisionTree.recordStage({ name: 'Begin' })
 
   // object to track if the function errored, returned at the end of the function
   let error = null
 
   try {
+    const selfEndpoint = config.get('creatorNodeEndpoint')
+
+    if (!selfEndpoint) {
+      decisionTree.recordStage({ name: 'selfEndpoint missing', log: false })
+      throw new Error('selfEndpoint missing')
+    }
+
     let libs
     try {
       info('init AudiusLibs')
       libs = await initAudiusLibs({})
+      decisionTree.recordStage({ name: 'initAudiusLibs() success' })
     } catch (e) {
       recordException(e)
+      decisionTree.recordStage({
+        name: 'initAudiusLibs() Error',
+        data: { errorMsg: e.message },
+        log: false
+      })
       throw new Error(`InitAudiusLibs Error - ${e.message}`)
     }
 
@@ -72,10 +80,16 @@ async function primarySyncFromSecondary({
       logger,
       libs
     })
+    decisionTree.recordStage({ name: 'getUserReplicaSet() success ' })
 
     // Error if this node is not primary for user
     if (userReplicaSet[0] !== selfEndpoint) {
-      throw new Error(`Failure - this node is not primary for user`)
+      decisionTree.recordState({
+        name: 'Error - Node is not primary for user',
+        data: { userReplicaSet },
+        log: false
+      })
+      throw new Error(`Node is not primary for user`)
     }
 
     // filter out current node from user's replica set
@@ -85,26 +99,68 @@ async function primarySyncFromSecondary({
     let completed = false
     let exportClockRangeMin = 0
     while (!completed) {
-      const fetchedCNodeUser = await fetchExportFromSecondary({
-        secondary,
-        wallet,
-        exportClockRangeMin,
-        selfEndpoint
-      })
+      const decisionTreeData = { exportClockRangeMin }
+
+      let fetchedCNodeUser
+      try {
+        fetchedCNodeUser = await fetchExportFromSecondary({
+          secondary,
+          wallet,
+          exportClockRangeMin,
+          selfEndpoint
+        })
+        decisionTree.recordStage({
+          name: 'fetchExportFromSecondary() Success',
+          data: decisionTreeData
+        })
+      } catch (e) {
+        decisionTree.recordStage({
+          name: 'fetchExportFromSecondary() Error',
+          data: { ...decisionTreeData, errorMsg: e.message },
+          log: false
+        })
+        throw e
+      }
 
       // Save all files to disk separately from DB writes to minimize DB transaction duration
-      await saveFilesToDisk({
-        files: fetchedCNodeUser.files,
-        userReplicaSet,
-        libs,
-        logger
-      })
+      try {
+        await saveFilesToDisk({
+          files: fetchedCNodeUser.files,
+          userReplicaSet,
+          libs,
+          logger
+        })
+        decisionTree.recordStage({
+          name: 'saveFilesToDisk() Success',
+          data: decisionTreeData
+        })
+      } catch (e) {
+        decisionTree.recordStage({
+          name: 'saveFilesToDisk() Error',
+          data: { ...decisionTreeData, errorMsg: e.message },
+          log: false
+        })
+        throw e
+      }
 
-      await saveEntriesToDB({
-        fetchedCNodeUser,
-        logger,
-        logPrefix
-      })
+      try {
+        await saveEntriesToDB({
+          fetchedCNodeUser,
+          logger,
+          logPrefix
+        })
+        decisionTree.recordStage({
+          name: 'saveEntriesToDB() Success',
+          data: decisionTreeData
+        })
+      } catch (e) {
+        decisionTree.recordStage({
+          name: 'saveEntriesToDB() Error',
+          data: { ...decisionTreeData, errorMsg: e.message },
+          log: false
+        })
+        throw e
+      }
 
       const clockInfo = fetchedCNodeUser.clockInfo
       if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
@@ -113,6 +169,8 @@ async function primarySyncFromSecondary({
         exportClockRangeMin = clockInfo.requestedClockRangeMax + 1
       }
     }
+
+    decisionTree.recordStage({ name: 'Complete Success' })
   } catch (e) {
     recordException(e)
     error = e
@@ -121,15 +179,7 @@ async function primarySyncFromSecondary({
   } finally {
     await WalletWriteLock.release(wallet)
 
-    if (error) {
-      logger.error(
-        `${logPrefix} Error ${error.message} [Duration: ${
-          Date.now() - start
-        }ms]`
-      )
-    } else {
-      logger.info(`${logPrefix} Complete [Duration: ${Date.now() - start}ms]`)
-    }
+    decisionTree.printTree()
   }
 
   return error
@@ -152,44 +202,43 @@ async function _fetchExportFromSecondary({
     force_export: true
   }
 
-  try {
-    const exportResp = await asyncRetry({
-      // Throws on any non-200 response code
-      asyncFn: () =>
-        axios({
-          method: 'get',
-          baseURL: secondary,
-          url: '/export',
-          responseType: 'json',
-          params: exportQueryParams,
-          timeout: EXPORT_REQ_TIMEOUT_MS
-        }),
-      retries: EXPORT_REQ_MAX_RETRIES,
-      log: false
-    })
+  const exportResp = await asyncRetry({
+    // Throws on any non-200 response code
+    asyncFn: () =>
+      axios({
+        method: 'get',
+        baseURL: secondary,
+        url: '/export',
+        responseType: 'json',
+        params: exportQueryParams,
+        timeout: EXPORT_REQ_TIMEOUT_MS
+      }),
+    retries: EXPORT_REQ_MAX_RETRIES,
+    log: false
+  })
 
-    // Validate export response
-    if (
-      !_.has(exportResp, 'data.data') ||
-      !_.has(exportResp.data.data, 'cnodeUsers') ||
-      Object.keys(exportResp.data.data.cnodeUsers).length !== 1
-    ) {
-      throw new Error('Malformatted export response data')
-    }
-
-    const { cnodeUsers } = exportResp.data.data
-
-    const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
-
-    if (fetchedCNodeUser.walletPublicKey !== wallet) {
-      throw new Error('Wallet mismatch')
-    }
-
-    return fetchedCNodeUser
-  } catch (e) {
-    recordException(e)
-    throw new Error(`[fetchExportFromSecondary] ERROR: ${e.message}`)
+  // Validate export response
+  if (
+    !_.has(exportResp, 'data.data') ||
+    !_.has(exportResp.data.data, 'cnodeUsers')
+  ) {
+    throw new Error('Malformatted export response data')
   }
+
+  const { cnodeUsers } = exportResp.data.data
+
+  if (!cnodeUsers.length === 0) {
+    throw new Error('No cnodeUser returned from export')
+  } else if (cnodeUsers.length > 1) {
+    throw new Error('Multiple cnodeUsers returned from export')
+  }
+
+  const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
+  if (fetchedCNodeUser.walletPublicKey !== wallet) {
+    throw new Error('Wallet mismatch')
+  }
+
+  return fetchedCNodeUser
 }
 
 const fetchExportFromSecondary = instrumentTracing({
@@ -205,98 +254,93 @@ const fetchExportFromSecondary = instrumentTracing({
 async function _saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
-  try {
-    const trackFiles = files.filter((file) =>
-      models.File.TrackTypes.includes(file.type)
-    )
-    const nonTrackFiles = files.filter((file) =>
-      models.File.NonTrackTypes.includes(file.type)
-    )
+  const trackFiles = files.filter((file) =>
+    models.File.TrackTypes.includes(file.type)
+  )
+  const nonTrackFiles = files.filter((file) =>
+    models.File.NonTrackTypes.includes(file.type)
+  )
+
+  /**
+   * Save all Track files to disk
+   */
+  for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
+    const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
 
     /**
-     * Save all Track files to disk
+     * Fetch content for each CID + save to FS
+     * Record any CIDs that failed retrieval/saving for later use
+     *
+     * - `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
      */
-    for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
-      const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
+    await Promise.all(
+      trackFilesSlice.map(async (trackFile) => {
+        const succeeded = await saveFileForMultihashToFS(
+          libs,
+          logger,
+          trackFile.multihash,
+          trackFile.storagePath,
+          userReplicaSet,
+          null, // fileNameForImage
+          trackFile.trackBlockchainId
+        )
+        if (!succeeded) {
+          throw new Error(
+            `[saveFileForMultihashToFS] Failed for multihash ${trackFile.multihash}`
+          )
+        }
+      })
+    )
+  }
 
-      /**
-       * Fetch content for each CID + save to FS
-       * Record any CIDs that failed retrieval/saving for later use
-       *
-       * - `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
-       */
-      await Promise.all(
-        trackFilesSlice.map(async (trackFile) => {
-          const succeeded = await saveFileForMultihashToFS(
+  /**
+   * Save all non-Track files to disk
+   */
+  for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
+    const nonTrackFilesSlice = nonTrackFiles.slice(
+      i,
+      i + FileSaveMaxConcurrency
+    )
+
+    await Promise.all(
+      nonTrackFilesSlice.map(async (nonTrackFile) => {
+        // Skip over directories since there's no actual content to sync
+        // The files inside the directory are synced separately
+        if (nonTrackFile.type === 'dir') {
+          return
+        }
+
+        const multihash = nonTrackFile.multihash
+
+        // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
+        // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+        let succeeded
+        if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
+          succeeded = await saveFileForMultihashToFS(
             libs,
             logger,
-            trackFile.multihash,
-            trackFile.storagePath,
+            multihash,
+            nonTrackFile.storagePath,
             userReplicaSet,
-            null, // fileNameForImage
-            trackFile.trackBlockchainId
+            nonTrackFile.fileName
           )
-          if (!succeeded) {
-            throw new Error(
-              `[saveFileForMultihashToFS] Failed for multihash ${trackFile.multihash}`
-            )
-          }
-        })
-      )
-    }
+        } else {
+          succeeded = await saveFileForMultihashToFS(
+            libs,
+            logger,
+            multihash,
+            nonTrackFile.storagePath,
+            userReplicaSet
+          )
+        }
 
-    /**
-     * Save all non-Track files to disk
-     */
-    for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
-      const nonTrackFilesSlice = nonTrackFiles.slice(
-        i,
-        i + FileSaveMaxConcurrency
-      )
-
-      await Promise.all(
-        nonTrackFilesSlice.map(async (nonTrackFile) => {
-          // Skip over directories since there's no actual content to sync
-          // The files inside the directory are synced separately
-          if (nonTrackFile.type === 'dir') {
-            return
-          }
-
-          const multihash = nonTrackFile.multihash
-
-          // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
-          // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-          let succeeded
-          if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-            succeeded = await saveFileForMultihashToFS(
-              libs,
-              logger,
-              multihash,
-              nonTrackFile.storagePath,
-              userReplicaSet,
-              nonTrackFile.fileName
-            )
-          } else {
-            succeeded = await saveFileForMultihashToFS(
-              libs,
-              logger,
-              multihash,
-              nonTrackFile.storagePath,
-              userReplicaSet
-            )
-          }
-
-          if (!succeeded) {
-            throw new Error(
-              `[saveFileForMultihashToFS] Failed for multihash ${multihash}`
-            )
-          }
-        })
-      )
-    }
-  } catch (e) {
-    recordException(e)
-    throw new Error(`[saveFilesToDisk] ERROR: ${e.message}`)
+        if (!succeeded) {
+          throw new Error(
+            `[saveFileForMultihashToFS] Failed for multihash ${multihash}`
+          )
+        }
+      })
+    )
   }
 }
 
@@ -307,7 +351,7 @@ const saveFilesToDisk = instrumentTracing({
 /**
  * Saves all entries to DB that don't already exist in DB
  */
-async function _saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
+async function _saveEntriesToDB({ fetchedCNodeUser }) {
   const transaction = await models.sequelize.transaction()
 
   try {
@@ -317,11 +361,6 @@ async function _saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
       tracks: fetchedTracks,
       files: fetchedFiles
     } = fetchedCNodeUser
-
-    logger.info(
-      logPrefix,
-      `beginning add ops for cnodeUser wallet ${walletPublicKey}`
-    )
 
     let localCNodeUser = await models.CNodeUser.findOne({
       where: { walletPublicKey },
@@ -420,7 +459,7 @@ async function _saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
   } catch (e) {
     recordException(e)
     await transaction.rollback()
-    throw new Error(`[saveEntriesToDB] ERROR: ${e.message}`)
+    throw e
   }
 }
 
@@ -490,7 +529,7 @@ async function filterOutAlreadyPresentDBEntries({
 
 async function _getUserReplicaSet({ wallet, libs, logger }) {
   try {
-    let userReplicaSet = await getCreatorNodeEndpoints({
+    let userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
       libs,
       logger,
       wallet,

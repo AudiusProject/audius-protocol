@@ -2,9 +2,6 @@
 
 set -e
 
-# only accept the first argument in "manual" mode
-GRAFANA_DASHBOARD_DIR="${1:-grafana/dashboards/}"
-
 : "${BEARER_PATH:=grafana/bearer.env}"
 set -o allexport
 source ${BEARER_PATH}

@@ -77,6 +77,7 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
         - [Saving Production Dashboards Within `prometheus-grafana-metrics`](#saving-production-dashboards-within-prometheus-grafana-metrics)
         - [Saving Production Dashboards Locally](#saving-production-dashboards-locally)
     - [Releasing Dashboards to Production](#releasing-dashboards-to-production)
+    - [Releasing Alerts to Production](#releasing-alerts-to-production)
   - [Notes](#notes)
     - [SSH Access to `prometheus-grafana-metrics`](#ssh-access-to-prometheus-grafana-metrics)
 
@@ -335,7 +336,23 @@ The `Color Scheme` should remain set to `Classic Palette` to help standardize ou
 
 #### Thresholds
 
-Thresholds are best used when Alerts are defined within Panel `Description`. These thresholds should set `Show Thresholds` as `As Lines` so that it's easily visible when limits are being researched. Each line should follow the `Yellow -> Orange -> Red` palette to indicate Early Warning, Low-Urgency Alert, and High-Urgency Alert thresholds have been reached.
+Setting `Show Thresholds` to `As Lines` will activate Alerts the next time [Alerts are released to Production](#releasing-alerts-to-production).
+
+Matching Panel `Description`s should provide runbooks for each Alert level.
+
+Alert extraction uses the following Threshold Color / Alert Label mapping:
+
+| Threshold Color | Alert Labels                |
+| --------------- | --------------------------- |
+| Red             | {`channel`: `high-alert`}   |
+| Orange          | {`channel`: `medium-alert`} |
+| Yellow          | {`channel`: `low-alert`}    |
+
+Based on the `channel` label, each Alert will be routed to a different Grafana Contact Point.
+
+The largest color dot in the center creates an alert that will fire when the value is **greater than or equal to** the threshold.
+
+The second color dot, directly to the left of center, creates an alert that will fire when the value is **less than or equal to** the threshold.
 
 ### Saving Dashboards
 
@@ -383,7 +400,7 @@ cd ~/audius-protocol/monitoring
 # git add grafana/dashboards/
 
 # return to the master branch prior to logging out
-# git checkout master
+git checkout master
 ```
 
 ##### Saving Production Dashboards Locally
@@ -430,7 +447,38 @@ git pull
 # ./grafana/bin/upload-dashboards.sh filename.json
 
 # return to the master branch prior to logging out
-# git checkout master
+git checkout master
+```
+
+### Releasing Alerts to Production
+
+Alerts are extracted from dashboards using the [thresholds](#thresholds) setting. See the previous link for details on how alerts are defined.
+
+Alerts extracted on one system should not be mixed with another. Alert extraction relies on dashboard IDs which vary by deployment.
+
+Alert extraction will also always overwrite `grafana/dashboards/` and `grafana/alerts`. However, alert extraction should only happen in Production which should maintain a clean git status regardless.
+
+```bash
+
+# remove all previously generated alerts
+rm grafana/alerts/
+
+# extract alerts from dashboards
+./grafana/bin/extract-alerts.sh
+
+# remove all disabled alerts
+git status
+# bash ./grafana/bin/delete-alerts.sh ${filename}
+
+# confirm changes
+# git checkout -b grafana-alerts-$(date "+%F-%H-%M-%S")
+# git add grafana/alerts/ grafana/dashboards/
+
+# upload alerts
+./grafana/bin/upload-alerts.sh
+
+# return to the master branch prior to logging out
+git checkout master
 ```
 
 ## Notes
