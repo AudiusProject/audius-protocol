@@ -189,7 +189,6 @@ describe('test updateReplicaSet job processor', function () {
         }
       ]
     })
-    // expect(jobOutput.spanContext).to.exist
   })
 
   it('reconfigs one secondary when one secondary is unhealthy but reconfigs are disabled', async function () {
@@ -249,7 +248,6 @@ describe('test updateReplicaSet job processor', function () {
       fourthHealthyNode
     ])
     expect(jobOutput.jobsToEnqueue).to.not.exist
-    // expect(jobOutput.spanContext).to.exist
   })
 
   it('returns falsy replica set when the whole replica set is unhealthy', async function () {
@@ -311,6 +309,5 @@ describe('test updateReplicaSet job processor', function () {
       fourthHealthyNode
     ])
     expect(jobOutput.jobsToEnqueue).to.not.exist
-    // expect(jobOutput.spanContext).to.exist
   })
 })

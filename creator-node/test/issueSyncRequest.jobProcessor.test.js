@@ -274,7 +274,6 @@ describe('test issueSyncRequest job processor', function () {
     const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
       (job) => {
         const { parentSpanContext, ...rest } = job
-        // expect(parentSpanContext).to.exist
         return rest
       }
     )
@@ -305,7 +304,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(recordFailureStub).to.have.not.been.called
   })
 
-  it("requires additional sync when secondary doesn't update clock during sync", async function () {
+  it.only("requires additional sync when secondary doesn't update clock during sync", async function () {
     const primaryClockValue = 5
     const finalSecondaryClockValue = 3
 
@@ -357,7 +356,6 @@ describe('test issueSyncRequest job processor', function () {
     const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
       (job) => {
         const { parentSpanContext, ...rest } = job
-        // expect(parentSpanContext).to.exist
         return rest
       }
     )
@@ -377,7 +375,6 @@ describe('test issueSyncRequest job processor', function () {
       'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    // expect(result.spanContext).to.exist
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)

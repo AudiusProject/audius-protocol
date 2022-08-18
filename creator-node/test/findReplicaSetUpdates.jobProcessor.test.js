@@ -149,7 +149,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       jobProcessorArgs?.cNodeEndpointToSpIdMap ||
         DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
     )
-    // expect(jobOutput.spanContext).to.exist
+    // expect(jo.exist
     if (expectedUnhealthyReplicas?.length) {
       expect(
         jobOutput.jobsToEnqueue[QUEUE_NAMES.UPDATE_REPLICA_SET].length
@@ -166,7 +166,6 @@ describe('test findReplicaSetUpdates job processor', function () {
         unhealthyReplicas: expectedUnhealthyReplicas,
         replicaToUserInfoMap: REPLICA_TO_USER_INFO_MAP_FILTERED_TO_WALLET
       })
-      expect(parentSpanContext).to.exist
     } else {
       expect(jobOutput.jobsToEnqueue).to.not.exist
     }
