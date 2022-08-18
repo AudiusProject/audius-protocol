@@ -60,7 +60,6 @@ export const ExpandedSection = () => {
     useSelectProfile([
       'supporting_count',
       'user_id',
-
       'current_user_followee_follow_count'
     ])
   const accountId = useSelectorWeb(getUserId)
