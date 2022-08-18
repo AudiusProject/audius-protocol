@@ -43,10 +43,9 @@ const getNewOrExistingSyncReq = ({
     !syncType ||
     !syncMode
   ) {
-    span?.addEvent(
+    info(
       `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
     )
-    span?.setStatus({ code: SpanStatusCode.ERROR })
     throw new Error(
       `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
     )
