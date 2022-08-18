@@ -129,9 +129,9 @@ class StateMachineManager {
       // Else, set mode to config var, defaulting to RECONFIG_DISABLED if invalid
     } else {
       highestEnabledReconfigMode = reconfigModeKeys.includes(
-        config.get('snapbackHighestReconfigMode')
+        config.get('stateMachineHighestReconfigMode')
       )
-        ? config.get('snapbackHighestReconfigMode')
+        ? config.get('stateMachineHighestReconfigMode')
         : RECONFIG_MODES.RECONFIG_DISABLED.key
     }
 

@@ -415,10 +415,10 @@ const config = convict({
     env: 'creatorNodeIsDebug',
     default: false
   },
-  snapbackHighestReconfigMode: {
+  stateMachineHighestReconfigMode: {
     doc: 'Depending on the reconfig op, issue a reconfig or not. See stateMachineConstants for the modes.',
     format: String,
-    env: 'snapbackHighestReconfigMode',
+    env: 'stateMachineHighestReconfigMode',
     default: 'RECONFIG_DISABLED'
   },
   devMode: {
@@ -446,7 +446,7 @@ const config = convict({
     default: ''
   },
 
-  /** sync / snapback configs */
+  /** State Machine configs */
 
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
@@ -520,16 +520,10 @@ const config = convict({
     env: 'manualSyncsDisabled',
     default: false
   },
-  snapbackModuloBase: {
-    doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
-    format: 'nat',
-    env: 'snapbackModuloBase',
-    default: 48
-  },
-  snapbackUsersPerJob: {
+  stateMachineUsersPerJob: {
     doc: 'Maximum number of users to process in each stateMachineManager.stateMonitoring job',
     format: 'nat',
-    env: 'snapbackUsersPerJob',
+    env: 'stateMachineUsersPerJob',
     default: 1000
   },
   maxManualRequestSyncJobConcurrency: {
@@ -713,12 +707,6 @@ const config = convict({
     format: 'nat',
     env: 'findReplicaSetUpdatesJobLastSuccessfulRunDelayMs',
     default: 10 * 60 * 1000 // 10 mins
-  },
-  disableSnapback: {
-    doc: 'True to not run any snapback queues (old state machine and old syncs)',
-    format: Boolean,
-    env: 'disableSnapback',
-    default: true
   },
   mergePrimaryAndSecondaryEnabled: {
     doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',

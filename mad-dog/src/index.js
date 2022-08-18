@@ -6,19 +6,19 @@ const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
 const {
  coreIntegration,
- snapbackSMParallelSyncTest,
+ stateMachineParallelSyncTest,
  userReplicaSetManagerTest,
  IpldBlacklistTest,
  userReplicaSetBlockSaturationTest,
  trackListenCountsTest,
- SnapbackReconfigTests
+ StateMachineReconfigTests
 } = require('./tests/')
  
 // Configuration.
 // Should be CLI configurable in the future.
 const DEFAULT_NUM_CREATOR_NODES = 4
 const DEFAULT_NUM_USERS = 2
-const SNAPBACK_NUM_USERS = 10
+const STATE_MACHINE_NUM_USERS = 10
 const USER_REPLICA_SET_NUM_USERS = 4
 const MAD_DOG_NIGHTLY_DURATION_SECONDS = 300
  
@@ -180,13 +180,13 @@ async function main () {
        await testRunner([test])
        break
      }
-     case 'test-snapback': {
-       const snapbackNumUsers = 40
+     case 'test-statemachine': {
+       const stateMachineNumUsers = 40
        const test = makeTest(
-         'snapback',
-         snapbackSMParallelSyncTest,
+         'stateMachine',
+         stateMachineParallelSyncTest,
          {
-           numUsers: snapbackNumUsers
+           numUsers: stateMachineNumUsers
          }
        )
        await testRunner([test])
@@ -214,8 +214,8 @@ async function main () {
      }
      case 'test-ursm-nodes': {
        const deregisterCNTest = makeTest(
-         'snapbackReconfigTestDeregisterCN',
-         SnapbackReconfigTests.deregisterCN,
+         'stateMachineReconfigTestDeregisterCN',
+         StateMachineReconfigTests.deregisterCN,
          {
            numUsers: 8,
            numCreatorNodes: 10,
@@ -224,8 +224,8 @@ async function main () {
        )
  
        const forceCNUnavailabilityTest = makeTest(
-         'snapbackReconfigTestForceCNUnavailability',
-         SnapbackReconfigTests.forceCNUnavailability,
+         'stateMachineReconfigTestForceCNUnavailability',
+         StateMachineReconfigTests.forceCNUnavailability,
          {
            numUsers: 8,
            numCreatorNodes: 10,
@@ -267,8 +267,8 @@ async function main () {
          testDurationSeconds: MAD_DOG_NIGHTLY_DURATION_SECONDS
        })
  
-       const snapbackTest = makeTest('snapback', snapbackSMParallelSyncTest, {
-         numUsers: SNAPBACK_NUM_USERS
+       const stateMachineTest = makeTest('stateMachine', stateMachineParallelSyncTest, {
+         numUsers: STATE_MACHINE_NUM_USERS
        })
  
        // NOTE - this test in current form does not seem to work if DEFAULT_NUM_USERS != 2
@@ -305,8 +305,8 @@ async function main () {
        )
  
        const deregisterCNTest = makeTest(
-         'snapbackReconfigTestDeregisterCN',
-         SnapbackReconfigTests.deregisterCN,
+         'stateMachineReconfigTestDeregisterCN',
+         StateMachineReconfigTests.deregisterCN,
          {
            numUsers: 2,
            numCreatorNodes: 10,
@@ -315,8 +315,8 @@ async function main () {
        )
  
        const forceCNUnavailabilityTest = makeTest(
-         'snapbackReconfigTestForceCNUnavailability',
-         SnapbackReconfigTests.forceCNUnavailability,
+         'stateMachineReconfigTestForceCNUnavailability',
+         StateMachineReconfigTests.forceCNUnavailability,
          {
            numUsers: 2,
            numCreatorNodes: 10,
@@ -326,7 +326,7 @@ async function main () {
  
        const tests = [
          coreIntegrationTests,
-         snapbackTest,
+         stateMachineTest,
          ...blacklistTests,
          ursmTest,
          ursmBlockSaturationTest,
@@ -340,7 +340,7 @@ async function main () {
        break
      }
      default:
-       logger.error('Usage: one of either: `test`, `test-snapback`, `test-ursm`, `test-ursm-sat`, `test-ursm-nodes`, `test-listencount`, `test-blacklist`, `test-nightly`.')
+       logger.error('Usage: one of either: `test`, `test-statemachine`, `test-ursm`, `test-ursm-sat`, `test-ursm-nodes`, `test-listencount`, `test-blacklist`, `test-nightly`.')
    }
    process.exit()
  } catch (e) {

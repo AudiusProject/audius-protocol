@@ -42,9 +42,8 @@ const healthCheck = async (
   // Storage information
   const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
 
-  // SnapbackSM information
-  const snapbackUsersPerJob = config.get('snapbackUsersPerJob')
-  const snapbackModuloBase = config.get('snapbackModuloBase')
+  // StateMachine information
+  const stateMachineUsersPerJob = config.get('stateMachineUsersPerJob')
   const manualSyncsDisabled = config.get('manualSyncsDisabled')
 
   // expose audiusInfraStack to see how node is being run
@@ -101,9 +100,9 @@ const healthCheck = async (
     MONITORS.LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS
   ])
 
-  let currentSnapbackReconfigMode
+  let currentStateMachineReconfigMode
   if (stateMachineManager) {
-    currentSnapbackReconfigMode = stateMachineManager.highestEnabledReconfigMode
+    currentStateMachineReconfigMode = stateMachineManager.highestEnabledReconfigMode
   }
 
   const { active: transcodeActive, waiting: transcodeWaiting } =
@@ -163,10 +162,9 @@ const healthCheck = async (
     dailySyncFailCount,
     latestSyncSuccessTimestamp,
     latestSyncFailTimestamp,
-    currentSnapbackReconfigMode,
+    currentStateMachineReconfigMode,
     manualSyncsDisabled,
-    snapbackModuloBase,
-    snapbackUsersPerJob,
+    stateMachineUsersPerJob,
     stateMonitoringQueueRateLimitInterval: config.get(
       'stateMonitoringQueueRateLimitInterval'
     ),

@@ -24,7 +24,7 @@ const monitorAllUsersSyncStatus = async ({ executeAll, executeOne }) => {
   })
 }
 
-const snapbackSMParallelSyncTest = async ({
+const stateMachineParallelSyncTest = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -75,5 +75,5 @@ const snapbackSMParallelSyncTest = async ({
 
 module.exports = {
   monitorAllUsersSyncStatus,
-  snapbackSMParallelSyncTest
+  stateMachineParallelSyncTest
 }

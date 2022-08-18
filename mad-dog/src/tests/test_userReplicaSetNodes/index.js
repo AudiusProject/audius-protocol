@@ -31,10 +31,10 @@ const deregisterCN = async ({
       executeOne
     )
   } catch (e) {
-    return { error: `[Snapback CN Deregistering] Issue with creating and upgrading users: ${e}` }
+    return { error: `[StateMachine CN Deregistering] Issue with creating and upgrading users: ${e}` }
   }
 
-  logger.info('[Snapback CN Deregistering] Start')
+  logger.info('[StateMachine CN Deregistering] Start')
   for (let iteration = 0; iteration < iterations; iteration++) {
     creatorNodeIDToInfoMapping = await setNumCreatorNodes(numCreatorNodes, executeOne)
 
@@ -60,12 +60,12 @@ const deregisterCN = async ({
 
     if (!passed) {
       return {
-        error: `[Snapback CN Deregistering] Error with verifying updated replica set: ${error.toString()}`
+        error: `[StateMachine CN Deregistering] Error with verifying updated replica set: ${error.toString()}`
       }
     }
   }
 
-  logger.info('[Snapback CN Deregistering] SUCCESS!')
+  logger.info('[StateMachine CN Deregistering] SUCCESS!')
 }
 
 const forceCNUnavailability = async ({
@@ -86,10 +86,10 @@ const forceCNUnavailability = async ({
       executeOne
     )
   } catch (e) {
-    return { error: `[Snapback CN Unavailability] Issue with creating and upgrading users: ${e}` }
+    return { error: `[StateMachine CN Unavailability] Issue with creating and upgrading users: ${e}` }
   }
 
-  logger.info('[Snapback CN Unavailability] Start')
+  logger.info('[StateMachine CN Unavailability] Start')
 
   for (let iteration = 0; iteration < iterations; iteration++) {
     creatorNodeIDToInfoMapping = await setNumCreatorNodes(numCreatorNodes, executeOne)
@@ -117,12 +117,12 @@ const forceCNUnavailability = async ({
 
     if (!passed) {
       return {
-        error: `[Snapback CN Unavailability] Error with verifying updated replica set: ${error.toString()}`
+        error: `[StateMachine CN Unavailability] Error with verifying updated replica set: ${error.toString()}`
       }
     }
   }
 
-  logger.info('[Snapback CN Unavailability] SUCCESS!')
+  logger.info('[StateMachine CN Unavailability] SUCCESS!')
 }
 
 module.exports = {

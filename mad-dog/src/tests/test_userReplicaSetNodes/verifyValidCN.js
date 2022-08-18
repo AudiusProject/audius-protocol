@@ -2,7 +2,7 @@ const _ = require('lodash')
 const ServiceCommands = require('@audius/service-commands')
 
 const { verifyUserReplicaSetStatus } = require('../test_userReplicaSetManager')
-const { monitorAllUsersSyncStatus } = require('../test_snapbackSM')
+const { monitorAllUsersSyncStatus } = require('../test_CN_StateMachine')
 const { getIDfromEndpoint } = require('./setNumCreatorNodes')
 
 const { getUser } = ServiceCommands

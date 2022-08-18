@@ -143,7 +143,7 @@ describe('test monitorState job processor', function () {
     steps = {}
   }) {
     config.set('creatorNodeEndpoint', contentNodeEndpoint)
-    config.set('snapbackUsersPerJob', numUsersToProcess)
+    config.set('stateMachineUsersPerJob', numUsersToProcess)
     const jobFunc = makeProcessStateMonitoringJob({ ...steps })
     logger = {
       info: sandbox.stub(),
