@@ -1,6 +1,6 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import Integer, String, asc, desc, func, or_, text
+from sqlalchemy import asc, desc, func, or_
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
@@ -86,25 +86,9 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
         track_ids.append(listen["track_id"])
         listen_dates[listen["track_id"]] = listen["timestamp"]
 
-    # Order by the listening history order
-    # This helper just makes sure that we can order by the same ordering
-    # of track ids in the history results
-    # https://stackoverflow.com/questions/866465/order-by-the-in-value-list
-    order = (
-        text(
-            """
-        SELECT * 
-        FROM unnest(:track_ids) WITH ORDINALITY t(id, ord)
-        """
-        )
-        .bindparams(track_ids=track_ids)
-        .columns(id=String, ord=Integer)
-        .alias()
-    )
-
     base_query = (
         session.query(TrackWithAggregates)
-        .join(order, order.c.id == TrackWithAggregates.track_id)
+        .filter(TrackWithAggregates.track_id.in_(track_ids))
         .filter(TrackWithAggregates.is_current == True)
     )
 
@@ -132,7 +116,9 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
             )
         )
     elif sort_method == SortMethod.last_listen_date:
-        base_query = base_query.order_by(sort_fn(order.c.ord))
+        base_query = base_query.order_by(
+            sort_fn(func.array_position(track_ids, TrackWithAggregates.track_id))
+        )
     elif sort_method == SortMethod.plays:
         base_query = base_query.join(TrackWithAggregates.aggregate_play).order_by(
             sort_fn(AggregatePlay.count)
@@ -146,14 +132,16 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
             sort_fn(AggregateTrack.save_count)
         )
     else:
-        base_query = base_query.order_by(sort_fn(order.c.ord))
+        base_query = base_query.order_by(
+            sort_fn(func.array_position(track_ids, TrackWithAggregates.track_id))
+        )
 
     # Add pagination
     base_query = add_query_pagination(base_query, limit, offset)
-    base_query = base_query.all()
+    query_results = base_query.all()
     track_ids = track_ids[offset : offset + limit]
 
-    tracks = helpers.query_result_to_list(base_query)
+    tracks = helpers.query_result_to_list(query_results)
 
     # bundle peripheral info into track results
     tracks = populate_track_metadata(
