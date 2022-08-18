@@ -32,8 +32,6 @@ const { getFeatureFlag, FEATURE_FLAGS } = require('./featureFlag')
 const { setupRewardsAttester } = require('./utils/configureAttester')
 const { startRegistrationQueue } = require('./solanaNodeRegistration')
 
-const DOMAIN = 'mail.audius.co'
-
 class App {
   constructor (port) {
     this.port = port

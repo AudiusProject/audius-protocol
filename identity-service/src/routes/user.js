@@ -33,7 +33,7 @@ module.exports = function (app) {
         try {
           const checkValidEmailUrl = `https://api.seon.io/SeonRestService/email-verification/v1.0/${encodeURIComponent(email)}`
           const checkEmailResponse = await axios.get(checkValidEmailUrl, {
-            headers: { "X-API-KEY": config.get("seonApiKey") },
+            headers: { 'X-API-KEY': config.get('seonApiKey') }
           })
           isEmailDeliverable = checkEmailResponse.data.deliverable
         } catch (err) {
