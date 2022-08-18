@@ -11,7 +11,12 @@ const {
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const { SpanStatusCode } = require('@opentelemetry/api')
-const { instrumentTracing, getActiveSpan } = require('../../../utils/tracing')
+const {
+  instrumentTracing,
+  getActiveSpan,
+  currentSpanContext,
+  info
+} = require('../../../utils/tracing')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
@@ -31,8 +36,6 @@ const getNewOrExistingSyncReq = ({
   syncMode,
   immediate = false
 }) => {
-  const span = getActiveSpan()
-
   if (
     !userWallet ||
     !primaryEndpoint ||
@@ -59,7 +62,7 @@ const getNewOrExistingSyncReq = ({
     immediate
   )
   if (duplicateSyncJobInfo) {
-    span?.addEvent(
+    info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
     logger.info(
@@ -69,7 +72,7 @@ const getNewOrExistingSyncReq = ({
     return {
       duplicateSyncReq: {
         ...duplicateSyncJobInfo,
-        parentSpanContext: span?.spanContext()
+        parentSpanContext: currentSpanContext()
       }
     }
   }
@@ -94,7 +97,7 @@ const getNewOrExistingSyncReq = ({
     syncType,
     syncMode,
     syncRequestParameters,
-    parentSpanContext: span?.context()
+    parentSpanContext: currentSpanContext()
   }
 
   SyncRequestDeDuplicator.recordSync(
@@ -104,7 +107,7 @@ const getNewOrExistingSyncReq = ({
     immediate
   )
 
-  span?.addEvent(JSON.stringify(syncReqToEnqueue))
+  info(JSON.stringify(syncReqToEnqueue))
   return { syncReqToEnqueue }
 }
 
