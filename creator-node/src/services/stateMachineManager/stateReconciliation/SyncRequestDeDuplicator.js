@@ -25,17 +25,18 @@ class SyncRequestDeDuplicator {
     secondaryEndpoint,
     immediate = false
   ) {
+    const that = this
     return instrumentTracing({
       name: 'getDuplicateSyncJobInfo',
       fn: () => {
-        const syncKey = this._getSyncKey(
+        const syncKey = that._getSyncKey(
           syncType,
           userWallet,
           secondaryEndpoint,
           immediate
         )
 
-        const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
+        const duplicateSyncJobInfo = that.waitingSyncsByUserWalletMap[syncKey]
         return duplicateSyncJobInfo || null
       }
     })(syncType, userWallet, secondaryEndpoint, immediate)
@@ -49,10 +50,11 @@ class SyncRequestDeDuplicator {
     immediate = false,
     jobProps
   ) {
+    const that = this
     instrumentTracing({
       name: 'recordSync',
       fn: () => {
-        const syncKey = this._getSyncKey(
+        const syncKey = that._getSyncKey(
           syncType,
           userWallet,
           secondaryEndpoint,
@@ -61,21 +63,27 @@ class SyncRequestDeDuplicator {
         const span = getActiveSpan()
         span?.setAttribute('syncKey', syncKey)
 
-        this.waitingSyncsByUserWalletMap[syncKey] = jobProps
+        that.waitingSyncsByUserWalletMap[syncKey] = jobProps
       }
     })(syncType, userWallet, secondaryEndpoint, immediate, jobProps)
   }
 
   /** Remove sync with given properties */
   removeSync(syncType, userWallet, secondaryEndpoint, immediate = false) {
-    const syncKey = this._getSyncKey(
-      syncType,
-      userWallet,
-      secondaryEndpoint,
-      immediate
-    )
+    const that = this
+    instrumentTracing({
+      name: 'removeSync',
+      fn: () => {
+        const syncKey = that._getSyncKey(
+          syncType,
+          userWallet,
+          secondaryEndpoint,
+          immediate
+        )
 
-    delete this.waitingSyncsByUserWalletMap[syncKey]
+        delete that.waitingSyncsByUserWalletMap[syncKey]
+      }
+    })(syncType, userWallet, secondaryEndpoint, immediate)
   }
 }
 

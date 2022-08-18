@@ -16,7 +16,11 @@ const monitorStateJobProcessor = require('./monitorState.jobProcessor')
 const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
 const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
 const fetchCNodeEndpointToSpIdMapJobProcessor = require('./fetchCNodeEndpointToSpIdMap.jobProcessor')
-const { instrumentTracing, getActiveSpan } = require('../../../utils/tracing')
+const {
+  instrumentTracing,
+  getActiveSpan,
+  currentSpanContext
+} = require('../../../utils/tracing')
 
 const monitorStateLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.MONITOR_STATE
@@ -235,8 +239,6 @@ class StateMonitoringManager {
   startMonitorStateQueue = instrumentTracing({
     name: 'startMonitorStateQueue',
     fn: async (queue, discoveryNodeEndpoint) => {
-      const span = getActiveSpan()
-
       // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
       // pausing the queue and not enqueuing the first job
       if (config.get('stateMonitoringQueueRateLimitJobsPerInterval') === 0) {
@@ -256,7 +258,7 @@ class StateMonitoringManager {
         {
           lastProcessedUserId,
           discoveryNodeEndpoint,
-          parentSpanContext: span?.spanContext()
+          parentSpanContext: currentSpanContext()
         },
         /** opts */ { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
       )

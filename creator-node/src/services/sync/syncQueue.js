@@ -54,9 +54,10 @@ class SyncQueue {
     this.queue.process(jobProcessorConcurrency, async (job) => {
       const { parentSpanContext } = job.data
 
+      const that = this
       const processTask = instrumentTracing({
         name: 'syncQueue.process',
-        fn: this.processTask,
+        fn: that.processTask,
         options: {
           links: [
             {
