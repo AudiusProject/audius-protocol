@@ -527,7 +527,7 @@ const _issueUpdateReplicaSetOp = async (
         [secondary2]: oldSecondary2SpId
       } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
 
-      const { canReconfig, currentPrimarySpId, currentSecondarySpIds } =
+      const { canReconfig, chainPrimarySpId, chainSecondarySpIds } =
         await _canReconfig({
           libs: audiusLibs,
           oldPrimarySpId,
@@ -549,10 +549,10 @@ const _issueUpdateReplicaSetOp = async (
         newReplicaSetSPIds[0], // new primary
         newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
         // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
-        oldPrimarySpId || currentPrimarySpId,
+        oldPrimarySpId || chainPrimarySpId,
         [
-          oldSecondary1SpId || currentSecondarySpIds?.[0],
-          oldSecondary2SpId || currentSecondarySpIds?.[1]
+          oldSecondary1SpId || chainSecondarySpIds?.[0],
+          oldSecondary2SpId || chainSecondarySpIds?.[1]
         ]
       )
 
@@ -639,8 +639,8 @@ type CanReconfigParams = {
 }
 type CanReconfigReturnValue = {
   canReconfig: boolean
-  currentPrimarySpId?: number
-  currentSecondarySpIds?: number[]
+  chainPrimarySpId?: number
+  chainSecondarySpIds?: number[]
 }
 const _canReconfig = async ({
   libs,
@@ -651,20 +651,18 @@ const _canReconfig = async ({
   logger
 }: CanReconfigParams): Promise<CanReconfigReturnValue> => {
   try {
-    const {
-      primaryId: currentPrimarySpId,
-      secondaryIds: currentSecondarySpIds
-    } = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
-      userId
-    )
+    const { primaryId: chainPrimarySpId, secondaryIds: chainSecondarySpIds } =
+      await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
 
     if (
-      !currentPrimarySpId ||
-      !currentSecondarySpIds ||
-      currentSecondarySpIds.length < 2
+      !chainPrimarySpId ||
+      !chainSecondarySpIds ||
+      chainSecondarySpIds.length < 2
     ) {
       throw new Error(
-        `Could not get current replica set: currentPrimarySpId=${currentPrimarySpId} currentSecondarySpIds=${currentSecondarySpIds}`
+        `Could not get current replica set: chainPrimarySpId=${chainPrimarySpId} chainSecondarySpIds=${JSON.stringify(
+          chainSecondarySpIds || []
+        )}`
       )
     }
 
@@ -674,16 +672,16 @@ const _canReconfig = async ({
     if (isAnyNodeInReplicaSetDeregistered) {
       return {
         canReconfig: true,
-        currentPrimarySpId,
-        currentSecondarySpIds
+        chainPrimarySpId,
+        chainSecondarySpIds
       }
     }
 
     // Reconfig should only happen when the replica set that triggered the reconfig matches the chain
     const isReplicaSetCurrent =
-      currentPrimarySpId === oldPrimarySpId &&
-      currentSecondarySpIds[0] === oldSecondary1SpId &&
-      currentSecondarySpIds[1] === oldSecondary2SpId
+      chainPrimarySpId === oldPrimarySpId &&
+      chainSecondarySpIds[0] === oldSecondary1SpId &&
+      chainSecondarySpIds[1] === oldSecondary2SpId
     return {
       canReconfig: isReplicaSetCurrent
     }
