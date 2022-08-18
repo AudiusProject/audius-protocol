@@ -27,6 +27,8 @@ from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 
+# Please toggle below variable to true for development
+ENABLE_DEVELOPMENT_FEATURES = False
 
 def entity_manager_update(
     _,  # main indexing task
@@ -102,17 +104,20 @@ def entity_manager_update(
                 elif (
                     params.action == Action.CREATE
                     and params.entity_type == EntityType.TRACK
+                    and ENABLE_DEVELOPMENT_FEATURES
                 ):
                     create_track(params)
                 elif (
                     params.action == Action.UPDATE
                     and params.entity_type == EntityType.TRACK
+                    and ENABLE_DEVELOPMENT_FEATURES
                 ):
                     update_track(params)
 
                 elif (
                     params.action == Action.DELETE
                     and params.entity_type == EntityType.TRACK
+                    and ENABLE_DEVELOPMENT_FEATURES
                 ):
                     delete_track(params)
 
