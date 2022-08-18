@@ -258,7 +258,7 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
      */
     await Promise.all(
       trackFilesSlice.map(async (trackFile) => {
-        const succeeded = await saveFileForMultihashToFS(
+        const error = await saveFileForMultihashToFS(
           libs,
           logger,
           trackFile.multihash,
@@ -267,7 +267,7 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
-        if (!succeeded) {
+        if (error) {
           throw new Error(
             `[saveFileForMultihashToFS] Failed for multihash ${trackFile.multihash}`
           )
@@ -297,9 +297,9 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
 
         // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
         // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-        let succeeded
+        let error
         if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-          succeeded = await saveFileForMultihashToFS(
+          error = await saveFileForMultihashToFS(
             libs,
             logger,
             multihash,
@@ -308,7 +308,7 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
             nonTrackFile.fileName
           )
         } else {
-          succeeded = await saveFileForMultihashToFS(
+          error = await saveFileForMultihashToFS(
             libs,
             logger,
             multihash,
@@ -317,7 +317,7 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
           )
         }
 
-        if (!succeeded) {
+        if (error) {
           throw new Error(
             `[saveFileForMultihashToFS] Failed for multihash ${multihash}`
           )

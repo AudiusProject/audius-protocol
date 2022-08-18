@@ -421,7 +421,7 @@ const handleSyncFromPrimary = async ({
            */
           await Promise.all(
             trackFilesSlice.map(async (trackFile) => {
-              const success = await saveFileForMultihashToFS(
+              const error = await saveFileForMultihashToFS(
                 libs,
                 genericLogger,
                 trackFile.multihash,
@@ -432,7 +432,7 @@ const handleSyncFromPrimary = async ({
               )
 
               // If saveFile op failed, record CID for later processing
-              if (!success) {
+              if (error) {
                 CIDsThatFailedSaveFileOp.add(trackFile.multihash)
               }
             })
@@ -459,15 +459,14 @@ const handleSyncFromPrimary = async ({
               if (nonTrackFile.type !== 'dir') {
                 const multihash = nonTrackFile.multihash
 
-                let success
-
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+                let error
                 if (
                   nonTrackFile.type === 'image' &&
                   nonTrackFile.fileName !== null
                 ) {
-                  success = await saveFileForMultihashToFS(
+                  error = await saveFileForMultihashToFS(
                     libs,
                     genericLogger,
                     multihash,
@@ -476,7 +475,7 @@ const handleSyncFromPrimary = async ({
                     nonTrackFile.fileName
                   )
                 } else {
-                  success = await saveFileForMultihashToFS(
+                  error = await saveFileForMultihashToFS(
                     libs,
                     genericLogger,
                     multihash,
@@ -486,7 +485,7 @@ const handleSyncFromPrimary = async ({
                 }
 
                 // If saveFile op failed, record CID for later processing
-                if (!success) {
+                if (error) {
                   CIDsThatFailedSaveFileOp.add(multihash)
                 }
               }
