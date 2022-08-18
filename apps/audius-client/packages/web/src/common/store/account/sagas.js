@@ -63,15 +63,17 @@ const IP_STORAGE_KEY = 'user-ip-timestamp'
 
 function* recordIPIfNotRecent(handle) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const localStorage = yield getContext('localStorage')
   const timeBetweenRefresh = 24 * 60 * 60 * 1000
   const now = Date.now()
   const minAge = now - timeBetweenRefresh
-  const storedIPStr = window.localStorage.getItem(IP_STORAGE_KEY)
+  const storedIPStr = yield call([localStorage, 'getItem'], IP_STORAGE_KEY)
   const storedIP = storedIPStr && JSON.parse(storedIPStr)
   if (!storedIP || !storedIP[handle] || storedIP[handle].timestamp < minAge) {
     const { userIP, error } = yield call(recordIP, audiusBackendInstance)
     if (!error) {
-      window.localStorage.setItem(
+      yield call(
+        [localStorage, 'setItem'],
         IP_STORAGE_KEY,
         JSON.stringify({ ...storedIP, [handle]: { userIP, timestamp: now } })
       )
@@ -83,6 +85,7 @@ function* recordIPIfNotRecent(handle) {
 // recording metrics, setting user data
 function* onFetchAccount(account) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const isNativeMobile = yield getContext('isNativeMobile')
   if (account && account.handle) {
     // Set analytics user context
     const traits = {
@@ -93,7 +96,7 @@ function* onFetchAccount(account) {
     setSentryUser(account, traits)
   }
 
-  if (shouldRequestBrowserPermission()) {
+  if (!isNativeMobile && shouldRequestBrowserPermission()) {
     setHasRequestedBrowserPermission()
     yield put(accountActions.showPushNotificationConfirmation())
   }
@@ -260,6 +263,7 @@ function* cacheAccount(account) {
       { id: account.user_id, uid: 'USER_ACCOUNT', metadata: account }
     ])
   )
+
   const hasFavoritedItem =
     collections.some((playlist) => playlist.user.id !== account.user_id) ||
     account.track_save_count > 0
