@@ -501,7 +501,7 @@ const handleSyncFromPrimary = async ({
         const numCIDsThatFailedSaveFileOp = CIDsThatFailedSaveFileOp.size
         if (numCIDsThatFailedSaveFileOp > 0) {
           const userSyncFailureCount =
-            UserSyncFailureCountService.incrementFailureCount(
+            await UserSyncFailureCountService.incrementFailureCount(
               fetchedWalletPublicKey
             )
 
@@ -518,7 +518,7 @@ const handleSyncFromPrimary = async ({
             // If max failure threshold reached, continue with sync and reset failure count
           } else {
             // Reset falure count so subsequent user syncs will not always succeed & skip
-            UserSyncFailureCountService.resetFailureCount(
+            await UserSyncFailureCountService.resetFailureCount(
               fetchedWalletPublicKey
             )
 
@@ -529,7 +529,7 @@ const handleSyncFromPrimary = async ({
           }
         } else {
           // Reset failure count if all files were successfully saved
-          UserSyncFailureCountService.resetFailureCount(fetchedWalletPublicKey)
+          await UserSyncFailureCountService.resetFailureCount(fetchedWalletPublicKey)
         }
 
         /**
