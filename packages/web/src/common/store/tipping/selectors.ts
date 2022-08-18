@@ -53,7 +53,7 @@ const mergeMaps = <
       // in the overrides but not in the default,
       // OR
       // if the existing value in the default map has a smaller amount
-      // than that in the override, the update default value with the
+      // than that in the override, then update default value with the
       // override value
       const supportIds = Object.keys(mapOverrides[userId]) as unknown as ID[]
       for (const supportId of supportIds) {

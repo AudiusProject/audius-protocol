@@ -10,7 +10,8 @@ import {
 } from 'audius-client/src/common/store/tipping/selectors'
 import {
   sendTip,
-  fetchUserSupporter
+  fetchUserSupporter,
+  refreshSupport
 } from 'audius-client/src/common/store/tipping/slice'
 import { getAccountBalance } from 'audius-client/src/common/store/wallet/selectors'
 import { getBalance } from 'audius-client/src/common/store/wallet/slice'
@@ -66,6 +67,7 @@ export const SendTipScreen = () => {
   const {
     amountToTipToBecomeTopSupporter,
     shouldFetchUserSupporter,
+    shouldFetchSupportersForReceiver,
     isFirstSupporter,
     tipAmountWei,
     hasInsufficientBalance
@@ -89,6 +91,17 @@ export const SendTipScreen = () => {
       )
     }
   }, [shouldFetchUserSupporter, account, receiver, dispatchWeb])
+
+  useEffect(() => {
+    if (shouldFetchSupportersForReceiver && account && receiver) {
+      dispatchWeb(
+        refreshSupport({
+          senderUserId: account.user_id,
+          receiverUserId: receiver.user_id
+        })
+      )
+    }
+  }, [shouldFetchSupportersForReceiver, account, receiver, dispatchWeb])
 
   const handleBack = useCallback(() => {
     navigation.goBack()
