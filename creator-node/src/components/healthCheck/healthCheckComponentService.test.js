@@ -46,10 +46,6 @@ const trustedNotifierManagerMock = {
   trustedNotifierID: 12
 }
 
-const sequelizeMock = {
-  query: async () => Promise.resolve()
-}
-
 const getMonitorsMock = async (monitors) => {
   return monitors.map((monitor) => {
     switch (monitor.name) {
@@ -166,7 +162,6 @@ describe('Test Health Check', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
       TranscodingQueueMock(4, 0).isAvailable,
@@ -281,7 +276,6 @@ describe('Test Health Check', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
       TranscodingQueueMock(4, 0).isAvailable,
@@ -384,7 +378,6 @@ describe('Test Health Check', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
       TranscodingQueueMock(4, 0).isAvailable,
@@ -529,7 +522,6 @@ describe('Test Health Check Verbose', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
@@ -644,7 +636,6 @@ describe('Test Health Check Verbose', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
@@ -659,7 +650,6 @@ describe('Test Health Check Verbose', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
       TranscodingQueueMock(4, 0).isAvailable,
