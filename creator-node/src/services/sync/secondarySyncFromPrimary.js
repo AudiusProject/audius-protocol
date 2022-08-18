@@ -10,7 +10,7 @@ const {
 } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
-const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
+const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 
 const handleSyncFromPrimary = async ({
@@ -501,7 +501,7 @@ const handleSyncFromPrimary = async ({
         const numCIDsThatFailedSaveFileOp = CIDsThatFailedSaveFileOp.size
         if (numCIDsThatFailedSaveFileOp > 0) {
           const userSyncFailureCount =
-            UserSyncFailureCountManager.incrementFailureCount(
+            UserSyncFailureCountService.incrementFailureCount(
               fetchedWalletPublicKey
             )
 
@@ -518,7 +518,7 @@ const handleSyncFromPrimary = async ({
             // If max failure threshold reached, continue with sync and reset failure count
           } else {
             // Reset falure count so subsequent user syncs will not always succeed & skip
-            UserSyncFailureCountManager.resetFailureCount(
+            UserSyncFailureCountService.resetFailureCount(
               fetchedWalletPublicKey
             )
 
@@ -529,7 +529,7 @@ const handleSyncFromPrimary = async ({
           }
         } else {
           // Reset failure count if all files were successfully saved
-          UserSyncFailureCountManager.resetFailureCount(fetchedWalletPublicKey)
+          UserSyncFailureCountService.resetFailureCount(fetchedWalletPublicKey)
         }
 
         /**

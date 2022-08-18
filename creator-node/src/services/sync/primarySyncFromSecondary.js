@@ -13,11 +13,15 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const asyncRetry = require('../../utils/asyncRetry')
 const DecisionTree = require('../../utils/decisionTree')
+const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
 const DEFAULT_LOG_CONTEXT = {}
 const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
+const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
+  'syncRequestMaxUserFailureCountBeforeSkip'
+)
 
 /**
  * Export data for user from secondary and save locally, until complete
@@ -111,10 +115,12 @@ module.exports = async function primarySyncFromSecondary({
       }
 
       // Save all files to disk separately from DB writes to minimize DB transaction duration
+      let CIDsThatFailedSaveFileOp
       try {
-        await saveFilesToDisk({
+        CIDsThatFailedSaveFileOp = await saveFilesToDisk({
           files: fetchedCNodeUser.files,
           userReplicaSet,
+          wallet,
           libs,
           logger
         })
@@ -134,8 +140,7 @@ module.exports = async function primarySyncFromSecondary({
       try {
         await saveEntriesToDB({
           fetchedCNodeUser,
-          logger,
-          logPrefix
+          CIDsThatFailedSaveFileOp
         })
         decisionTree.recordStage({
           name: 'saveEntriesToDB() Success',
@@ -234,7 +239,7 @@ async function fetchExportFromSecondary({
  * - `saveFileForMultihashToFS` will exit early if files already exist on disk
  * - Performed in batches to limit concurrent load
  */
-async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
+async function saveFilesToDisk({ files, userReplicaSet, wallet, libs, logger }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
   const trackFiles = files.filter((file) =>
@@ -243,6 +248,8 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
   const nonTrackFiles = files.filter((file) =>
     models.File.NonTrackTypes.includes(file.type)
   )
+
+  const CIDsThatFailedSaveFileOp = new Set()
 
   /**
    * Save all Track files to disk
@@ -267,10 +274,10 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
+
+        // If saveFile op failed, record CID for later processing
         if (error) {
-          throw new Error(
-            `[saveFileForMultihashToFS] Failed for multihash ${trackFile.multihash}`
-          )
+          CIDsThatFailedSaveFileOp.add(trackFile.multihash)
         }
       })
     )
@@ -317,20 +324,40 @@ async function saveFilesToDisk({ files, userReplicaSet, libs, logger }) {
           )
         }
 
+        // If saveFile op failed, record CID for later processing
         if (error) {
-          throw new Error(
-            `[saveFileForMultihashToFS] Failed for multihash ${multihash}`
-          )
+          CIDsThatFailedSaveFileOp.add(multihash)
         }
       })
     )
   }
+
+  /**
+   * Handle case where some CIDs were not successfully saved
+   * Reject whole operation until threshold reached, then proceed and mark those CIDs as skipped
+   */
+  if (CIDsThatFailedSaveFileOp.size > 0) {
+    const userSyncFailureCount = await UserSyncFailureCountService.incrementFailureCount(wallet)
+
+    // Throw error if failure threshold not yet reached
+    if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
+      throw new Error('asdf')
+    } else {
+      // If threshold reached, reset failure count and continue
+      await UserSyncFailureCountService.resetFailureCount(wallet)
+    }
+  } else {
+    // Reset failure count if all CIDs were successfully saved
+    await UserSyncFailureCountService.resetFailureCount(wallet)
+  }
+
+  return CIDsThatFailedSaveFileOp
 }
 
 /**
  * Saves all entries to DB that don't already exist in DB
  */
-async function saveEntriesToDB({ fetchedCNodeUser }) {
+async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
   const transaction = await models.sequelize.transaction()
 
   try {
@@ -347,11 +374,11 @@ async function saveEntriesToDB({ fetchedCNodeUser }) {
     })
 
     let cnodeUserUUID
-    if (localCNodeUser) {
-      /**
-       * If local CNodeUser exists, filter out any received entries that are already present in DB
-       */
 
+    /**
+     * If local CNodeUser exists, filter out any received entries that are already present in DB
+     */
+    if (localCNodeUser) {
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
 
       const audiusUserComparisonFields = [
@@ -415,7 +442,15 @@ async function saveEntriesToDB({ fetchedCNodeUser }) {
         tableInstance: models.Track,
         entry: track
       })),
-      fetchedFiles.map((file) => ({ tableInstance: models.File, entry: file }))
+      fetchedFiles.map((file) => {
+        if (CIDsThatFailedSaveFileOp.has(file.multihash)) {
+          file.skipped = true
+        }
+        return {
+          tableInstance: models.File,
+          entry: file
+        }
+      })
     )
 
     // Sort by clock asc to preserve original insert order
