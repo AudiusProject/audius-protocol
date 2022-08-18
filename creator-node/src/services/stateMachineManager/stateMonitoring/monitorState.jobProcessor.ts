@@ -9,8 +9,6 @@ import type {
   StateMonitoringUser,
   UserSecondarySyncMetricsMap
 } from './types'
-import { SpanStatusCode } from '@opentelemetry/api'
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
@@ -23,11 +21,7 @@ import {
   computeUserSecondarySyncSuccessRatesMap
 } from './stateMonitoringUtils'
 import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
-import {
-  instrumentTracing,
-  recordException,
-  currentSpanContext
-} from '../../../utils/tracing'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -90,7 +84,7 @@ const monitorState = async ({
         usersLength: users?.length
       })
     } catch (e: any) {
-      recordException(e)
+      tracing.recordException(e)
       // Make the next job try again instead of looping back to userId 0
       users = [
         {
@@ -121,7 +115,7 @@ const monitorState = async ({
         unhealthyPeers: Array.from(unhealthyPeers)
       })
     } catch (e: any) {
-      recordException(e)
+      tracing.recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -165,7 +159,7 @@ const monitorState = async ({
         logger
       )
     } catch (e: any) {
-      recordException(e)
+      tracing.recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -193,7 +187,7 @@ const monitorState = async ({
         }
       )
     } catch (e: any) {
-      recordException(e)
+      tracing.recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -206,7 +200,7 @@ const monitorState = async ({
       )
     }
   } catch (e: any) {
-    recordException(e)
+    tracing.recordException(e)
     logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
   } finally {
     _addToDecisionTree(decisionTree, 'END monitor-state job processor', logger)
@@ -224,23 +218,23 @@ const monitorState = async ({
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
     userSecondarySyncMetricsMap,
-    parentSpanContext: currentSpanContext()
+    parentSpanContext: tracing.currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
     userSecondarySyncMetricsMap,
-    parentSpanContext: currentSpanContext()
+    parentSpanContext: tracing.currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {
     lastProcessedUserId: lastProcessedUser?.user_id || 0,
     discoveryNodeEndpoint,
-    parentSpanContext: currentSpanContext()
+    parentSpanContext: tracing.currentSpanContext()
   }
 
   return {
-    spanContext: currentSpanContext(),
+    spanContext: tracing.currentSpanContext(),
     jobsToEnqueue: {
       // Enqueue a job to find sync requests that need to be issued for the slice of users we just monitored
       [QUEUE_NAMES.FIND_SYNC_REQUESTS]: [findSyncRequestsJob],
@@ -310,7 +304,7 @@ module.exports = async (params: DecoratedJobParams<MonitorStateJobParams>) => {
           ]
         : [],
       attributes: {
-        [SemanticAttributes.CODE_FILEPATH]: __filename
+        [tracing.CODE_FILEPATH]: __filename
       }
     }
   })(params)

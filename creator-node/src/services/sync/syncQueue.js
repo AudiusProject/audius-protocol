@@ -1,10 +1,8 @@
 const Bull = require('bull')
 
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-
 const { logger } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
-const { instrumentTracing, recordException } = require('../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 const SYNC_QUEUE_HISTORY = 500
 const LOCK_DURATION = 1000 * 60 * 30 // 30 minutes
@@ -65,7 +63,7 @@ class SyncQueue {
             }
           ],
           attributes: {
-            [SemanticAttributes.CODE_FILEPATH]: __filename
+            [tracing.CODE_FILEPATH]: __filename
           }
         }
       })
@@ -94,7 +92,7 @@ class SyncQueue {
         logContext
       })
     } catch (e) {
-      recordException(e)
+      tracing.recordException(e)
       logger.error(
         `secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}`,
         e.message

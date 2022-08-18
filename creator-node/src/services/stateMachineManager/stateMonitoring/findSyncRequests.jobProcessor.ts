@@ -11,19 +11,13 @@ import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 
 import _ = require('lodash')
 
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-
 import config from '../../../config'
 import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
 import { makeGaugeIncToRecord } from '../stateMachineUtils'
 import { SyncType, SYNC_MODES, QUEUE_NAMES } from '../stateMachineConstants'
 import { getNewOrExistingSyncReq } from '../stateReconciliation/stateReconciliationUtils'
 import { computeSyncModeForUserAndReplica } from './stateMonitoringUtils'
-import {
-  currentSpanContext,
-  instrumentTracing,
-  recordException
-} from '../../../utils/tracing'
+import { instrumentTracing, tracing } from '../../../tracer'
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -150,7 +144,7 @@ const findSyncRequests = async ({
   }
 
   return {
-    spanContext: currentSpanContext(),
+    spanContext: tracing.currentSpanContext(),
     duplicateSyncReqs,
     errors,
     jobsToEnqueue: syncReqsToEnqueue?.length
@@ -267,7 +261,7 @@ async function _findSyncsForUser(
         secondaryFilesHash
       })
     } catch (e: any) {
-      recordException(e)
+      tracing.recordException(e)
       outcomesBySecondary[secondary].result =
         'no_sync_error_computing_sync_mode'
       errors.push(
@@ -302,7 +296,7 @@ async function _findSyncsForUser(
           result = 'new_sync_request_unable_to_enqueue'
         }
       } catch (e: any) {
-        recordException(e)
+        tracing.recordException(e)
         result = 'no_sync_unexpected_error'
         errors.push(
           `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary} - ${e.message}`
@@ -344,7 +338,7 @@ module.exports = async (
           ]
         : [],
       attributes: {
-        [SemanticAttributes.CODE_FILEPATH]: __filename
+        [tracing.CODE_FILEPATH]: __filename
       }
     }
   })(params)

@@ -10,14 +10,7 @@ const {
   HEALTHY_SERVICES_TTL_SEC
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-const {
-  instrumentTracing,
-  currentSpanContext,
-  info,
-  warn,
-  error,
-  recordException
-} = require('../../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../../tracer')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
@@ -44,7 +37,7 @@ const getNewOrExistingSyncReq = ({
     !syncType ||
     !syncMode
   ) {
-    info(
+    tracing.info(
       `getNewOrExistingSyncReq missing parameter - userWallet: ${userWallet}, primaryEndpoint: ${primaryEndpoint}, secondaryEndpoint: ${secondaryEndpoint}, syncType: ${syncType}, syncMode: ${syncMode}`
     )
     throw new Error(
@@ -62,7 +55,7 @@ const getNewOrExistingSyncReq = ({
     immediate
   )
   if (duplicateSyncJobInfo) {
-    info(
+    tracing.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
     logger.info(
@@ -72,7 +65,7 @@ const getNewOrExistingSyncReq = ({
     return {
       duplicateSyncReq: {
         ...duplicateSyncJobInfo,
-        parentSpanContext: currentSpanContext()
+        parentSpanContext: tracing.currentSpanContext()
       }
     }
   }
@@ -97,7 +90,7 @@ const getNewOrExistingSyncReq = ({
     syncType,
     syncMode,
     syncRequestParameters,
-    parentSpanContext: currentSpanContext()
+    parentSpanContext: tracing.currentSpanContext()
   }
 
   SyncRequestDeDuplicator.recordSync(
@@ -107,7 +100,7 @@ const getNewOrExistingSyncReq = ({
     immediate
   )
 
-  info(JSON.stringify(syncReqToEnqueue))
+  tracing.info(JSON.stringify(syncReqToEnqueue))
   return { syncReqToEnqueue }
 }
 
@@ -136,19 +129,19 @@ const issueSyncRequestsUntilSynced = async (
   if (!_.isEmpty(duplicateSyncReq)) {
     // Log duplicate and return
     logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
-    warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
+    tracing.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
-    info(JSON.stringify(syncReqToEnqueue))
+    tracing.info(JSON.stringify(syncReqToEnqueue))
     await queue.add({
       enqueuedBy: 'issueSyncRequestsUntilSynced',
-      parentSpanContext: currentSpanContext(),
+      parentSpanContext: tracing.currentSpanContext(),
       ...syncReqToEnqueue
     })
   } else {
     // Log error that the sync request couldn't be created and return
     logger.error(`Failed to create manual sync request`)
-    error(`Failed to create manual sync request`)
+    tracing.error(`Failed to create manual sync request`)
     return
   }
 
@@ -177,7 +170,7 @@ const issueSyncRequestsUntilSynced = async (
       await Utils.timeout(500)
     } catch (e) {
       // do nothing and let while loop continue
-      recordException(e)
+      tracing.recordException(e)
     }
   }
 

@@ -16,11 +16,7 @@ const monitorStateJobProcessor = require('./monitorState.jobProcessor')
 const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
 const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
 const fetchCNodeEndpointToSpIdMapJobProcessor = require('./fetchCNodeEndpointToSpIdMap.jobProcessor')
-const {
-  instrumentTracing,
-  getActiveSpan,
-  currentSpanContext
-} = require('../../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../../tracer')
 
 const monitorStateLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.MONITOR_STATE
@@ -258,7 +254,7 @@ class StateMonitoringManager {
         {
           lastProcessedUserId,
           discoveryNodeEndpoint,
-          parentSpanContext: currentSpanContext()
+          parentSpanContext: tracing.currentSpanContext()
         },
         /** opts */ { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
       )

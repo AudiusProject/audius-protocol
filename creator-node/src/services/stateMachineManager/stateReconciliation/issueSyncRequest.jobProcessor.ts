@@ -14,8 +14,6 @@ import type { AxiosRequestConfig } from 'axios'
 import axios from 'axios'
 import _ from 'lodash'
 
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-
 import config from '../../../config'
 
 import Utils from '../../../utils'
@@ -35,11 +33,7 @@ import {
 } from '../stateMachineConstants'
 import primarySyncFromSecondary from '../../sync/primarySyncFromSecondary'
 import SyncRequestDeDuplicator from './SyncRequestDeDuplicator'
-import {
-  instrumentTracing,
-  recordException,
-  currentSpanContext
-} from '../../../utils/tracing'
+import { instrumentTracing, tracing } from '../../../tracer'
 import { generateDataForSignatureRecovery } from '../../sync/secondarySyncFromPrimaryUtils'
 import { generateTimestampAndSignature } from '../../../apiSigning'
 const models = require('../../../models')
@@ -152,7 +146,7 @@ const issueSyncRequest = async ({
   return {
     jobsToEnqueue,
     metricsToRecord,
-    spanContext: currentSpanContext(),
+    spanContext: tracing.currentSpanContext(),
     error
   }
 }
@@ -266,7 +260,7 @@ async function _handleIssueSyncRequest({
         message: `${logMsgString} || Error issuing sync request: ${e.message}`
       },
       syncReqToEnqueue: {
-        parentSpanContext: currentSpanContext(),
+        parentSpanContext: tracing.currentSpanContext(),
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
         syncRequestParameters
@@ -389,7 +383,7 @@ const _additionalSyncIsRequired = async (
         break
       }
     } catch (e) {
-      recordException(e as Error)
+      tracing.recordException(e as Error)
       logger.warn(`${logMsgString} || Error: ${(e as Error).message}`)
     }
 
@@ -446,7 +440,7 @@ const _additionalSyncIsRequired = async (
   const response: AdditionalSyncIsRequiredResponse = { outcome }
   if (additionalSyncIsRequired) {
     response.syncReqToEnqueue = {
-      parentSpanContext: currentSpanContext(),
+      parentSpanContext: tracing.currentSpanContext(),
       syncType,
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
       syncRequestParameters
@@ -476,7 +470,7 @@ module.exports = async (
           ]
         : [],
       attributes: {
-        [SemanticAttributes.CODE_FILEPATH]: __filename
+        [tracing.CODE_FILEPATH]: __filename
       }
     }
   })(params)

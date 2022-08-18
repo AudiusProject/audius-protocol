@@ -9,9 +9,6 @@ import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
 import type { SpanContext } from '@opentelemetry/api'
 
-import { SpanStatusCode } from '@opentelemetry/api'
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-
 import { Queue } from 'bull'
 
 // eslint-disable-next-line import/no-unresolved
@@ -20,7 +17,7 @@ import _ from 'lodash'
 import { logger as baseLogger, createChildLogger } from '../../logging'
 import { QUEUE_NAMES } from './stateMachineConstants'
 import { METRIC_RECORD_TYPE } from '../prometheusMonitoring/prometheus.constants'
-import { instrumentTracing, recordException } from '../../utils/tracing'
+import { instrumentTracing, tracing } from '../../tracer'
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take
@@ -83,7 +80,7 @@ const makeOnCompleteCallback = (
       logger.info(`Job successfully completed. Parsing result: ${resultString}`)
       jobResult = JSON.parse(resultString) || {}
     } catch (e: any) {
-      recordException(e)
+      tracing.recordException(e)
       logger.error(`Failed to parse job result string: ${e.message}`)
       return
     }
@@ -162,7 +159,7 @@ const _enqueueJobs = async (
       `Added ${bulkAddResult.length} jobs to ${queueNameToAddTo} in bulk after successful completion`
     )
   } catch (e: any) {
-    recordException(e)
+    tracing.recordException(e)
     logger.error(
       `Failed to bulk-add jobs to ${queueNameToAddTo} after successful completion: ${e}`
     )
@@ -173,7 +170,7 @@ const enqueueJobs = instrumentTracing({
   fn: _enqueueJobs,
   options: {
     attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
+      [tracing.CODE_FILEPATH]: __filename
     }
   }
 })
@@ -226,7 +223,7 @@ module.exports = instrumentTracing({
   fn: makeOnCompleteCallback,
   options: {
     attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
+      [tracing.CODE_FILEPATH]: __filename
     }
   }
 })

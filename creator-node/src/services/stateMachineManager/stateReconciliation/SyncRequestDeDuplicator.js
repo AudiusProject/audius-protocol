@@ -1,4 +1,4 @@
-const { instrumentTracing, getActiveSpan } = require('../../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../../tracer')
 
 /**
  * Ensure a sync request for (syncType, userWallet, secondaryEndpoint) can only be enqueued once
@@ -60,8 +60,7 @@ class SyncRequestDeDuplicator {
           secondaryEndpoint,
           immediate
         )
-        const span = getActiveSpan()
-        span?.setAttribute('syncKey', syncKey)
+        tracing.setSpanAttribute('syncKey', syncKey)
 
         that.waitingSyncsByUserWalletMap[syncKey] = jobProps
       }

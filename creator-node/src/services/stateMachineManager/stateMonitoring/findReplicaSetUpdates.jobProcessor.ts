@@ -12,10 +12,8 @@ import type {
   FindReplicaSetUpdatesJobReturnValue,
   StateMonitoringUser
 } from './types'
-import type { SpanContext } from '@opentelemetry/api'
 import _ from 'lodash'
 
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import {
   FIND_REPLICA_SET_UPDATES_BATCH_SIZE,
   QUEUE_NAMES
@@ -23,7 +21,7 @@ import {
 import CNodeHealthManager from '../CNodeHealthManager'
 import config from '../../../config'
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
-import { currentSpanContext, instrumentTracing } from '../../../utils/tracing'
+import { tracing, instrumentTracing } from '../../../tracer'
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const minSecondaryUserSyncSuccessPercent =
@@ -112,7 +110,7 @@ const findReplicaSetUpdates = async ({
         const { wallet } = updateReplicaSetOp
 
         updateReplicaSetJobs.push({
-          parentSpanContext: currentSpanContext(),
+          parentSpanContext: tracing.currentSpanContext(),
           wallet,
           userId: updateReplicaSetOp.userId,
           primary: updateReplicaSetOp.primary,
@@ -138,7 +136,7 @@ const findReplicaSetUpdates = async ({
   }
 
   return {
-    spanContext: currentSpanContext(),
+    spanContext: tracing.currentSpanContext(),
     cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
@@ -354,7 +352,7 @@ module.exports = async (
           ]
         : [],
       attributes: {
-        [SemanticAttributes.CODE_FILEPATH]: __filename
+        [tracing.CODE_FILEPATH]: __filename
       }
     }
   })(params)

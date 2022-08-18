@@ -12,7 +12,7 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
-const { instrumentTracing, recordException } = require('../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 const _handleSyncFromPrimary = async ({
   serviceRegistry,
@@ -41,7 +41,7 @@ const _handleSyncFromPrimary = async ({
       redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
     )
   } catch (e) {
-    recordException(e)
+    tracing.recordException(e)
     return {
       error: new Error(
         `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
@@ -214,7 +214,7 @@ const _handleSyncFromPrimary = async ({
         // Spread + set uniq's the array
         userReplicaSet = [...new Set(userReplicaSet)]
       } catch (e) {
-        recordException(e)
+        tracing.recordException(e)
         genericLogger.error(
           logPrefix,
           `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`

@@ -12,12 +12,7 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const asyncRetry = require('../../utils/asyncRetry')
-const {
-  instrumentTracing,
-  recordException,
-  getActiveSpan,
-  info
-} = require('../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../tracer')
 const DecisionTree = require('../../utils/decisionTree')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
@@ -34,8 +29,7 @@ async function primarySyncFromSecondary({
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
-  const span = getActiveSpan()
-  span?.setAttribute('wallet', wallet)
+  tracing.setSpanAttribute('wallet', wallet)
 
   const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
   const logger = genericLogger.child(logContext)
@@ -55,11 +49,11 @@ async function primarySyncFromSecondary({
 
     let libs
     try {
-      info('init AudiusLibs')
+      tracing.info('init AudiusLibs')
       libs = await initAudiusLibs({})
       decisionTree.recordStage({ name: 'initAudiusLibs() success' })
     } catch (e) {
-      recordException(e)
+      tracing.recordException(e)
       decisionTree.recordStage({
         name: 'initAudiusLibs() Error',
         data: { errorMsg: e.message },
@@ -172,7 +166,7 @@ async function primarySyncFromSecondary({
 
     decisionTree.recordStage({ name: 'Complete Success' })
   } catch (e) {
-    recordException(e)
+    tracing.recordException(e)
     error = e
 
     await SyncHistoryAggregator.recordSyncFail(wallet)
@@ -457,7 +451,7 @@ async function _saveEntriesToDB({ fetchedCNodeUser }) {
 
     await transaction.commit()
   } catch (e) {
-    recordException(e)
+    tracing.recordException(e)
     await transaction.rollback()
     throw e
   }
@@ -543,7 +537,7 @@ async function _getUserReplicaSet({ wallet, libs, logger }) {
 
     return userReplicaSet
   } catch (e) {
-    recordException(e)
+    tracing.recordException(e)
     throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
   }
 }

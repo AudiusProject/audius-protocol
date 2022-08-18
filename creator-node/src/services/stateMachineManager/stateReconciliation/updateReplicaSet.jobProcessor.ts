@@ -26,13 +26,7 @@ import {
 import { retrieveClockValueForUserFromReplica } from '../stateMachineUtils'
 import initAudiusLibs from '../../initAudiusLibs'
 
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-import {
-  instrumentTracing,
-  recordException,
-  info,
-  currentSpanContext
-} from '../../../utils/tracing'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
 
@@ -89,7 +83,7 @@ const updateReplicaSet = async function ({
   healthyNodes = await getCachedHealthyNodes()
   if (healthyNodes.length === 0) {
     try {
-      info('init libs')
+      tracing.info('init libs')
       audiusLibs = await initAudiusLibs({
         enableEthContracts: true,
         enableContracts: true,
@@ -145,7 +139,7 @@ const updateReplicaSet = async function ({
         logger
       ))
   } catch (e: any) {
-    recordException(e)
+    tracing.recordException(e)
     logger.error(
       `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
         e.stack
@@ -159,7 +153,7 @@ const updateReplicaSet = async function ({
     issuedReconfig,
     newReplicaSet,
     healthyNodes,
-    spanContext: currentSpanContext(),
+    spanContext: tracing.currentSpanContext(),
     jobsToEnqueue: syncJobsToEnqueue?.length
       ? {
           [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
@@ -537,7 +531,7 @@ const _issueUpdateReplicaSetOp = async (
     const startTimeMs = Date.now()
     try {
       if (!audiusLibs) {
-        info('init libs')
+        tracing.info('init libs')
         audiusLibs = await initAudiusLibs({
           enableEthContracts: false,
           enableContracts: true,
@@ -587,7 +581,7 @@ const _issueUpdateReplicaSetOp = async (
         }ms for userId=${userId} wallet=${wallet}`
       )
     } catch (e: any) {
-      recordException(e)
+      tracing.recordException(e)
       throw new Error(
         `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${
           Date.now() - startTimeMs
@@ -639,7 +633,7 @@ const _issueUpdateReplicaSetOp = async (
       `[_issueUpdateReplicaSetOp] Reconfig SUCCESS: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
   } catch (e: any) {
-    recordException(e)
+    tracing.recordException(e)
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
     return response
@@ -729,7 +723,7 @@ module.exports = async (
           ]
         : [],
       attributes: {
-        [SemanticAttributes.CODE_FILEPATH]: __filename
+        [tracing.CODE_FILEPATH]: __filename
       }
     }
   })(params)

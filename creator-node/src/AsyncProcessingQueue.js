@@ -2,7 +2,6 @@ const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 
 // Processing fns
 const {
@@ -13,11 +12,7 @@ const {
 const {
   processTranscodeAndSegments
 } = require('./components/tracks/trackContentUploadManager')
-const {
-  instrumentTracing,
-  getActiveSpan,
-  currentSpanContext
-} = require('./utils/tracing')
+const { tracing, instrumentTracing } = require('./tracer')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
@@ -73,7 +68,7 @@ class AsyncProcessingQueue {
           attributes: {
             task: task,
             requestID: logContext.requestID,
-            [SemanticAttributes.CODE_FILEPATH]: __filename
+            [tracing.CODE_FILEPATH]: __filename
           }
         }
       })
@@ -103,7 +98,7 @@ class AsyncProcessingQueue {
           'Failed to hand off transcode. Retrying upload to current node...'
         )
         await this.addTrackContentUploadTask({
-          parentSpanContext: currentSpanContext(),
+          parentSpanContext: tracing.currentSpanContext(),
           logContext,
           req: job.data.req
         })
@@ -113,7 +108,7 @@ class AsyncProcessingQueue {
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
         )
         await this.addProcessTranscodeAndSegmentTask({
-          parentSpanContext: currentSpanContext(),
+          parentSpanContext: tracing.currentSpanContext(),
           logContext,
           req: { ...job.data.req, transcodeFilePath, segmentFileNames }
         })

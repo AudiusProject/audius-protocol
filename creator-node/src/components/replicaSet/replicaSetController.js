@@ -1,9 +1,6 @@
 const express = require('express')
 const _ = require('lodash')
 
-const { SpanStatusCode } = require('@opentelemetry/api')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-
 const {
   successResponse,
   handleResponse,
@@ -23,11 +20,7 @@ const {
   enqueueSync,
   processManualImmediateSync
 } = require('./syncQueueComponentService')
-const {
-  instrumentTracing,
-  getActiveSpan,
-  currentSpanContext
-} = require('../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../tracer')
 const {
   generateDataForSignatureRecovery
 } = require('../../services/sync/secondarySyncFromPrimaryUtils')
@@ -131,7 +124,7 @@ const syncRouteController = async (req, res) => {
           wallet
         },
         logContext: req.logContext,
-        parentSpanContext: currentSpanContext()
+        parentSpanContext: tracing.currentSpanContext()
       })
     } catch (e) {
       return errorResponseServerError(e)
@@ -161,7 +154,7 @@ const syncRouteController = async (req, res) => {
           wallet
         },
         logContext: req.logContext,
-        parentSpanContext: currentSpanContext()
+        parentSpanContext: tracing.currentSpanContext()
       })
       delete syncDebounceQueue[wallet]
     }, debounceTime)
@@ -231,7 +224,7 @@ router.post(
       fn: syncRouteController,
       options: {
         attributes: {
-          [SemanticAttributes.CODE_FILEPATH]: __filename
+          [tracing.CODE_FILEPATH]: __filename
         }
       }
     })

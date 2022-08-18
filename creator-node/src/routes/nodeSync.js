@@ -1,5 +1,4 @@
 const express = require('express')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 
 const models = require('../models')
 const {
@@ -11,16 +10,11 @@ const {
 const config = require('../config')
 const retry = require('async-retry')
 const exportComponentService = require('../components/replicaSet/exportComponentService')
-const {
-  instrumentTracing,
-  getActiveSpan,
-  recordException
-} = require('../utils/tracing')
+const { instrumentTracing, tracing } = require('../tracer')
 
 const router = express.Router()
 
 const handleExport = async (req, res) => {
-  const span = getActiveSpan()
   const start = Date.now()
 
   const walletPublicKeys = req.query.wallet_public_key // array
@@ -58,10 +52,10 @@ const handleExport = async (req, res) => {
       } ms`
     )
 
-    span?.setAttribute('cnodeUsersDict', JSON.stringify(cnodeUsersDict))
+    tracing.setSpanAttribute('cnodeUsersDict', JSON.stringify(cnodeUsersDict))
     return successResponse({ cnodeUsers: cnodeUsersDict })
   } catch (e) {
-    recordException(e)
+    tracing.recordException(e)
     req.logger.error(
       `Error in /export for wallets ${walletPublicKeys} to source endpoint ${
         sourceEndpoint || '(not provided)'
@@ -90,8 +84,8 @@ router.get(
       fn: handleExport,
       options: {
         attributes: {
-          [SemanticAttributes.CODE_FUNCTION]: 'handleExport',
-          [SemanticAttributes.CODE_FILEPATH]: __filename
+          [tracing.CODE_FUNCTION]: 'handleExport',
+          [tracing.CODE_FILEPATH]: __filename
         }
       }
     })

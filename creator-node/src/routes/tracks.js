@@ -3,7 +3,6 @@ const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('buffer')
 const { promisify } = require('util')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 
 const config = require('../config')
 const models = require('../models')
@@ -38,20 +37,14 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
-const {
-  instrumentTracing,
-  getActiveSpan,
-  currentSpanContext,
-  info
-} = require('../utils/tracing')
+const { instrumentTracing, tracing } = require('../tracer')
 
 const readFile = promisify(fs.readFile)
 
 const router = express.Router()
 
 const handleTrackContentAsync = async (req, res) => {
-  const span = getActiveSpan()
-  span?.setAttribute('requestID', req.logContext.requestID)
+  tracing.setSpanAttribute('requestID', req.logContext.requestID)
   if (req.fileSizeError || req.fileFilterError) {
     removeTrackFolder({ logContext: req.logContext }, req.fileDir)
     return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
@@ -66,9 +59,9 @@ const handleTrackContentAsync = async (req, res) => {
   })
 
   if (selfTranscode) {
-    info('adding track content upload task')
+    tracing.info('adding track content upload task')
     await AsyncProcessingQueue.addTrackContentUploadTask({
-      parentSpanContext: currentSpanContext(),
+      parentSpanContext: tracing.currentSpanContext(),
       logContext: req.logContext,
       req: {
         fileName: req.fileName,
@@ -78,9 +71,9 @@ const handleTrackContentAsync = async (req, res) => {
       }
     })
   } else {
-    info('adding trancode hand off task')
+    tracing.info('adding trancode hand off task')
     await AsyncProcessingQueue.addTranscodeHandOffTask({
-      parentSpanContext: currentSpanContext(),
+      parentSpanContext: tracing.currentSpanContext(),
       logContext: req.logContext,
       req: {
         fileName: req.fileName,
@@ -111,7 +104,7 @@ router.post(
       fn: handleTrackContentAsync,
       options: {
         attributes: {
-          [SemanticAttributes.CODE_FILEPATH]: __filename
+          [tracing.CODE_FILEPATH]: __filename
         }
       }
     })
@@ -158,7 +151,7 @@ router.post(
           req.app.get('serviceRegistry').asyncProcessingQueue
 
         await AsyncProcessingQueue.addTranscodeAndSegmentTask({
-          parentSpanContext: currentSpanContext(),
+          parentSpanContext: tracing.currentSpanContext(),
           logContext: req.logContext,
           req: {
             fileName: req.fileName,

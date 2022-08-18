@@ -6,16 +6,10 @@ import type {
 } from './types'
 import _ from 'lodash'
 
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-
 import { createChildLogger } from '../../logging'
 import redis from '../../redis'
 import { QUEUE_NAMES } from './stateMachineConstants'
-import {
-  getActiveSpan,
-  instrumentTracing,
-  recordException
-} from '../../utils/tracing'
+import { instrumentTracing, tracing } from '../../tracer'
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -32,8 +26,6 @@ const processJob = async function (
   parentLogger: Logger,
   prometheusRegistry: any
 ) {
-  const span = getActiveSpan()
-
   // Make sure logger has `queue` property
   const queueName = parentLogger?.fields?.queue
   if (!queueName) {
@@ -44,7 +36,7 @@ const processJob = async function (
   }
 
   const { id: jobId, data: jobData } = job
-  span?.setAttribute('jobId', jobId)
+  tracing.setSpanAttribute('jobId', jobId)
 
   const jobLogger = createChildLogger(parentLogger, { jobId }) as Logger
   jobLogger.info(`New job: ${JSON.stringify(job)}`)
@@ -65,7 +57,7 @@ const processJob = async function (
     })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error) {
-    recordException(error as Error)
+    tracing.recordException(error as Error)
     jobLogger.error(`Error processing job: ${error}`)
     jobLogger.error((error as Error).stack)
     result = { error: (error as Error).message || `${error}` }
@@ -95,7 +87,7 @@ module.exports = instrumentTracing({
   fn: processJob,
   options: {
     attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
+      [tracing.CODE_FILEPATH]: __filename
     }
   }
 })

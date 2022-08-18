@@ -4,7 +4,6 @@ const { libs } = require('@audius/sdk')
 const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 
 const {
   METRIC_RECORD_TYPE,
@@ -19,7 +18,7 @@ const {
   CLOCK_STATUS_REQUEST_TIMEOUT_MS,
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
 } = require('./stateMachineConstants')
-const { instrumentTracing } = require('../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
@@ -146,7 +145,7 @@ const _retrieveClockValueForUserFromReplica = async (replica, wallet) => {
 const retrieveClockValueForUserFromReplica = instrumentTracing({
   fn: _retrieveClockValueForUserFromReplica,
   options: {
-    [SemanticAttributes.CODE_FILEPATH]: __filename
+    [tracing.CODE_FILEPATH]: __filename
   }
 })
 

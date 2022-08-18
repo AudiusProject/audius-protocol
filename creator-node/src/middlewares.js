@@ -1,6 +1,4 @@
 const promiseAny = require('promise.any')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
-const { SpanStatusCode } = require('@opentelemetry/api')
 
 const {
   sendResponse,
@@ -20,7 +18,7 @@ const BlacklistManager = require('./blacklistManager')
 const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
-const { instrumentTracing, error, recordException } = require('./utils/tracing')
+const { instrumentTracing, tracing } = require('./tracer')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -308,7 +306,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       'manualSyncsDisabled'
     )})`
     req.logger.error(errorMsg)
-    error(errorMsg)
+    tracing.error(errorMsg)
     if (enforceWriteQuorum) {
       throw new Error(errorMsg)
     }
@@ -324,7 +322,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       route,
       result: 'failed_short_circuit'
     })
-    error(errorMsg)
+    tracing.error(errorMsg)
     req.logger.error(errorMsg)
     if (enforceWriteQuorum) {
       throw new Error(errorMsg)
@@ -348,7 +346,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       const errorMsg =
         'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
 
-      error(errorMsg)
+      tracing.error(errorMsg)
       req.logger.error(errorMsg)
       if (enforceWriteQuorum) {
         throw new Error(errorMsg)
@@ -418,7 +416,7 @@ async function _issueAndWaitForSecondarySyncRequests(
         result: 'succeeded'
       })
     } catch (e) {
-      recordException(e)
+      tracing.recordException(e)
       endHistogramTimer({
         enforceWriteQuorum: String(enforceWriteQuorum),
         ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -428,7 +426,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
         Date.now() - replicationStart
       }ms`
-      error(errorMsg)
+      tracing.error(errorMsg)
       req.logger.error(`${errorMsg}: ${e.message}`)
 
       // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
@@ -440,7 +438,7 @@ async function _issueAndWaitForSecondarySyncRequests(
 
     // If any error during replication, error if quorum is enforced
   } catch (e) {
-    recordException(e)
+    tracing.recordException(e)
     endHistogramTimer({
       enforceWriteQuorum: String(enforceWriteQuorum),
       ignoreWriteQuorum: String(ignoreWriteQuorum),
@@ -452,7 +450,7 @@ async function _issueAndWaitForSecondarySyncRequests(
       e.message
     )
     if (enforceWriteQuorum) {
-      error(
+      tracing.error(
         `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}: ${e.message}`
       )
       throw new Error(
@@ -466,7 +464,7 @@ const issueAndWaitForSecondarySyncRequests = instrumentTracing({
   fn: _issueAndWaitForSecondarySyncRequests,
   options: {
     attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
+      [tracing.CODE_FILEPATH]: __filename
     }
   }
 })

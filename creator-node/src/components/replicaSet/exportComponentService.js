@@ -1,10 +1,9 @@
 const _ = require('lodash')
-const { SemanticAttributes } = require('@opentelemetry/semantic-conventions')
 
 const models = require('../../models')
 const { Transaction } = require('sequelize')
 const DBManager = require('../../dbManager')
-const { instrumentTracing } = require('../../utils/tracing')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
@@ -173,7 +172,7 @@ module.exports = instrumentTracing({
   fn: exportComponentService,
   options: {
     attributes: {
-      [SemanticAttributes.CODE_FILEPATH]: __filename
+      [tracing.CODE_FILEPATH]: __filename
     }
   }
 })

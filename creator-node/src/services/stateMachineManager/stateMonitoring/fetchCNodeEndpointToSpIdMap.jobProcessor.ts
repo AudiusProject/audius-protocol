@@ -4,16 +4,9 @@ import type {
   FetchCNodeEndpointToSpIdMapJobReturnValue
 } from './types'
 
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
-
 import initAudiusLibs from '../../initAudiusLibs'
 import ContentNodeInfoManager from '../ContentNodeInfoManager'
-import {
-  currentSpanContext,
-  instrumentTracing,
-  info,
-  recordException
-} from '../../../utils/tracing'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 /**
  * Processes a job to update the cNodeEndpoint->spId map by reading the chain.
@@ -29,7 +22,7 @@ const fetchCNodeEndpointToSpIdMap = async ({
 > => {
   let errorMsg = ''
   try {
-    info('init AudiusLibs')
+    tracing.info('init AudiusLibs')
     const audiusLibs = await initAudiusLibs({
       enableEthContracts: true,
       enableContracts: false,
@@ -41,13 +34,13 @@ const fetchCNodeEndpointToSpIdMap = async ({
       audiusLibs.ethContracts
     )
   } catch (e: any) {
-    recordException(e)
+    tracing.recordException(e)
     errorMsg = e.message || e.toString()
     logger.error(`updateEndpointToSpIdMap Error: ${errorMsg}`)
   }
   return {
     cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
-    spanContext: currentSpanContext(),
+    spanContext: tracing.currentSpanContext(),
     errorMsg
   }
 }
@@ -68,7 +61,7 @@ module.exports = async (
           ]
         : [],
       attributes: {
-        [SemanticAttributes.CODE_FILEPATH]: __filename
+        [tracing.CODE_FILEPATH]: __filename
       }
     }
   })(params)
