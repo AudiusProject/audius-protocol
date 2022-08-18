@@ -1,7 +1,7 @@
 [
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_017_Notification",
+      "__alertId__": "YCgu57m4z_017_High",
       "__dashboardUid__": "YCgu57m4z",
       "__panelId__": "17",
       "description": "\n\nWe ignore any previous one-off proposers to keep this metric at 0. Anything greater than 0 should be considered to be created by an attacker.",
@@ -37,7 +37,7 @@
             {
               "evaluator": {
                 "params": [
-                  null,
+                  1,
                   0
                 ],
                 "type": "gt"
@@ -77,16 +77,16 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "ARwYXYzVk",
-    "for": "0",
-    "id": 220174,
+    "folderUID": "zpejR_iVz",
+    "for": "0s",
+    "id": 180171,
     "labels": {
-      "channel": "notification"
+      "channel": "high-alert"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Proposals by Unknown Proposers (Notification)",
-    "uid": "YCgu57m4z_017_Notification"
+    "title": "Proposals by Unknown Proposers (High)",
+    "uid": "YCgu57m4z_017_High"
   }
 ]

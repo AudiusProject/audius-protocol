@@ -1,7 +1,7 @@
 [
   {
     "annotations": {
-      "__alertId__": "jPaB_Yk4k_005_Notification",
+      "__alertId__": "jPaB_Yk4k_005_High",
       "__dashboardUid__": "jPaB_Yk4k",
       "__panelId__": "5",
       "description": "",
@@ -37,7 +37,7 @@
             {
               "evaluator": {
                 "params": [
-                  null,
+                  10,
                   0
                 ],
                 "type": "gt"
@@ -77,16 +77,16 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "ARwYXYzVk",
-    "for": "0",
-    "id": 200054,
+    "folderUID": "zpejR_iVz",
+    "for": "0s",
+    "id": 110051,
     "labels": {
-      "channel": "notification"
+      "channel": "high-alert"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Contract Movements (Notification)",
-    "uid": "jPaB_Yk4k_005_Notification"
+    "title": "Contract Movements (High)",
+    "uid": "jPaB_Yk4k_005_High"
   }
 ]
