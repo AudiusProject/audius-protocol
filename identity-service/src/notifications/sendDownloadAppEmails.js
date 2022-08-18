@@ -46,7 +46,7 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
     logger.info(`processDownloadAppEmail - ${emailUsers.length} 2 day old users who have not signed in mobile`)
 
     for (let userToEmail of emailUsers) {
-      if (!existingUser.isEmailDeliverable) {
+      if (!userToEmail.isEmailDeliverable) {
         logger.info(`Unable to deliver download app email to ${userToEmail.handle} ${userToEmail.email}`)
         continue
       }
