@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { getAccountUser } from 'common/store/account/selectors'
+import { useRecord, make } from 'common/store/analytics/actions'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { getShowTip, getTipToDisplay } from 'common/store/tipping/selectors'
 import { beginTip, fetchRecentTips, hideTip } from 'common/store/tipping/slice'
@@ -15,7 +16,6 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useRecord, make } from 'store/analytics/actions'
 import {
   setUsers,
   setVisibility

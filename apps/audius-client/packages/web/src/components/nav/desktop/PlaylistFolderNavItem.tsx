@@ -23,9 +23,9 @@ import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 
+import { useRecord, make } from 'common/store/analytics/actions'
 import Draggable from 'components/dragndrop/Draggable'
 import Droppable from 'components/dragndrop/Droppable'
-import { useRecord, make } from 'store/analytics/actions'
 
 import navColumnStyles from './NavColumn.module.css'
 import styles from './PlaylistLibrary.module.css'

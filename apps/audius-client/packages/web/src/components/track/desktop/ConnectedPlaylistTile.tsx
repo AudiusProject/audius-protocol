@@ -27,6 +27,7 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { getUserHandle } from 'common/store/account/selectors'
+import { TrackEvent, make } from 'common/store/analytics/actions'
 import {
   getCollection,
   getTracksFromCollection
@@ -46,7 +47,6 @@ import Menu from 'components/menu/Menu'
 import { CollectionArtwork } from 'components/track/desktop/Artwork'
 import { TrackTileSize } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { TrackEvent, make } from 'store/analytics/actions'
 import {
   setUsers,
   setVisibility

@@ -20,6 +20,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { getUserId } from 'common/store/account/selectors'
+import { TrackEvent, make } from 'common/store/analytics/actions'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
 import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
 import * as trackPageActions from 'common/store/pages/track/actions'
@@ -50,7 +51,6 @@ import { getCanonicalName } from 'common/utils/genres'
 import { formatSeconds, formatDate } from 'common/utils/timeUtil'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
-import { TrackEvent, make } from 'store/analytics/actions'
 import {
   setUsers,
   setVisibility

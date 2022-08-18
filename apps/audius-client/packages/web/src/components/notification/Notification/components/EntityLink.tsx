@@ -4,8 +4,8 @@ import { Name, Collection, Track, User, Nullable } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { useRecord, make } from 'common/store/analytics/actions'
 import { Entity } from 'common/store/notifications/types'
-import { useRecord, make } from 'store/analytics/actions'
 
 import { getEntityLink } from '../utils'
 

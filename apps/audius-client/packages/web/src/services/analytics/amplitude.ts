@@ -60,5 +60,7 @@ export const track = (
     return
   }
   amp.getInstance().logEvent(event, properties)
-  if (callback) callback()
+  if (callback) {
+    callback()
+  }
 }

@@ -9,8 +9,8 @@ import {
   UseTikTokAuthArguments,
   createUseTikTokAuthHook
 } from 'common/hooks/useTikTokAuth'
+import { useRecord, make } from 'common/store/analytics/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { useRecord, make } from 'store/analytics/actions'
 
 /**
  * A hook that returns a withAuth function that can be passed a function which will

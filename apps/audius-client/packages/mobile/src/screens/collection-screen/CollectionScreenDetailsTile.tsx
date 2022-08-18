@@ -17,9 +17,9 @@ import type {
 import { TrackList } from 'app/components/track-list'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { make, track } from 'app/services/analytics'
 import { getPlaying, getPlayingUid, getTrack } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
-import { make, track } from 'app/utils/analytics'
 import { formatCount } from 'app/utils/format'
 
 const messages = {

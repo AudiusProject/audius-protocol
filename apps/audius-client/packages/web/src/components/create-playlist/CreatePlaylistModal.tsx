@@ -11,8 +11,8 @@ import {
   IconPlaylists
 } from '@audius/stems'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { make, useRecord } from 'store/analytics/actions'
 import zIndex from 'utils/zIndex'
 
 import styles from './CreatePlaylistModal.module.css'

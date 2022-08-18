@@ -17,6 +17,7 @@ import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
 import { useSelectTierInfo } from 'common/hooks/wallet'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { feedActions } from 'common/store/pages/profile/lineups/feed/actions'
 import { tracksActions } from 'common/store/pages/profile/lineups/tracks/actions'
 import { ProfileUser, Tabs } from 'common/store/pages/profile/types'
@@ -35,7 +36,6 @@ import UploadChip from 'components/upload/UploadChip'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
-import { make, useRecord } from 'store/analytics/actions'
 import {
   albumPage,
   playlistPage,

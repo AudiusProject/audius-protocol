@@ -10,8 +10,8 @@ import IconCrownSource from 'app/assets/images/crown2x.png'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
-import { make } from 'app/utils/analytics'
 
 import {
   NotificationBody,

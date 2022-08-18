@@ -11,6 +11,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { getLineupHasTracks } from 'common/store/lineup/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import {
@@ -39,7 +40,6 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import Tooltip from 'components/tooltip/Tooltip'
-import { make } from 'store/analytics/actions'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import {
   getAudio,

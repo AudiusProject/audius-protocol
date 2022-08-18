@@ -17,6 +17,7 @@ import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
@@ -31,7 +32,6 @@ import NavContext, {
   RightPreset
 } from 'components/nav/store/context'
 import useTabs from 'hooks/useTabs/useTabs'
-import { make, useRecord } from 'store/analytics/actions'
 import { getLocationPathname } from 'store/routing/selectors'
 import { useSelector } from 'utils/reducer'
 import {

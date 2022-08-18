@@ -11,6 +11,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { pause, play } from 'common/store/queue/slice'
 import {
@@ -24,7 +25,6 @@ import PlayButton from 'components/play-bar/PlayButton'
 import TrackingBar from 'components/play-bar/TrackingBar'
 import { PlayButtonStatus } from 'components/play-bar/types'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { make, useRecord } from 'store/analytics/actions'
 import {
   getAudio,
   getBuffering,

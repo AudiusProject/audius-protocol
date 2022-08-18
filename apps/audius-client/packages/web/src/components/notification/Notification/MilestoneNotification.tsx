@@ -4,6 +4,7 @@ import { Name, User, Nullable } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import {
   getNotificationEntity,
   getNotificationUser
@@ -14,7 +15,6 @@ import {
   Milestone
 } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
-import { make } from 'store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 import { fullProfilePage, profilePage } from 'utils/route'
 

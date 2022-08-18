@@ -1,6 +1,7 @@
 import { all, fork } from 'redux-saga/effects'
 
 import accountSagas from 'common/store/account/sagas'
+import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas, { setupBackend } from 'common/store/backend/sagas'
 import collectionsSagas from 'common/store/cache/collections/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
@@ -58,7 +59,7 @@ import trendingPlaylistSagas from 'pages/trending-playlists/store/sagas'
 import trendingUndergroundSagas from 'pages/trending-underground/store/sagas'
 import uploadSagas from 'pages/upload-page/store/sagas'
 import { initInterface } from 'services/native-mobile-interface/helpers'
-import analyticsSagas from 'store/analytics/sagas'
+import webAnalyticsSagas from 'store/analytics/sagas'
 import cookieBannerSagas from 'store/application/ui/cookieBanner/sagas'
 import scrollLockSagas from 'store/application/ui/scrollLock/sagas'
 import stemUploadSagas from 'store/application/ui/stemsUpload/sagas'
@@ -82,6 +83,7 @@ export default function* rootSaga() {
   const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
     // Config
     analyticsSagas(),
+    webAnalyticsSagas(),
     backendSagas(),
     confirmerSagas(),
     cookieBannerSagas(),

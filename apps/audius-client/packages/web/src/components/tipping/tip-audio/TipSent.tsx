@@ -6,9 +6,9 @@ import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { getAccountUser } from 'common/store/account/selectors'
+import { useRecord, make } from 'common/store/analytics/actions'
 import { getSendTipData } from 'common/store/tipping/selectors'
 import { formatNumberCommas } from 'common/utils/formatUtil'
-import { useRecord, make } from 'store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'

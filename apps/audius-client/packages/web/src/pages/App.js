@@ -21,6 +21,7 @@ import {
   getConnectivityFailure,
   getUserHandle
 } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { getWeb3Error } from 'common/store/backend/selectors'
 import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import {
@@ -78,7 +79,6 @@ import Visualizer from 'pages/visualizer/Visualizer'
 import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
-import { make } from 'store/analytics/actions'
 import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
 import { getShowCookieBanner } from 'store/application/ui/cookieBanner/selectors'
 import {

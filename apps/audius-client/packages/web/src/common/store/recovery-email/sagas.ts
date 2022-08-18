@@ -1,7 +1,7 @@
 import { Name } from '@audius/common'
 import { takeLatest, put } from 'typed-redux-saga'
 
-import { make } from 'store/analytics/actions'
+import { make } from 'common/store/analytics/actions'
 
 import { getContext } from '../effects'
 

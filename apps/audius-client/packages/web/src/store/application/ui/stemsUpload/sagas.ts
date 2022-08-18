@@ -1,6 +1,7 @@
 import { Name, Track, User } from '@audius/common'
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
+import { make } from 'common/store/analytics/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { getUser } from 'common/store/cache/users/selectors'
@@ -10,7 +11,6 @@ import {
 } from 'common/store/stems-upload/slice'
 import { handleUploads } from 'pages/upload-page/store/sagas'
 import { createStemMetadata } from 'pages/upload-page/store/utils/stems'
-import { make } from 'store/analytics/actions'
 
 function* watchUploadStems() {
   yield takeEvery(

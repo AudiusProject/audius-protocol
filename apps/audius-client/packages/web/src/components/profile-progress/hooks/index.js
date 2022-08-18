@@ -4,7 +4,7 @@ import { Name } from '@audius/common'
 import { useDispatch } from 'react-redux'
 import { useTransition } from 'react-spring'
 
-import { make } from 'store/analytics/actions'
+import { make } from 'common/store/analytics/actions'
 
 const COMPLETION_DISMISSAL_DELAY_MSEC = 3 * 1000
 

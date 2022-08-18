@@ -21,7 +21,6 @@ import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import PushNotifications from 'app/notifications'
 import { RootScreen } from 'app/screens/root-screen'
 import { store } from 'app/store'
-import { setup as setupAnalytics } from 'app/utils/analytics'
 
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
@@ -56,10 +55,6 @@ const App = () => {
   useEffect(() => {
     PushNotifications.setWebRef(webRef)
   }, [webRef])
-
-  useEffect(() => {
-    setupAnalytics()
-  }, [])
 
   return (
     <SafeAreaProvider>

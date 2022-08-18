@@ -4,9 +4,9 @@ import { Name } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import { ChallengeReward } from 'common/store/notifications/types'
 import { challengeRewardsConfig } from 'pages/audio-rewards-page/config'
-import { make, useRecord } from 'store/analytics/actions'
 import { AUDIO_PAGE } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'

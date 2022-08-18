@@ -10,6 +10,7 @@ import {
   getAccountUser,
   getAccountStatus
 } from 'common/store/account/selectors'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { getNotificationUnviewedCount } from 'common/store/notifications/selectors'
 import { getSearchStatus } from 'common/store/pages/search-results/selectors'
 import { openSignOn } from 'common/store/pages/signon/actions'
@@ -17,7 +18,6 @@ import {
   RouterContext,
   SlideDirection
 } from 'components/animated-switch/RouterContextProvider'
-import { make, useRecord } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import { getIsIOS } from 'utils/browser'
 import {

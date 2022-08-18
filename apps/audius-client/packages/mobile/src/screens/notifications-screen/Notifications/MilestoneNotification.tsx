@@ -17,8 +17,8 @@ import {
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
+import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
-import { make } from 'app/utils/analytics'
 import { formatCount } from 'app/utils/format'
 import { getUserRoute } from 'app/utils/routes'
 

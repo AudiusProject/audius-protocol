@@ -27,6 +27,7 @@ import {
   getUserId,
   getAccountCollections
 } from 'common/store/account/selectors'
+import { TrackEvent, make } from 'common/store/analytics/actions'
 import {
   editPlaylist,
   removeTrackFromPlaylist,
@@ -70,7 +71,6 @@ import { setRepost } from 'common/store/user-list/reposts/actions'
 import { RepostType } from 'common/store/user-list/reposts/types'
 import { formatUrlName } from 'common/utils/formatUtil'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
-import { TrackEvent, make } from 'store/analytics/actions'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import {
   setUsers,

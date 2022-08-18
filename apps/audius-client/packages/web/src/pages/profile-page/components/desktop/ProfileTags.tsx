@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 import { Name } from '@audius/common'
 import { IconTrending } from '@audius/stems'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import Tag from 'components/track/Tag'
-import { make, useRecord } from 'store/analytics/actions'
 import { searchResultsPage } from 'utils/route'
 
 import styles from './ProfileTags.module.css'

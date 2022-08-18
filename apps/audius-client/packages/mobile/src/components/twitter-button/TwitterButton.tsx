@@ -10,9 +10,9 @@ import type { ButtonProps } from 'app/components/core'
 import { Button, useOnOpenLink } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import type { make } from 'app/services/analytics'
+import { track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
-import type { make } from 'app/utils/analytics'
-import { track } from 'app/utils/analytics'
 import { getTwitterLink } from 'app/utils/twitter'
 
 const messages = {

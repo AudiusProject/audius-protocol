@@ -13,6 +13,7 @@ import {
 
 import * as accountActions from 'common/store/account/reducer'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
+import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as cacheActions from 'common/store/cache/actions'
 import * as collectionActions from 'common/store/cache/collections/actions'
@@ -24,7 +25,6 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { squashNewLines } from 'common/utils/formatUtil'
-import { make } from 'store/analytics/actions'
 import { dataURLtoFile } from 'utils/fileUtils'
 import { waitForAccount } from 'utils/sagaHelpers'
 

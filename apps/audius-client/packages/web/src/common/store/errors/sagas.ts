@@ -2,7 +2,7 @@ import { Name } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { takeEvery, put } from 'redux-saga/effects'
 
-import { make } from 'store/analytics/actions'
+import { make } from 'common/store/analytics/actions'
 import { ERROR_PAGE } from 'utils/route'
 
 import { toast } from '../ui/toast/slice'

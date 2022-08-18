@@ -2,8 +2,8 @@ import { Name, Nullable } from '@audius/common'
 import { AccountInfo } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 
+import { track } from 'services/analytics'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
-import { track } from 'store/analytics/providers'
 
 // @ts-ignore
 const libs = () => window.audiusLibs
@@ -39,25 +39,37 @@ export const createUserBankIfNeeded = async (feePayerOverride = null) => {
     const userbankExists = await doesUserBankExist()
     if (userbankExists) return
     console.warn(`Userbank doesn't exist, attempting to create...`)
-    await track(Name.CREATE_USER_BANK_REQUEST, { userId })
+    await track({
+      eventName: Name.CREATE_USER_BANK_REQUEST,
+      properties: { userId }
+    })
     const { error, errorCode } = await createUserBank(feePayerOverride)
     if (error || errorCode) {
       console.error(
         `Failed to create userbank, with err: ${error}, ${errorCode}`
       )
-      await track(Name.CREATE_USER_BANK_FAILURE, {
-        userId,
-        errorCode,
-        error: (error as any).toString()
+      await track({
+        eventName: Name.CREATE_USER_BANK_FAILURE,
+        properties: {
+          userId,
+          errorCode,
+          error: (error as any).toString()
+        }
       })
     } else {
       console.log(`Successfully created userbank!`)
-      await track(Name.CREATE_USER_BANK_SUCCESS, { userId })
+      await track({
+        eventName: Name.CREATE_USER_BANK_SUCCESS,
+        properties: { userId }
+      })
     }
   } catch (err) {
-    await track(Name.CREATE_USER_BANK_FAILURE, {
-      userId,
-      errorMessage: (err as any).toString()
+    await track({
+      eventName: Name.CREATE_USER_BANK_FAILURE,
+      properties: {
+        userId,
+        errorMessage: (err as any).toString()
+      }
     })
     console.error(`Failed to create userbank, with err: ${err}`)
   }
