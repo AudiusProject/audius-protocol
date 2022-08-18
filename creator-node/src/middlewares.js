@@ -20,7 +20,7 @@ const BlacklistManager = require('./blacklistManager')
 const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
-const { instrumentTracing, getActiveSpan, error, recordException } = require('./utils/tracing')
+const { instrumentTracing, error, recordException } = require('./utils/tracing')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token

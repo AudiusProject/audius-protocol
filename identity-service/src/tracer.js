@@ -9,7 +9,6 @@ const { registerInstrumentations } = require('@opentelemetry/instrumentation')
 const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node')
 const { Resource } = require('@opentelemetry/resources')
 const {
-// SemanticAttributes,
   SemanticResourceAttributes: ResourceAttributesSC
 } = require('@opentelemetry/semantic-conventions')
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http')

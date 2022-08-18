@@ -4,7 +4,7 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { getTracer } from '../tracer'
 
 /**
- * Higher-order function that adds opentelemtry tracing to a function
+ * Higher-order function that adds opentelemetry tracing to a function
  */
 export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   name,
