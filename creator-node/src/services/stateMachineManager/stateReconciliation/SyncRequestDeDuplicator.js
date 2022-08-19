@@ -26,7 +26,7 @@ class SyncRequestDeDuplicator {
     immediate = false
   ) {
     const that = this
-    return instrumentTracing({
+    const handler = instrumentTracing({
       name: 'getDuplicateSyncJobInfo',
       fn: () => {
         const syncKey = that._getSyncKey(
@@ -39,7 +39,9 @@ class SyncRequestDeDuplicator {
         const duplicateSyncJobInfo = that.waitingSyncsByUserWalletMap[syncKey]
         return duplicateSyncJobInfo || null
       }
-    })(syncType, userWallet, secondaryEndpoint, immediate)
+    })
+
+    return handler(syncType, userWallet, secondaryEndpoint, immediate)
   }
 
   /** Record job info for sync with given properties */

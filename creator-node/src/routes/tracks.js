@@ -101,6 +101,7 @@ router.post(
   handleTrackContentUpload,
   handleResponse(
     instrumentTracing({
+      name: '/track_content_sync handler',
       fn: handleTrackContentAsync,
       options: {
         attributes: {
@@ -145,7 +146,7 @@ router.post(
   ensureStorageMiddleware,
   handleTrackContentUpload,
   handleResponse(async (req, res) => {
-    return await instrumentTracing({
+    const handler = instrumentTracing({
       fn: async () => {
         const AsyncProcessingQueue =
           req.app.get('serviceRegistry').asyncProcessingQueue
@@ -161,7 +162,10 @@ router.post(
         })
         return successResponse({ uuid: req.logContext.requestID })
       }
-    })(req, res)
+    })
+
+    const response = await handler(req, res)
+    return response
   })
 )
 

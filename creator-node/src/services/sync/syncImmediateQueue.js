@@ -52,18 +52,20 @@ class SyncImmediateQueue {
         name: 'syncImmediateQueue.process',
         fn: that.processTask,
         options: {
-          links: [
-            {
-              context: parentSpanContext
-            }
-          ],
+          links: parentSpanContext
+            ? [
+                {
+                  context: parentSpanContext
+                }
+              ]
+            : [],
           attributes: {
             [tracing.CODE_FILEPATH]: __filename
           }
         }
       })
 
-      return await processTask(job)
+      await processTask(job)
     })
   }
 

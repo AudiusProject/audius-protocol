@@ -458,7 +458,7 @@ module.exports = async (
   params: DecoratedJobParams<IssueSyncRequestJobParams>
 ) => {
   const { parentSpanContext } = params
-  return await instrumentTracing({
+  const jobProcessor = instrumentTracing({
     name: 'issueSyncRequest.jobProcessor',
     fn: issueSyncRequest,
     options: {
@@ -473,5 +473,7 @@ module.exports = async (
         [tracing.CODE_FILEPATH]: __filename
       }
     }
-  })(params)
+  })
+
+  return await jobProcessor(params)
 }

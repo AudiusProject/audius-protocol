@@ -340,7 +340,7 @@ module.exports = async (
   params: DecoratedJobParams<FindReplicaSetUpdateJobParams>
 ) => {
   const { parentSpanContext } = params
-  return await instrumentTracing({
+  const jobProcessor = instrumentTracing({
     name: 'findReplicaSetUpdates.jobProcessor',
     fn: findReplicaSetUpdates,
     options: {
@@ -355,5 +355,7 @@ module.exports = async (
         [tracing.CODE_FILEPATH]: __filename
       }
     }
-  })(params)
+  })
+
+  return await jobProcessor(params)
 }

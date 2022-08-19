@@ -81,10 +81,10 @@ router.get(
   '/export',
   handleResponse(
     instrumentTracing({
+      name: '/export handler',
       fn: handleExport,
       options: {
         attributes: {
-          [tracing.CODE_FUNCTION]: 'handleExport',
           [tracing.CODE_FILEPATH]: __filename
         }
       }

@@ -221,6 +221,7 @@ router.post(
   ensureStorageMiddleware,
   handleResponse(
     instrumentTracing({
+      name: 'syncRouteController',
       fn: syncRouteController,
       options: {
         attributes: {

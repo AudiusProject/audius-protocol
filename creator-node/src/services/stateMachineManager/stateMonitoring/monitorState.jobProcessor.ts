@@ -292,7 +292,7 @@ const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
 
 module.exports = async (params: DecoratedJobParams<MonitorStateJobParams>) => {
   const { parentSpanContext } = params
-  return await instrumentTracing({
+  const jobProcessor = instrumentTracing({
     name: 'monitorState.jobProcessor',
     fn: monitorState,
     options: {
@@ -307,5 +307,7 @@ module.exports = async (params: DecoratedJobParams<MonitorStateJobParams>) => {
         [tracing.CODE_FILEPATH]: __filename
       }
     }
-  })(params)
+  })
+
+  return await jobProcessor(params)
 }
