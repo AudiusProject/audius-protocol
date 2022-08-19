@@ -43,7 +43,10 @@ module.exports = async function ({
 > {
   const numWalletsOnNode = await _saveWalletsOnThisNodeToRedis()
   const numWalletsWithNodeInReplicaSet =
-    await _saveWalletsWithThisNodeInReplicaToRedis(discoveryNodeEndpoint, logger)
+    await _saveWalletsWithThisNodeInReplicaToRedis(
+      discoveryNodeEndpoint,
+      logger
+    )
   const numWalletsWithOrphanedData = await _saveWalletsWithOrphanedDataToRedis()
   const requestsIssued = await _batchIssueReqsToRecoverOrphanedData(
     numWalletsWithOrphanedData,
@@ -150,7 +153,9 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
         ? batchOfUsers[batchOfUsers.length - 1].user_id
         : 0
     } catch (e: any) {
-      logger.error(`Error fetching batch of users from ${discoveryNodeEndpoint}: ${e.message}`)
+      logger.error(
+        `Error fetching batch of users from ${discoveryNodeEndpoint}: ${e.message}`
+      )
       // `batchOfUsers?.length` will be 0, which will cause us to break out of this loop and not fetch all users.
       // This will cause extra users to be marked as orphaned, which is okay because orphaned data
       // recovery will short circuit later to avoid wiping state on any node in the user's replica set.
@@ -158,12 +163,13 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
   } while (batchOfUsers?.length === NUM_USERS_PER_QUERY && prevUserId !== 0)
 
   // Save the wallets as a redis set and return the set cardinality
-  const numWalletsWithNodeInReplicaSet: number = walletsWithNodeInReplicaSetArr.length
-    ? await redisClient.sadd(
-        WALLETS_WITH_NODE_IN_REPLICA_SET_KEY,
-        walletsWithNodeInReplicaSetArr
-      )
-    : 0
+  const numWalletsWithNodeInReplicaSet: number =
+    walletsWithNodeInReplicaSetArr.length
+      ? await redisClient.sadd(
+          WALLETS_WITH_NODE_IN_REPLICA_SET_KEY,
+          walletsWithNodeInReplicaSetArr
+        )
+      : 0
   return numWalletsWithNodeInReplicaSet
 }
 
@@ -198,8 +204,15 @@ const _batchIssueReqsToRecoverOrphanedData = async (
   logger: Logger
 ): Promise<number> => {
   let requestsIssued = 0
-  for (let i = 0; i < numWalletsWithOrphanedData; i += NUM_USERS_TO_RECOVER_PER_BATCH) {
-    const walletsWithOrphanedData = await redisClient.spop(WALLETS_ORPHANED_KEY, NUM_USERS_TO_RECOVER_PER_BATCH)
+  for (
+    let i = 0;
+    i < numWalletsWithOrphanedData;
+    i += NUM_USERS_TO_RECOVER_PER_BATCH
+  ) {
+    const walletsWithOrphanedData = await redisClient.spop(
+      WALLETS_ORPHANED_KEY,
+      NUM_USERS_TO_RECOVER_PER_BATCH
+    )
     if (!walletsWithOrphanedData?.length) return requestsIssued
 
     for (const wallet of walletsWithOrphanedData) {
@@ -209,7 +222,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
         logger
       )
       if (!primaryEndpoint) continue
-  
+
       try {
         await axios({
           baseURL: primaryEndpoint,
