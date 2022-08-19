@@ -1,4 +1,4 @@
-const { instrumentTracing, tracing } = require('../../../tracer')
+const { instrumentTracingSync, tracing } = require('../../../tracer')
 
 /**
  * Ensure a sync request for (syncType, userWallet, secondaryEndpoint) can only be enqueued once
@@ -25,10 +25,11 @@ class SyncRequestDeDuplicator {
     secondaryEndpoint,
     immediate = false
   ) {
-    const handler = instrumentTracing({
+    const _getSyncKey = this._getSyncKey
+    const handler = instrumentTracingSync({
       name: 'getDuplicateSyncJobInfo',
       fn: () => {
-        const syncKey = this._getSyncKey(
+        const syncKey = _getSyncKey(
           syncType,
           userWallet,
           secondaryEndpoint,
@@ -51,10 +52,11 @@ class SyncRequestDeDuplicator {
     immediate = false,
     jobProps
   ) {
-    instrumentTracing({
+    const _getSyncKey = this._getSyncKey
+    instrumentTracingSync({
       name: 'recordSync',
       fn: () => {
-        const syncKey = this._getSyncKey(
+        const syncKey = _getSyncKey(
           syncType,
           userWallet,
           secondaryEndpoint,
@@ -69,10 +71,11 @@ class SyncRequestDeDuplicator {
 
   /** Remove sync with given properties */
   removeSync(syncType, userWallet, secondaryEndpoint, immediate = false) {
-    instrumentTracing({
+    const _getSyncKey = this._getSyncKey
+    instrumentTracingSync({
       name: 'removeSync',
       fn: () => {
-        const syncKey = this._getSyncKey(
+        const syncKey = _getSyncKey(
           syncType,
           userWallet,
           secondaryEndpoint,

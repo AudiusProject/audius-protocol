@@ -17,7 +17,7 @@ import _ from 'lodash'
 import { logger as baseLogger, createChildLogger } from '../../logging'
 import { QUEUE_NAMES } from './stateMachineConstants'
 import { METRIC_RECORD_TYPE } from '../prometheusMonitoring/prometheus.constants'
-import { instrumentTracing, tracing } from '../../tracer'
+import { instrumentTracing, instrumentTracingSync, tracing } from '../../tracer'
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take
@@ -220,7 +220,7 @@ const recordMetrics = (
   }
 }
 
-module.exports = instrumentTracing({
+module.exports = instrumentTracingSync({
   name: 'onComplete bull queue callback',
   fn: makeOnCompleteCallback,
   options: {

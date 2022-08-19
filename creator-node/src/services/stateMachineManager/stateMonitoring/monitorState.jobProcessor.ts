@@ -21,7 +21,11 @@ import {
   computeUserSecondarySyncSuccessRatesMap
 } from './stateMonitoringUtils'
 import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
-import { instrumentTracing, tracing } from '../../../tracer'
+import {
+  instrumentTracing,
+  instrumentTracingSync,
+  tracing
+} from '../../../tracer'
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -246,7 +250,7 @@ const monitorState = async ({
   }
 }
 
-const _addToDecisionTree = instrumentTracing({
+const _addToDecisionTree = instrumentTracingSync({
   fn: (decisionTree: Decision[], stage: string, logger: Logger, data = {}) => {
     const obj: Decision = { stage, data, time: Date.now() }
 

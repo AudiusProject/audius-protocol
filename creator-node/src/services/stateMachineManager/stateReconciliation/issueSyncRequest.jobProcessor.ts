@@ -254,6 +254,7 @@ async function _handleIssueSyncRequest({
       await axios(syncRequestParameters as AxiosRequestConfig)
     }
   } catch (e: any) {
+    tracing.recordException(e)
     return {
       result: 'failure_issue_sync_request',
       error: {

@@ -10,7 +10,11 @@ const {
   HEALTHY_SERVICES_TTL_SEC
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-const { instrumentTracing, tracing } = require('../../../tracer')
+const {
+  instrumentTracing,
+  instrumentTracingSync,
+  tracing
+} = require('../../../tracer')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
@@ -135,7 +139,6 @@ const issueSyncRequestsUntilSynced = async (
     tracing.info(JSON.stringify(syncReqToEnqueue))
     await queue.add({
       enqueuedBy: 'issueSyncRequestsUntilSynced',
-      parentSpanContext: tracing.currentSpanContext(),
       ...syncReqToEnqueue
     })
   } else {
@@ -195,7 +198,9 @@ const cacheHealthyNodes = async (healthyNodes) => {
 }
 
 module.exports = {
-  getNewOrExistingSyncReq: instrumentTracing({ fn: getNewOrExistingSyncReq }),
+  getNewOrExistingSyncReq: instrumentTracingSync({
+    fn: getNewOrExistingSyncReq
+  }),
   issueSyncRequestsUntilSynced: instrumentTracing({
     fn: issueSyncRequestsUntilSynced
   }),
