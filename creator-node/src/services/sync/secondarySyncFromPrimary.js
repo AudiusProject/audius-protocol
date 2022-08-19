@@ -704,11 +704,9 @@ async function secondarySyncFromPrimary({
   )
   const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
 
-  const mode = forceWipe
-    ? 'force_wipe'
-    : forceResyncConfig?.forceResync
-    ? 'force_resync'
-    : 'default'
+  let mode = 'default'
+  if (forceResyncConfig?.forceResync) mode = 'force_resync'
+  if (forceWipe) mode = 'force_wipe'
 
   const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,

@@ -95,6 +95,5 @@ export type RecoverOrphanedDataJobParams = {
 export type RecoverOrphanedDataJobReturnValue = {
   numWalletsOnNode: number
   numWalletsWithNodeInReplicaSet: number
-  numWalletsOrphanedOrUnsynced: number
-  walletsWithOrphanedData: string[]
+  numWalletsWithOrphanedData: number
 }

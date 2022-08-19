@@ -56,7 +56,7 @@ export const QUEUE_HISTORY = Object.freeze({
   // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
   UPDATE_REPLICA_SET: 100_000,
   // Max number of completed/failed jobs to keep in redis for the recover-orphaned-data queue
-  RECOVER_ORPHANED_DATA: 10_000
+  RECOVER_ORPHANED_DATA: 100_000
 })
 
 export const QUEUE_NAMES = {
@@ -98,7 +98,7 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   // Max millis to run an update-replica-set job for before marking it as stalled
   UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000,
   // Max millis to run a recover-orphaned-data job for before marking it as stalled
-  RECOVER_ORPHANED_DATA: 60 /* min */ * 60 * 1000
+  RECOVER_ORPHANED_DATA: 5 /* hours */ * 60 /* min */ * 60 * 1000
 })
 
 /**

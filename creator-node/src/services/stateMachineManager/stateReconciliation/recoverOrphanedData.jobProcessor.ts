@@ -1,4 +1,5 @@
 import type Logger from 'bunyan'
+import type { Redis } from 'ioredis'
 import type {
   RecoverOrphanedDataJobParams,
   RecoverOrphanedDataJobReturnValue
@@ -13,14 +14,15 @@ import { StateMonitoringUser } from '../stateMonitoring/types'
 const { QUEUE_NAMES } = require('../stateMachineConstants')
 const { getNodeUsers } = require('../stateMonitoring/stateMonitoringUtils')
 const config = require('../../../config')
-const redisClient = require('../../../redis')
+const redisClient: Redis = require('../../../redis')
 const models = require('../../../models')
 
 const WALLETS_ON_NODE_KEY = 'orphanedDataWalletsWithStateOnNode'
 const WALLETS_WITH_NODE_IN_REPLICA_SET_KEY =
   'orphanedDataWalletsWithNodeInReplicaSet'
-const WALLETS_ORPHANED_OR_UNSYNCED_KEY = 'oprhanedDataWalletsOrphanedOrUnsynced'
+const WALLETS_ORPHANED_KEY = 'oprhanedDataWallets'
 const NUM_USERS_PER_QUERY = 10_000
+const NUM_USERS_TO_RECOVER_PER_BATCH = 1000
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 
@@ -39,13 +41,12 @@ module.exports = async function ({
 }: DecoratedJobParams<RecoverOrphanedDataJobParams>): Promise<
   DecoratedJobReturnValue<RecoverOrphanedDataJobReturnValue>
 > {
-  const numWalletsOnNode = await _storeWalletsOnThisNode()
+  const numWalletsOnNode = await _saveWalletsOnThisNodeToRedis()
   const numWalletsWithNodeInReplicaSet =
-    await _storeWalletsWithThisNodeInReplica(discoveryNodeEndpoint)
-  const numWalletsOrphanedOrUnsynced = await _storeWalletsOrphanedOrUnsynced()
-  const walletsWithOrphanedData = await _getWalletsWithOrphanedData()
-  const requestsIssued = await _issueReqsToRecoverOrphanedData(
-    walletsWithOrphanedData,
+    await _saveWalletsWithThisNodeInReplicaToRedis(discoveryNodeEndpoint, logger)
+  const numWalletsWithOrphanedData = await _saveWalletsWithOrphanedDataToRedis()
+  const requestsIssued = await _batchIssueReqsToRecoverOrphanedData(
+    numWalletsWithOrphanedData,
     discoveryNodeEndpoint,
     logger
   )
@@ -53,8 +54,7 @@ module.exports = async function ({
   return {
     numWalletsOnNode,
     numWalletsWithNodeInReplicaSet,
-    numWalletsOrphanedOrUnsynced,
-    walletsWithOrphanedData,
+    numWalletsWithOrphanedData,
     jobsToEnqueue: {
       // Enqueue another job to search for any new data that gets orphaned after this job finishes
       [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: [
@@ -66,7 +66,7 @@ module.exports = async function ({
     metricsToRecord: [
       makeGaugeSetToRecord(
         METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE,
-        walletsWithOrphanedData.length
+        numWalletsWithOrphanedData
       ),
       makeGaugeSetToRecord(
         METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE,
@@ -79,7 +79,7 @@ module.exports = async function ({
 /**
  * Queries this node's db to find all users who have data on it and adds them to a redis set.
  */
-const _storeWalletsOnThisNode = async () => {
+const _saveWalletsOnThisNodeToRedis = async () => {
   await redisClient.del(WALLETS_ON_NODE_KEY)
 
   // Make paginated SQL queries to find all wallets with data on this node
@@ -112,7 +112,7 @@ const _storeWalletsOnThisNode = async () => {
   )
 
   // Save the wallets as a redis set and return the set cardinality
-  const numWalletsOnNode = walletsOnThisNodeArr.length
+  const numWalletsOnNode: number = walletsOnThisNodeArr.length
     ? await redisClient.sadd(WALLETS_ON_NODE_KEY, walletsOnThisNodeArr)
     : 0
   return numWalletsOnNode
@@ -122,8 +122,9 @@ const _storeWalletsOnThisNode = async () => {
  * Queries the given discovery node to find all users who have this content node as their primary or secondary.
  * Adds them to a redis set.
  */
-const _storeWalletsWithThisNodeInReplica = async (
-  discoveryNodeEndpoint: string
+const _saveWalletsWithThisNodeInReplicaToRedis = async (
+  discoveryNodeEndpoint: string,
+  logger: Logger
 ) => {
   await redisClient.del(WALLETS_WITH_NODE_IN_REPLICA_SET_KEY)
 
@@ -133,24 +134,31 @@ const _storeWalletsWithThisNodeInReplica = async (
   const walletsWithNodeInReplicaSetArr: string[] = []
   do {
     // Get batch of users and all it to the array of all wallets
-    batchOfUsers = await getNodeUsers(
-      discoveryNodeEndpoint,
-      thisContentNodeEndpoint,
-      prevUserId,
-      NUM_USERS_PER_QUERY
-    )
-    batchOfUsers?.forEach((user) =>
-      walletsWithNodeInReplicaSetArr.push(user.wallet)
-    )
+    try {
+      batchOfUsers = await getNodeUsers(
+        discoveryNodeEndpoint,
+        thisContentNodeEndpoint,
+        prevUserId,
+        NUM_USERS_PER_QUERY
+      )
+      batchOfUsers?.forEach((user) =>
+        walletsWithNodeInReplicaSetArr.push(user.wallet)
+      )
 
-    // Move pagination cursor to the end of the batch
-    prevUserId = batchOfUsers?.length
-      ? batchOfUsers[batchOfUsers.length - 1].user_id
-      : 0
+      // Move pagination cursor to the end of the batch
+      prevUserId = batchOfUsers?.length
+        ? batchOfUsers[batchOfUsers.length - 1].user_id
+        : 0
+    } catch (e: any) {
+      logger.error(`Error fetching batch of users from ${discoveryNodeEndpoint}: ${e.message}`)
+      // `batchOfUsers?.length` will be 0, which will cause us to break out of this loop and not fetch all users.
+      // This will cause extra users to be marked as orphaned, which is okay because orphaned data
+      // recovery will short circuit later to avoid wiping state on any node in the user's replica set.
+    }
   } while (batchOfUsers?.length === NUM_USERS_PER_QUERY && prevUserId !== 0)
 
   // Save the wallets as a redis set and return the set cardinality
-  const numWalletsWithNodeInReplicaSet = walletsWithNodeInReplicaSetArr.length
+  const numWalletsWithNodeInReplicaSet: number = walletsWithNodeInReplicaSetArr.length
     ? await redisClient.sadd(
         WALLETS_WITH_NODE_IN_REPLICA_SET_KEY,
         walletsWithNodeInReplicaSetArr
@@ -160,114 +168,72 @@ const _storeWalletsWithThisNodeInReplica = async (
 }
 
 /**
- * Adds wallets that are orphaned or unsynced to a redis set.
- * This is the same as the set difference between walletsOnThisNode and walletsWithThisNodeInReplicaSet.
- * @returns number of wallets that either:
- *          * have data on this node but don't have this node in their replica set (they're orphaned)
- *          * have this node in their Replica Set but don't have data on this node (they're unsynced)
+ * Finds wallets that are orphaned and adds them to a redis set.
+ * (Set of orphaned wallets) = (set of wallets on this node) - (set of wallets with this node in their replica set)
+ * @returns number of wallets that have data orphaned on this node
  */
-const _storeWalletsOrphanedOrUnsynced = async () => {
-  await redisClient.del(WALLETS_ORPHANED_OR_UNSYNCED_KEY)
-  const numWalletsOrphanedOrUnsynced = await redisClient.sdiffstore(
-    WALLETS_ORPHANED_OR_UNSYNCED_KEY,
+const _saveWalletsWithOrphanedDataToRedis = async () => {
+  const numWalletsOrphaned: number = await redisClient.sdiffstore(
+    WALLETS_ORPHANED_KEY,
     WALLETS_ON_NODE_KEY,
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
   )
-  return numWalletsOrphanedOrUnsynced
+  return numWalletsOrphaned
 }
 
 /**
- * @returns string[] of wallets with data orphaned on this node by taking the set intersection of
- *          wallets with data on this node and wallets with orphaned data or unsynced data (this filters
- *          out wallets that only have this node in their ReplicaSet but no data on this node)
- */
-const _getWalletsWithOrphanedData = async () => {
-  const walletsWithOrphanedData: string[] = await redisClient.sinter(
-    WALLETS_ON_NODE_KEY,
-    WALLETS_ORPHANED_OR_UNSYNCED_KEY
-  )
-  return walletsWithOrphanedData
-}
-
-/**
- * Issues requests to move data that's orphaned on this node back to each user's primary.
+ * Pops from redis set in batches and issues requests to move data that's orphaned on this node back to each user's primary.
  * Each request will sync from this node to a primary and then "force wipe" this node:
  *  1. Merge orphaned data from this node into the user's primary.
  *  2. Wipe the user's data from this node.
  *  3. *DON'T* resync from the primary to this node -- this is what non-modified forceResync would do -- and instead set forceWipe=true.
- * @param {string[]} walletsWithOrphanedData users to issue requests to recover orphaned data for
+ * @param {number} numWalletsWithOrphanedData number of users to issue requests to recover orphaned data for
  * @param {string} discoveryNodeEndpoint the endpoint of a discovery node to make queries to
  * @param {Logger} logger logger
  * @return {number} number of requests successfully issued
  */
-const _issueReqsToRecoverOrphanedData = async (
-  walletsWithOrphanedData: string[],
+const _batchIssueReqsToRecoverOrphanedData = async (
+  numWalletsWithOrphanedData: number,
   discoveryNodeEndpoint: string,
   logger: Logger
 ): Promise<number> => {
   let requestsIssued = 0
-  for (const wallet of walletsWithOrphanedData) {
-    const primaryEndpoint = await _getPrimaryForWallet(
-      wallet,
-      discoveryNodeEndpoint,
-      logger
-    )
-    if (!primaryEndpoint) continue
+  for (let i = 0; i < numWalletsWithOrphanedData; i += NUM_USERS_TO_RECOVER_PER_BATCH) {
+    const walletsWithOrphanedData = await redisClient.spop(WALLETS_ORPHANED_KEY, NUM_USERS_TO_RECOVER_PER_BATCH)
+    if (!walletsWithOrphanedData?.length) return requestsIssued
 
-    try {
-      await axios({
-        baseURL: primaryEndpoint,
-        url: '/merge_primary_and_secondary',
-        method: 'post',
-        params: {
-          wallet,
-          endpoint: thisContentNodeEndpoint,
-          forceWipe: true
-        }
-      })
-      requestsIssued++
-    } catch (e: any) {
-      logger.error(
-        `Error issuing request to recover orphaned data: ${e.message}`
+    for (const wallet of walletsWithOrphanedData) {
+      const primaryEndpoint = await _getPrimaryForWallet(
+        wallet,
+        discoveryNodeEndpoint,
+        logger
       )
+      if (!primaryEndpoint) continue
+  
+      try {
+        await axios({
+          baseURL: primaryEndpoint,
+          url: '/merge_primary_and_secondary',
+          method: 'post',
+          params: {
+            wallet,
+            endpoint: thisContentNodeEndpoint,
+            forceWipe: true
+          }
+        })
+        requestsIssued++
+      } catch (e: any) {
+        logger.error(
+          `Error issuing request to recover orphaned data: ${e.message}`
+        )
+      }
     }
   }
   return requestsIssued
 }
 
-/**
- * Gets a POST request that can be issued to "force wipe" (modified forceResync=true flag):
- *  1. Merges orphaned data from this node into the user's primary.
- *  2. Wipes the user's data from this node.
- *  3. *DON'T* resync from the primary to this node -- this is what non-modified forceResync would do -- and instead set forceWipe=true.
- * @param wallet the wallet of the user with data orphaned on this node
- */
-const _getReqToRecoverOrphanedData = async (
-  wallet: string,
-  discoveryNodeEndpoint: string,
-  logger: Logger
-): Promise<any> => {
-  const primaryEndpoint = await _getPrimaryForWallet(
-    wallet,
-    discoveryNodeEndpoint,
-    logger
-  )
-  if (!primaryEndpoint) return undefined
-
-  const syncRequestParameters = {
-    baseURL: primaryEndpoint,
-    url: '/merge_primary_and_secondary',
-    method: 'post',
-    params: {
-      wallet,
-      endpoint: thisContentNodeEndpoint,
-      forceWipe: true
-    }
-  }
-
-  return syncRequestParameters
-}
-
+// Primary could potentially be passed from state machine, but the added complexity isn't worth it.
+// This could probably be batched to get primary for multiple users instead of making so many calls.
 const _getPrimaryForWallet = async (
   wallet: string,
   discoveryNodeEndpoint: string,
