@@ -6,7 +6,6 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as CoinbaseLogo } from 'assets/img/coinbase-pay/LogoCoinbase.svg'
 import { ReactComponent as IconCaretDownLine } from 'assets/img/iconCaretDownLine.svg'
 import { ReactComponent as IconCaretUpLine } from 'assets/img/iconCaretUpLine.svg'
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
@@ -25,6 +24,7 @@ import {
   getAccountTotalBalance
 } from 'common/store/wallet/selectors'
 import { formatWei } from 'common/utils/wallet'
+import { CoinbasePayButtonCustom } from 'components/coinbase-pay-button'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
 import { isMobile } from 'utils/clientUtil'
 
@@ -42,9 +42,7 @@ const messages = {
   checkoutWithCoinbase: 'Checkout with Coinbase',
   showAdvanced: 'Show Advanced',
   hideAdvanced: 'Hide Advanced',
-  advancedOptions: 'Advanced Options',
-  buyWith: 'Buy with',
-  buyWithCoinbase: 'Buy with Coinbase'
+  advancedOptions: 'Advanced Options'
 }
 const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -212,23 +210,7 @@ export const WalletManagementTile = () => {
             </div>
           </div>
         </div>
-        <Button
-          aria-label={messages.buyWithCoinbase}
-          text={
-            <>
-              <span>{messages.buyWith}</span>
-              <CoinbaseLogo
-                className={styles.coinbaseLogo}
-                width={97}
-                height={18}
-              />
-            </>
-          }
-          type={ButtonType.GLASS}
-          includeHoverAnimations
-          className={styles.coinbaseButton}
-          textClassName={styles.textClassName}
-        />
+        <CoinbasePayButtonCustom />
         <ToggleCollapseButton
           className={styles.advancedToggle}
           showText={messages.showAdvanced}
