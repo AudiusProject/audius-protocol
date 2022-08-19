@@ -445,6 +445,12 @@ const config = convict({
     env: 'cidWhitelist',
     default: ''
   },
+  considerNodeUnhealthy: {
+    doc: 'Flag to mark the node as unhealthy (health_check will 200 but healthy: false in response). Wont be selected in replica sets, other nodes will roll this node off replica sets for their users',
+    format: Boolean,
+    env: 'considerNodeUnhealthy',
+    default: false
+  },
 
   /** sync / snapback configs */
 
