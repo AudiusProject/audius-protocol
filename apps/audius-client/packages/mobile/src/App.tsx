@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react'
 
 import { PortalProvider } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
-import { Platform } from 'react-native'
+import { Platform, UIManager } from 'react-native'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import type WebView from 'react-native-webview'
@@ -34,6 +34,13 @@ const Airplay = Platform.select({
   ios: () => require('./components/audio/Airplay').default,
   android: () => () => null
 })?.()
+
+// Need to enable this flag for LayoutAnimation to work on Android
+if (Platform.OS === 'android') {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true)
+  }
+}
 
 // Increment the session count when the App.tsx code is first run
 incrementSessionCount()
