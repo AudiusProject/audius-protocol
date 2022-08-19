@@ -2048,7 +2048,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
         wallet: USER_1_WALLET,
         selfEndpoint: SELF
       })
-      assert.deepStrictEqual(error.message, `Failed to save ${numUniqueCIDs} files to disk. Cannot proceed because UserSyncFailureCount = ${i} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`)
+      assert.deepStrictEqual(error.message, `[saveFilesToDisk] Failed to save ${numUniqueCIDs} files to disk. Cannot proceed because UserSyncFailureCount = ${i} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`)
     }
 
     const error = await primarySyncFromSecondaryStub({
