@@ -14,6 +14,7 @@ from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
+
 def test_index_valid_track(app, mocker):
     "Tests valid batch of tracks create/update/delete actions"
 
