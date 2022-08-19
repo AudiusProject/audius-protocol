@@ -172,6 +172,12 @@ export interface TrackFull {
     permalink?: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    is_streamable?: boolean;
+    /**
+     * 
      * @type {number}
      * @memberof TrackFull
      */
