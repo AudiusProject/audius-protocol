@@ -117,7 +117,6 @@ export spOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 # Setting peerSetManager env vars
 export peerHealthCheckRequestTimeout=2000
 # bytes; 10gb
-export minimumStoragePathSize=10000000000
 # bytes; 2gb 
 export minimumMemoryAvailable=2000000000
 export maxFileDescriptorsAllocatedPercentage=95

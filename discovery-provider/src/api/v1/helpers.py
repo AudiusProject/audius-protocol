@@ -210,6 +210,10 @@ def extend_track(track):
     if "save_count" in track:
         track["favorite_count"] = track["save_count"]
 
+    track["is_streamable"] = (
+        not track["is_delete"] and not track["user"]["is_deactivated"]
+    )
+
     duration = 0.0
     for segment in track["track_segments"]:
         # NOTE: Legacy track segments store the duration as a string

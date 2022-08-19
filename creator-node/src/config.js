@@ -556,12 +556,6 @@ const config = convict({
     env: 'peerHealthCheckRequestTimeout',
     default: 2000
   },
-  minimumStoragePathSize: {
-    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set; 100gb',
-    format: 'nat',
-    env: 'minimumStoragePathSize',
-    default: 100000000000
-  },
   minimumMemoryAvailable: {
     doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
     format: 'nat',

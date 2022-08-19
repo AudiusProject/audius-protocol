@@ -55,6 +55,23 @@ CLEAR_LIBRARY_PANEL_UPDATED='del(.panels[].libraryPanel.meta.updated)'
 # wrap the final output in a different format and use overwrite: true, to avoid .id and .version collisions
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
 
+# FOLDERS
+# ids have to be unique
+CLEAR_FOLDER_IDS='del(.[].id)'
+
+path=grafana/dashboards/folders.json
+response=$(curl \
+    -s \
+    -H "Authorization: Bearer ${BEARER_TOKEN}" \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json' \
+    ${BASE_URL}/api/folders)
+
+echo ${response} \
+    | jq "${CLEAR_FOLDER_IDS}" \
+    > "${path}"
+echo "Saved to: ${path}"
+
 path=grafana/dashboards/library.json
 # save all library panels into a single file
 curl -s "${PASS_URL}/api/library-elements?perPage=100" \
