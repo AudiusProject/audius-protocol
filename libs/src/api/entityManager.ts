@@ -55,12 +55,10 @@ export class EntityManager extends Base {
   }
 
   mapTimestamps(addedTimestamps: PlaylistTrack[]) {
-    const trackIds = addedTimestamps.map(
-      (trackObj) => ({
-        track: trackObj.track,
-        time: trackObj.metadata_time ?? trackObj.time // default to time for legacy playlists
-      })
-    )
+    const trackIds = addedTimestamps.map((trackObj) => ({
+      track: trackObj.track,
+      time: trackObj.metadata_time ?? trackObj.time // default to time for legacy playlists
+    }))
 
     return trackIds
   }
