@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from datetime import datetime
 from typing import Dict, Set
 
 from src.models.playlists.playlist import Playlist
@@ -13,48 +14,40 @@ from src.tasks.entity_manager.utils import (
 logger = logging.getLogger(__name__)
 
 
-def is_valid_playlist_tx(params: ManageEntityParameters):
+def validate_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     playlist_id = params.entity_id
     if user_id not in params.existing_records["users"]:
-        # user does not exist
-        return False
+        raise Exception("User does not exists")
 
     wallet = params.existing_records["users"][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
-        # user does not match signer
-        return False
+        raise Exception("User does not match signer")
 
     if params.entity_type != EntityType.PLAYLIST:
-        return False
+        raise Exception("Entity type is not a playlist")
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records["playlists"]:
-            # playlist already exists
-            return False
+            raise Exception("Cannot create playlist that already exists")
         if playlist_id < PLAYLIST_ID_OFFSET:
-            return False
+            raise Exception("Cannot create playlist below the offset")
     else:
-        # update / delete specific validations
         if playlist_id not in params.existing_records["playlists"]:
-            # playlist does not exist
-            return False
+            raise Exception("Cannot update playlist that does not exist")
         existing_playlist: Playlist = params.existing_records["playlists"][playlist_id]
         if existing_playlist.playlist_owner_id != user_id:
-            # existing playlist does not match user
-            return False
-
-    return True
+            raise Exception("Cannot update playlist that does not match user")
 
 
 def create_playlist(params: ManageEntityParameters):
-    if not is_valid_playlist_tx(params):
-        return
+    validate_playlist_tx(params)
 
     playlist_id = params.entity_id
     metadata = params.ipfs_metadata[params.metadata_cid]
     tracks = metadata["playlist_contents"].get("track_ids", [])
     tracks_with_index_time = []
+    last_added_to = None
     for track in tracks:
         tracks_with_index_time.append(
             {
@@ -63,7 +56,7 @@ def create_playlist(params: ManageEntityParameters):
                 "time": params.block_integer_time,
             }
         )
-    logger.info("making model")
+        last_added_to = params.block_integer_time
     create_playlist_record = Playlist(
         playlist_id=playlist_id,
         metadata_multihash=params.metadata_cid,
@@ -80,18 +73,15 @@ def create_playlist(params: ManageEntityParameters):
         blocknumber=params.block_number,
         blockhash=params.event_blockhash,
         txhash=params.txhash,
+        last_added_to=last_added_to,
         is_current=False,
         is_delete=False,
     )
-    logger.info("adding playlist info")
-    logger.info("adding playlist info")
-    logger.info("adding playlist info")
     params.add_playlist_record(playlist_id, create_playlist_record)
 
 
 def update_playlist(params: ManageEntityParameters):
-    if not is_valid_playlist_tx(params):
-        return
+    validate_playlist_tx(params)
     # TODO ignore updates on deleted playlists?
 
     playlist_id = params.entity_id
@@ -117,8 +107,7 @@ def update_playlist(params: ManageEntityParameters):
 
 
 def delete_playlist(params: ManageEntityParameters):
-    if not is_valid_playlist_tx(params):
-        return
+    validate_playlist_tx(params)
 
     existing_playlist = params.existing_records["playlists"][params.entity_id]
     existing_playlist.is_current = False  # invalidate old playlist
@@ -150,6 +139,7 @@ def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
         blocknumber=block_number,
         blockhash=event_blockhash,
         txhash=txhash,
+        last_added_to=old_playlist.last_added_to,
         is_current=False,
         is_delete=old_playlist.is_delete,
         metadata_multihash=old_playlist.metadata_multihash,
@@ -218,7 +208,7 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
 
 
 def process_playlist_data_event(
-    playlist_record: Playlist,
+    playlist_record,
     playlist_metadata,
     block_integer_time,
     block_datetime,
@@ -241,7 +231,17 @@ def process_playlist_data_event(
     playlist_record.playlist_contents = process_playlist_contents(
         playlist_record, playlist_metadata, block_integer_time
     )
+
+    track_ids = playlist_record.playlist_contents["track_ids"]
+    last_added_to = track_ids[0]["time"] if track_ids else None
+    for track_obj in playlist_record.playlist_contents["track_ids"]:
+        if track_obj["time"] > last_added_to:
+            last_added_to = track_obj["time"]
+    playlist_record.last_added_to = datetime.utcfromtimestamp(last_added_to)
+
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
 
-    logger.info(f"index.py | AudiusData | Updated playlist record {playlist_record}")
+    logger.info(
+        f"playlist.py | EntityManager | Updated playlist record {playlist_record}"
+    )
