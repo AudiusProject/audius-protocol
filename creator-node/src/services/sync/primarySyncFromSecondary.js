@@ -119,7 +119,8 @@ module.exports = async function primarySyncFromSecondary({
           userReplicaSet,
           wallet,
           libs,
-          logger
+          logger,
+          logPrefix
         })
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Success',
@@ -242,7 +243,8 @@ async function saveFilesToDisk({
   userReplicaSet,
   wallet,
   libs,
-  logger
+  logger,
+  logPrefix
 }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
@@ -347,11 +349,15 @@ async function saveFilesToDisk({
     // Throw error if failure threshold not yet reached
     if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
       throw new Error(
-        `Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Cannot proceed because UserSyncFailureCount = ${userSyncFailureCount} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
+        `[saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Cannot proceed because UserSyncFailureCount = ${userSyncFailureCount} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
       )
     } else {
       // If threshold reached, reset failure count and continue
       await UserSyncFailureCountService.resetFailureCount(wallet)
+
+      logger.info(
+        `${logPrefix} [saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Proceeding anyway because UserSyncFailureCount = ${userSyncFailureCount} reached SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
+      )
     }
   } else {
     // Reset failure count if all CIDs were successfully saved
