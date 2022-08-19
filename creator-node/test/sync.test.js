@@ -72,11 +72,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
     }
 
     await redisClient.flushdb()
-
-    // Clear storagePath
-    const storagePath = config.get('storagePath')
-    const absoluteStoragePath = path.resolve(storagePath)
-    await fs.emptyDir(path.resolve(absoluteStoragePath))
   })
 
   /**
@@ -1045,6 +1040,11 @@ describe('Test secondarySyncFromPrimary()', async function () {
      * Setup deps + mocks + app
      */
     beforeEach(async function () {
+      // Clear storagePath
+      const storagePath = config.get('storagePath')
+      const absoluteStoragePath = path.resolve(storagePath)
+      await fs.emptyDir(path.resolve(absoluteStoragePath))
+
       nock.cleanAll()
 
       maxExportClockValueRange = originalMaxExportClockValueRange
