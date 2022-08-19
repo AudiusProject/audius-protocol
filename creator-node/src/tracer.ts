@@ -89,7 +89,9 @@ export const setupTracing = () => {
 /**
  * Higher-order function that adds opentelemetry tracing to a function.
  * Usage of this would look like
- * `const someFunction = instrumentTracing({ fn: _someFunction })`
+ * ```
+ * const someFunction = instrumentTracing({ fn: _someFunction })
+ * ```
  */
 export const instrumentTracing = <
   TFunction extends (...args: any[]) => Promise<any>
@@ -129,7 +131,9 @@ export const instrumentTracing = <
 /**
  * Higher-order function that adds opentelemetry tracing to a function.
  * Usage of this would look like
- * `const someFunction = instrumentTracing({ fn: _someFunction })`
+ * ```
+ * const someFunction = instrumentTracingSync({ fn: _someFunction })
+ * ```
  */
 export const instrumentTracingSync = <
   TFunction extends (...args: any[]) => any
