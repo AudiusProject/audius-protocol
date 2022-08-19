@@ -73,7 +73,7 @@ class AsyncProcessingQueue {
         }
       })
 
-      await processTask(job, done)
+      return await processTask(job, done)
     })
 
     this.PROCESS_NAMES = PROCESS_NAMES

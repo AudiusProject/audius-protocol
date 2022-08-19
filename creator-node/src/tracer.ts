@@ -28,10 +28,20 @@ import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
 
 const SERVICE_NAME = 'content-node'
 
+/**
+ * Initializes a tracer for content node as well as registers import instrumentions
+ * for packages that are frequently used
+ */
 export const setupTracing = () => {
   // Not functionally required but gives some insight what happens behind the scenes
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
 
+  /**
+   * A Tracer Provider is a factory for Tracers.
+   * A Tracer Provider is initialized once and its lifecycle matches the application’s lifecycle.
+   * Tracer Provider initialization also includes Resource and Exporter initialization.
+   * It is typically the first step in tracing with OpenTelemetry.
+   */
   const provider = new NodeTracerProvider({
     resource: new Resource({
       [ResourceAttributesSC.SERVICE_NAME]: SERVICE_NAME
@@ -41,11 +51,22 @@ export const setupTracing = () => {
     tracerProvider: provider,
     instrumentations: [
       // Express instrumentation expects HTTP layer to be instrumented
+      // This reads and writes the appropriate opentelemetry headers to requests
       new HttpInstrumentation(),
+
+      // Adds spans to express routes
       new ExpressInstrumentation(),
+
+      // Adds spans to redis operations
       new RedisInstrumentation(),
+
+      // Adds spans to postgres transactions
       new PgInstrumentation(),
+
+      // Injects traceid, spanid, and SpanContext into bunyan logs
       new BunyanInstrumentation({
+        // Adds a hook to logs that injects more span info
+        // and the service name into logs
         logHook: (span, record) => {
           record['resource.span'] = span
           record['resource.service.name'] =
@@ -60,7 +81,9 @@ export const setupTracing = () => {
 }
 
 /**
- * Higher-order function that adds opentelemetry tracing to a function
+ * Higher-order function that adds opentelemetry tracing to a function.
+ * Usage of this would look like
+ * `const someFunction = instrumentTracing({ fn: _someFunction })`
  */
 export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   name,
@@ -101,6 +124,14 @@ export const tracing = {
   CODE_FUNCTION: SemanticAttributes.CODE_FUNCTION,
   SpanStatusCode: SpanStatusCode,
 
+  /**
+   * A Tracer creates spans containing more information about what is happening
+   * for a given operation, such as a request in a service.
+   * Tracers are created from Tracer Providers.
+   *
+   * This function fetches the tracer from the application context
+   * @returns {Tracer} the tracer for content node
+   */
   getTracer: () => {
     return trace.getTracer(SERVICE_NAME)
   },
@@ -145,6 +176,10 @@ export const tracing = {
     span?.setStatus({ code: SpanStatusCode.ERROR, message: error.message })
   },
 
+  /**
+   * Fetches the current span context if in an active span
+   * @returns {SpanContext | undefined} the current span context if in a span
+   */
   currentSpanContext: (): SpanContext | undefined => {
     const span = tracing.getActiveSpan()
     return span?.spanContext()
