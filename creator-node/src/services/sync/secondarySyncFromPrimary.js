@@ -606,6 +606,7 @@ const _handleSyncFromPrimary = async ({
         // track that sync for this user was successful
         await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
       } catch (e) {
+        tracing.recordException(e)
         genericLogger.error(
           logPrefix,
           `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`,
@@ -623,6 +624,7 @@ const _handleSyncFromPrimary = async ({
             `fixInconsistentUser() executed for ${fetchedCNodeUser.cnodeUserUUID} - numRowsUpdated:${numRowsUpdated}`
           )
         } catch (e) {
+          tracing.recordException(e)
           genericLogger.error(
             logPrefix,
             `fixInconsistentUser() error for ${fetchedCNodeUser.cnodeUserUUID} - ${e.message}`
@@ -638,6 +640,7 @@ const _handleSyncFromPrimary = async ({
       }
     }
   } catch (e) {
+    tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
     genericLogger.error(
       logPrefix,
@@ -658,6 +661,7 @@ const _handleSyncFromPrimary = async ({
     try {
       await redis.WalletWriteLock.release(wallet)
     } catch (e) {
+      tracing.recordException(e)
       genericLogger.warn(
         logPrefix,
         `Failure to release write lock for ${wallet} with error ${e.message}`
