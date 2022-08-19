@@ -1272,7 +1272,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
   })
 })
 
-describe.only('Test primarySyncFromSecondary() with mocked export', async () => {
+describe('Test primarySyncFromSecondary() with mocked export', async () => {
   let server, app, serviceRegistryMock, primarySyncFromSecondaryStub
 
   const NODES = {
