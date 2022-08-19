@@ -1,5 +1,5 @@
-import logging  # pylint: disable=C0302
 from typing import List
+import logging  # pylint: disable=C0302
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
