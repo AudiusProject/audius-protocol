@@ -43,13 +43,8 @@ class SyncImmediateQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const {
-        wallet,
-        creatorNodeEndpoint,
-        forceResyncConfig,
-        forceWipe,
-        logContext
-      } = job.data
+      const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
+        job.data
 
       try {
         await secondarySyncFromPrimary({
@@ -57,7 +52,6 @@ class SyncImmediateQueue {
           wallet,
           creatorNodeEndpoint,
           forceResyncConfig,
-          forceWipe,
           logContext
         })
       } catch (e) {
@@ -76,14 +70,12 @@ class SyncImmediateQueue {
     wallet,
     creatorNodeEndpoint,
     forceResyncConfig,
-    forceWipe,
     logContext
   }) {
     const job = await this.queue.add({
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
-      forceWipe,
       logContext
     })
     const result = await job.finished()

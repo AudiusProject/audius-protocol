@@ -58,7 +58,7 @@ const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint: string) => {
 
 /**
  * Retrieve users with this node as replica (primary or secondary).
- * Makes single request to discovery node to retrieve all users, optionally paginated
+ * Makes request (with retries) to discovery node to retrieve all users, optionally paginated
  *
  * @notice Discovery Nodes will ignore these params if they're not updated to the version which added pagination
  * @param {string} discoveryNodeEndpoint the IP address / URL of a Discovery Node to make requests to

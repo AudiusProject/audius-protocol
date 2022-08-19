@@ -694,7 +694,7 @@ async function secondarySyncFromPrimary({
   creatorNodeEndpoint,
   forceResyncConfig,
   logContext,
-  forceWipe,
+  forceWipe = false,
   blockNumber = null
 }) {
   const { prometheusRegistry } = serviceRegistry
@@ -704,6 +704,8 @@ async function secondarySyncFromPrimary({
   )
   const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
 
+  // forceWipe only wipes data from the secondary and and doesn't resync from the primary.
+  // This flag takes precedence over forceResync, which wipes and then resyncs, if both are present
   let mode = 'default'
   if (forceResyncConfig?.forceResync) mode = 'force_resync'
   if (forceWipe) mode = 'force_wipe'

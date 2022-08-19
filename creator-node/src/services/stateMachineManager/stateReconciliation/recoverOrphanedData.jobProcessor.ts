@@ -16,6 +16,7 @@ const { getNodeUsers } = require('../stateMonitoring/stateMonitoringUtils')
 const config = require('../../../config')
 const redisClient: Redis = require('../../../redis')
 const models = require('../../../models')
+const asyncRetry = require('../../../utils/asyncRetry')
 
 const WALLETS_ON_NODE_KEY = 'orphanedDataWalletsWithStateOnNode'
 const WALLETS_WITH_NODE_IN_REPLICA_SET_KEY =
@@ -245,8 +246,6 @@ const _batchIssueReqsToRecoverOrphanedData = async (
   return requestsIssued
 }
 
-// Primary could potentially be passed from state machine, but the added complexity isn't worth it.
-// This could probably be batched to get primary for multiple users instead of making so many calls.
 const _getPrimaryForWallet = async (
   wallet: string,
   discoveryNodeEndpoint: string,
@@ -254,14 +253,21 @@ const _getPrimaryForWallet = async (
 ): Promise<string> => {
   let user
   try {
-    const resp = await axios({
-      method: 'get',
-      baseURL: discoveryNodeEndpoint,
-      url: 'users',
-      params: {
-        wallet
+    const resp = await asyncRetry({
+      logLabel: "fetch user's primary endpoint",
+      options: { retries: 3 },
+      asyncFn: async () => {
+        return axios({
+          method: 'get',
+          baseURL: discoveryNodeEndpoint,
+          url: 'users',
+          params: {
+            wallet
+          },
+          timeout: 2000
+        })
       },
-      timeout: 2000
+      logger
     })
     user = resp?.data?.data?.[0]
   } catch (e: any) {
