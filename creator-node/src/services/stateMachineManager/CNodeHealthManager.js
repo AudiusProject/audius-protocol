@@ -134,11 +134,9 @@ class CNodeHealthManager {
     // Check for sufficient minimum storage size
     const { healthy } = verboseHealthCheckResp
     if (!healthy) {
-      throw new Error(
-        `Node health check returned healthy: false`
-      )
+      throw new Error(`Node health check returned healthy: false`)
     }
-    
+
     const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
     if (
       storagePathSize &&
