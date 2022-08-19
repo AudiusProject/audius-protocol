@@ -1,0 +1,40 @@
+.coinbaseButton:not(:disabled) {
+  background: transparent !important;
+  border: 1px solid #0052ff;
+}
+.coinbaseButton .coinbaseLogo {
+  vertical-align: baseline;
+  margin-left: 4px;
+}
+.coinbaseButton .textClassName {
+  color: #0052ff;
+  font-size: var(--font-2xl);
+  font-weight: var(--font-demi-bold);
+  text-transform: none;
+}
+.coinbaseLogo path {
+  transition: all var(--quick);
+}
+
+/** Hover **/
+.coinbaseButton:hover:not(:disabled) {
+  background: #0052ff !important;
+  transform: none;
+}
+.coinbaseButton:hover:not(:disabled) .textClassName {
+  color: var(--static-white);
+}
+.coinbaseButton:hover:not(:disabled) .coinbaseLogo path {
+  fill: var(--static-white);
+}
+
+/** Disabled **/
+.coinbaseButton:disabled {
+  background: var(--neutral-light-6);
+}
+.coinbaseButton:disabled .textClassName {
+  color: var(--static-white);
+}
+.coinbaseButton:disabled .coinbaseLogo path {
+  fill: var(--static-white);
+}

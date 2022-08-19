@@ -158,31 +158,3 @@
   opacity: 0.5;
   background-color: hsla(0, 0%, 100%, 0.1);
 }
-
-.coinbaseButton {
-  background: transparent !important;
-  border: 1px solid #0052ff;
-}
-.coinbaseButton .coinbaseLogo {
-  vertical-align: baseline;
-  margin-left: 4px;
-}
-.coinbaseButton .textClassName {
-  color: #0052ff;
-  font-size: var(--font-2xl);
-  font-weight: var(--font-demi-bold);
-  text-transform: none;
-}
-.coinbaseButton:hover {
-  background: #0052ff !important;
-  transform: none;
-}
-.coinbaseButton:hover .textClassName {
-  color: var(--static-white);
-}
-.coinbaseLogo path {
-  transition: all var(--quick);
-}
-.coinbaseButton:hover .coinbaseLogo path {
-  fill: var(--static-white);
-}
