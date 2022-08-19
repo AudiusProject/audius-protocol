@@ -70,7 +70,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
     } catch (e) {
       // do nothing
     }
+
     await redisClient.flushdb()
+
+    // Clear storagePath
+    const storagePath = config.get('storagePath')
+    const absoluteStoragePath = path.resolve(storagePath)
+    await fs.emptyDir(path.resolve(absoluteStoragePath))
   })
 
   /**
