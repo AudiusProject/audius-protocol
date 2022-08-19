@@ -55,6 +55,7 @@ def create_playlist(params: ManageEntityParameters):
     metadata = params.ipfs_metadata[params.metadata_cid]
     tracks = metadata["playlist_contents"].get("track_ids", [])
     tracks_with_index_time = []
+    last_added_to = None
     for track in tracks:
         tracks_with_index_time.append(
             {
@@ -63,7 +64,7 @@ def create_playlist(params: ManageEntityParameters):
                 "time": params.block_integer_time,
             }
         )
-    logger.info("making model")
+        last_added_to = params.block_integer_time
     create_playlist_record = Playlist(
         playlist_id=playlist_id,
         metadata_multihash=params.metadata_cid,
@@ -80,12 +81,10 @@ def create_playlist(params: ManageEntityParameters):
         blocknumber=params.block_number,
         blockhash=params.event_blockhash,
         txhash=params.txhash,
+        last_added_to=last_added_to,
         is_current=False,
         is_delete=False,
     )
-    logger.info("adding playlist info")
-    logger.info("adding playlist info")
-    logger.info("adding playlist info")
     params.add_playlist_record(playlist_id, create_playlist_record)
 
 
@@ -150,6 +149,7 @@ def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
         blocknumber=block_number,
         blockhash=event_blockhash,
         txhash=txhash,
+        last_added_to=old_playlist.last_added_to,
         is_current=False,
         is_delete=old_playlist.is_delete,
         metadata_multihash=old_playlist.metadata_multihash,
@@ -241,6 +241,14 @@ def process_playlist_data_event(
     playlist_record.playlist_contents = process_playlist_contents(
         playlist_record, playlist_metadata, block_integer_time
     )
+
+    track_ids = playlist_record.playlist_contents["track_ids"]
+    last_added_to = track_ids[0]["time"] if track_ids else None
+    for track_obj in playlist_record.playlist_contents["track_ids"]:
+        if track_obj["time"] > last_added_to:
+            last_added_to = track_obj["time"]
+    playlist_record.last_added_to = last_added_to
+
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
 
