@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@audius/sdk": "0.0.32",
-    "@solana/web3.js": "1.53.0",
+    "@solana/web3.js": "1.37.1",
     "axios": "0.19.2",
     "borsh": "0.4.0",
     "colors": "1.4.0",

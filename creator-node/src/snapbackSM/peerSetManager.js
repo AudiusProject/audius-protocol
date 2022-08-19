@@ -9,11 +9,11 @@ const {
   GET_NODE_USERS_CANCEL_TOKEN_MS,
   GET_NODE_USERS_DEFAULT_PAGE_SIZE
 } = require('./StateMachineConstants')
+const { hasEnoughStorageSpace } = require('../fileManager')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
 )
-const MINIMUM_STORAGE_PATH_SIZE = config.get('minimumStoragePathSize')
 const MINIMUM_MEMORY_AVAILABLE = config.get('minimumMemoryAvailable')
 const MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE =
   config.get('maxFileDescriptorsAllocatedPercentage') / 100
@@ -26,6 +26,7 @@ const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE =
 const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
+const MAX_STORAGE_USED_PERCENT = config.get('maxStorageUsedPercent')
 
 class PeerSetManager {
   constructor({
@@ -259,12 +260,16 @@ class PeerSetManager {
     if (
       storagePathSize &&
       storagePathUsed &&
-      storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE
+      !hasEnoughStorageSpace({
+        storagePathSize,
+        storagePathUsed,
+        maxStorageUsedPercent: MAX_STORAGE_USED_PERCENT
+      })
     ) {
       throw new Error(
         `Almost out of storage=${
           storagePathSize - storagePathUsed
-        }bytes remaining. Minimum storage required=${MINIMUM_STORAGE_PATH_SIZE}bytes`
+        }bytes remaining out of ${storagePathSize}. Requires less than ${MAX_STORAGE_USED_PERCENT}% used`
       )
     }
 

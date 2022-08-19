@@ -485,7 +485,7 @@ const pushNotificationMessagesMap = {
     return `${capitalize(notification.sendingUser.name)} sent you a tip of ${notification.amount} $AUDIO`
   },
   [notificationTypes.SupporterDethroned] (notification) {
-    return `${capitalize(notification.newTopSupporter.handle)} dethroned you to become ${notification.supportedUser.name}'s top supporter. Tip to reclaim the throne?`
+    return `${capitalize(notification.newTopSupporter.handle)} dethroned you as ${notification.supportedUser.name}'s #1 Top Supporter! Tip to reclaim your spot?`
   }
 
 }

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from integration_tests.challenges.index_helpers import UpdateTask
@@ -105,7 +106,7 @@ def test_index_valid_playlists(app, mocker):
             "playlist_name": "playlist 2",
         },
         "QmUpdatePlaylist1": {
-            "playlist_contents": {"track_ids": []},
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
             "description": "",
             "playlist_image_sizes_multihash": "",
             "playlist_name": "playlist 1 updated",
@@ -143,6 +144,7 @@ def test_index_valid_playlists(app, mocker):
             )
             .first()
         )
+        assert datetime.timestamp(playlist_1.last_added_to) == 1585336422
         assert playlist_1.playlist_name == "playlist 1 updated"
         assert playlist_1.is_delete == True
 
@@ -154,6 +156,7 @@ def test_index_valid_playlists(app, mocker):
             )
             .first()
         )
+        assert playlist_2.last_added_to == None
         assert playlist_2.playlist_name == "playlist 2"
         assert playlist_2.is_delete == False
 
@@ -220,6 +223,20 @@ def test_index_invalid_playlists(app, mocker):
                         "_userId": 1,
                         "_action": "Create",
                         "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylistInvalidMetadata": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "QmCreatePlaylist1",
                         "_signer": "user1wallet",
                     }
                 )
@@ -323,7 +340,14 @@ def test_index_invalid_playlists(app, mocker):
         ],
     }
     populate_mock_db(db, entities)
-
+    test_metadata = {
+        "QmCreatePlaylist1": {
+            # missing playlist_contents, invalid metadata
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "playlist 1",
+        }
+    }
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
@@ -334,7 +358,7 @@ def test_index_invalid_playlists(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            ipfs_metadata={},
+            ipfs_metadata=test_metadata,
         )
 
         # validate db records
