@@ -56,9 +56,10 @@ class AsyncProcessingQueue {
 
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
       const { task, logContext, parentSpanContext } = job.data
+      const that = this
       const processTask = instrumentTracing({
         name: 'AsyncProcessingQueue.process',
-        fn: this.processTask,
+        fn: that.processTask,
         options: {
           links: [
             {

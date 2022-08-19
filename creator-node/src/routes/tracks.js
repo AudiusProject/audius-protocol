@@ -161,7 +161,7 @@ router.post(
         })
         return successResponse({ uuid: req.logContext.requestID })
       }
-    })
+    })(req, res)
   })
 )
 
