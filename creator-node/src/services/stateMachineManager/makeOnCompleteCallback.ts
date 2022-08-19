@@ -167,6 +167,7 @@ const _enqueueJobs = async (
 }
 
 const enqueueJobs = instrumentTracing({
+  name: 'enqueue new queue jobs',
   fn: _enqueueJobs,
   options: {
     attributes: {
@@ -220,6 +221,7 @@ const recordMetrics = (
 }
 
 module.exports = instrumentTracing({
+  name: 'onComplete bull queue callback',
   fn: makeOnCompleteCallback,
   options: {
     attributes: {

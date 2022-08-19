@@ -44,13 +44,14 @@ class SyncImmediateQueue {
     const jobProcessorConcurrency = this.nodeConfig.get(
       'syncQueueMaxConcurrency'
     )
+
+    const untracedProcessTask = this.processTask
     this.queue.process(jobProcessorConcurrency, async (job) => {
       const { parentSpanContext } = job.data
 
-      const that = this
-      const processTask = instrumentTracing({
+      const processTaskTraced = instrumentTracing({
         name: 'syncImmediateQueue.process',
-        fn: that.processTask,
+        fn: untracedProcessTask,
         options: {
           links: parentSpanContext
             ? [
@@ -64,8 +65,7 @@ class SyncImmediateQueue {
           }
         }
       })
-
-      await processTask(job)
+      await processTaskTraced(job)
     })
   }
 

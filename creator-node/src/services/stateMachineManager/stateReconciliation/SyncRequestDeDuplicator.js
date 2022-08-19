@@ -25,18 +25,17 @@ class SyncRequestDeDuplicator {
     secondaryEndpoint,
     immediate = false
   ) {
-    const that = this
     const handler = instrumentTracing({
       name: 'getDuplicateSyncJobInfo',
       fn: () => {
-        const syncKey = that._getSyncKey(
+        const syncKey = this._getSyncKey(
           syncType,
           userWallet,
           secondaryEndpoint,
           immediate
         )
 
-        const duplicateSyncJobInfo = that.waitingSyncsByUserWalletMap[syncKey]
+        const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
         return duplicateSyncJobInfo || null
       }
     })
@@ -52,11 +51,10 @@ class SyncRequestDeDuplicator {
     immediate = false,
     jobProps
   ) {
-    const that = this
     instrumentTracing({
       name: 'recordSync',
       fn: () => {
-        const syncKey = that._getSyncKey(
+        const syncKey = this._getSyncKey(
           syncType,
           userWallet,
           secondaryEndpoint,
@@ -64,25 +62,24 @@ class SyncRequestDeDuplicator {
         )
         tracing.setSpanAttribute('syncKey', syncKey)
 
-        that.waitingSyncsByUserWalletMap[syncKey] = jobProps
+        this.waitingSyncsByUserWalletMap[syncKey] = jobProps
       }
     })(syncType, userWallet, secondaryEndpoint, immediate, jobProps)
   }
 
   /** Remove sync with given properties */
   removeSync(syncType, userWallet, secondaryEndpoint, immediate = false) {
-    const that = this
     instrumentTracing({
       name: 'removeSync',
       fn: () => {
-        const syncKey = that._getSyncKey(
+        const syncKey = this._getSyncKey(
           syncType,
           userWallet,
           secondaryEndpoint,
           immediate
         )
 
-        delete that.waitingSyncsByUserWalletMap[syncKey]
+        delete this.waitingSyncsByUserWalletMap[syncKey]
       }
     })(syncType, userWallet, secondaryEndpoint, immediate)
   }

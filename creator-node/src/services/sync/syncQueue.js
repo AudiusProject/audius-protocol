@@ -49,26 +49,29 @@ class SyncQueue {
     const jobProcessorConcurrency = this.nodeConfig.get(
       'syncQueueMaxConcurrency'
     )
+
+    const untracedProcessTask = this.processTask
     this.queue.process(jobProcessorConcurrency, async (job) => {
       const { parentSpanContext } = job.data
 
-      const that = this
-      const processTask = instrumentTracing({
+      const processTaskTraced = instrumentTracing({
         name: 'syncQueue.process',
-        fn: that.processTask,
+        fn: untracedProcessTask,
         options: {
-          links: [
-            {
-              context: parentSpanContext
-            }
-          ],
+          links: parentSpanContext
+            ? [
+                {
+                  context: parentSpanContext
+                }
+              ]
+            : [],
           attributes: {
             [tracing.CODE_FILEPATH]: __filename
           }
         }
       })
 
-      return await processTask(job)
+      return await processTaskTraced(job)
     })
   }
 
