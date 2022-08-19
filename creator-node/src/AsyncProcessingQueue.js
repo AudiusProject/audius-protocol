@@ -54,12 +54,13 @@ class AsyncProcessingQueue {
 
     this.libs = libs
 
+    const untracedProcessTask = this.processTask
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
       const { task, logContext, parentSpanContext } = job.data
 
-      const processTask = instrumentTracing({
+      const processTaskTraced = instrumentTracing({
         name: 'AsyncProcessingQueue.process',
-        fn: this.processTask,
+        fn: untracedProcessTask,
         options: {
           links: [
             {
@@ -74,7 +75,7 @@ class AsyncProcessingQueue {
         }
       })
 
-      return await processTask(job, done)
+      return await processTaskTraced(job, done)
     })
 
     this.PROCESS_NAMES = PROCESS_NAMES

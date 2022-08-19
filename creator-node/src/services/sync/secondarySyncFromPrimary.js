@@ -14,6 +14,10 @@ const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 const { instrumentTracing, tracing } = require('../../tracer')
 
+/**
+ *
+ * @returns {{error, result}}
+ */
 const _handleSyncFromPrimary = async ({
   serviceRegistry,
   wallet,
