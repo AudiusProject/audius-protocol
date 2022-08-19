@@ -38,9 +38,6 @@ module.exports = async function primarySyncFromSecondary({
   const decisionTree = new DecisionTree({ name: logPrefix, logger })
   decisionTree.recordStage({ name: 'Begin', log: true })
 
-  // object to track if the function errored, returned at the end of the function
-  let error = null
-
   try {
     const selfEndpoint = config.get('creatorNodeEndpoint')
 
@@ -126,7 +123,11 @@ module.exports = async function primarySyncFromSecondary({
         })
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Success',
-          data: decisionTreeData,
+          data: {
+            ...decisionTreeData,
+            numCIDsThatFailedSaveFileOp: CIDsThatFailedSaveFileOp.size,
+            CIDsThatFailedSaveFileOp
+          },
           log: true
         })
       } catch (e) {
@@ -165,16 +166,13 @@ module.exports = async function primarySyncFromSecondary({
 
     decisionTree.recordStage({ name: 'Complete Success' })
   } catch (e) {
-    error = e
-
     await SyncHistoryAggregator.recordSyncFail(wallet)
+    return e
   } finally {
     await WalletWriteLock.release(wallet)
 
     decisionTree.printTree()
   }
-
-  return error
 }
 
 /**
@@ -348,7 +346,9 @@ async function saveFilesToDisk({
 
     // Throw error if failure threshold not yet reached
     if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
-      throw new Error('asdf')
+      throw new Error(
+        `Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Cannot proceed because UserSyncFailureCount = ${userSyncFailureCount} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
+      )
     } else {
       // If threshold reached, reset failure count and continue
       await UserSyncFailureCountService.resetFailureCount(wallet)

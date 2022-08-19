@@ -603,6 +603,15 @@ const handleSyncFromPrimary = async ({
 
         // track that sync for this user was successful
         await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
+
+        genericLogger.info(
+          logPrefix,
+          `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
+            Date.now() - start
+          }. From endpoint ${creatorNodeEndpoint}.`
+        )
+
+        return { result: 'success' }
       } catch (e) {
         genericLogger.error(
           logPrefix,
@@ -662,15 +671,6 @@ const handleSyncFromPrimary = async ({
       )
     }
   }
-
-  genericLogger.info(
-    logPrefix,
-    `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
-      Date.now() - start
-    }. From endpoint ${creatorNodeEndpoint}.`
-  )
-
-  return { result: 'success' }
 }
 
 /**
