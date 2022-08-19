@@ -98,7 +98,7 @@ class SkippedCIDsRetryQueue {
     const savedFileUUIDs = []
     for await (const file of skippedFiles) {
       // Returns boolean success indicator
-      const success = await saveFileForMultihashToFS(
+      const error = await saveFileForMultihashToFS(
         libs,
         logger,
         file.multihash,
@@ -107,7 +107,7 @@ class SkippedCIDsRetryQueue {
         file.fileName,
         file.trackBlockchainId
       )
-      if (success) {
+      if (!error) {
         savedFileUUIDs.push(file.fileUUID)
       }
       // Do nothing on failure, since that is the default behavior
