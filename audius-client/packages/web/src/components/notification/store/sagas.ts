@@ -20,7 +20,7 @@ import {
   takeEvery,
   select,
   takeLatest
-} from 'typed-redux-saga/macro'
+} from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getUserId, getHasAccount } from 'common/store/account/selectors'

@@ -1,4 +1,4 @@
-import { call, put, select, takeEvery } from 'typed-redux-saga/macro'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getHasAccount } from 'common/store/account/selectors'

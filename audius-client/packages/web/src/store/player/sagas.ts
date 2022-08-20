@@ -8,7 +8,7 @@ import {
   spawn,
   takeLatest,
   delay
-} from 'typed-redux-saga/macro'
+} from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import * as cacheActions from 'common/store/cache/actions'

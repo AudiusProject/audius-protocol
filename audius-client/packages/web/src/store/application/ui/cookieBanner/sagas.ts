@@ -1,4 +1,4 @@
-import { call, put, takeEvery } from 'typed-redux-saga/macro'
+import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 

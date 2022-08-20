@@ -1,6 +1,6 @@
 import { Name, Chain, BNWei, FeatureFlags } from '@audius/common'
 import BN from 'bn.js'
-import { all, call, put, take, takeEvery, select } from 'typed-redux-saga/macro'
+import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'

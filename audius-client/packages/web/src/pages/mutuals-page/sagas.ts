@@ -1,5 +1,5 @@
 import { ID, User } from '@audius/common'
-import { put, select } from 'typed-redux-saga/macro'
+import { put, select } from 'typed-redux-saga'
 
 import { AudiusBackend } from 'common/services/audius-backend'
 import { getUser } from 'common/store/cache/users/selectors'

@@ -1,5 +1,5 @@
 import { ID, User, UserMetadata } from '@audius/common'
-import { call, select } from 'typed-redux-saga/macro'
+import { call, select } from 'typed-redux-saga'
 
 import { AudiusAPIClient } from 'common/services/audius-api-client'
 import { AudiusBackend } from 'common/services/audius-backend'

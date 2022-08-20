@@ -10,14 +10,7 @@ import {
   makeUid,
   Uid
 } from '@audius/common'
-import {
-  all,
-  call,
-  put,
-  select,
-  takeEvery,
-  takeLatest
-} from 'typed-redux-saga/macro'
+import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'

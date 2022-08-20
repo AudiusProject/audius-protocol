@@ -20,7 +20,7 @@ import {
   takeEvery,
   fork,
   cancel
-} from 'typed-redux-saga/macro'
+} from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getAccountUser } from 'common/store/account/selectors'
