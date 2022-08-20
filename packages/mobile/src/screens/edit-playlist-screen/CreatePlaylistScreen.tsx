@@ -6,6 +6,7 @@ import { createPlaylist } from 'audius-client/src/common/store/cache/collections
 import { playlistPage } from 'audius-client/src/utils/route'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
+import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import { FormScreen } from 'app/components/form-screen'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -63,12 +64,15 @@ export const CreatePlaylistScreen = () => {
   const navigation = useNavigation()
   const handleSubmit = useCallback(
     (values: PlaylistValues) => {
-      const tempId = Date.now().toString()
+      const tempId = getTempPlaylistId()
       dispatchWeb(
         createPlaylist(tempId, values, CreatePlaylistSource.FAVORITES_PAGE)
       )
       navigation.replace({
-        native: { screen: 'Collection', params: { id: parseInt(tempId, 10) } },
+        native: {
+          screen: 'Collection',
+          params: { id: parseInt(tempId.toString(), 10) }
+        },
         web: { route: playlistPage(handle, values.playlist_name, tempId) }
       })
       toast({ content: messages.playlistCreatedToast })
