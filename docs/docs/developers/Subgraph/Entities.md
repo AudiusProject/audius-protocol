@@ -6,7 +6,7 @@ title: Subgraph Entities
 # Entities
 
 - [`AudiusNetwork`](#audiusnetwork)
-- [`ServiceType`](#ServiceType)
+- [`ServiceType`](#servicetype)
 - [`ServiceTypeVersion`](#servicetypeversion)
 - [`ServiceNode`](#servicenode)
 - [`User`](#user)
@@ -420,7 +420,7 @@ Description:
 | returnData           | Bytes     |             |
 | blockNumber          | BigInt!   |          
 
-# GuardianTransactionEcecutedEvent
+# GuardianTransactionExecutedEvent
 
 Description:
 
