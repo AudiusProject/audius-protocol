@@ -1,0 +1,132 @@
+{
+  "receiver": "#eng-alerts-debug",
+  "routes": [
+    {
+      "receiver": "#eng-token-alerts",
+      "object_matchers": [
+        [
+          "channel",
+          "=",
+          "slack-eng-token-alerts"
+        ]
+      ]
+    },
+    {
+      "receiver": "#eng-alerts-debug",
+      "object_matchers": [
+        [
+          "alert",
+          "=",
+          "p3"
+        ],
+        [
+          "env",
+          "=",
+          "prod"
+        ]
+      ],
+      "group_wait": "10s",
+      "group_interval": "10s"
+    },
+    {
+      "receiver": "#eng-alerts-debug",
+      "object_matchers": [
+        [
+          "alert",
+          "=",
+          "p2"
+        ],
+        [
+          "env",
+          "=",
+          "prod"
+        ]
+      ],
+      "group_wait": "10s",
+      "group_interval": "10s"
+    },
+    {
+      "receiver": "#eng-alerts-debug",
+      "object_matchers": [
+        [
+          "alert",
+          "=",
+          "p1"
+        ],
+        [
+          "env",
+          "=",
+          "prod"
+        ]
+      ],
+      "group_wait": "10s",
+      "group_interval": "10s"
+    },
+    {
+      "receiver": "#eng-alerts-debug",
+      "object_matchers": [
+        [
+          "alert",
+          "=",
+          "p3"
+        ],
+        [
+          "env",
+          "=",
+          "stage"
+        ]
+      ],
+      "group_wait": "10s",
+      "group_interval": "10s"
+    },
+    {
+      "receiver": "#eng-alerts-debug",
+      "object_matchers": [
+        [
+          "alert",
+          "=",
+          "p2"
+        ],
+        [
+          "env",
+          "=",
+          "stage"
+        ]
+      ],
+      "group_wait": "10s",
+      "group_interval": "10s"
+    },
+    {
+      "receiver": "#eng-alerts-debug",
+      "object_matchers": [
+        [
+          "alert",
+          "=",
+          "p1"
+        ],
+        [
+          "env",
+          "=",
+          "stage"
+        ]
+      ],
+      "group_wait": "10s",
+      "group_interval": "10s"
+    },
+    {
+      "receiver": "#eng-alerts-debug",
+      "object_matchers": [
+        [
+          "alert",
+          "=",
+          "debug"
+        ]
+      ],
+      "group_wait": "10s",
+      "group_interval": "10s",
+      "repeat_interval": "10s"
+    }
+  ],
+  "group_wait": "10s",
+  "group_interval": "10s"
+}

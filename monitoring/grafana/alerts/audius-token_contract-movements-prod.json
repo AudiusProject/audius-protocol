@@ -1,0 +1,93 @@
+[
+  {
+    "annotations": {
+      "__alertId__": "jPaB_Yk4k_005_P1",
+      "__dashboardUid__": "jPaB_Yk4k",
+      "__panelId__": "5",
+      "description": "",
+      "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=5",
+      "summary": ""
+    },
+    "condition": "B",
+    "data": [
+      {
+        "datasourceUid": "r2_nnDL7z",
+        "model": {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "expr": "audius_exporters_alchemy_balance{} - (audius_exporters_alchemy_balance offset 1m)",
+          "hide": false,
+          "intervalMs": 1,
+          "maxDataPoints": 43200,
+          "refId": "A"
+        },
+        "queryType": "",
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        }
+      },
+      {
+        "datasourceUid": "-100",
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  10,
+                  0
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "or"
+              },
+              "query": {
+                "params": [
+                  "A"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "hide": false,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "B",
+          "type": "classic_conditions"
+        },
+        "queryType": "",
+        "refId": "B",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        }
+      }
+    ],
+    "execErrState": "Alerting",
+    "folderUID": "ARwYXYzVk",
+    "for": "0s",
+    "id": 200051,
+    "labels": {
+      "alert": "p1",
+      "env": "prod"
+    },
+    "noDataState": "OK",
+    "orgID": 1,
+    "ruleGroup": "group",
+    "title": "PROD P1 Alert on Contract Movements",
+    "uid": "jPaB_Yk4k_005_P1"
+  }
+]

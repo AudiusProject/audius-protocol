@@ -1,12 +1,12 @@
 [
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_017_High",
-      "__dashboardUid__": "YCgu57m4z",
-      "__panelId__": "17",
-      "description": "\n\nWe ignore any previous one-off proposers to keep this metric at 0. Anything greater than 0 should be considered to be created by an attacker.",
-      "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=17",
-      "summary": "The number of proposals opened by unknown proposers.\n\n"
+      "__alertId__": "ZUjg533nk_008_P1",
+      "__dashboardUid__": "ZUjg533nk",
+      "__panelId__": "8",
+      "description": "",
+      "runbook_url": "http://grafana.audius.co/d/ZUjg533nk?viewPanel=8",
+      "summary": ""
     },
     "condition": "B",
     "data": [
@@ -17,9 +17,9 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "audius_exporters_sdk_proposals_by_unknown_proposers",
+          "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"prod\", host=~\".*\", success=\"True\"}",
           "hide": false,
-          "intervalMs": 1000,
+          "intervalMs": 1,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -37,7 +37,7 @@
             {
               "evaluator": {
                 "params": [
-                  1,
+                  90,
                   0
                 ],
                 "type": "gt"
@@ -77,16 +77,17 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "zpejR_iVz",
+    "folderUID": "ARwYXYzVk",
     "for": "0s",
-    "id": 180171,
+    "id": 150081,
     "labels": {
-      "channel": "high-alert"
+      "alert": "p1",
+      "env": "prod"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Proposals by Unknown Proposers (High)",
-    "uid": "YCgu57m4z_017_High"
+    "title": "PROD P1 Alert on Last Successful Celery Task Duration",
+    "uid": "ZUjg533nk_008_P1"
   }
 ]

@@ -1,0 +1,50 @@
+[
+  {
+    "annotations": {
+      "__alertId__": "YCgu57m4z_017_P1",
+      "__dashboardUid__": "YCgu57m4z",
+      "__panelId__": "17",
+      "description": "We ignore any previous one-off proposers to keep this metric at 0. Anything greater than 0 should be considered to be created by an attacker.",
+      "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=17",
+      "summary": "The number of proposals opened by unknown proposers."
+    },
+    "condition": "A",
+    "data": [
+      {
+        "datasourceUid": "-100",
+        "model": {
+          "conditions": [],
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "hide": false,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A",
+          "type": "classic_conditions"
+        },
+        "queryType": "",
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        }
+      }
+    ],
+    "execErrState": "Alerting",
+    "folderUID": "ARwYXYzVk",
+    "for": "0s",
+    "id": 220171,
+    "labels": {
+      "alert": "p1",
+      "env": "stage"
+    },
+    "noDataState": "OK",
+    "orgID": 1,
+    "ruleGroup": "group",
+    "title": "stage P1 Alert on Proposals by Unknown Proposers",
+    "uid": "YCgu57m4z_017_P1"
+  }
+]

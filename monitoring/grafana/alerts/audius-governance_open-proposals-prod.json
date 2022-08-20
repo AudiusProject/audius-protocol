@@ -1,12 +1,12 @@
 [
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_020_Low",
+      "__alertId__": "YCgu57m4z_020_P3",
       "__dashboardUid__": "YCgu57m4z",
       "__panelId__": "20",
-      "description": "\n\nThe number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
+      "description": "The number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
       "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=20",
-      "summary": "The number of open proposals at the moment.\n\n"
+      "summary": "The number of open proposals at the moment."
     },
     "condition": "B",
     "data": [
@@ -19,7 +19,7 @@
           },
           "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
           "hide": false,
-          "intervalMs": 1000,
+          "intervalMs": 1,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -77,26 +77,27 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "zpejR_iVz",
+    "folderUID": "ARwYXYzVk",
     "for": "0s",
-    "id": 180203,
+    "id": 220203,
     "labels": {
-      "channel": "low-alert"
+      "alert": "p3",
+      "env": "prod"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Open Proposals (Low)",
-    "uid": "YCgu57m4z_020_Low"
+    "title": "PROD P3 Alert on Open Proposals",
+    "uid": "YCgu57m4z_020_P3"
   },
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_020_High",
+      "__alertId__": "YCgu57m4z_020_P1",
       "__dashboardUid__": "YCgu57m4z",
       "__panelId__": "20",
-      "description": "\n\nThe number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
+      "description": "The number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
       "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=20",
-      "summary": "The number of open proposals at the moment.\n\n"
+      "summary": "The number of open proposals at the moment."
     },
     "condition": "B",
     "data": [
@@ -109,7 +110,7 @@
           },
           "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
           "hide": false,
-          "intervalMs": 1000,
+          "intervalMs": 1,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -167,16 +168,17 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "zpejR_iVz",
+    "folderUID": "ARwYXYzVk",
     "for": "0s",
-    "id": 180201,
+    "id": 220201,
     "labels": {
-      "channel": "high-alert"
+      "alert": "p1",
+      "env": "prod"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Open Proposals (High)",
-    "uid": "YCgu57m4z_020_High"
+    "title": "PROD P1 Alert on Open Proposals",
+    "uid": "YCgu57m4z_020_P1"
   }
 ]

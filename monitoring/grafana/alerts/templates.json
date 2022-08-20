@@ -1,0 +1,18 @@
+[
+  {
+    "name": "myalert",
+    "template": "{{ define \"myalert\" }}\n{{ reReplaceAll \"localhost:3000\" \"grafana.audius.co\" .GeneratorURL }}\n{{ .Labels.alertname }}: {{ template \"value\" . }}\n{{ .Annotations.summary }}\n{{ end }}\n{{- /* • Runbook: {{ .Annotations.runbook_url }} */ -}}\n{{- /* • Silence alert: {{ reReplaceAll \"localhost:3000\" \"grafana.audius.co\" .SilenceURL }} */ -}}"
+  },
+  {
+    "name": "mymessage",
+    "template": "{{ define \"mymessage\" }}{{ range $index, $firing := .Alerts.Firing }}\n• {{ $firing.Labels.alertname }}: {{ template \"value\" . }}{{ end }}\n  {{ if gt (len .Alerts.Firing) 0 -}}\n    {{- range $index, $firing := .Alerts.Firing }}\n————————————————————————\n        {{ template \"myalert\" . }}\n    {{ end -}}\n  {{ end }}\n  {{- if gt (len .Alerts.Resolved) 0 -}}\n    {{- len .Alerts.Resolved }} resolved:\n    {{- range $index, $resolved := .Alerts.Resolved }}\n------------------------------------------------\n————————————————————————————————————————————————\n        {{ template \"myalert\" .}}\n      {{ end }}\n  {{ end }}\n{{ end }}"
+  },
+  {
+    "name": "title",
+    "template": "{{ define \"title\" }}\n  {{ $threshold := \"Threshold\" }}\n  {{ if gt (len .Alerts.Firing) 1 }} {{ $threshold = \"Thresholds\" }} {{ end }}\n  {{ len .Alerts.Firing }} {{ $threshold }} Breached\n{{ end }}"
+  },
+  {
+    "name": "value",
+    "template": "{{ define \"value\" }}\n  {{- or (.ValueString | reReplaceAll `.* value=` \"\" | reReplaceAll ` \\]` \"\") \"MISSING\" -}} \n{{- end -}}"
+  }
+]

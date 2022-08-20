@@ -1,11 +1,11 @@
 [
   {
     "annotations": {
-      "__alertId__": "jPaB_Yk4k_005_High",
-      "__dashboardUid__": "jPaB_Yk4k",
-      "__panelId__": "5",
+      "__alertId__": "ZUjg533nk_008_P1",
+      "__dashboardUid__": "ZUjg533nk",
+      "__panelId__": "8",
       "description": "",
-      "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=5",
+      "runbook_url": "http://grafana.audius.co/d/ZUjg533nk?viewPanel=8",
       "summary": ""
     },
     "condition": "B",
@@ -17,9 +17,9 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "audius_exporters_alchemy_balance{} - (audius_exporters_alchemy_balance offset 1m)",
+          "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"stage\", host=~\".*\", success=\"True\"}",
           "hide": false,
-          "intervalMs": 1000,
+          "intervalMs": 1,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -37,7 +37,7 @@
             {
               "evaluator": {
                 "params": [
-                  10,
+                  90,
                   0
                 ],
                 "type": "gt"
@@ -77,16 +77,17 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "zpejR_iVz",
+    "folderUID": "ARwYXYzVk",
     "for": "0s",
-    "id": 110051,
+    "id": 150081,
     "labels": {
-      "channel": "high-alert"
+      "alert": "p1",
+      "env": "stage"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Contract Movements (High)",
-    "uid": "jPaB_Yk4k_005_High"
+    "title": "stage P1 Alert on Last Successful Celery Task Duration",
+    "uid": "ZUjg533nk_008_P1"
   }
 ]

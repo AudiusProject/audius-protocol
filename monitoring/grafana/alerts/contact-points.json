@@ -1,0 +1,35 @@
+[
+  {
+    "uid": "vXdmYlm4k",
+    "name": "#eng-alerts-debug",
+    "type": "slack",
+    "settings": {
+      "icon_url": "https://audius.org/img/audius.png",
+      "recipient": "C03STD3UXMG",
+      "text": "{{ template \"mymessage\" . }}",
+      "title": "{{ template \"title\" . }}",
+      "token": "[REDACTED]",
+      "username": "My User"
+    },
+    "disableResolveMessage": true
+  },
+  {
+    "uid": "qEfFXYkVz",
+    "name": "#eng-token-alerts",
+    "type": "slack",
+    "settings": {
+      "recipient": "C03S95863FV",
+      "token": "[REDACTED]"
+    },
+    "disableResolveMessage": true
+  },
+  {
+    "uid": "-PBKuLz4k",
+    "name": "email receiver",
+    "type": "email",
+    "settings": {
+      "addresses": "<example@email.com>"
+    },
+    "disableResolveMessage": false
+  }
+]

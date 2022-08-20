@@ -79,6 +79,34 @@ curl -s "${PASS_URL}/api/library-elements?perPage=100" \
     > ${path}
 echo "Saved to: ${path}"
 
+path=grafana/alerts/contact-points.json
+# save all library panels into a single file
+curl -s "${PASS_URL}/api/v1/provisioning/contact-points" \
+    | jq . \
+    > ${path}
+echo "Saved to: ${path}"
+
+path=grafana/alerts/policies.json
+# save all library panels into a single file
+curl -s "${PASS_URL}/api/v1/provisioning/policies" \
+    | jq . \
+    > ${path}
+echo "Saved to: ${path}"
+
+path=grafana/alerts/mute-timings.json
+# save all library panels into a single file
+curl -s "${PASS_URL}/api/v1/provisioning/mute-timings" \
+    | jq . \
+    > ${path}
+echo "Saved to: ${path}"
+
+path=grafana/alerts/templates.json
+# save all library panels into a single file
+curl -s "${PASS_URL}/api/v1/provisioning/templates" \
+    | jq . \
+    > ${path}
+echo "Saved to: ${path}"
+
 # save dashboards into separate json files
 for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | select(.type != "dash-folder") | .uid')
 do

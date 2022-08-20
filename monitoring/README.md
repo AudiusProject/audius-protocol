@@ -340,19 +340,32 @@ The `Color Scheme` should remain set to `Classic Palette` to help standardize ou
 
 #### Thresholds
 
-Setting `Show Thresholds` to `As Lines` will activate Alerts the next time [Alerts are released to Production](#releasing-alerts-to-production).
+Setting `Show Thresholds` to `As Lines` and `Thresholds Mode` to `Absolute` will activate Alerts the next time [Alerts are released to Production](#releasing-alerts-to-production).
 
-Matching Panel `Description`s should provide runbooks for each Alert level.
+Matching Panel `Description`s should provide runbooks for each Alert level. Each Panel `Description` will be split into two parts for different Alert metadata fields with `summary` being used as part of the Slack alert:
+
+```python
+summary, description = description.split("---")
+```
 
 Alert extraction uses the following Threshold Color / Alert Label mapping:
 
 | Threshold Color | Alert Labels                |
 | --------------- | --------------------------- |
-| Red             | {`channel`: `high-alert`}   |
-| Orange          | {`channel`: `medium-alert`} |
-| Yellow          | {`channel`: `low-alert`}    |
+| Red             | {`alert`: `p1`}   |
+| Orange          | {`alert`: `p2`} |
+| Yellow          | {`alert`: `p3`}    |
 
-Based on the `channel` label, each Alert will be routed to a different Grafana Contact Point.
+Additionally, all occurrences of `$env` will result in two sets of nearly identical alerts with different `env` labels:
+
+| Environment | Alert Labels     |
+| ----------- | ---------------- |
+| Staging     | {`env`: `stage`} |
+| Production  | {`env`: `prod`}  |
+
+Based on the combination of labels, each Alert will be routed to different Grafana Contact Point(s).
+
+All other Template Variables will be replaced with `.*`. If not ideal, a separate panel must be created with the hardcoded filters.
 
 The largest color dot in the center creates an alert that will fire when the value is **greater than or equal to** the threshold.
 
@@ -484,6 +497,49 @@ git status
 # return to the master branch prior to logging out
 git checkout master
 ```
+
+## Alerting
+
+Alerting is composed of:
+
+* Alert Rules
+* Contact Points
+* Message Templates
+* Notification Policies
+* Alert Groups (not implemented for now)
+* Mute Timings (not implemented for now)
+
+### Alert Rules
+
+Our Alert Rules are currently being serviced by Grafana.
+
+We can choose to use [Prometheus' AlertManager](https://prometheus.io/docs/alerting/latest/notification_examples/) in the future.
+
+CUSTOM ALERTS ARE NOT TOUCHED
+
+PROVISIONED ALERTS ARE UPDATED, NOT DELETED, TO PRESERVE HISTORY
+
+### Contact Points
+
+ONE SLACK CHANNEL PER POINT
+
+### Message Templates
+
+[Message Templates](https://grafana.com/docs/grafana/latest/alerting/contact-points/message-templating/) use the [Golang Templating Language](https://pkg.go.dev/text/template).
+
+[Functions](https://grafana.com/docs/grafana/v8.0/alerting/unified-alerting/message-templating/template-data/#functions) are also available for Message Templates. The Grafana docs highlight [these functions](https://grafana.com/docs/grafana/latest/alerting/fundamentals/annotation-label/example-template-functions/) that work in addition to the [default functions provided by Go templating](https://pkg.go.dev/text/template#hdr-Functions).
+
+The [default alert template](https://github.com/grafana/grafana/blob/main/pkg/services/ngalert/notifier/channels/default_template.go) is a good place to learn what options are available. Some [additional high-level information](https://grafana.com/docs/grafana/latest/alerting/contact-points/message-templating/template-data) can be found in the Grafana docs as well as an [example template](https://grafana.com/docs/grafana/latest/alerting/contact-points/message-templating/example-template/).
+
+### Notification Policies
+
+NESTED POLICIES
+
+ONE OR MANY, ORDERING MATTERS
+
+GROUP WAITING
+
+MUTE TIMINGS
 
 ## Notes
 
