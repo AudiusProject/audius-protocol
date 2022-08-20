@@ -62,11 +62,13 @@ class AsyncProcessingQueue {
         name: 'AsyncProcessingQueue.process',
         fn: untracedProcessTask,
         options: {
-          links: [
-            {
-              context: parentSpanContext
-            }
-          ],
+          links: parentSpanContext
+            ? [
+                {
+                  context: parentSpanContext
+                }
+              ]
+            : [],
           attributes: {
             task: task,
             requestID: logContext.requestID,

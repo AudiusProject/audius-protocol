@@ -26,6 +26,7 @@ class SyncRequestDeDuplicator {
     immediate = false
   ) {
     const _getSyncKey = this._getSyncKey
+    const waitingSyncsByUserWalletMap = this.waitingSyncsByUserWalletMap
     const handler = instrumentTracingSync({
       name: 'getDuplicateSyncJobInfo',
       fn: () => {
@@ -36,7 +37,7 @@ class SyncRequestDeDuplicator {
           immediate
         )
 
-        const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
+        const duplicateSyncJobInfo = waitingSyncsByUserWalletMap[syncKey]
         return duplicateSyncJobInfo || null
       }
     })
@@ -53,6 +54,7 @@ class SyncRequestDeDuplicator {
     jobProps
   ) {
     const _getSyncKey = this._getSyncKey
+    const waitingSyncsByUserWalletMap = this.waitingSyncsByUserWalletMap
     instrumentTracingSync({
       name: 'recordSync',
       fn: () => {
@@ -64,7 +66,7 @@ class SyncRequestDeDuplicator {
         )
         tracing.setSpanAttribute('syncKey', syncKey)
 
-        this.waitingSyncsByUserWalletMap[syncKey] = jobProps
+        waitingSyncsByUserWalletMap[syncKey] = jobProps
       }
     })(syncType, userWallet, secondaryEndpoint, immediate, jobProps)
   }
@@ -72,6 +74,7 @@ class SyncRequestDeDuplicator {
   /** Remove sync with given properties */
   removeSync(syncType, userWallet, secondaryEndpoint, immediate = false) {
     const _getSyncKey = this._getSyncKey
+    const waitingSyncsByUserWalletMap = this.waitingSyncsByUserWalletMap
     instrumentTracingSync({
       name: 'removeSync',
       fn: () => {
@@ -82,7 +85,7 @@ class SyncRequestDeDuplicator {
           immediate
         )
 
-        delete this.waitingSyncsByUserWalletMap[syncKey]
+        delete waitingSyncsByUserWalletMap[syncKey]
       }
     })(syncType, userWallet, secondaryEndpoint, immediate)
   }
