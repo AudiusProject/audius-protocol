@@ -1,5 +1,5 @@
 import { Name } from '@audius/common'
-import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
+import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { make } from 'common/store/analytics/actions'

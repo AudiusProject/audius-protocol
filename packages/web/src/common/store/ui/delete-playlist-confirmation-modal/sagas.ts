@@ -1,5 +1,5 @@
 import { takeEvery } from 'redux-saga/effects'
-import { put } from 'typed-redux-saga/macro'
+import { put } from 'typed-redux-saga'
 
 import { setVisibility } from '../modals/slice'
 

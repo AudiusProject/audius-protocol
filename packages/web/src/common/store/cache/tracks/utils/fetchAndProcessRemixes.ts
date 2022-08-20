@@ -1,5 +1,5 @@
 import { ID, Kind, UserTrackMetadata, removeNullable } from '@audius/common'
-import { select, call, put } from 'typed-redux-saga/macro'
+import { select, call, put } from 'typed-redux-saga'
 
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'

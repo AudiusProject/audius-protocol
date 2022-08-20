@@ -1,11 +1,4 @@
-import {
-  takeEvery,
-  call,
-  put,
-  race,
-  select,
-  delay
-} from 'typed-redux-saga/macro'
+import { takeEvery, call, put, race, select, delay } from 'typed-redux-saga'
 
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import { isMobile } from 'utils/clientUtil'

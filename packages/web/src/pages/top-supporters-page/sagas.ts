@@ -1,5 +1,5 @@
 import { ID, User, removeNullable } from '@audius/common'
-import { put, select } from 'typed-redux-saga/macro'
+import { put, select } from 'typed-redux-saga'
 
 import * as adapter from 'common/services/audius-api-client/ResponseAdapter'
 import { getUser } from 'common/store/cache/users/selectors'

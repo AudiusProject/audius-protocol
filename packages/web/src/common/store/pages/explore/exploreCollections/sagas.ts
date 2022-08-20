@@ -1,5 +1,5 @@
 import { Collection, Status } from '@audius/common'
-import { takeEvery, call, put } from 'typed-redux-saga/macro'
+import { takeEvery, call, put } from 'typed-redux-saga'
 
 import { getAccountStatus } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'

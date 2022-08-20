@@ -13,7 +13,7 @@ import {
   select,
   take,
   takeLatest
-} from 'typed-redux-saga/macro'
+} from 'typed-redux-saga'
 import { WalletLinkProvider } from 'walletlink'
 
 import { newUserMetadata } from 'common/schemas'

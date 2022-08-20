@@ -1,5 +1,5 @@
 import { ID } from '@audius/common'
-import { takeEvery, put, select } from 'typed-redux-saga/macro'
+import { takeEvery, put, select } from 'typed-redux-saga'
 
 import { CommonState } from 'common/store'
 import { getCollection as getCollectionBase } from 'common/store/cache/collections/selectors'
