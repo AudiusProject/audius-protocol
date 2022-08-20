@@ -148,6 +148,7 @@ export type APIStem = {
 }
 
 export type APIPlaylistAddedTimestamp = {
+  metadata_timestamp: number
   timestamp: number
   track_id: OpaqueID
 }

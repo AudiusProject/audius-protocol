@@ -42,6 +42,7 @@ export const audiusBackendInstance = audiusBackend({
   getWeb3Config: async (
     libs,
     registryAddress,
+    entityManagerAddress,
     web3ProviderUrls,
     web3NetworkId
   ) => {
@@ -57,19 +58,30 @@ export const audiusBackendInstance = audiusBackend({
           web3Config: await libs.configExternalWeb3(
             registryAddress,
             window.web3.currentProvider,
-            web3NetworkId
+            web3NetworkId,
+            entityManagerAddress
           )
         }
       } catch (e) {
         return {
           error: true,
-          web3Config: libs.configInternalWeb3(registryAddress, web3ProviderUrls)
+          web3Config: libs.configInternalWeb3(
+            registryAddress,
+            web3ProviderUrls,
+            null,
+            entityManagerAddress
+          )
         }
       }
     }
     return {
       error: false,
-      web3Config: libs.configInternalWeb3(registryAddress, web3ProviderUrls)
+      web3Config: libs.configInternalWeb3(
+        registryAddress,
+        web3ProviderUrls,
+        null,
+        entityManagerAddress
+      )
     }
   },
   identityServiceUrl: process.env.REACT_APP_IDENTITY_SERVICE,
@@ -86,6 +98,7 @@ export const audiusBackendInstance = audiusBackend({
   recaptchaSiteKey: process.env.REACT_APP_RECAPTCHA_SITE_KEY,
   recordAnalytics: track,
   registryAddress: process.env.REACT_APP_REGISTRY_ADDRESS,
+  entityManagerAddress: process.env.REACT_APP_ENTITY_MANAGER_ADDRESS,
   remoteConfigInstance,
   setLocalStorageItem: async (key, value) =>
     window.localStorage.setItem(key, value),

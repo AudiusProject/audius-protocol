@@ -14,6 +14,7 @@ import {
 import { FEED_PAGE, playlistPage } from 'audius-client/src/utils/route'
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { View } from 'react-native'
+import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import Button, { ButtonType } from 'app/components/button'
 import { Card } from 'app/components/card'
@@ -67,7 +68,7 @@ export const AddToPlaylistDrawer = () => {
       playlist_name: trackTitle,
       is_private: false
     })
-    const tempId = `${Date.now()}`
+    const tempId = getTempPlaylistId()
     dispatchWeb(
       createPlaylist(tempId, metadata, CreatePlaylistSource.FROM_TRACK, trackId)
     )

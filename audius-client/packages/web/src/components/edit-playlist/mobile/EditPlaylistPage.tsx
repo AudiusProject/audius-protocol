@@ -42,6 +42,7 @@ import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { playlistPage } from 'utils/route'
+import { getTempPlaylistId } from 'utils/tempPlaylistId'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'
@@ -241,7 +242,7 @@ const EditPlaylistPage = g(
         close()
       } else {
         // Create new playlist
-        const tempId = `${Date.now()}`
+        const tempId = getTempPlaylistId()
         createPlaylist(tempId, formFields)
         toast(messages.toast)
         close()
@@ -453,7 +454,7 @@ function mapStateToProps(state: AppState) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     close: () => dispatch(createPlaylistActions.close()),
-    createPlaylist: (tempId: string, metadata: Collection) =>
+    createPlaylist: (tempId: number, metadata: Collection) =>
       dispatch(
         createPlaylist(tempId, metadata, CreatePlaylistSource.CREATE_PAGE)
       ),

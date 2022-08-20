@@ -88,6 +88,7 @@ import {
   TRENDING_PAGE,
   UPLOAD_PAGE
 } from 'utils/route'
+import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import NavAudio from './NavAudio'
 import styles from './NavColumn.module.css'
@@ -182,7 +183,7 @@ const NavColumn = ({
 
   const onCreatePlaylist = useCallback(
     (metadata) => {
-      const tempId = `${Date.now()}`
+      const tempId = getTempPlaylistId()
       createPlaylist(tempId, metadata)
       closeCreatePlaylistModal()
       if (account) {
@@ -557,7 +558,7 @@ const mapStateToProps = (state: AppState) => {
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   resetUploadState: () => dispatch(resetUploadState()),
-  createPlaylist: (tempId: string, metadata: Record<string, unknown>) =>
+  createPlaylist: (tempId: number, metadata: Record<string, unknown>) =>
     dispatch(createPlaylist(tempId, metadata, CreatePlaylistSource.NAV)),
   goToRoute: (route: string) => dispatch(pushRoute(route)),
   saveTrack: (trackId: number) =>
