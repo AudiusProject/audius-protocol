@@ -1,5 +1,5 @@
 import { Kind } from '@audius/common'
-import { all, fork, call, put, select, takeEvery } from 'typed-redux-saga/macro'
+import { all, fork, call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { AudiusBackend } from 'common/services/audius-backend'
 import { getContext } from 'common/store'

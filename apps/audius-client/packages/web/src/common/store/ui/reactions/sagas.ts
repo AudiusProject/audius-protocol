@@ -1,5 +1,5 @@
 import { removeNullable } from '@audius/common'
-import { call, takeEvery, all, put, select } from 'typed-redux-saga/macro'
+import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { submitReaction } from 'services/audius-backend/Reactions'

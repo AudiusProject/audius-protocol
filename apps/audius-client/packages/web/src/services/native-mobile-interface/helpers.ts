@@ -1,6 +1,6 @@
 import { uuid } from '@audius/common'
 import { eventChannel } from 'redux-saga'
-import { take, put } from 'typed-redux-saga/macro'
+import { take, put } from 'typed-redux-saga'
 
 import { getIsIOS } from 'utils/browser'
 

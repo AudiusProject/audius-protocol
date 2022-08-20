@@ -16,7 +16,7 @@ import {
   takeEvery,
   takeLatest,
   delay
-} from 'typed-redux-saga/macro'
+} from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'

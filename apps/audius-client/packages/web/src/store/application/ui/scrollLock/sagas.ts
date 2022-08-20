@@ -1,4 +1,4 @@
-import { takeEvery, select } from 'typed-redux-saga/macro'
+import { takeEvery, select } from 'typed-redux-saga'
 
 import { isMobile } from 'utils/clientUtil'
 

@@ -1,5 +1,5 @@
 import { ID, UID, removeNullable } from '@audius/common'
-import { all, put, select, takeEvery, call } from 'typed-redux-saga/macro'
+import { all, put, select, takeEvery, call } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'

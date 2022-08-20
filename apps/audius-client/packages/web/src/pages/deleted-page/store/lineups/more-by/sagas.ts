@@ -1,4 +1,4 @@
-import { call, select } from 'typed-redux-saga/macro'
+import { call, select } from 'typed-redux-saga'
 
 import { getUserId } from 'common/store/account/selectors'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'

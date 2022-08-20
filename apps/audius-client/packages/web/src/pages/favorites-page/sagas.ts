@@ -1,5 +1,5 @@
 import { ID, Collection, FavoriteType, Track } from '@audius/common'
-import { select, put } from 'typed-redux-saga/macro'
+import { select, put } from 'typed-redux-saga'
 
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'

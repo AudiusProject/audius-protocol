@@ -6,7 +6,7 @@ import {
   UserTrack,
   UserTrackMetadata
 } from '@audius/common'
-import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
+import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getAccountStatus, getUserId } from 'common/store/account/selectors'

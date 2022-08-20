@@ -1,5 +1,5 @@
 import { Kind, ID, Name, makeKindId } from '@audius/common'
-import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
+import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'

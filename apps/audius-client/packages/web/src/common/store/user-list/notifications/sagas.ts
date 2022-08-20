@@ -1,4 +1,4 @@
-import { call, put, select } from 'typed-redux-saga/macro'
+import { call, put, select } from 'typed-redux-saga'
 
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { getNotificationById } from 'common/store/notifications/selectors'

@@ -1,5 +1,5 @@
 import { Name } from '@audius/common'
-import { call, delay, put, select, takeEvery } from 'typed-redux-saga/macro'
+import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
 import { getContext } from 'common/store'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
