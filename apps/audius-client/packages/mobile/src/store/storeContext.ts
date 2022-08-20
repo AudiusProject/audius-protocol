@@ -4,6 +4,7 @@ import type { CommonStoreContext } from 'audius-client/src/common/store'
 import * as analytics from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { env } from 'app/services/env'
 import { fingerprintClient } from 'app/services/fingerprint'
 import { localStorage } from 'app/services/local-storage'
 import {
@@ -23,5 +24,6 @@ export const storeContext: CommonStoreContext = {
   fingerprintClient,
   walletClient,
   localStorage,
-  isNativeMobile: true
+  isNativeMobile: true,
+  env
 }
