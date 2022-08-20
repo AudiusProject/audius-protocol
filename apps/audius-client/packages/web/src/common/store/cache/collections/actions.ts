@@ -33,12 +33,12 @@ export const FETCH_COVER_ART = 'TRACKS/FETCH_COVER_ART'
  * @param initTrackId optional track id to pull artwork from.
  */
 export function createPlaylist(
-  tempId: number | string,
+  playlistId: number,
   formFields: Record<string, unknown>,
   source: string,
   initTrackId?: number | null
 ) {
-  return { type: CREATE_PLAYLIST, tempId, formFields, source, initTrackId }
+  return { type: CREATE_PLAYLIST, playlistId, formFields, source, initTrackId }
 }
 
 export function createPlaylistRequested() {

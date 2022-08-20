@@ -34,6 +34,7 @@ try {
   const REACT_APP_USER_NODE = 'http://cn-um_creator-node_1:4099'
 
   const REACT_APP_REGISTRY_ADDRESS = configFile.registryAddress
+  const REACT_APP_ENTITY_MANAGER_ADDRESS = configFile.entityManagerProxyAddress
   const REACT_APP_WEB3_PROVIDER_URLS = `http://${HOST}:8545,http://${HOST}:8545`
 
   const REACT_APP_ETH_REGISTRY_ADDRESS = ethConfigFile.registryAddress
@@ -85,6 +86,7 @@ try {
   REACT_APP_USER_NODE=${REACT_APP_USER_NODE}
 
   REACT_APP_REGISTRY_ADDRESS=${REACT_APP_REGISTRY_ADDRESS}
+  REACT_APP_ENTITY_MANAGER_ADDRESS=${REACT_APP_ENTITY_MANAGER_ADDRESS}
   REACT_APP_WEB3_PROVIDER_URL=${REACT_APP_WEB3_PROVIDER_URLS}
 
   REACT_APP_ETH_REGISTRY_ADDRESS=${REACT_APP_ETH_REGISTRY_ADDRESS}
@@ -122,7 +124,7 @@ try {
 
   // Note .env.dev.local takes precidence over .env.dev
   // https://facebook.github.io/create-react-app/docs/adding-custom-environment-variables
-  fs.writeFile('./.env/.env.dev.local', contents, err => {
+  fs.writeFile('./.env/.env.dev.local', contents, (err) => {
     if (err) {
       console.error(err)
     }

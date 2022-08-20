@@ -25,6 +25,7 @@ import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
+import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import styles from './AddToPlaylistModal.module.css'
 
@@ -83,7 +84,7 @@ const AddToPlaylistModal = () => {
       playlist_name: trackTitle,
       is_private: false
     })
-    const tempId = `${Date.now()}`
+    const tempId = getTempPlaylistId()
     dispatch(
       createPlaylist(tempId, metadata, CreatePlaylistSource.FROM_TRACK, trackId)
     )
