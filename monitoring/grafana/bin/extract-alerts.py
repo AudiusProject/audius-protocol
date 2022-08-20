@@ -57,12 +57,12 @@ def extract_alerts(template, dashboard, env):
                 visible_and_absolute = False
                 if "custom" in panel["fieldConfig"]["defaults"]:
                     custom = panel["fieldConfig"]["defaults"]["custom"]
-                    visible = (custom["thresholdsStyle"]["mode"] == "line")
+                    visible = custom["thresholdsStyle"]["mode"] == "line"
 
                     mode = panel["fieldConfig"]["defaults"]["thresholds"]["mode"]
-                    absolute = (mode == "absolute")
+                    absolute = mode == "absolute"
 
-                    if visible and mode:
+                    if visible and absolute:
                         visible_and_absolute = True
                 if not visible_and_absolute:
                     continue
@@ -102,14 +102,14 @@ def extract_alerts(template, dashboard, env):
 
                     # assume all metrics missing $env are Prod-only metrics
                     expression = target["expr"]
-                    if '$env' not in expression and env != "prod":
+                    if "$env" not in expression and env != "prod":
                         continue
 
                     # create different alerts for stage and prod
-                    expression = re.sub(r'\$env', env, expression)
+                    expression = re.sub(r"\$env", env, expression)
 
                     # make all other regex matches be .* for alerts
-                    expression = re.sub(r'\$[A-Za-z0-9_]+', '.*', expression)
+                    expression = re.sub(r"\$[A-Za-z0-9_]+", ".*", expression)
 
                     ref_ids.append(next(ref_gen))
                     data.append(
@@ -174,7 +174,7 @@ def extract_alerts(template, dashboard, env):
                 alert_id = (dashboard_id * 10000) + (panel_id * 10) + level_id + 100000
 
                 title = sanatize_text(panel["title"])
-                title_env = env.upper() if env == 'prod' else env.lower()
+                title_env = env.upper() if env == "prod" else env.lower()
                 title = f"{title_env} {title_level} Alert on {title}"
 
                 formatted_text = template.format(
@@ -201,7 +201,6 @@ def extract_alerts(template, dashboard, env):
                     f.write(json.dumps(panel_alerts, indent=2, sort_keys=True))
 
 
-
 @click.command()
 @click.help_option("-h", "--help")
 @click.argument("filename")
@@ -223,9 +222,8 @@ def main(filename):
         print("Please run this instead: ./grafana/bin/extract-alerts.sh")
         exit(1)
 
-    for env in ('prod', 'stage'):
+    for env in ("prod", "stage"):
         extract_alerts(template, dashboard, env)
-
 
 
 if __name__ == "__main__":
