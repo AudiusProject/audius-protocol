@@ -14,12 +14,12 @@ import { AuthHeaders } from 'common/services/audius-backend'
 import { SearchKind } from 'common/store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
 import type { SupporterResponse } from 'services/audius-backend/Tipping'
-import {
-  getEagerDiscprov,
-  waitForLibsInit
-} from 'services/audius-backend/eagerLoadUtils'
+import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 import type { AudiusBackend } from '../audius-backend'
+import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
+import { Env } from '../env'
+import { LocalStorage } from '../local-storage'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
@@ -427,6 +427,8 @@ type AudiusAPIClientConfig = {
   audiusLibs?: AudiusLibs
   overrideEndpoint?: string
   remoteConfigInstance: RemoteConfigInstance
+  localStorage: LocalStorage
+  env: Env
 }
 
 export class AudiusAPIClient {
@@ -438,17 +440,23 @@ export class AudiusAPIClient {
   audiusLibs?: AudiusLibs
   overrideEndpoint?: string
   remoteConfigInstance: RemoteConfigInstance
+  localStorage: LocalStorage
+  env: Env
 
   constructor({
     audiusBackendInstance,
     audiusLibs,
     overrideEndpoint,
-    remoteConfigInstance
+    remoteConfigInstance,
+    localStorage,
+    env
   }: AudiusAPIClientConfig) {
     this.audiusBackendInstance = audiusBackendInstance
     this.audiusLibs = audiusLibs
     this.overrideEndpoint = overrideEndpoint
     this.remoteConfigInstance = remoteConfigInstance
+    this.localStorage = localStorage
+    this.env = env
   }
 
   async getTrending({
@@ -1421,7 +1429,9 @@ export class AudiusAPIClient {
     }
 
     // Set the state to the eager discprov
-    const eagerDiscprov = getEagerDiscprov()
+    console.log('aight its getting eager')
+    const eagerDiscprov = await getEagerDiscprov(this.localStorage, this.env)
+    console.log('aight it got eager', eagerDiscprov)
     if (eagerDiscprov) {
       console.debug(`APIClient: setting to eager discprov: ${eagerDiscprov}`)
       this.initializationState = {
