@@ -3,36 +3,11 @@
  * protocol before libs has initialized.
  */
 
+import { getEagerDiscprov } from 'common/services/audius-backend/eagerLoadUtils'
+import { env } from 'services/env'
 import { localStorage } from 'services/local-storage'
 
 export const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
-
-const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-node-timestamp'
-
-export const getEagerDiscprov = () => {
-  const cachedDiscProvData = window.localStorage.getItem(
-    DISCOVERY_PROVIDER_TIMESTAMP
-  )
-
-  // Set the eager discprov to use to either
-  // 1. local storage discprov if available
-  // 2. dapp whitelist
-  // Note: This discovery provider is only used on intial paint
-  let eagerDiscprov: string
-  if (cachedDiscProvData) {
-    const cachedDiscprov = JSON.parse(cachedDiscProvData)
-    eagerDiscprov = cachedDiscprov.endpoint
-  } else {
-    const EAGER_DISCOVERY_NODES = process.env.REACT_APP_EAGER_DISCOVERY_NODES
-      ? process.env.REACT_APP_EAGER_DISCOVERY_NODES.split(',')
-      : []
-    eagerDiscprov =
-      EAGER_DISCOVERY_NODES[
-        Math.floor(Math.random() * EAGER_DISCOVERY_NODES.length)
-      ]
-  }
-  return eagerDiscprov
-}
 
 /**
  * Wait for the `LIBS_INITTED_EVENT` or pass through if there
@@ -71,7 +46,8 @@ export const withEagerOption = async (
   },
   ...args: any
 ) => {
-  const disprovEndpoint = endpoint ?? getEagerDiscprov()
+  const disprovEndpoint =
+    endpoint ?? (await getEagerDiscprov(localStorage, env))
   // @ts-ignore
   if (window.audiusLibs) {
     // @ts-ignore
@@ -128,7 +104,7 @@ const makeRequest = async (
   endpoint: string,
   requiresUser = false
 ) => {
-  const eagerDiscprov = getEagerDiscprov()
+  const eagerDiscprov = await getEagerDiscprov(localStorage, env)
   const discprovEndpoint = endpoint ?? eagerDiscprov
   const user = await localStorage.getAudiusAccountUser()
   if (!user && requiresUser) throw new Error('User required to continue')
