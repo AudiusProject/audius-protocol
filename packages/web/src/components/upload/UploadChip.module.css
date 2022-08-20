@@ -1,7 +1,6 @@
 /* general */
 
 .uploadChip {
-  margin-top: 32px;
   border-radius: 8px;
   background-color: var(--white);
   border: 1px solid var(--neutral-light-8);
