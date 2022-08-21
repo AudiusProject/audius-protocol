@@ -57,7 +57,10 @@ module.exports = function (app) {
       to: existingUser.email,
       bcc: ['forrest@audius.co'],
       subject: 'The Automated Welcome Email',
-      html: welcomeHtml
+      html: welcomeHtml,
+      asm: {
+        groupId: 19141,
+      },
     }
     try {
       await sg.send(emailParams)

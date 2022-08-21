@@ -88,7 +88,10 @@ async function renderAndSendDownloadAppEmail (
       to: userEmail,
       bcc: ['forrest@audius.co'],
       html: downloadAppHtml,
-      subject: 'Audius Is Better On The Go 📱'
+      subject: 'Audius Is Better On The Go 📱',
+      asm: {
+        groupId: 19141,
+      },
     }
 
     // Send email

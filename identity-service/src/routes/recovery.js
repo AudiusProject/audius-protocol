@@ -79,7 +79,10 @@ module.exports = function (app) {
       from: 'Audius Recovery <recovery@audius.co>',
       to: `${email}`,
       subject: 'Save This Email: Audius Password Recovery',
-      html: recoveryHtml
+      html: recoveryHtml,
+      asm: {
+        groupId: 19141,
+      },
     }
     try {
       await sg.send(emailParams)

@@ -393,7 +393,10 @@ async function renderAndSendNotificationEmail (
       to: `${userEmail}`,
       bcc: 'audius-email-test@audius.co',
       html: notifHtml,
-      subject: emailSubject
+      subject: emailSubject,
+      asm: {
+        groupId: 19141,
+      },
     }
 
     // Send email
