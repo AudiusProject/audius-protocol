@@ -59,8 +59,8 @@ module.exports = function (app) {
       subject: 'The Automated Welcome Email',
       html: welcomeHtml,
       asm: {
-        groupId: 19141,
-      },
+        groupId: 19141
+      }
     }
     try {
       await sg.send(emailParams)

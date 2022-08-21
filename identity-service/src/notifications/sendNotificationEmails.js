@@ -395,8 +395,8 @@ async function renderAndSendNotificationEmail (
       html: notifHtml,
       subject: emailSubject,
       asm: {
-        groupId: 19141,
-      },
+        groupId: 19141
+      }
     }
 
     // Send email

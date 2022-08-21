@@ -90,8 +90,8 @@ async function renderAndSendDownloadAppEmail (
       html: downloadAppHtml,
       subject: 'Audius Is Better On The Go 📱',
       asm: {
-        groupId: 19141,
-      },
+        groupId: 19141
+      }
     }
 
     // Send email
