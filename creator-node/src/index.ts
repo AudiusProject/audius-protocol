@@ -1,4 +1,6 @@
 'use strict'
+const { setupTracing } = require('./tracer')
+setupTracing('content-node')
 
 const ON_DEATH = require('death')
 const EthereumWallet = require('ethereumjs-wallet')
