@@ -11,6 +11,10 @@ export enum BuyAudioStage {
   FINISH = 'FINISH'
 }
 
+export enum OnRampProvider {
+  COINBASE = 'coinbase'
+}
+
 type AmountObject = {
   amount: number
   uiAmount: number
