@@ -1,17 +1,5 @@
-import type {
-  Span,
-  SpanOptions,
-  SpanContext,
-  AttributeValue
-} from '@opentelemetry/api'
-import {
-  trace,
-  diag,
-  DiagConsoleLogger,
-  DiagLogLevel,
-  context,
-  SpanStatusCode
-} from '@opentelemetry/api'
+import type { Span, SpanContext, AttributeValue } from '@opentelemetry/api'
+import { trace, context, SpanStatusCode } from '@opentelemetry/api'
 
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
