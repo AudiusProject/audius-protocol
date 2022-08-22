@@ -141,23 +141,6 @@
     </script>
     <!-- end Optimizely -->
 
-    <script>
-      const fetchBItems = async () => {
-        const bItemsUrl = '%REACT_APP_B_ITEMS_URL%'
-        if (bItemsUrl) {
-          try {
-            window.bItems = new Set((await (await fetch(bItemsUrl)).json()).i)
-          } catch (e) {
-            window.bItems = new Set()
-          }
-        } else {
-          window.bItems = new Set()
-        }
-        window.dispatchEvent(new CustomEvent('B_ITEMS_LOADED'))
-      }
-      fetchBItems()
-    </script>
-
     <!-- TODO: Remove this when we compute average colors on the backend -->
     <link href="/scripts/jimp.min.js" as="script">
   </head>
