@@ -4,10 +4,13 @@ const axios = require('axios')
 const { logger: genericLogger } = require('../../logging')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
-const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
+const {
+  getOwnEndpoint,
+  getUserReplicaSetEndpointsFromDiscovery
+} = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
-const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
+const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 
 const handleSyncFromPrimary = async ({
@@ -201,7 +204,7 @@ const handleSyncFromPrimary = async ({
       let userReplicaSet = []
       try {
         const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
-        userReplicaSet = await getCreatorNodeEndpoints({
+        userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
           libs,
           logger: genericLogger,
           wallet: fetchedWalletPublicKey,
@@ -425,7 +428,7 @@ const handleSyncFromPrimary = async ({
            */
           await Promise.all(
             trackFilesSlice.map(async (trackFile) => {
-              const success = await saveFileForMultihashToFS(
+              const error = await saveFileForMultihashToFS(
                 libs,
                 genericLogger,
                 trackFile.multihash,
@@ -436,7 +439,7 @@ const handleSyncFromPrimary = async ({
               )
 
               // If saveFile op failed, record CID for later processing
-              if (!success) {
+              if (error) {
                 CIDsThatFailedSaveFileOp.add(trackFile.multihash)
               }
             })
@@ -463,15 +466,14 @@ const handleSyncFromPrimary = async ({
               if (nonTrackFile.type !== 'dir') {
                 const multihash = nonTrackFile.multihash
 
-                let success
-
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+                let error
                 if (
                   nonTrackFile.type === 'image' &&
                   nonTrackFile.fileName !== null
                 ) {
-                  success = await saveFileForMultihashToFS(
+                  error = await saveFileForMultihashToFS(
                     libs,
                     genericLogger,
                     multihash,
@@ -480,7 +482,7 @@ const handleSyncFromPrimary = async ({
                     nonTrackFile.fileName
                   )
                 } else {
-                  success = await saveFileForMultihashToFS(
+                  error = await saveFileForMultihashToFS(
                     libs,
                     genericLogger,
                     multihash,
@@ -490,7 +492,7 @@ const handleSyncFromPrimary = async ({
                 }
 
                 // If saveFile op failed, record CID for later processing
-                if (!success) {
+                if (error) {
                   CIDsThatFailedSaveFileOp.add(multihash)
                 }
               }
@@ -506,7 +508,7 @@ const handleSyncFromPrimary = async ({
         const numCIDsThatFailedSaveFileOp = CIDsThatFailedSaveFileOp.size
         if (numCIDsThatFailedSaveFileOp > 0) {
           const userSyncFailureCount =
-            UserSyncFailureCountManager.incrementFailureCount(
+            await UserSyncFailureCountService.incrementFailureCount(
               fetchedWalletPublicKey
             )
 
@@ -523,7 +525,7 @@ const handleSyncFromPrimary = async ({
             // If max failure threshold reached, continue with sync and reset failure count
           } else {
             // Reset falure count so subsequent user syncs will not always succeed & skip
-            UserSyncFailureCountManager.resetFailureCount(
+            await UserSyncFailureCountService.resetFailureCount(
               fetchedWalletPublicKey
             )
 
@@ -534,7 +536,9 @@ const handleSyncFromPrimary = async ({
           }
         } else {
           // Reset failure count if all files were successfully saved
-          UserSyncFailureCountManager.resetFailureCount(fetchedWalletPublicKey)
+          await UserSyncFailureCountService.resetFailureCount(
+            fetchedWalletPublicKey
+          )
         }
 
         /**
@@ -606,6 +610,15 @@ const handleSyncFromPrimary = async ({
 
         // track that sync for this user was successful
         await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
+
+        genericLogger.info(
+          logPrefix,
+          `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
+            Date.now() - start
+          }. From endpoint ${creatorNodeEndpoint}.`
+        )
+
+        return { result: 'success' }
       } catch (e) {
         genericLogger.error(
           logPrefix,
@@ -665,15 +678,6 @@ const handleSyncFromPrimary = async ({
       )
     }
   }
-
-  genericLogger.info(
-    logPrefix,
-    `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
-      Date.now() - start
-    }. From endpoint ${creatorNodeEndpoint}.`
-  )
-
-  return { result: 'success' }
 }
 
 /**

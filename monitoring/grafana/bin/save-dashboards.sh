@@ -23,7 +23,7 @@ CLEAR_ITERATION='del(.iteration)'
 # CLEAR VERSION TO AVOID CONFLICTS
 # reset .versions to null
 CLEAR_VERSION='.version = null'
-CLEAR_DASHBOARD_ID='.id = null'
+: "${CLEAR_DASHBOARD_ID:=.id = null}"
 
 # CLEAR PROMETHEUS UID
 # clears prometheus uid since each deployment is unique
@@ -54,6 +54,23 @@ CLEAR_LIBRARY_PANEL_UPDATED='del(.panels[].libraryPanel.meta.updated)'
 # REQUIRED FOR PUSHING JSON-BACKED DASHBOARDS VIA THE API
 # wrap the final output in a different format and use overwrite: true, to avoid .id and .version collisions
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
+
+# FOLDERS
+# ids have to be unique
+CLEAR_FOLDER_IDS='del(.[].id)'
+
+path=grafana/dashboards/folders.json
+response=$(curl \
+    -s \
+    -H "Authorization: Bearer ${BEARER_TOKEN}" \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json' \
+    ${BASE_URL}/api/folders)
+
+echo ${response} \
+    | jq "${CLEAR_FOLDER_IDS}" \
+    > "${path}"
+echo "Saved to: ${path}"
 
 path=grafana/dashboards/library.json
 # save all library panels into a single file

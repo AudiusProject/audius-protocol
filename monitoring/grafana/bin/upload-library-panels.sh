@@ -2,9 +2,6 @@
 
 set -e
 
-# only accept the first argument in "manual" mode
-GRAFANA_DASHBOARD_DIR="${1:-grafana/dashboards/}"
-
 : "${BEARER_PATH:=grafana/bearer.env}"
 set -o allexport
 source ${BEARER_PATH}
@@ -18,6 +15,28 @@ set +o allexport
 BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
 # upload all library panels
+cat grafana/dashboards/library.json \
+    | jq -cr '.[]' \
+    | while read -r panel;
+    do
+        response=$(curl \
+            -s \
+            -H "Authorization: Bearer ${BEARER_TOKEN}" \
+            -u ${GRAFANA_USER}:${GRAFANA_PASS} \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json" \
+            -d "${panel}" \
+            ${BASE_URL}/api/library-elements)
+        message=$(echo ${response} | jq -r '.message // empty')
+        if [[ "${message}" =~ .*"library element with that name or UID already exists".* ]]; then
+            echo "Found: $(echo ${panel} | jq -r .uid)"
+        else
+            echo "Created: $(echo ${panel} | jq -r .uid)"
+            echo ${response} | jq .
+        fi
+     done
+
 cat grafana/dashboards/library.json \
     | jq -cr '.[]' \
     | while read -r panel;

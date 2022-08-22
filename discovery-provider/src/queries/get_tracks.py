@@ -222,7 +222,7 @@ def get_tracks(args: GetTrackArgs):
                 )
                 args["user_id"] = user.user_id
 
-            if "routes" in args and args.get("route") is not None:
+            if "routes" in args and args.get("routes") is not None:
                 # Convert the handles to user_ids
                 routes = args.get("routes")
                 handles = [route["handle"].lower() for route in routes]

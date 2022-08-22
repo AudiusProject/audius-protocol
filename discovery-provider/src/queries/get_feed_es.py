@@ -196,13 +196,13 @@ def get_feed_es(args, limit=10):
             sorted_feed.append(item)
 
     # attach users
-    user_id_list = [str(id) for id in get_users_ids(sorted_feed)]
-    user_id_list.append(current_user_id)
-    user_list = esclient.mget(index=ES_USERS, ids=user_id_list)
+    user_id_set = set([str(id) for id in get_users_ids(sorted_feed)])
+    user_id_set.add(current_user_id)
+    user_list = esclient.mget(index=ES_USERS, ids=list(user_id_set))
     user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
 
     # populate_user_metadata_es:
-    current_user = user_by_id.pop(str(current_user_id))
+    current_user = user_by_id.get(str(current_user_id))
     for id, user in user_by_id.items():
         user_by_id[id] = populate_user_metadata_es(user, current_user)
 
@@ -227,7 +227,8 @@ def get_feed_es(args, limit=10):
 
         # save_count was renamed to favorite_count when working on search...
         # but /feed still expects save_count
-        item["save_count"] = item["favorite_count"]
+        if "favorite_count" in item:
+            item["save_count"] = item["favorite_count"]
 
     # populate metadata + remove extra fields from items
     sorted_feed = [

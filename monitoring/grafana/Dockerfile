@@ -1,7 +1,7 @@
 # Docs: https://grafana.com/docs/grafana/latest/installation/docker/#build-and-run-a-docker-image-with-pre-installed-plugins
 # Original: https://github.com/grafana/grafana/blob/a51c2774b8e77cafc0100a3882d77039c189e301/packaging/docker/custom/ubuntu.Dockerfile 
 
-ARG GRAFANA_VERSION="latest"
+ARG GRAFANA_VERSION="9.1.0"
 
 FROM grafana/grafana:${GRAFANA_VERSION}
 
@@ -16,9 +16,6 @@ RUN mkdir -p "$GF_PATHS_PLUGINS" && \
     chown -R grafana:${GF_GID} "$GF_PATHS_PLUGINS"
 
 RUN if [ $GF_INSTALL_IMAGE_RENDERER_PLUGIN = "true" ]; then \
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
     apk --no-cache  upgrade && \
     apk add --no-cache udev ttf-opensans chromium && \
     rm -rf /tmp/* && \

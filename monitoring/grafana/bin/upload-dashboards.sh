@@ -17,8 +17,30 @@ set +o allexport
 
 BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
+folders=grafana/dashboards/folders.json
+cat ${folders} \
+    | jq -cr '.[]' \
+    | while read -r folder;
+    do
+        echo "Updating: ${folder}"
+
+        # ignore stdout since it really only gets run on setup
+        # mainly needed for Alerts (Production only)
+        curl \
+            -s \
+            -H "Authorization: Bearer ${BEARER_TOKEN}" \
+            -u ${GRAFANA_USER}:${GRAFANA_PASS} \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json" \
+            -d "${folder}" \
+            ${BASE_URL}/api/folders \
+        | jq . \
+            > /dev/null
+    done
+
 # upload dashboard json files
-json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json' -not -name 'library.json')
+json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json' -not -name 'library.json' -not -name 'folders.json')
 for json_dashboard in ${json_dashboards}
 do
     curl \
