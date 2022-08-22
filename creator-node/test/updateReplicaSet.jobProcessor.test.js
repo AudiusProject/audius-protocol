@@ -153,7 +153,7 @@ describe('test updateReplicaSet job processor', function () {
       secondary2,
       unhealthyReplicas,
       replicaToUserInfoMap,
-      enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
+      enabledReconfigModes: [RECONFIG_MODES.ONE_SECONDARY.key]
     })
 
     const { metricsToRecord, ...rest } = output
@@ -235,7 +235,7 @@ describe('test updateReplicaSet job processor', function () {
       secondary2,
       unhealthyReplicas,
       replicaToUserInfoMap,
-      enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
+      enabledReconfigModes: [RECONFIG_MODES.RECONFIG_DISABLED.key] // Disable reconfigs
     })
 
     const { metricsToRecord, ...rest } = output
