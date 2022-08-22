@@ -6,12 +6,12 @@ import {
   KeyboardEvent
 } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { Spring } from 'react-spring/renderprops'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PreloadImage from 'components/preload-image/PreloadImage'

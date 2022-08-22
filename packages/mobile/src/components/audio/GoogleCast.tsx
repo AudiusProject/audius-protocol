@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { setIsCasting } from 'audius-client/src/common/store/cast/slice'
+import { castActions } from '@audius/common'
 import {
   CastState,
   useCastState,
@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { getTrack, getPlaying, getSeek } from 'app/store/audio/selectors'
+const { setIsCasting } = castActions
 
 export const useChromecast = () => {
   const dispatchWeb = useDispatchWeb()

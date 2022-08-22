@@ -1,8 +1,8 @@
+import { modalsSelectors } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
-import { getModalVisibility } from 'common/store/ui/modals/slice'
 import NowPlayingDrawer from 'components/now-playing/NowPlayingDrawer'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 import { getCollectible, getUid as getPlayingUid } from 'store/player/selectors'
@@ -11,6 +11,7 @@ import { isMobile } from 'utils/clientUtil'
 
 import styles from './PlayBarProvider.module.css'
 import DesktopPlayBar from './desktop/PlayBar'
+const { getModalVisibility } = modalsSelectors
 
 type OwnProps = {
   isMobile: boolean

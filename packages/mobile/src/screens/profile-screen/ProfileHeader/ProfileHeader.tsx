@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import { accountSelectors } from '@audius/common'
 import type { Animated } from 'react-native'
 import { LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
@@ -23,6 +23,7 @@ import { CollapsedSection } from './CollapsedSection'
 import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
 import { ExpandedSection } from './ExpandedSection'
 import { TopSupporters } from './TopSupporters'
+const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {

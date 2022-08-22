@@ -1,7 +1,13 @@
-import type { CommonState } from 'audius-client/src/common/store'
-import type { RemoteConfigState } from 'audius-client/src/common/store/remote-config/slice'
-import remoteConfig from 'audius-client/src/common/store/remote-config/slice'
-import { reducers as commonReducers } from 'common/store/reducers'
+import type { RemoteConfigState, CommonState } from '@audius/common'
+import {
+  remoteConfigReducer as remoteConfig,
+  reducers as commonReducers
+} from '@audius/common'
+import backend from 'audius-client/src/common/store/backend/reducer'
+import type { BackendState } from 'audius-client/src/common/store/backend/types'
+import confirmer from 'audius-client/src/common/store/confirmer/reducer'
+import type { ConfirmerState } from 'audius-client/src/common/store/confirmer/types'
+import signOnReducer from 'audius-client/src/common/store/pages/signon/reducer'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import createSagaMiddleware from 'redux-saga'
@@ -32,6 +38,9 @@ import web from './web/reducer'
 
 export type AppState = {
   audio: AudioState
+  signOn: ReturnType<typeof signOnReducer>
+  backend: BackendState
+  confirmer: ConfirmerState
   common: CommonState
   drawers: DrawersState
   downloads: DownloadState
@@ -45,10 +54,15 @@ export type AppState = {
   web: WebState
 }
 
+const commonStoreReducers = commonReducers()
+
 const createRootReducer = () =>
   combineReducers({
-    ...commonReducers(),
+    ...commonStoreReducers,
     audio,
+    backend,
+    confirmer,
+    signOn: signOnReducer,
     common,
     drawers,
     downloads,

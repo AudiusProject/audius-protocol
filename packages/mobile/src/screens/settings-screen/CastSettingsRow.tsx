@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import type { CastMethod } from 'audius-client/src/common/store/cast/slice'
-import { updateMethod } from 'audius-client/src/common/store/cast/slice'
-import { getMethod as getCastMethod } from 'common/store/cast/selectors'
+import type { CastMethod } from '@audius/common'
+import { accountSelectors, castSelectors, castActions } from '@audius/common'
 
 import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
 import { SegmentedControl } from 'app/components/core'
@@ -14,6 +12,9 @@ import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
+const { updateMethod } = castActions
+const { getMethod: getCastMethod } = castSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   cast: 'Cast to Devices',

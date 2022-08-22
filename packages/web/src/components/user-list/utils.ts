@@ -1,13 +1,18 @@
-import { ID, User, UserMetadata } from '@audius/common'
+import {
+  ID,
+  User,
+  UserMetadata,
+  accountSelectors,
+  getContext,
+  AudiusAPIClient,
+  AudiusBackend
+} from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
-import { AudiusAPIClient } from 'common/services/audius-api-client'
-import { AudiusBackend } from 'common/services/audius-backend'
-import { getContext } from 'common/store'
-import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
 import { waitForAccount } from 'utils/sagaHelpers'
+const { getAccountUser, getUserId } = accountSelectors
 
 export type UserListProviderArgs<T, U = void> = {
   // Gets the track or playlist we're referencing.

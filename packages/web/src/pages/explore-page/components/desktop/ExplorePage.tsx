@@ -4,12 +4,12 @@ import {
   UserCollection,
   Variant as CollectionVariant,
   Status,
-  User
+  User,
+  ExploreCollectionsVariant
 } from '@audius/common'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
 import UserArtCard from 'components/card/desktop/UserArtCard'
 import Header from 'components/header/desktop/Header'

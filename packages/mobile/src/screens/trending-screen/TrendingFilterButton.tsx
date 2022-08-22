@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 
-import { getTrendingGenre } from 'audius-client/src/common/store/pages/trending/selectors'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
-import { Genre } from 'audius-client/src/common/utils/genres'
+import { Genre, trendingPageSelectors, modalsActions } from '@audius/common'
 
 import { HeaderButton } from 'app/components/header'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { MODAL_NAME } from './TrendingFilterDrawer'
+const { getTrendingGenre } = trendingPageSelectors
+const { setVisibility } = modalsActions
 
 export const TrendingFilterButton = () => {
   const dispatchWeb = useDispatchWeb()

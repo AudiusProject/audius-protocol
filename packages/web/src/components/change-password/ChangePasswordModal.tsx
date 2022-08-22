@@ -1,14 +1,19 @@
 import { useEffect } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  ChangePasswordPageStep,
+  changePasswordSelectors,
+  changePasswordActions
+} from '@audius/common'
 import { Modal } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
-import { getCurrentPage } from 'common/store/change-password/selectors'
-import { changePage, Page } from 'common/store/change-password/slice'
 
 import { ChangePassword } from './ChangePassword'
+const { changePage } = changePasswordActions
+const { getCurrentPage } = changePasswordSelectors
 
 const messages = {
   title: (
@@ -25,14 +30,14 @@ export const ChangePasswordModal = (props: any) => {
 
   const currentPage = useSelector(getCurrentPage)
   const allowClose = [
-    Page.CONFIRM_CREDENTIALS,
-    Page.FAILURE,
-    Page.SUCCESS
+    ChangePasswordPageStep.CONFIRM_CREDENTIALS,
+    ChangePasswordPageStep.FAILURE,
+    ChangePasswordPageStep.SUCCESS
   ].includes(currentPage)
 
   useEffect(() => {
     if (showModal) {
-      dispatch(changePage(Page.CONFIRM_CREDENTIALS))
+      dispatch(changePage(ChangePasswordPageStep.CONFIRM_CREDENTIALS))
       const trackEvent: TrackEvent = make(
         Name.SETTINGS_START_CHANGE_PASSWORD,
         {}

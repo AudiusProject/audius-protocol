@@ -1,11 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
-import { Name, SquareSizes } from '@audius/common'
+import { Name, SquareSizes, accountSelectors } from '@audius/common'
 import { Modal } from '@audius/stems'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getAccountUser } from 'common/store/account/selectors'
 import { useRecord, make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
@@ -21,6 +20,7 @@ import { withNullGuard } from 'utils/withNullGuard'
 import styles from './FirstUploadModal.module.css'
 import { getIsOpen } from './store/selectors'
 import { setVisibility } from './store/slice'
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   first: 'You just uploaded your first track to Audius!',

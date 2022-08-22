@@ -1,10 +1,10 @@
-import { ID, User } from '@audius/common'
-
 import {
+  ID,
+  User,
   AccountImage,
   InstagramProfile,
   TwitterProfile
-} from 'common/store/account/reducer'
+} from '@audius/common'
 
 import { FollowArtistsCategory, Pages } from './types'
 

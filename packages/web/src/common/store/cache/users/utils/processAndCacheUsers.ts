@@ -1,8 +1,5 @@
-import { User, Kind, makeUid } from '@audius/common'
+import { User, Kind, makeUid, getContext, cacheActions } from '@audius/common'
 import { put } from 'typed-redux-saga'
-
-import * as cacheActions from 'common/store/cache/actions'
-import { getContext } from 'common/store/effects'
 
 import { reformat } from './reformat'
 

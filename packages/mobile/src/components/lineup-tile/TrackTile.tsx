@@ -7,24 +7,17 @@ import {
   RepostSource,
   ShareSource,
   FavoriteType,
-  SquareSizes
-} from '@audius/common'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
-import { getUserFromTrack } from 'audius-client/src/common/store/cache/users/selectors'
-import {
-  repostTrack,
-  saveTrack,
-  undoRepostTrack,
-  unsaveTrack
-} from 'audius-client/src/common/store/social/tracks/actions'
-import {
+  SquareSizes,
+  accountSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  tracksSocialActions,
   OverflowAction,
-  OverflowSource
-} from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
-import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
-import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  RepostType
+} from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
@@ -36,6 +29,13 @@ import type { AppState } from 'app/store'
 import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { LineupTile } from './LineupTile'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open: openOverflowMenu } = mobileOverflowMenuUIActions
+const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
+  tracksSocialActions
+const { getUserFromTrack } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
+const getUserId = accountSelectors.getUserId
 
 export const TrackTile = (props: LineupItemProps) => {
   const { uid } = props

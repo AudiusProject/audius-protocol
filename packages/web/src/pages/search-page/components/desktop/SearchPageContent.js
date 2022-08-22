@@ -1,11 +1,13 @@
 import { Component } from 'react'
 
-import { Status } from '@audius/common'
+import {
+  Status,
+  formatCount,
+  searchResultsPageTracksLineupActions as tracksActions
+} from '@audius/common'
 import { Redirect } from 'react-router'
 
 import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
-import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
-import { formatCount } from 'common/utils/formatUtil'
 import Card from 'components/card/desktop/Card'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import Header from 'components/header/desktop/Header'

@@ -1,15 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common'
 import {
-  getCognitoFlowUrl,
-  getCognitoFlowUrlStatus
-} from 'audius-client/src/common/store/pages/audio-rewards/selectors'
-import {
+  Status,
+  audioRewardsPageActions,
   CognitoFlowStatus,
-  fetchCognitoFlowUrl,
-  setCognitoFlowStatus
-} from 'audius-client/src/common/store/pages/audio-rewards/slice'
+  audioRewardsPageSelectors
+} from '@audius/common'
 import { StyleSheet, View } from 'react-native'
 import WebView from 'react-native-webview'
 
@@ -20,6 +16,8 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import type { ThemeColors } from 'app/utils/theme'
+const { getCognitoFlowUrl, getCognitoFlowUrlStatus } = audioRewardsPageSelectors
+const { fetchCognitoFlowUrl, setCognitoFlowStatus } = audioRewardsPageActions
 
 const MODAL_NAME = 'Cognito'
 

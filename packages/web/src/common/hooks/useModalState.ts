@@ -1,15 +1,12 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 
+import { modalsSelectors, modalsActions, Modals } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'utils/reducer'
+import { useSelector } from './useSelector'
 
-import {
-  getModalVisibility,
-  Modals,
-  setVisibility
-} from '../store/ui/modals/slice'
-
+const { setVisibility } = modalsActions
+const { getModalVisibility } = modalsSelectors
 /**
  * Sets visibility for a modal
  * *Returns a higher order function*
@@ -51,14 +48,7 @@ export const useGetVisibility = (modalName: Modals) => {
  * hooks above.
  */
 export const useModalState = (
-  modalName: Modals
+  _modalName: Modals
 ): [boolean, (isOpen: boolean) => void] => {
-  const isOpen = useGetVisibility(modalName)
-  const setVisibility = useSetVisibility()
-  const setter = useMemo(
-    () => setVisibility(modalName),
-    [modalName, setVisibility]
-  )
-
-  return [isOpen === true, setter]
+  return [false, () => {}]
 }

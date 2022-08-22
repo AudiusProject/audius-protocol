@@ -1,15 +1,14 @@
 import { useCallback } from 'react'
 
-import type { BNWei } from '@audius/common'
-import { Chain } from '@audius/common'
-import { getAssociatedWallets } from 'audius-client/src/common/store/pages/token-dashboard/selectors'
-import type { AssociatedWallet } from 'audius-client/src/common/store/pages/token-dashboard/types'
-import { getAccountBalance } from 'audius-client/src/common/store/wallet/selectors'
+import type { BNWei, AssociatedWallet } from '@audius/common'
 import {
+  Chain,
   formatWei,
   shortenEthAddress,
-  shortenSPLAddress
-} from 'audius-client/src/common/utils/wallet'
+  shortenSPLAddress,
+  tokenDashboardPageSelectors,
+  walletSelectors
+} from '@audius/common'
 import BN from 'bn.js'
 import {
   StyleSheet,
@@ -30,6 +29,8 @@ import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { ThemeColors } from 'app/hooks/useThemedStyles'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import share from 'app/utils/share'
+const { getAccountBalance } = walletSelectors
+const { getAssociatedWallets } = tokenDashboardPageSelectors
 
 const AUDIO_BREAKDOWN_MODAL_NAME = 'AudioBreakdown'
 

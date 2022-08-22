@@ -7,7 +7,19 @@ import {
   PlaybackSource,
   Name,
   ShareSource,
-  SquareSizes
+  SquareSizes,
+  Genre,
+  accountSelectors,
+  averageColorSelectors,
+  castSelectors,
+  queueActions,
+  RepeatMode,
+  tracksSocialActions,
+  OverflowAction,
+  OverflowActionCallbacks,
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import cn from 'classnames'
@@ -15,34 +27,8 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
-import { getUserId } from 'common/store/account/selectors'
 import { useRecord, make } from 'common/store/analytics/actions'
-import { getDominantColorsByTrack } from 'common/store/average-color/slice'
-import { getIsCasting, getMethod } from 'common/store/cast/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import {
-  next,
-  pause,
-  play,
-  previous,
-  repeat,
-  shuffle
-} from 'common/store/queue/slice'
-import { RepeatMode } from 'common/store/queue/types'
-import {
-  saveTrack,
-  unsaveTrack,
-  repostTrack,
-  undoRepostTrack
-} from 'common/store/social/tracks/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/slice'
-import {
-  OverflowAction,
-  OverflowActionCallbacks,
-  OverflowSource
-} from 'common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import { Genre } from 'common/utils/genres'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -73,6 +59,14 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open } = mobileOverflowMenuUIActions
+const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
+  tracksSocialActions
+const { next, pause, play, previous, repeat, shuffle } = queueActions
+const { getIsCasting, getMethod } = castSelectors
+const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
+const getUserId = accountSelectors.getUserId
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

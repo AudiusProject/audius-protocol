@@ -1,25 +1,27 @@
+import {
+  averageColorReducer,
+  ChangePasswordState,
+  NotificationState,
+  SmartCollectionState,
+  remixesPageReducer as RemixesPageReducer,
+  HistoryPageState,
+  CollectionsPageState,
+  queueReducer as QueueReducer,
+  ReachabilityState,
+  remoteConfigReducer as RemoteConfigReducer,
+  stemsUploadReducer as StemsUploadReducer,
+  CreatePlaylistModalState,
+  RepostsPageState,
+  NotificationUsersPageState,
+  FollowingPageState,
+  FollowersPageState,
+  FavoritesPageState,
+  CommonState
+} from '@audius/common'
 import { RouterState } from 'connected-react-router'
 
-import { CommonState } from 'common/store'
-import averageColor from 'common/store/average-color/slice'
-import { ChangePasswordState } from 'common/store/change-password/slice'
-import NotificationState from 'common/store/notifications/types'
-import { CollectionsPageState } from 'common/store/pages/collection/types'
-import HistoryPageState from 'common/store/pages/history-page/types'
-import RemixesPageReducer from 'common/store/pages/remixes/slice'
-import SignOnPageState from 'common/store/pages/signon/types'
-import { SmartCollectionState } from 'common/store/pages/smart-collection/slice'
-import QueueReducer from 'common/store/queue/slice'
-import { ReachabilityState } from 'common/store/reachability/types'
-import RemoteConfigReducer from 'common/store/remote-config/slice'
+import signOnReducer from 'common/store/pages/signon/reducer'
 import ServiceSelectionReducer from 'common/store/service-selection/slice'
-import StemsUploadReducer from 'common/store/stems-upload/slice'
-import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
-import { FavoritesPageState } from 'common/store/user-list/favorites/types'
-import { FollowersPageState } from 'common/store/user-list/followers/types'
-import { FollowingPageState } from 'common/store/user-list/following/types'
-import { NotificationUsersPageState } from 'common/store/user-list/notifications/types'
-import { RepostsPageState } from 'common/store/user-list/reposts/types'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
 import MusicConfetti from 'components/music-confetti/store/slice'
@@ -48,6 +50,7 @@ import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { UserListModalState } from './application/ui/userListModal/types'
 import { DragNDropState } from './dragndrop/types'
+const averageColor = averageColorReducer
 
 export type AppState = CommonState & {
   // Config
@@ -102,7 +105,7 @@ export type AppState = CommonState & {
   // Pages
   upload: UploadPageState
   dashboard: ArtistDashboardState
-  signOn: SignOnPageState
+  signOn: ReturnType<typeof signOnReducer>
   history: HistoryPageState
   searchBar: SearchBarState
   collection: CollectionsPageState

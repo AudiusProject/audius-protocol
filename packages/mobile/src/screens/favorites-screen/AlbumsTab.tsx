@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { getAccountWithAlbums } from 'audius-client/src/common/store/account/selectors'
+import { accountSelectors } from '@audius/common'
 import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -10,6 +10,7 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
 import type { ExtendedCollection } from './types'
+const getAccountWithAlbums = accountSelectors.getAccountWithAlbums
 
 const messages = {
   emptyTabText: "You haven't favorited any albums yet.",

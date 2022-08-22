@@ -1,8 +1,8 @@
-import { RecentTipsStorage, Nullable } from '@audius/common'
+import { RecentTipsStorage, Nullable, tippingActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import { fetchRecentTips } from 'common/store/tipping/slice'
 import { MessageType } from 'services/native-mobile-interface/types'
+const { fetchRecentTips } = tippingActions
 
 function* watchFetchRecentTips() {
   yield takeEvery(

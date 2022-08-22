@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import { accountSelectors } from '@audius/common'
 import Config from 'react-native-config'
 
 import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
@@ -14,6 +14,7 @@ import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
+const getUserId = accountSelectors.getUserId
 
 const isStaging = Config.ENVIRONMENT === 'staging'
 

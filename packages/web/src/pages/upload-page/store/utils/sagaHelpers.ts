@@ -1,10 +1,10 @@
-import { Name } from '@audius/common'
+import { Name, accountSelectors } from '@audius/common'
 import { range } from 'lodash'
 import { all, put, select } from 'typed-redux-saga'
 
-import { getAccountUser } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForAccount } from 'utils/sagaHelpers'
+const getAccountUser = accountSelectors.getAccountUser
 
 export function* reportSuccessAndFailureEvents({
   numSuccess,

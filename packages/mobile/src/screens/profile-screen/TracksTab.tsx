@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
 
+import {
+  profilePageSelectors,
+  profilePageTracksLineupActions as tracksActions
+} from '@audius/common'
 import type { RouteProp } from '@react-navigation/core'
 import { useRoute } from '@react-navigation/core'
-import { tracksActions } from 'audius-client/src/common/store/pages/profile/lineups/tracks/actions'
-import {
-  getProfileTracksLineup,
-  getProfileUserHandle
-} from 'audius-client/src/common/store/pages/profile/selectors'
 
 import { Lineup } from 'app/components/lineup'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -14,6 +13,7 @@ import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
 import { getIsOwner, useSelectProfile } from './selectors'
+const { getProfileTracksLineup, getProfileUserHandle } = profilePageSelectors
 
 export const TracksTab = () => {
   const { params } =

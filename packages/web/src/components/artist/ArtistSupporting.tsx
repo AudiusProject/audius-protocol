@@ -1,16 +1,19 @@
 import { useCallback, useEffect } from 'react'
 
-import { ID, User } from '@audius/common'
+import {
+  ID,
+  User,
+  stringWeiToBN,
+  cacheUsersSelectors,
+  tippingSelectors,
+  tippingActions,
+  userListActions,
+  SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
-import { getUsers } from 'common/store/cache/users/selectors'
-import { getOptimisticSupporting } from 'common/store/tipping/selectors'
-import { fetchSupportingForUser } from 'common/store/tipping/slice'
-import { loadMore, reset } from 'common/store/user-list/actions'
-import { USER_LIST_TAG as SUPPORTING_TAG } from 'common/store/user-list/supporting/types'
-import { stringWeiToBN } from 'common/utils/wallet'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import {
   setUsers,
@@ -23,6 +26,10 @@ import {
 import { MAX_ARTIST_HOVER_TOP_SUPPORTING } from 'utils/constants'
 
 import styles from './ArtistSupporting.module.css'
+const { loadMore, reset } = userListActions
+const { getUsers } = cacheUsersSelectors
+const { getOptimisticSupporting } = tippingSelectors
+const { fetchSupportingForUser } = tippingActions
 
 const messages = {
   supporting: 'Supporting'

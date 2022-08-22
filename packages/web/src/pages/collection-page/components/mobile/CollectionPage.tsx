@@ -7,14 +7,12 @@ import {
   Variant,
   SmartCollectionVariant,
   Status,
-  User
+  User,
+  CollectionsPageType,
+  CollectionTrack,
+  OverflowAction
 } from '@audius/common'
 
-import {
-  CollectionsPageType,
-  CollectionTrack
-} from 'common/store/pages/collection/types'
-import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

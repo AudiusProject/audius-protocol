@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { getSendUser } from 'audius-client/src/common/store/tipping/selectors'
+import { tippingSelectors } from '@audius/common'
 import { Pressable, View } from 'react-native'
 
 import { Text } from 'app/components/core'
@@ -10,6 +10,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { getUserRoute } from 'app/utils/routes'
+const { getSendUser } = tippingSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {

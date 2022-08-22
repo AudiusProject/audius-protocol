@@ -1,18 +1,18 @@
 import { useCallback, useContext } from 'react'
 
-import { Name, FeatureFlags } from '@audius/common'
+import {
+  Name,
+  FeatureFlags,
+  accountSelectors,
+  collectionsSocialActions,
+  tracksSocialActions,
+  usersSocialActions,
+  shareModalUISelectors,
+  shareSoundToTiktokModalActions
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { getAccountUser } from 'common/store/account/selectors'
 import { make, useRecord } from 'common/store/analytics/actions'
-import {
-  shareAudioNftPlaylist,
-  shareCollection
-} from 'common/store/social/collections/actions'
-import { shareTrack } from 'common/store/social/tracks/actions'
-import { shareUser } from 'common/store/social/users/actions'
-import { getShareState } from 'common/store/ui/share-modal/selectors'
-import { requestOpen as requestOpenTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useModalState } from 'pages/modals/useModalState'
@@ -25,6 +25,12 @@ import { ShareDialog } from './components/ShareDialog'
 import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
 import { getTwitterShareText } from './utils'
+const { getShareState } = shareModalUISelectors
+const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
+const { shareUser } = usersSocialActions
+const { shareTrack } = tracksSocialActions
+const { shareAudioNftPlaylist, shareCollection } = collectionsSocialActions
+const getAccountUser = accountSelectors.getAccountUser
 
 export const ShareModal = () => {
   const { isOpen, onClose, onClosed } = useModalState('Share')

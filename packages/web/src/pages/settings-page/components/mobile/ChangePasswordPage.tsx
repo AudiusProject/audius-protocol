@@ -1,11 +1,14 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  ChangePasswordPageStep,
+  changePasswordSelectors,
+  changePasswordActions
+} from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
-import { getCurrentPage } from 'common/store/change-password/selectors'
-import { changePage, Page } from 'common/store/change-password/slice'
 import { ChangePassword } from 'components/change-password/ChangePassword'
 import NavContext, {
   CenterPreset,
@@ -14,6 +17,8 @@ import NavContext, {
 
 import styles from './ChangePasswordPage.module.css'
 import { SettingsPageProps } from './SettingsPage'
+const { changePage } = changePasswordActions
+const { getCurrentPage } = changePasswordSelectors
 
 export const ChangePasswordPage = ({ goBack }: SettingsPageProps) => {
   const dispatch = useDispatch()
@@ -24,7 +29,12 @@ export const ChangePasswordPage = ({ goBack }: SettingsPageProps) => {
 
   // Remove back arrow on new password and loading pages
   useEffect(() => {
-    if ([Page.NEW_PASSWORD, Page.LOADING].includes(currentPage)) {
+    if (
+      [
+        ChangePasswordPageStep.NEW_PASSWORD,
+        ChangePasswordPageStep.LOADING
+      ].includes(currentPage)
+    ) {
       navContext.setLeft(null)
     } else {
       navContext.setLeft(LeftPreset.BACK)
@@ -38,7 +48,7 @@ export const ChangePasswordPage = ({ goBack }: SettingsPageProps) => {
 
   // On initial render, set the page to confirm credentials
   useEffect(() => {
-    dispatch(changePage(Page.CONFIRM_CREDENTIALS))
+    dispatch(changePage(ChangePasswordPageStep.CONFIRM_CREDENTIALS))
     const trackEvent: TrackEvent = make(Name.SETTINGS_START_CHANGE_PASSWORD, {})
     dispatch(trackEvent)
   }, [dispatch])

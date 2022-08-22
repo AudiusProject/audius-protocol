@@ -1,5 +1,6 @@
-import * as actions from 'common/store/pages/settings/actions'
-import createErrorSagas from 'common/utils/errorSagas'
+import { settingsPageActions as actions } from '@audius/common'
+
+import { createErrorSagas } from 'utils/errorSagas'
 
 type Errors = actions.TogglePushNotificationSettingFailed
 

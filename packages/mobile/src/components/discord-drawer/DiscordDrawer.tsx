@@ -1,14 +1,9 @@
 import { useCallback } from 'react'
 
 import {
-  getDiscordCode,
-  getModalState,
-  getModalVisible
-} from 'audius-client/src/common/store/pages/token-dashboard/selectors'
-import {
-  setModalState,
-  setModalVisibility
-} from 'audius-client/src/common/store/pages/token-dashboard/slice'
+  tokenDashboardPageActions,
+  tokenDashboardPageSelectors
+} from '@audius/common'
 import { AUDIUS_DISCORD_LINK } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 
@@ -19,6 +14,9 @@ import Drawer from 'app/components/drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
+const { getDiscordCode, getModalState, getModalVisible } =
+  tokenDashboardPageSelectors
+const { setModalState, setModalVisibility } = tokenDashboardPageActions
 
 const messages = {
   title: 'Launch the VIP Discord',

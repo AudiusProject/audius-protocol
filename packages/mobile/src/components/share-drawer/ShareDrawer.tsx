@@ -1,13 +1,15 @@
 import { useCallback, useContext } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import {
+  FeatureFlags,
+  accountSelectors,
+  collectionsSocialActions,
+  tracksSocialActions,
+  usersSocialActions,
+  shareModalUISelectors,
+  shareSoundToTiktokModalActions
+} from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { shareCollection } from 'audius-client/src/common/store/social/collections/actions'
-import { shareTrack } from 'audius-client/src/common/store/social/tracks/actions'
-import { shareUser } from 'audius-client/src/common/store/social/users/actions'
-import { getShareState } from 'audius-client/src/common/store/ui/share-modal/selectors'
-import { requestOpen as requestOpenTikTokModal } from 'audius-client/src/common/store/ui/share-sound-to-tiktok-modal/slice'
 import { Linking, StyleSheet, View } from 'react-native'
 
 import IconLink from 'app/assets/images/iconLink.svg'
@@ -28,6 +30,12 @@ import { ToastContext } from '../toast/ToastContext'
 
 import { messages } from './messages'
 import { getContentUrl, getTwitterShareUrl } from './utils'
+const { getShareState } = shareModalUISelectors
+const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
+const { shareUser } = usersSocialActions
+const { shareTrack } = tracksSocialActions
+const { shareCollection } = collectionsSocialActions
+const getAccountUser = accountSelectors.getAccountUser
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({

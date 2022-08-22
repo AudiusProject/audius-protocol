@@ -1,36 +1,32 @@
-import type { ID } from '@audius/common'
+import type { ID, OverflowActionCallbacks, CommonState } from '@audius/common'
 import {
   FavoriteSource,
   FollowSource,
   RepostSource,
-  ShareSource
+  ShareSource,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  tracksSocialActions,
+  usersSocialActions,
+  addToPlaylistUIActions,
+  OverflowAction,
+  mobileOverflowMenuUISelectors
 } from '@audius/common'
-import type { CommonState } from 'audius-client/src/common/store'
-import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 // Importing directly from audius-client for now, this will be removed
 // when the profile page is implemented in RN
-import {
-  repostTrack,
-  undoRepostTrack,
-  saveTrack,
-  unsaveTrack,
-  shareTrack
-} from 'audius-client/src/common/store/social/tracks/actions'
-import {
-  followUser,
-  unfollowUser
-} from 'audius-client/src/common/store/social/users/actions'
-import { requestOpen as openAddToPlaylistModal } from 'audius-client/src/common/store/ui/add-to-playlist/actions'
-import { getMobileOverflowModal } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
-import type { OverflowActionCallbacks } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { OverflowAction } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 import { profilePage } from 'audius-client/src/utils/route'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
+const { requestOpen: openAddToPlaylistModal } = addToPlaylistUIActions
+const { followUser, unfollowUser } = usersSocialActions
+const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack, shareTrack } =
+  tracksSocialActions
+const { getUser } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element

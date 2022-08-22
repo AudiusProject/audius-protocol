@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
 import type { User } from '@audius/common'
-import { FollowSource } from '@audius/common'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import { FollowSource, accountSelectors } from '@audius/common'
 import { Pressable, View, Animated } from 'react-native'
 
 import IconUser from 'app/assets/images/iconUser.svg'
@@ -22,6 +21,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { SupporterInfo } from './SupporterInfo'
 import { SupportingInfo } from './SupportingInfo'
+const getUserId = accountSelectors.getUserId
 
 const messages = {
   followers: (followerCount: number) =>

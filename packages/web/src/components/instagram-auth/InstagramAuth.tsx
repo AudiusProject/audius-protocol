@@ -1,12 +1,11 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import { StringKeys } from '@audius/common'
+import { StringKeys, InstagramProfile } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import cn from 'classnames'
-import 'url-search-params-polyfill'
 
-import { InstagramProfile } from 'common/store/account/reducer'
 import { getIGUserUrl } from 'common/store/pages/signon/sagas'
+import 'url-search-params-polyfill'
 import { RequestInstagramAuthMessage } from 'services/native-mobile-interface/oauth'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 

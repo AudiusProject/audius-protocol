@@ -1,6 +1,6 @@
 import { useEffect, useContext } from 'react'
 
-import { Name } from '@audius/common'
+import { Name, themeSelectors } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -12,7 +12,6 @@ import { Dispatch } from 'redux'
 import notFoundAnimation from 'assets/animations/404.json'
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
 import { useRecord, make } from 'common/store/analytics/actions'
-import { getTheme } from 'common/store/ui/theme/selectors'
 import NavContext, {
   CenterPreset,
   RightPreset
@@ -23,6 +22,7 @@ import { isMobile } from 'utils/clientUtil'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './NotFoundPage.module.css'
+const { getTheme } = themeSelectors
 
 const messages = {
   title: 'Not Found',

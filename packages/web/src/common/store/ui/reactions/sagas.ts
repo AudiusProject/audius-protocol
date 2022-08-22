@@ -1,17 +1,17 @@
-import { removeNullable } from '@audius/common'
+import {
+  removeNullable,
+  getReactionFromRawValue,
+  reactionsMap,
+  reactionsUIActions,
+  reactionsUISelectors,
+  getContext
+} from '@audius/common'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
 import { submitReaction } from 'services/audius-backend/Reactions'
-
-import {
-  fetchReactionValues,
-  getReactionFromRawValue,
-  makeGetReactionForSignature,
-  reactionsMap,
-  setLocalReactionValues,
-  writeReactionValue
-} from './slice'
+const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
+  reactionsUIActions
+const { makeGetReactionForSignature } = reactionsUISelectors
 
 function* fetchReactionValuesAsync({
   payload

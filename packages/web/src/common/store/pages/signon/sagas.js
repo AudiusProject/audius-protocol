@@ -3,7 +3,15 @@ import {
   Name,
   FeatureFlags,
   IntKeys,
-  StringKeys
+  StringKeys,
+  ELECTRONIC_SUBGENRES,
+  Genre,
+  accountSelectors,
+  accountActions,
+  cacheUsersSelectors,
+  collectionsSocialActions,
+  solanaSelectors,
+  usersSocialActions as socialActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import {
@@ -20,22 +28,15 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import * as accountActions from 'common/store/account/reducer'
 import { fetchAccountAsync, reCacheAccount } from 'common/store/account/sagas'
-import { getAccountUser } from 'common/store/account/selectors'
 import { identify, make } from 'common/store/analytics/actions'
 import * as backendActions from 'common/store/backend/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
-import { getUsers } from 'common/store/cache/users/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import { saveCollection } from 'common/store/social/collections/actions'
-import * as socialActions from 'common/store/social/users/actions'
-import { getFeePayer } from 'common/store/solana/selectors'
-import { ELECTRONIC_SUBGENRES, Genre } from 'common/utils/genres'
 import { MAX_HANDLE_LENGTH } from 'pages/sign-on/utils/formatSocialProfile'
 import { getCityAndRegion } from 'services/Location'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
@@ -51,6 +52,10 @@ import mobileSagas from './mobileSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 import { checkHandle } from './verifiedChecker'
+const { getFeePayer } = solanaSelectors
+const { saveCollection } = collectionsSocialActions
+const { getUsers } = cacheUsersSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'

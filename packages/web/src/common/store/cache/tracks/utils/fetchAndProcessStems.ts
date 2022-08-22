@@ -1,13 +1,19 @@
-import { ID, Kind, StemCategory, Stem, StemTrackMetadata } from '@audius/common'
+import {
+  ID,
+  Kind,
+  StemCategory,
+  Stem,
+  StemTrackMetadata,
+  cacheTracksSelectors,
+  cacheActions,
+  getContext
+} from '@audius/common'
 import { call, put } from 'redux-saga/effects'
 
-import * as cacheActions from 'common/store/cache/actions'
-import { getContext } from 'common/store/effects'
 import { waitForValue } from 'utils/sagaHelpers'
 
-import { getTrack } from '../selectors'
-
 import { processAndCacheTracks } from './processAndCacheTracks'
+const { getTrack } = cacheTracksSelectors
 
 /**
  * Fetches stems for a parent track.

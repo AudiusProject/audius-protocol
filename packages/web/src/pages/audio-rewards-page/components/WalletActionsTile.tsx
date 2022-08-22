@@ -1,4 +1,9 @@
-import { BNWei } from '@audius/common'
+import {
+  BNWei,
+  tokenDashboardPageActions,
+  tokenDashboardPageSelectors,
+  walletSelectors
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -6,16 +11,13 @@ import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
-import { getHasAssociatedWallets } from 'common/store/pages/token-dashboard/selectors'
-import {
-  pressReceive,
-  pressSend,
-  pressConnectWallets
-} from 'common/store/pages/token-dashboard/slice'
-import { getAccountBalance } from 'common/store/wallet/selectors'
 import { useSelector } from 'utils/reducer'
 
 import styles from './WalletActionsTile.module.css'
+const { getAccountBalance } = walletSelectors
+const { getHasAssociatedWallets } = tokenDashboardPageSelectors
+const { pressReceive, pressSend, pressConnectWallets } =
+  tokenDashboardPageActions
 
 const messages = {
   receiveLabel: 'RECEIVE $AUDIO',

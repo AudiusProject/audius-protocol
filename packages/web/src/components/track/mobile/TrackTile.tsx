@@ -1,13 +1,11 @@
 import { useCallback, useState, useEffect, MouseEvent } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, formatCount, formatSeconds } from '@audius/common'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
-import { formatCount } from 'common/utils/formatUtil'
-import { formatSeconds } from 'common/utils/timeUtil'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import Skeleton from 'components/skeleton/Skeleton'

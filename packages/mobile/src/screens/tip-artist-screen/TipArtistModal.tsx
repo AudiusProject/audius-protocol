@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
+import { tippingActions } from '@audius/common'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { resetSend } from 'audius-client/src/common/store/tipping/slice'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 
@@ -10,6 +10,7 @@ import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 import { ConfirmSendTipScreen } from './ConfirmSendTipScreen'
 import { SendTipScreen } from './SendTipScreen'
 import { TipSentScreen } from './TipSentScreen'
+const { resetSend } = tippingActions
 
 const Stack = createNativeStackNavigator()
 

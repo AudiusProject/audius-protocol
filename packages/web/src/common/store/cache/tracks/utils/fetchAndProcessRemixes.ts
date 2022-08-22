@@ -1,14 +1,20 @@
-import { ID, Kind, UserTrackMetadata, removeNullable } from '@audius/common'
+import {
+  ID,
+  Kind,
+  UserTrackMetadata,
+  removeNullable,
+  accountSelectors,
+  cacheTracksSelectors,
+  cacheActions,
+  getContext
+} from '@audius/common'
 import { select, call, put } from 'typed-redux-saga'
 
-import { getUserId } from 'common/store/account/selectors'
-import * as cacheActions from 'common/store/cache/actions'
-import { getContext } from 'common/store/effects'
 import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
-import { getTrack } from '../selectors'
-
 import { processAndCacheTracks } from './processAndCacheTracks'
+const { getTrack } = cacheTracksSelectors
+const getUserId = accountSelectors.getUserId
 
 const INITIAL_FETCH_LIMIT = 6
 

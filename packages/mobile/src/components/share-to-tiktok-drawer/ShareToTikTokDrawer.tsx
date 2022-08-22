@@ -2,15 +2,10 @@ import { useMemo } from 'react'
 
 import type { Nullable } from '@audius/common'
 import {
-  getStatus,
-  getTrack
-} from 'audius-client/src/common/store/ui/share-sound-to-tiktok-modal/selectors'
-import {
-  authenticated,
-  setStatus,
-  share
-} from 'audius-client/src/common/store/ui/share-sound-to-tiktok-modal/slice'
-import { Status } from 'audius-client/src/common/store/ui/share-sound-to-tiktok-modal/types'
+  shareSoundToTiktokModalActions,
+  ShareSoundToTiktokModalStatus,
+  shareSoundToTiktokModalSelectors
+} from '@audius/common'
 import { StyleSheet, View } from 'react-native'
 
 import IconTikTok from 'app/assets/images/iconTikTok.svg'
@@ -24,6 +19,8 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { ThemeColors } from 'app/hooks/useThemedStyles'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
+const { getStatus, getTrack } = shareSoundToTiktokModalSelectors
+const { authenticated, setStatus, share } = shareSoundToTiktokModalActions
 
 enum FileRequirementError {
   MIN_LENGTH,
@@ -98,7 +95,10 @@ export const ShareToTikTokDrawer = () => {
   const status = useSelectorWeb(getStatus)
 
   const withTikTokAuth = useTikTokAuth({
-    onError: () => dispatchWeb(setStatus({ status: Status.SHARE_ERROR }))
+    onError: () =>
+      dispatchWeb(
+        setStatus({ status: ShareSoundToTiktokModalStatus.SHARE_ERROR })
+      )
   })
 
   const fileRequirementError: Nullable<FileRequirementError> = useMemo(() => {
@@ -127,19 +127,21 @@ export const ShareToTikTokDrawer = () => {
 
   const renderMessage = () => {
     const hasError =
-      fileRequirementError !== null || status === Status.SHARE_ERROR
+      fileRequirementError !== null ||
+      status === ShareSoundToTiktokModalStatus.SHARE_ERROR
 
     const rawMessage =
       {
-        [Status.SHARE_STARTED]: messages.inProgress,
-        [Status.SHARE_SUCCESS]: messages.success,
-        [Status.SHARE_ERROR]: messages.error,
-        [Status.SHARE_UNINITIALIZED]: messages.confirmation
-      }[status as Status] ?? messages.confirmation
+        [ShareSoundToTiktokModalStatus.SHARE_STARTED]: messages.inProgress,
+        [ShareSoundToTiktokModalStatus.SHARE_SUCCESS]: messages.success,
+        [ShareSoundToTiktokModalStatus.SHARE_ERROR]: messages.error,
+        [ShareSoundToTiktokModalStatus.SHARE_UNINITIALIZED]:
+          messages.confirmation
+      }[status as ShareSoundToTiktokModalStatus] ?? messages.confirmation
 
     if (hasError) {
       const errorMessage =
-        status === Status.SHARE_ERROR
+        status === ShareSoundToTiktokModalStatus.SHARE_ERROR
           ? messages.error
           : fileRequirementErrorMessages[fileRequirementError!]
 
@@ -158,7 +160,7 @@ export const ShareToTikTokDrawer = () => {
   }
 
   const renderButton = () => {
-    if (status === Status.SHARE_SUCCESS) {
+    if (status === ShareSoundToTiktokModalStatus.SHARE_SUCCESS) {
       return (
         <View style={styles.button}>
           <Button onPress={onClose} title={messages.completeButton} />
@@ -192,7 +194,11 @@ export const ShareToTikTokDrawer = () => {
           </View>
         </View>
         {renderMessage()}
-        {status === Status.SHARE_STARTED ? <LoadingSpinner /> : renderButton()}
+        {status === ShareSoundToTiktokModalStatus.SHARE_STARTED ? (
+          <LoadingSpinner />
+        ) : (
+          renderButton()
+        )}
       </View>
     </AppDrawer>
   )

@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 
+import {
+  notificationsSelectors,
+  FollowNotification as FollowNotificationType
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { getNotificationUsers } from 'common/store/notifications/selectors'
-import { Follow } from 'common/store/notifications/types'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -26,6 +28,7 @@ import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFollow } from './components/icons'
 import { USER_LENGTH_LIMIT } from './utils'
+const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   and: 'and',
@@ -33,7 +36,7 @@ const messages = {
 }
 
 type FollowNotificationProps = {
-  notification: Follow
+  notification: FollowNotificationType
 }
 
 export const FollowNotification = (props: FollowNotificationProps) => {

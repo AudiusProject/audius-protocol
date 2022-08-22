@@ -1,5 +1,5 @@
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import type { TierChange } from 'audius-client/src/common/store/notifications/types'
+import type { TierChangeNotification as TierChangeNotificationType } from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common'
 import { fullProfilePage } from 'audius-client/src/utils/route'
 
 import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
@@ -15,6 +15,7 @@ import {
   NotificationText,
   NotificationTwitterButton
 } from '../Notification'
+const { getUser } = cacheUsersSelectors
 
 const messages = {
   unlocked: 'Tier Unlocked',
@@ -58,7 +59,7 @@ const tierInfoMap = {
 }
 
 type TierChangeNotificationProps = {
-  notification: TierChange
+  notification: TierChangeNotificationType
 }
 
 export const TierChangeNotification = (props: TierChangeNotificationProps) => {

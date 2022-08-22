@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 
-import { Modal } from '@audius/stems'
-import cn from 'classnames'
-
-import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import {
   Notifications,
   BrowserNotificationSetting,
   EmailFrequency
-} from 'common/store/pages/settings/types'
+} from '@audius/common'
+import { Modal } from '@audius/stems'
+import cn from 'classnames'
+
+import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import TabSlider from 'components/data-entry/TabSlider'
 import Switch from 'components/switch/Switch'
 import { Permission } from 'utils/browserNotifications'

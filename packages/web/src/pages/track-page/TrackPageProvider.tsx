@@ -13,42 +13,32 @@ import {
   FavoriteType,
   Status,
   Track,
-  Uid
+  Uid,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  accountSelectors,
+  cacheTracksActions as cacheTrackActions,
+  lineupSelectors,
+  trackPageActions,
+  trackPageSelectors,
+  trackPageLineupActions,
+  OverflowAction,
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  RepostType,
+  repostsUserListActions,
+  favoritesUserListActions,
+  tracksSocialActions as socialTracksActions,
+  usersSocialActions as socialUsersActions
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getUserId } from 'common/store/account/selectors'
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import * as cacheTrackActions from 'common/store/cache/tracks/actions'
-import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
-import * as trackPageActions from 'common/store/pages/track/actions'
-import { tracksActions } from 'common/store/pages/track/lineup/actions'
-import {
-  getUser,
-  getLineup,
-  getTrackRank,
-  getTrack,
-  getRemixParentTrack,
-  getStatus,
-  getSourceSelector,
-  getTrackPermalink
-} from 'common/store/pages/track/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import * as socialTracksActions from 'common/store/social/tracks/actions'
-import * as socialUsersActions from 'common/store/social/users/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/slice'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import { setFavorite } from 'common/store/user-list/favorites/actions'
-import { setRepost } from 'common/store/user-list/reposts/actions'
-import { RepostType } from 'common/store/user-list/reposts/types'
-import { getCanonicalName } from 'common/utils/genres'
-import { formatSeconds, formatDate } from 'common/utils/timeUtil'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import {
@@ -80,6 +70,23 @@ import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
 import { TRENDING_BADGE_LIMIT } from './store/sagas'
+const { setFavorite } = favoritesUserListActions
+const { setRepost } = repostsUserListActions
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open } = mobileOverflowMenuUIActions
+const { tracksActions } = trackPageLineupActions
+const {
+  getUser,
+  getLineup,
+  getTrackRank,
+  getTrack,
+  getRemixParentTrack,
+  getStatus,
+  getSourceSelector,
+  getTrackPermalink
+} = trackPageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
+const getUserId = accountSelectors.getUserId
 
 const getRemixParentTrackId = (track: Track | null) =>
   track?.remix_of?.tracks?.[0]?.parent_track_id

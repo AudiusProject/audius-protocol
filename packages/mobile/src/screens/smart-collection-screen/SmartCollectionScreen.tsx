@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
-import { FavoriteSource } from '@audius/common'
-import { getPlaylistLibrary } from 'audius-client/src/common/store/account/selectors'
-import { getCollection } from 'audius-client/src/common/store/pages/smart-collection/selectors'
-import { findInPlaylistLibrary } from 'audius-client/src/common/store/playlist-library/helpers'
 import {
-  saveSmartCollection,
-  unsaveSmartCollection
-} from 'audius-client/src/common/store/social/collections/actions'
+  FavoriteSource,
+  accountSelectors,
+  smartCollectionPageSelectors,
+  findInPlaylistLibrary,
+  collectionsSocialActions
+} from '@audius/common'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -17,6 +16,9 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
 import type { SmartCollection as SmartCollectionsmartCollection } from 'app/screens/explore-screen/smartCollections'
 import { makeStyles } from 'app/styles'
+const { saveSmartCollection, unsaveSmartCollection } = collectionsSocialActions
+const { getCollection } = smartCollectionPageSelectors
+const getPlaylistLibrary = accountSelectors.getPlaylistLibrary
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {

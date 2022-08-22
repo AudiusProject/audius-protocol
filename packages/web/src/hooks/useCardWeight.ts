@@ -1,8 +1,7 @@
 import { useEffect, useRef, useCallback, MutableRefObject } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import { InterpolationChain, useSpring } from 'react-spring'
-
-import useInstanceVar from 'common/hooks/useInstanceVar'
 
 type Transform = {
   interpolate: InterpolationChain<unknown>

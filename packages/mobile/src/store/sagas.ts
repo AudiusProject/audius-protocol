@@ -1,3 +1,4 @@
+import { remoteConfigSagas as remoteConfig } from '@audius/common'
 import analyticsSagas from 'audius-client/src/common/store/analytics/sagas'
 import accountSagas from 'common/store/account/sagas'
 import backendSagas, { setupBackend } from 'common/store/backend/sagas'
@@ -7,7 +8,6 @@ import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import confirmerSagas from 'common/store/confirmer/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
-import remoteConfig from 'common/store/remote-config/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import { all, fork } from 'typed-redux-saga'
 

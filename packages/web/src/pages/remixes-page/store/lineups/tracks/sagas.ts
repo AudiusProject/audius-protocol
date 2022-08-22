@@ -1,17 +1,19 @@
+import {
+  accountSelectors,
+  remixesPageLineupActions as tracksActions,
+  remixesPageActions,
+  remixesPageSelectors,
+  getContext
+} from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import {
-  PREFIX,
-  tracksActions
-} from 'common/store/pages/remixes/lineup/actions'
-import { getTrackId, getLineup } from 'common/store/pages/remixes/selectors'
-import { setCount } from 'common/store/pages/remixes/slice'
 import { LineupSagas } from 'store/lineup/sagas'
 import { AppState } from 'store/types'
 import { waitForAccount } from 'utils/sagaHelpers'
+const { getTrackId, getLineup } = remixesPageSelectors
+const { setCount } = remixesPageActions
+const getUserId = accountSelectors.getUserId
 
 function* getTracks({
   offset,
@@ -42,12 +44,13 @@ function* getTracks({
   return processedTracks
 }
 
-const sourceSelector = (state: AppState) => `${PREFIX}:${getTrackId(state)}`
+const sourceSelector = (state: AppState) =>
+  `${tracksActions.prefix}:${getTrackId(state)}`
 
 class TracksSagas extends LineupSagas {
   constructor() {
     super(
-      PREFIX,
+      tracksActions.prefix,
       tracksActions,
       getLineup,
       getTracks,

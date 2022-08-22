@@ -1,16 +1,12 @@
 import { useContext, useState } from 'react'
 
-import { CreatePlaylistSource } from '@audius/common'
-import { newCollectionMetadata } from 'audius-client/src/common/schemas'
-import { getAccountWithOwnPlaylists } from 'audius-client/src/common/store/account/selectors'
 import {
-  addTrackToPlaylist,
-  createPlaylist
-} from 'audius-client/src/common/store/cache/collections/actions'
-import {
-  getTrackId,
-  getTrackTitle
-} from 'audius-client/src/common/store/ui/add-to-playlist/selectors'
+  CreatePlaylistSource,
+  accountSelectors,
+  cacheCollectionsActions,
+  addToPlaylistUISelectors,
+  newCollectionMetadata
+} from '@audius/common'
 import { FEED_PAGE, playlistPage } from 'audius-client/src/utils/route'
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { View } from 'react-native'
@@ -25,6 +21,9 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles, shadow } from 'app/styles'
+const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
+const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
+const getAccountWithOwnPlaylists = accountSelectors.getAccountWithOwnPlaylists
 
 const messages = {
   title: 'Add To Playlist',

@@ -1,6 +1,15 @@
 import { Component, ComponentType } from 'react'
 
-import { ID, Name, User } from '@audius/common'
+import {
+  ID,
+  Name,
+  User,
+  accountSelectors,
+  InstagramProfile,
+  AccountImage,
+  TwitterProfile,
+  accountActions
+} from '@audius/common'
 import {
   push as pushRoute,
   replace as replaceRoute,
@@ -12,13 +21,6 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import {
-  InstagramProfile,
-  AccountImage,
-  showPushNotificationConfirmation,
-  TwitterProfile
-} from 'common/store/account/reducer'
-import { getHasAccount } from 'common/store/account/selectors'
 import { make, TrackEvent } from 'common/store/analytics/actions'
 import * as signOnAction from 'common/store/pages/signon/actions'
 import {
@@ -48,6 +50,9 @@ import {
   SignOnProps as MobileSignOnProps,
   MobilePages
 } from './components/mobile/SignOnPage'
+
+const { showPushNotificationConfirmation } = accountActions
+const getHasAccount = accountSelectors.getHasAccount
 
 const messages = {
   title: 'Sign Up',

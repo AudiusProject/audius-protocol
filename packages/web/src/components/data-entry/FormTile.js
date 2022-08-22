@@ -1,16 +1,16 @@
 import { Component, useState, useCallback } from 'react'
 
+import {
+  GENRES,
+  ELECTRONIC_PREFIX,
+  getCanonicalName,
+  createRemixOfMetadata
+} from '@audius/common'
 import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
-import { createRemixOfMetadata } from 'common/schemas'
-import {
-  GENRES,
-  ELECTRONIC_PREFIX,
-  getCanonicalName
-} from 'common/utils/genres'
 import DatePicker from 'components/data-entry/DatePicker'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import Input from 'components/data-entry/Input'

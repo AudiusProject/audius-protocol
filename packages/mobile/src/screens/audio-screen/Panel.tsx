@@ -1,6 +1,5 @@
 import type { OptimisticUserChallenge } from '@audius/common'
-import { fillString } from 'audius-client/src/common/utils/fillString'
-import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
+import { fillString, formatNumberCommas } from '@audius/common'
 import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 

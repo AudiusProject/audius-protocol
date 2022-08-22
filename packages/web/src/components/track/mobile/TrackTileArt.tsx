@@ -1,9 +1,14 @@
 import { memo } from 'react'
 
-import { ID, CoverArtSizes, SquareSizes, Remix } from '@audius/common'
+import {
+  ID,
+  CoverArtSizes,
+  SquareSizes,
+  Remix,
+  useLoadImageWithTimeout
+} from '@audius/common'
 import cn from 'classnames'
 
-import { useLoadImageWithTimeout } from 'common/hooks/useImageSize'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

@@ -1,4 +1,4 @@
-import type { CommonState } from 'audius-client/src/common/store'
+import type { CommonState } from '@audius/common'
 import { isEqual as lodashIsEqual } from 'lodash'
 import type { Selector } from 'react-redux'
 import { useSelector } from 'react-redux'

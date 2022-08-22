@@ -3,7 +3,16 @@ import {
   Kind,
   DoubleKeys,
   makeUid,
-  makeKindId
+  makeKindId,
+  squashNewLines,
+  accountSelectors,
+  cacheActions,
+  profilePageSelectors,
+  FollowType,
+  profilePageActions as profileActions,
+  reachabilitySelectors,
+  tippingActions,
+  artistRecommendationsUIActions as artistRecommendationsActions
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -16,9 +25,7 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
 import {
   fetchUsers,
   fetchUserByHandle,
@@ -28,19 +35,8 @@ import {
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import * as profileActions from 'common/store/pages/profile/actions'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
-import {
-  getProfileUserId,
-  getProfileFollowers,
-  getProfileUser
-} from 'common/store/pages/profile/selectors'
-import { FollowType } from 'common/store/pages/profile/types'
-import { getIsReachable } from 'common/store/reachability/selectors'
-import { refreshSupport } from 'common/store/tipping/slice'
-import * as artistRecommendationsActions from 'common/store/ui/artist-recommendations/slice'
-import { squashNewLines } from 'common/utils/formatUtil'
 import { fetchCID } from 'services/audius-backend'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
 import SolanaClient from 'services/solana-client/SolanaClient'
@@ -52,6 +48,12 @@ import {
 } from 'utils/constants'
 import { dataURLtoFile } from 'utils/fileUtils'
 import { waitForAccount } from 'utils/sagaHelpers'
+const { refreshSupport } = tippingActions
+const { getIsReachable } = reachabilitySelectors
+const { getProfileUserId, getProfileFollowers, getProfileUser } =
+  profilePageSelectors
+
+const { getUserId, getAccountUser } = accountSelectors
 
 function* watchFetchProfile() {
   yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)

@@ -1,5 +1,4 @@
-import { AudiusBackend, AuthHeaders } from 'common/services/audius-backend'
-import { getErrorMessage } from 'common/utils/error'
+import { AudiusBackend, AuthHeaders, getErrorMessage } from '@audius/common'
 
 export const recordIP = async (
   audiusBackendInstance: AudiusBackend

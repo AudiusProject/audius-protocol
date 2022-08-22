@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
-import type { SupporterRankUp } from 'common/store/notifications/types'
+import type { SupporterRankUpNotification } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
 
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
@@ -11,6 +11,7 @@ import { NotificationTile, NotificationTwitterButton } from '../Notification'
 
 import { SupporterAndSupportingNotificationContent } from './SupporterAndSupportingNotificationContent'
 import { useGoToProfile } from './useGoToProfile'
+const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Top Supporter',
@@ -21,7 +22,7 @@ const messages = {
 }
 
 type TopSupporterNotificationProps = {
-  notification: SupporterRankUp
+  notification: SupporterRankUpNotification
 }
 
 export const TopSupporterNotification = (

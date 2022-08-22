@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
-import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
-import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
-import type { TipSend } from 'audius-client/src/common/store/notifications/types'
+import type { TipSendNotification } from '@audius/common'
+import { useUIAudio, notificationsSelectors } from '@audius/common'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
@@ -22,6 +21,7 @@ import { TipText } from '../Notification/TipText'
 import { UserNameLink } from '../Notification/UserNameLink'
 
 import { useGoToProfile } from './useGoToProfile'
+const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Your Tip Was Sent!',
@@ -32,7 +32,7 @@ const messages = {
 }
 
 type TipSentNotificationProps = {
-  notification: TipSend
+  notification: TipSendNotification
 }
 
 export const TipSentNotification = (props: TipSentNotificationProps) => {

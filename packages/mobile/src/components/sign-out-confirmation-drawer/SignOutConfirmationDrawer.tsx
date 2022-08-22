@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { signOut } from 'common/store/sign-out/slice'
+import { signOutActions } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -9,6 +9,7 @@ import { AppDrawer, useDrawerState } from 'app/components/drawer/AppDrawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import useSearchHistory from 'app/store/search/hooks'
 import { makeStyles } from 'app/styles'
+const { signOut } = signOutActions
 
 const MODAL_NAME = 'SignOutConfirmation'
 

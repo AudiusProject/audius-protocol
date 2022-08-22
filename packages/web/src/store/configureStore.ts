@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable, CommonState, ErrorLevel } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import { routerMiddleware, push as pushRoute } from 'connected-react-router'
 import { debounce, isEmpty, pick, pickBy } from 'lodash'
@@ -7,12 +7,10 @@ import { composeWithDevTools } from 'redux-devtools-extension/logOnlyInProductio
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 
-import { CommonState } from 'common/store'
-import { Level } from 'common/store/errors/level'
-import { reportToSentry } from 'common/store/errors/reportToSentry'
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import { postMessage } from 'services/native-mobile-interface/helpers'
 import { MessageType } from 'services/native-mobile-interface/types'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import createRootReducer, { commonStoreReducers } from 'store/reducers'
 import rootSaga from 'store/sagas'
 import history from 'utils/history'
@@ -45,7 +43,7 @@ const onSagaError = (
   store.dispatch(pushRoute(ERROR_PAGE))
 
   reportToSentry({
-    level: Level.Fatal,
+    level: ErrorLevel.Fatal,
     error,
     additionalInfo: errorInfo
   })

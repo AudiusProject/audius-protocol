@@ -1,17 +1,20 @@
 import { useCallback, useEffect } from 'react'
 
-import { Name, User } from '@audius/common'
+import {
+  Name,
+  User,
+  accountSelectors,
+  cacheUsersSelectors,
+  tippingSelectors,
+  tippingActions
+} from '@audius/common'
 import { IconButton, PillButton, useMediaQueryListener } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
-import { getAccountUser } from 'common/store/account/selectors'
 import { useRecord, make } from 'common/store/analytics/actions'
-import { getUsers } from 'common/store/cache/users/selectors'
-import { getShowTip, getTipToDisplay } from 'common/store/tipping/selectors'
-import { beginTip, fetchRecentTips, hideTip } from 'common/store/tipping/slice'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -32,6 +35,10 @@ import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
 
 import styles from './FeedTipTile.module.css'
+const { beginTip, fetchRecentTips, hideTip } = tippingActions
+const { getUsers } = cacheUsersSelectors
+const { getShowTip, getTipToDisplay } = tippingSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   wasTippedBy: 'Was Tipped By',

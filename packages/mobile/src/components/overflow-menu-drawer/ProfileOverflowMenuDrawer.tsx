@@ -1,18 +1,18 @@
-import type { ID } from '@audius/common'
-import { FollowSource, ShareSource } from '@audius/common'
-import type { CommonState } from 'audius-client/src/common/store'
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
+import type { ID, OverflowActionCallbacks, CommonState } from '@audius/common'
 import {
-  followUser,
-  unfollowUser,
-  shareUser
-} from 'audius-client/src/common/store/social/users/actions'
-import { getMobileOverflowModal } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
-import type { OverflowActionCallbacks } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { OverflowAction } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
+  FollowSource,
+  ShareSource,
+  cacheUsersSelectors,
+  usersSocialActions,
+  OverflowAction,
+  mobileOverflowMenuUISelectors
+} from '@audius/common'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
+const { followUser, unfollowUser, shareUser } = usersSocialActions
+const { getUser } = cacheUsersSelectors
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => React.ReactNode

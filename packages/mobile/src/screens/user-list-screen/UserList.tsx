@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ID, User } from '@audius/common'
-import { useFocusEffect, useIsFocused } from '@react-navigation/native'
-import type { CommonState } from 'audius-client/src/common/store'
-import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
+import type { ID, User, UserListStoreState, CommonState } from '@audius/common'
 import {
-  loadMore,
-  reset,
-  setLoading
-} from 'audius-client/src/common/store/user-list/actions'
-import { makeGetOptimisticUserIdsIfNeeded } from 'audius-client/src/common/store/user-list/selectors'
-import type { UserListStoreState } from 'audius-client/src/common/store/user-list/types'
+  cacheUsersSelectors,
+  userListActions,
+  userListSelectors
+} from '@audius/common'
+import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 import { View } from 'react-native'
 import type { Selector } from 'react-redux'
 
@@ -21,6 +17,9 @@ import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { UserListItem } from './UserListItem'
+const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
+const { loadMore, reset, setLoading } = userListActions
+const { getUsers } = cacheUsersSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   spinner: {

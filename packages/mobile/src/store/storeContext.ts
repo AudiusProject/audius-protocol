@@ -1,5 +1,5 @@
+import type { CommonStoreContext } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import type { CommonStoreContext } from 'audius-client/src/common/store'
 
 import * as analytics from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'

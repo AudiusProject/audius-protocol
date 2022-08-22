@@ -7,7 +7,16 @@ import {
   useState
 } from 'react'
 
-import { Chain, Collectible, CollectibleMediaType } from '@audius/common'
+import {
+  Chain,
+  Collectible,
+  CollectibleMediaType,
+  formatDateWithTimezoneOffset,
+  accountSelectors,
+  badgeTiers,
+  collectibleDetailsUISelectors,
+  collectibleDetailsUIActions
+} from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -26,21 +35,13 @@ import { ReactComponent as IconEmbed } from 'assets/img/iconEmbed.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import { ReactComponent as IconMute } from 'assets/img/iconVolume0.svg'
 import { useModalState } from 'common/hooks/useModalState'
-import { useSelectTierInfo } from 'common/hooks/wallet'
-import { getAccountUser } from 'common/store/account/selectors'
-import {
-  getCollectibleDetails,
-  getCollectible
-} from 'common/store/ui/collectible-details/selectors'
-import { setCollectible } from 'common/store/ui/collectible-details/slice'
-import { badgeTiers } from 'common/store/wallet/utils'
-import { formatDateWithTimezoneOffset } from 'common/utils/timeUtil'
 import Drawer from 'components/drawer/Drawer'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useScript } from 'hooks/useScript'
+import { useSelectTierInfo } from 'hooks/wallet'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { useIsMobile } from 'utils/clientUtil'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
@@ -49,6 +50,9 @@ import zIndex from 'utils/zIndex'
 
 import { collectibleMessages } from './CollectiblesPage'
 import styles from './CollectiblesPage.module.css'
+const { setCollectible } = collectibleDetailsUIActions
+const { getCollectibleDetails, getCollectible } = collectibleDetailsUISelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

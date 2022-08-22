@@ -1,9 +1,5 @@
-import {
-  getNotificationEntity,
-  getNotificationUsers
-} from 'audius-client/src/common/store/notifications/selectors'
-import type { Favorite } from 'common/store/notifications/types'
-import { formatCount } from 'common/utils/formatUtil'
+import type { FavoriteNotification as FavoriteNotificationType } from '@audius/common'
+import { formatCount, notificationsSelectors } from '@audius/common'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -19,6 +15,7 @@ import {
 } from '../Notification'
 
 import { useSocialActionHandler } from './useSocialActionHandler'
+const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   others: (userCount: number) =>
@@ -27,7 +24,7 @@ const messages = {
 }
 
 type FavoriteNotificationProps = {
-  notification: Favorite
+  notification: FavoriteNotificationType
 }
 
 export const FavoriteNotification = (props: FavoriteNotificationProps) => {

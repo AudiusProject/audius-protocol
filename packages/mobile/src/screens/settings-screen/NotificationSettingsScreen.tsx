@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { PushNotificationSetting } from 'audius-client/src/common/store/pages/settings/types'
+import { PushNotificationSetting } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { Screen } from 'app/components/core'

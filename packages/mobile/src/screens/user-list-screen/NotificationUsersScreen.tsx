@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 
-import { NotificationType } from 'audius-client/src/common/store/notifications/types'
-import { setNotificationId } from 'audius-client/src/common/store/user-list/notifications/actions'
-import { getUserList } from 'audius-client/src/common/store/user-list/notifications/selectors'
+import {
+  NotificationType,
+  notificationsUserListActions,
+  notificationsUserListSelectors
+} from '@audius/common'
 
 import { Screen } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -10,6 +12,8 @@ import { useRoute } from 'app/hooks/useRoute'
 import { formatCount } from 'app/utils/format'
 
 import { UserList } from './UserList'
+const { getUserList } = notificationsUserListSelectors
+const { setNotificationId } = notificationsUserListActions
 
 export const NotificationUsersScreen = () => {
   const { params } = useRoute<'NotificationUsers'>()

@@ -1,10 +1,11 @@
 import type { User } from '@audius/common'
-import { getOptimisticSupporting } from 'audius-client/src/common/store/tipping/selectors'
-import { getId as getSupportingId } from 'common/store/user-list/supporting/selectors'
+import { tippingSelectors, supportingUserListSelectors } from '@audius/common'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { Tip } from './Tip'
+const { getId: getSupportingId } = supportingUserListSelectors
+const { getOptimisticSupporting } = tippingSelectors
 
 type SupportingInfoProps = {
   user: User

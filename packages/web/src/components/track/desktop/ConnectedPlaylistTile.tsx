@@ -17,7 +17,12 @@ import {
   FavoriteSource,
   PlaybackSource,
   Name,
-  Track
+  Track,
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  collectionsSocialActions,
+  shareModalUIActions
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -26,20 +31,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import { getUserHandle } from 'common/store/account/selectors'
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import {
-  getCollection,
-  getTracksFromCollection
-} from 'common/store/cache/collections/selectors'
-import { getUserFromCollection } from 'common/store/cache/users/selectors'
-import {
-  saveCollection,
-  unsaveCollection,
-  repostCollection,
-  undoRepostCollection
-} from 'common/store/social/collections/actions'
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Draggable from 'components/dragndrop/Draggable'
 import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu'
@@ -75,6 +67,16 @@ import PlaylistTile from './PlaylistTile'
 import TrackListItem from './TrackListItem'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { getUserFromCollection } = cacheUsersSelectors
+const {
+  saveCollection,
+  unsaveCollection,
+  repostCollection,
+  undoRepostCollection
+} = collectionsSocialActions
+const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
+const getUserHandle = accountSelectors.getUserHandle
 
 type OwnProps = {
   uid: UID

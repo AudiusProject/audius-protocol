@@ -1,14 +1,11 @@
 import { useCallback } from 'react'
 
-import {
-  getNotificationEntities,
-  getNotificationUser
-} from 'audius-client/src/common/store/notifications/selectors'
 import type {
   EntityType,
-  RemixCreate,
-  TrackEntity
-} from 'audius-client/src/common/store/notifications/types'
+  TrackEntity,
+  RemixCreateNotification as RemixCreateNotificationType
+} from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
@@ -26,6 +23,7 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 import { useDrawerNavigation } from '../useDrawerNavigation'
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New Remix of Your Track',
@@ -35,7 +33,7 @@ const messages = {
 }
 
 type RemixCreateNotificationProps = {
-  notification: RemixCreate
+  notification: RemixCreateNotificationType
 }
 
 export const RemixCreateNotification = (

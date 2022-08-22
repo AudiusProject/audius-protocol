@@ -1,4 +1,4 @@
-import type { Genre } from 'audius-client/src/common/utils/genres'
+import type { Genre } from '@audius/common'
 
 import { track, make } from 'app/services/analytics'
 import { EventNames, PlaybackSource } from 'app/types/analytics'

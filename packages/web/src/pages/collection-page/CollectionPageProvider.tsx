@@ -15,7 +15,29 @@ import {
   FavoriteType,
   Kind,
   Status,
-  Uid
+  Uid,
+  formatUrlName,
+  accountSelectors,
+  cacheCollectionsActions,
+  lineupSelectors,
+  notificationsSelectors,
+  notificationsActions,
+  collectionPageActions as collectionActions,
+  collectionPageLineupActions as tracksActions,
+  collectionPageSelectors,
+  CollectionPageTrackRecord,
+  CollectionTrack,
+  CollectionsPageType,
+  OverflowAction,
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  RepostType,
+  repostsUserListActions,
+  favoritesUserListActions,
+  collectionsSocialActions as socialCollectionsActions,
+  tracksSocialActions as socialTracksActions,
+  usersSocialActions as socialUsersActions
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -23,53 +45,8 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import {
-  getUserId,
-  getAccountCollections
-} from 'common/store/account/selectors'
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import {
-  editPlaylist,
-  removeTrackFromPlaylist,
-  orderPlaylist,
-  publishPlaylist,
-  deletePlaylist
-} from 'common/store/cache/collections/actions'
-import {
-  makeGetTableMetadatas,
-  makeGetLineupOrder
-} from 'common/store/lineup/selectors'
-import { updatePlaylistLastViewedAt } from 'common/store/notifications/actions'
-import { getPlaylistUpdates } from 'common/store/notifications/selectors'
-import * as collectionActions from 'common/store/pages/collection/actions'
-import { tracksActions } from 'common/store/pages/collection/lineup/actions'
-import {
-  getCollection,
-  getCollectionStatus,
-  getCollectionTracksLineup,
-  getCollectionUid,
-  getUser,
-  getUserUid
-} from 'common/store/pages/collection/selectors'
-import {
-  TrackRecord,
-  CollectionTrack,
-  CollectionsPageType
-} from 'common/store/pages/collection/types'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import * as socialCollectionsActions from 'common/store/social/collections/actions'
-import * as socialTracksActions from 'common/store/social/tracks/actions'
-import * as socialUsersActions from 'common/store/social/users/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/slice'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import { setFavorite } from 'common/store/user-list/favorites/actions'
-import { setRepost } from 'common/store/user-list/reposts/actions'
-import { RepostType } from 'common/store/user-list/reposts/types'
-import { formatUrlName } from 'common/utils/formatUtil'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import {
@@ -97,6 +74,30 @@ import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
+const { setFavorite } = favoritesUserListActions
+const { setRepost } = repostsUserListActions
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open } = mobileOverflowMenuUIActions
+const {
+  getCollection,
+  getCollectionStatus,
+  getCollectionTracksLineup,
+  getCollectionUid,
+  getUser,
+  getUserUid
+} = collectionPageSelectors
+const { updatePlaylistLastViewedAt } = notificationsActions
+const { getPlaylistUpdates } = notificationsSelectors
+const { makeGetTableMetadatas, makeGetLineupOrder } = lineupSelectors
+const {
+  editPlaylist,
+  removeTrackFromPlaylist,
+  orderPlaylist,
+  publishPlaylist,
+  deletePlaylist
+} = cacheCollectionsActions
+
+const { getUserId, getAccountCollections } = accountSelectors
 
 type OwnProps = {
   type: CollectionsPageType
@@ -382,7 +383,9 @@ class CollectionPage extends Component<
     return currentQueueItem.track ? currentQueueItem.track.track_id : null
   }
 
-  formatMetadata = (trackMetadatas: CollectionTrack[]): TrackRecord[] => {
+  formatMetadata = (
+    trackMetadatas: CollectionTrack[]
+  ): CollectionPageTrackRecord[] => {
     return trackMetadatas.map((metadata, i) => ({
       ...metadata,
       key: `${metadata.title}_${metadata.uid}_${i}`,
@@ -417,7 +420,7 @@ class CollectionPage extends Component<
     ]
   }
 
-  onClickRow = (trackRecord: TrackRecord) => {
+  onClickRow = (trackRecord: CollectionPageTrackRecord) => {
     const { playing, play, pause, record } = this.props
     const playingUid = this.getPlayingUid()
     if (playing && playingUid === trackRecord.uid) {
@@ -457,7 +460,7 @@ class CollectionPage extends Component<
     )
   }
 
-  onClickSave = (record: TrackRecord) => {
+  onClickSave = (record: CollectionPageTrackRecord) => {
     if (!record.has_current_user_saved) {
       this.props.saveTrack(record.track_id)
     } else {
@@ -465,15 +468,15 @@ class CollectionPage extends Component<
     }
   }
 
-  onClickTrackName = (record: TrackRecord) => {
+  onClickTrackName = (record: CollectionPageTrackRecord) => {
     this.props.goToRoute(record.permalink)
   }
 
-  onClickArtistName = (record: TrackRecord) => {
+  onClickArtistName = (record: CollectionPageTrackRecord) => {
     this.props.goToRoute(profilePage(record.handle))
   }
 
-  onClickRepostTrack = (record: TrackRecord) => {
+  onClickRepostTrack = (record: CollectionPageTrackRecord) => {
     if (!record.has_current_user_reposted) {
       this.props.repostTrack(record.track_id)
     } else {

@@ -1,4 +1,5 @@
-import { CommonStoreContext } from 'common/store'
+import { CommonStoreContext } from '@audius/common'
+
 import * as analytics from 'services/analytics'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -10,8 +11,8 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { walletClient } from 'services/wallet-client'
 
 export const storeContext: CommonStoreContext = {
-  getLocalStorageItem: async (key) => window.localStorage.getItem(key),
-  setLocalStorageItem: async (key, value) =>
+  getLocalStorageItem: async (key: string) => window.localStorage.getItem(key),
+  setLocalStorageItem: async (key: string, value: string) =>
     window.localStorage.setItem(key, value),
   getFeatureEnabled,
   analytics,

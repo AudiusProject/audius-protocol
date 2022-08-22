@@ -4,7 +4,20 @@ import {
   StringAudio,
   IntKeys,
   StringKeys,
-  RemoteConfigInstance
+  RemoteConfigInstance,
+  getContext,
+  stringAudioToStringWei,
+  accountSelectors,
+  accountActions,
+  audioRewardsPageActions,
+  ClaimStatus,
+  CognitoFlowStatus,
+  HCaptchaStatus,
+  UndisbursedUserChallenge,
+  audioRewardsPageSelectors,
+  solanaSelectors,
+  walletActions,
+  modalsActions
 } from '@audius/common'
 import {
   call,
@@ -18,49 +31,7 @@ import {
   delay
 } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { fetchAccountSucceeded } from 'common/store/account/reducer'
-import {
-  getAccountUser,
-  getUserHandle,
-  getUserId
-} from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import {
-  getClaimStatus,
-  getClaimToRetry,
-  getUserChallenge,
-  getUserChallengesOverrides,
-  getUserChallengeSpecifierMap
-} from 'common/store/pages/audio-rewards/selectors'
-import {
-  resetAndCancelClaimReward,
-  claimChallengeReward,
-  claimChallengeRewardFailed,
-  claimChallengeRewardSucceeded,
-  claimChallengeRewardWaitForRetry,
-  ClaimStatus,
-  CognitoFlowStatus,
-  fetchUserChallenges,
-  fetchUserChallengesFailed,
-  fetchUserChallengesSucceeded,
-  HCaptchaStatus,
-  setCognitoFlowStatus,
-  setHCaptchaStatus,
-  setUserChallengesDisbursed,
-  updateHCaptchaScore,
-  showRewardClaimedToast,
-  claimChallengeRewardAlreadyClaimed,
-  setUserChallengeCurrentStepCount,
-  resetUserChallengeCurrentStepCount,
-  updateOptimisticListenStreak,
-  setUndisbursedChallenges,
-  UndisbursedUserChallenge
-} from 'common/store/pages/audio-rewards/slice'
-import { getFeePayer } from 'common/store/solana/selectors'
-import { setVisibility } from 'common/store/ui/modals/slice'
-import { getBalance, increaseBalance } from 'common/store/wallet/slice'
-import { stringAudioToStringWei } from 'common/utils/wallet'
 import { show as showMusicConfetti } from 'components/music-confetti/store/slice'
 import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
 import { getCognitoExists } from 'services/audius-backend/Cognito'
@@ -70,6 +41,39 @@ import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
 } from 'utils/sagaPollingDaemons'
+const { setVisibility } = modalsActions
+const { getBalance, increaseBalance } = walletActions
+const { getFeePayer } = solanaSelectors
+const {
+  getClaimStatus,
+  getClaimToRetry,
+  getUserChallenge,
+  getUserChallengesOverrides,
+  getUserChallengeSpecifierMap
+} = audioRewardsPageSelectors
+const {
+  resetAndCancelClaimReward,
+  claimChallengeReward,
+  claimChallengeRewardFailed,
+  claimChallengeRewardSucceeded,
+  claimChallengeRewardWaitForRetry,
+  fetchUserChallenges,
+  fetchUserChallengesFailed,
+  fetchUserChallengesSucceeded,
+  setCognitoFlowStatus,
+  setHCaptchaStatus,
+  setUserChallengesDisbursed,
+  updateHCaptchaScore,
+  showRewardClaimedToast,
+  claimChallengeRewardAlreadyClaimed,
+  setUserChallengeCurrentStepCount,
+  resetUserChallengeCurrentStepCount,
+  updateOptimisticListenStreak,
+  setUndisbursedChallenges
+} = audioRewardsPageActions
+const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
+
+const { getAccountUser, getUserHandle, getUserId } = accountSelectors
 
 const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
 const REACT_APP_ORACLE_ETH_ADDRESSES =

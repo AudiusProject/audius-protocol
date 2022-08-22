@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  notificationsSelectors,
+  Entity,
+  UserSubscriptionNotification as UserSubscriptionNotificationType
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import {
-  getNotificationEntities,
-  getNotificationUser
-} from 'common/store/notifications/selectors'
-import { Entity, UserSubscription } from 'common/store/notifications/types'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 
@@ -24,6 +24,7 @@ import { ProfilePicture } from './components/ProfilePicture'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRelease } from './components/icons'
 import { getEntityLink } from './utils'
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New Release',
@@ -32,7 +33,7 @@ const messages = {
 }
 
 type UserSubscriptionNotificationProps = {
-  notification: UserSubscription
+  notification: UserSubscriptionNotificationType
 }
 
 export const UserSubscriptionNotification = (

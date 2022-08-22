@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 
+import {
+  trendingUndergroundPageLineupActions,
+  trendingUndergroundPageLineupSelectors
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { trendingUndergroundLineupActions } from 'common/store/pages/trending-underground/lineup/actions'
-import { getLineup } from 'common/store/pages/trending-underground/lineup/selectors'
 import DesktopHeader from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Lineup from 'components/lineup/Lineup'
@@ -16,10 +18,11 @@ import { isMobile } from 'utils/clientUtil'
 import { BASE_URL, TRENDING_UNDERGROUND_PAGE } from 'utils/route'
 
 import styles from './TrendingUndergroundPage.module.css'
+const { getLineup } = trendingUndergroundPageLineupSelectors
 
 const useTrendingUndergroundLineup = (containerRef: HTMLElement) => {
   return useLineupProps({
-    actions: trendingUndergroundLineupActions,
+    actions: trendingUndergroundPageLineupActions,
     getLineupSelector: getLineup,
     variant: LineupVariant.MAIN,
     scrollParent: containerRef,
@@ -88,7 +91,7 @@ const useLineupReset = () => {
   const dispatch = useDispatch()
   useEffect(() => {
     return () => {
-      dispatch(trendingUndergroundLineupActions.reset())
+      dispatch(trendingUndergroundPageLineupActions.reset())
     }
   }, [dispatch])
 }

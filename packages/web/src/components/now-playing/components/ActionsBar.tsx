@@ -1,5 +1,6 @@
 import { memo } from 'react'
 
+import { CastMethod } from '@audius/common'
 import {
   IconShare,
   IconKebabHorizontal,
@@ -9,7 +10,6 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import { CastMethod } from 'common/store/cast/slice'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { AirplayMessage } from 'services/native-mobile-interface/cast'

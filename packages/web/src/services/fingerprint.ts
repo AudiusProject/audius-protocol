@@ -1,4 +1,4 @@
-import { FingerprintClient } from 'common/services/fingerprint'
+import { FingerprintClient } from '@audius/common'
 
 const apiKey = process.env.REACT_APP_FINGERPRINT_PUBLIC_API_KEY || ''
 const endpoint = process.env.REACT_APP_FINGERPRINT_ENDPOINT || ''

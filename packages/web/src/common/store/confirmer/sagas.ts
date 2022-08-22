@@ -1,6 +1,6 @@
+import { getContext } from '@audius/common'
 import { call, delay, put, race, select, takeEvery } from 'redux-saga/effects'
 
-import { getContext } from 'common/store'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import {
   getResult,

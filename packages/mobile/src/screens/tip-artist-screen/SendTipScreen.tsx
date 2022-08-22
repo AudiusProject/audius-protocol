@@ -1,21 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { BNWei, StringWei } from '@audius/common'
+import {
+  stringWeiToBN,
+  accountSelectors,
+  tippingSelectors,
+  tippingActions,
+  walletSelectors,
+  walletActions
+} from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import {
-  getOptimisticSupporters,
-  getOptimisticSupporting,
-  getSendUser
-} from 'audius-client/src/common/store/tipping/selectors'
-import {
-  sendTip,
-  fetchUserSupporter,
-  refreshSupport
-} from 'audius-client/src/common/store/tipping/slice'
-import { getAccountBalance } from 'audius-client/src/common/store/wallet/selectors'
-import { getBalance } from 'audius-client/src/common/store/wallet/slice'
-import { stringWeiToBN } from 'audius-client/src/common/utils/wallet'
 import { useGetFirstOrTopSupporter } from 'audius-client/src/hooks/useGetFirstOrTopSupporter'
 import BN from 'bn.js'
 
@@ -37,6 +31,12 @@ import { ReceiverDetails } from './ReceiverDetails'
 import { TipInput } from './TipInput'
 import { TipScreen } from './TipScreen'
 import type { TipArtistNavigationParamList } from './navigation'
+const { getBalance } = walletActions
+const { getAccountBalance } = walletSelectors
+const { sendTip, fetchUserSupporter, refreshSupport } = tippingActions
+const { getOptimisticSupporters, getOptimisticSupporting, getSendUser } =
+  tippingSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   sendTip: 'Send Tip',

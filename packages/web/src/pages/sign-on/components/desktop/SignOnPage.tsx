@@ -1,6 +1,14 @@
 import { Suspense, useEffect } from 'react'
 
-import { ID, Status, User } from '@audius/common'
+import {
+  ID,
+  Status,
+  User,
+  accountSelectors,
+  AccountImage,
+  InstagramProfile,
+  TwitterProfile
+} from '@audius/common'
 import cn from 'classnames'
 import { animated } from 'react-spring'
 import { Transition } from 'react-spring/renderprops'
@@ -11,12 +19,6 @@ import imageSignUp3 from 'assets/img/4-Conductor-4-3.jpg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import imagePhone from 'assets/img/imagePhone.png'
 import CTAImage from 'assets/img/signUpCTA.png'
-import {
-  AccountImage,
-  InstagramProfile,
-  TwitterProfile
-} from 'common/store/account/reducer'
-import { getAccountStatus } from 'common/store/account/selectors'
 import { getStatus } from 'common/store/pages/signon/selectors'
 import { Pages, FollowArtistsCategory } from 'common/store/pages/signon/types'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
@@ -37,6 +39,7 @@ import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 
 import AppCTA from './AppCTA'
 import styles from './SignOn.module.css'
+const getAccountStatus = accountSelectors.getAccountStatus
 
 const MetaMaskModal = lazyWithPreload(
   () => import('pages/sign-on/components/desktop/MetaMaskModal'),

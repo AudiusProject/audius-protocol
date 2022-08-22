@@ -6,30 +6,23 @@ import {
   RepostSource,
   ShareSource,
   FavoriteType,
-  SquareSizes
-} from '@audius/common'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import {
-  repostCollection,
-  saveCollection,
-  undoRepostCollection,
-  unsaveCollection
-} from 'audius-client/src/common/store/social/collections/actions'
-import {
+  SquareSizes,
+  formatDate,
+  accountSelectors,
+  collectionPageSelectors,
+  collectionsSocialActions,
   OverflowAction,
-  OverflowSource
-} from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
-import { setFavorite } from 'audius-client/src/common/store/user-list/favorites/actions'
-import { setRepost } from 'audius-client/src/common/store/user-list/reposts/actions'
-import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
-import { formatDate } from 'audius-client/src/common/utils/timeUtil'
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  RepostType,
+  repostsUserListActions,
+  favoritesUserListActions
+} from '@audius/common'
 import {
   FAVORITING_USERS_ROUTE,
   REPOSTING_USERS_ROUTE
 } from 'audius-client/src/utils/route'
-import { getCollection, getUser } from 'common/store/pages/collection/selectors'
-import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 
 import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
@@ -41,6 +34,18 @@ import type { SearchPlaylist, SearchUser } from 'app/store/search/types'
 import { makeStyles } from 'app/styles'
 
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
+const { setFavorite } = favoritesUserListActions
+const { setRepost } = repostsUserListActions
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open: openOverflowMenu } = mobileOverflowMenuUIActions
+const {
+  repostCollection,
+  saveCollection,
+  undoRepostCollection,
+  unsaveCollection
+} = collectionsSocialActions
+const { getCollection, getUser } = collectionPageSelectors
+const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {

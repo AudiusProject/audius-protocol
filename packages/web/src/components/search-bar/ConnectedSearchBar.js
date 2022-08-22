@@ -1,16 +1,19 @@
 import { Component } from 'react'
 
-import { Name, SquareSizes } from '@audius/common'
+import {
+  Name,
+  SquareSizes,
+  getTierForUser,
+  imageBlank as placeholderArt,
+  imageProfilePicEmpty as profilePicEmpty
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
-import placeholderArt from 'common/assets/img/imageBlank2x.png'
-import profilePicEmpty from 'common/assets/img/imageProfilePicEmpty2X.png'
 import { make } from 'common/store/analytics/actions'
-import { getTierForUser } from 'common/store/wallet/utils'
 import { getSearch } from 'components/search-bar/store/selectors'
 import Bar from 'components/search/SearchBar'
 import { albumPage, playlistPage, profilePage, getPathname } from 'utils/route'

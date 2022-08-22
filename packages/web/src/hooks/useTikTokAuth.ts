@@ -2,13 +2,13 @@
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 
-import { Name } from '@audius/common'
-
 import {
+  Name,
   Credentials,
   UseTikTokAuthArguments,
   createUseTikTokAuthHook
-} from 'common/hooks/useTikTokAuth'
+} from '@audius/common'
+
 import { useRecord, make } from 'common/store/analytics/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 

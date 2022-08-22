@@ -1,6 +1,19 @@
 import { cloneElement, useCallback, useEffect, useState } from 'react'
 
-import { BadgeTier, BNWei, StringAudio, StringWei } from '@audius/common'
+import {
+  BadgeTier,
+  BNWei,
+  StringAudio,
+  StringWei,
+  formatWei,
+  stringWeiToBN,
+  weiToString,
+  accountSelectors,
+  tippingSelectors,
+  tippingActions,
+  walletSelectors,
+  getTierAndNumberForBalance
+} from '@audius/common'
 import { Format, IconTrophy, TokenValueInput } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -8,16 +21,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCircle.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
-import { getAccountUser } from 'common/store/account/selectors'
-import {
-  getOptimisticSupporters,
-  getOptimisticSupporting,
-  getSendUser
-} from 'common/store/tipping/selectors'
-import { fetchUserSupporter, sendTip } from 'common/store/tipping/slice'
-import { getAccountBalance } from 'common/store/wallet/selectors'
-import { getTierAndNumberForBalance } from 'common/store/wallet/utils'
-import { formatWei, stringWeiToBN, weiToString } from 'common/utils/wallet'
 import Tooltip from 'components/tooltip/Tooltip'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useGetFirstOrTopSupporter } from 'hooks/useGetFirstOrTopSupporter'
@@ -26,6 +29,11 @@ import ButtonWithArrow from 'pages/audio-rewards-page/components/ButtonWithArrow
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
 import styles from './TipAudio.module.css'
+const { getAccountBalance } = walletSelectors
+const { getOptimisticSupporters, getOptimisticSupporting, getSendUser } =
+  tippingSelectors
+const { fetchUserSupporter, sendTip } = tippingActions
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   availableToSend: 'AVAILABLE TO SEND',

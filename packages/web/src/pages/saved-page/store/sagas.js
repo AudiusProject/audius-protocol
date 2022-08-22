@@ -1,4 +1,10 @@
 import {
+  accountSelectors,
+  savedPageTracksLineupActions as tracksActions,
+  savedPageActions as actions,
+  savedPageSelectors
+} from '@audius/common'
+import {
   takeLatest,
   call,
   put,
@@ -7,14 +13,12 @@ import {
   getContext
 } from 'redux-saga/effects'
 
-import { getAccountUser } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import * as actions from 'common/store/pages/saved-page/actions'
-import { tracksActions } from 'common/store/pages/saved-page/lineups/tracks/actions'
-import { getSaves } from 'common/store/pages/saved-page/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/tracks/sagas'
+const { getSaves } = savedPageSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 function* fetchTracksLineup() {
   yield put(tracksActions.fetchLineupMetadatas())

@@ -1,9 +1,10 @@
+import { reachabilitySelectors } from '@audius/common'
 import { connect } from 'react-redux'
 
-import { getIsReachable } from 'common/store/reachability/selectors'
 import { AppState } from 'store/types'
 
 import ReachabilityBarContainer from './components/ReachabilityBarContainer'
+const { getIsReachable } = reachabilitySelectors
 
 type ConnectedReachabilityBarProps = ReturnType<typeof mapStateToProps>
 

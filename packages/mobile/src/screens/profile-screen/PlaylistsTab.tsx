@@ -1,9 +1,10 @@
-import { getProfilePlaylists } from 'audius-client/src/common/store/pages/profile/selectors'
+import { profilePageSelectors } from '@audius/common'
 
 import { CollectionList } from 'app/components/collection-list'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { useEmptyProfileText } from './EmptyProfileTile'
+const { getProfilePlaylists } = profilePageSelectors
 
 export const PlaylistsTab = () => {
   const playlists = useSelectorWeb(getProfilePlaylists)

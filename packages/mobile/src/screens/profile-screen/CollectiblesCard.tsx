@@ -1,9 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
 import type { ID, Collectible } from '@audius/common'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { setCollectible } from 'audius-client/src/common/store/ui/collectible-details/slice'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+import {
+  accountSelectors,
+  collectibleDetailsUIActions,
+  modalsActions
+} from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, Text, View } from 'react-native'
 
@@ -14,6 +16,9 @@ import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles, shadow } from 'app/styles'
+const { setVisibility } = modalsActions
+const { setCollectible } = collectibleDetailsUIActions
+const getUserId = accountSelectors.getUserId
 
 type UseStyleConfig = {
   isOwned: boolean

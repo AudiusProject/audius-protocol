@@ -1,7 +1,5 @@
-import { BNWei } from '@audius/common'
+import { BNWei, formatWei } from '@audius/common'
 import cn from 'classnames'
-
-import { formatWei } from 'common/utils/wallet'
 
 import styles from './DisplayAudio.module.css'
 import TokenHoverTooltip from './TokenHoverTooltip'

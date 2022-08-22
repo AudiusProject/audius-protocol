@@ -4,13 +4,13 @@ import {
   ID,
   ProfilePictureSizes,
   SquareSizes,
-  CoverArtSizes
+  CoverArtSizes,
+  pluralize,
+  imageBlank as placeholderArt
 } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import placeholderArt from 'common/assets/img/imageBlank2x.png'
-import { pluralize } from 'common/utils/formatUtil'
 import ActionsTab from 'components/actions-tab/ActionsTab'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Menu, { MenuOptionType } from 'components/menu/Menu'

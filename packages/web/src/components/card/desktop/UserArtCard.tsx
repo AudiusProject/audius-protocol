@@ -1,14 +1,17 @@
 import { useCallback } from 'react'
 
-import { ID, SquareSizes } from '@audius/common'
+import {
+  ID,
+  SquareSizes,
+  formatCount,
+  cacheUsersSelectors,
+  imageBlank as placeholderArt
+} from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import placeholderArt from 'common/assets/img/imageBlank2x.png'
-import { getUser } from 'common/store/cache/users/selectors'
-import { formatCount } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -26,6 +29,7 @@ import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './UserArtCard.module.css'
+const { getUser } = cacheUsersSelectors
 
 const messages = {
   followers: (count: number) => `${formatCount(count)} Followers`

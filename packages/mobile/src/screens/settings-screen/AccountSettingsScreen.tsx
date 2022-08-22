@@ -1,8 +1,10 @@
 import { useCallback, useContext } from 'react'
 
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { resendRecoveryEmail } from 'audius-client/src/common/store/recovery-email/slice'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+import {
+  accountSelectors,
+  recoveryEmailActions,
+  modalsActions
+} from '@audius/common'
 import { Text, View } from 'react-native'
 
 import Door from 'app/assets/images/emojis/door.png'
@@ -25,6 +27,9 @@ import { makeStyles } from 'app/styles'
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { AccountSettingsItem } from './AccountSettingsItem'
+const { resendRecoveryEmail } = recoveryEmailActions
+const { setVisibility } = modalsActions
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: 'Account',

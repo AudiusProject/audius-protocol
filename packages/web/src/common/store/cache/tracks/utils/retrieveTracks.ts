@@ -4,16 +4,17 @@ import {
   Status,
   Track,
   TrackMetadata,
-  UserTrackMetadata
+  UserTrackMetadata,
+  accountSelectors,
+  CommonState,
+  getContext,
+  cacheSelectors,
+  cacheTracksActions as trackActions,
+  cacheTracksSelectors
 } from '@audius/common'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
-import { CommonState, getContext } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
 import { retrieve } from 'common/store/cache/sagas'
-import { getEntryTimestamp } from 'common/store/cache/selectors'
-import * as trackActions from 'common/store/cache/tracks/actions'
-import { getTracks as getTracksSelector } from 'common/store/cache/tracks/selectors'
 import { waitForAccount } from 'utils/sagaHelpers'
 
 import { setTracksIsBlocked } from './blocklist'
@@ -24,6 +25,9 @@ import {
 import { fetchAndProcessStems } from './fetchAndProcessStems'
 import { addUsersFromTracks } from './helpers'
 import { reformat } from './reformat'
+const { getEntryTimestamp } = cacheSelectors
+const { getTracks: getTracksSelector } = cacheTracksSelectors
+const getUserId = accountSelectors.getUserId
 
 type UnlistedTrackRequest = { id: ID; url_title: string; handle: string }
 type RetrieveTracksArgs = {

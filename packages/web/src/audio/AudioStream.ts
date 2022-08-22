@@ -1,7 +1,6 @@
-import { TrackSegment } from '@audius/common'
+import { TrackSegment, decodeHashId } from '@audius/common'
 import Hls from 'hls.js'
 
-import { decodeHashId } from 'common/utils/hashIds'
 import { fetchCID } from 'services/audius-backend'
 import { generateM3U8, generateM3U8Variants } from 'utils/hlsUtil'
 

@@ -1,26 +1,28 @@
 import { memo } from 'react'
 
-import { ID, FavoriteSource, RepostSource } from '@audius/common'
+import {
+  ID,
+  FavoriteSource,
+  RepostSource,
+  accountSelectors,
+  cacheUsersSelectors,
+  tracksSocialActions,
+  OverflowAction,
+  OverflowSource,
+  mobileOverflowMenuUIActions
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getUserId } from 'common/store/account/selectors'
-import { getUserFromTrack } from 'common/store/cache/users/selectors'
-import {
-  saveTrack,
-  unsaveTrack,
-  repostTrack,
-  undoRepostTrack
-} from 'common/store/social/tracks/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/slice'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'common/store/ui/mobile-overflow-menu/types'
 import { AppState } from 'store/types'
 
 import TrackListItem, { TrackListItemProps } from './TrackListItem'
+const { open } = mobileOverflowMenuUIActions
+const { getUserFromTrack } = cacheUsersSelectors
+const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
+  tracksSocialActions
+const getUserId = accountSelectors.getUserId
 
 type OwnProps = Omit<TrackListItemProps, 'userId'>
 type StateProps = ReturnType<typeof mapStateToProps>

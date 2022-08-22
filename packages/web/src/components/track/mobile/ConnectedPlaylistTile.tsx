@@ -8,35 +8,25 @@ import {
   PlaybackSource,
   ShareSource,
   FavoriteType,
-  Track
+  Track,
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  collectionsSocialActions,
+  OverflowAction,
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  themeSelectors,
+  RepostType,
+  favoritesUserListActions,
+  repostsUserListActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getUserId } from 'common/store/account/selectors'
 import { useRecord, make } from 'common/store/analytics/actions'
-import {
-  getCollection,
-  getTracksFromCollection
-} from 'common/store/cache/collections/selectors'
-import { getUserFromCollection } from 'common/store/cache/users/selectors'
-import {
-  saveCollection,
-  unsaveCollection,
-  repostCollection,
-  undoRepostCollection
-} from 'common/store/social/collections/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/slice'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import { getTheme } from 'common/store/ui/theme/selectors'
-import { setFavorite } from 'common/store/user-list/favorites/actions'
-import { setRepost } from 'common/store/user-list/reposts/actions'
-import { RepostType } from 'common/store/user-list/reposts/types'
 import { PlaylistTileProps } from 'components/track/types'
 import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
 import { AppState } from 'store/types'
@@ -52,6 +42,20 @@ import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
 
 import PlaylistTile from './PlaylistTile'
+const { setFavorite } = favoritesUserListActions
+const { setRepost } = repostsUserListActions
+const { getTheme } = themeSelectors
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open } = mobileOverflowMenuUIActions
+const { getUserFromCollection } = cacheUsersSelectors
+const {
+  saveCollection,
+  unsaveCollection,
+  repostCollection,
+  undoRepostCollection
+} = collectionsSocialActions
+const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
+const getUserId = accountSelectors.getUserId
 
 type ConnectedPlaylistTileProps = PlaylistTileProps &
   ReturnType<typeof mapStateToProps> &

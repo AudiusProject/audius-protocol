@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
-import type { ID } from '@audius/common'
-import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
-import { getOptimisticSupportingForUser } from 'audius-client/src/common/store/tipping/selectors'
-import type { SupportingMapForUser } from 'audius-client/src/common/store/tipping/types'
-import { stringWeiToBN } from 'audius-client/src/common/utils/wallet'
+import {
+  stringWeiToBN,
+  cacheUsersSelectors,
+  tippingSelectors
+} from '@audius/common'
+import type { ID, SupportingMapForUser } from '@audius/common'
 import { MAX_PROFILE_SUPPORTING_TILES } from 'audius-client/src/utils/constants'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
@@ -15,6 +16,8 @@ import { ProfilePictureList } from 'app/screens/notifications-screen/Notificatio
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
+const { getOptimisticSupportingForUser } = tippingSelectors
+const { getUsers } = cacheUsersSelectors
 
 const MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS = 5
 

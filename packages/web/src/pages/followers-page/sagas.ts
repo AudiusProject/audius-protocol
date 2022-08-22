@@ -1,17 +1,19 @@
-import { ID, User } from '@audius/common'
+import {
+  ID,
+  User,
+  cacheUsersSelectors,
+  followersUserListSelectors,
+  UserListSagaFactory,
+  followersUserListActions,
+  FOLLOWERS_USER_LIST_TAG as USER_LIST_TAG
+} from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
-import { getUser } from 'common/store/cache/users/selectors'
-import { getFollowersError } from 'common/store/user-list/followers/actions'
 import { watchFollowersError } from 'common/store/user-list/followers/errorSagas'
-import {
-  getId,
-  getUserList,
-  getUserIds
-} from 'common/store/user-list/followers/selectors'
-import { USER_LIST_TAG } from 'common/store/user-list/followers/types'
-import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
+const { getFollowersError } = followersUserListActions
+const { getId, getUserList, getUserIds } = followersUserListSelectors
+const { getUser } = cacheUsersSelectors
 
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,

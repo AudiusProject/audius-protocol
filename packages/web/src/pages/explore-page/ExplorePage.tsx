@@ -1,12 +1,13 @@
+import { remoteConfigSelectors } from '@audius/common'
 import { connect, useSelector } from 'react-redux'
 
-import { isRemoteConfigLoaded } from 'common/store/remote-config/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 
 import ExplorePageProvider from './ExplorePageProvider'
 import DesktopExplorePage from './components/desktop/ExplorePage'
 import MobileExplorePage from './components/mobile/ExplorePage'
+const { isRemoteConfigLoaded } = remoteConfigSelectors
 
 type OwnProps = {}
 

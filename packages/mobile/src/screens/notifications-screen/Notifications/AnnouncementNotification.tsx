@@ -1,4 +1,4 @@
-import type { Announcement } from 'audius-client/src/common/store/notifications/types'
+import type { AnnouncementNotification as AnnouncementNotificationType } from '@audius/common'
 import Markdown from 'react-native-markdown-display'
 
 import IconAudius from 'app/assets/images/iconAudius.svg'
@@ -31,7 +31,7 @@ const useStyles = makeStyles(({ typography, palette }) => ({
 }))
 
 type AnnouncementNotificationProps = {
-  notification: Announcement
+  notification: AnnouncementNotificationType
 }
 
 export const AnnouncementNotification = (

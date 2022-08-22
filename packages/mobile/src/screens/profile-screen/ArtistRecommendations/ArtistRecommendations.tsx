@@ -1,12 +1,11 @@
 import { Fragment, useCallback } from 'react'
 
-import { FollowSource } from '@audius/common'
 import {
-  followUser,
-  unfollowUser
-} from 'audius-client/src/common/store/social/users/actions'
-import { makeGetRelatedArtists } from 'audius-client/src/common/store/ui/artist-recommendations/selectors'
-import { fetchRelatedArtists } from 'audius-client/src/common/store/ui/artist-recommendations/slice'
+  FollowSource,
+  usersSocialActions,
+  artistRecommendationsUISelectors,
+  artistRecommendationsUIActions
+} from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 import { useEffectOnce } from 'react-use'
 
@@ -25,6 +24,9 @@ import { EventNames } from 'app/types/analytics'
 import { useSelectProfile } from '../selectors'
 
 import { ArtistLink } from './ArtistLink'
+const { fetchRelatedArtists } = artistRecommendationsUIActions
+const { makeGetRelatedArtists } = artistRecommendationsUISelectors
+const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
   description: 'Here are some accounts that vibe well with',

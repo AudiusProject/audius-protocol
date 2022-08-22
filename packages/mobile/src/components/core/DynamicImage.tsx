@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 import type { Maybe } from '@audius/common'
-import useInstanceVar from 'audius-client/src/common/hooks/useInstanceVar'
+import { useInstanceVar } from '@audius/common'
 import type {
   ImageProps,
   ImageStyle,

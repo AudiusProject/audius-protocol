@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { squashNewLines } from 'audius-client/src/common/utils/formatUtil'
+import { squashNewLines, accountSelectors } from '@audius/common'
 import type { ImageStyle } from 'react-native'
 import { TouchableOpacity, View } from 'react-native'
 
@@ -188,7 +187,7 @@ export const DetailsTile = ({
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const currentUserId = useSelectorWeb(getUserId)
+  const currentUserId = useSelectorWeb(accountSelectors.getUserId)
 
   const isOwner = user?.user_id === currentUserId
 

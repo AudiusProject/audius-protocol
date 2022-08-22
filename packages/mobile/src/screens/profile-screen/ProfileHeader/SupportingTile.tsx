@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
 import type { Supporting } from '@audius/common'
-import { WidthSizes } from '@audius/common'
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
+import { WidthSizes, cacheUsersSelectors } from '@audius/common'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
 import { profilePage } from 'audius-client/src/utils/route'
 import type { StyleProp, ViewStyle } from 'react-native'
@@ -19,6 +18,7 @@ import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
+const { getUser } = cacheUsersSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {

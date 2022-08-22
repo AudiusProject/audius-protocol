@@ -7,7 +7,14 @@ import {
   useState
 } from 'react'
 
-import { Collectible, CollectiblesMetadata } from '@audius/common'
+import {
+  Collectible,
+  CollectiblesMetadata,
+  useInstanceVar,
+  ProfileUser,
+  collectibleDetailsUISelectors,
+  collectibleDetailsUIActions
+} from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -30,11 +37,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconGradientCollectibles } from 'assets/img/iconGradientCollectibles.svg'
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import { useModalState } from 'common/hooks/useModalState'
-import { ProfileUser } from 'common/store/pages/profile/types'
-import { getCollectible } from 'common/store/ui/collectible-details/selectors'
-import { setCollectible } from 'common/store/ui/collectible-details/slice'
 import CollectibleDetails from 'components/collectibles/components/CollectibleDetails'
 import {
   HiddenCollectibleRow,
@@ -57,6 +60,8 @@ import {
 import zIndex from 'utils/zIndex'
 
 import styles from './CollectiblesPage.module.css'
+const { getCollectible } = collectibleDetailsUISelectors
+const { setCollectible } = collectibleDetailsUIActions
 
 export const editTableContainerClass = 'editTableContainer'
 

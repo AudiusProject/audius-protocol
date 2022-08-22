@@ -1,6 +1,12 @@
 import { PureComponent } from 'react'
 
 import {
+  squashNewLines,
+  getCanonicalName,
+  formatDate,
+  formatSeconds
+} from '@audius/common'
+import {
   Button,
   ButtonType,
   IconShare,
@@ -15,9 +21,6 @@ import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
 
-import { squashNewLines } from 'common/utils/formatUtil'
-import { getCanonicalName } from 'common/utils/genres'
-import { formatDate, formatSeconds } from 'common/utils/timeUtil'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

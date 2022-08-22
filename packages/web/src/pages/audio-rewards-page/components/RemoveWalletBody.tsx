@@ -1,17 +1,18 @@
 import { useCallback } from 'react'
 
+import {
+  tokenDashboardPageActions,
+  tokenDashboardPageSelectors
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { getRemoveWallet } from 'common/store/pages/token-dashboard/selectors'
-import {
-  confirmRemoveWallet,
-  pressConnectWallets
-} from 'common/store/pages/token-dashboard/slice'
 import { useSelector } from 'utils/reducer'
 
 import styles from './RemoveWalletBody.module.css'
+const { getRemoveWallet } = tokenDashboardPageSelectors
+const { confirmRemoveWallet, pressConnectWallets } = tokenDashboardPageActions
 
 const messages = {
   warning: 'Are you sure you want to remove this wallet from your account?',

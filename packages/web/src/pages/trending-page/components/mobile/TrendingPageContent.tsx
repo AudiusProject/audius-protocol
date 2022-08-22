@@ -1,17 +1,17 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { Name, Status, TimeRange } from '@audius/common'
+import {
+  Name,
+  Status,
+  TimeRange,
+  trendingPageLineupActions
+} from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconAllTime } from 'assets/img/iconAllTime.svg'
 import { ReactComponent as IconDay } from 'assets/img/iconDay.svg'
 import { ReactComponent as IconMonth } from 'assets/img/iconMonth.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
-import {
-  trendingAllTimeActions,
-  trendingMonthActions,
-  trendingWeekActions
-} from 'common/store/pages/trending/lineup/actions'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import { EndOfLineup } from 'components/lineup/EndOfLineup'
@@ -34,6 +34,8 @@ import RewardsBanner from '../RewardsBanner'
 
 import TrendingFilterButton from './TrendingFilterButton'
 import styles from './TrendingPageContent.module.css'
+const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
+  trendingPageLineupActions
 
 const messages = {
   title: 'Trending',

@@ -1,15 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common'
 import {
-  getChangePasswordStatus,
-  getCurrentPage
-} from 'audius-client/src/common/store/change-password/selectors'
-import {
-  changePage,
-  changePassword,
-  Page
-} from 'audius-client/src/common/store/change-password/slice'
+  Status,
+  ChangePasswordPageStep,
+  changePasswordSelectors,
+  changePasswordActions
+} from '@audius/common'
 import { View } from 'react-native'
 
 import { ConfirmCredentials } from 'app/components/confirm-credentials'
@@ -22,6 +18,8 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+const { changePage, changePassword } = changePasswordActions
+const { getChangePasswordStatus, getCurrentPage } = changePasswordSelectors
 
 const messages = {
   changeHeader: 'Change Password',
@@ -71,7 +69,7 @@ export const ChangePasswordScreen = () => {
   const currentPage = useSelectorWeb(getCurrentPage)
 
   const setCurrentPage = useCallback(
-    (page: Page) => dispatchWeb(changePage(page)),
+    (page: ChangePasswordPageStep) => dispatchWeb(changePage(page)),
     [dispatchWeb]
   )
 
@@ -84,7 +82,7 @@ export const ChangePasswordScreen = () => {
   }) => {
     setEmail(email)
     setOldPassword(password)
-    setCurrentPage(Page.NEW_PASSWORD)
+    setCurrentPage(ChangePasswordPageStep.NEW_PASSWORD)
   }
 
   const handleNewPasswordSubmitted = (password: string) => {
@@ -93,22 +91,22 @@ export const ChangePasswordScreen = () => {
 
   const handlePressDone = useCallback(() => {
     navigation.goBack()
-    setCurrentPage(Page.CONFIRM_CREDENTIALS)
+    setCurrentPage(ChangePasswordPageStep.CONFIRM_CREDENTIALS)
   }, [navigation, setCurrentPage])
 
   useEffect(() => {
     if (changePasswordStatus === Status.LOADING) {
-      setCurrentPage(Page.LOADING)
+      setCurrentPage(ChangePasswordPageStep.LOADING)
     } else if (
-      currentPage === Page.LOADING &&
+      currentPage === ChangePasswordPageStep.LOADING &&
       changePasswordStatus === Status.SUCCESS
     ) {
-      setCurrentPage(Page.SUCCESS)
+      setCurrentPage(ChangePasswordPageStep.SUCCESS)
     } else if (
-      currentPage === Page.LOADING &&
+      currentPage === ChangePasswordPageStep.LOADING &&
       changePasswordStatus === Status.ERROR
     ) {
-      setCurrentPage(Page.FAILURE)
+      setCurrentPage(ChangePasswordPageStep.FAILURE)
     }
   }, [currentPage, setCurrentPage, changePasswordStatus])
 
@@ -146,14 +144,14 @@ export const ChangePasswordScreen = () => {
 
   const getPageContent = () => {
     switch (currentPage) {
-      case Page.NEW_PASSWORD:
+      case ChangePasswordPageStep.NEW_PASSWORD:
         return changePasswordView
-      case Page.LOADING:
+      case ChangePasswordPageStep.LOADING:
         return loadingView
-      case Page.SUCCESS:
-      case Page.FAILURE:
+      case ChangePasswordPageStep.SUCCESS:
+      case ChangePasswordPageStep.FAILURE:
         return doneView
-      case Page.CONFIRM_CREDENTIALS:
+      case ChangePasswordPageStep.CONFIRM_CREDENTIALS:
       default:
         return credentialsView
     }

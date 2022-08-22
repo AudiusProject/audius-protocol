@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react'
 import { useContext, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common'
-import { getSearchStatus } from 'audius-client/src/common/store/pages/search-results/selectors'
+import { Status, searchResultsPageSelectors } from '@audius/common'
 
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyResults } from '../EmptyResults'
 import { SearchFocusContext } from '../SearchFocusContext'
+const { getSearchStatus } = searchResultsPageSelectors
 
 type SearchResultsTabProps = {
   children: ReactNode

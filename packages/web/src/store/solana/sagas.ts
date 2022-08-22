@@ -1,8 +1,8 @@
+import { solanaActions, getContext } from '@audius/common'
 import { put, call, take } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
 import * as backendActions from 'common/store/backend/actions'
-import { setFeePayer } from 'common/store/solana/slice'
+const { setFeePayer } = solanaActions
 
 function* watchForFeePayer() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

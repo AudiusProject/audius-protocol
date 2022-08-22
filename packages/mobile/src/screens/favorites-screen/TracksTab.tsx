@@ -1,17 +1,16 @@
 import { useCallback, useState } from 'react'
 
 import type { ID, UID } from '@audius/common'
-import { Status, FavoriteSource, Name, PlaybackSource } from '@audius/common'
-import { makeGetTableMetadatas } from 'audius-client/src/common/store/lineup/selectors'
-import { tracksActions } from 'audius-client/src/common/store/pages/saved-page/lineups/tracks/actions'
 import {
-  getSavedTracksLineup,
-  getSavedTracksStatus
-} from 'audius-client/src/common/store/pages/saved-page/selectors'
-import {
-  saveTrack,
-  unsaveTrack
-} from 'audius-client/src/common/store/social/tracks/actions'
+  Status,
+  FavoriteSource,
+  Name,
+  PlaybackSource,
+  lineupSelectors,
+  savedPageTracksLineupActions as tracksActions,
+  savedPageSelectors,
+  tracksSocialActions
+} from '@audius/common'
 import { shallowEqual, useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
@@ -26,6 +25,9 @@ import { makeStyles } from 'app/styles'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
+const { saveTrack, unsaveTrack } = tracksSocialActions
+const { getSavedTracksLineup, getSavedTracksStatus } = savedPageSelectors
+const { makeGetTableMetadatas } = lineupSelectors
 
 const messages = {
   emptyTabText: "You haven't favorited any tracks yet.",

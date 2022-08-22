@@ -1,12 +1,11 @@
 import { useCallback, useRef } from 'react'
 
-import { Theme, StringKeys, FeatureFlags } from '@audius/common'
+import { Theme, StringKeys, FeatureFlags, formatCount } from '@audius/common'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
-import { formatCount } from 'common/utils/formatUtil'
 import NavButton from 'components/nav/desktop/NavButton'
 import NavPopupMenu from 'components/nav/desktop/NavPopupMenu'
 import { NotificationPanel } from 'components/notification'

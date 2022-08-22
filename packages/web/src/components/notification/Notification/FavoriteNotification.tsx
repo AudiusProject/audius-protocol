@@ -1,13 +1,12 @@
 import { MouseEventHandler, useCallback } from 'react'
 
+import {
+  notificationsSelectors,
+  FavoriteNotification as FavoriteNotificationType
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import {
-  getNotificationEntity,
-  getNotificationUsers
-} from 'common/store/notifications/selectors'
-import { Favorite } from 'common/store/notifications/types'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -26,13 +25,14 @@ import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFavorite } from './components/icons'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
+const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   favorited: ' favorited your '
 }
 
 type FavoriteNotificationProps = {
-  notification: Favorite
+  notification: FavoriteNotificationType
 }
 export const FavoriteNotification = (props: FavoriteNotificationProps) => {
   const { notification } = props

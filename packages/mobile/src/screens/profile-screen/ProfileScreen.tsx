@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Status, ShareSource } from '@audius/common'
+import {
+  Status,
+  ShareSource,
+  accountSelectors,
+  profilePageSelectors,
+  profilePageActions,
+  shareModalUIActions
+} from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
-import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'
-import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
 import { Animated, View } from 'react-native'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
@@ -25,6 +28,10 @@ import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { useSelectProfileRoot } from './selectors'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { fetchProfile } = profilePageActions
+const { getProfileStatus } = profilePageSelectors
+const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ spacing }) => ({
   navigator: {

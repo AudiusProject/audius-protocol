@@ -1,7 +1,5 @@
-import { UserCollectionMetadata, Variant } from '@audius/common'
+import { UserCollectionMetadata, Variant, AudiusBackend } from '@audius/common'
 import { omit } from 'lodash'
-
-import { AudiusBackend } from 'common/services/audius-backend'
 
 /**
  * Reformats a collection to be used internally within the client

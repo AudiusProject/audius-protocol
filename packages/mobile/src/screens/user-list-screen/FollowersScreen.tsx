@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 
-import { setFollowers } from 'audius-client/src/common/store/user-list/followers/actions'
-import { getUserList } from 'audius-client/src/common/store/user-list/followers/selectors'
+import {
+  followersUserListSelectors,
+  followersUserListActions
+} from '@audius/common'
 
 import IconUser from 'app/assets/images/iconUser.svg'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -9,6 +11,8 @@ import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
+const { setFollowers } = followersUserListActions
+const { getUserList } = followersUserListSelectors
 
 const messages = {
   title: 'Followers'

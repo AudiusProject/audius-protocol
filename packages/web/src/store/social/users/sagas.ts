@@ -1,22 +1,29 @@
-import { Kind, ID, Name, makeKindId } from '@audius/common'
+import {
+  Kind,
+  ID,
+  Name,
+  makeKindId,
+  accountSelectors,
+  cacheActions,
+  cacheUsersSelectors,
+  getContext,
+  usersSocialActions as socialActions
+} from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
-import { getUsers, getUser } from 'common/store/cache/users/selectors'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import * as socialActions from 'common/store/social/users/actions'
 import { profilePage } from 'utils/route'
 import { waitForAccount } from 'utils/sagaHelpers'
 import { share } from 'utils/share'
 
 import errorSagas from './errorSagas'
+const { getUsers, getUser } = cacheUsersSelectors
+const getUserId = accountSelectors.getUserId
 
 /* FOLLOW */
 

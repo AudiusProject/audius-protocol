@@ -1,5 +1,4 @@
-import { getSendAmount } from 'audius-client/src/common/store/tipping/selectors'
-import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
+import { formatNumberCommas, tippingSelectors } from '@audius/common'
 import { View } from 'react-native'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
@@ -8,6 +7,7 @@ import { Text, AudioText } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
+const { getSendAmount } = tippingSelectors
 
 const messages = {
   sending: 'Sending',

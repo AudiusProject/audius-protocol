@@ -1,13 +1,12 @@
 import { MouseEventHandler, useCallback } from 'react'
 
+import {
+  notificationsSelectors,
+  RepostNotification as RepostNotificationType
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import {
-  getNotificationEntity,
-  getNotificationUsers
-} from 'common/store/notifications/selectors'
-import { Repost } from 'common/store/notifications/types'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
@@ -26,13 +25,14 @@ import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconRepost } from './components/icons'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
+const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   reposted: 'reposted your'
 }
 
 type RepostNotificationProps = {
-  notification: Repost
+  notification: RepostNotificationType
 }
 
 export const RepostNotification = (props: RepostNotificationProps) => {

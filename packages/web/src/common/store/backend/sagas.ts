@@ -1,4 +1,10 @@
 import {
+  accountActions,
+  reachabilityActions,
+  reachabilitySelectors,
+  getContext
+} from '@audius/common'
+import {
   put,
   all,
   delay,
@@ -9,15 +15,11 @@ import {
   race
 } from 'typed-redux-saga'
 
-import * as accountActions from 'common/store/account/reducer'
-import * as reachabilityActions from 'common/store/reachability/actions'
-import { getIsReachable } from 'common/store/reachability/selectors'
 import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecycle'
-
-import { getContext } from '../effects'
 
 import * as backendActions from './actions'
 import { watchBackendErrors } from './errorSagas'
+const { getIsReachable } = reachabilitySelectors
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const REACHABILITY_TIMEOUT_MS = 8 * 1000

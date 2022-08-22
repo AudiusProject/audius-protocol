@@ -8,7 +8,12 @@ import {
   CoverPhotoSizes,
   ProfilePictureSizes,
   LineupState,
-  Status
+  Status,
+  profilePageTracksLineupActions as tracksActions,
+  ProfileUser,
+  ProfilePageTabs,
+  profilePageFeedLineupActions as feedActions,
+  badgeTiers
 } from '@audius/common'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
@@ -16,12 +21,7 @@ import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
-import { useSelectTierInfo } from 'common/hooks/wallet'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { feedActions } from 'common/store/pages/profile/lineups/feed/actions'
-import { tracksActions } from 'common/store/pages/profile/lineups/tracks/actions'
-import { ProfileUser, Tabs } from 'common/store/pages/profile/types'
-import { badgeTiers } from 'common/store/wallet/utils'
 import Card from 'components/card/desktop/Card'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
@@ -34,6 +34,7 @@ import ConnectedProfileCompletionHeroCard from 'components/profile-progress/Conn
 import StatBanner from 'components/stat-banner/StatBanner'
 import UploadChip from 'components/upload/UploadChip'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
+import { useSelectTierInfo } from 'hooks/wallet'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
 import {
@@ -81,7 +82,7 @@ export type ProfilePageProps = {
   profilePictureSizes: ProfilePictureSizes | null
   updatedProfilePicture: { error: boolean; url: string }
   hasProfilePicture: boolean
-  activeTab: Tabs | null
+  activeTab: ProfilePageTabs | null
   dropdownDisabled: boolean
   following: boolean
   isSubscribed: boolean
@@ -112,7 +113,7 @@ export type ProfilePageProps = {
   updateTikTokHandle: (handle: string) => void
   updateWebsite: (website: string) => void
   updateDonation: (donation: string) => void
-  changeTab: (tab: Tabs) => void
+  changeTab: (tab: ProfilePageTabs) => void
   getLineupProps: (lineup: any) => any
   onEdit: () => void
   onSave: () => void
@@ -357,17 +358,29 @@ const ProfilePage = ({
     ) : null
 
     const headers = [
-      { icon: <IconNote />, text: Tabs.TRACKS, label: Tabs.TRACKS },
-      { icon: <IconAlbum />, text: Tabs.ALBUMS, label: Tabs.ALBUMS },
+      {
+        icon: <IconNote />,
+        text: ProfilePageTabs.TRACKS,
+        label: ProfilePageTabs.TRACKS
+      },
+      {
+        icon: <IconAlbum />,
+        text: ProfilePageTabs.ALBUMS,
+        label: ProfilePageTabs.ALBUMS
+      },
       {
         icon: <IconPlaylists />,
-        text: Tabs.PLAYLISTS,
-        label: Tabs.PLAYLISTS
+        text: ProfilePageTabs.PLAYLISTS,
+        label: ProfilePageTabs.PLAYLISTS
       },
-      { icon: <IconReposts />, text: Tabs.REPOSTS, label: Tabs.REPOSTS }
+      {
+        icon: <IconReposts />,
+        text: ProfilePageTabs.REPOSTS,
+        label: ProfilePageTabs.REPOSTS
+      }
     ]
     const elements = [
-      <div key={Tabs.TRACKS} className={styles.tiles}>
+      <div key={ProfilePageTabs.TRACKS} className={styles.tiles}>
         {renderProfileCompletionCard()}
         {status !== Status.LOADING ? (
           artistTracks.status !== Status.LOADING &&
@@ -391,7 +404,7 @@ const ProfilePage = ({
           )
         ) : null}
       </div>,
-      <div key={Tabs.ALBUMS} className={styles.cards}>
+      <div key={ProfilePageTabs.ALBUMS} className={styles.cards}>
         {albums.length === 0 && !isOwner ? (
           <EmptyTab
             isOwner={isOwner}
@@ -402,7 +415,7 @@ const ProfilePage = ({
           <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
         )}
       </div>,
-      <div key={Tabs.PLAYLISTS} className={styles.cards}>
+      <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
         {playlists.length === 0 && !isOwner ? (
           <EmptyTab
             isOwner={isOwner}
@@ -416,7 +429,7 @@ const ProfilePage = ({
           />
         )}
       </div>,
-      <div key={Tabs.REPOSTS} className={styles.tiles}>
+      <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
         {status !== Status.LOADING ? (
           (userFeed.status !== Status.LOADING &&
             userFeed.entries.length === 0) ||
@@ -450,12 +463,12 @@ const ProfilePage = ({
     ) {
       headers.push({
         icon: <IconCollectibles />,
-        text: Tabs.COLLECTIBLES,
-        label: Tabs.COLLECTIBLES
+        text: ProfilePageTabs.COLLECTIBLES,
+        label: ProfilePageTabs.COLLECTIBLES
       })
 
       elements.push(
-        <div key={Tabs.COLLECTIBLES} className={styles.tiles}>
+        <div key={ProfilePageTabs.COLLECTIBLES} className={styles.tiles}>
           <CollectiblesPage
             userId={userId}
             name={name}
@@ -524,11 +537,19 @@ const ProfilePage = ({
     )
 
     const headers = [
-      { icon: <IconReposts />, text: Tabs.REPOSTS, label: Tabs.REPOSTS },
-      { icon: <IconPlaylists />, text: Tabs.PLAYLISTS, label: Tabs.PLAYLISTS }
+      {
+        icon: <IconReposts />,
+        text: ProfilePageTabs.REPOSTS,
+        label: ProfilePageTabs.REPOSTS
+      },
+      {
+        icon: <IconPlaylists />,
+        text: ProfilePageTabs.PLAYLISTS,
+        label: ProfilePageTabs.PLAYLISTS
+      }
     ]
     const elements = [
-      <div key={Tabs.REPOSTS} className={styles.tiles}>
+      <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
         {renderProfileCompletionCard()}
         {(userFeed.status !== Status.LOADING &&
           userFeed.entries.length === 0) ||
@@ -549,7 +570,7 @@ const ProfilePage = ({
           />
         )}
       </div>,
-      <div key={Tabs.PLAYLISTS} className={styles.cards}>
+      <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
         {playlists.length === 0 && !isOwner ? (
           <EmptyTab
             isOwner={isOwner}
@@ -575,12 +596,12 @@ const ProfilePage = ({
     ) {
       headers.push({
         icon: <IconCollectibles />,
-        text: Tabs.COLLECTIBLES,
-        label: Tabs.COLLECTIBLES
+        text: ProfilePageTabs.COLLECTIBLES,
+        label: ProfilePageTabs.COLLECTIBLES
       })
 
       elements.push(
-        <div key={Tabs.COLLECTIBLES} className={styles.tiles}>
+        <div key={ProfilePageTabs.COLLECTIBLES} className={styles.tiles}>
           <CollectiblesPage
             userId={userId}
             name={name}

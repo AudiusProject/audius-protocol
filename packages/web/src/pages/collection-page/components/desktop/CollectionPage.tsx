@@ -7,14 +7,12 @@ import {
   Variant,
   Status,
   User,
-  FeatureFlags
+  FeatureFlags,
+  CollectionTrack,
+  CollectionPageTrackRecord,
+  CollectionsPageType
 } from '@audius/common'
 
-import {
-  CollectionTrack,
-  TrackRecord,
-  CollectionsPageType
-} from 'common/store/pages/collection/types'
 import CollectionHeader from 'components/collection/desktop/CollectionHeader'
 import Page from 'components/page/Page'
 import {
@@ -75,20 +73,22 @@ export type CollectionPageProps = {
   userPlaylists?: any
   isQueued: () => boolean
   onHeroTrackClickArtistName: () => void
-  onPlay: (record: TrackRecord) => void
-  onHeroTrackShare: (record: TrackRecord) => void
-  onHeroTrackSave?: (record: TrackRecord) => void
-  onClickRow: (record: TrackRecord, index: number) => void
-  onClickSave?: (record: TrackRecord) => void
+  onPlay: (record: CollectionPageTrackRecord) => void
+  onHeroTrackShare: (record: CollectionPageTrackRecord) => void
+  onHeroTrackSave?: (record: CollectionPageTrackRecord) => void
+  onClickRow: (record: CollectionPageTrackRecord, index: number) => void
+  onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean
-  getFilteredData: (trackMetadata: CollectionTrack[]) => [TrackRecord[], number]
+  getFilteredData: (
+    trackMetadata: CollectionTrack[]
+  ) => [CollectionPageTrackRecord[], number]
   onFilterChange: (evt: ChangeEvent<HTMLInputElement>) => void
   onHeroTrackEdit: () => void
   onPublish: () => void
   onHeroTrackRepost?: any
-  onClickTrackName: (record: TrackRecord) => void
-  onClickArtistName: (record: TrackRecord) => void
-  onClickRepostTrack: (record: TrackRecord) => void
+  onClickTrackName: (record: CollectionPageTrackRecord) => void
+  onClickArtistName: (record: CollectionPageTrackRecord) => void
+  onClickRepostTrack: (record: CollectionPageTrackRecord) => void
   onSortTracks: (sorters: any) => void
   onReorderTracks: (source: number, destination: number) => void
   onClickRemove: (

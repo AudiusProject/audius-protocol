@@ -1,8 +1,7 @@
-import { RemoteConfigInstance, StringKeys } from '@audius/common'
+import { RemoteConfigInstance, StringKeys, getContext } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import { takeEvery } from 'redux-saga/effects'
 
-import { getContext } from 'common/store'
 import {
   formatInstagramProfile,
   formatTwitterProfile

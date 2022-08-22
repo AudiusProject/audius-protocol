@@ -1,6 +1,6 @@
+import { accountSelectors } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
-import { getUserId } from 'common/store/account/selectors'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import {
   PREFIX,
@@ -9,6 +9,7 @@ import {
 import { getLineup } from 'pages/deleted-page/store/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForAccount } from 'utils/sagaHelpers'
+const getUserId = accountSelectors.getUserId
 
 function* getTracks({
   payload

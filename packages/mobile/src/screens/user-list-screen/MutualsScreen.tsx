@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 
-import { setMutuals } from 'audius-client/src/common/store/user-list/mutuals/actions'
-import { getUserList } from 'audius-client/src/common/store/user-list/mutuals/selectors'
-import { USER_LIST_TAG } from 'audius-client/src/common/store/user-list/mutuals/types'
+import {
+  mutualsUserListActions,
+  mutualsUserListSelectors,
+  MUTUALS_USER_LIST_TAG
+} from '@audius/common'
 
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -10,6 +12,8 @@ import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
+const { getUserList } = mutualsUserListSelectors
+const { setMutuals } = mutualsUserListActions
 
 const messages = {
   title: 'Mutuals'
@@ -28,7 +32,7 @@ export const MutualsScreen = () => {
     <UserListScreen title={messages.title} titleIcon={IconFollowing}>
       <UserList
         userSelector={getUserList}
-        tag={USER_LIST_TAG}
+        tag={MUTUALS_USER_LIST_TAG}
         setUserList={handleSetMutals}
       />
     </UserListScreen>

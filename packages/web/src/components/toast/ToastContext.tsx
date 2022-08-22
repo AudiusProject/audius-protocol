@@ -1,14 +1,14 @@
 import { createContext, useCallback } from 'react'
 
+import { CommonState, toastActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTransition, animated } from 'react-spring'
 
-import { CommonState } from 'common/store'
-import { clearToasts, toast } from 'common/store/ui/toast/slice'
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
 
 import styles from './ToastContext.module.css'
 import Toast from './mobile/Toast'
+const { clearToasts, toast } = toastActions
 
 const DEFAULT_TIMEOUT = 3000
 

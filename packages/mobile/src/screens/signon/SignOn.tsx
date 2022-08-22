@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
+import { accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getPasswordField,
@@ -49,6 +49,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import type { SignOnStackParamList } from './types'
 
+const { getAccountUser } = accountSelectors
 const isAndroid = Platform.OS === 'android'
 const image = backgImage
 const windowWidth = Dimensions.get('window').width

@@ -1,24 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common'
+import {
+  Status,
+  ChangePasswordPageStep,
+  changePasswordSelectors,
+  changePasswordActions
+} from '@audius/common'
 import { Button, ButtonType, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import {
-  getChangePasswordStatus,
-  getCurrentPage
-} from 'common/store/change-password/selectors'
-import {
-  changePage,
-  changePassword,
-  Page
-} from 'common/store/change-password/slice'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import EnterPassword from 'components/sign-on/EnterPassword'
 
 import styles from './ChangePassword.module.css'
 import { ConfirmCredentials } from './ConfirmCredentials'
+const { changePage, changePassword } = changePasswordActions
+const { getChangePasswordStatus, getCurrentPage } = changePasswordSelectors
 
 const messages = {
   helpTexts: [
@@ -57,7 +55,7 @@ export const ChangePassword = ({
   }) => {
     setEmail(email)
     setOldPassword(password)
-    setCurrentPage(Page.NEW_PASSWORD)
+    setCurrentPage(ChangePasswordPageStep.NEW_PASSWORD)
   }
 
   const onNewPasswordSubmitted = (password: string) => {
@@ -65,7 +63,7 @@ export const ChangePassword = ({
   }
 
   const setCurrentPage = useCallback(
-    (page: Page) => {
+    (page: ChangePasswordPageStep) => {
       dispatch(changePage(page))
     },
     [dispatch]
@@ -73,23 +71,23 @@ export const ChangePassword = ({
 
   useEffect(() => {
     if (changePasswordStatus === Status.LOADING) {
-      setCurrentPage(Page.LOADING)
+      setCurrentPage(ChangePasswordPageStep.LOADING)
     } else if (
-      currentPage === Page.LOADING &&
+      currentPage === ChangePasswordPageStep.LOADING &&
       changePasswordStatus === Status.SUCCESS
     ) {
-      setCurrentPage(Page.SUCCESS)
+      setCurrentPage(ChangePasswordPageStep.SUCCESS)
     } else if (
-      currentPage === Page.LOADING &&
+      currentPage === ChangePasswordPageStep.LOADING &&
       changePasswordStatus === Status.ERROR
     ) {
-      setCurrentPage(Page.FAILURE)
+      setCurrentPage(ChangePasswordPageStep.FAILURE)
     }
   }, [changePasswordStatus, currentPage, setCurrentPage])
 
   const getPageContents = () => {
     switch (currentPage) {
-      case Page.NEW_PASSWORD:
+      case ChangePasswordPageStep.NEW_PASSWORD:
         return (
           <EnterPassword
             continueLabel={messages.changePassword}
@@ -98,10 +96,10 @@ export const ChangePassword = ({
             onSubmit={onNewPasswordSubmitted}
           />
         )
-      case Page.LOADING:
+      case ChangePasswordPageStep.LOADING:
         return <LoadingSpinnerFullPage />
-      case Page.FAILURE:
-      case Page.SUCCESS:
+      case ChangePasswordPageStep.FAILURE:
+      case ChangePasswordPageStep.SUCCESS:
         return (
           <Button
             text='Done'
@@ -120,7 +118,8 @@ export const ChangePassword = ({
   }
   return (
     <div className={cn(styles.content, { [styles.isMobile]: isMobile })}>
-      {currentPage === Page.CONFIRM_CREDENTIALS && isMobile ? (
+      {currentPage === ChangePasswordPageStep.CONFIRM_CREDENTIALS &&
+      isMobile ? (
         <>
           <div className={styles.headerText}>{messages.changePassword}</div>
           <div className={styles.helpText}>
@@ -130,11 +129,11 @@ export const ChangePassword = ({
       ) : (
         <div
           className={cn(styles.headerText, {
-            [styles.error]: currentPage === Page.FAILURE
+            [styles.error]: currentPage === ChangePasswordPageStep.FAILURE
           })}
         >
           {messages.helpTexts[currentPage]}
-          {currentPage === Page.FAILURE && (
+          {currentPage === ChangePasswordPageStep.FAILURE && (
             <i className='emoji confused-face'></i>
           )}
         </div>

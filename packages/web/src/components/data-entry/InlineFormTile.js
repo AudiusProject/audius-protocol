@@ -1,5 +1,6 @@
 import { Component } from 'react'
 
+import { GENRES, ELECTRONIC_PREFIX, getCanonicalName } from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -10,11 +11,6 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
-import {
-  GENRES,
-  ELECTRONIC_PREFIX,
-  getCanonicalName
-} from 'common/utils/genres'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import LabeledInput from 'components/data-entry/LabeledInput'
 import TagInput from 'components/data-entry/TagInput'

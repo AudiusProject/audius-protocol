@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import type { ID } from '@audius/common'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import {
+  accountSelectors,
   OverflowAction,
-  OverflowSource
-} from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
+  OverflowSource,
+  mobileOverflowMenuUIActions
+} from '@audius/common'
 import type { NativeSyntheticEvent, NativeTouchEvent } from 'react-native'
 import { Text, TouchableOpacity, View } from 'react-native'
 
@@ -24,6 +24,8 @@ import { useThemeColors } from 'app/utils/theme'
 import { TablePlayButton } from './TablePlayButton'
 import { TrackArtwork } from './TrackArtwork'
 import type { TrackMetadata } from './types'
+const { open: openOverflowMenu } = mobileOverflowMenuUIActions
+const getUserId = accountSelectors.getUserId
 
 export type TrackItemAction = 'save' | 'overflow' | 'remove'
 

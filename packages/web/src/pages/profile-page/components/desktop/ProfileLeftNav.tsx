@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
-import { ID, Name } from '@audius/common'
+import { ID, Name, accountSelectors } from '@audius/common'
 import cn from 'classnames'
 import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { getAccountUser } from 'common/store/account/selectors'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
@@ -23,6 +22,7 @@ import { UPLOAD_PAGE } from 'utils/route'
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
 import styles from './ProfilePage.module.css'
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   aboutYou: 'About You',

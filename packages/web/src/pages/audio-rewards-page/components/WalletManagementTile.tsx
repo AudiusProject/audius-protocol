@@ -1,6 +1,13 @@
 import React, { useCallback, useState } from 'react'
 
-import { Nullable, BNWei } from '@audius/common'
+import {
+  Nullable,
+  BNWei,
+  tokenDashboardPageActions,
+  walletSelectors,
+  tokenDashboardPageSelectors,
+  formatWei
+} from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -13,23 +20,16 @@ import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { ReactComponent as IconSettings } from 'assets/img/iconSettings.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
-import { getHasAssociatedWallets } from 'common/store/pages/token-dashboard/selectors'
-import {
-  pressReceive,
-  pressSend,
-  pressConnectWallets
-} from 'common/store/pages/token-dashboard/slice'
-import {
-  getAccountBalance,
-  getAccountTotalBalance
-} from 'common/store/wallet/selectors'
-import { formatWei } from 'common/utils/wallet'
 import { CoinbasePayButtonCustom } from 'components/coinbase-pay-button'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
 import { isMobile } from 'utils/clientUtil'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
+const { getHasAssociatedWallets } = tokenDashboardPageSelectors
+const { pressReceive, pressSend, pressConnectWallets } =
+  tokenDashboardPageActions
+const { getAccountBalance, getAccountTotalBalance } = walletSelectors
 
 const messages = {
   receiveLabel: 'Receive $AUDIO',

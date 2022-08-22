@@ -1,20 +1,25 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { Name, User } from '@audius/common'
+import {
+  Name,
+  User,
+  notificationsSelectors,
+  notificationsActions,
+  Notification
+} from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { toggleNotificationPanel } from 'common/store/notifications/actions'
-import { getNotificationPanelIsOpen } from 'common/store/notifications/selectors'
-import { Notification } from 'common/store/notifications/types'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './UserNameLink.module.css'
+const { toggleNotificationPanel } = notificationsActions
+const { getNotificationPanelIsOpen } = notificationsSelectors
 
 const messages = {
   deactivated: 'Deactivated'

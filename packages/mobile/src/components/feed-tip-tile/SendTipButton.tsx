@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import type { User } from '@audius/common'
-import { beginTip } from 'audius-client/src/common/store/tipping/slice'
+import { tippingActions } from '@audius/common'
 import { View } from 'react-native'
 
 import { Text, Button } from 'app/components/core'
@@ -9,6 +9,7 @@ import UserBadges from 'app/components/user-badges'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
+const { beginTip } = tippingActions
 
 const messages = {
   sendTipToPrefix: 'SEND TIP TO '

@@ -1,10 +1,13 @@
-import { Kind, makeUid } from '@audius/common'
+import {
+  Kind,
+  makeUid,
+  cacheActions,
+  collectionPageActions as collectionActions,
+  collectionPageLineupActions as tracksActions
+} from '@audius/common'
 import { call, put, takeLatest, takeEvery } from 'redux-saga/effects'
 
-import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
-import * as collectionActions from 'common/store/pages/collection/actions'
-import { tracksActions } from 'common/store/pages/collection/lineup/actions.js'
 import tracksSagas from 'pages/collection-page/store/lineups/tracks/sagas'
 
 function* watchFetchCollection() {

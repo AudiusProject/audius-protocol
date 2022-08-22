@@ -1,6 +1,10 @@
-import { getNotificationUser } from 'common/store/notifications/selectors'
-import { TierChange } from 'common/store/notifications/types'
-import { BadgeTierInfo, badgeTiers } from 'common/store/wallet/utils'
+import {
+  notificationsSelectors,
+  TierChangeNotification as TierChangeNotificationType,
+  BadgeTierInfo,
+  badgeTiers
+} from '@audius/common'
+
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
 import { fullProfilePage } from 'utils/route'
@@ -13,6 +17,7 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTier } from './components/icons'
+const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   unlocked: 'tier unlocked',
@@ -35,7 +40,7 @@ const tierInfoMap = {
 }
 
 type TierChangeNotificationProps = {
-  notification: TierChange
+  notification: TierChangeNotificationType
 }
 
 export const TierChangeNotification = (props: TierChangeNotificationProps) => {

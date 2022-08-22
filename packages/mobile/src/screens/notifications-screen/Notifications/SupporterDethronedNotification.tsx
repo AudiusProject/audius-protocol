@@ -1,10 +1,14 @@
 import { useCallback } from 'react'
 
-import type { Nullable } from '@audius/common'
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
-import type { SupporterDethroned } from 'audius-client/src/common/store/notifications/types'
-import { beginTip } from 'audius-client/src/common/store/tipping/slice'
+import {
+  cacheUsersSelectors,
+  notificationsSelectors,
+  tippingActions
+} from '@audius/common'
+import type {
+  Nullable,
+  SupporterDethronedNotification as SupporterDethroned
+} from '@audius/common'
 
 import IconCrownSource from 'app/assets/images/crown2x.png'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -23,6 +27,10 @@ import {
   ProfilePicture,
   UserNameLink
 } from '../Notification'
+
+const { getUser } = cacheUsersSelectors
+const { getNotificationUser } = notificationsSelectors
+const { beginTip } = tippingActions
 
 type SupporterDethronedNotificationProps = {
   notification: SupporterDethroned

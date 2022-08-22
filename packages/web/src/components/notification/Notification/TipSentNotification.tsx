@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  useUIAudio,
+  notificationsSelectors,
+  TipSendNotification
+} from '@audius/common'
 
-import { useUIAudio } from 'common/hooks/useUIAudio'
 import { make } from 'common/store/analytics/actions'
-import { getNotificationUser } from 'common/store/notifications/selectors'
-import { TipSend } from 'common/store/notifications/types'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TipSentNotification.module.css'
@@ -20,6 +22,7 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
+const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Your Tip Was Sent!',
@@ -30,7 +33,7 @@ const messages = {
 }
 
 type TipSentNotificationProps = {
-  notification: TipSend
+  notification: TipSendNotification
 }
 
 export const TipSentNotification = (props: TipSentNotificationProps) => {

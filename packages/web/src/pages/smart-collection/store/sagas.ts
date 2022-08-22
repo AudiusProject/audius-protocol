@@ -4,20 +4,17 @@ import {
   Status,
   Track,
   UserTrack,
-  UserTrackMetadata
+  UserTrackMetadata,
+  accountSelectors,
+  smartCollectionPageActions,
+  collectionPageActions,
+  getContext
 } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { getAccountStatus, getUserId } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
-import { setSmartCollection } from 'common/store/pages/collection/actions'
-import {
-  fetchSmartCollection,
-  fetchSmartCollectionSucceeded
-} from 'common/store/pages/smart-collection/slice'
 import Explore from 'services/audius-backend/Explore'
 import { getLuckyTracks } from 'store/recommendation/sagas'
 import { EXPLORE_PAGE } from 'utils/route'
@@ -35,6 +32,11 @@ import {
   UNDER_THE_RADAR,
   REMIXABLES
 } from '../smartCollections'
+const { setSmartCollection } = collectionPageActions
+const { fetchSmartCollection, fetchSmartCollectionSucceeded } =
+  smartCollectionPageActions
+
+const { getAccountStatus, getUserId } = accountSelectors
 
 const COLLECTIONS_LIMIT = 25
 

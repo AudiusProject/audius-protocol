@@ -1,13 +1,15 @@
 import {
   createUseFeatureFlagHook,
-  createUseRemoteVarHook
+  createUseRemoteVarHook,
+  accountSelectors,
+  remoteConfigSelectors
 } from '@audius/common'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { isRemoteConfigLoaded } from 'audius-client/src/common/store/remote-config/selectors'
 import { useSelector } from 'react-redux'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
+const { isRemoteConfigLoaded } = remoteConfigSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 export const useFeatureFlag = createUseFeatureFlagHook({
   remoteConfigInstance,

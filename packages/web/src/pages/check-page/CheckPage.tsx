@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 
+import { accountSelectors } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { getAccountUser } from 'common/store/account/selectors'
 import { useScript } from 'hooks/useScript'
 import { getCognitoSignature } from 'services/audius-backend/Cognito'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import './CheckPage.module.css'
+const getAccountUser = accountSelectors.getAccountUser
 
 declare global {
   interface Window {

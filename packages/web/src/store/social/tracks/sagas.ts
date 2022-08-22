@@ -1,26 +1,38 @@
-import { Kind, ID, Name, Track, User, makeKindId } from '@audius/common'
+import {
+  Kind,
+  ID,
+  Name,
+  Track,
+  User,
+  makeKindId,
+  formatShareText,
+  accountSelectors,
+  accountActions,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  cacheActions,
+  audioRewardsPageActions,
+  getContext,
+  tracksSocialActions as socialActions
+} from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import * as accountActions from 'common/store/account/reducer'
-import { getUserId, getUserHandle } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
-import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
 import { adjustUserField } from 'common/store/cache/users/sagas'
-import { getUser } from 'common/store/cache/users/selectors'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import { updateOptimisticListenStreak } from 'common/store/pages/audio-rewards/slice'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import * as socialActions from 'common/store/social/tracks/actions'
-import { formatShareText } from 'common/utils/formatUtil'
 import TrackDownload from 'services/audius-backend/TrackDownload'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 import { share } from 'utils/share'
 
 import watchTrackErrors from './errorSagas'
+const { updateOptimisticListenStreak } = audioRewardsPageActions
+const { getUser } = cacheUsersSelectors
+const { getTrack, getTracks } = cacheTracksSelectors
+
+const { getUserId, getUserHandle } = accountSelectors
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

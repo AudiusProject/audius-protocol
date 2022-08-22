@@ -1,14 +1,18 @@
 import { useCallback, useContext, useMemo } from 'react'
 
+import {
+  cacheCollectionsActions,
+  deletePlaylistConfirmationModalUISelectors
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { deletePlaylist } from 'common/store/cache/collections/actions'
-import { getPlaylistId } from 'common/store/ui/delete-playlist-confirmation-modal/selectors'
 import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import { TRENDING_PAGE } from 'utils/route'
+const { getPlaylistId } = deletePlaylistConfirmationModalUISelectors
+const { deletePlaylist } = cacheCollectionsActions
 
 const messages = {
   delete: 'Delete',

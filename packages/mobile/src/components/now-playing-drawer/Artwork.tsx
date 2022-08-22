@@ -1,8 +1,7 @@
 import React from 'react'
 
 import type { Track } from '@audius/common'
-import { SquareSizes } from '@audius/common'
-import { getDominantColorsByTrack } from 'audius-client/src/common/store/average-color/slice'
+import { SquareSizes, averageColorSelectors } from '@audius/common'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
 
@@ -11,6 +10,7 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import type { ThemeColors } from 'app/utils/theme'
+const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 
 const dimensions = Dimensions.get('window')
 const spacing = 24

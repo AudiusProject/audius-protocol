@@ -1,16 +1,18 @@
-import { StringKeys } from '@audius/common'
+import {
+  StringKeys,
+  accountSelectors,
+  trendingUndergroundPageLineupSelectors,
+  trendingUndergroundPageLineupActions,
+  getContext
+} from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import {
-  PREFIX,
-  trendingUndergroundLineupActions
-} from 'common/store/pages/trending-underground/lineup/actions'
-import { getLineup } from 'common/store/pages/trending-underground/lineup/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForAccount } from 'utils/sagaHelpers'
+
+const { getLineup } = trendingUndergroundPageLineupSelectors
+const getUserId = accountSelectors.getUserId
 
 function* getTrendingUnderground({
   limit,
@@ -47,8 +49,8 @@ function* getTrendingUnderground({
 class UndergroundTrendingSagas extends LineupSagas {
   constructor() {
     super(
-      PREFIX,
-      trendingUndergroundLineupActions,
+      trendingUndergroundPageLineupActions.prefix,
+      trendingUndergroundPageLineupActions,
       getLineup,
       getTrendingUnderground
     )

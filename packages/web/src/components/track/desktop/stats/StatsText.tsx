@@ -1,8 +1,6 @@
 import { memo } from 'react'
 
-import { User } from '@audius/common'
-
-import { formatCount, pluralize } from 'common/utils/formatUtil'
+import { User, formatCount, pluralize } from '@audius/common'
 
 import styles from './StatsText.module.css'
 

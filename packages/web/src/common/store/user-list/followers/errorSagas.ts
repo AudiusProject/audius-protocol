@@ -1,8 +1,8 @@
+import { followersUserListActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-
-import { GET_FOLLOWERS_ERROR, getFollowersError } from './actions'
+import * as errorActions from 'store/errors/actions'
+const { GET_FOLLOWERS_ERROR, getFollowersError } = followersUserListActions
 
 type ErrorActions = ReturnType<typeof getFollowersError>
 

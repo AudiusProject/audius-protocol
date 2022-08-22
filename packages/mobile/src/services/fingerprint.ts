@@ -1,4 +1,4 @@
-import { FingerprintClient } from 'common/services/fingerprint'
+import { FingerprintClient } from '@audius/common'
 import Config from 'react-native-config'
 
 const apiKey = Config.FINGERPRINT_PUBLIC_API_KEY || ''

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import useInstanceVar from 'common/hooks/useInstanceVar'
+import { useInstanceVar } from '@audius/common'
 
 enum KonamiKey {
   UP = 'UP',

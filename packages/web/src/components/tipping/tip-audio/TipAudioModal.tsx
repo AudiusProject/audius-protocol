@@ -1,6 +1,12 @@
 import { useCallback, useEffect } from 'react'
 
-import { Nullable } from '@audius/common'
+import {
+  Nullable,
+  tippingSelectors,
+  tippingActions,
+  TippingSendStatus,
+  walletActions
+} from '@audius/common'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 import { animated, Transition } from 'react-spring/renderprops'
@@ -9,15 +15,14 @@ import { usePrevious } from 'react-use'
 import { ReactComponent as IconVerifiedGreen } from 'assets/img/iconVerifiedGreen.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
-import { getSendStatus } from 'common/store/tipping/selectors'
-import { resetSend } from 'common/store/tipping/slice'
-import { TippingSendStatus } from 'common/store/tipping/types'
-import { getBalance } from 'common/store/wallet/slice'
 
 import { ConfirmSendTip } from './ConfirmSendTip'
 import { SendTip } from './SendTip'
 import styles from './TipAudio.module.css'
 import { TipSent } from './TipSent'
+const { getBalance } = walletActions
+const { resetSend } = tippingActions
+const { getSendStatus } = tippingSelectors
 
 const messages = {
   sendATip: 'Send Tip',

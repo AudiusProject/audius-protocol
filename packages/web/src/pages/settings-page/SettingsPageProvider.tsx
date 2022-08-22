@@ -1,37 +1,30 @@
 import { ComponentType, PureComponent } from 'react'
 
-import { Name, Theme } from '@audius/common'
+import {
+  Name,
+  Theme,
+  accountSelectors,
+  InstagramProfile,
+  castSelectors,
+  CastMethod,
+  castActions,
+  settingsPageSelectors,
+  BrowserNotificationSetting,
+  EmailFrequency,
+  PushNotificationSetting,
+  settingsPageActions as settingPageActions,
+  makeGetTierAndVerifiedForUser,
+  modalsActions,
+  themeSelectors,
+  themeActions,
+  accountActions,
+  TwitterProfile
+} from '@audius/common'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import * as accountActions from 'common/store/account/reducer'
-import {
-  getAccountVerified,
-  getAccountHasTracks,
-  getAccountProfilePictureSizes,
-  getUserId,
-  getUserHandle,
-  getUserName
-} from 'common/store/account/selectors'
 import { make, TrackEvent } from 'common/store/analytics/actions'
-import { getMethod as getCastMethod } from 'common/store/cast/selectors'
-import { CastMethod, updateMethod } from 'common/store/cast/slice'
-import * as settingPageActions from 'common/store/pages/settings/actions'
-import {
-  getBrowserNotificationSettings,
-  getPushNotificationSettings,
-  getEmailFrequency
-} from 'common/store/pages/settings/selectors'
-import {
-  BrowserNotificationSetting,
-  EmailFrequency,
-  PushNotificationSetting
-} from 'common/store/pages/settings/types'
-import { setVisibility } from 'common/store/ui/modals/slice'
-import { setTheme } from 'common/store/ui/theme/actions'
-import { getTheme } from 'common/store/ui/theme/selectors'
-import { makeGetTierAndVerifiedForUser } from 'common/store/wallet/utils'
 import { show } from 'components/music-confetti/store/slice'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { AppState } from 'store/types'
@@ -49,6 +42,25 @@ import {
   SettingsPageProps as MobileSettingsPageProps,
   SubPage
 } from './components/mobile/SettingsPage'
+const { setTheme } = themeActions
+const { getTheme } = themeSelectors
+const { setVisibility } = modalsActions
+const {
+  getBrowserNotificationSettings,
+  getPushNotificationSettings,
+  getEmailFrequency
+} = settingsPageSelectors
+const { updateMethod } = castActions
+const { getMethod: getCastMethod } = castSelectors
+
+const {
+  getAccountVerified,
+  getAccountHasTracks,
+  getAccountProfilePictureSizes,
+  getUserId,
+  getUserHandle,
+  getUserName
+} = accountSelectors
 
 const isStaging = process.env.REACT_APP_ENVIRONMENT === 'staging'
 
@@ -241,12 +253,10 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(settingPageActions.getNotificationSettings()),
     getPushNotificationSettings: () =>
       dispatch(settingPageActions.getPushNotificationSettings()),
-    onTwitterLogin: (uuid: string, profile: accountActions.TwitterProfile) =>
+    onTwitterLogin: (uuid: string, profile: TwitterProfile) =>
       dispatch(accountActions.twitterLogin({ uuid, profile })),
-    onInstagramLogin: (
-      uuid: string,
-      profile: accountActions.InstagramProfile
-    ) => dispatch(accountActions.instagramLogin({ uuid, profile })),
+    onInstagramLogin: (uuid: string, profile: InstagramProfile) =>
+      dispatch(accountActions.instagramLogin({ uuid, profile })),
     subscribeBrowserPushNotifications: () =>
       dispatch(accountActions.subscribeBrowserPushNotifications()),
     setBrowserNotificationSettingsOn: () =>

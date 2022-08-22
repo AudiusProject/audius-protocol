@@ -1,7 +1,7 @@
+import { formatCount } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
-import { formatCount } from 'common/utils/formatUtil'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 
 import styles from './ArtistChip.module.css'

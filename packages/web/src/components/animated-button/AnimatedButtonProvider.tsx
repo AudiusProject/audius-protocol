@@ -7,10 +7,9 @@ import {
   MouseEvent
 } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
-
-import useInstanceVar from 'common/hooks/useInstanceVar'
 
 import styles from './AnimatedButtonProvider.module.css'
 

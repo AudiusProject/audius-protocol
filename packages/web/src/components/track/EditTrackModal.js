@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { SquareSizes } from '@audius/common'
+import { SquareSizes, newTrackMetadata } from '@audius/common'
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { mapValues } from 'lodash'
 import PropTypes from 'prop-types'
 
-import * as schemas from 'common/schemas'
 import FormTile from 'components/data-entry/FormTile'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import zIndex from 'utils/zIndex'
@@ -25,7 +24,7 @@ const EditTrackModal = ({
   onDeleteStem,
   onDelete
 }) => {
-  const initialForm = schemas.newTrackMetadata(metadata)
+  const initialForm = newTrackMetadata(metadata)
   const [formFields, setFormFields] = useState(initialForm)
   const [invalidFields, setInvalidFields] = useState(
     mapValues(formFields, (v) => false)
@@ -192,7 +191,7 @@ EditTrackModal.defaultProps = {
   onCancel: () => {},
   onSave: () => {},
   onDelete: () => {},
-  metadata: schemas.newTrackMetadata(),
+  metadata: newTrackMetadata(),
   showUnlistedToggle: true
 }
 

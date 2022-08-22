@@ -1,18 +1,19 @@
 import { ComponentType, useCallback, useState } from 'react'
 
-import { Name, Nullable } from '@audius/common'
-import { useDispatch } from 'react-redux'
-
-import { useUIAudio } from 'common/hooks/useUIAudio'
-import { make } from 'common/store/analytics/actions'
-import { getNotificationUser } from 'common/store/notifications/selectors'
-import { TipReceive } from 'common/store/notifications/types'
 import {
-  makeGetReactionForSignature,
+  Name,
+  Nullable,
+  useUIAudio,
+  notificationsSelectors,
+  TipReceiveNotification,
   reactionOrder,
   ReactionTypes,
-  writeReactionValue
-} from 'common/store/ui/reactions/slice'
+  reactionsUIActions,
+  reactionsUISelectors
+} from '@audius/common'
+import { useDispatch } from 'react-redux'
+
+import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TipReceivedNotification.module.css'
@@ -28,6 +29,9 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
+const { writeReactionValue } = reactionsUIActions
+const { makeGetReactionForSignature } = reactionsUISelectors
+const { getNotificationUser } = notificationsSelectors
 
 const reactionList: [ReactionTypes, ComponentType<ReactionProps>][] =
   reactionOrder.map((r) => [r, reactionMap[r]])
@@ -43,7 +47,7 @@ const messages = {
 }
 
 type TipReceivedNotificationProps = {
-  notification: TipReceive
+  notification: TipReceiveNotification
 }
 
 const useSetReaction = (tipTxSignature: string) => {

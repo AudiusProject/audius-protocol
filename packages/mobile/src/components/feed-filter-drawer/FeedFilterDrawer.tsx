@@ -1,14 +1,19 @@
 import { useCallback, useMemo } from 'react'
 
-import { FeedFilter, Name } from '@audius/common'
-import { setFeedFilter } from 'audius-client/src/common/store/pages/feed/actions'
-import { feedActions } from 'audius-client/src/common/store/pages/feed/lineup/actions'
+import {
+  FeedFilter,
+  Name,
+  feedPageLineupActions as feedActions,
+  feedPageActions
+} from '@audius/common'
 import { Text } from 'react-native'
 
 import ActionDrawer from 'app/components/action-drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
+
+const { setFeedFilter } = feedPageActions
 
 const MODAL_NAME = 'FeedFilter'
 

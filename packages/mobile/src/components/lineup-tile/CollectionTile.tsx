@@ -1,35 +1,29 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Collection, Track, User } from '@audius/common'
+import type {
+  Collection,
+  Track,
+  User,
+  EnhancedCollectionTrack
+} from '@audius/common'
 import {
   FavoriteSource,
   PlaybackSource,
   RepostSource,
   ShareSource,
   FavoriteType,
-  SquareSizes
-} from '@audius/common'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import type { EnhancedCollectionTrack } from 'audius-client/src/common/store/cache/collections/selectors'
-import {
-  getCollection,
-  getTracksFromCollection
-} from 'audius-client/src/common/store/cache/collections/selectors'
-import { getUserFromCollection } from 'audius-client/src/common/store/cache/users/selectors'
-import {
-  repostCollection,
-  saveCollection,
-  undoRepostCollection,
-  unsaveCollection
-} from 'audius-client/src/common/store/social/collections/actions'
-import {
+  SquareSizes,
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  collectionsSocialActions,
   OverflowAction,
-  OverflowSource
-} from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
-import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  RepostType
+} from '@audius/common'
 import { albumPage, playlistPage } from 'audius-client/src/utils/route'
-import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import { useSelector } from 'react-redux'
 
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
@@ -42,6 +36,17 @@ import { getPlayingUid } from 'app/store/audio/selectors'
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
 import type { LineupItemProps } from './types'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open: openOverflowMenu } = mobileOverflowMenuUIActions
+const {
+  repostCollection,
+  saveCollection,
+  undoRepostCollection,
+  unsaveCollection
+} = collectionsSocialActions
+const { getUserFromCollection } = cacheUsersSelectors
+const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
+const getUserId = accountSelectors.getUserId
 
 export const CollectionTile = (props: LineupItemProps) => {
   const { uid } = props

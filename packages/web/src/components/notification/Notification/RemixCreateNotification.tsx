@@ -1,15 +1,16 @@
 import { useCallback } from 'react'
 
-import { Name, Nullable } from '@audius/common'
+import {
+  Name,
+  Nullable,
+  notificationsSelectors,
+  RemixCreateNotification as RemixCreateNotificationType,
+  TrackEntity
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import {
-  getNotificationEntities,
-  getNotificationUser
-} from 'common/store/notifications/selectors'
-import { RemixCreate, TrackEntity } from 'common/store/notifications/types'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
@@ -22,6 +23,7 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
 import { getEntityLink } from './utils'
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New remix of your track',
@@ -31,7 +33,7 @@ const messages = {
 }
 
 type RemixCreateNotificationProps = {
-  notification: RemixCreate
+  notification: RemixCreateNotificationType
 }
 
 export const RemixCreateNotification = (

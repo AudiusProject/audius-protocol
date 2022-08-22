@@ -13,13 +13,13 @@ import {
   createRef
 } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 import { throttle } from 'lodash'
 import { animated, useTransition, useSpring } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './TabStyles.module.css'

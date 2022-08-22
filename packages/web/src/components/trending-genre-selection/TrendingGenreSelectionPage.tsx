@@ -1,23 +1,23 @@
-import { TimeRange } from '@audius/common'
+import {
+  TimeRange,
+  TRENDING_GENRES,
+  ELECTRONIC_PREFIX,
+  Genre,
+  trendingPageLineupActions,
+  trendingPageActions,
+  trendingPageSelectors
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import * as trendingPageActions from 'common/store/pages/trending/actions'
-import {
-  trendingMonthActions,
-  trendingWeekActions,
-  trendingAllTimeActions
-} from 'common/store/pages/trending/lineup/actions'
-import {
-  getTrendingGenre,
-  getTrendingTimeRange
-} from 'common/store/pages/trending/selectors'
-import { TRENDING_GENRES, ELECTRONIC_PREFIX, Genre } from 'common/utils/genres'
 import { AppState } from 'store/types'
 import { TRENDING_PAGE } from 'utils/route'
 
 import TrendingGenreSelectionPage from './components/TrendingGenreSelectionPage'
+const { getTrendingGenre, getTrendingTimeRange } = trendingPageSelectors
+const { trendingMonthActions, trendingWeekActions, trendingAllTimeActions } =
+  trendingPageLineupActions
 
 type ConnectedTrendingGenreSelectionPageProps = {} & ReturnType<
   typeof mapStateToProps

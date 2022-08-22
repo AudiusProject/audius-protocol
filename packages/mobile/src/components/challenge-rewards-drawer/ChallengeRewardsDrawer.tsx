@@ -1,10 +1,12 @@
 import React from 'react'
 
 import type { UserChallengeState } from '@audius/common'
-import { ClaimStatus } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import { getAAOErrorEmojis } from 'audius-client/src/common/utils/aaoErrorCodes'
-import { fillString } from 'audius-client/src/common/utils/fillString'
-import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
+import {
+  fillString,
+  formatNumberCommas,
+  ClaimStatus,
+  getAAOErrorEmojis
+} from '@audius/common'
 import type { ImageSourcePropType } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 

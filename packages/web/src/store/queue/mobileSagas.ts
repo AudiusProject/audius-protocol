@@ -1,10 +1,15 @@
-import { ID, UID, removeNullable } from '@audius/common'
+import {
+  ID,
+  UID,
+  removeNullable,
+  accountSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  queueActions,
+  getContext
+} from '@audius/common'
 import { all, put, select, takeEvery, call } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
-import { getTrack } from 'common/store/cache/tracks/selectors'
-import { getUser } from 'common/store/cache/users/selectors'
 import {
   getOrder,
   getIndex,
@@ -15,13 +20,6 @@ import {
   getQueueAutoplay
 } from 'common/store/queue/selectors'
 import {
-  persist,
-  queueAutoplay,
-  repeat,
-  shuffle,
-  updateIndex
-} from 'common/store/queue/slice'
-import {
   PersistQueueMessage,
   RepeatModeMessage,
   ShuffleMessage
@@ -30,6 +28,10 @@ import { MessageType, Message } from 'services/native-mobile-interface/types'
 import * as playerActions from 'store/player/slice'
 import { generateM3U8Variants } from 'utils/hlsUtil'
 import { waitForAccount } from 'utils/sagaHelpers'
+const { getUser } = cacheUsersSelectors
+const { persist, queueAutoplay, repeat, shuffle, updateIndex } = queueActions
+const { getTrack } = cacheTracksSelectors
+const getUserId = accountSelectors.getUserId
 
 const PUBLIC_IPFS_GATEWAY = 'http://cloudflare-ipfs.com/ipfs/'
 const DEFAULT_IMAGE_URL =

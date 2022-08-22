@@ -1,15 +1,17 @@
 import { Component } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  accountSelectors,
+  queueActions,
+  newCollectionMetadata
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { Spring } from 'react-spring/renderprops'
 
-import * as schemas from 'common/schemas'
-import { getAccountUser } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
-import { pause as pauseQueue } from 'common/store/queue/slice'
 import { openWithDelay } from 'components/first-upload-modal/store/slice'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
@@ -28,6 +30,8 @@ import {
   undoResetState,
   toggleMultiTrackNotification
 } from './store/actions'
+const { pause: pauseQueue } = queueActions
+const getAccountUser = accountSelectors.getAccountUser
 
 const Pages = Object.freeze({
   SELECT: 0,
@@ -70,7 +74,7 @@ class Upload extends Component {
     // Contains metadata related to the upload itself, e.g. playlist vs. track.
     metadata: this.props.upload.metadata
       ? this.props.upload.metadata
-      : schemas.newCollectionMetadata({ artwork: { file: null, url: '' } }),
+      : newCollectionMetadata({ artwork: { file: null, url: '' } }),
 
     // An array of array of tracks representing stems per track.
     stems: [],
@@ -266,7 +270,7 @@ class Upload extends Component {
       preview: null,
       previewIndex: -1,
       uploadType: UploadType.INDIVIDUAL_TRACK,
-      metadata: schemas.newCollectionMetadata({
+      metadata: newCollectionMetadata({
         artwork: { file: null, url: '' }
       }),
       uploadTrackerror: null

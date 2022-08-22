@@ -1,11 +1,8 @@
-import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
-import { tracksActions } from 'audius-client/src/common/store/pages/track/lineup/actions'
 import {
-  getLineup,
-  getRemixParentTrack,
-  getTrack,
-  getUser
-} from 'audius-client/src/common/store/pages/track/selectors'
+  lineupSelectors,
+  trackPageLineupActions,
+  trackPageSelectors
+} from '@audius/common'
 import { trackRemixesPage } from 'audius-client/src/utils/route'
 import { omit } from 'lodash'
 import { Text, View } from 'react-native'
@@ -19,6 +16,9 @@ import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { TrackScreenMainContent } from './TrackScreenMainContent'
+const { tracksActions } = trackPageLineupActions
+const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
 
 const getMoreByArtistLineup = makeGetLineupMetadatas(getLineup)
 

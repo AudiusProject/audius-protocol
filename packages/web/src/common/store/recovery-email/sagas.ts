@@ -1,11 +1,9 @@
-import { Name } from '@audius/common'
+import { Name, getContext, recoveryEmailActions } from '@audius/common'
 import { takeLatest, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 
-import { getContext } from '../effects'
-
-import { resendRecoveryEmail as resendRecoveryEmailAction } from './slice'
+const { resendRecoveryEmail: resendRecoveryEmailAction } = recoveryEmailActions
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

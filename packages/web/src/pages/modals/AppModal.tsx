@@ -1,6 +1,6 @@
 import { ComponentType } from 'react'
 
-import { Modals } from 'common/store/ui/modals/slice'
+import { Modals } from '@audius/common'
 
 import { useModalState } from './useModalState'
 

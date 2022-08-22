@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 
-import { Name, User } from '@audius/common'
+import { Name, User, encodeHashId, accountSelectors } from '@audius/common'
 import {
   Button,
   ButtonProps,
@@ -16,9 +16,7 @@ import { useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
-import { getAccountUser } from 'common/store/account/selectors'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { encodeHashId } from 'common/utils/hashIds'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ProfileInfo } from 'components/profile-info/ProfileInfo'
@@ -28,6 +26,7 @@ import { ERROR_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { signOut } from 'utils/signOut'
 
 import styles from '../styles/OAuthLoginPage.module.css'
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   alreadyLoggedInAuthorizePrompt: (appName: string) =>

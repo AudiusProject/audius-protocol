@@ -6,31 +6,29 @@ import {
   RepostSource,
   FavoriteSource,
   PlaybackSource,
-  Name
+  Name,
+  formatCount,
+  accountSelectors,
+  accountActions,
+  lineupSelectors,
+  notificationsSelectors,
+  notificationsActions,
+  savedPageTracksLineupActions as tracksActions,
+  savedPageActions as saveActions,
+  savedPageSelectors,
+  SavedPageTabs as ProfileTabs,
+  SavedPageTrack,
+  TrackRecord,
+  SavedPageCollection,
+  tracksSocialActions as socialActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import * as accountActions from 'common/store/account/reducer'
-import { getAccountWithSavedPlaylistsAndAlbums } from 'common/store/account/selectors'
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import { makeGetTableMetadatas } from 'common/store/lineup/selectors'
-import { updatePlaylistLastViewedAt } from 'common/store/notifications/actions'
-import { getPlaylistUpdates } from 'common/store/notifications/selectors'
-import * as saveActions from 'common/store/pages/saved-page/actions'
-import { tracksActions } from 'common/store/pages/saved-page/lineups/tracks/actions'
-import { getSavedTracksLineup } from 'common/store/pages/saved-page/selectors'
-import {
-  Tabs as ProfileTabs,
-  SavedPageTrack,
-  TrackRecord,
-  SavedPageCollection
-} from 'common/store/pages/saved-page/types'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import * as socialActions from 'common/store/social/tracks/actions'
-import { formatCount } from 'common/utils/formatUtil'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
@@ -38,6 +36,12 @@ import { profilePage } from 'utils/route'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
+const { getSavedTracksLineup } = savedPageSelectors
+const { updatePlaylistLastViewedAt } = notificationsActions
+const { getPlaylistUpdates } = notificationsSelectors
+const { makeGetTableMetadatas } = lineupSelectors
+
+const { getAccountWithSavedPlaylistsAndAlbums } = accountSelectors
 
 const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

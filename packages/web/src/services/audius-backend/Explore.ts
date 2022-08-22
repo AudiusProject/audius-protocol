@@ -4,14 +4,15 @@ import {
   FeedFilter,
   UserCollectionMetadata,
   UserTrack,
-  removeNullable
+  removeNullable,
+  encodeHashId,
+  responseAdapter as adapter,
+  APIPlaylist,
+  APITrack,
+  AudiusAPIClient,
+  AudiusBackend,
+  AuthHeaders
 } from '@audius/common'
-
-import { AudiusAPIClient } from 'common/services/audius-api-client'
-import * as adapter from 'common/services/audius-api-client/ResponseAdapter'
-import { APIPlaylist, APITrack } from 'common/services/audius-api-client/types'
-import { AudiusBackend, AuthHeaders } from 'common/services/audius-backend'
-import { encodeHashId } from 'common/utils/hashIds'
 
 type CollectionWithScore = APIPlaylist & { score: number }
 

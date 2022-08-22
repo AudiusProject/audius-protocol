@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
+import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
 import TwitterLogin from 'react-twitter-auth'
 
-import profilePicEmpty from 'common/assets/img/imageProfilePicEmpty2X.png'
 import Input from 'components/data-entry/Input'
 import InstagramAuth from 'components/instagram-auth/InstagramAuth'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

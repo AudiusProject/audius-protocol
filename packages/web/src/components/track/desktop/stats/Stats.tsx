@@ -1,19 +1,24 @@
 import { memo, useMemo, MouseEvent } from 'react'
 
-import { ID, Favorite, Repost } from '@audius/common'
+import {
+  ID,
+  Favorite,
+  Repost,
+  formatCount,
+  createShallowSelector,
+  cacheUsersSelectors,
+  CommonState
+} from '@audius/common'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
-import { CommonState } from 'common/store'
-import { getUsers } from 'common/store/cache/users/selectors'
-import { formatCount } from 'common/utils/formatUtil'
-import { createShallowSelector } from 'common/utils/selectorHelpers'
 
 import ProfileImage from './ProfileImage'
 import styles from './Stats.module.css'
 import StatsText, { Flavor } from './StatsText'
+const { getUsers } = cacheUsersSelectors
 
 const MAX_REPOST_IMAGES = 3
 const makeFolloweeActionsUsers = () =>

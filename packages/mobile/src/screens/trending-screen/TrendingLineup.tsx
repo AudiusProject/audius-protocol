@@ -1,25 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name, TimeRange } from '@audius/common'
+import {
+  Name,
+  TimeRange,
+  lineupSelectors,
+  trendingPageLineupActions,
+  trendingPageActions,
+  trendingPageSelectors
+} from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
-import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
-import { setTrendingTimeRange } from 'audius-client/src/common/store/pages/trending/actions'
-import {
-  trendingWeekActions,
-  trendingMonthActions,
-  trendingAllTimeActions
-} from 'audius-client/src/common/store/pages/trending/lineup/actions'
-import {
-  getDiscoverTrendingAllTimeLineup,
-  getDiscoverTrendingMonthLineup,
-  getDiscoverTrendingWeekLineup
-} from 'audius-client/src/common/store/pages/trending/selectors'
 
 import { Lineup } from 'app/components/lineup'
 import type { LineupProps } from 'app/components/lineup/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
+const {
+  getDiscoverTrendingAllTimeLineup,
+  getDiscoverTrendingMonthLineup,
+  getDiscoverTrendingWeekLineup
+} = trendingPageSelectors
+const { setTrendingTimeRange } = trendingPageActions
+const { trendingWeekActions, trendingMonthActions, trendingAllTimeActions } =
+  trendingPageLineupActions
+const { makeGetLineupMetadatas } = lineupSelectors
 
 const getTrendingWeekLineup = makeGetLineupMetadatas(
   getDiscoverTrendingWeekLineup

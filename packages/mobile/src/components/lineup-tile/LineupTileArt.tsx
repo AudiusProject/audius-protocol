@@ -1,5 +1,5 @@
 import type { Remix } from '@audius/common'
-import { useLoadImageWithTimeout } from 'audius-client/src/common/hooks/useImageSize'
+import { useLoadImageWithTimeout } from '@audius/common'
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 

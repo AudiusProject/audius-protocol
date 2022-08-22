@@ -1,18 +1,23 @@
 import { ComponentType, useEffect } from 'react'
 
+import {
+  formatCount,
+  accountSelectors,
+  explorePageActions,
+  explorePageSelectors
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { getAccountUser } from 'common/store/account/selectors'
-import { makeGetExplore } from 'common/store/pages/explore/selectors'
-import { fetchExplore } from 'common/store/pages/explore/slice'
-import { formatCount } from 'common/utils/formatUtil'
 import { AppState } from 'store/types'
 
 import { ExplorePageProps as DesktopExplorePageProps } from './components/desktop/ExplorePage'
 import { ExplorePageProps as MobileExplorePageProps } from './components/mobile/ExplorePage'
+const { makeGetExplore } = explorePageSelectors
+const { fetchExplore } = explorePageActions
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: 'Explore',

@@ -1,4 +1,4 @@
-import { badgeTiers } from 'audius-client/src/common/store/wallet/utils'
+import { badgeTiers } from '@audius/common'
 
 import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
