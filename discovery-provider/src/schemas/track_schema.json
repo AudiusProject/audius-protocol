@@ -12,63 +12,105 @@
                     "default": null
                 },
                 "length": {
-                    "type": ["integer", "null"],
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
                     "default": null
                 },
                 "cover_art": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null,
                     "$ref": "#/definitions/CID"
                 },
                 "cover_art_sizes": {
-                  "$comment": "type can be null if attached as a stem",
-                  "type": ["string",  "null"],
-                  "default": null,
-                  "$ref": "#/definitions/CID"
-              },
+                    "$comment": "type can be null if attached as a stem",
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null,
+                    "$ref": "#/definitions/CID"
+                },
                 "tags": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "genre": {
                     "$comment": "genre can be null if attached as a stem",
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "mood": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "credits_splits": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "create_date": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "release_date": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "file_type": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "description": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "license": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "isrc": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "iswc": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "default": null
                 },
                 "track_segments": {
@@ -97,7 +139,10 @@
                     }
                 },
                 "download": {
-                    "type": ["object", "null"],
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "$ref": "#/definitions/Download",
                     "default": {
                         "cid": null,
@@ -106,13 +151,31 @@
                     }
                 },
                 "stem_of": {
-                    "type": ["object", "null"],
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "$ref": "#/definitions/StemOf",
                     "default": null
                 },
                 "remix_of": {
-                    "type": ["object", "null"],
+                    "type": [
+                        "object",
+                        "null"
+                    ],
                     "$ref": "#/definitions/RemixOf",
+                    "default": null
+                },
+                "is_premium": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "premium_conditions": {
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "$ref": "#/definitions/PremiumConditions",
                     "default": null
                 }
             },
@@ -142,7 +205,10 @@
             "title": "Track"
         },
         "RemixOf": {
-            "type": ["object", "null"],
+            "type": [
+                "object",
+                "null"
+            ],
             "additionalProperties": false,
             "properties": {
                 "tracks": {
@@ -172,11 +238,17 @@
             "title": "TrackElement"
         },
         "Download": {
-            "type": ["object", "null"],
+            "type": [
+                "object",
+                "null"
+            ],
             "additionalProperties": false,
             "properties": {
                 "cid": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "$ref": "#/definitions/CID"
                 },
                 "is_downloadable": {
@@ -216,13 +288,15 @@
                     "type": "boolean"
                 }
             },
-            "required": [
-            ],
+            "required": [],
             "$comment": "No required fields for FieldVisibility because it causes backwards compatibility issues. If we added a new property, we don't want old records to fail if all properties are not specified(and overwrite the values with the defaults), but we also don't want to set new properties especially on the discovery provider because then we'd be writing properties not present in the metadata written on chain.",
             "title": "FieldVisibility"
         },
         "StemOf": {
-            "type": ["object", "null"],
+            "type": [
+                "object",
+                "null"
+            ],
             "additionalProperties": false,
             "properties": {
                 "category": {
@@ -257,11 +331,27 @@
             "title": "TrackSegment"
         },
         "CID": {
-            "type": ["string", "null"],
+            "type": [
+                "string",
+                "null"
+            ],
             "minLength": 46,
             "maxLength": 46,
             "pattern": "^Qm[a-zA-Z0-9]{44}$",
             "title": "CID"
+        },
+        "PremiumConditions": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "nft-collection": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "nft-collection"
+            ],
+            "title": "PremiumConditions"
         }
     }
 }
