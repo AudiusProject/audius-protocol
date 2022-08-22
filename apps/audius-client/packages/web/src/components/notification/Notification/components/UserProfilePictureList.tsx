@@ -1,7 +1,6 @@
-import { User } from '@audius/common'
+import { User, formatCount } from '@audius/common'
 import cn from 'classnames'
 
-import { formatCount } from 'common/utils/formatUtil'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import { USER_LENGTH_LIMIT } from '../utils'

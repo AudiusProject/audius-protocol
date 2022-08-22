@@ -1,17 +1,15 @@
 import { useCallback } from 'react'
 
-import { removeNullable } from '@audius/common'
+import {
+  removeNullable,
+  accountSelectors,
+  cacheUsersSelectors,
+  profilePageSelectors
+} from '@audius/common'
 import { IconFollowing } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { getUserId } from 'common/store/account/selectors'
-import { getUsers } from 'common/store/cache/users/selectors'
-import {
-  getFolloweeFollows,
-  getProfileUser,
-  getProfileUserId
-} from 'common/store/pages/profile/selectors'
 import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from 'components/profile-picture-list-tile/ProfilePictureListTile'
 import {
@@ -24,6 +22,10 @@ import {
 } from 'store/application/ui/userListModal/types'
 
 import styles from './ProfileMutuals.module.css'
+const { getFolloweeFollows, getProfileUser, getProfileUserId } =
+  profilePageSelectors
+const { getUsers } = cacheUsersSelectors
+const getUserId = accountSelectors.getUserId
 
 const messages = {
   mutuals: 'Mutuals'

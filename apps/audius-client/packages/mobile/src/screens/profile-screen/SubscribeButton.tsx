@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import type { User } from '@audius/common'
-import { setNotificationSubscription } from 'audius-client/src/common/store/pages/profile/actions'
+import { profilePageActions } from '@audius/common'
 
 import IconNotification from 'app/assets/images/iconNotification.svg'
 import { Button } from 'app/components/core'
@@ -10,6 +10,7 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { getIsSubscribed } from './selectors'
+const { setNotificationSubscription } = profilePageActions
 
 const messages = {
   subscribe: 'subscribe',

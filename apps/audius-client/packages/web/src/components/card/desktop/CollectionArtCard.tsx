@@ -1,16 +1,19 @@
 import { useCallback, useState } from 'react'
 
-import { ID, SquareSizes } from '@audius/common'
+import {
+  ID,
+  SquareSizes,
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  imageBlank as placeholderArt
+} from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import placeholderArt from 'common/assets/img/imageBlank2x.png'
-import { getUserId } from 'common/store/account/selectors'
-import { getCollection } from 'common/store/cache/collections/selectors'
-import { getUserFromCollection } from 'common/store/cache/users/selectors'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Menu, { MenuType } from 'components/menu/Menu'
@@ -32,6 +35,9 @@ import { playlistPage, albumPage, profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './CollectionArtCard.module.css'
+const { getUserFromCollection } = cacheUsersSelectors
+const { getCollection } = cacheCollectionsSelectors
+const getUserId = accountSelectors.getUserId
 
 type OwnProps = {
   className?: string

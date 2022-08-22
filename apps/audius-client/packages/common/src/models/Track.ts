@@ -1,19 +1,19 @@
-import { Favorite } from 'models/Favorite'
-import { CID, ID, UID } from 'models/Identifiers'
-import { CoverArtSizes } from 'models/ImageSizes'
-import { Repost } from 'models/Repost'
-import { User, UserMetadata } from 'models/User'
-import { Nullable } from 'utils/typeUtils'
+import { Nullable } from '../utils/typeUtils'
 
+import { Favorite } from './Favorite'
+import { CID, ID, UID } from './Identifiers'
+import { CoverArtSizes } from './ImageSizes'
+import { Repost } from './Repost'
 import { StemCategory } from './Stems'
 import { Timestamped } from './Timestamped'
+import { User, UserMetadata } from './User'
 
 export interface TrackSegment {
   duration: string
   multihash: CID
 }
 
-interface Followee extends User {
+export interface Followee extends User {
   is_delete: boolean
   repost_item_id: string
   repost_type: string

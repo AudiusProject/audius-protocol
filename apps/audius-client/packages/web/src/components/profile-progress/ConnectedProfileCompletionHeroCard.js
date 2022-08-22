@@ -1,15 +1,16 @@
+import { challengesSelectors, profilePageActions } from '@audius/common'
 import { connect } from 'react-redux'
 import { animated } from 'react-spring'
 
-import {
-  getOrderedCompletionStages,
-  getProfilePageMeterDismissed,
-  getIsAccountLoaded
-} from 'common/store/challenges/selectors/profile-progress'
-import { profileMeterDismissed } from 'common/store/pages/profile/actions'
 import ProfileCompletionHeroCard from 'components/profile-progress/components/ProfileCompletionHeroCard'
 
 import { useVerticalCollapse, useProfileCompletionDismissal } from './hooks'
+const { profileMeterDismissed } = profilePageActions
+const {
+  getOrderedCompletionStages,
+  getProfilePageMeterDismissed,
+  getIsAccountLoaded
+} = challengesSelectors
 
 const ORIGINAL_HEIGHT_PIXELS = 206
 

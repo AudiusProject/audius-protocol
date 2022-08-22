@@ -1,12 +1,9 @@
-import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
-import { tracksActions } from 'audius-client/src/common/store/pages/remixes/lineup/actions'
 import {
-  getTrack,
-  getUser,
-  getLineup,
-  getCount
-} from 'audius-client/src/common/store/pages/remixes/selectors'
-import { pluralize } from 'audius-client/src/common/utils/formatUtil'
+  pluralize,
+  lineupSelectors,
+  remixesPageLineupActions as tracksActions,
+  remixesPageSelectors
+} from '@audius/common'
 import { Text, View } from 'react-native'
 
 import { Screen } from 'app/components/core'
@@ -16,6 +13,8 @@ import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { flexRowCentered, makeStyles } from 'app/styles'
+const { getTrack, getUser, getLineup, getCount } = remixesPageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
 
 const getRemixesTracksLineup = makeGetLineupMetadatas(getLineup)
 

@@ -3,47 +3,31 @@ import {
   FollowSource,
   ID,
   RepostSource,
-  ShareSource
+  ShareSource,
+  cacheCollectionsActions,
+  cacheCollectionsSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  notificationsSelectors,
+  notificationsActions,
+  Notification,
+  NotificationType,
+  collectionsSocialActions,
+  tracksSocialActions,
+  usersSocialActions,
+  addToPlaylistUIActions,
+  createPlaylistModalUIActions,
+  deletePlaylistConfirmationModalUIActions,
+  OverflowSource,
+  mobileOverflowMenuUISelectors,
+  modalsActions,
+  modalsSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { publishPlaylist } from 'common/store/cache/collections/actions'
-import { getCollection } from 'common/store/cache/collections/selectors'
-import { getTrack } from 'common/store/cache/tracks/selectors'
-import { getUser } from 'common/store/cache/users/selectors'
-import { unsubscribeUser } from 'common/store/notifications/actions'
-import { getNotificationById } from 'common/store/notifications/selectors'
-import {
-  Notification,
-  NotificationType
-} from 'common/store/notifications/types'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import {
-  repostCollection,
-  saveCollection,
-  shareCollection,
-  undoRepostCollection,
-  unsaveCollection
-} from 'common/store/social/collections/actions'
-import {
-  repostTrack,
-  saveTrack,
-  undoRepostTrack,
-  unsaveTrack
-} from 'common/store/social/tracks/actions'
-import {
-  followUser,
-  shareUser,
-  unfollowUser
-} from 'common/store/social/users/actions'
-import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
-import { open as openEditPlaylist } from 'common/store/ui/createPlaylistModal/actions'
-import { requestOpen as openDeletePlaylist } from 'common/store/ui/delete-playlist-confirmation-modal/slice'
-import { getMobileOverflowModal } from 'common/store/ui/mobile-overflow-menu/selectors'
-import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
-import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
 import { AppState } from 'store/types'
 import {
   albumPage,
@@ -53,6 +37,29 @@ import {
 } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
+const { setVisibility } = modalsActions
+const { getModalVisibility } = modalsSelectors
+const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
+const { requestOpen: openDeletePlaylist } =
+  deletePlaylistConfirmationModalUIActions
+const { open: openEditPlaylist } = createPlaylistModalUIActions
+const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
+const { followUser, shareUser, unfollowUser } = usersSocialActions
+const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
+  tracksSocialActions
+const {
+  repostCollection,
+  saveCollection,
+  shareCollection,
+  undoRepostCollection,
+  unsaveCollection
+} = collectionsSocialActions
+const { unsubscribeUser } = notificationsActions
+const { getTrack } = cacheTracksSelectors
+const { getUser } = cacheUsersSelectors
+const { getNotificationById } = notificationsSelectors
+const { getCollection } = cacheCollectionsSelectors
+const { publishPlaylist } = cacheCollectionsActions
 
 type ConnectedMobileOverflowModalProps = {} & ReturnType<
   typeof mapStateToProps

@@ -1,5 +1,5 @@
 import type { ID } from '@audius/common'
-import { makeGetTierAndVerifiedForUser } from 'audius-client/src/common/store/wallet/utils'
+import { makeGetTierAndVerifiedForUser } from '@audius/common'
 
 import { isEqual, useSelectorWeb } from './useSelectorWeb'
 

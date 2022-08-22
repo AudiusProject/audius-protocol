@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 
+import { reachabilitySelectors } from '@audius/common'
 import { connect } from 'react-redux'
 
-import { getIsReachable } from 'common/store/reachability/selectors'
 import NoConnectivityContent from 'components/no-connectivity-page/NoConnectivityContent'
 import { AppState } from 'store/types'
+const { getIsReachable } = reachabilitySelectors
 
 type NetworkConnectivityMonitorProps = {
   children: JSX.Element

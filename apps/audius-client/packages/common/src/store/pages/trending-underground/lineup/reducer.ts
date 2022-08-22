@@ -1,0 +1,38 @@
+import { LineupState, Track } from '../../../../models/index'
+import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
+import { initialLineupState } from 'store/lineup/reducer'
+
+import { PREFIX } from './actions'
+
+const initialState: LineupState<Track> = {
+  ...initialLineupState,
+  prefix: PREFIX
+}
+
+type ResetSucceeded = typeof RESET_SUCCEEDED
+
+type ResetSucceededAction = {
+  type: ResetSucceeded
+}
+
+const actionsMap = {
+  [RESET_SUCCEEDED](
+    _state: typeof initialState,
+    _action: ResetSucceededAction
+  ) {
+    const newState = initialState
+    return newState
+  }
+}
+
+const trendingUndergroundReducer = (
+  state = initialState,
+  action: ResetSucceededAction
+) => {
+  const baseActionType = stripPrefix(PREFIX, action.type) as ResetSucceeded
+  const matchingReduceFunction = actionsMap[baseActionType]
+  if (!matchingReduceFunction) return state
+  return matchingReduceFunction(state, action)
+}
+
+export default trendingUndergroundReducer

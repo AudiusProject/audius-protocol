@@ -13,18 +13,18 @@ import {
   Name,
   ProfilePictureSizes,
   SquareSizes,
-  User
+  User,
+  artistRecommendationsUISelectors,
+  artistRecommendationsUIActions,
+  usersSocialActions as socialActions,
+  CommonState
 } from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconClose } from 'assets/img/iconRemove.svg'
-import { CommonState } from 'common/store'
 import { make, useRecord } from 'common/store/analytics/actions'
-import * as socialActions from 'common/store/social/users/actions'
-import { makeGetRelatedArtists } from 'common/store/ui/artist-recommendations/selectors'
-import { fetchRelatedArtists } from 'common/store/ui/artist-recommendations/slice'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/follow-button/FollowButton'
@@ -36,6 +36,8 @@ import { useIsMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './ArtistRecommendations.module.css'
+const { makeGetRelatedArtists } = artistRecommendationsUISelectors
+const { fetchRelatedArtists } = artistRecommendationsUIActions
 
 export type ArtistRecommendationsProps = {
   ref?: MutableRefObject<HTMLDivElement>

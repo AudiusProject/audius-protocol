@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
 
 import type { ID, Track, User } from '@audius/common'
-import { SquareSizes } from '@audius/common'
-import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
-import { getUserFromTrack } from 'audius-client/src/common/store/cache/users/selectors'
+import {
+  SquareSizes,
+  cacheTracksSelectors,
+  cacheUsersSelectors
+} from '@audius/common'
 import { profilePage } from 'audius-client/src/utils/route'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
@@ -19,6 +21,8 @@ import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import type { StylesProp } from 'app/styles'
 import { flexRowCentered, makeStyles } from 'app/styles'
+const { getUserFromTrack } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
 
 const messages = {
   by: 'By '

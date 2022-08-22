@@ -5,7 +5,9 @@ import {
   FavoriteSource,
   Name,
   PlaybackSource,
-  SquareSizes
+  SquareSizes,
+  queueActions,
+  tracksSocialActions
 } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -13,12 +15,6 @@ import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import { pause, play } from 'common/store/queue/slice'
-import {
-  recordListen,
-  saveTrack,
-  unsaveTrack
-} from 'common/store/social/tracks/actions'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -36,6 +32,8 @@ import { AppState } from 'store/types'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import styles from './PlayBar.module.css'
+const { recordListen, saveTrack, unsaveTrack } = tracksSocialActions
+const { pause, play } = queueActions
 
 const SEEK_INTERVAL = 200
 

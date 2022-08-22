@@ -1,6 +1,5 @@
-import { SquareSizes } from '@audius/common'
+import { SquareSizes, TrackEntity } from '@audius/common'
 
-import { TrackEntity } from 'common/store/notifications/types'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'

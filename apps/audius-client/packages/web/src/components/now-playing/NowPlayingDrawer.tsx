@@ -1,13 +1,12 @@
 import { useEffect, useCallback } from 'react'
 
+import { useInstanceVar, nowPlayingUIActions } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
-import useInstanceVar from 'common/hooks/useInstanceVar'
-import { setIsOpen as _setIsNowPlayingOpen } from 'common/store/ui/now-playing/slice'
 import ConnectedBottomBar from 'components/nav/mobile/ConnectedBottomBar'
 import MobilePlayBar from 'components/play-bar/mobile/PlayBar'
 import {
@@ -17,6 +16,7 @@ import {
 
 import NowPlaying from './NowPlaying'
 import styles from './NowPlayingDrawer.module.css'
+const { setIsOpen: _setIsNowPlayingOpen } = nowPlayingUIActions
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

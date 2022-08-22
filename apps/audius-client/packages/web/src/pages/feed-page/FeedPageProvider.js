@@ -1,6 +1,13 @@
 import { PureComponent } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  accountSelectors,
+  lineupSelectors,
+  feedPageLineupActions as feedActions,
+  feedPageSelectors,
+  feedPageActions as discoverPageAction
+} from '@audius/common'
 import {
   push as pushRoute,
   replace as replaceRoute
@@ -8,21 +15,16 @@ import {
 import { connect } from 'react-redux'
 import { withRouter, matchPath } from 'react-router-dom'
 
-import { getHasAccount } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
-import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
-import * as discoverPageAction from 'common/store/pages/feed/actions'
-import { feedActions } from 'common/store/pages/feed/lineup/actions'
-import {
-  getDiscoverFeedLineup,
-  makeGetSuggestedFollows,
-  getFeedFilter
-} from 'common/store/pages/feed/selectors'
 import { openSignOn } from 'common/store/pages/signon/actions'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_PAGE } from 'utils/route'
+const { getDiscoverFeedLineup, makeGetSuggestedFollows, getFeedFilter } =
+  feedPageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
+const getHasAccount = accountSelectors.getHasAccount
 
 const messages = {
   feedTitle: 'Feed',

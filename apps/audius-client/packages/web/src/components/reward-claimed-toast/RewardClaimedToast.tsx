@@ -1,10 +1,12 @@
 import { useContext, useEffect } from 'react'
 
+import {
+  audioRewardsPageActions,
+  audioRewardsPageSelectors
+} from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
-import { getShowRewardClaimedToast } from 'common/store/pages/audio-rewards/selectors'
-import { resetRewardClaimedToast } from 'common/store/pages/audio-rewards/slice'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { getLocationPathname } from 'store/routing/selectors'
@@ -12,6 +14,8 @@ import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { AUDIO_PAGE } from 'utils/route'
 
 import styles from './RewardClaimedToast.module.css'
+const { getShowRewardClaimedToast } = audioRewardsPageSelectors
+const { resetRewardClaimedToast } = audioRewardsPageActions
 
 const messages = {
   challengeCompleted: 'You’ve Completed an $AUDIO Rewards Challenge!',

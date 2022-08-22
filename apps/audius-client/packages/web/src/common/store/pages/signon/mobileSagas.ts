@@ -1,8 +1,7 @@
-import { User } from '@audius/common'
+import { User, accountActions } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { all, call, put, select, take, takeEvery } from 'redux-saga/effects'
 
-import * as accountActions from 'common/store/account/reducer'
 import {
   SignInFailureMessage,
   SignUpValidateEmailFailureMessage,

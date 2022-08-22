@@ -1,7 +1,7 @@
 import { useCallback, useContext, useRef } from 'react'
 
+import { accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import type { FlatList as RNFlatList } from 'react-native'
 import { View, Text } from 'react-native'
 
@@ -16,6 +16,7 @@ import { getCollectiblesRoute } from 'app/utils/routes'
 
 import { CollectiblesCard } from './CollectiblesCard'
 import { getProfile } from './selectors'
+const getUserId = accountSelectors.getUserId
 
 const messages = {
   title: 'Collectibles',

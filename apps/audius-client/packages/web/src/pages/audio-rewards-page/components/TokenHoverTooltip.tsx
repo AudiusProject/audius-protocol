@@ -1,8 +1,7 @@
 import { ReactNode } from 'react'
 
-import { BNWei } from '@audius/common'
+import { BNWei, formatWei } from '@audius/common'
 
-import { formatWei } from 'common/utils/wallet'
 import Tooltip from 'components/tooltip/Tooltip'
 
 type TokenHoverTooltipProps = {

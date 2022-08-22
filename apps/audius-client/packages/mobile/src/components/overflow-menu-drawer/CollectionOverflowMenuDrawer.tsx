@@ -1,23 +1,19 @@
-import type { ID } from '@audius/common'
-import { FavoriteSource, RepostSource, ShareSource } from '@audius/common'
-import type { CommonState } from 'audius-client/src/common/store'
-import { publishPlaylist } from 'audius-client/src/common/store/cache/collections/actions'
-import { getCollection } from 'audius-client/src/common/store/cache/collections/selectors'
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
+import type { ID, OverflowActionCallbacks, CommonState } from '@audius/common'
+import {
+  FavoriteSource,
+  RepostSource,
+  ShareSource,
+  cacheCollectionsActions,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  collectionsSocialActions,
+  createPlaylistModalUIActions,
+  deletePlaylistConfirmationModalUIActions,
+  OverflowAction,
+  mobileOverflowMenuUISelectors
+} from '@audius/common'
 // Importing directly from audius-client for now, this will be removed
 // when the profile page is implemented in RN
-import {
-  repostCollection,
-  undoRepostCollection,
-  saveCollection,
-  unsaveCollection,
-  shareCollection
-} from 'audius-client/src/common/store/social/collections/actions'
-import { open as openEditPlaylist } from 'audius-client/src/common/store/ui/createPlaylistModal/actions'
-import { requestOpen as openDeletePlaylist } from 'audius-client/src/common/store/ui/delete-playlist-confirmation-modal/slice'
-import { getMobileOverflowModal } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
-import type { OverflowActionCallbacks } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { OverflowAction } from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 import {
   profilePage,
   playlistPage,
@@ -27,6 +23,20 @@ import {
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
+const { requestOpen: openDeletePlaylist } =
+  deletePlaylistConfirmationModalUIActions
+const { open: openEditPlaylist } = createPlaylistModalUIActions
+const {
+  repostCollection,
+  undoRepostCollection,
+  saveCollection,
+  unsaveCollection,
+  shareCollection
+} = collectionsSocialActions
+const { getUser } = cacheUsersSelectors
+const { getCollection } = cacheCollectionsSelectors
+const { publishPlaylist } = cacheCollectionsActions
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => React.ReactNode

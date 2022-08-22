@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
 
-import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
-import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
-import type { Reaction } from 'audius-client/src/common/store/notifications/types'
-import { getReactionFromRawValue } from 'audius-client/src/common/store/ui/reactions/slice'
+import type { ReactionNotification } from '@audius/common'
+import {
+  useUIAudio,
+  notificationsSelectors,
+  getReactionFromRawValue
+} from '@audius/common'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
@@ -26,6 +28,7 @@ import {
 import { reactionMap } from '../Reaction'
 
 import { useGoToProfile } from './useGoToProfile'
+const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   reacted: 'reacted',
@@ -56,7 +59,7 @@ const useStyles = makeStyles(() => ({
 }))
 
 type TipReactionNotificationProps = {
-  notification: Reaction
+  notification: ReactionNotification
   isVisible: boolean
 }
 

@@ -1,16 +1,18 @@
-import { UserCollectionMetadata, StringKeys } from '@audius/common'
+import {
+  UserCollectionMetadata,
+  StringKeys,
+  accountSelectors,
+  trendingPlaylistsPageLineupSelectors,
+  trendingPlaylistsPageLineupActions,
+  getContext
+} from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
-import {
-  PREFIX,
-  trendingPlaylistLineupActions
-} from 'common/store/pages/trending-playlists/lineups/actions'
-import { getLineup } from 'common/store/pages/trending-playlists/lineups/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForAccount } from 'utils/sagaHelpers'
+const { getLineup } = trendingPlaylistsPageLineupSelectors
+const getUserId = accountSelectors.getUserId
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   const apiClient = yield* getContext('apiClient')
@@ -58,7 +60,12 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
 
 class TrendingPlaylistSagas extends LineupSagas {
   constructor() {
-    super(PREFIX, trendingPlaylistLineupActions, getLineup, getPlaylists)
+    super(
+      trendingPlaylistsPageLineupActions.prefix,
+      trendingPlaylistsPageLineupActions,
+      getLineup,
+      getPlaylists
+    )
   }
 }
 

@@ -4,25 +4,19 @@ import {
   ChallengeRewardID,
   OptimisticUserChallenge,
   removeNullable,
-  StringKeys
+  StringKeys,
+  fillString,
+  formatNumberCommas,
+  challengesSelectors,
+  audioRewardsPageActions,
+  ChallengeRewardsModalType,
+  audioRewardsPageSelectors
 } from '@audius/common'
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
-import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
-import {
-  getUserChallenges,
-  getUserChallengesLoading
-} from 'common/store/pages/audio-rewards/selectors'
-import {
-  ChallengeRewardsModalType,
-  fetchUserChallenges,
-  setChallengeRewardsModalType
-} from 'common/store/pages/audio-rewards/slice'
-import { fillString } from 'common/utils/fillString'
-import { formatNumberCommas } from 'common/utils/formatUtil'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -31,6 +25,11 @@ import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
 import { challengeRewardsConfig } from './config'
+const { getUserChallenges, getUserChallengesLoading } =
+  audioRewardsPageSelectors
+const { fetchUserChallenges, setChallengeRewardsModalType } =
+  audioRewardsPageActions
+const { getOptimisticUserChallenges } = challengesSelectors
 
 const messages = {
   title: '$AUDIO REWARDS',

@@ -84,7 +84,7 @@ export const createUseFeatureFlagHook =
       },
       // We want configLoaded and shouldRecompute to trigger refreshes of the memo
       // eslint-disable-next-line
-    [flag, shouldRecompute]
+      [flag, shouldRecompute]
     )
     return { isLoaded: configLoaded, isEnabled, setOverride }
   }

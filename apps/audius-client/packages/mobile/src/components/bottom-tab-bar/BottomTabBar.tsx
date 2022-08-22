@@ -1,12 +1,14 @@
 import { useCallback, useState } from 'react'
 
+import {
+  accountSelectors,
+  explorePageActions,
+  ExplorePageTabs
+} from '@audius/common'
 import type { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 // eslint-disable-next-line import/no-unresolved
 import type { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
 import type { NavigationHelpers, ParamListBase } from '@react-navigation/native'
-import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
-import { setTab } from 'audius-client/src/common/store/pages/explore/slice'
-import { Tabs } from 'audius-client/src/common/store/pages/explore/types'
 import {
   openSignOn as _openSignOn,
   showRequiresAccountModal
@@ -31,6 +33,8 @@ import { makeStyles } from 'app/styles'
 
 import { BottomTabBarButton } from './BottomTabBarButton'
 import { BOTTOM_BAR_HEIGHT } from './constants'
+const { setTab } = explorePageActions
+const getUserHandle = accountSelectors.getUserHandle
 
 type NavigationRoute = RNBottomTabBarProps['state']['routes'][0]
 
@@ -96,7 +100,7 @@ export const BottomTabBar = ({
     dispatchWeb(showRequiresAccountModal())
   }, [dispatchWeb])
   const resetExploreTab = useCallback(
-    () => dispatchWeb(setTab({ tab: Tabs.FOR_YOU })),
+    () => dispatchWeb(setTab({ tab: ExplorePageTabs.FOR_YOU })),
     [dispatchWeb]
   )
   const scrollToTop = useCallback(

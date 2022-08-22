@@ -1,10 +1,12 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import {
+  FeatureFlags,
+  tokenDashboardPageActions,
+  walletActions
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { preloadWalletProviders } from 'common/store/pages/token-dashboard/slice'
-import { getBalance } from 'common/store/wallet/slice'
 import Header from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
@@ -27,6 +29,8 @@ import TrendingRewardsTile from './TrendingRewardsTile'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
 import { WalletManagementTile } from './components/WalletManagementTile'
+const { getBalance } = walletActions
+const { preloadWalletProviders } = tokenDashboardPageActions
 
 const messages = {
   title: '$AUDIO & Rewards',

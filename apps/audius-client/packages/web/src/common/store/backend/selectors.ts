@@ -1,3 +1,4 @@
-import { CommonState } from '../reducers'
+// TODO: change back to CommonState
+import { AppState } from 'store/types'
 
-export const getWeb3Error = (state: CommonState) => state.backend.web3Error
+export const getWeb3Error = (state: AppState) => state.backend.web3Error

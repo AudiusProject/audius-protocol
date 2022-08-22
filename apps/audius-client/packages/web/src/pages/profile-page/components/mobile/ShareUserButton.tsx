@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
 
-import { ID, ShareSource, Nullable } from '@audius/common'
+import { ID, ShareSource, Nullable, shareModalUIActions } from '@audius/common'
 import { IconShare, IconButton } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-
 import styles from './ShareUserButton.module.css'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 type ShareUserButtonProps = {
   userId: Nullable<ID>

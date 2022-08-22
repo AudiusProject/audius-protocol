@@ -1,25 +1,19 @@
 import { useCallback, useLayoutEffect } from 'react'
 
 import type { Track } from '@audius/common'
-import { FavoriteSource, RepostSource, ShareSource } from '@audius/common'
-import { updateMethod } from 'audius-client/src/common/store/cast/slice'
 import {
-  repostTrack,
-  saveTrack,
-  undoRepostTrack,
-  unsaveTrack
-} from 'audius-client/src/common/store/social/tracks/actions'
-import { getUserId } from 'common/store/account/selectors'
-import {
-  getMethod as getCastMethod,
-  getIsCasting
-} from 'common/store/cast/selectors'
-import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
-import {
+  FavoriteSource,
+  RepostSource,
+  ShareSource,
+  accountSelectors,
+  castSelectors,
+  castActions,
+  tracksSocialActions,
   OverflowAction,
-  OverflowSource
-} from 'common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions
+} from '@audius/common'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
 
@@ -35,6 +29,13 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open: openOverflowMenu } = mobileOverflowMenuUIActions
+const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
+  tracksSocialActions
+const { updateMethod } = castActions
+const { getMethod: getCastMethod, getIsCasting } = castSelectors
+const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   container: {

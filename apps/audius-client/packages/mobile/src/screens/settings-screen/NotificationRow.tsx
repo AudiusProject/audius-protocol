@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 
-import { togglePushNotificationSetting } from 'audius-client/src/common/store/pages/settings/actions'
-import { getPushNotificationSettings } from 'audius-client/src/common/store/pages/settings/selectors'
-import { PushNotificationSetting } from 'audius-client/src/common/store/pages/settings/types'
+import {
+  settingsPageActions,
+  settingsPageSelectors,
+  PushNotificationSetting
+} from '@audius/common'
 import { View } from 'react-native'
 
 import { Switch } from 'app/components/core'
@@ -12,6 +14,8 @@ import { makeStyles } from 'app/styles'
 
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
+const { getPushNotificationSettings } = settingsPageSelectors
+const { togglePushNotificationSetting } = settingsPageActions
 
 const useStyles = makeStyles(({ palette }) => ({
   content: {

@@ -1,15 +1,16 @@
-import { Kind } from '@audius/common'
+import {
+  Kind,
+  accountSelectors,
+  historyPageTracksLineupActions as tracksActions
+} from '@audius/common'
 import { keyBy } from 'lodash'
 import { call, getContext, select } from 'redux-saga/effects'
 
-import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import {
-  PREFIX,
-  tracksActions
-} from 'common/store/pages/history-page/lineups/tracks/actions'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForAccount } from 'utils/sagaHelpers'
+const getUserId = accountSelectors.getUserId
+const PREFIX = tracksActions.prefix
 
 function* getHistoryTracks() {
   const apiClient = yield getContext('apiClient')

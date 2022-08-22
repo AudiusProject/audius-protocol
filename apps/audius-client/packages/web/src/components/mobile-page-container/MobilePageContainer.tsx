@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useContext } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import cn from 'classnames'
 import { Helmet } from 'react-helmet'
 import { connect } from 'react-redux'
 
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import { ScrollContext } from 'components/scroll-provider/ScrollProvider'
 import { getHasTrack } from 'store/player/selectors'
 import { AppState } from 'store/types'

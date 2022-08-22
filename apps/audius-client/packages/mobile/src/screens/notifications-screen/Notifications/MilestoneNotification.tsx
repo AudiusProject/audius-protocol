@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 
-import type { User, Nullable } from '@audius/common'
-import {
-  getNotificationEntity,
-  getNotificationUser
-} from 'audius-client/src/common/store/notifications/selectors'
 import type {
+  User,
+  Nullable,
   EntityType,
-  Milestone
-} from 'audius-client/src/common/store/notifications/types'
-import { Achievement } from 'audius-client/src/common/store/notifications/types'
+  MilestoneNotification as MilestoneNotificationType
+} from '@audius/common'
+import { notificationsSelectors, Achievement } from '@audius/common'
 import {
   fullProfilePage,
   NOTIFICATION_PAGE
@@ -32,6 +29,7 @@ import {
 } from '../Notification'
 import { getEntityRoute, getEntityScreen } from '../Notification/utils'
 import { useDrawerNavigation } from '../useDrawerNavigation'
+const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Milestone Reached!',
@@ -54,7 +52,7 @@ Check it out!`
 }
 
 const getTwitterShareData = (
-  notification: Milestone,
+  notification: MilestoneNotificationType,
   entity?: Nullable<EntityType>,
   user?: Nullable<User>
 ) => {
@@ -91,7 +89,7 @@ const getTwitterShareData = (
 }
 
 type MilestoneNotificationProps = {
-  notification: Milestone
+  notification: MilestoneNotificationType
 }
 
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {

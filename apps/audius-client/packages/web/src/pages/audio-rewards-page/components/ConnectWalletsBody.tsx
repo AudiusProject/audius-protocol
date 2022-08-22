@@ -1,18 +1,19 @@
 import { useCallback } from 'react'
 
+import {
+  tokenDashboardPageActions,
+  tokenDashboardPageSelectors
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import {
-  getAssociatedWallets,
-  getRemoveWallet
-} from 'common/store/pages/token-dashboard/selectors'
-import { connectNewWallet } from 'common/store/pages/token-dashboard/slice'
 import { useSelector } from 'utils/reducer'
 
 import styles from './ConnectWalletsBody.module.css'
 import WalletsTable from './WalletsTable'
+const { getAssociatedWallets, getRemoveWallet } = tokenDashboardPageSelectors
+const { connectNewWallet } = tokenDashboardPageActions
 
 const WALLET_COUNT_LIMIT = 5
 

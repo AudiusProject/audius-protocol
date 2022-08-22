@@ -1,22 +1,24 @@
-import { ID, Collection, Track } from '@audius/common'
+import {
+  ID,
+  Collection,
+  Track,
+  cacheCollectionsSelectors,
+  cacheTracksSelectors,
+  RepostType,
+  UserListSagaFactory,
+  repostsUserListActions,
+  repostsUserListSelectors,
+  REPOSTS_USER_LIST_TAG
+} from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
-import { getCollection } from 'common/store/cache/collections/selectors'
-import { getTrack } from 'common/store/cache/tracks/selectors'
-import {
-  trackRepostError,
-  playlistRepostError
-} from 'common/store/user-list/reposts/actions'
 import { watchRepostsError } from 'common/store/user-list/reposts/errorSagas'
-import {
-  getId,
-  getRepostsType,
-  getUserList,
-  getUserIds
-} from 'common/store/user-list/reposts/selectors'
-import { RepostType, USER_LIST_TAG } from 'common/store/user-list/reposts/types'
-import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
+const { getId, getRepostsType, getUserList, getUserIds } =
+  repostsUserListSelectors
+const { trackRepostError, playlistRepostError } = repostsUserListActions
+const { getTrack } = cacheTracksSelectors
+const { getCollection } = cacheCollectionsSelectors
 
 const getPlaylistReposts = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
@@ -90,7 +92,7 @@ function* getReposts(currentPage: number, pageSize: number) {
 }
 
 const userListSagas = UserListSagaFactory.createSagas({
-  tag: USER_LIST_TAG,
+  tag: REPOSTS_USER_LIST_TAG,
   fetchUsers: getReposts,
   stateSelector: getUserList,
   errorDispatcher

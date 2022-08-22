@@ -1,9 +1,13 @@
-import { CoverPhotoSizes, WidthSizes } from '@audius/common'
+import {
+  CoverPhotoSizes,
+  WidthSizes,
+  useImageSize,
+  cacheUsersActions,
+  imageCoverPhotoBlank
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import imageCoverPhotoBlank from 'common/assets/img/imageCoverPhotoBlank.jpg'
-import { useImageSize } from 'common/hooks/useImageSize'
-import { fetchCoverPhoto } from 'common/store/cache/users/actions'
+const { fetchCoverPhoto } = cacheUsersActions
 
 export const useUserCoverPhoto = (
   userId: number | null,

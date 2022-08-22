@@ -5,16 +5,16 @@ import {
   WidthSizes,
   Supporting,
   User,
-  Nullable
+  Nullable,
+  cacheUsersSelectors,
+  imageCoverPhotoBlank,
+  imageProfilePicEmpty as profilePicEmpty
 } from '@audius/common'
 import { IconTrophy } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import imageCoverPhotoBlank from 'common/assets/img/imageCoverPhotoBlank.jpg'
-import profilePicEmpty from 'common/assets/img/imageProfilePicEmpty2X.png'
-import { getUser } from 'common/store/cache/users/selectors'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
@@ -22,6 +22,7 @@ import { AppState } from 'store/types'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
 
 import styles from './SupportingTile.module.css'
+const { getUser } = cacheUsersSelectors
 
 type SupportingCardProps = {
   supporting: Supporting

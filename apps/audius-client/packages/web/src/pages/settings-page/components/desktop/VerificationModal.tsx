@@ -6,7 +6,9 @@ import {
   ProfilePictureSizes,
   SquareSizes,
   Status,
-  BooleanKeys
+  BooleanKeys,
+  TwitterProfile,
+  InstagramProfile
 } from '@audius/common'
 import { Modal, Button, ButtonType, IconNote, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
@@ -14,7 +16,6 @@ import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
 import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
-import { TwitterProfile, InstagramProfile } from 'common/store/account/reducer'
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

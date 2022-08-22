@@ -1,12 +1,12 @@
 import { useEffect, useCallback, useRef, ReactNode, useState } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import { IconRemove } from '@audius/stems'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 import { useSpring, animated, useTransition } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import { usePortal } from 'hooks/usePortal'
 import {
   EnablePullToRefreshMessage,

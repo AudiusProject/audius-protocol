@@ -1,18 +1,18 @@
 import { useCallback, useContext } from 'react'
 
-import { Name, Status } from '@audius/common'
+import {
+  Name,
+  Status,
+  accountSelectors,
+  notificationsSelectors,
+  searchResultsPageSelectors
+} from '@audius/common'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import {
-  getAccountUser,
-  getAccountStatus
-} from 'common/store/account/selectors'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { getNotificationUnviewedCount } from 'common/store/notifications/selectors'
-import { getSearchStatus } from 'common/store/pages/search-results/selectors'
 import { openSignOn } from 'common/store/pages/signon/actions'
 import {
   RouterContext,
@@ -28,6 +28,9 @@ import {
 } from 'utils/route'
 
 import NavBar from './NavBar'
+const { getSearchStatus } = searchResultsPageSelectors
+const { getNotificationUnviewedCount } = notificationsSelectors
+const { getAccountUser, getAccountStatus } = accountSelectors
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &

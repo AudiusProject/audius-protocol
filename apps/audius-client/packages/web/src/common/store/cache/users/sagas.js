@@ -1,4 +1,14 @@
-import { DefaultSizes, Kind, Status } from '@audius/common'
+import {
+  DefaultSizes,
+  Kind,
+  Status,
+  accountSelectors,
+  cacheActions,
+  cacheUsersSelectors,
+  cacheReducer,
+  cacheUsersActions as userActions,
+  removePlaylistLibraryTempPlaylists
+} from '@audius/common'
 import { mergeWith } from 'lodash'
 import {
   call,
@@ -10,18 +20,8 @@ import {
   getContext
 } from 'redux-saga/effects'
 
-import { getAccountUser, getUserId } from 'common/store/account/selectors'
-import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
-import { mergeCustomizer } from 'common/store/cache/reducer'
 import { retrieve } from 'common/store/cache/sagas'
-import * as userActions from 'common/store/cache/users/actions'
-import {
-  getUser,
-  getUsers,
-  getUserTimestamps
-} from 'common/store/cache/users/selectors'
-import { removePlaylistLibraryTempPlaylists } from 'common/store/playlist-library/helpers'
 import {
   getSelectedServices,
   getStatus
@@ -30,6 +30,9 @@ import { fetchServicesFailed } from 'common/store/service-selection/slice'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 
 import { pruneBlobValues, reformat } from './utils'
+const { mergeCustomizer } = cacheReducer
+const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
+const { getAccountUser, getUserId } = accountSelectors
 
 /**
  * If the user is not a creator, upgrade the user to a creator node.

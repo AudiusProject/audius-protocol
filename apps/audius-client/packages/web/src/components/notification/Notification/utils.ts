@@ -1,4 +1,5 @@
-import { Entity, EntityType } from 'common/store/notifications/types'
+import { Entity, EntityType } from '@audius/common'
+
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { UserListEntityType } from 'store/application/ui/userListModal/types'
 import {

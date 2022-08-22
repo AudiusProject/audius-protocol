@@ -1,12 +1,17 @@
-import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
-import { feedActions } from 'audius-client/src/common/store/pages/profile/lineups/feed/actions'
-import { getProfileFeedLineup } from 'audius-client/src/common/store/pages/profile/selectors'
+import {
+  lineupSelectors,
+  profilePageSelectors,
+  profilePageFeedLineupActions as feedActions
+} from '@audius/common'
 
 import { Lineup } from 'app/components/lineup'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
 import { useSelectProfile } from './selectors'
+
+const { getProfileFeedLineup } = profilePageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
 
 const getUserFeedMetadatas = makeGetLineupMetadatas(getProfileFeedLineup)
 

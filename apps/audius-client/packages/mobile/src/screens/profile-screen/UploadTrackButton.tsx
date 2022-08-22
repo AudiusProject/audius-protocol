@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+import { modalsActions } from '@audius/common'
 import { View } from 'react-native'
 
 import IconUpload from 'app/assets/images/iconUpload.svg'
@@ -9,6 +9,7 @@ import { MODAL_NAME } from 'app/components/mobile-upload-drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
+const { setVisibility } = modalsActions
 
 const messages = {
   uploadTrack: 'Upload Track'

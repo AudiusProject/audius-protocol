@@ -1,4 +1,5 @@
-import { AudiusAPIClient } from 'common/services/audius-api-client'
+import { AudiusAPIClient } from '@audius/common'
+
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
 import { localStorage } from 'services/local-storage'

@@ -1,21 +1,20 @@
 import { useCallback, useContext, useEffect, MouseEvent } from 'react'
 
-import { Chain, BNWei, FeatureFlags } from '@audius/common'
+import {
+  Chain,
+  BNWei,
+  FeatureFlags,
+  shortenEthAddress,
+  shortenSPLAddress,
+  tokenDashboardPageActions,
+  tokenDashboardPageSelectors
+} from '@audius/common'
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemoveTrack.svg'
-import {
-  getAssociatedWallets,
-  getRemoveWallet
-} from 'common/store/pages/token-dashboard/selectors'
-import {
-  requestRemoveWallet,
-  resetStatus
-} from 'common/store/pages/token-dashboard/slice'
-import { shortenEthAddress, shortenSPLAddress } from 'common/utils/wallet'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -29,6 +28,8 @@ import { useSelector } from 'utils/reducer'
 
 import DisplayAudio from './DisplayAudio'
 import styles from './WalletsTable.module.css'
+const { getAssociatedWallets, getRemoveWallet } = tokenDashboardPageSelectors
+const { requestRemoveWallet, resetStatus } = tokenDashboardPageActions
 
 const COPIED_TOAST_TIMEOUT = 2000
 

@@ -1,16 +1,12 @@
-import { ID } from '@audius/common'
+import { ID, explorePageActions } from '@audius/common'
 import { call, put, takeEvery } from 'redux-saga/effects'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { STATIC_EXPLORE_CONTENT_URL } from 'utils/constants'
-
-import {
-  fetchExplore,
-  fetchExploreSucceeded,
-  fetchExploreFailed
-} from './slice'
+const { fetchExplore, fetchExploreSucceeded, fetchExploreFailed } =
+  explorePageActions
 
 const EXPLORE_CONTENT_URL =
   process.env.REACT_APP_EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL

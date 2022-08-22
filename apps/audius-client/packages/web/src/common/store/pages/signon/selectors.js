@@ -1,6 +1,6 @@
+import { cacheUsersSelectors } from '@audius/common'
 import { createSelector } from 'reselect'
-
-import { getUsers } from 'common/store/cache/users/selectors'
+const { getUsers } = cacheUsersSelectors
 
 // Sign On selectors
 export const getSignOn = (state) => state.signOn

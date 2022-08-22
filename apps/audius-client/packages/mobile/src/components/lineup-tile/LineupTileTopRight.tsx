@@ -1,4 +1,4 @@
-import { formatSeconds } from 'audius-client/src/common/utils/timeUtil'
+import { formatSeconds } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'

@@ -1,11 +1,13 @@
-import { Kind } from '@audius/common'
+import {
+  Kind,
+  accountSelectors,
+  cacheActions,
+  getContext,
+  AudiusBackend
+} from '@audius/common'
 import { all, fork, call, put, select, takeEvery } from 'typed-redux-saga'
 
-import { AudiusBackend } from 'common/services/audius-backend'
-import { getContext } from 'common/store'
-import { getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
 import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { watchServiceSelectionErrors } from './errorSagas'
@@ -20,6 +22,7 @@ import {
   setSyncing as setSyncingAction,
   Service
 } from './slice'
+const getAccountUser = accountSelectors.getAccountUser
 
 export function* watchFetchServices() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

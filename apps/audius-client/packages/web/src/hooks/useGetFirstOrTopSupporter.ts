@@ -7,12 +7,13 @@ import {
   BNWei,
   StringAudio,
   StringWei,
-  Nullable
+  Nullable,
+  parseWeiNumber,
+  parseAudioInputToWei,
+  stringWeiToBN,
+  SupportersMap,
+  SupportingMap
 } from '@audius/common'
-
-import { SupportersMap, SupportingMap } from 'common/store/tipping/types'
-import { parseWeiNumber } from 'common/utils/formatUtil'
-import { parseAudioInputToWei, stringWeiToBN } from 'common/utils/wallet'
 
 const zeroWei = stringWeiToBN('0' as StringWei)
 

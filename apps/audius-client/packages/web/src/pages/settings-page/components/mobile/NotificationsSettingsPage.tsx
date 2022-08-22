@@ -1,11 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
+import { EmailFrequency, PushNotificationSetting } from '@audius/common'
 import cn from 'classnames'
 
-import {
-  EmailFrequency,
-  PushNotificationSetting
-} from 'common/store/pages/settings/types'
 import TabSlider from 'components/data-entry/TabSlider'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'

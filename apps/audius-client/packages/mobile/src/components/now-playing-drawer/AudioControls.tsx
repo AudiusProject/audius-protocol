@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
+import { queueActions, RepeatMode } from '@audius/common'
 import { getRepeat, getShuffle } from 'common/store/queue/selectors'
-import { shuffle, repeat } from 'common/store/queue/slice'
-import { RepeatMode } from 'common/store/queue/types'
 import { Animated, View, StyleSheet } from 'react-native'
 
 import IconNext from 'app/assets/images/iconNext.svg'
@@ -19,6 +18,7 @@ import type { ThemeColors } from 'app/utils/theme'
 import { PlayButton } from './PlayButton'
 import { RepeatButton } from './RepeatButton'
 import { ShuffleButton } from './ShuffleButton'
+const { shuffle, repeat } = queueActions
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -94,6 +94,9 @@ export const AudioControls = ({
       case RepeatMode.SINGLE:
         mode = RepeatMode.OFF
         break
+      default:
+        // To appease ts - shouldn't actually hit this.
+        mode = RepeatMode.ALL
     }
     dispatchWeb(repeat({ mode }))
   }, [dispatchWeb, repeatMode])

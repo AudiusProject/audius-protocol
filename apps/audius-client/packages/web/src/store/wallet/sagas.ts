@@ -1,32 +1,39 @@
-import { Name, Chain, BNWei, FeatureFlags } from '@audius/common'
+import {
+  Name,
+  Chain,
+  BNWei,
+  FeatureFlags,
+  stringWeiToBN,
+  weiToString,
+  getErrorMessage,
+  accountSelectors,
+  accountActions,
+  tokenDashboardPageActions,
+  walletSelectors,
+  walletActions,
+  getContext
+} from '@audius/common'
 import BN from 'bn.js'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { fetchAccountSucceeded } from 'common/store/account/reducer'
-import { getAccountUser } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
-import {
-  fetchAssociatedWallets,
-  transferEthAudioToSolWAudio
-} from 'common/store/pages/token-dashboard/slice'
-import {
-  getAccountBalance,
-  getFreezeUntilTime,
-  getLocalBalanceDidChange
-} from 'common/store/wallet/selectors'
-import {
+import { waitForAccount } from 'utils/sagaHelpers'
+
+const {
   getBalance,
   setBalance,
   send,
   sendSucceeded,
   sendFailed,
   decreaseBalance
-} from 'common/store/wallet/slice'
-import { getErrorMessage } from 'common/utils/error'
-import { stringWeiToBN, weiToString } from 'common/utils/wallet'
-import { waitForAccount } from 'utils/sagaHelpers'
+} = walletActions
+const { getAccountBalance, getFreezeUntilTime, getLocalBalanceDidChange } =
+  walletSelectors
+const { fetchAssociatedWallets, transferEthAudioToSolWAudio } =
+  tokenDashboardPageActions
+const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
+const getAccountUser = accountSelectors.getAccountUser
 
 // TODO: handle errors
 const errors = {

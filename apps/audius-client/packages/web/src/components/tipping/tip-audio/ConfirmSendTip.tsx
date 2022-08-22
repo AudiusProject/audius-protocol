@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { tippingSelectors, tippingActions } from '@audius/common'
 import { Button, ButtonType, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,13 +8,13 @@ import { Transition, animated } from 'react-spring/renderprops'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
-import { getSendTipData } from 'common/store/tipping/selectors'
-import { confirmSendTip, beginTip } from 'common/store/tipping/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
 import styles from './TipAudio.module.css'
+const { getSendTipData } = tippingSelectors
+const { confirmSendTip, beginTip } = tippingActions
 
 const messages = {
   sending: 'SENDING',

@@ -1,16 +1,17 @@
 import { useCallback } from 'react'
 
-import { Name, Track } from '@audius/common'
+import {
+  Name,
+  Track,
+  notificationsSelectors,
+  AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType,
+  CollectionEntity,
+  Entity
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import { getNotificationEntities } from 'common/store/notifications/selectors'
-import {
-  AddTrackToPlaylist,
-  CollectionEntity,
-  Entity
-} from 'common/store/notifications/types'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TipSentNotification.module.css'
@@ -25,6 +26,7 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconAddTrackToPlaylist } from './components/icons'
 import { getEntityLink } from './utils'
+const { getNotificationEntities } = notificationsSelectors
 
 const messages = {
   title: 'Track Added to Playlist',
@@ -37,7 +39,7 @@ const messages = {
 }
 
 type AddTrackToPlaylistNotificationProps = {
-  notification: AddTrackToPlaylist
+  notification: AddTrackToPlaylistNotificationType
 }
 
 export const AddTrackToPlaylistNotification = (

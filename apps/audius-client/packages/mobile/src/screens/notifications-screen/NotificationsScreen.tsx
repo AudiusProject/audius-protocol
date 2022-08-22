@@ -1,7 +1,7 @@
 import { memo, useEffect } from 'react'
 
+import { notificationsActions } from '@audius/common'
 import { useDrawerStatus } from '@react-navigation/drawer'
-import { markAllAsViewed } from 'audius-client/src/common/store/notifications/actions'
 import { View } from 'react-native'
 import { usePrevious } from 'react-use'
 
@@ -10,6 +10,7 @@ import { makeStyles } from 'app/styles'
 
 import { NotificationList } from './NotificationList'
 import { TopBar } from './TopBar'
+const { markAllAsViewed } = notificationsActions
 
 const useStyles = makeStyles(({ palette }) => ({
   root: {

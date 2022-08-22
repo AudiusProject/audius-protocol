@@ -1,5 +1,8 @@
-import type { ID, Nullable } from '@audius/common'
-import type { getTracks } from 'common/store/ui/createPlaylistModal/selectors'
+import type {
+  ID,
+  Nullable,
+  createPlaylistModalUISelectors
+} from '@audius/common'
 
 export type Image = {
   height?: number
@@ -15,7 +18,7 @@ export type PlaylistValues = {
   playlist_name: string
   description: Nullable<string>
   artwork: Image
-  tracks: ReturnType<typeof getTracks>
+  tracks: ReturnType<typeof createPlaylistModalUISelectors.getTracks>
   track_ids: {
     time: number
     track: ID

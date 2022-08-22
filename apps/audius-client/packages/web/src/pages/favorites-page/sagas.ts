@@ -1,22 +1,25 @@
-import { ID, Collection, FavoriteType, Track } from '@audius/common'
+import {
+  ID,
+  Collection,
+  FavoriteType,
+  Track,
+  cacheCollectionsSelectors,
+  cacheTracksSelectors,
+  UserListSagaFactory,
+  favoritesUserListActions,
+  favoritesUserListSelectors,
+  FAVORITES_USER_LIST_TAG
+} from '@audius/common'
 import { select, put } from 'typed-redux-saga'
 
-import { getCollection } from 'common/store/cache/collections/selectors'
-import { getTrack } from 'common/store/cache/tracks/selectors'
-import {
-  trackFavoriteError,
-  playlistFavoriteError
-} from 'common/store/user-list/favorites/actions'
 import { watchFavoriteError } from 'common/store/user-list/favorites/errorSagas'
-import {
-  getId,
-  getUserList,
-  getUserIds,
-  getFavoriteType
-} from 'common/store/user-list/favorites/selectors'
-import { USER_LIST_TAG } from 'common/store/user-list/favorites/types'
-import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
+
+const { getId, getUserList, getUserIds, getFavoriteType } =
+  favoritesUserListSelectors
+const { trackFavoriteError, playlistFavoriteError } = favoritesUserListActions
+const { getTrack } = cacheTracksSelectors
+const { getCollection } = cacheCollectionsSelectors
 
 const getPlaylistFavorites = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
@@ -92,7 +95,7 @@ function* getFavorites(currentPage: number, pageSize: number) {
 }
 
 const userListSagas = UserListSagaFactory.createSagas({
-  tag: USER_LIST_TAG,
+  tag: FAVORITES_USER_LIST_TAG,
   fetchUsers: getFavorites,
   stateSelector: getUserList,
   errorDispatcher

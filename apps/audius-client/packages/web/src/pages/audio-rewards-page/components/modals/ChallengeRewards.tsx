@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useContext, useMemo } from 'react'
 
 import {
+  fillString,
+  formatNumberCommas,
+  accountSelectors,
+  challengesSelectors,
+  audioRewardsPageActions,
+  ChallengeRewardsModalType,
+  ClaimStatus,
+  CognitoFlowStatus,
+  audioRewardsPageSelectors,
+  getAAOErrorEmojis
+} from '@audius/common'
+import {
   Button,
   ButtonType,
   ProgressBar,
@@ -16,26 +28,6 @@ import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
 import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
-import { getUserHandle } from 'common/store/account/selectors'
-import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
-import { getCompletionStages } from 'common/store/challenges/selectors/profile-progress'
-import {
-  getAAOErrorCode,
-  getChallengeRewardsModalType,
-  getClaimStatus,
-  getCognitoFlowStatus
-} from 'common/store/pages/audio-rewards/selectors'
-import {
-  ChallengeRewardsModalType,
-  setChallengeRewardsModalType,
-  ClaimStatus,
-  resetAndCancelClaimReward,
-  CognitoFlowStatus,
-  claimChallengeReward
-} from 'common/store/pages/audio-rewards/slice'
-import { getAAOErrorEmojis } from 'common/utils/aaoErrorCodes'
-import { fillString } from 'common/utils/fillString'
-import { formatNumberCommas } from 'common/utils/formatUtil'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { show as showConfetti } from 'components/music-confetti/store/slice'
 import Toast from 'components/toast/Toast'
@@ -53,6 +45,20 @@ import PurpleBox from '../PurpleBox'
 
 import styles from './ChallengeRewards.module.css'
 import ModalDrawer from './ModalDrawer'
+const {
+  getCognitoFlowStatus,
+  getAAOErrorCode,
+  getChallengeRewardsModalType,
+  getClaimStatus
+} = audioRewardsPageSelectors
+const {
+  setChallengeRewardsModalType,
+  resetAndCancelClaimReward,
+  claimChallengeReward
+} = audioRewardsPageActions
+const { getOptimisticUserChallenges } = challengesSelectors
+const { getCompletionStages } = challengesSelectors
+const getUserHandle = accountSelectors.getUserHandle
 
 export const useRewardsModalType = (): [
   ChallengeRewardsModalType,

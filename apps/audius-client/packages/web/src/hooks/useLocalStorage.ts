@@ -1,4 +1,4 @@
-import { createUseLocalStorageHook } from 'common/hooks/useLocalStorage'
+import { createUseLocalStorageHook } from '@audius/common'
 
 const getJSONValue = (key: string) => {
   const val = window.localStorage.getValue(key)

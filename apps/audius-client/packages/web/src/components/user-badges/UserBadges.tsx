@@ -12,7 +12,7 @@ import IconBronzeBadge from 'assets/img/tokenBadgeBronze40@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum40@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver40@2x.png'
-import { useSelectTierInfo } from 'common/hooks/wallet'
+import { useSelectTierInfo } from 'hooks/wallet'
 
 import styles from './UserBadges.module.css'
 

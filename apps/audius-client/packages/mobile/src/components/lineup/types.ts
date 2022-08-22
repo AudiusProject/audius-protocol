@@ -1,7 +1,13 @@
 import type { ReactElement } from 'react'
 
-import type { ID, UID, Kind, Lineup as LineupData, Maybe } from '@audius/common'
-import type { LineupActions } from 'audius-client/src/common/store/lineup/actions'
+import type {
+  ID,
+  UID,
+  Kind,
+  Lineup as LineupData,
+  Maybe,
+  LineupBaseActions
+} from '@audius/common'
 import type { SectionListProps } from 'react-native'
 
 export enum LineupVariant {
@@ -29,7 +35,7 @@ export type FeedTipLineupItem = {
 
 export type LineupProps = {
   /** Object containing lineup actions such as setPage */
-  actions: LineupActions
+  actions: LineupBaseActions
 
   /** The maximum number of total tracks to fetch */
   count?: number

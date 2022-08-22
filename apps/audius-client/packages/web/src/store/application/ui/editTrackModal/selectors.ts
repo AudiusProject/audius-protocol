@@ -1,7 +1,7 @@
-import { StemTrack } from '@audius/common'
+import { StemTrack, cacheTracksSelectors } from '@audius/common'
 
-import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
 import { AppState } from 'store/types'
+const { getTrack, getTracks } = cacheTracksSelectors
 
 export const getBaseState = (state: AppState) =>
   state.application.ui.editTrackModal

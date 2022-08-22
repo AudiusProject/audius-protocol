@@ -1,17 +1,16 @@
-import { Name } from '@audius/common'
+import { Name, changePasswordActions, getContext } from '@audius/common'
 import { call, put, takeEvery } from 'redux-saga/effects'
 
-import { getContext } from 'common/store'
 import { make, TrackEvent } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import {
+const {
   confirmCredentials,
   confirmCredentialsSucceeded,
   confirmCredentialsFailed,
   changePassword,
   changePasswordSucceeded,
   changePasswordFailed
-} from 'common/store/change-password/slice'
+} = changePasswordActions
 
 function* handleConfirmCredentials(
   action: ReturnType<typeof confirmCredentials>

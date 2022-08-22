@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  notificationsSelectors,
+  SupporterRankUpNotification
+} from '@audius/common'
 
 import { ReactComponent as IconTrending } from 'assets/img/iconTrending.svg'
 import { make } from 'common/store/analytics/actions'
-import { getNotificationUser } from 'common/store/notifications/selectors'
-import { SupporterRankUp } from 'common/store/notifications/types'
 import { useSelector } from 'utils/reducer'
 
 import styles from './TopSupporterNotification.module.css'
@@ -19,6 +21,7 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
+const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Top Supporter',
@@ -29,7 +32,7 @@ const messages = {
 }
 
 type TopSupporterNotificationProps = {
-  notification: SupporterRankUp
+  notification: SupporterRankUpNotification
 }
 
 export const TopSupporterNotification = (

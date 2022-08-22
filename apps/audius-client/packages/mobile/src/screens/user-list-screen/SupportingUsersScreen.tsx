@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 
-import { setSupporting } from 'audius-client/src/common/store/user-list/supporting/actions'
-import { getUserList } from 'audius-client/src/common/store/user-list/supporting/selectors'
+import {
+  supportingUserListActions,
+  supportingUserListSelectors
+} from '@audius/common'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -9,6 +11,8 @@ import { useRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
+const { getUserList } = supportingUserListSelectors
+const { setSupporting } = supportingUserListActions
 
 const messages = {
   title: 'Supporting'

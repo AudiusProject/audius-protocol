@@ -3,24 +3,22 @@ import { EventEmitter } from 'events'
 import optimizely from '@optimizely/optimizely-sdk'
 
 import { ID } from 'models'
+import { Nullable } from 'utils'
+
 import {
   remoteConfigIntDefaults,
   remoteConfigStringDefaults,
   remoteConfigDoubleDefaults,
   remoteConfigBooleanDefaults
-} from 'services/remote-config/defaults'
-import {
-  FeatureFlags,
-  flagDefaults
-} from 'services/remote-config/feature-flags'
+} from './defaults'
+import { FeatureFlags, flagDefaults } from './feature-flags'
 import {
   IntKeys,
   StringKeys,
   DoubleKeys,
   BooleanKeys,
   AllRemoteConfigKeys
-} from 'services/remote-config/types'
-import { Nullable } from 'utils'
+} from './types'
 
 export const USER_ID_AVAILABLE_EVENT = 'USER_ID_AVAILABLE_EVENT'
 
@@ -221,6 +219,12 @@ export const remoteConfig = <
    * that is enabled and supposed to return true.
    */
   const waitForUserRemoteConfig = async () => {
+    if (typeof window.addEventListener === 'undefined') {
+      console.error(
+        '`waitForUserRemoteConfig` not comptaible in non-browser environment.'
+      )
+      return
+    }
     if (state.id && state.id > 0) {
       await new Promise<void>((resolve) => onClientReady(resolve))
       return

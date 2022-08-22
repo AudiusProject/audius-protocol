@@ -1,23 +1,32 @@
 import { useEffect, useState } from 'react'
 
-import { ID, FollowSource, User } from '@audius/common'
+import {
+  ID,
+  FollowSource,
+  User,
+  accountSelectors,
+  cacheUsersSelectors,
+  profilePageActions,
+  userListActions,
+  userListSelectors,
+  UserListStoreState,
+  usersSocialActions as socialActions
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getUserId } from 'common/store/account/selectors'
-import { getUsers } from 'common/store/cache/users/selectors'
-import { setNotificationSubscription } from 'common/store/pages/profile/actions'
-import * as socialActions from 'common/store/social/users/actions'
-import { loadMore, reset } from 'common/store/user-list/actions'
-import { makeGetOptimisticUserIdsIfNeeded } from 'common/store/user-list/selectors'
-import { UserListStoreState } from 'common/store/user-list/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import UserList from './components/UserList'
+const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
+const { loadMore, reset } = userListActions
+const { getUsers } = cacheUsersSelectors
+const { setNotificationSubscription } = profilePageActions
+const getUserId = accountSelectors.getUserId
 
 type ConnectedUserListOwnProps = {
   // A tag uniquely identifying this particular instance of a UserList in the store.

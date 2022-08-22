@@ -14,7 +14,12 @@ import {
   FavoriteSource,
   Name,
   PlaybackSource,
-  Status
+  Status,
+  accountSelectors,
+  lineupSelectors,
+  historyPageTracksLineupActions as tracksActions,
+  historyPageSelectors,
+  tracksSocialActions as socialActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEqual } from 'lodash'
@@ -22,13 +27,8 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { getUserId } from 'common/store/account/selectors'
 import { useRecord, make } from 'common/store/analytics/actions'
-import { makeGetTableMetadatas } from 'common/store/lineup/selectors'
-import { tracksActions } from 'common/store/pages/history-page/lineups/tracks/actions'
-import { getHistoryTracksLineup } from 'common/store/pages/history-page/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import * as socialActions from 'common/store/social/tracks/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
@@ -36,6 +36,9 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
 import { HistoryPageProps as MobileHistoryPageProps } from './components/mobile/HistoryPage'
+const { getHistoryTracksLineup } = historyPageSelectors
+const { makeGetTableMetadatas } = lineupSelectors
+const getUserId = accountSelectors.getUserId
 
 const messages = {
   title: 'History',

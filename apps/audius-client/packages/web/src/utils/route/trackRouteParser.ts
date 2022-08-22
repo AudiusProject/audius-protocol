@@ -1,7 +1,6 @@
-import { ID } from '@audius/common'
+import { ID, decodeHashId } from '@audius/common'
 import { matchPath } from 'react-router-dom'
 
-import { decodeHashId } from 'common/utils/hashIds'
 import { TRACK_ID_PAGE, TRACK_PAGE } from 'utils/route'
 
 export type TrackRouteParams =

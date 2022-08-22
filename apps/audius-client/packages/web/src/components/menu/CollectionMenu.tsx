@@ -3,19 +3,20 @@ import {
   ID,
   ShareSource,
   FavoriteSource,
-  RepostSource
+  RepostSource,
+  cacheUsersSelectors,
+  collectionsSocialActions as socialActions
 } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getUser } from 'common/store/cache/users/selectors'
-import * as socialActions from 'common/store/social/collections/actions'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
 import { albumPage, playlistPage, profilePage } from 'utils/route'
+const { getUser } = cacheUsersSelectors
 
 type PlaylistId = number
 

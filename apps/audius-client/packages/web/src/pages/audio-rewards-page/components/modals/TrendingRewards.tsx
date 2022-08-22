@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Theme, StringKeys } from '@audius/common'
+import {
+  Theme,
+  StringKeys,
+  audioRewardsPageActions,
+  TrendingRewardsModalType,
+  audioRewardsPageSelectors
+} from '@audius/common'
 import { TabSlider } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { getTrendingRewardsModalType } from 'common/store/pages/audio-rewards/selectors'
-import {
-  TrendingRewardsModalType,
-  setTrendingRewardsModalType
-} from 'common/store/pages/audio-rewards/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -29,6 +30,8 @@ import ButtonWithArrow from '../ButtonWithArrow'
 
 import ModalDrawer from './ModalDrawer'
 import styles from './TrendingRewards.module.css'
+const { getTrendingRewardsModalType } = audioRewardsPageSelectors
+const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

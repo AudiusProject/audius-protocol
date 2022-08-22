@@ -1,5 +1,4 @@
-import { TimeRange } from '@audius/common'
-import { getTrendingGenre } from 'audius-client/src/common/store/pages/trending/selectors'
+import { TimeRange, trendingPageSelectors } from '@audius/common'
 
 import IconAllTime from 'app/assets/images/iconAllTime.svg'
 import IconDay from 'app/assets/images/iconDay.svg'
@@ -13,6 +12,7 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { TrendingFilterButton } from './TrendingFilterButton'
 import { TrendingLineup } from './TrendingLineup'
+const { getTrendingGenre } = trendingPageSelectors
 
 const ThisWeekTab = () => {
   const trendingGenre = useSelectorWeb(getTrendingGenre)

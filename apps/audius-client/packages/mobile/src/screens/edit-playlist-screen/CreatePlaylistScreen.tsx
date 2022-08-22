@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 
-import { CreatePlaylistSource } from '@audius/common'
-import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
-import { createPlaylist } from 'audius-client/src/common/store/cache/collections/actions'
+import {
+  CreatePlaylistSource,
+  accountSelectors,
+  cacheCollectionsActions
+} from '@audius/common'
 import { playlistPage } from 'audius-client/src/utils/route'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
@@ -17,6 +19,8 @@ import { useToast } from 'app/hooks/useToast'
 import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
 import { PlaylistImageInput } from './PlaylistImageInput'
 import { PlaylistNameInput } from './PlaylistNameInput'
+const { createPlaylist } = cacheCollectionsActions
+const getUserHandle = accountSelectors.getUserHandle
 
 const messages = {
   title: 'Create Playlist',

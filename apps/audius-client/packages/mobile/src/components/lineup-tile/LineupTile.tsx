@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import { accountSelectors } from '@audius/common'
 import { Animated, Easing } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -18,6 +18,7 @@ import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileStats } from './LineupTileStats'
 import { LineupTileTopRight } from './LineupTileTopRight'
+const getUserId = accountSelectors.getUserId
 
 export const LineupTile = ({
   children,

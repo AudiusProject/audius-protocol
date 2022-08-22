@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import { setIsCasting } from 'common/store/cast/slice'
+import { castActions } from '@audius/common'
 import {
   requireNativeComponent,
   NativeEventEmitter,
@@ -8,7 +8,7 @@ import {
 } from 'react-native'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-
+const { setIsCasting } = castActions
 const AIRPLAY_PORT_TYPE = 'AirPlay'
 
 const AirplayViewManager = requireNativeComponent('AirplayView')

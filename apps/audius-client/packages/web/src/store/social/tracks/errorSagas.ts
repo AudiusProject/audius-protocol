@@ -1,5 +1,6 @@
-import * as socialTrackActions from 'common/store/social/tracks/actions'
-import createErrorSagas from 'common/utils/errorSagas'
+import { tracksSocialActions as socialTrackActions } from '@audius/common'
+
+import { createErrorSagas } from 'utils/errorSagas'
 
 type TrackRepostErrors =
   | ReturnType<typeof socialTrackActions.trackRepostFailed>

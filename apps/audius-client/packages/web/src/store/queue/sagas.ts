@@ -8,17 +8,20 @@ import {
   User,
   Nullable,
   makeUid,
-  Uid
+  Uid,
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  cacheActions,
+  cacheSelectors,
+  queueActions,
+  RepeatMode,
+  QueueSource
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
-import { getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
-import * as cacheActions from 'common/store/cache/actions'
-import { getCollection } from 'common/store/cache/collections/selectors'
-import { getId } from 'common/store/cache/selectors'
-import { getTrack } from 'common/store/cache/tracks/selectors'
-import { getUser } from 'common/store/cache/users/selectors'
 import {
   getCollectible,
   getId as getQueueTrackId,
@@ -32,18 +35,6 @@ import {
   getUid,
   getUndershot
 } from 'common/store/queue/selectors'
-import {
-  add,
-  clear,
-  next,
-  pause,
-  play,
-  queueAutoplay,
-  persist,
-  previous,
-  remove
-} from 'common/store/queue/slice'
-import { RepeatMode, Source } from 'common/store/queue/types'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import {
   getTrackId as getPlayerTrackId,
@@ -55,6 +46,22 @@ import { waitForAccount } from 'utils/sagaHelpers'
 import { getRecommendedTracks } from '../recommendation/sagas'
 
 import mobileSagas from './mobileSagas'
+const {
+  add,
+  clear,
+  next,
+  pause,
+  play,
+  queueAutoplay,
+  persist,
+  previous,
+  remove
+} = queueActions
+const { getId } = cacheSelectors
+const { getUser } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
+const { getCollection } = cacheCollectionsSelectors
+const getUserId = accountSelectors.getUserId
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
@@ -348,7 +355,7 @@ export function* watchQueueAutoplay() {
       const recommendedTracks = tracks.map(({ track_id }) => ({
         id: track_id,
         uid: makeUid(Kind.TRACKS, track_id),
-        source: Source.RECOMMENDED_TRACKS
+        source: QueueSource.RECOMMENDED_TRACKS
       }))
       yield* put(add({ entries: recommendedTracks }))
     }

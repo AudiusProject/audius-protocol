@@ -1,11 +1,15 @@
 import { useContext, useEffect, useCallback } from 'react'
 
-import { FeedFilter, Name, Status } from '@audius/common'
+import {
+  FeedFilter,
+  Name,
+  Status,
+  feedPageLineupActions as feedActions
+} from '@audius/common'
 import cn from 'classnames'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { feedActions } from 'common/store/pages/feed/lineup/actions'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'

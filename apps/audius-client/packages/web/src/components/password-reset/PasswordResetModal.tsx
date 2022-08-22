@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 
-import { Status } from '@audius/common'
+import { Status, accountSelectors } from '@audius/common'
 import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { RESET_REQUIRED_KEY } from 'common/store/account/mobileSagas'
-import { getNeedsAccountRecovery } from 'common/store/account/selectors'
 import EnterPassword from 'components/sign-on/EnterPassword'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
@@ -14,6 +13,7 @@ import { isMobile } from 'utils/clientUtil'
 import styles from './PasswordResetModal.module.css'
 import { changePassword } from './store/actions'
 import { getStatus } from './store/selectors'
+const { getNeedsAccountRecovery } = accountSelectors
 
 const messages = {
   title: 'Reset Your Password',

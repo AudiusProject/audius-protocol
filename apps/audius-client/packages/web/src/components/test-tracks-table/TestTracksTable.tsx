@@ -1,11 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
+import { formatCount, formatSeconds } from '@audius/common'
 import cn from 'classnames'
 import moment from 'moment'
 import { ColumnInstance } from 'react-table'
 
-import { formatCount } from 'common/utils/formatUtil'
-import { formatSeconds } from 'common/utils/timeUtil'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import {
   TestTable,

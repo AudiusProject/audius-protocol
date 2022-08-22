@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 
+import {
+  trendingPlaylistsPageLineupSelectors,
+  trendingPlaylistsPageLineupActions
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { trendingPlaylistLineupActions } from 'common/store/pages/trending-playlists/lineups/actions'
-import { getLineup } from 'common/store/pages/trending-playlists/lineups/selectors'
 import DesktopHeader from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Lineup from 'components/lineup/Lineup'
@@ -16,6 +18,7 @@ import { isMobile } from 'utils/clientUtil'
 import { BASE_URL, TRENDING_PLAYLISTS_PAGE } from 'utils/route'
 
 import styles from './TrendingPlaylistPage.module.css'
+const { getLineup } = trendingPlaylistsPageLineupSelectors
 
 const messages = {
   trendingPlaylistTile: 'Trending Playlists',
@@ -25,7 +28,7 @@ const messages = {
 /** Wraps useLineupProps to return trending playlist lineup props */
 const useTrendingPlaylistLineup = (containerRef: HTMLElement) => {
   return useLineupProps({
-    actions: trendingPlaylistLineupActions,
+    actions: trendingPlaylistsPageLineupActions,
     getLineupSelector: getLineup,
     variant: LineupVariant.PLAYLIST,
     numPlaylistSkeletonRows: 5,
@@ -92,7 +95,7 @@ const useLineupReset = () => {
   const dispatch = useDispatch()
   useEffect(() => {
     return () => {
-      dispatch(trendingPlaylistLineupActions.reset())
+      dispatch(trendingPlaylistsPageLineupActions.reset())
     }
   }, [dispatch])
 }

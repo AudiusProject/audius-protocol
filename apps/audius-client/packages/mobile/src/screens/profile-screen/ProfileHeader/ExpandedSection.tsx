@@ -1,4 +1,4 @@
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import { accountSelectors } from '@audius/common'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
@@ -15,6 +15,7 @@ import { ProfileMutualsButton } from './ProfileMutualsButton'
 import { ProfileTierTile } from './ProfileTierTile'
 import { SocialsAndSites } from './SocialsAndSites'
 import { SupportingList } from './SupportingList'
+const getUserId = accountSelectors.getUserId
 
 const messages = {
   supporting: 'Supporting'

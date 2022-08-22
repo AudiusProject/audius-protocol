@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import useInstanceVar from 'common/hooks/useInstanceVar'
+import { useInstanceVar } from '@audius/common'
 
 /**
  * useDelayedEffect invokes a callback after a given delay on the satisfaction

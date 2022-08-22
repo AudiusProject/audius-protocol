@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  ChallengeRewardNotification as ChallengeRewardNotificationType
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { ChallengeReward } from 'common/store/notifications/types'
 import { challengeRewardsConfig } from 'pages/audio-rewards-page/config'
 import { AUDIO_PAGE } from 'utils/route'
 
@@ -29,7 +31,7 @@ const messages = {
 }
 
 type ChallengeRewardNotificationProps = {
-  notification: ChallengeReward
+  notification: ChallengeRewardNotificationType
 }
 
 export const ChallengeRewardNotification = (

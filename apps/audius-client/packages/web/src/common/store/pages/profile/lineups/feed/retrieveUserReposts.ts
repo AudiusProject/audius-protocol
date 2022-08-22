@@ -1,9 +1,14 @@
-import { ID, UserCollection, Track, UserTrackMetadata } from '@audius/common'
+import {
+  ID,
+  UserCollection,
+  Track,
+  UserTrackMetadata,
+  getContext
+} from '@audius/common'
 import { all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { getContext } from 'common/store/effects'
 
 const getTracksAndCollections = (
   feed: (UserTrackMetadata | UserCollection)[]

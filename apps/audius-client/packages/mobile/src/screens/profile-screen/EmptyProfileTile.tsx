@@ -1,9 +1,10 @@
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import { accountSelectors } from '@audius/common'
 
 import { EmptyTile } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { useSelectProfile } from './selectors'
+const getUserId = accountSelectors.getUserId
 
 const messages = {
   you: 'You',

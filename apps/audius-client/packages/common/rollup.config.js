@@ -1,8 +1,7 @@
-import dts from 'rollup-plugin-dts'
+import image from '@rollup/plugin-image'
 import rollupTypescript from 'rollup-plugin-typescript2'
 
 import pkg from './package.json'
-import tsconfig from './tsconfig.json'
 
 export default [
   {
@@ -21,15 +20,11 @@ export default [
         sourcemap: true
       }
     ],
-    plugins: [rollupTypescript()]
-  },
-  {
-    input: './dist/index.d.ts',
-    output: [{ file: 'dist/index.d.ts', format: 'es' }],
-    plugins: [
-      dts({
-        compilerOptions: tsconfig.compilerOptions
-      })
+    plugins: [rollupTypescript(), image()],
+
+    external: [
+      ...Object.keys(pkg.dependencies),
+      ...Object.keys(pkg.devDependencies)
     ]
   }
 ]

@@ -1,17 +1,15 @@
 import { useCallback } from 'react'
 
+import { audioRewardsPageActions, HCaptchaStatus } from '@audius/common'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import {
-  HCaptchaStatus,
-  setHCaptchaStatus
-} from 'common/store/pages/audio-rewards/slice'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import styles from './HCaptchaModal.module.css'
 import ModalDrawer from './ModalDrawer'
+const { setHCaptchaStatus } = audioRewardsPageActions
 
 const sitekey = process.env.REACT_APP_HCAPTCHA_SITE_KEY
 

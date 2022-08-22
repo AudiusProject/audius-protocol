@@ -1,12 +1,16 @@
 import { memo } from 'react'
 
-import { ID, SquareSizes, CoverArtSizes } from '@audius/common'
+import {
+  ID,
+  SquareSizes,
+  CoverArtSizes,
+  useLoadImageWithTimeout
+} from '@audius/common'
 import { PbIconPlay as IconPlay, PbIconPause as IconPause } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { useLoadImageWithTimeout } from 'common/hooks/useImageSize'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

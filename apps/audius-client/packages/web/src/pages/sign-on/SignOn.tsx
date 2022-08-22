@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
+import { accountSelectors } from '@audius/common'
 import { replace as replaceRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { getHasAccount } from 'common/store/account/selectors'
 import * as signOnAction from 'common/store/pages/signon/actions'
 import { getPage } from 'common/store/pages/signon/selectors'
 import { Pages } from 'common/store/pages/signon/types'
@@ -16,6 +16,8 @@ import { TRENDING_PAGE } from 'utils/route'
 import SignOnProvider from './SignOnProvider'
 import SignOnDesktopPage from './components/desktop/SignOnPage'
 import SignOnMobilePage from './components/mobile/SignOnPage'
+
+const getHasAccount = accountSelectors.getHasAccount
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

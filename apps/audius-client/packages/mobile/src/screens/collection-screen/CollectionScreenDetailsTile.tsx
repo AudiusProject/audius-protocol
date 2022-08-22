@@ -1,11 +1,15 @@
 import { useCallback, useMemo } from 'react'
 
 import type { ID, UID } from '@audius/common'
-import { Status, Name, PlaybackSource } from '@audius/common'
-import { makeGetTableMetadatas } from 'audius-client/src/common/store/lineup/selectors'
-import { tracksActions } from 'audius-client/src/common/store/pages/collection/lineup/actions'
-import { getCollectionTracksLineup } from 'audius-client/src/common/store/pages/collection/selectors'
-import { formatSecondsAsText } from 'audius-client/src/common/utils/timeUtil'
+import {
+  Status,
+  Name,
+  PlaybackSource,
+  formatSecondsAsText,
+  lineupSelectors,
+  collectionPageLineupActions as tracksActions,
+  collectionPageSelectors
+} from '@audius/common'
 import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -21,6 +25,8 @@ import { make, track } from 'app/services/analytics'
 import { getPlaying, getPlayingUid, getTrack } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
+const { getCollectionTracksLineup } = collectionPageSelectors
+const { makeGetTableMetadatas } = lineupSelectors
 
 const messages = {
   album: 'Album',

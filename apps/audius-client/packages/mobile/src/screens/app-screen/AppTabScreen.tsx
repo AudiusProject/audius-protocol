@@ -1,10 +1,14 @@
 import { useContext, useEffect } from 'react'
 
-import type { ID, FavoriteType, TipSource } from '@audius/common'
+import type {
+  ID,
+  FavoriteType,
+  TipSource,
+  NotificationType,
+  RepostType
+} from '@audius/common'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
-import type { NotificationType } from 'audius-client/src/common/store/notifications/types'
-import type { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { MessageType } from 'audius-client/src/services/native-mobile-interface/types'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'

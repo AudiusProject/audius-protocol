@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
+import { accountSelectors } from '@audius/common'
 import { Text, View } from 'react-native'
 
 import { ProfilePicture } from 'app/components/user'
@@ -11,6 +11,7 @@ import { makeStyles } from 'app/styles'
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { SettingsRow } from './SettingsRow'
+const getAccountUser = accountSelectors.getAccountUser
 
 const useStyles = makeStyles(({ typography, spacing, palette }) => ({
   root: { paddingVertical: spacing(5) },

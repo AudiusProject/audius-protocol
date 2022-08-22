@@ -1,16 +1,17 @@
+import { audioRewardsPageActions } from '@audius/common'
 import { takeEvery, put, takeLatest, call } from 'redux-saga/effects'
 
-import {
-  fetchCognitoFlowUrl,
-  fetchCognitoFlowUrlFailed,
-  fetchCognitoFlowUrlSucceeded,
-  updateHCaptchaScore
-} from 'common/store/pages/audio-rewards/slice'
 import {
   CognitoFlowResponse,
   getCognitoFlow
 } from 'services/audius-backend/Cognito'
 import { MessageType } from 'services/native-mobile-interface/types'
+const {
+  fetchCognitoFlowUrl,
+  fetchCognitoFlowUrlFailed,
+  fetchCognitoFlowUrlSucceeded,
+  updateHCaptchaScore
+} = audioRewardsPageActions
 
 function* fetchCognitoFlowUriAsync() {
   try {

@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
-import type { Nullable } from '@audius/common'
-import { getNotificationEntity } from 'audius-client/src/common/store/notifications/selectors'
 import type {
+  Nullable,
   TrackEntity,
-  TrendingTrack
-} from 'audius-client/src/common/store/notifications/types'
+  TrendingTrackNotification as TrendingTrackNotificationType
+} from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -19,6 +19,7 @@ import {
   NotificationTitle
 } from '../Notification'
 import { useDrawerNavigation } from '../useDrawerNavigation'
+const { getNotificationEntity } = notificationsSelectors
 
 const getRankSuffix = (rank: number) => {
   if (rank === 1) return 'st'
@@ -35,7 +36,7 @@ const messages = {
 }
 
 type TrendingTrackNotificationProps = {
-  notification: TrendingTrack
+  notification: TrendingTrackNotificationType
 }
 
 export const TrendingTrackNotification = (

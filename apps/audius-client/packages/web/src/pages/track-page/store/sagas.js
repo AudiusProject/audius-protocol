@@ -1,4 +1,15 @@
-import { Kind, StringKeys, makeUid } from '@audius/common'
+import {
+  Kind,
+  StringKeys,
+  makeUid,
+  cacheTracksActions as trackCacheActions,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  trackPageActions,
+  trackPageSelectors,
+  trackPageLineupActions,
+  reachabilitySelectors
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import moment from 'moment'
 import {
@@ -11,22 +22,16 @@ import {
 } from 'redux-saga/effects'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as trackCacheActions from 'common/store/cache/tracks/actions'
-import { getTrack as getCachedTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
-import { getUsers } from 'common/store/cache/users/selectors'
-import * as trackPageActions from 'common/store/pages/track/actions'
-import { tracksActions } from 'common/store/pages/track/lineup/actions'
-import {
-  getSourceSelector,
-  getTrack,
-  getTrendingTrackRanks,
-  getUser
-} from 'common/store/pages/track/selectors'
-import { getIsReachable } from 'common/store/reachability/selectors'
 import tracksSagas from 'pages/track-page/store/lineups/tracks/sagas'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
+const { getIsReachable } = reachabilitySelectors
+const { tracksActions } = trackPageLineupActions
+const { getSourceSelector, getTrack, getTrendingTrackRanks, getUser } =
+  trackPageSelectors
+const { getTrack: getCachedTrack } = cacheTracksSelectors
+const { getUsers } = cacheUsersSelectors
 
 export const TRENDING_BADGE_LIMIT = 10
 

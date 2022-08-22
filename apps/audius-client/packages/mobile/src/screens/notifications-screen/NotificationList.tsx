@@ -1,16 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common'
+import type { Notification } from '@audius/common'
 import {
-  fetchNotifications,
-  refreshNotifications
-} from 'audius-client/src/common/store/notifications/actions'
-import {
-  getNotificationHasMore,
-  getNotificationStatus,
-  makeGetAllNotifications
-} from 'audius-client/src/common/store/notifications/selectors'
-import type { Notification } from 'audius-client/src/common/store/notifications/types'
+  Status,
+  notificationsSelectors,
+  notificationsActions
+} from '@audius/common'
 import type { ViewToken } from 'react-native'
 import { View } from 'react-native'
 
@@ -23,6 +18,12 @@ import { makeStyles } from 'app/styles'
 import { EmptyNotifications } from './EmptyNotifications'
 import { NotificationListItem } from './NotificationListItem'
 import { NotificationsDrawerNavigationContext } from './NotificationsDrawerNavigationContext'
+const { fetchNotifications, refreshNotifications } = notificationsActions
+const {
+  getNotificationHasMore,
+  getNotificationStatus,
+  makeGetAllNotifications
+} = notificationsSelectors
 
 const NOTIFICATION_PAGE_SIZE = 10
 

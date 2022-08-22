@@ -1,10 +1,14 @@
 import { ComponentPropsWithoutRef } from 'react'
 
-import { ID, SquareSizes, User } from '@audius/common'
+import {
+  ID,
+  SquareSizes,
+  User,
+  SUPPORTING_USER_LIST_TAG,
+  TOP_SUPPORTERS_USER_LIST_TAG
+} from '@audius/common'
 import cn from 'classnames'
 
-import { USER_LIST_TAG as SUPPORTING_USER_LIST_TAG } from 'common/store/user-list/supporting/types'
-import { USER_LIST_TAG as TOP_SUPPORTERS_USER_LIST_TAG } from 'common/store/user-list/top-supporters/types'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { MountPlacement } from 'components/types'

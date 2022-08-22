@@ -1,6 +1,5 @@
 import type { BNWei } from '@audius/common'
-import { getAccountBalance } from 'audius-client/src/common/store/wallet/selectors'
-import { formatWei } from 'audius-client/src/common/utils/wallet'
+import { formatWei, walletSelectors } from '@audius/common'
 import BN from 'bn.js'
 import { Image, View } from 'react-native'
 
@@ -8,6 +7,7 @@ import TokenBadgeNoTier from 'app/assets/images/tokenBadgeNoTier.png'
 import { Text } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
+const { getAccountBalance } = walletSelectors
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   root: {

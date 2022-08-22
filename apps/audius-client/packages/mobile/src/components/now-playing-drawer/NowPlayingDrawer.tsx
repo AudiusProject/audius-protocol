@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getTrack } from 'audius-client/src/common/store/cache/tracks/selectors'
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { next, previous } from 'audius-client/src/common/store/queue/slice'
-import { Genre } from 'audius-client/src/common/utils/genres'
+import {
+  Genre,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  queueActions
+} from '@audius/common'
 import type {
   Animated,
   GestureResponderEvent,
@@ -39,6 +41,9 @@ import { PlayBar } from './PlayBar'
 import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
 import { PLAY_BAR_HEIGHT } from './constants'
+const { next, previous } = queueActions
+const { getUser } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
 
 const STATUS_BAR_FADE_CUTOFF = 0.6
 const SKIP_DURATION_SEC = 15

@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
-import type { Modals } from 'audius-client/src/common/store/ui/modals/slice'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
+import { modalsActions, modalsSelectors } from '@audius/common'
+import type { Modals } from '@audius/common'
 import type { SetOptional } from 'type-fest'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -12,6 +9,8 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import type { DrawerProps } from './Drawer'
 import { Drawer } from './Drawer'
+const { setVisibility } = modalsActions
+const { getModalVisibility } = modalsSelectors
 
 export const useDrawerState = (modalName: Modals) => {
   const dispatchWeb = useDispatchWeb()

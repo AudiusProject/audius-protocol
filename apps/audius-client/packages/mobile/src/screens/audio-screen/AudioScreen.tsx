@@ -1,17 +1,16 @@
 import { useCallback } from 'react'
 
 import type { BNWei, StringWei, Nullable } from '@audius/common'
-import { useFocusEffect } from '@react-navigation/native'
-import { getHasAssociatedWallets } from 'audius-client/src/common/store/pages/token-dashboard/selectors'
 import {
-  setModalState,
-  setModalVisibility
-} from 'audius-client/src/common/store/pages/token-dashboard/slice'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
-import { getAccountTotalBalance } from 'audius-client/src/common/store/wallet/selectors'
-import { getBalance } from 'audius-client/src/common/store/wallet/slice'
-import { getTierAndNumberForBalance } from 'audius-client/src/common/store/wallet/utils'
-import { formatWei } from 'audius-client/src/common/utils/wallet'
+  formatWei,
+  tokenDashboardPageActions,
+  tokenDashboardPageSelectors,
+  walletSelectors,
+  walletActions,
+  getTierAndNumberForBalance,
+  modalsActions
+} from '@audius/common'
+import { useFocusEffect } from '@react-navigation/native'
 import BN from 'bn.js'
 import { Image, Linking, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -43,6 +42,11 @@ import { useThemeColors } from 'app/utils/theme'
 import { ChallengeRewards } from './ChallengeRewards'
 import { Tier } from './Tier'
 import { TrendingRewards } from './TrendingRewards'
+const { setVisibility } = modalsActions
+const { getBalance } = walletActions
+const { getAccountTotalBalance } = walletSelectors
+const { getHasAssociatedWallets } = tokenDashboardPageSelectors
+const { setModalState, setModalVisibility } = tokenDashboardPageActions
 
 const LEARN_MORE_LINK = 'https://blog.audius.co/article/community-meet-audio'
 

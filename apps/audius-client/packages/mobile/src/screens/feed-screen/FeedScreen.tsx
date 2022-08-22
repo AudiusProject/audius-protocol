@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from '@audius/common'
-import { makeGetLineupMetadatas } from 'audius-client/src/common/store/lineup/selectors'
-import { feedActions } from 'audius-client/src/common/store/pages/feed/lineup/actions'
 import {
-  getDiscoverFeedLineup,
-  getFeedFilter
-} from 'audius-client/src/common/store/pages/feed/selectors'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+  Name,
+  lineupSelectors,
+  feedPageLineupActions as feedActions,
+  feedPageSelectors,
+  modalsActions
+} from '@audius/common'
 import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
 
@@ -21,6 +20,9 @@ import { make, track } from 'app/services/analytics'
 import { getIsSignedIn } from 'app/store/lifecycle/selectors'
 
 import { FeedFilterButton } from './FeedFilterButton'
+const { setVisibility } = modalsActions
+const { getDiscoverFeedLineup, getFeedFilter } = feedPageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
 
 const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
 

@@ -1,6 +1,13 @@
 import { PureComponent, useState, useEffect } from 'react'
 
-import { Variant, SquareSizes, SmartCollectionVariant } from '@audius/common'
+import {
+  Variant,
+  SquareSizes,
+  SmartCollectionVariant,
+  squashNewLines,
+  formatSecondsAsText,
+  formatDate
+} from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -18,8 +25,6 @@ import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
-import { squashNewLines } from 'common/utils/formatUtil'
-import { formatSecondsAsText, formatDate } from 'common/utils/timeUtil'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { Input } from 'components/input'

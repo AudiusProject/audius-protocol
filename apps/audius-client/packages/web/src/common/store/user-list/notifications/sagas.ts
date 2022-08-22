@@ -1,17 +1,18 @@
+import {
+  notificationsSelectors,
+  UserListSagaFactory,
+  notificationsUserListActions,
+  notificationsUserListSelectors,
+  NOTIFICATIONS_USER_LIST_TAG as USER_LIST_TAG
+} from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
 
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
-import { getNotificationById } from 'common/store/notifications/selectors'
-import {
-  getUserIds,
-  getId,
-  getUserList
-} from 'common/store/user-list/notifications/selectors'
-import UserListSagaFactory from 'common/store/user-list/sagas'
 
-import { getNotificationError } from './actions'
 import { watchRepostsError } from './errorSagas'
-import { USER_LIST_TAG } from './types'
+const { getUserIds, getId, getUserList } = notificationsUserListSelectors
+const { getNotificationError } = notificationsUserListActions
+const { getNotificationById } = notificationsSelectors
 
 function* errorDispatcher(error: Error) {
   const id = yield* select(getId)

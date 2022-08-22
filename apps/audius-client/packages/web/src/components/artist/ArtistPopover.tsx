@@ -1,19 +1,24 @@
 import { useCallback, ReactNode, useState } from 'react'
 
-import { WidthSizes, SquareSizes } from '@audius/common'
+import {
+  WidthSizes,
+  SquareSizes,
+  accountSelectors,
+  CommonState,
+  cacheUsersSelectors
+} from '@audius/common'
 import Popover from 'antd/lib/popover'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { CommonState } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
-import { getUser } from 'common/store/cache/users/selectors'
 import { MountPlacement } from 'components/types'
 import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import { ArtistCard } from './ArtistCard'
 import styles from './ArtistPopover.module.css'
+const { getUser } = cacheUsersSelectors
+const getUserId = accountSelectors.getUserId
 
 enum Placement {
   Top = 'top',

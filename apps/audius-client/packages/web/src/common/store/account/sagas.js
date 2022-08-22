@@ -1,4 +1,15 @@
-import { Kind, Status, USER_ID_AVAILABLE_EVENT } from '@audius/common'
+import {
+  Kind,
+  Status,
+  USER_ID_AVAILABLE_EVENT,
+  accountSelectors,
+  accountActions,
+  cacheActions,
+  settingsPageActions,
+  profilePageActions,
+  solanaSelectors,
+  modalsActions
+} from '@audius/common'
 import {
   call,
   put,
@@ -8,28 +19,8 @@ import {
   getContext
 } from 'redux-saga/effects'
 
-import * as accountActions from 'common/store/account/reducer'
-import {
-  getUserId,
-  getUserHandle,
-  getAccountUser,
-  getAccountAlbumIds,
-  getAccountSavedPlaylistIds,
-  getAccountOwnedPlaylistIds,
-  getAccountToCache
-} from 'common/store/account/selectors'
-import { identify } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
-import { fetchProfile } from 'common/store/pages/profile/actions'
-import {
-  setBrowserNotificationPermission,
-  setBrowserNotificationEnabled,
-  setBrowserNotificationSettingsOn
-} from 'common/store/pages/settings/actions'
-import { getFeePayer } from 'common/store/solana/selectors'
-import { setVisibility } from 'common/store/ui/modals/slice'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
 import { fetchCID } from 'services/audius-backend'
 import { recordIP } from 'services/audius-backend/RecordIP'
@@ -51,11 +42,32 @@ import {
   removeHasRequestedBrowserPermission,
   shouldRequestBrowserPermission
 } from 'utils/browserNotifications'
-import { isMobile, isElectron } from 'utils/clientUtil'
+import { isElectron, isMobile } from 'utils/clientUtil'
 import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
+
+import { identify } from '../analytics/actions'
 
 import disconnectedWallets from './disconnected_wallet_fix.json'
 import mobileSagas, { setHasSignedInOnMobile } from './mobileSagas'
+
+const { setVisibility } = modalsActions
+const { getFeePayer } = solanaSelectors
+const { fetchProfile } = profilePageActions
+const {
+  setBrowserNotificationPermission,
+  setBrowserNotificationEnabled,
+  setBrowserNotificationSettingsOn
+} = settingsPageActions
+
+const {
+  getUserId,
+  getUserHandle,
+  getAccountUser,
+  getAccountAlbumIds,
+  getAccountSavedPlaylistIds,
+  getAccountOwnedPlaylistIds,
+  getAccountToCache
+} = accountSelectors
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -245,7 +257,8 @@ export function* fetchAccountAsync(action) {
   window.dispatchEvent(event)
 
   // Fire-and-forget fp identify
-  fingerprintClient.identify(account.user_id)
+  const clientOrigin = isMobile() ? 'mobile' : isElectron() ? 'desktop' : 'web'
+  fingerprintClient.identify(account.user_id, clientOrigin)
 
   yield call(recordIPIfNotRecent, account.handle)
 

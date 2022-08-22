@@ -1,19 +1,24 @@
-import { TimeRange } from '@audius/common'
+import {
+  TimeRange,
+  accountSelectors,
+  trendingPageLineupActions,
+  trendingPageSelectors
+} from '@audius/common'
 import { select } from 'redux-saga/effects'
 
-import { getUserId } from 'common/store/account/selectors'
-import {
+import { retrieveTrending } from 'pages/track-page/store/retrieveTrending'
+import { LineupSagas } from 'store/lineup/sagas'
+import { waitForAccount } from 'utils/sagaHelpers'
+const { getTrendingGenre } = trendingPageSelectors
+const {
   TRENDING_WEEK_PREFIX,
   TRENDING_MONTH_PREFIX,
   TRENDING_ALL_TIME_PREFIX,
   trendingWeekActions,
   trendingMonthActions,
   trendingAllTimeActions
-} from 'common/store/pages/trending/lineup/actions'
-import { getTrendingGenre } from 'common/store/pages/trending/selectors'
-import { retrieveTrending } from 'pages/track-page/store/retrieveTrending'
-import { LineupSagas } from 'store/lineup/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
+} = trendingPageLineupActions
+const getUserId = accountSelectors.getUserId
 
 function getTracks(timeRange) {
   return function* ({ offset, limit }) {

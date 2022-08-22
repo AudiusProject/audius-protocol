@@ -1,6 +1,13 @@
 import { ReactElement, useCallback, useEffect, useMemo } from 'react'
 
-import { BadgeTier, Nullable } from '@audius/common'
+import {
+  BadgeTier,
+  Nullable,
+  accountSelectors,
+  tokenDashboardPageActions,
+  badgeTiers,
+  getTierNumber
+} from '@audius/common'
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -10,17 +17,16 @@ import IconBronzeBadge from 'assets/img/tokenBadgeBronze108@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
-import { useSelectTierInfo } from 'common/hooks/wallet'
-import { getAccountUser } from 'common/store/account/selectors'
-import { pressDiscord } from 'common/store/pages/token-dashboard/slice'
-import { badgeTiers, getTierNumber } from 'common/store/wallet/utils'
 import { show } from 'components/music-confetti/store/slice'
 import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { useSelectTierInfo } from 'hooks/wallet'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import styles from './Tiers.module.css'
+const { pressDiscord } = tokenDashboardPageActions
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: '$AUDIO VIP TIERS',

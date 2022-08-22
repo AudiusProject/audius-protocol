@@ -1,13 +1,12 @@
 import { useEffect, useContext } from 'react'
 
+import { notificationsSelectors, Notification } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import ReactMarkdown from 'react-markdown'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { getNotificationById } from 'common/store/notifications/selectors'
-import { Notification } from 'common/store/notifications/types'
 import Header from 'components/header/mobile/Header'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
@@ -15,6 +14,7 @@ import { AppState } from 'store/types'
 import { NOTIFICATION_PAGE } from 'utils/route'
 
 import styles from './AnnouncementPage.module.css'
+const { getNotificationById } = notificationsSelectors
 
 const messages = {
   title: 'NOTIFICATIONS',

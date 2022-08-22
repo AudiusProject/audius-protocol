@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  getNotificationEntities,
-  getNotificationUser
-} from 'audius-client/src/common/store/notifications/selectors'
-import type { UserSubscription } from 'audius-client/src/common/store/notifications/types'
-import { Entity } from 'audius-client/src/common/store/notifications/types'
+import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common'
+import { notificationsSelectors, Entity } from '@audius/common'
 import { profilePage } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 
@@ -23,6 +19,7 @@ import {
 } from '../Notification'
 import { getEntityRoute, getEntityScreen } from '../Notification/utils'
 import { useDrawerNavigation } from '../useDrawerNavigation'
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New Release',
@@ -31,7 +28,7 @@ const messages = {
 }
 
 type UserSubscriptionNotificationProps = {
-  notification: UserSubscription
+  notification: UserSubscriptionNotificationType
 }
 
 export const UserSubscriptionNotification = (

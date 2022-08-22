@@ -1,13 +1,12 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 
-import { PlayableType, ID, Name, Track } from '@audius/common'
+import { PlayableType, ID, Name, Track, encodeHashId } from '@audius/common'
 import { Modal, Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
-import { encodeHashId } from 'common/utils/hashIds'
 import TabSlider from 'components/data-entry/TabSlider'
 import { AppState } from 'store/types'
 import { BASE_GA_URL } from 'utils/route'

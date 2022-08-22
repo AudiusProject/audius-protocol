@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
+import { modalsActions, modalsSelectors, Modals } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import {
-  getModalVisibility,
-  Modals,
-  setVisibility
-} from 'common/store/ui/modals/slice'
 import { useSelector } from 'utils/reducer'
+const { setVisibility } = modalsActions
+const { getModalVisibility } = modalsSelectors
 
 export const useModalState = (modalName: Modals) => {
   const modalState = useSelector((state) =>

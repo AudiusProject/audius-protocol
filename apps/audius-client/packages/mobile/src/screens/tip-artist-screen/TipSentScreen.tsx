@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
 
+import {
+  formatNumberCommas,
+  accountSelectors,
+  tippingSelectors
+} from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { getSendTipData } from 'audius-client/src/common/store/tipping/selectors'
-import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
@@ -20,6 +22,8 @@ import { DescriptionText } from './DescriptionText'
 import { ReceiverDetails } from './ReceiverDetails'
 import { TipHeader } from './TipHeader'
 import { TipScreen } from './TipScreen'
+const { getSendTipData } = tippingSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: 'Tip Sent',

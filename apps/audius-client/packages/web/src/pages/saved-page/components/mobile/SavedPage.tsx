@@ -1,6 +1,17 @@
 import { ReactNode, useCallback, useEffect, useContext } from 'react'
 
-import { ID, UID, Name, Lineup, Status, User } from '@audius/common'
+import {
+  ID,
+  UID,
+  Name,
+  Lineup,
+  Status,
+  User,
+  SavedPageTabs,
+  SavedPageTrack,
+  SavedPageCollection,
+  QueueItem
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
@@ -9,12 +20,6 @@ import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
-import {
-  Tabs,
-  SavedPageTrack,
-  SavedPageCollection
-} from 'common/store/pages/saved-page/types'
-import { QueueItem } from 'common/store/queue/types'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -357,9 +362,13 @@ const messages = {
 }
 
 const tabHeaders = [
-  { icon: <IconNote />, text: messages.tracks, label: Tabs.TRACKS },
-  { icon: <IconAlbum />, text: messages.albums, label: Tabs.ALBUMS },
-  { icon: <IconPlaylists />, text: messages.playlists, label: Tabs.PLAYLISTS }
+  { icon: <IconNote />, text: messages.tracks, label: SavedPageTabs.TRACKS },
+  { icon: <IconAlbum />, text: messages.albums, label: SavedPageTabs.ALBUMS },
+  {
+    icon: <IconPlaylists />,
+    text: messages.playlists,
+    label: SavedPageTabs.PLAYLISTS
+  }
 ]
 
 export type SavedPageProps = {

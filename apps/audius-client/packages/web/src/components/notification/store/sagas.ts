@@ -6,7 +6,24 @@ import {
   FeatureFlags,
   IntKeys,
   remoteConfigIntDefaults,
-  RemoteConfigInstance
+  RemoteConfigInstance,
+  accountSelectors,
+  getContext,
+  notificationsSelectors,
+  Notification,
+  getErrorMessage,
+  Entity,
+  NotificationType,
+  Achievement,
+  notificationsActions as notificationActions,
+  FetchNotificationUsers,
+  FetchNotifications,
+  SubscribeUser,
+  UnsubscribeUser,
+  UpdatePlaylistLastViewedAt,
+  reachabilitySelectors,
+  walletActions,
+  reactionsUIActions
 } from '@audius/common'
 import moment from 'moment'
 import { eventChannel } from 'redux-saga'
@@ -22,38 +39,29 @@ import {
   takeLatest
 } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { getUserId, getHasAccount } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import * as notificationActions from 'common/store/notifications/actions'
-import {
-  getLastNotification,
-  getNotificationUserList,
-  getNotificationPanelIsOpen,
-  getNotificationStatus,
-  makeGetAllNotifications,
-  getPlaylistUpdates
-} from 'common/store/notifications/selectors'
-import {
-  Notification,
-  Entity,
-  NotificationType,
-  Achievement
-} from 'common/store/notifications/types'
-import { getIsReachable } from 'common/store/reachability/selectors'
-import { fetchReactionValues } from 'common/store/ui/reactions/slice'
-import { getBalance } from 'common/store/wallet/slice'
-import { getErrorMessage } from 'common/utils/error'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
 import { isElectron } from 'utils/clientUtil'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 
 import { watchNotificationError } from './errorSagas'
 import mobileSagas from './mobileSagas'
+const { fetchReactionValues } = reactionsUIActions
+const { getBalance } = walletActions
+const { getIsReachable } = reachabilitySelectors
+const {
+  getLastNotification,
+  getNotificationUserList,
+  getNotificationPanelIsOpen,
+  getNotificationStatus,
+  makeGetAllNotifications,
+  getPlaylistUpdates
+} = notificationsSelectors
+const { getUserId, getHasAccount } = accountSelectors
 
 type ResponseNotification = Notification & {
   id: string
@@ -122,9 +130,7 @@ function* recordPlaylistUpdatesAnalytics(playlistUpdates: ID[]) {
  * Fetch notifications, used by notification pagination
  * This is the function used to fetch more notifcations after the initial load in getNotifications
  */
-export function* fetchNotifications(
-  action: notificationActions.FetchNotifications
-) {
+export function* fetchNotifications(action: FetchNotifications) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   try {
@@ -135,18 +141,17 @@ export function* fetchNotifications(
       ? lastNotification.timestamp
       : moment().toISOString()
     const withDethroned =
-      (yield* call(
+      ((yield* call(
         getFeatureEnabled,
         FeatureFlags.SUPPORTER_DETHRONED_ENABLED
-      )) ?? false
+      )) as boolean | null) ?? false
 
-    const notificationsResponse: NotificationsResponse = yield* call(
-      audiusBackendInstance.getNotifications,
-      {
+    const notificationsResponse: NotificationsResponse = yield* call(() =>
+      audiusBackendInstance.getNotifications({
         limit,
         timeOffset,
         withDethroned
-      }
+      })
     )
     if ('error' in notificationsResponse) {
       yield* put(
@@ -365,9 +370,7 @@ export function* handleNewNotifications(notifications: Notification[]) {
   }
 }
 
-export function* fetchNotificationUsers(
-  action: notificationActions.FetchNotificationUsers
-) {
+export function* fetchNotificationUsers(action: FetchNotificationUsers) {
   try {
     const userList = yield* select(getNotificationUserList)
     if (userList.status === Status.LOADING) return
@@ -389,16 +392,12 @@ export function* fetchNotificationUsers(
   }
 }
 
-export function* subscribeUserSettings(
-  action: notificationActions.SubscribeUser
-) {
+export function* subscribeUserSettings(action: SubscribeUser) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(audiusBackendInstance.updateUserSubscription, action.userId, true)
 }
 
-export function* unsubscribeUserSettings(
-  action: notificationActions.UnsubscribeUser
-) {
+export function* unsubscribeUserSettings(action: UnsubscribeUser) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(
     audiusBackendInstance.updateUserSubscription,
@@ -408,7 +407,7 @@ export function* unsubscribeUserSettings(
 }
 
 export function* updatePlaylistLastViewedAt(
-  action: notificationActions.UpdatePlaylistLastViewedAt
+  action: UpdatePlaylistLastViewedAt
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(
@@ -525,17 +524,19 @@ export function* getNotifications(isFirstFetch: boolean) {
       if (!hasAccount) return
       const timeOffset = moment().toISOString()
       const withDethroned =
-        (yield* call(
+        ((yield* call(
           getFeatureEnabled,
           FeatureFlags.SUPPORTER_DETHRONED_ENABLED
-        )) ?? false
+        )) as boolean | null) ?? false
 
       const notificationsResponse: NotificationsResponse | undefined =
-        yield* call(audiusBackendInstance.getNotifications, {
-          limit,
-          timeOffset,
-          withDethroned
-        })
+        yield* call(() =>
+          audiusBackendInstance.getNotifications({
+            limit,
+            timeOffset,
+            withDethroned
+          })
+        )
       if (
         !notificationsResponse ||
         ('error' in notificationsResponse &&

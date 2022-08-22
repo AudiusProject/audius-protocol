@@ -1,15 +1,11 @@
+import {
+  cacheTracksSelectors,
+  searchResultsPageSelectors,
+  SearchKind,
+  searchResultsPageTracksLineupActions as tracksActions
+} from '@audius/common'
 import { select, all, call } from 'redux-saga/effects'
 
-import { getTracks } from 'common/store/cache/tracks/selectors'
-import {
-  PREFIX,
-  tracksActions
-} from 'common/store/pages/search-results/lineup/tracks/actions'
-import {
-  getSearchTracksLineup,
-  getSearchResultsPageTracks
-} from 'common/store/pages/search-results/selectors'
-import { SearchKind } from 'common/store/pages/search-results/types'
 import {
   getCategory,
   getQuery,
@@ -22,6 +18,9 @@ import {
 } from 'pages/search-page/store/sagas'
 import { LineupSagas } from 'store/lineup/sagas'
 import { isMobile } from 'utils/clientUtil'
+const { getSearchTracksLineup, getSearchResultsPageTracks } =
+  searchResultsPageSelectors
+const { getTracks } = cacheTracksSelectors
 
 function* getSearchPageResultsTracks({ offset, limit, payload }) {
   const category = getCategory()
@@ -75,7 +74,7 @@ function* getSearchPageResultsTracks({ offset, limit, payload }) {
 class SearchPageResultsSagas extends LineupSagas {
   constructor() {
     super(
-      PREFIX,
+      tracksActions.prefix,
       tracksActions,
       getSearchTracksLineup,
       getSearchPageResultsTracks

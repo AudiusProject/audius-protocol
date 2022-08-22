@@ -1,8 +1,8 @@
 import { useEffect, useCallback } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import { useSpring, animated } from 'react-spring'
 
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import DynamicImage, {
   DynamicImageProps
 } from 'components/dynamic-image/DynamicImage'

@@ -1,14 +1,16 @@
 import { useCallback, useContext } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import {
+  FeatureFlags,
+  notificationsSelectors,
+  notificationsActions
+} from '@audius/common'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
 import type {
   NativeStackNavigationOptions,
   NativeStackNavigationProp
 } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
-import { markAllAsViewed } from 'audius-client/src/common/store/notifications/actions'
-import { getNotificationUnviewedCount } from 'audius-client/src/common/store/notifications/selectors'
 import { Text, View } from 'react-native'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
@@ -28,6 +30,8 @@ import { useThemeColors } from 'app/utils/theme'
 
 import type { AppScreenParamList } from './AppScreen'
 import type { AppTabScreenParamList } from './AppTabScreen'
+const { markAllAsViewed } = notificationsActions
+const { getNotificationUnviewedCount } = notificationsSelectors
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   headerLeft: { marginLeft: spacing(-2), width: 40 },

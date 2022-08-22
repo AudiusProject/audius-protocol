@@ -1,4 +1,15 @@
-import { Kind, Name, Status, makeUid } from '@audius/common'
+import {
+  Kind,
+  Name,
+  Status,
+  makeUid,
+  formatUrlName,
+  accountSelectors,
+  accountActions,
+  cacheTracksActions as tracksActions,
+  cacheUsersSelectors,
+  cacheActions
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
 import { channel, buffers } from 'redux-saga'
@@ -15,19 +26,10 @@ import {
   getContext
 } from 'redux-saga/effects'
 
-import * as accountActions from 'common/store/account/reducer'
-import {
-  getAccountUser,
-  getUserHandle,
-  getUserId
-} from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
 import { reformat } from 'common/store/cache/collections/utils'
-import * as tracksActions from 'common/store/cache/tracks/actions'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
-import { getUser } from 'common/store/cache/users/selectors'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import {
@@ -35,7 +37,6 @@ import {
   getStatus
 } from 'common/store/service-selection/selectors'
 import { fetchServicesFailed } from 'common/store/service-selection/slice'
-import { formatUrlName } from 'common/utils/formatUtil'
 import UploadType from 'pages/upload-page/components/uploadType'
 import { getStems } from 'pages/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
@@ -51,6 +52,9 @@ import * as uploadActions from './actions'
 import { watchUploadErrors } from './errorSagas'
 import { ProgressStatus } from './types'
 import { reportSuccessAndFailureEvents } from './utils/sagaHelpers'
+
+const { getUser } = cacheUsersSelectors
+const { getAccountUser, getUserHandle, getUserId } = accountSelectors
 
 const MAX_CONCURRENT_UPLOADS = 4
 const MAX_CONCURRENT_REGISTRATIONS = 4

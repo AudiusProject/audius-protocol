@@ -2,7 +2,7 @@ import type {
   AccountImage,
   TwitterAccountPayload,
   TwitterProfile
-} from 'audius-client/src/common/store/account/reducer'
+} from '@audius/common'
 
 import type { Message } from 'app/message'
 

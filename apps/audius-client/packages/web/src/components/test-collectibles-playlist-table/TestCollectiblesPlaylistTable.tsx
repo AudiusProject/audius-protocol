@@ -1,10 +1,9 @@
 import { useCallback, useMemo } from 'react'
 
-import { Chain } from '@audius/common'
+import { Chain, formatSeconds } from '@audius/common'
 import cn from 'classnames'
 import { ColumnInstance } from 'react-table'
 
-import { formatSeconds } from 'common/utils/timeUtil'
 import { TestTable, TablePlayButton } from 'components/test-table'
 
 import styles from './TestCollectiblesPlaylistTable.module.css'

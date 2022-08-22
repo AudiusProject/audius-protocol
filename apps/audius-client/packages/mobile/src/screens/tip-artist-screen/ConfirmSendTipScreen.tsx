@@ -1,11 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
+import { tippingSelectors, tippingActions } from '@audius/common'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { getSendTipData } from 'audius-client/src/common/store/tipping/selectors'
-import {
-  beginTip,
-  confirmSendTip
-} from 'audius-client/src/common/store/tipping/slice'
 
 import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconCheck from 'app/assets/images/iconCheck.svg'
@@ -21,6 +17,8 @@ import { SendTipStatusText } from './SendTipStatusText'
 import { TipHeader } from './TipHeader'
 import { TipScreen } from './TipScreen'
 import type { TipArtistNavigationParamList } from './navigation'
+const { beginTip, confirmSendTip } = tippingActions
+const { getSendTipData } = tippingSelectors
 
 const messages = {
   title: 'Confirm Tip',

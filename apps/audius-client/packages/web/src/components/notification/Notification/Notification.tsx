@@ -1,16 +1,11 @@
+import {
+  notificationsSelectors,
+  Notification as Notifications,
+  NotificationType,
+  CommonState
+} from '@audius/common'
 import { useSelector } from 'react-redux'
 
-import { CommonState } from 'common/store'
-import {
-  getNotificationEntities,
-  getNotificationEntity,
-  getNotificationUser,
-  getNotificationUsers
-} from 'common/store/notifications/selectors'
-import {
-  Notification as Notifications,
-  NotificationType
-} from 'common/store/notifications/types'
 import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 
 import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification'
@@ -32,6 +27,12 @@ import { TopSupportingNotification } from './TopSupportingNotification'
 import { TrendingTrackNotification } from './TrendingTrackNotification'
 import { UserSubscriptionNotification } from './UserSubscriptionNotification'
 import { USER_LENGTH_LIMIT } from './utils'
+const {
+  getNotificationEntities,
+  getNotificationEntity,
+  getNotificationUser,
+  getNotificationUsers
+} = notificationsSelectors
 
 type NotificationProps = {
   notification: Notifications

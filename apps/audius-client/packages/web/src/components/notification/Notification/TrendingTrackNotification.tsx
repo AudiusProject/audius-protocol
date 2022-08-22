@@ -1,12 +1,16 @@
 import { useCallback } from 'react'
 
-import { Name, Nullable } from '@audius/common'
+import {
+  Name,
+  Nullable,
+  notificationsSelectors,
+  TrackEntity,
+  TrendingTrackNotification as TrendingTrackNotificationType
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import { getNotificationEntity } from 'common/store/notifications/selectors'
-import { TrackEntity, TrendingTrack } from 'common/store/notifications/types'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
@@ -18,6 +22,7 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTrending } from './components/icons'
 import { getRankSuffix, getEntityLink } from './utils'
+const { getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: 'Trending on Audius!',
@@ -31,7 +36,7 @@ const messages = {
 }
 
 type TrendingTrackNotificationProps = {
-  notification: TrendingTrack
+  notification: TrendingTrackNotificationType
 }
 
 export const TrendingTrackNotification = (

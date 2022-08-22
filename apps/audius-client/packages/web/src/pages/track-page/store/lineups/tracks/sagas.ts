@@ -1,15 +1,18 @@
+import {
+  accountSelectors,
+  cacheTracksSelectors,
+  trackPageLineupActions,
+  trackPageSelectors
+} from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
-import { getUserId } from 'common/store/account/selectors'
-import { getTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
-import { PREFIX, tracksActions } from 'common/store/pages/track/lineup/actions'
-import {
-  getLineup,
-  getSourceSelector as sourceSelector
-} from 'common/store/pages/track/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
+const { PREFIX, tracksActions } = trackPageLineupActions
+const { getLineup, getSourceSelector: sourceSelector } = trackPageSelectors
+const { getTrack } = cacheTracksSelectors
+const getUserId = accountSelectors.getUserId
 
 function* getTracks({
   payload,

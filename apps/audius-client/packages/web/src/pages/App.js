@@ -6,7 +6,11 @@ import {
   SmartCollectionVariant,
   Status,
   Theme,
-  StringKeys
+  StringKeys,
+  accountSelectors,
+  ExploreCollectionsVariant,
+  themeSelectors,
+  themeActions
 } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -14,24 +18,14 @@ import { matchPath } from 'react-router'
 import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
-import {
-  getHasAccount,
-  getAccountStatus,
-  getUserId,
-  getConnectivityFailure,
-  getUserHandle
-} from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { getWeb3Error } from 'common/store/backend/selectors'
-import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import {
   openSignOn,
   updateRouteOnCompletion as updateRouteOnSignUpCompletion
 } from 'common/store/pages/signon/actions'
 import { getStatus as getSignOnStatus } from 'common/store/pages/signon/selectors'
 import { Pages as SignOnPages } from 'common/store/pages/signon/types'
-import { setTheme } from 'common/store/ui/theme/actions'
-import { getTheme } from 'common/store/ui/theme/selectors'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import AppRedirectPopover from 'components/app-redirect-popover/components/AppRedirectPopover'
 import MobileDesktopBanner from 'components/banner/CTABanner'
@@ -174,6 +168,16 @@ import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
 import SupportingPage from './supporting-page/SupportingPage'
 import TopSupportersPage from './top-supporters-page/TopSupportersPage'
+const { setTheme } = themeActions
+const { getTheme } = themeSelectors
+
+const {
+  getHasAccount,
+  getAccountStatus,
+  getUserId,
+  getConnectivityFailure,
+  getUserHandle
+} = accountSelectors
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 

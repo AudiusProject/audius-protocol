@@ -4,7 +4,16 @@ import {
   Kind,
   makeKindId,
   makeUid,
-  FeatureFlags
+  FeatureFlags,
+  squashNewLines,
+  accountSelectors,
+  accountActions,
+  cacheCollectionsSelectors,
+  cacheCollectionsActions as collectionActions,
+  PlaylistOperations,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  cacheActions
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import {
@@ -18,31 +27,26 @@ import {
   getContext
 } from 'redux-saga/effects'
 
-import * as accountActions from 'common/store/account/reducer'
-import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
-import * as collectionActions from 'common/store/cache/collections/actions'
-import { getCollection } from 'common/store/cache/collections/selectors'
-import { getTrack } from 'common/store/cache/tracks/selectors'
+import watchTrackErrors from 'common/store/cache/collections/errorSagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { getUser } from 'common/store/cache/users/selectors'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { squashNewLines } from 'common/utils/formatUtil'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { dataURLtoFile } from 'utils/fileUtils'
 import { waitForAccount } from 'utils/sagaHelpers'
 
-import watchTrackErrors from './errorSagas'
-import { PlaylistOperations } from './types'
 import { reformat } from './utils'
 import {
   retrieveCollection,
   retrieveCollections
 } from './utils/retrieveCollections'
+const { getUser } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
+const { getCollection } = cacheCollectionsSelectors
+const { getAccountUser, getUserId } = accountSelectors
 
 /** Counts instances of trackId in a playlist. */
 const countTrackIds = (playlistContents, trackId) => {

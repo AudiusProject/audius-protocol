@@ -1,7 +1,11 @@
-import { BNWei, StringAudio, WalletAddress } from '@audius/common'
+import {
+  BNWei,
+  StringAudio,
+  WalletAddress,
+  stringAudioToBN,
+  weiToAudio
+} from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
-
-import { stringAudioToBN, weiToAudio } from 'common/utils/wallet'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 

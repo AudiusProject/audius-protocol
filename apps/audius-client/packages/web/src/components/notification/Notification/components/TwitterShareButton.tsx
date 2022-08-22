@@ -1,17 +1,21 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { Nullable } from '@audius/common'
+import {
+  Nullable,
+  useTwitterButtonStatus,
+  CommonState,
+  cacheUsersActions,
+  cacheUsersSelectors
+} from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
-import { useTwitterButtonStatus } from 'common/hooks/useTwitterButtonStatus'
-import { CommonState } from 'common/store'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { fetchUserSocials } from 'common/store/cache/users/actions'
-import { getUser } from 'common/store/cache/users/selectors'
 import { openTwitterLink } from 'utils/tweet'
 
 import styles from './TwitterShareButton.module.css'
+const { fetchUserSocials } = cacheUsersActions
+const { getUser } = cacheUsersSelectors
 
 const messages = {
   share: 'Share'

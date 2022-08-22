@@ -1,25 +1,28 @@
-import { ID, User, removeNullable } from '@audius/common'
+import {
+  ID,
+  User,
+  removeNullable,
+  decodeHashId,
+  encodeHashId,
+  cacheUsersSelectors,
+  tippingActions,
+  SupportersMapForUser,
+  UserListSagaFactory,
+  topSupportersUserListSelectors,
+  topSupportersUserListActions,
+  TOP_SUPPORTERS_USER_LIST_TAG,
+  SupporterResponse,
+  responseAdapter as adapter
+} from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
-import * as adapter from 'common/services/audius-api-client/ResponseAdapter'
-import { getUser } from 'common/store/cache/users/selectors'
-import { setSupportersForUser } from 'common/store/tipping/slice'
-import { SupportersMapForUser } from 'common/store/tipping/types'
-import UserListSagaFactory from 'common/store/user-list/sagas'
-import { getTopSupportersError } from 'common/store/user-list/top-supporters/actions'
 import { watchTopSupportersError } from 'common/store/user-list/top-supporters/errorSagas'
-import {
-  getId,
-  getUserList,
-  getUserIds
-} from 'common/store/user-list/top-supporters/selectors'
-import { USER_LIST_TAG } from 'common/store/user-list/top-supporters/types'
-import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
 import { createUserListProvider } from 'components/user-list/utils'
-import {
-  fetchSupporters,
-  SupporterResponse
-} from 'services/audius-backend/Tipping'
+import { fetchSupporters } from 'services/audius-backend/Tipping'
+const { getTopSupportersError } = topSupportersUserListActions
+const { getId, getUserList, getUserIds } = topSupportersUserListSelectors
+const { setSupportersForUser } = tippingActions
+const { getUser } = cacheUsersSelectors
 
 type SupportersProcessExtraType = {
   userId: ID
@@ -99,7 +102,7 @@ function* getTopSupporters(currentPage: number, pageSize: number) {
 }
 
 const userListSagas = UserListSagaFactory.createSagas({
-  tag: USER_LIST_TAG,
+  tag: TOP_SUPPORTERS_USER_LIST_TAG,
   fetchUsers: getTopSupporters,
   stateSelector: getUserList,
   errorDispatcher

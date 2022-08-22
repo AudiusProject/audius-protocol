@@ -1,21 +1,21 @@
 import { useEffect, useState, useCallback, ComponentType } from 'react'
 
-import { ID, FavoriteType } from '@audius/common'
+import {
+  ID,
+  FavoriteType,
+  ExploreCollectionsVariant,
+  explorePageCollectionsSelectors,
+  explorePageCollectionsActions,
+  RepostType,
+  repostsUserListActions,
+  favoritesUserListActions
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import {
-  getCollections,
-  getStatus
-} from 'common/store/pages/explore/exploreCollections/selectors'
-import { fetch } from 'common/store/pages/explore/exploreCollections/slice'
-import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
-import { setFavorite } from 'common/store/user-list/favorites/actions'
-import { setRepost } from 'common/store/user-list/reposts/actions'
-import { RepostType } from 'common/store/user-list/reposts/types'
 import {
   setUsers,
   setVisibility
@@ -40,6 +40,10 @@ import {
 } from './collections'
 import { CollectionsPageProps as DesktopCollectionsPageProps } from './components/desktop/CollectionsPage'
 import { CollectionsPageProps as MobileCollectionsPageProps } from './components/mobile/CollectionsPage'
+const { setFavorite } = favoritesUserListActions
+const { setRepost } = repostsUserListActions
+const { fetch } = explorePageCollectionsActions
+const { getCollections, getStatus } = explorePageCollectionsSelectors
 
 type OwnProps = {
   isMobile: boolean

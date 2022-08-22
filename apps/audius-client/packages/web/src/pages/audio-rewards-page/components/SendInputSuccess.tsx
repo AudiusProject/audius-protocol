@@ -1,6 +1,4 @@
-import { WalletAddress, BNWei } from '@audius/common'
-
-import { formatWei } from 'common/utils/wallet'
+import { WalletAddress, BNWei, formatWei } from '@audius/common'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 

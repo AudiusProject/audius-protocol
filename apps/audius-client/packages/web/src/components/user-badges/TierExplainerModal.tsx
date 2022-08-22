@@ -5,7 +5,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { useProfileTier } from 'common/hooks/wallet'
+import { useProfileTier } from 'hooks/wallet'
 import { Tier } from 'pages/audio-rewards-page/Tiers'
 import { AUDIO_PAGE } from 'utils/route'
 

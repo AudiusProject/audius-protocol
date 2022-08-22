@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
 import type { Track, User } from '@audius/common'
-import { FavoriteSource, SquareSizes } from '@audius/common'
 import {
-  saveTrack,
-  unsaveTrack
-} from 'audius-client/src/common/store/social/tracks/actions'
+  FavoriteSource,
+  SquareSizes,
+  tracksSocialActions
+} from '@audius/common'
 import { TouchableOpacity, Animated, View, Dimensions } from 'react-native'
 
 import { DynamicImage } from 'app/components/core'
@@ -18,6 +18,7 @@ import { makeStyles } from 'app/styles'
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
+const { saveTrack, unsaveTrack } = tracksSocialActions
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {

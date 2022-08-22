@@ -1,14 +1,19 @@
-import { ID, User, DoubleKeys } from '@audius/common'
+import {
+  ID,
+  User,
+  DoubleKeys,
+  accountSelectors,
+  getContext,
+  artistRecommendationsUIActions as artistRecommendationsActions
+} from '@audius/common'
 import { Action } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'redux-saga/effects'
 
-import { getContext } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { waitForAccount } from 'utils/sagaHelpers'
 
-import * as artistRecommendationsActions from './slice'
+const getUserId = accountSelectors.getUserId
 
 export function* fetchRelatedArtists(action: Action) {
   const apiClient = yield* getContext('apiClient')

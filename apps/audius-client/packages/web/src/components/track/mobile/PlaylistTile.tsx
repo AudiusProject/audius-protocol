@@ -1,12 +1,16 @@
 import { useState, useEffect, MouseEvent } from 'react'
 
-import { UID, ID, LineupTrack } from '@audius/common'
+import {
+  UID,
+  ID,
+  LineupTrack,
+  formatCount,
+  formatSeconds
+} from '@audius/common'
 import cn from 'classnames'
 import { range } from 'lodash'
 
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
-import { formatCount } from 'common/utils/formatUtil'
-import { formatSeconds } from 'common/utils/timeUtil'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import Skeleton from 'components/skeleton/Skeleton'

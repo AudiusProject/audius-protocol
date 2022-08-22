@@ -1,18 +1,22 @@
 import { useContext, useEffect, useCallback, FC } from 'react'
 
-import { ID, SquareSizes, ProfilePictureSizes, Theme } from '@audius/common'
-import cn from 'classnames'
-
-import horizontalLogo from 'assets/img/settingsPageLogo.png'
-import { InstagramProfile, TwitterProfile } from 'common/store/account/reducer'
-import { CastMethod } from 'common/store/cast/slice'
 import {
+  ID,
+  SquareSizes,
+  ProfilePictureSizes,
+  Theme,
+  InstagramProfile,
+  TwitterProfile,
+  CastMethod,
   Notifications,
   EmailFrequency,
   BrowserNotificationSetting,
   PushNotificationSetting,
   PushNotifications
-} from 'common/store/pages/settings/types'
+} from '@audius/common'
+import cn from 'classnames'
+
+import horizontalLogo from 'assets/img/settingsPageLogo.png'
 import TabSlider from 'components/data-entry/TabSlider'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'

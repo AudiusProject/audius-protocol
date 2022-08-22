@@ -1,19 +1,20 @@
 import { useContext, useEffect } from 'react'
 
+import {
+  userListActions,
+  notificationsUserListSelectors,
+  NOTIFICATIONS_USER_LIST_TAG as USER_LIST_TAG
+} from '@audius/common'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { loadMore } from 'common/store/user-list/actions'
-import {
-  getPageTitle,
-  getUserList
-} from 'common/store/user-list/notifications/selectors'
-import { USER_LIST_TAG } from 'common/store/user-list/notifications/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import UserList from 'components/user-list/UserList'
 import { AppState } from 'store/types'
+const { getPageTitle, getUserList } = notificationsUserListSelectors
+const { loadMore } = userListActions
 
 export type OwnProps = {}
 

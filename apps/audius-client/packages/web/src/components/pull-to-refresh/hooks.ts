@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import { config, useSpring } from 'react-spring'
 
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import {
   EnablePullToRefreshMessage,
   DisablePullToRefreshMessage

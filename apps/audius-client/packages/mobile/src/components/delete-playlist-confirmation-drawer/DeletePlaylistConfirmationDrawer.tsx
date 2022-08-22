@@ -1,12 +1,16 @@
 import { useCallback, useMemo } from 'react'
 
-import { deletePlaylist } from 'common/store/cache/collections/actions'
-import { getPlaylistId } from 'common/store/ui/delete-playlist-confirmation-modal/selectors'
+import {
+  cacheCollectionsActions,
+  deletePlaylistConfirmationModalUISelectors
+} from '@audius/common'
 
 import ActionDrawer from 'app/components/action-drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+const { getPlaylistId } = deletePlaylistConfirmationModalUISelectors
+const { deletePlaylist } = cacheCollectionsActions
 
 export const DeletePlaylistConfirmationDrawer = () => {
   const playlistId = useSelectorWeb(getPlaylistId)

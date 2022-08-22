@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 
-import { Name, User, FeatureFlags } from '@audius/common'
+import {
+  Name,
+  User,
+  FeatureFlags,
+  shareSoundToTiktokModalActions
+} from '@audius/common'
 import { Button, ButtonType, IconTikTok, IconTwitterBird } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -9,7 +14,6 @@ import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'
 import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { useRecord, make } from 'common/store/analytics/actions'
-import { open as openTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -30,6 +34,7 @@ import { openTwitterLink } from 'utils/tweet'
 import { UploadPageState } from '../store/types'
 
 import styles from './ShareBanner.module.css'
+const { open: openTikTokModal } = shareSoundToTiktokModalActions
 
 type UploadType = 'Track' | 'Tracks' | 'Album' | 'Playlist' | 'Remix'
 type ContinuePage = 'Track' | 'Profile' | 'Album' | 'Playlist' | 'Remix'

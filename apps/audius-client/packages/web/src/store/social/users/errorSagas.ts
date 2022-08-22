@@ -1,5 +1,6 @@
-import * as socialUserActions from 'common/store/social/users/actions'
-import createErrorSagas from 'common/utils/errorSagas'
+import { usersSocialActions as socialUserActions } from '@audius/common'
+
+import { createErrorSagas } from 'utils/errorSagas'
 
 type UserErrors =
   | ReturnType<typeof socialUserActions.followUserFailed>

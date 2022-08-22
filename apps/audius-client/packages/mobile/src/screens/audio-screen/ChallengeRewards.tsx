@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react'
 
-import type { ChallengeRewardID } from '@audius/common'
-import { removeNullable, StringKeys } from '@audius/common'
-import { getOptimisticUserChallenges } from 'audius-client/src/common/store/challenges/selectors/optimistic-challenges'
+import type {
+  ChallengeRewardID,
+  ChallengeRewardsModalType
+} from '@audius/common'
 import {
-  getUserChallenges,
-  getUserChallengesLoading
-} from 'audius-client/src/common/store/pages/audio-rewards/selectors'
-import type { ChallengeRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import {
-  fetchUserChallenges,
-  setChallengeRewardsModalType
-} from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+  removeNullable,
+  StringKeys,
+  challengesSelectors,
+  audioRewardsPageActions,
+  audioRewardsPageSelectors,
+  modalsActions
+} from '@audius/common'
 import { View } from 'react-native'
 
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -23,6 +22,12 @@ import { makeStyles } from 'app/styles'
 import { challengesConfig } from 'app/utils/challenges'
 
 import { Panel } from './Panel'
+const { setVisibility } = modalsActions
+const { getUserChallenges, getUserChallengesLoading } =
+  audioRewardsPageSelectors
+const { fetchUserChallenges, setChallengeRewardsModalType } =
+  audioRewardsPageActions
+const { getOptimisticUserChallenges } = challengesSelectors
 
 const validRewardIds: Set<ChallengeRewardID> = new Set([
   'track-upload',

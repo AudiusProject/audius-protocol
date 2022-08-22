@@ -1,6 +1,6 @@
+import { Genre } from '@audius/common'
 import { useSelector } from 'react-redux'
 
-import { Genre } from 'common/utils/genres'
 import { makeGetCurrent } from 'store/player/selectors'
 
 import BackwardSkipButton, {

@@ -1,6 +1,5 @@
-import { getProfileUserId } from 'audius-client/src/common/store/pages/profile/selectors'
-import type { BadgeTierInfo } from 'audius-client/src/common/store/wallet/utils'
-import { badgeTiers } from 'audius-client/src/common/store/wallet/utils'
+import { profilePageSelectors, badgeTiers } from '@audius/common'
+import type { BadgeTierInfo } from '@audius/common'
 import { Text, View } from 'react-native'
 
 import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
@@ -11,6 +10,7 @@ import { AppDrawer } from '../drawer/AppDrawer'
 
 import { IconAudioBadge } from './IconAudioBadge'
 import { TierText } from './TierText'
+const { getProfileUserId } = profilePageSelectors
 
 export const MODAL_NAME = 'TiersExplainer'
 
