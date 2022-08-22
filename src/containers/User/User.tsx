@@ -137,7 +137,8 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
             <DelegationStatsChip
               className={styles.delegationState}
               deployerCut={
-                (user as Operator | undefined)?.serviceProvider?.deployerCut ?? 0
+                (user as Operator | undefined)?.serviceProvider?.deployerCut ??
+                0
               }
               delegated={inboundDelegation.amount ?? Utils.toBN('0')}
               minDelegation={
