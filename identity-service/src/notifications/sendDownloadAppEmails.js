@@ -90,7 +90,7 @@ async function renderAndSendDownloadAppEmail (
       html: downloadAppHtml,
       subject: 'Audius Is Better On The Go 📱',
       asm: {
-        groupId: 19141
+        groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
       }
     }
 

@@ -395,7 +395,7 @@ async function renderAndSendNotificationEmail (
       html: notifHtml,
       subject: emailSubject,
       asm: {
-        groupId: 19141
+        groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
       }
     }
 

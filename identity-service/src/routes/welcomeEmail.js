@@ -59,7 +59,7 @@ module.exports = function (app) {
       subject: 'The Automated Welcome Email',
       html: welcomeHtml,
       asm: {
-        groupId: 19141
+        groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
       }
     }
     try {
