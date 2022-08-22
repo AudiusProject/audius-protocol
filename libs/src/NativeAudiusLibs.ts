@@ -157,7 +157,8 @@ export class AudiusLibs {
   static configInternalWeb3(
     registryAddress: string,
     providers: provider,
-    privateKey: string
+    privateKey?: string,
+    entityManagerAddress?: string
   ) {
     let providerList
     if (typeof providers === 'string') {
@@ -174,6 +175,7 @@ export class AudiusLibs {
 
     return {
       registryAddress,
+      entityManagerAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
         web3ProviderEndpoints: providerList,
