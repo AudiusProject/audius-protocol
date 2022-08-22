@@ -1,6 +1,7 @@
-import { Collection, LineupState } from '../../../../models/index'
 import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
 import { initialLineupState } from 'store/lineup/reducer'
+
+import { Collection, LineupState } from '../../../../models'
 
 import { PREFIX } from './actions'
 

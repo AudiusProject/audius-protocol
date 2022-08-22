@@ -1,6 +1,6 @@
 import { createCustomAction } from 'typesafe-actions'
 
-import { ID } from '../../../models/index'
+import { ID } from '../../../models'
 
 export const SET_MUTUALS = 'MUTUAL_USERS_PAGE/SET_MUTUALS'
 export const GET_MUTUALS_ERROR = 'MUTUAL_USERS_PAGE/GET_MUTUALS_ERROR'

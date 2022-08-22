@@ -1,9 +1,10 @@
 import { createSelector } from 'reselect'
 
-import { UserCollection, Status, User } from '../../../models/index'
 import { getCollections } from 'store/cache/collections/selectors'
 import { getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
+
+import { UserCollection, Status, User } from '../../../models'
 
 const getExplore = (state: CommonState) => state.pages.explore
 

@@ -1,6 +1,5 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
-import { TimeRange } from '../../../models/index'
 import { asLineup } from 'store/lineup/reducer'
 import {
   SET_TRENDING_GENRE,
@@ -13,6 +12,8 @@ import {
   TRENDING_ALL_TIME_PREFIX
 } from 'store/pages/trending/lineup/actions'
 import { GENRES } from 'utils/genres'
+
+import { TimeRange } from '../../../models'
 
 import { trendingWeek, trendingMonth, trendingAllTime } from './lineup/reducer'
 

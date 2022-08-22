@@ -1,4 +1,4 @@
-import { ID, LineupState } from '../../../models/index'
+import { ID, LineupState } from '../../../models'
 
 export default interface TrackPageState {
   trackId: ID | null

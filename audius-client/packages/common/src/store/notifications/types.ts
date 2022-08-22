@@ -1,3 +1,5 @@
+import { Nullable } from 'utils'
+
 import {
   ID,
   ChallengeRewardID,
@@ -7,8 +9,7 @@ import {
   Track,
   User,
   StringWei
-} from '../../models/index'
-import { Nullable } from 'utils/index'
+} from '../../models'
 
 import {
   fetchNotifications,

@@ -1,4 +1,3 @@
-import { Status } from '../../../models/index'
 import { asLineup } from 'store/lineup/reducer'
 import {
   FETCH_SEARCH_PAGE_RESULTS,
@@ -16,6 +15,8 @@ import {
 } from 'store/pages/search-results/actions'
 import { PREFIX } from 'store/pages/search-results/lineup/tracks/actions'
 import tracksReducer from 'store/pages/search-results/lineup/tracks/reducer'
+
+import { Status } from '../../../models'
 
 import { SearchPageState } from './types'
 

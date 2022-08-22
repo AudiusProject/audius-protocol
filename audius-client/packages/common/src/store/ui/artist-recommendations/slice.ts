@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, Status } from '../../../models/index'
+import { ID, Status } from '../../../models'
 
 export type ArtistRecommendationsState = Record<
   ID,

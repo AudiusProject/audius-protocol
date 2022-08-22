@@ -1,6 +1,6 @@
 import { createCustomAction } from 'typesafe-actions'
 
-import { ID } from '../../../models/index'
+import { ID } from '../../../models'
 
 import { RepostType } from './types'
 

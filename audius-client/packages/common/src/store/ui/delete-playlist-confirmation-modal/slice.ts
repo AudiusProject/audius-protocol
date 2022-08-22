@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID } from '../../../models/Identifiers'
 import { Nullable } from 'utils/typeUtils'
+
+import { ID } from '../../../models/Identifiers'
 
 type DeletePlaylistConfirmationState = {
   playlistId: Nullable<ID>
