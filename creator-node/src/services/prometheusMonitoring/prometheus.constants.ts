@@ -120,7 +120,12 @@ export const METRIC_LABELS = Object.freeze({
     ],
     result: [
       'succeess',
-      
+      'skipping_update_replica_set',
+      'failure_no_healthy_nodes',
+      'failure_no_valid_sp',
+      'blahblahblahblah',
+      'blahblahblahblah',
+      'falure_to_update_replica_set'
     ]
   },
 

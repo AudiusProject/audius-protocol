@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import { METRIC_NAMES } from '../../../services/prometheusMonitoring/prometheus.constants'
 import {
   getCachedHealthyNodes,
   cacheHealthyNodes
@@ -11,6 +12,7 @@ import type {
   UpdateReplicaSetJobParams,
   UpdateReplicaSetJobReturnValue
 } from './types'
+import { makeHistogramToRecord } from '../stateMachineUtils'
 
 const _ = require('lodash')
 
@@ -20,7 +22,8 @@ const {
   RECONFIG_MODES,
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
   QUEUE_NAMES,
-  SYNC_MODES
+  SYNC_MODES,
+  STATE_MACHINE_JOB_NAMES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
 const ContentNodeInfoManager = require('../ContentNodeInfoManager')
@@ -59,6 +62,7 @@ const updateReplicaSetJobProcessor = async function ({
   DecoratedJobReturnValue<UpdateReplicaSetJobReturnValue>
 > {
   let errorMsg = ''
+  let metricsToRecord = []
   let issuedReconfig = false
   let syncJobsToEnqueue: IssueSyncRequestJobParams[] = []
   let newReplicaSet: NewReplicaSet = {
@@ -68,6 +72,9 @@ const updateReplicaSetJobProcessor = async function ({
     issueReconfig: false,
     reconfigType: null
   }
+  let result = ''
+
+  const startTimeMs = Date.now()
 
   /**
    * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
@@ -94,10 +101,12 @@ const updateReplicaSetJobProcessor = async function ({
           log: true
         })
       healthyNodes = Object.keys(healthyServicesMap || {})
-      if (healthyNodes.length === 0)
+      if (healthyNodes.length === 0) {
+        // TODO: failure_no_healthy_nodes
         throw new Error(
           'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
         )
+      }
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
       const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
@@ -135,6 +144,7 @@ const updateReplicaSetJobProcessor = async function ({
         logger
       ))
   } catch (e: any) {
+    // TODO: failure_to_update_replica_set
     logger.error(
       `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
         e.stack
@@ -143,11 +153,25 @@ const updateReplicaSetJobProcessor = async function ({
     errorMsg = e.toString()
   }
 
+  // Make metrics to record
+  metricsToRecord = [
+    makeHistogramToRecord(
+      METRIC_NAMES[
+        `STATE_MACHINE_${STATE_MACHINE_JOB_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+      ],
+      (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+      {
+        result
+      }
+    )
+  ]
+
   return {
     errorMsg,
     issuedReconfig,
     newReplicaSet,
     healthyNodes,
+    metricsToRecord,
     jobsToEnqueue: syncJobsToEnqueue?.length
       ? {
           [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
@@ -497,6 +521,7 @@ const _issueUpdateReplicaSetOp = async (
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
       if (!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]) {
+        // TODO: failure_no_valid_sp
         response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
           ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
         )} | endpt=${endpt}. Skipping reconfig.`
@@ -538,6 +563,7 @@ const _issueUpdateReplicaSetOp = async (
         })
 
       if (!canReconfig) {
+        // TODO: skip_update_replica_set
         logger.info(
           `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
         )
@@ -563,6 +589,7 @@ const _issueUpdateReplicaSetOp = async (
         }ms for userId=${userId} wallet=${wallet}`
       )
     } catch (e: any) {
+      // TODO: failure_to_update_replica_set
       throw new Error(
         `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${
           Date.now() - startTimeMs
@@ -610,6 +637,7 @@ const _issueUpdateReplicaSetOp = async (
       `[_issueUpdateReplicaSetOp] Reconfig SUCCESS: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
   } catch (e: any) {
+    // TODO: failure_to_update_replica_set
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
     return response
