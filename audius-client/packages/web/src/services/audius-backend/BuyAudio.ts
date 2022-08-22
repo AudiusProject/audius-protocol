@@ -10,7 +10,8 @@ import {
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
-  Transaction
+  Transaction,
+  TransactionInstruction
 } from '@solana/web3.js'
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
@@ -23,7 +24,12 @@ const MAX_TOKEN_ACCOUNT_POLL_COUNT = 20
 const SOL_ACCOUNT_POLL_MS = 5000
 const MAX_SOL_ACCOUNT_POLL_COUNT = 20
 
+const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
 const ATA_SIZE = 165 // Size allocated for an associated token account
+
+const MEMO_PROGRAM_ID = new PublicKey(
+  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+)
 
 const delay = (ms: number) =>
   new Promise((resolve, reject) => {
@@ -42,12 +48,21 @@ export const getSolanaConnection = async () => {
   return libs().solanaWeb3Manager.connection as Connection
 }
 
+export const getRootAccountRentExemptionMinimum = async () => {
+  await waitForLibsInit()
+  const connection = await getSolanaConnection()
+  return await connection.getMinimumBalanceForRentExemption(
+    ROOT_ACCOUNT_SIZE,
+    'processed'
+  )
+}
+
 export const getAssociatedTokenRentExemptionMinimum = async () => {
   await waitForLibsInit()
   const connection = await getSolanaConnection()
   return await connection.getMinimumBalanceForRentExemption(
     ATA_SIZE,
-    'finalized'
+    'processed'
   )
 }
 
@@ -189,18 +204,32 @@ export const pollForSolBalanceChange = async ({
 export const createTransferToUserBankTransaction = async ({
   userBank,
   fromAccount,
-  amount
+  amount,
+  memo
 }: {
   userBank: PublicKey
   fromAccount: PublicKey
   amount: u64
+  memo: string
 }) => {
   await waitForLibsInit()
   const mintPublicKey = new PublicKey(libs().solanaWeb3Config.mintAddress)
   const associatedTokenAccount = await getAudioAccount({
     rootAccount: fromAccount
   })
-  const instruction = Token.createTransferCheckedInstruction(
+  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
+  const memoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: fromAccount,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(memo)
+  })
+  const transferInstruction = Token.createTransferCheckedInstruction(
     TOKEN_PROGRAM_ID,
     associatedTokenAccount,
     mintPublicKey,
@@ -211,6 +240,7 @@ export const createTransferToUserBankTransaction = async ({
     8
   )
   const tx = new Transaction()
-  tx.add(instruction)
+  tx.add(memoInstruction)
+  tx.add(transferInstruction)
   return tx
 }
