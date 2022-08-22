@@ -1429,9 +1429,7 @@ export class AudiusAPIClient {
     }
 
     // Set the state to the eager discprov
-    console.log('aight its getting eager')
     const eagerDiscprov = await getEagerDiscprov(this.localStorage, this.env)
-    console.log('aight it got eager', eagerDiscprov)
     if (eagerDiscprov) {
       console.debug(`APIClient: setting to eager discprov: ${eagerDiscprov}`)
       this.initializationState = {
