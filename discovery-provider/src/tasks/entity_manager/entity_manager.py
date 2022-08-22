@@ -27,6 +27,9 @@ from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 
+# Please toggle below variable to true for development
+ENABLE_DEVELOPMENT_FEATURES = False
+
 
 def entity_manager_update(
     _,  # main indexing task
@@ -103,17 +106,20 @@ def entity_manager_update(
                     elif (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.TRACK
+                        and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         create_track(params)
                     elif (
                         params.action == Action.UPDATE
                         and params.entity_type == EntityType.TRACK
+                        and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         update_track(params)
 
                     elif (
                         params.action == Action.DELETE
                         and params.entity_type == EntityType.TRACK
+                        and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_track(params)
                 except Exception as e:
@@ -121,7 +127,6 @@ def entity_manager_update(
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with params {params}"
                     )
-
         # compile records_to_save
         records_to_save = []
         for playlist_records in new_records["playlists"].values():
