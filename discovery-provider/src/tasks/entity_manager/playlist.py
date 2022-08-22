@@ -3,6 +3,8 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, Set
 
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.playlists.playlist import Playlist
 from src.tasks.entity_manager.utils import (
     PLAYLIST_ID_OFFSET,
@@ -79,6 +81,15 @@ def create_playlist(params: ManageEntityParameters):
     )
     params.add_playlist_record(playlist_id, create_playlist_record)
 
+    dispatch_challenge_playlist_upload(
+        params.challenge_bus, params.block_number, create_playlist_record
+    )
+
+
+def dispatch_challenge_playlist_upload(
+    bus: ChallengeEventBus, block_number: int, playlist_record: Playlist
+):
+    bus.dispatch(ChallengeEvent.first_playlist, block_number, playlist_record.playlist_owner_id)
 
 def update_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
