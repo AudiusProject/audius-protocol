@@ -285,8 +285,8 @@ export function fetchUser(
     if (setStatus) setStatus(Status.Loading)
     const user = await getUserMetadata(wallet, aud)
 
-    const isStaker = await aud.Staking.isStaker(wallet)
-    if (!isStaker) {
+    const totalStaked = await aud.Staking.totalStakedFor(wallet)
+    if (!totalStaked.gt(new BN('0'))) {
       dispatch(
         setUsers({
           users: { [wallet]: user }
