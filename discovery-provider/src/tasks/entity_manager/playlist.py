@@ -81,15 +81,20 @@ def create_playlist(params: ManageEntityParameters):
     )
     params.add_playlist_record(playlist_id, create_playlist_record)
 
-    dispatch_challenge_playlist_upload(
-        params.challenge_bus, params.block_number, create_playlist_record
-    )
+    if tracks:
+        dispatch_challenge_playlist_upload(
+            params.challenge_bus, params.block_number, create_playlist_record
+        )
 
 
 def dispatch_challenge_playlist_upload(
     bus: ChallengeEventBus, block_number: int, playlist_record: Playlist
 ):
-    bus.dispatch(ChallengeEvent.first_playlist, block_number, playlist_record.playlist_owner_id)
+    # Adds challenge for creating your first playlist and adding a track to it.
+    bus.dispatch(
+        ChallengeEvent.first_playlist, block_number, playlist_record.playlist_owner_id
+    )
+
 
 def update_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
@@ -115,6 +120,11 @@ def update_playlist(params: ManageEntityParameters):
         params.metadata_cid,
     )
     params.add_playlist_record(playlist_id, updated_playlist)
+
+    if updated_playlist.playlist_contents["track_ids"]:
+        dispatch_challenge_playlist_upload(
+            params.challenge_bus, params.block_number, updated_playlist
+        )
 
 
 def delete_playlist(params: ManageEntityParameters):
