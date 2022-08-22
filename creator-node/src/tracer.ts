@@ -33,9 +33,6 @@ const SERVICE_NAME = 'content-node'
  * for packages that are frequently used
  */
 export const setupTracing = () => {
-  // Not functionally required but gives some insight what happens behind the scenes
-  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
-
   /**
    * A Tracer Provider is a factory for Tracers.
    * A Tracer Provider is initialized once and its lifecycle matches the application’s lifecycle.
