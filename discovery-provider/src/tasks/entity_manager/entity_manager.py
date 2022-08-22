@@ -27,6 +27,9 @@ from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 
+# Please toggle below variable to true for development
+ENABLE_DEVELOPMENT_FEATURES = False
+
 
 def entity_manager_update(
     _,  # main indexing task
@@ -71,53 +74,59 @@ def entity_manager_update(
                 update_task, tx_receipt
             )
             for event in entity_manager_event_tx:
-                params = ManageEntityParameters(
-                    session,
-                    challenge_bus,
-                    event,
-                    new_records,  # actions below populate these records
-                    existing_records,
-                    pending_track_routes,
-                    ipfs_metadata,
-                    block_timestamp,
-                    block_number,
-                    event_blockhash,
-                    txhash,
-                )
-                if (
-                    params.action == Action.CREATE
-                    and params.entity_type == EntityType.PLAYLIST
-                ):
-                    create_playlist(params)
-                elif (
-                    params.action == Action.UPDATE
-                    and params.entity_type == EntityType.PLAYLIST
-                ):
-                    update_playlist(params)
-                elif (
-                    params.action == Action.DELETE
-                    and params.entity_type == EntityType.PLAYLIST
-                ):
-                    delete_playlist(params)
-                elif (
-                    params.action == Action.CREATE
-                    and params.entity_type == EntityType.TRACK
-                ):
-                    create_track(params)
-                elif (
-                    params.action == Action.UPDATE
-                    and params.entity_type == EntityType.TRACK
-                ):
-                    update_track(params)
+                try:
+                    params = ManageEntityParameters(
+                        session,
+                        challenge_bus,
+                        event,
+                        new_records,  # actions below populate these records
+                        existing_records,
+                        pending_track_routes,
+                        ipfs_metadata,
+                        block_timestamp,
+                        block_number,
+                        event_blockhash,
+                        txhash,
+                    )
+                    if (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.PLAYLIST
+                    ):
+                        create_playlist(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.PLAYLIST
+                    ):
+                        update_playlist(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.PLAYLIST
+                    ):
+                        delete_playlist(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.TRACK
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        create_track(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.TRACK
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        update_track(params)
 
-                elif (
-                    params.action == Action.DELETE
-                    and params.entity_type == EntityType.TRACK
-                ):
-                    delete_track(params)
-
-        logger.info(new_records)
-
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.TRACK
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        delete_track(params)
+                except Exception as e:
+                    # swallow exception to keep indexing
+                    logger.info(
+                        f"entity_manager.py | failed to process tx error {e} | with params {params}"
+                    )
         # compile records_to_save
         records_to_save = []
         for playlist_records in new_records["playlists"].values():
@@ -135,7 +144,7 @@ def entity_manager_update(
         num_total_changes += len(records_to_save)
 
     except Exception as e:
-        logger.error(f"Exception occurred {e}", exc_info=True)
+        logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
     return num_total_changes, changed_entity_ids
 

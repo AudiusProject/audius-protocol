@@ -34,7 +34,7 @@ module.exports = class DecisionTree {
     this.name = name
   }
 
-  recordStage = ({ name, data = null, log = true }: RecordStageParams) => {
+  recordStage = ({ name, data = null, log = false }: RecordStageParams) => {
     const timestamp = Date.now()
 
     let stage: Stage
