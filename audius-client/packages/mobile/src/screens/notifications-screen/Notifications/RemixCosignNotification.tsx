@@ -1,14 +1,11 @@
 import { useCallback } from 'react'
 
-import type { Nullable } from '@audius/common'
-import {
-  getNotificationEntities,
-  getNotificationUser
-} from 'audius-client/src/common/store/notifications/selectors'
 import type {
-  RemixCosign,
+  Nullable,
+  RemixCosignNotification as RemixCosignNotificationType,
   TrackEntity
-} from 'audius-client/src/common/store/notifications/types'
+} from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
 import { View } from 'react-native'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
@@ -28,6 +25,7 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 import { useDrawerNavigation } from '../useDrawerNavigation'
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Remix Co-sign',
@@ -37,7 +35,7 @@ const messages = {
 }
 
 type RemixCosignNotificationProps = {
-  notification: RemixCosign
+  notification: RemixCosignNotificationType
 }
 
 export const RemixCosignNotification = (

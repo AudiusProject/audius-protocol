@@ -1,14 +1,18 @@
-import { Kind } from '@audius/common'
+import {
+  Kind,
+  accountReducer,
+  cacheActions,
+  queueReducer as reducer,
+  queueActions as actions,
+  RepeatMode,
+  QueueSource
+} from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { take } from 'redux-saga/effects'
 
 import AudioStream from 'audio/AudioStream'
-import accountSlice from 'common/store/account/reducer'
-import * as cacheActions from 'common/store/cache/actions'
-import reducer, * as actions from 'common/store/queue/slice'
-import { RepeatMode, Source } from 'common/store/queue/types'
 import playerReducer, * as playerActions from 'store/player/slice'
 import * as sagas from 'store/queue/sagas'
 import { getRecommendedTracks } from 'store/recommendation/sagas'
@@ -158,7 +162,7 @@ describe('watchNext', () => {
           tracks: noopReducer(initialTracks),
           queue: reducer,
           player: playerReducer,
-          account: accountSlice.reducer
+          account: accountReducer
         }),
         {
           player: initialPlayer,
@@ -374,7 +378,7 @@ describe('watchNext', () => {
           tracks: noopReducer(initialTracks),
           queue: reducer,
           player: playerReducer,
-          account: accountSlice.reducer
+          account: accountReducer
         }),
         {
           player: initialPlayer,
@@ -406,7 +410,7 @@ describe('watchQueueAutoplay', () => {
       {
         id: 1,
         uid: 'kind:TRACKS-id:1-count:1',
-        source: Source.RECOMMENDED_TRACKS
+        source: QueueSource.RECOMMENDED_TRACKS
       }
     ]
     await expectSaga(sagas.watchQueueAutoplay, actions)

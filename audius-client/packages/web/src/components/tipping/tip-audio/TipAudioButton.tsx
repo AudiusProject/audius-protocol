@@ -1,5 +1,10 @@
 import { useCallback } from 'react'
 
+import {
+  accountSelectors,
+  profilePageSelectors,
+  tippingActions
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -7,12 +12,12 @@ import { useDispatch } from 'react-redux'
 
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
-import { getAccountUser } from 'common/store/account/selectors'
-import { getProfileUser } from 'common/store/pages/profile/selectors'
-import { beginTip } from 'common/store/tipping/slice'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './TipAudio.module.css'
+const { beginTip } = tippingActions
+const { getProfileUser } = profilePageSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   tipAudio: 'Tip $AUDIO'

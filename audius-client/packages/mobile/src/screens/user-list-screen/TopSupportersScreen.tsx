@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { setTopSupporters } from 'audius-client/src/common/store/user-list/top-supporters/actions'
 import {
-  getUserList,
-  getId as getSupportersId
-} from 'audius-client/src/common/store/user-list/top-supporters/selectors'
+  cacheUsersSelectors,
+  topSupportersUserListSelectors,
+  topSupportersUserListActions
+} from '@audius/common'
 import { View } from 'react-native'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
@@ -17,6 +16,9 @@ import { makeStyles } from 'app/styles'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
+const { setTopSupporters } = topSupportersUserListActions
+const { getUserList, getId: getSupportersId } = topSupportersUserListSelectors
+const { getUser } = cacheUsersSelectors
 
 const messages = {
   title: 'Top Supporters'

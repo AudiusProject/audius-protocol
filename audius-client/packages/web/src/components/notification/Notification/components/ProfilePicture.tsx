@@ -1,17 +1,22 @@
 import { MouseEventHandler, useCallback, useEffect, useState } from 'react'
 
-import { SquareSizes, User } from '@audius/common'
+import {
+  SquareSizes,
+  User,
+  notificationsSelectors,
+  notificationsActions
+} from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { toggleNotificationPanel } from 'common/store/notifications/actions'
-import { getNotificationPanelIsOpen } from 'common/store/notifications/selectors'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ProfilePicture.module.css'
+const { toggleNotificationPanel } = notificationsActions
+const { getNotificationPanelIsOpen } = notificationsSelectors
 
 const imageLoadDelay = 250
 

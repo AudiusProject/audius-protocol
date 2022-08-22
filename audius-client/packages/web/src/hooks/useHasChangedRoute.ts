@@ -1,8 +1,7 @@
 import { useEffect } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import { useHistory } from 'react-router-dom'
-
-import useInstanceVar from 'common/hooks/useInstanceVar'
 
 /**
  * Custom hook that fires a callback when the route changes

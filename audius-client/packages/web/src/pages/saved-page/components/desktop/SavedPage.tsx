@@ -1,15 +1,20 @@
-import { ID, UID, Lineup, Status, User, FeatureFlags } from '@audius/common'
+import {
+  ID,
+  UID,
+  Lineup,
+  Status,
+  User,
+  SavedPageTabs as ProfileTabs,
+  TrackRecord,
+  SavedPageTrack,
+  SavedPageCollection,
+  QueueItem,
+  FeatureFlags
+} from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
-import {
-  Tabs as ProfileTabs,
-  TrackRecord,
-  SavedPageTrack,
-  SavedPageCollection
-} from 'common/store/pages/saved-page/types'
-import { QueueItem } from 'common/store/queue/types'
 import Card from 'components/card/desktop/Card'
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'

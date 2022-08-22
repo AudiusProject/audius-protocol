@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
+import { Status, accountSelectors } from '@audius/common'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -31,6 +30,7 @@ import { getHandleError, getHandleIsValid } from 'app/store/signon/selectors'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 import { getUserRoute } from 'app/utils/routes'
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: 'Verification',

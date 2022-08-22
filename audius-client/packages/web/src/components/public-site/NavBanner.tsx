@@ -9,7 +9,6 @@ import {
 import cn from 'classnames'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
-import { useMatchesBreakpoint } from 'common/hooks/useMatchesBreakpoint'
 import {
   AUDIUS_LISTENING_LINK,
   AUDIUS_HOT_AND_NEW,
@@ -18,6 +17,7 @@ import {
   AUDIUS_BLOG_LINK,
   DOWNLOAD_START_LINK
 } from 'utils/route'
+import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './NavBanner.module.css'
 import { handleClickRoute } from './handleClickRoute'

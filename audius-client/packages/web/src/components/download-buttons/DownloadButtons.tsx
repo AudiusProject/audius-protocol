@@ -1,28 +1,29 @@
 import { memo, useCallback } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  ButtonState,
+  ButtonType,
+  useDownloadTrackButtons,
+  toastActions
+} from '@audius/common'
 import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
 import {
-  ButtonState,
-  ButtonType,
-  useDownloadTrackButtons
-} from 'common/hooks/useDownloadTrackButtons'
-import {
   openSignOn,
   updateRouteOnExit,
   updateRouteOnCompletion,
   showRequiresAccountModal
 } from 'common/store/pages/signon/actions'
-import { toast } from 'common/store/ui/toast/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './DownloadButtons.module.css'
+const { toast } = toastActions
 
 export type DownloadButtonProps = {
   state: ButtonState

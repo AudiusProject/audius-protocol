@@ -6,7 +6,8 @@ import {
   UserCollection,
   LineupState,
   Status,
-  User
+  User,
+  searchResultsPageTracksLineupActions as tracksActions
 } from '@audius/common'
 import cn from 'classnames'
 import { matchPath } from 'react-router'
@@ -18,7 +19,6 @@ import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'

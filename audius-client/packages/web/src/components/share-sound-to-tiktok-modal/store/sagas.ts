@@ -1,17 +1,26 @@
-import { Name } from '@audius/common'
-import { takeEvery, put, call, select } from 'typed-redux-saga'
-
-import { getContext } from 'common/store'
-import { make } from 'common/store/analytics/actions'
-import { getTrack } from 'common/store/cache/tracks/selectors'
-import { setVisibility } from 'common/store/ui/modals/slice'
 import {
+  Name,
+  getContext,
+  getErrorMessage,
+  encodeHashId,
+  cacheTracksSelectors,
+  modalsActions,
+  ShareSoundToTiktokModalStatus,
+  shareSoundToTiktokModalActions,
+  shareSoundToTiktokModalSelectors
+} from '@audius/common'
+import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
+
+import { make } from 'common/store/analytics/actions'
+import { show as showConfetti } from 'components/music-confetti/store/slice'
+import { AppState } from 'store/types'
+const {
   getAccessToken,
   getIsAuthenticated,
   getOpenId,
-  getTrack as getTrackToShare
-} from 'common/store/ui/share-sound-to-tiktok-modal/selectors'
-import {
+  getTrack: getTrackToShare
+} = shareSoundToTiktokModalSelectors
+const {
   authenticated,
   open,
   requestOpen,
@@ -19,12 +28,9 @@ import {
   setStatus,
   share,
   upload
-} from 'common/store/ui/share-sound-to-tiktok-modal/slice'
-import { Status } from 'common/store/ui/share-sound-to-tiktok-modal/types'
-import { getErrorMessage } from 'common/utils/error'
-import { encodeHashId } from 'common/utils/hashIds'
-import { show as showConfetti } from 'components/music-confetti/store/slice'
-import { AppState } from 'store/types'
+} = shareSoundToTiktokModalActions
+const { setVisibility } = modalsActions
+const { getTrack } = cacheTracksSelectors
 
 const TIKTOK_SHARE_SOUND_ENDPOINT =
   'https://open-api.tiktok.com/share/sound/upload/'
@@ -55,7 +61,7 @@ async function* handleShare() {
   const apiClient = yield* getContext('apiClient')
   yield* put(make(Name.TIKTOK_START_SHARE_SOUND, {}))
 
-  yield* put(setStatus({ status: Status.SHARE_STARTED }))
+  yield* put(setStatus({ status: ShareSoundToTiktokModalStatus.SHARE_STARTED }))
 
   const track = yield* select(getTrackToShare)
   if (!track) return
@@ -85,7 +91,7 @@ async function* handleShare() {
     const errorMessage = getErrorMessage(error)
     console.log(errorMessage)
     yield* put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: errorMessage }))
-    yield* put(setStatus({ status: Status.SHARE_ERROR }))
+    yield* put(setStatus({ status: ShareSoundToTiktokModalStatus.SHARE_ERROR }))
   }
 }
 
@@ -122,13 +128,15 @@ function* handleUpload() {
     }
 
     yield* put(make(Name.TIKTOK_COMPLETE_SHARE_SOUND, {}))
-    yield* put(setStatus({ status: Status.SHARE_SUCCESS }))
+    yield* put(
+      setStatus({ status: ShareSoundToTiktokModalStatus.SHARE_SUCCESS })
+    )
     yield* put(showConfetti())
   } catch (error) {
     const errorMessage = getErrorMessage(error)
     console.log(errorMessage)
     yield* put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: errorMessage }))
-    yield* put(setStatus({ status: Status.SHARE_ERROR }))
+    yield* put(setStatus({ status: ShareSoundToTiktokModalStatus.SHARE_ERROR }))
   } finally {
     trackBlob = null
   }

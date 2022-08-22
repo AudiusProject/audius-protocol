@@ -1,28 +1,30 @@
-import { Kind } from '@audius/common'
+import {
+  Kind,
+  accountSelectors,
+  cacheTracksActions,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  profilePageSelectors,
+  TracksSortMode,
+  profilePageTracksLineupActions as tracksActions,
+  profilePageTracksLineupActions as lineupActions,
+  tracksSocialActions
+} from '@audius/common'
 import { all, call, select, takeEvery, put } from 'redux-saga/effects'
 
-import { getUserId } from 'common/store/account/selectors'
-import { DELETE_TRACK } from 'common/store/cache/tracks/actions'
-import { getTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { getUser } from 'common/store/cache/users/selectors'
-import {
-  PREFIX,
-  tracksActions,
-  tracksActions as lineupActions
-} from 'common/store/pages/profile/lineups/tracks/actions'
-import {
-  getProfileUserId,
-  getProfileTracksLineup,
-  getProfileUserHandle
-} from 'common/store/pages/profile/selectors'
-import { SET_ARTIST_PICK } from 'common/store/social/tracks/actions'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 
-import { TracksSortMode } from '../../types'
-
 import { retrieveUserTracks } from './retrieveUserTracks'
+const { SET_ARTIST_PICK } = tracksSocialActions
+const { getProfileUserId, getProfileTracksLineup, getProfileUserHandle } =
+  profilePageSelectors
+const { getUser } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
+const { DELETE_TRACK } = cacheTracksActions
+const getUserId = accountSelectors.getUserId
+const PREFIX = tracksActions.prefix
 
 function* getTracks({ offset, limit, payload }) {
   const handle = yield select(getProfileUserHandle)

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { beginTip } from 'audius-client/src/common/store/tipping/slice'
+import { tippingActions } from '@audius/common'
 
 import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
 import { Button } from 'app/components/core'
@@ -9,6 +9,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from './selectors'
+const { beginTip } = tippingActions
 
 const messages = {
   title: 'Tip $AUDIO',

@@ -4,22 +4,23 @@ import {
   Track,
   UserTrackMetadata,
   Nullable,
-  StringKeys
+  StringKeys,
+  Genre,
+  cacheTracksSelectors,
+  trendingPageLineupSelectors,
+  trendingPageActions,
+  trendingPageSelectors,
+  getContext
 } from '@audius/common'
 import { call, put, select } from 'redux-saga/effects'
 
-import { getContext } from 'common/store'
-import { getTracks } from 'common/store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { setLastFetchedTrendingGenre } from 'common/store/pages/trending/actions'
-import { getTrendingEntries } from 'common/store/pages/trending/lineup/selectors'
-import {
-  getLastFetchedTrendingGenre,
-  getTrendingGenre
-} from 'common/store/pages/trending/selectors'
-import { Genre } from 'common/utils/genres'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { AppState } from 'store/types'
+const { getLastFetchedTrendingGenre, getTrendingGenre } = trendingPageSelectors
+const { setLastFetchedTrendingGenre } = trendingPageActions
+const { getTrendingEntries } = trendingPageLineupSelectors
+const { getTracks } = cacheTracksSelectors
 
 type RetrieveTrendingArgs = {
   timeRange: TimeRange

@@ -1,15 +1,15 @@
 import type { ReactNode } from 'react'
 import { createContext, useCallback } from 'react'
 
-import { Name } from '@audius/common'
-import { setTheme } from 'audius-client/src/common/store/ui/theme/actions'
-import { getTheme } from 'audius-client/src/common/store/ui/theme/selectors'
+import { Name, themeActions, themeSelectors } from '@audius/common'
 import { useDarkMode } from 'react-native-dark-mode'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
 import { Theme } from 'app/utils/theme'
+const { setTheme } = themeActions
+const { getTheme } = themeSelectors
 
 type ThemeContextProps = {
   theme: Theme

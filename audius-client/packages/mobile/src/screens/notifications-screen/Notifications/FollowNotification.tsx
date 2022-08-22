@@ -1,6 +1,5 @@
-import { getNotificationUsers } from 'audius-client/src/common/store/notifications/selectors'
-import type { Follow } from 'common/store/notifications/types'
-import { formatCount } from 'common/utils/formatUtil'
+import type { FollowNotification as FollowNotificationType } from '@audius/common'
+import { formatCount, notificationsSelectors } from '@audius/common'
 
 import IconUser from 'app/assets/images/iconUser.svg'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -15,6 +14,7 @@ import {
 } from '../Notification'
 
 import { useSocialActionHandler } from './useSocialActionHandler'
+const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   others: (userCount: number) =>
@@ -23,7 +23,7 @@ const messages = {
 }
 
 type FollowNotificationProps = {
-  notification: Follow
+  notification: FollowNotificationType
 }
 
 export const FollowNotification = (props: FollowNotificationProps) => {

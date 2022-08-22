@@ -1,10 +1,12 @@
-import { BNWei } from '@audius/common'
+import {
+  BNWei,
+  tokenDashboardPageSelectors,
+  walletSelectors
+} from '@audius/common'
 import { IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { getAssociatedWallets } from 'common/store/pages/token-dashboard/selectors'
-import { getAccountBalance } from 'common/store/wallet/selectors'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
@@ -14,6 +16,8 @@ import WalletsTable from '../WalletsTable'
 
 import styles from './AudioBreakdownModal.module.css'
 import ModalDrawer from './ModalDrawer'
+const { getAccountBalance } = walletSelectors
+const { getAssociatedWallets } = tokenDashboardPageSelectors
 
 const messages = {
   modalTitle: '$AUDIO BREAKDOWN',

@@ -1,4 +1,4 @@
-import { Name } from '@audius/common'
+import { Name, accountSelectors } from '@audius/common'
 import {
   call,
   cancel,
@@ -10,7 +10,6 @@ import {
   getContext
 } from 'redux-saga/effects'
 
-import { getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { setTracksIsBlocked } from 'common/store/cache/tracks/utils/blocklist'
@@ -19,6 +18,7 @@ import { waitForAccount } from 'utils/sagaHelpers'
 
 import mobileSagas from './mobileSagas'
 import { getSearch } from './selectors'
+const getUserId = accountSelectors.getUserId
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export function* getSearchResults(searchText) {

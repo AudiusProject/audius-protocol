@@ -1,13 +1,15 @@
+import {
+  trackPageSelectors,
+  trendingPageSelectors,
+  searchResultsPageSelectors,
+  savedPageSelectors,
+  profilePageSelectors,
+  historyPageSelectors,
+  feedPageSelectors,
+  collectionPageSelectors
+} from '@audius/common'
 import { matchPath } from 'react-router'
 
-import { getCollectionTracksLineup } from 'common/store/pages/collection/selectors'
-import { getDiscoverFeedLineup } from 'common/store/pages/feed/selectors'
-import { getHistoryTracksLineup } from 'common/store/pages/history-page/selectors'
-import { getProfileTracksLineup } from 'common/store/pages/profile/selectors'
-import { getSavedTracksLineup } from 'common/store/pages/saved-page/selectors'
-import { getSearchTracksLineup } from 'common/store/pages/search-results/selectors'
-import { getLineup } from 'common/store/pages/track/selectors'
-import { getCurrentDiscoverTrendingLineup } from 'common/store/pages/trending/selectors'
 import {
   FEED_PAGE,
   TRENDING_PAGE,
@@ -25,6 +27,14 @@ import {
   NOT_FOUND_PAGE,
   getPathname
 } from 'utils/route'
+const { getCollectionTracksLineup } = collectionPageSelectors
+const { getDiscoverFeedLineup } = feedPageSelectors
+const { getHistoryTracksLineup } = historyPageSelectors
+const { getProfileTracksLineup } = profilePageSelectors
+const { getSavedTracksLineup } = savedPageSelectors
+const { getSearchTracksLineup } = searchResultsPageSelectors
+const { getLineup } = trackPageSelectors
+const { getCurrentDiscoverTrendingLineup } = trendingPageSelectors
 
 export const getLineupSelectorForRoute = (state) => {
   const matchPage = (path) => {

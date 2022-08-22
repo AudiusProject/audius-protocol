@@ -1,4 +1,4 @@
-import type { CommonState } from 'audius-client/src/common/store'
+import type { CommonState } from '@audius/common'
 
 import type { CommonActions } from './actions'
 import { RECEIVE } from './actions'

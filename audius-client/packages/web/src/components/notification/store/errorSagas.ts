@@ -1,17 +1,19 @@
+import {
+  notificationsActions as notificationActions,
+  FetchNotificationsFailed,
+  FetchNotificationUsersFailed,
+  ErrorLevel
+} from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-import { Level } from 'common/store/errors/level'
-import * as notificationActions from 'common/store/notifications/actions'
+import * as errorActions from 'store/errors/actions'
 
 const noRedirectSet = new Set([
   // Failed to fetch notifications
   notificationActions.FETCH_NOTIFICATIONS_FAILED
 ])
 
-type ErrorAction =
-  | notificationActions.FetchNotificationsFailed
-  | notificationActions.FetchNotificationUsersFailed
+type ErrorAction = FetchNotificationsFailed | FetchNotificationUsersFailed
 
 function* handleFetchNotificationError(action: ErrorAction) {
   // Determine whether the error should redirect to /error and whether it should report it.
@@ -25,7 +27,7 @@ function* handleFetchNotificationError(action: ErrorAction) {
       shouldRedirect,
       shouldReport,
       additionalInfo: { errorMessage: action.message },
-      level: Level.Warning
+      level: ErrorLevel.Warning
     })
   )
 }

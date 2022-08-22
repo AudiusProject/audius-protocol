@@ -1,4 +1,5 @@
-import * as schemas from 'common/schemas'
+import { newTrackMetadata } from '@audius/common'
+
 import { DownloadTrackMessage } from 'services/native-mobile-interface/downloadTrack'
 
 import { waitForLibsInit } from './eagerLoadUtils'
@@ -41,7 +42,7 @@ class TrackDownload {
 
     updateTrackDownloadCIDInProgress.add(trackId)
 
-    const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
+    const cleanedMetadata = newTrackMetadata(metadata, true)
     const account = window.audiusLibs.Account.getCurrentUser()
 
     if (!cid) {

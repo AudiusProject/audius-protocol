@@ -1,8 +1,8 @@
+import { followingUserListActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-
-import { GET_FOLLOWING_ERROR, getFollowingError } from './actions'
+import * as errorActions from 'store/errors/actions'
+const { GET_FOLLOWING_ERROR, getFollowingError } = followingUserListActions
 
 type ErrorActions = ReturnType<typeof getFollowingError>
 

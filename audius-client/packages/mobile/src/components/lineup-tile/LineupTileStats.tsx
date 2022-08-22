@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
-import type { ID, FavoriteType } from '@audius/common'
-import { setFavorite } from 'audius-client/src/common/store/user-list/favorites/actions'
-import { setRepost } from 'audius-client/src/common/store/user-list/reposts/actions'
-import type { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
-import { formatCount } from 'audius-client/src/common/utils/formatUtil'
+import type { ID, FavoriteType, RepostType } from '@audius/common'
+import {
+  formatCount,
+  repostsUserListActions,
+  favoritesUserListActions
+} from '@audius/common'
 import {
   FAVORITING_USERS_ROUTE,
   REPOSTING_USERS_ROUTE
@@ -23,6 +24,8 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { createStyles as createTrackTileStyles } from './styles'
+const { setFavorite } = favoritesUserListActions
+const { setRepost } = repostsUserListActions
 
 const formatPlayCount = (playCount?: number) => {
   if (!playCount) {

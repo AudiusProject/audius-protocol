@@ -1,13 +1,13 @@
+import { favoritesUserListActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-
-import {
+import * as errorActions from 'store/errors/actions'
+const {
   GET_TRACK_FAVORITE_ERROR,
   GET_PLAYLIST_FAVORITE_ERROR,
   trackFavoriteError,
   playlistFavoriteError
-} from './actions'
+} = favoritesUserListActions
 
 type ErrorActions =
   | ReturnType<typeof trackFavoriteError>

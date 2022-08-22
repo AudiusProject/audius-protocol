@@ -1,18 +1,16 @@
 import { useState, useCallback } from 'react'
 
+import { accountSelectors, challengesSelectors } from '@audius/common'
 import { connect } from 'react-redux'
 import { animated } from 'react-spring'
 
-import { getAccountUser } from 'common/store/account/selectors'
-import {
-  getOrderedCompletionStages,
-  getIsAccountLoaded
-} from 'common/store/challenges/selectors/profile-progress'
 import MusicConfetti from 'components/background-animations/MusicConfetti'
 import ProfileCompletionPanel from 'components/profile-progress/components/ProfileCompletionPanel'
 
 import ProfileCompletionTooltip from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'
+const { getOrderedCompletionStages, getIsAccountLoaded } = challengesSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const ORIGINAL_HEIGHT_PIXELS = 118
 

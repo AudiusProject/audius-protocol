@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import HCaptcha from '@hcaptcha/react-native-hcaptcha'
-import { getHCaptchaStatus } from 'audius-client/src/common/store/pages/audio-rewards/selectors'
-import { HCaptchaStatus } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import {
-  getModalVisibility,
-  setVisibility
-} from 'audius-client/src/common/store/ui/modals/slice'
+  HCaptchaStatus,
+  audioRewardsPageSelectors,
+  modalsActions,
+  modalsSelectors
+} from '@audius/common'
+import HCaptcha from '@hcaptcha/react-native-hcaptcha'
 import type { NativeSyntheticEvent } from 'react-native'
 import Config from 'react-native-config'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
+const { setVisibility } = modalsActions
+const { getModalVisibility } = modalsSelectors
+const { getHCaptchaStatus } = audioRewardsPageSelectors
 
 type HCaptchaMessage = {
   data: string

@@ -1,6 +1,6 @@
+import { audiusBackend } from '@audius/common'
 import type { AudiusLibs } from '@audius/sdk'
 
-import { audiusBackend } from 'common/services/audius-backend'
 import { track } from 'services/analytics'
 import {
   LIBS_INITTED_EVENT,
@@ -10,6 +10,7 @@ import {
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { monitoringCallbacks } from 'services/serviceMonitoring'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron, isMobile } from 'utils/clientUtil'
 
 import { fetchCID } from './fetchCID'
@@ -97,6 +98,7 @@ export const audiusBackendInstance = audiusBackend({
   },
   recaptchaSiteKey: process.env.REACT_APP_RECAPTCHA_SITE_KEY,
   recordAnalytics: track,
+  reportError: reportToSentry,
   registryAddress: process.env.REACT_APP_REGISTRY_ADDRESS,
   entityManagerAddress: process.env.REACT_APP_ENTITY_MANAGER_ADDRESS,
   remoteConfigInstance,

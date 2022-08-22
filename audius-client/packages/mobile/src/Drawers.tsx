@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 
-import type { Modals } from 'audius-client/src/common/store/ui/modals/slice'
+import type { Modals } from '@audius/common'
 
 import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'

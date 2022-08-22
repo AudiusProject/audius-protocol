@@ -1,18 +1,16 @@
 import { useEffect, useCallback, useContext } from 'react'
 
-import { Status } from '@audius/common'
+import {
+  Status,
+  notificationsSelectors,
+  notificationsActions,
+  Notification as Notifications
+} from '@audius/common'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { fetchNotifications } from 'common/store/notifications/actions'
-import {
-  getNotificationHasMore,
-  getNotificationStatus,
-  makeGetAllNotifications
-} from 'common/store/notifications/selectors'
-import { Notification as Notifications } from 'common/store/notifications/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkConnectivityMonitor'
@@ -20,6 +18,12 @@ import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkC
 import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
 import styles from './NotificationPage.module.css'
+const { fetchNotifications } = notificationsActions
+const {
+  getNotificationHasMore,
+  getNotificationStatus,
+  makeGetAllNotifications
+} = notificationsSelectors
 
 const getNotifications = makeGetAllNotifications()
 

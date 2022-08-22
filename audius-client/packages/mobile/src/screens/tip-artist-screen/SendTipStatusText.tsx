@@ -1,9 +1,10 @@
-import { getSendStatus } from 'audius-client/src/common/store/tipping/selectors'
+import { tippingSelectors } from '@audius/common'
 import { View } from 'react-native'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { DescriptionText } from './DescriptionText'
+const { getSendStatus } = tippingSelectors
 
 const messages = {
   disclaimer: 'Are you sure? This tip cannot be reversed.',

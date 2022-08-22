@@ -1,8 +1,6 @@
-import { Name } from '@audius/common'
+import { Name, accountSelectors, getContext } from '@audius/common'
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { requestConfirmation } from 'common/store/confirmer/actions'
@@ -16,6 +14,7 @@ import {
   deactivateAccount,
   deactivateAccountFailed
 } from './slice'
+const { getAccountUser, getUserId } = accountSelectors
 
 const DEACTIVATE_CONFIRMATION_UID = 'DEACTIVATE'
 

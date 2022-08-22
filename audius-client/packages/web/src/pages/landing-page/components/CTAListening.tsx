@@ -7,9 +7,9 @@ import { useChain, useTrail, animated } from 'react-spring'
 
 import appImg from 'assets/img/publicSite/AudiusAppAlt@2x.png'
 import hqAudio from 'assets/img/publicSite/HQ-Audio@1x.jpg'
-import { useMatchesBreakpoint } from 'common/hooks/useMatchesBreakpoint'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import { AUDIUS_LISTENING_LINK } from 'utils/route'
+import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './CTAListening.module.css'
 

@@ -1,4 +1,4 @@
-import { Notification } from 'common/store/notifications/types'
+import { Notification } from '@audius/common'
 
 import { NativeMobileMessage } from './helpers'
 import { MessageType } from './types'

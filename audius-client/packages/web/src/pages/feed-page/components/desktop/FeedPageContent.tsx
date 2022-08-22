@@ -1,7 +1,10 @@
-import { Name, FeedFilter } from '@audius/common'
+import {
+  Name,
+  FeedFilter,
+  feedPageLineupActions as feedActions
+} from '@audius/common'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { feedActions } from 'common/store/pages/feed/lineup/actions'
 import Header from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'

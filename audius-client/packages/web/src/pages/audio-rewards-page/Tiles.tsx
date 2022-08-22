@@ -1,6 +1,13 @@
 import { useCallback, ReactNode } from 'react'
 
-import { BNWei, Nullable } from '@audius/common'
+import {
+  BNWei,
+  Nullable,
+  formatWei,
+  tokenDashboardPageActions,
+  tokenDashboardPageSelectors,
+  walletSelectors
+} from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -9,17 +16,6 @@ import { useDispatch } from 'react-redux'
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { useModalState } from 'common/hooks/useModalState'
-import { getHasAssociatedWallets } from 'common/store/pages/token-dashboard/selectors'
-import {
-  pressConnectWallets,
-  pressReceive,
-  pressSend
-} from 'common/store/pages/token-dashboard/slice'
-import {
-  getAccountBalance,
-  getAccountTotalBalance
-} from 'common/store/wallet/selectors'
-import { formatWei } from 'common/utils/wallet'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
@@ -27,6 +23,10 @@ import { useSelector } from 'utils/reducer'
 
 import styles from './Tiles.module.css'
 import TokenHoverTooltip from './components/TokenHoverTooltip'
+const { getAccountBalance, getAccountTotalBalance } = walletSelectors
+const { getHasAssociatedWallets } = tokenDashboardPageSelectors
+const { pressConnectWallets, pressReceive, pressSend } =
+  tokenDashboardPageActions
 
 const messages = {
   noClaim1: 'You earn $AUDIO by using Audius.',

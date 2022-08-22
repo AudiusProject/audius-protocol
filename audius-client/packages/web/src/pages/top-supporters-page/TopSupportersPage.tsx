@@ -1,10 +1,15 @@
 import { useContext, useEffect } from 'react'
 
-import { getUserList } from 'common/store/user-list/top-supporters/selectors'
-import { USER_LIST_TAG } from 'common/store/user-list/top-supporters/types'
+import {
+  topSupportersUserListSelectors,
+  TOP_SUPPORTERS_USER_LIST_TAG as USER_LIST_TAG
+} from '@audius/common'
+
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import UserList from 'components/user-list/UserList'
+
+const { getUserList } = topSupportersUserListSelectors
 
 const messages = {
   title: 'Top Supporters'

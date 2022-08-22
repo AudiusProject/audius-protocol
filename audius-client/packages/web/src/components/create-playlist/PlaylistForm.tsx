@@ -5,10 +5,10 @@ import {
   CollectionMetadata,
   SquareSizes,
   DeepNullable,
-  Nullable
+  Nullable,
+  newCollectionMetadata
 } from '@audius/common'
 
-import * as schemas from 'common/schemas'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import UploadArtwork from 'components/upload/UploadArtwork'
@@ -79,7 +79,7 @@ const PlaylistForm = ({
 }: PlaylistFormProps) => {
   const [formFields, setFormFields] = useState<PlaylistFormFields>({
     artwork: {},
-    ...schemas.newCollectionMetadata(metadata)
+    ...newCollectionMetadata(metadata)
   })
   const [errors, setErrors] = useState({
     playlistName: false,
@@ -97,7 +97,7 @@ const PlaylistForm = ({
   useEffect(() => {
     if (metadata) {
       setFormFields((oldFormFields) => ({
-        ...schemas.newCollectionMetadata(metadata),
+        ...newCollectionMetadata(metadata),
         artwork: oldFormFields.artwork,
         playlist_name: oldFormFields.playlist_name,
         description: oldFormFields.description

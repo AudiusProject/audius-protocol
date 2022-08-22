@@ -1,13 +1,11 @@
-import { ID } from '@audius/common'
+import { ID, decodeHashId, ProfilePageTabRoute } from '@audius/common'
 import { matchPath } from 'react-router-dom'
 
-import { TabRoute } from 'common/store/pages/profile/types'
-import { decodeHashId } from 'common/utils/hashIds'
 import { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } from 'utils/route'
 
 type UserRouteParams =
   | { handle: string; userId: null; tab: null }
-  | { handle: string; userId: null; tab: TabRoute }
+  | { handle: string; userId: null; tab: ProfilePageTabRoute }
   | { handle: null; userId: ID; tab: null }
   | null
 
@@ -37,13 +35,13 @@ export const parseUserRoute = (route: string): UserRouteParams => {
     return { handle, userId: null, tab: null }
   }
 
-  const profilePageTabMatch = matchPath<{ handle: string; tab: TabRoute }>(
-    route,
-    {
-      path: `${PROFILE_PAGE}/:tab`,
-      exact: true
-    }
-  )
+  const profilePageTabMatch = matchPath<{
+    handle: string
+    tab: ProfilePageTabRoute
+  }>(route, {
+    path: `${PROFILE_PAGE}/:tab`,
+    exact: true
+  })
   if (profilePageTabMatch) {
     const { handle, tab } = profilePageTabMatch.params
     if (
@@ -57,13 +55,13 @@ export const parseUserRoute = (route: string): UserRouteParams => {
     }
   }
 
-  const profilePageTabIdMatch = matchPath<{ handle: string; tab: TabRoute }>(
-    route,
-    {
-      path: `${PROFILE_PAGE}/:tab/:id`,
-      exact: true
-    }
-  )
+  const profilePageTabIdMatch = matchPath<{
+    handle: string
+    tab: ProfilePageTabRoute
+  }>(route, {
+    path: `${PROFILE_PAGE}/:tab/:id`,
+    exact: true
+  })
   if (profilePageTabIdMatch) {
     const { handle, tab } = profilePageTabIdMatch.params
     if (tab === 'collectibles') {

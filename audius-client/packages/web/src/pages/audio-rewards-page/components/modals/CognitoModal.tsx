@@ -5,22 +5,22 @@ import {
   FlowUIOpenEvent,
   FlowUICloseEvent,
   FlowSessionEvent,
-  FlowErrorEvent
+  FlowErrorEvent,
+  accountSelectors,
+  audioRewardsPageActions,
+  CognitoFlowStatus
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { getUserHandle } from 'common/store/account/selectors'
 import { make, useRecord } from 'common/store/analytics/actions'
-import {
-  CognitoFlowStatus,
-  setCognitoFlowStatus
-} from 'common/store/pages/audio-rewards/slice'
 import { useScript } from 'hooks/useScript'
 import { getCognitoSignature } from 'services/audius-backend/Cognito'
 import { isElectron, isMobile } from 'utils/clientUtil'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
+const { setCognitoFlowStatus } = audioRewardsPageActions
+const getUserHandle = accountSelectors.getUserHandle
 
 declare global {
   interface Window {

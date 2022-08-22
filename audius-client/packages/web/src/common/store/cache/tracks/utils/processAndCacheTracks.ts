@@ -1,8 +1,12 @@
-import { Kind, Track, TrackMetadata, makeUid } from '@audius/common'
+import {
+  Kind,
+  Track,
+  TrackMetadata,
+  makeUid,
+  cacheActions,
+  getContext
+} from '@audius/common'
 import { put, call } from 'redux-saga/effects'
-
-import { getContext } from 'common/store'
-import * as cacheActions from 'common/store/cache/actions'
 
 import { setTracksIsBlocked } from './blocklist'
 import { addUsersFromTracks } from './helpers'

@@ -1,9 +1,13 @@
-import { StringKeys } from '@audius/common'
-import type { TrendingRewardID } from '@audius/common'
-import type { TrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import { setTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import type { Modals } from 'audius-client/src/common/store/ui/modals/slice'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+import {
+  StringKeys,
+  audioRewardsPageActions,
+  modalsActions
+} from '@audius/common'
+import type {
+  TrendingRewardID,
+  TrendingRewardsModalType,
+  Modals
+} from '@audius/common'
 import { View } from 'react-native'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -12,6 +16,8 @@ import { makeStyles } from 'app/styles'
 import { trendingRewardsConfig } from 'app/utils/challenges'
 
 import { Panel } from './Panel'
+const { setVisibility } = modalsActions
+const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 const validRewardIds: Set<TrendingRewardID> = new Set([
   'trending-track',

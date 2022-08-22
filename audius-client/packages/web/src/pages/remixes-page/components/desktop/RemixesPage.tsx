@@ -1,8 +1,7 @@
-import { Track, User } from '@audius/common'
+import { Track, User, pluralize } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconRemixes } from 'assets/img/iconRemix.svg'
-import { pluralize } from 'common/utils/formatUtil'
 import Header from 'components/header/desktop/Header'
 import Lineup, { LineupWithoutTile } from 'components/lineup/Lineup'
 import Page from 'components/page/Page'

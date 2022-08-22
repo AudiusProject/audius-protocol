@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import type { Modals } from 'audius-client/src/common/store/ui/modals/slice'
+import type { Modals } from '@audius/common'
 import type { TextStyle, ViewStyle } from 'react-native'
 import { StyleSheet, TouchableHighlight, View } from 'react-native'
 

@@ -1,7 +1,7 @@
+import { getContext } from '@audius/common'
 import { omit } from 'lodash'
 import { takeEvery, call } from 'redux-saga/effects'
 
-import { getContext } from 'common/store'
 import {
   TRACK,
   IDENTIFY,

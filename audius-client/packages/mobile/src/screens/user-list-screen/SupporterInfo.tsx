@@ -1,6 +1,8 @@
 import type { User } from '@audius/common'
-import { getOptimisticSupporters } from 'audius-client/src/common/store/tipping/selectors'
-import { getId as getSupportersId } from 'audius-client/src/common/store/user-list/top-supporters/selectors'
+import {
+  tippingSelectors,
+  topSupportersUserListSelectors
+} from '@audius/common'
 import { View } from 'react-native'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
@@ -11,6 +13,8 @@ import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { Tip } from './Tip'
+const { getId: getSupportersId } = topSupportersUserListSelectors
+const { getOptimisticSupporters } = tippingSelectors
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {

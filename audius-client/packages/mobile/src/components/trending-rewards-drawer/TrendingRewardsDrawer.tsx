@@ -1,9 +1,12 @@
 import { useCallback } from 'react'
 
-import { Theme, StringKeys } from '@audius/common'
-import { getTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/selectors'
-import type { TrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import { setTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
+import type { TrendingRewardsModalType } from '@audius/common'
+import {
+  Theme,
+  StringKeys,
+  audioRewardsPageActions,
+  audioRewardsPageSelectors
+} from '@audius/common'
 import {
   TRENDING_PAGE,
   TRENDING_PLAYLISTS_PAGE,
@@ -31,6 +34,8 @@ import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
 
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
+const { getTrendingRewardsModalType } = audioRewardsPageSelectors
+const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 const TRENDING_REWARDS_DRAWER_NAME = 'TrendingRewardsExplainer'
 const TOS_URL = 'https://blog.audius.co/article/audio-rewards'

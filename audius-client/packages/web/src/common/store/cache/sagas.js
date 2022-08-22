@@ -1,11 +1,17 @@
-import { Status, makeUids, getIdFromKindId } from '@audius/common'
+import {
+  Status,
+  makeUids,
+  getIdFromKindId,
+  cacheActions,
+  cacheSelectors,
+  cacheConfig
+} from '@audius/common'
 import { pick } from 'lodash'
 import { all, call, put, select, takeEvery } from 'redux-saga/effects'
 
-import * as cacheActions from 'common/store/cache/actions'
-import { CACHE_PRUNE_MIN } from 'common/store/cache/config'
-import { getCache } from 'common/store/cache/selectors'
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
+const { CACHE_PRUNE_MIN } = cacheConfig
+const { getCache } = cacheSelectors
 
 const DEFAULT_ENTRY_TTL = 5 /* min */ * 60 /* seconds */ * 1000 /* ms */
 

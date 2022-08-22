@@ -1,6 +1,4 @@
-import { TrackMetadata } from '@audius/common'
-
-import { AudiusBackend } from 'common/services/audius-backend'
+import { TrackMetadata, AudiusBackend } from '@audius/common'
 
 declare global {
   interface Window {

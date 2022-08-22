@@ -1,10 +1,13 @@
 import { ReactNode } from 'react'
 
-import { TrendingRewardID, StringKeys } from '@audius/common'
+import {
+  TrendingRewardID,
+  StringKeys,
+  audioRewardsPageActions
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
-import { setTrendingRewardsModalType } from 'common/store/pages/audio-rewards/slice'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
@@ -12,6 +15,7 @@ import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
 import { trendingRewardsConfig } from './config'
+const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 type RewardPanelProps = {
   title: string

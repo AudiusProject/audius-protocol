@@ -1,24 +1,20 @@
 import { Component } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  accountSelectors,
+  lineupSelectors,
+  searchResultsPageActions as searchPageActions,
+  searchResultsPageSelectors,
+  SearchKind,
+  searchResultsPageTracksLineupActions as tracksActions
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Redirect } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
-import { getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
-import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
-import * as searchPageActions from 'common/store/pages/search-results/actions'
-import { tracksActions } from 'common/store/pages/search-results/lineup/tracks/actions'
-import {
-  makeGetSearchArtists,
-  makeGetSearchPlaylists,
-  makeGetSearchAlbums,
-  getSearchTracksLineup,
-  getBaseState as getSearchResultsState
-} from 'common/store/pages/search-results/selectors'
-import { SearchKind } from 'common/store/pages/search-results/types'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import {
@@ -29,6 +25,15 @@ import {
 } from 'utils/route'
 
 import * as helpers from './helpers'
+const {
+  makeGetSearchArtists,
+  makeGetSearchPlaylists,
+  makeGetSearchAlbums,
+  getSearchTracksLineup,
+  getBaseState: getSearchResultsState
+} = searchResultsPageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
+const getUserId = accountSelectors.getUserId
 
 class SearchPageProvider extends Component {
   constructor(props) {

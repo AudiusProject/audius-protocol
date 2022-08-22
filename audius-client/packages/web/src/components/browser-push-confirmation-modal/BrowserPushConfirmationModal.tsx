@@ -1,14 +1,17 @@
 import { useState, useCallback, useEffect } from 'react'
 
+import {
+  accountActions,
+  settingsPageSelectors,
+  settingsPageActions as settingPageActions,
+  modalsActions,
+  modalsSelectors
+} from '@audius/common'
 import { Modal, Anchor, Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { subscribeBrowserPushNotifications } from 'common/store/account/reducer'
-import * as settingPageActions from 'common/store/pages/settings/actions'
-import { getBrowserNotificationSettings } from 'common/store/pages/settings/selectors'
-import { setVisibility, getModalVisibility } from 'common/store/ui/modals/slice'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { AppState } from 'store/types'
 import {
@@ -20,6 +23,11 @@ import {
 import { isElectron, isMobile } from 'utils/clientUtil'
 
 import styles from './BrowserPushConfirmationModal.module.css'
+const { setVisibility } = modalsActions
+const { getModalVisibility } = modalsSelectors
+const { getBrowserNotificationSettings } = settingsPageSelectors
+
+const { subscribeBrowserPushNotifications } = accountActions
 
 type BrowserPushConfirmationModal = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>

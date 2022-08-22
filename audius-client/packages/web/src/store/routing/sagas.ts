@@ -1,3 +1,4 @@
+import { accountSelectors } from '@audius/common'
 import {
   LOCATION_CHANGE,
   push as pushRoute,
@@ -5,7 +6,6 @@ import {
 } from 'connected-react-router'
 import { take, takeEvery, select, put } from 'redux-saga/effects'
 
-import { getUserHandle } from 'common/store/account/selectors'
 import {
   OnFirstPage,
   NotOnFirstPage,
@@ -25,6 +25,7 @@ import {
 
 import mobileSagas from './mobileSagas'
 import { getLocationPathname } from './selectors'
+const getUserHandle = accountSelectors.getUserHandle
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 enum LocationAction {

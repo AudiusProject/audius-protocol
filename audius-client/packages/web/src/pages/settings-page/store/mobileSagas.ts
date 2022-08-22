@@ -1,22 +1,24 @@
+import {
+  getErrorMessage,
+  accountSelectors,
+  settingsPageInitialState as initialState,
+  settingsPageSelectors,
+  PushNotifications,
+  PushNotificationSetting,
+  settingsPageActions as actions,
+  getContext,
+  AudiusBackend
+} from '@audius/common'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
-import { AudiusBackend } from 'common/services/audius-backend'
-import { getContext } from 'common/store'
-import { getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as actions from 'common/store/pages/settings/actions'
-import { initialState } from 'common/store/pages/settings/reducer'
-import { getPushNotificationSettings } from 'common/store/pages/settings/selectors'
-import {
-  PushNotifications,
-  PushNotificationSetting
-} from 'common/store/pages/settings/types'
-import { getErrorMessage } from 'common/utils/error'
 import {
   EnablePushNotificationsMessage,
   DisablePushNotificationsMessage
 } from 'services/native-mobile-interface/notifications'
 import { waitForValue } from 'utils/sagaHelpers'
+const { getPushNotificationSettings } = settingsPageSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 function* watchGetPushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

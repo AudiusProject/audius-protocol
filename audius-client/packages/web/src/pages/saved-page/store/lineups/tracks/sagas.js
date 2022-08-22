@@ -1,26 +1,27 @@
-import { Kind, makeUid } from '@audius/common'
+import {
+  Kind,
+  makeUid,
+  cacheTracksSelectors,
+  savedPageTracksLineupActions as savedTracksActions,
+  savedPageActions as saveActions,
+  savedPageSelectors,
+  queueActions,
+  tracksSocialActions
+} from '@audius/common'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'
 
-import { getTracks as getCacheTracks } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import * as saveActions from 'common/store/pages/saved-page/actions'
-import {
-  PREFIX,
-  tracksActions as savedTracksActions
-} from 'common/store/pages/saved-page/lineups/tracks/actions'
-import {
-  getLocalSaves,
-  getLocalSave,
-  getSavedTracksLineupUid,
-  getSaves
-} from 'common/store/pages/saved-page/selectors'
-import * as queueActions from 'common/store/queue/slice'
-import { SAVE_TRACK, UNSAVE_TRACK } from 'common/store/social/tracks/actions'
 import { LineupSagas } from 'store/lineup/sagas'
 import { getUid as getPlayerUid } from 'store/player/selectors'
+const { SAVE_TRACK, UNSAVE_TRACK } = tracksSocialActions
+const { getLocalSaves, getLocalSave, getSavedTracksLineupUid, getSaves } =
+  savedPageSelectors
+const { getTracks: getCacheTracks } = cacheTracksSelectors
 
 const getSavedTracks = (state) => state.pages.savedPage.tracks
+
+const PREFIX = savedTracksActions.prefix
 
 function* getTracks() {
   const savedTracks = yield select(getSaves)
@@ -98,7 +99,7 @@ function* watchSave() {
     const localSaveUid = makeUid(
       Kind.TRACKS,
       trackId,
-      savedTracksActions.PREFIX
+      savedTracksActions.prefix
     )
 
     const newEntry = {
@@ -115,7 +116,7 @@ function* watchSave() {
           {
             id: trackId,
             uid: localSaveUid,
-            souce: savedTracksActions.PREFIX
+            souce: savedTracksActions.prefix
           }
         ]
       })

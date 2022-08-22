@@ -1,4 +1,5 @@
-import { InstagramProfile, TwitterProfile } from 'common/store/account/reducer'
+import { InstagramProfile, TwitterProfile } from '@audius/common'
+
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION

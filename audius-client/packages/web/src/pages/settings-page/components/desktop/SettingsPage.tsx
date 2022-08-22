@@ -1,6 +1,16 @@
 import { Component } from 'react'
 
-import { ID, ProfilePictureSizes, OS, Theme } from '@audius/common'
+import {
+  ID,
+  ProfilePictureSizes,
+  OS,
+  Theme,
+  InstagramProfile,
+  TwitterProfile,
+  Notifications,
+  BrowserNotificationSetting,
+  EmailFrequency
+} from '@audius/common'
 import {
   Modal,
   Button,
@@ -13,12 +23,6 @@ import {
 import cn from 'classnames'
 
 import audiusIcon from 'assets/img/audiusIcon.png'
-import { InstagramProfile, TwitterProfile } from 'common/store/account/reducer'
-import {
-  Notifications,
-  BrowserNotificationSetting,
-  EmailFrequency
-} from 'common/store/pages/settings/types'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import TabSlider from 'components/data-entry/TabSlider'

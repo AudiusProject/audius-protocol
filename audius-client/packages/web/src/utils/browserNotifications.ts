@@ -1,4 +1,5 @@
-import { AudiusBackend } from 'common/services/audius-backend'
+import { AudiusBackend } from '@audius/common'
+
 import { isElectron } from 'utils/clientUtil'
 
 export enum Permission {

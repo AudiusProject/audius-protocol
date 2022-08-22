@@ -1,5 +1,7 @@
-import type { ChallengeRewardID } from '@audius/common'
-import type { ChallengeReward } from 'audius-client/src/common/store/notifications/types'
+import type {
+  ChallengeRewardID,
+  ChallengeRewardNotification as ChallengeRewardNotificationType
+} from '@audius/common'
 
 import IconAudius from 'app/assets/images/iconAudius.svg'
 
@@ -67,7 +69,7 @@ const challengeInfoMap: Record<
 }
 
 type ChallengeRewardNotificationProps = {
-  notification: ChallengeReward
+  notification: ChallengeRewardNotificationType
 }
 
 export const ChallengeRewardNotification = (

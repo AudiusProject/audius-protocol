@@ -1,12 +1,16 @@
 import { memo, useState } from 'react'
 
-import { CoverPhotoSizes, WidthSizes, Nullable } from '@audius/common'
+import {
+  CoverPhotoSizes,
+  WidthSizes,
+  Nullable,
+  imageCoverPhotoBlank
+} from '@audius/common'
 import cn from 'classnames'
 import { FileWithPreview } from 'react-dropzone'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import imageCoverPhotoBlank from 'common/assets/img/imageCoverPhotoBlank.jpg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'

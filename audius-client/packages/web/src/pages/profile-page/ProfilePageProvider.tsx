@@ -9,7 +9,30 @@ import {
   BadgeTier,
   Kind,
   Status,
-  makeKindId
+  makeKindId,
+  formatCount,
+  getErrorMessage,
+  accountSelectors,
+  lineupSelectors,
+  profilePageSelectors,
+  CollectionSortMode,
+  ProfilePageTabs,
+  FollowType,
+  TracksSortMode,
+  getTabForRoute,
+  profilePageActions as profileActions,
+  profilePageTracksLineupActions as tracksActions,
+  profilePageFeedLineupActions as feedActions,
+  artistRecommendationsUISelectors,
+  OverflowSource,
+  OverflowAction,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  followingUserListActions,
+  followersUserListActions,
+  usersSocialActions as socialActions,
+  createPlaylistModalUIActions as createPlaylistModalActions,
+  newUserMetadata
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -18,41 +41,9 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { newUserMetadata } from 'common/schemas'
-import { getAccountUser } from 'common/store/account/selectors'
 import { make, TrackEvent } from 'common/store/analytics/actions'
 import { getIsDone } from 'common/store/confirmer/selectors'
-import { makeGetLineupMetadatas } from 'common/store/lineup/selectors'
-import * as profileActions from 'common/store/pages/profile/actions'
-import { feedActions } from 'common/store/pages/profile/lineups/feed/actions'
-import { tracksActions } from 'common/store/pages/profile/lineups/tracks/actions'
-import {
-  makeGetProfile,
-  getProfileFeedLineup,
-  getProfileTracksLineup,
-  getProfileUserId
-} from 'common/store/pages/profile/selectors'
-import {
-  CollectionSortMode,
-  Tabs,
-  FollowType,
-  TracksSortMode,
-  getTabForRoute
-} from 'common/store/pages/profile/types'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import * as socialActions from 'common/store/social/users/actions'
-import { makeGetRelatedArtists } from 'common/store/ui/artist-recommendations/selectors'
-import * as createPlaylistModalActions from 'common/store/ui/createPlaylistModal/actions'
-import { open } from 'common/store/ui/mobile-overflow-menu/slice'
-import {
-  OverflowSource,
-  OverflowAction
-} from 'common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import { setFollowers } from 'common/store/user-list/followers/actions'
-import { setFollowing } from 'common/store/user-list/following/actions'
-import { getErrorMessage } from 'common/utils/error'
-import { formatCount } from 'common/utils/formatUtil'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
@@ -64,6 +55,20 @@ import { parseUserRoute } from 'utils/route/userRouteParser'
 
 import { ProfilePageProps as DesktopProfilePageProps } from './components/desktop/ProfilePage'
 import { ProfilePageProps as MobileProfilePageProps } from './components/mobile/ProfilePage'
+const { setFollowers } = followersUserListActions
+const { setFollowing } = followingUserListActions
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open } = mobileOverflowMenuUIActions
+const { makeGetRelatedArtists } = artistRecommendationsUISelectors
+
+const {
+  makeGetProfile,
+  getProfileFeedLineup,
+  getProfileTracksLineup,
+  getProfileUserId
+} = profilePageSelectors
+const { makeGetLineupMetadatas } = lineupSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -91,7 +96,7 @@ type ProfilePageProps = OwnProps &
   RouteComponentProps
 
 type ProfilePageState = {
-  activeTab: Tabs | null
+  activeTab: ProfilePageTabs | null
   editMode: boolean
   shouldMaskContent: boolean
   updatedName: string | null
@@ -180,11 +185,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     ) {
       if (profile.profile.track_count > 0) {
         this.setState({
-          activeTab: Tabs.TRACKS
+          activeTab: ProfilePageTabs.TRACKS
         })
       } else {
         this.setState({
-          activeTab: Tabs.REPOSTS
+          activeTab: ProfilePageTabs.REPOSTS
         })
       }
     } else if (
@@ -194,7 +199,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       !(profile.profile.track_count > 0)
     ) {
       this.setState({
-        activeTab: Tabs.REPOSTS
+        activeTab: ProfilePageTabs.REPOSTS
       })
     }
 
@@ -388,7 +393,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     })
   }
 
-  changeTab = (tab: Tabs) => {
+  changeTab = (tab: ProfilePageTabs) => {
     this.setState({
       activeTab: tab
     })
@@ -620,12 +625,12 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       let tab = `/${currLabel.toLowerCase()}`
       if (profile.track_count > 0) {
         // An artist, default route is tracks
-        if (currLabel === Tabs.TRACKS) {
+        if (currLabel === ProfilePageTabs.TRACKS) {
           tab = ''
         }
       } else {
         // A normal user, default route is reposts
-        if (currLabel === Tabs.REPOSTS) {
+        if (currLabel === ProfilePageTabs.REPOSTS) {
           tab = ''
         }
       }
@@ -636,7 +641,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       )
     }
     didChangeTabsFrom(prevLabel, currLabel)
-    this.setState({ activeTab: currLabel as Tabs })
+    this.setState({ activeTab: currLabel as ProfilePageTabs })
   }
 
   loadMoreUserFeed = (offset: number, limit: number) => {
@@ -814,7 +819,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const followees = profile ? profile.followees.users : []
 
     const dropdownDisabled =
-      activeTab === Tabs.REPOSTS || activeTab === Tabs.COLLECTIBLES
+      activeTab === ProfilePageTabs.REPOSTS ||
+      activeTab === ProfilePageTabs.COLLECTIBLES
     const following = !!profile && profile.does_current_user_follow
 
     const childProps = {

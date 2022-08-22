@@ -1,13 +1,15 @@
 import { useCallback, useState } from 'react'
 
+import {
+  accountSelectors,
+  explorePageActions,
+  ExplorePageTabs
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { getUserHandle } from 'common/store/account/selectors'
-import { setTab } from 'common/store/pages/explore/slice'
-import { Tabs } from 'common/store/pages/explore/types'
 import {
   openSignOn,
   showRequiresAccountModal
@@ -23,6 +25,8 @@ import {
   getPathname
 } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
+const { setTab } = explorePageActions
+const getUserHandle = accountSelectors.getUserHandle
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -134,7 +138,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(showRequiresAccountModal())
     },
     resetExploreTab: () => {
-      dispatch(setTab({ tab: Tabs.FOR_YOU }))
+      dispatch(setTab({ tab: ExplorePageTabs.FOR_YOU }))
     }
   }
 }

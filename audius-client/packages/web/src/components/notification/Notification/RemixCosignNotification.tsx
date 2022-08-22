@@ -1,15 +1,16 @@
 import { useCallback } from 'react'
 
-import { Nullable, Name } from '@audius/common'
+import {
+  Nullable,
+  Name,
+  notificationsSelectors,
+  RemixCosignNotification as RemixCosignNotificationType,
+  TrackEntity
+} from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import {
-  getNotificationEntities,
-  getNotificationUser
-} from 'common/store/notifications/selectors'
-import { RemixCosign, TrackEntity } from 'common/store/notifications/types'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
@@ -23,6 +24,7 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
 import { getEntityLink } from './utils'
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Remix Co-sign',
@@ -32,7 +34,7 @@ const messages = {
 }
 
 type RemixCosignNotificationProps = {
-  notification: RemixCosign
+  notification: RemixCosignNotificationType
 }
 
 export const RemixCosignNotification = (

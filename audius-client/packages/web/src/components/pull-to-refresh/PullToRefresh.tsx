@@ -1,12 +1,12 @@
 import { useState, useEffect, ReactNode, memo } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import cn from 'classnames'
 import Lottie, { EventListener } from 'react-lottie'
 import { animated } from 'react-spring'
 
 import iconRefreshPull from 'assets/animations/iconRefreshPull.json'
 import iconRefreshSpin from 'assets/animations/iconRefreshSpin.json'
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import { getIsIOS } from 'utils/browser'
 
 import styles from './PullToRefresh.module.css'

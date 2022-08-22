@@ -1,6 +1,12 @@
 import { useRef, useCallback, useEffect, MutableRefObject } from 'react'
 
-import { Status, Nullable } from '@audius/common'
+import {
+  Status,
+  Nullable,
+  notificationsSelectors,
+  notificationsActions,
+  Notification as Notifications
+} from '@audius/common'
 import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
@@ -10,21 +16,6 @@ import { useSearchParam } from 'react-use'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
-import {
-  fetchNotifications,
-  setNotificationModal,
-  toggleNotificationPanel
-} from 'common/store/notifications/actions'
-import {
-  getModalNotification,
-  getNotificationHasLoaded,
-  getNotificationHasMore,
-  getNotificationModalIsOpen,
-  getNotificationPanelIsOpen,
-  getNotificationStatus,
-  makeGetAllNotifications
-} from 'common/store/notifications/selectors'
-import { Notification as Notifications } from 'common/store/notifications/types'
 import { getIsOpen as getIsUserListOpen } from 'store/application/ui/userListModal/selectors'
 import zIndex from 'utils/zIndex'
 
@@ -32,6 +23,17 @@ import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
 import { NotificationModal } from './NotificationModal'
 import styles from './NotificationPanel.module.css'
+const { fetchNotifications, setNotificationModal, toggleNotificationPanel } =
+  notificationsActions
+const {
+  getModalNotification,
+  getNotificationHasLoaded,
+  getNotificationHasMore,
+  getNotificationModalIsOpen,
+  getNotificationPanelIsOpen,
+  getNotificationStatus,
+  makeGetAllNotifications
+} = notificationsSelectors
 
 const getNotifications = makeGetAllNotifications()
 

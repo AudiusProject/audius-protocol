@@ -4,7 +4,18 @@ import {
   UserChallenge,
   StringAudio,
   IntKeys,
-  StringKeys
+  StringKeys,
+  accountSelectors,
+  audioRewardsPageActions,
+  AudioRewardsClaim,
+  ClaimStatus,
+  CognitoFlowStatus,
+  HCaptchaStatus,
+  audioRewardsPageSelectors,
+  solanaSelectors,
+  walletActions,
+  modalsActions,
+  stringAudioToStringWei
 } from '@audius/common'
 import delayP from '@redux-saga/delay-p'
 import { expectSaga } from 'redux-saga-test-plan'
@@ -12,42 +23,7 @@ import { call, select } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { all, fork } from 'redux-saga/effects'
 
-import {
-  getAccountUser,
-  getUserHandle,
-  getUserId
-} from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import {
-  getClaimStatus,
-  getClaimToRetry,
-  getUserChallenge,
-  getUserChallenges,
-  getUserChallengesOverrides,
-  getUserChallengeSpecifierMap
-} from 'common/store/pages/audio-rewards/selectors'
-import {
-  Claim,
-  claimChallengeReward,
-  claimChallengeRewardAlreadyClaimed,
-  claimChallengeRewardFailed,
-  claimChallengeRewardSucceeded,
-  claimChallengeRewardWaitForRetry,
-  ClaimStatus,
-  CognitoFlowStatus,
-  fetchUserChallenges,
-  fetchUserChallengesSucceeded,
-  HCaptchaStatus,
-  resetUserChallengeCurrentStepCount,
-  setCognitoFlowStatus,
-  setHCaptchaStatus,
-  setUserChallengesDisbursed,
-  showRewardClaimedToast
-} from 'common/store/pages/audio-rewards/slice'
-import { getFeePayer } from 'common/store/solana/selectors'
-import { setVisibility } from 'common/store/ui/modals/slice'
-import { getBalance, increaseBalance } from 'common/store/wallet/slice'
-import { stringAudioToStringWei } from 'common/utils/wallet'
 import { apiClient } from 'services/audius-api-client'
 import { getCognitoExists } from 'services/audius-backend/Cognito'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -57,6 +33,32 @@ import { MockRemoteConfigInstance } from 'services/remote-config/__mocks__/remot
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import rewardsSagas from './sagas'
+const { setVisibility } = modalsActions
+const { getBalance, increaseBalance } = walletActions
+const { getFeePayer } = solanaSelectors
+const {
+  getClaimStatus,
+  getClaimToRetry,
+  getUserChallenge,
+  getUserChallenges,
+  getUserChallengesOverrides,
+  getUserChallengeSpecifierMap
+} = audioRewardsPageSelectors
+const {
+  claimChallengeReward,
+  claimChallengeRewardAlreadyClaimed,
+  claimChallengeRewardFailed,
+  claimChallengeRewardSucceeded,
+  claimChallengeRewardWaitForRetry,
+  fetchUserChallenges,
+  fetchUserChallengesSucceeded,
+  resetUserChallengeCurrentStepCount,
+  setCognitoFlowStatus,
+  setHCaptchaStatus,
+  setUserChallengesDisbursed,
+  showRewardClaimedToast
+} = audioRewardsPageActions
+const { getAccountUser, getUserHandle, getUserId } = accountSelectors
 
 // Setup mocks
 jest.mock('services/remote-config/remote-config-instance')
@@ -69,7 +71,7 @@ function* saga() {
   yield all(rewardsSagas().map(fork))
 }
 
-const testClaim: Claim = {
+const testClaim: AudioRewardsClaim = {
   challengeId: 'connect-verified',
   specifiers: ['1'],
   amount: 10

@@ -1,6 +1,6 @@
+import { newTrackMetadata } from '@audius/common'
 import jsmediatags from 'jsmediatags'
 
-import * as schemas from 'common/schemas'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 const ALLOWED_MAX_AUDIO_SIZE_BYTES = 250 * 1000 * 1000
@@ -129,7 +129,7 @@ export const processFiles = (
     return {
       file,
       preview: audio,
-      metadata: schemas.newTrackMetadata({
+      metadata: newTrackMetadata({
         title,
         artwork
       })

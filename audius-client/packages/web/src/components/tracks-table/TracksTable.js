@@ -1,5 +1,6 @@
 import { Component } from 'react'
 
+import { formatCount, formatSeconds } from '@audius/common'
 import Table from 'antd/lib/table'
 import cn from 'classnames'
 import moment from 'moment'
@@ -11,8 +12,6 @@ import {
 } from 'react-beautiful-dnd'
 
 import { ReactComponent as IconCarrotDown } from 'assets/img/iconCaretDown.svg'
-import { formatCount } from 'common/utils/formatUtil'
-import { formatSeconds } from 'common/utils/timeUtil'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Draggable from 'components/dragndrop/Draggable'
 import Skeleton from 'components/skeleton/Skeleton'

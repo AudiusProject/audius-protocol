@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import type { Notification } from 'audius-client/src/common/store/notifications/types'
+import type { Notification } from '@audius/common'
 import { View } from 'react-native'
 
 import { Tile, Text } from 'app/components/core'

@@ -1,18 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { setTrendingGenre } from 'audius-client/src/common/store/pages/trending/actions'
-import {
-  trendingWeekActions,
-  trendingMonthActions,
-  trendingAllTimeActions
-} from 'audius-client/src/common/store/pages/trending/lineup/actions'
-import { getTrendingGenre } from 'audius-client/src/common/store/pages/trending/selectors'
 import {
   ELECTRONIC_PREFIX,
   ELECTRONIC_SUBGENRES,
   Genre,
-  GENRES
-} from 'audius-client/src/common/utils/genres'
+  GENRES,
+  trendingPageLineupActions,
+  trendingPageSelectors,
+  trendingPageActions
+} from '@audius/common'
 import { FlatList, Keyboard, View } from 'react-native'
 
 import { TextInput, Button } from 'app/components/core'
@@ -20,6 +16,10 @@ import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
+const { setTrendingGenre } = trendingPageActions
+const { getTrendingGenre } = trendingPageSelectors
+const { trendingWeekActions, trendingMonthActions, trendingAllTimeActions } =
+  trendingPageLineupActions
 
 export const MODAL_NAME = 'TrendingGenreSelection'
 

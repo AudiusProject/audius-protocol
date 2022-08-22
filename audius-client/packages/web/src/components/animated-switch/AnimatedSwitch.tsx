@@ -8,10 +8,10 @@ import {
   CSSProperties
 } from 'react'
 
+import { useInstanceVar } from '@audius/common'
 import { Switch, useHistory } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
 
-import useInstanceVar from 'common/hooks/useInstanceVar'
 import { getIsIOS } from 'utils/browser'
 import {
   SIGN_IN_PAGE,

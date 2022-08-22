@@ -1,11 +1,10 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { Name, Collection, Track, User, Nullable } from '@audius/common'
+import { Name, Collection, Track, User, Nullable, Entity } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { useRecord, make } from 'common/store/analytics/actions'
-import { Entity } from 'common/store/notifications/types'
+import { make, useRecord } from 'common/store/analytics/actions'
 
 import { getEntityLink } from '../utils'
 

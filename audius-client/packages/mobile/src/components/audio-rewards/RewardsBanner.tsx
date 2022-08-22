@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { setTrendingRewardsModalType } from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+import { audioRewardsPageActions, modalsActions } from '@audius/common'
 import { Text, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -10,6 +9,8 @@ import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
+const { setVisibility } = modalsActions
+const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 const messages = {
   rewards: '$audio rewards',

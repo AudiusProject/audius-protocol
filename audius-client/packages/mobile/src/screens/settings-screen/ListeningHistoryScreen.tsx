@@ -1,10 +1,14 @@
 import { useCallback } from 'react'
 
 import type { ID, UID } from '@audius/common'
-import { Status, Name, PlaybackSource } from '@audius/common'
-import { makeGetTableMetadatas } from 'audius-client/src/common/store/lineup/selectors'
-import { tracksActions } from 'audius-client/src/common/store/pages/history-page/lineups/tracks/actions'
-import { getHistoryTracksLineup } from 'audius-client/src/common/store/pages/history-page/selectors'
+import {
+  Status,
+  Name,
+  PlaybackSource,
+  lineupSelectors,
+  historyPageTracksLineupActions as tracksActions,
+  historyPageSelectors
+} from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import { Screen, Tile, VirtualizedScrollView } from 'app/components/core'
@@ -15,6 +19,8 @@ import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
+const { getHistoryTracksLineup } = historyPageSelectors
+const { makeGetTableMetadatas } = lineupSelectors
 
 const messages = {
   title: 'Listening History'

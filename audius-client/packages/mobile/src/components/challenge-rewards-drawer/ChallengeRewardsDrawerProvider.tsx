@@ -1,19 +1,15 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import type { Maybe } from '@audius/common'
-import { IntKeys, StringKeys } from '@audius/common'
-import { getOptimisticUserChallenges } from 'audius-client/src/common/store/challenges/selectors/optimistic-challenges'
 import {
-  getAAOErrorCode,
-  getChallengeRewardsModalType,
-  getClaimStatus
-} from 'audius-client/src/common/store/pages/audio-rewards/selectors'
-import {
-  claimChallengeReward,
+  IntKeys,
+  StringKeys,
+  challengesSelectors,
+  audioRewardsPageActions,
   ClaimStatus,
-  resetAndCancelClaimReward
-} from 'audius-client/src/common/store/pages/audio-rewards/slice'
-import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+  audioRewardsPageSelectors,
+  modalsActions
+} from '@audius/common'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -29,6 +25,12 @@ import { ToastContext } from '../toast/ToastContext'
 import { ChallengeRewardsDrawer } from './ChallengeRewardsDrawer'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
 import { ReferralRewardContents } from './ReferralRewardContents'
+const { setVisibility } = modalsActions
+const { getChallengeRewardsModalType, getClaimStatus, getAAOErrorCode } =
+  audioRewardsPageSelectors
+const { claimChallengeReward, resetAndCancelClaimReward } =
+  audioRewardsPageActions
+const { getOptimisticUserChallenges } = challengesSelectors
 
 const messages = {
   // Claim success toast

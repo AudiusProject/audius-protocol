@@ -7,8 +7,8 @@ import crowdImg from 'assets/img/publicSite/ImgCrowd.jpg'
 import { ReactComponent as IconAudio } from 'assets/img/publicSite/iconAudio.svg'
 import { ReactComponent as IconFree } from 'assets/img/publicSite/iconFree.svg'
 import { ReactComponent as IconRemix } from 'assets/img/publicSite/iconRemix.svg'
-import { useMatchesBreakpoint } from 'common/hooks/useMatchesBreakpoint'
 import useHasViewed from 'hooks/useHasViewed'
+import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './PlatformFeatures.module.css'
 

@@ -1,23 +1,25 @@
-import { Kind, getIdFromKindId, getKindFromKindId } from '@audius/common'
+import {
+  Kind,
+  getIdFromKindId,
+  getKindFromKindId,
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheTracksSelectors,
+  profilePageSelectors,
+  profilePageFeedLineupActions as feedActions
+} from '@audius/common'
 import { select, call } from 'redux-saga/effects'
 
-import { getUserId } from 'common/store/account/selectors'
-import { getCollections } from 'common/store/cache/collections/selectors'
-import { getTracks } from 'common/store/cache/tracks/selectors'
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
-import {
-  PREFIX,
-  feedActions
-} from 'common/store/pages/profile/lineups/feed/actions'
-import {
-  getProfileUserId,
-  getProfileFeedLineup,
-  getProfileUserHandle
-} from 'common/store/pages/profile/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForAccount } from 'utils/sagaHelpers'
 
 import { retrieveUserReposts } from './retrieveUserReposts'
+const { getProfileUserId, getProfileFeedLineup, getProfileUserHandle } =
+  profilePageSelectors
+const { getTracks } = cacheTracksSelectors
+const { getCollections } = cacheCollectionsSelectors
+const getUserId = accountSelectors.getUserId
 
 function* getReposts({ offset, limit, payload }) {
   const handle = yield select(getProfileUserHandle)
@@ -81,12 +83,13 @@ function* getReposts({ offset, limit, payload }) {
   return reposts
 }
 
-const sourceSelector = (state) => `${PREFIX}:${getProfileUserId(state)}`
+const sourceSelector = (state) =>
+  `${feedActions.prefix}:${getProfileUserId(state)}`
 
 class FeedSagas extends LineupSagas {
   constructor() {
     super(
-      PREFIX,
+      feedActions.prefix,
       feedActions,
       getProfileFeedLineup,
       getReposts,

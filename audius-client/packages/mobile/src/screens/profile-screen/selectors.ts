@@ -1,19 +1,17 @@
 import type { User } from '@audius/common'
-import {
-  getAccountUser,
-  getUserId
-} from 'audius-client/src/common/store/account/selectors'
-import {
-  getProfileUser,
-  getProfileUserHandle,
-  getProfileUserId,
-  makeGetProfile
-} from 'audius-client/src/common/store/pages/profile/selectors'
+import { accountSelectors, profilePageSelectors } from '@audius/common'
 import { isEqual } from 'lodash'
 import { createSelector } from 'reselect'
 
 import { useRoute } from 'app/hooks/useRoute'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+const {
+  getProfileUser,
+  getProfileUserHandle,
+  getProfileUserId,
+  makeGetProfile
+} = profilePageSelectors
+const { getAccountUser, getUserId } = accountSelectors
 
 /*
  * Selects profile user and ensures rerenders occur only for changes specified in deps

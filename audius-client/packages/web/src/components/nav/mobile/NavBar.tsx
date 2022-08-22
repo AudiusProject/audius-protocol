@@ -1,6 +1,6 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
-import { Status, FeatureFlags } from '@audius/common'
+import { Status, FeatureFlags, formatCount } from '@audius/common'
 import {
   IconCaretRight,
   IconRemove,
@@ -15,7 +15,6 @@ import { useHistory } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
 
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
-import { formatCount } from 'common/utils/formatUtil'
 import {
   RouterContext,
   SlideDirection

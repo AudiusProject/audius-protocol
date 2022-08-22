@@ -1,11 +1,11 @@
 import { Component } from 'react'
 
+import { BackendUtils as Utils } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import Tooltip from 'antd/lib/tooltip'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { Utils } from 'common/services/audius-backend'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 import styles from './MetaMaskModal.module.css'

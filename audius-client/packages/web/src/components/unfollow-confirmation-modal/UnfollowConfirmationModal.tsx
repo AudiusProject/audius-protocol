@@ -1,14 +1,18 @@
-import { ID, FollowSource } from '@audius/common'
+import {
+  ID,
+  FollowSource,
+  profilePageActions,
+  usersSocialActions as socialActions
+} from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { setNotificationSubscription } from 'common/store/pages/profile/actions'
-import * as socialActions from 'common/store/social/users/actions'
 import { AppState } from 'store/types'
 
 import UnfollowConfirmationModal from './components/UnfollowConfirmationModal'
 import * as actions from './store/actions'
 import { getIsOpen, getUserId } from './store/selectors'
+const { setNotificationSubscription } = profilePageActions
 
 type UnfollowConfirmationModalProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>

@@ -1,12 +1,14 @@
-import { Kind } from '@audius/common'
+import {
+  Kind,
+  cacheActions,
+  usersSocialActions as actions
+} from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
-import * as actions from 'common/store/social/users/actions'
 import * as sagas from 'store/social/users/sagas'
 import { noopReducer } from 'store/testHelper'
 

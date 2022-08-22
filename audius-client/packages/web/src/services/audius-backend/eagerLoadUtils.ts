@@ -3,7 +3,8 @@
  * protocol before libs has initialized.
  */
 
-import { getEagerDiscprov } from 'common/services/audius-backend/eagerLoadUtils'
+import { getEagerDiscprov } from '@audius/common'
+
 import { env } from 'services/env'
 import { localStorage } from 'services/local-storage'
 

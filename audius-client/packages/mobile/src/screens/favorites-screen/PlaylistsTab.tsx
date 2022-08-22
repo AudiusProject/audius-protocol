@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { getAccountWithPlaylists } from 'audius-client/src/common/store/account/selectors'
+import { accountSelectors } from '@audius/common'
 import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -13,6 +13,7 @@ import type { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScre
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
 import type { ExtendedCollection } from './types'
+const getAccountWithPlaylists = accountSelectors.getAccountWithPlaylists
 
 const messages = {
   emptyTabText: "You haven't favorited any playlists yet.",

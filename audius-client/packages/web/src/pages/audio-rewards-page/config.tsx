@@ -5,12 +5,12 @@ import {
   ChallengeRewardID,
   OptimisticUserChallenge,
   TrendingRewardID,
-  Nullable
+  Nullable,
+  formatNumberCommas
 } from '@audius/common'
 import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
 
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
-import { formatNumberCommas } from 'common/utils/formatUtil'
 import {
   profilePage,
   SETTINGS_PAGE,

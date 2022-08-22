@@ -6,28 +6,20 @@ import {
   Collection,
   SquareSizes,
   Nullable,
-  RandomImage
+  RandomImage,
+  accountSelectors,
+  cacheCollectionsActions,
+  collectionPageLineupActions as tracksActions,
+  createPlaylistModalUISelectors,
+  createPlaylistModalUIActions as createPlaylistActions,
+  imageBlank as placeholderCoverArt,
+  newCollectionMetadata
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
-import placeholderCoverArt from 'common/assets/img/imageBlank2x.png'
-import * as schemas from 'common/schemas'
-import { getAccountUser } from 'common/store/account/selectors'
-import {
-  createPlaylist,
-  editPlaylist,
-  orderPlaylist,
-  removeTrackFromPlaylist
-} from 'common/store/cache/collections/actions'
-import { tracksActions } from 'common/store/pages/collection/lineup/actions'
-import * as createPlaylistActions from 'common/store/ui/createPlaylistModal/actions'
-import {
-  getMetadata,
-  getTracks
-} from 'common/store/ui/createPlaylistModal/selectors'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import EditableRow, { Format } from 'components/groupable-list/EditableRow'
 import GroupableList from 'components/groupable-list/GroupableList'
@@ -47,6 +39,10 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'
 import RemovePlaylistTrackDrawer from './RemovePlaylistTrackDrawer'
+const { getMetadata, getTracks } = createPlaylistModalUISelectors
+const { createPlaylist, editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
+  cacheCollectionsActions
+const getAccountUser = accountSelectors.getAccountUser
 
 const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -61,7 +57,7 @@ const messages = {
 
 const initialFormFields = {
   artwork: {},
-  ...schemas.newCollectionMetadata()
+  ...newCollectionMetadata()
 }
 
 type EditPlaylistPageProps = ReturnType<typeof mapStateToProps> &

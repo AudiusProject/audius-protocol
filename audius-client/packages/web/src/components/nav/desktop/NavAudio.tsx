@@ -1,24 +1,32 @@
 import { cloneElement, useCallback, useEffect, useState } from 'react'
 
-import { ChallengeRewardID, BadgeTier, BNWei, StringKeys } from '@audius/common'
+import {
+  ChallengeRewardID,
+  BadgeTier,
+  BNWei,
+  StringKeys,
+  formatWei,
+  accountSelectors,
+  challengesSelectors,
+  walletSelectors
+} from '@audius/common'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { animated, Transition } from 'react-spring/renderprops'
 
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
-import { useSelectTierInfo } from 'common/hooks/wallet'
-import { getAccountUser } from 'common/store/account/selectors'
-import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
-import { getAccountTotalBalance } from 'common/store/wallet/selectors'
-import { formatWei } from 'common/utils/wallet'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
+import { useSelectTierInfo } from 'hooks/wallet'
 import { useSelector } from 'utils/reducer'
 import { AUDIO_PAGE } from 'utils/route'
 
 import styles from './NavAudio.module.css'
+const { getAccountTotalBalance } = walletSelectors
+const { getOptimisticUserChallenges } = challengesSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 type BubbleType = 'none' | 'claim' | 'earn'
 

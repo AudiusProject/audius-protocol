@@ -1,18 +1,20 @@
-import { FavoriteType } from '@audius/common'
+import {
+  FavoriteType,
+  topSupportersUserListActions as topSupporterActions,
+  supportingUserListActions as supportingActions,
+  RepostType,
+  repostsUserListActions as repostActions,
+  notificationsUserListActions as notificationActions,
+  mutualsUserListActions,
+  followingUserListActions as followingActions,
+  followersUserListActions as followerActions,
+  favoritesUserListActions as favoritesActions
+} from '@audius/common'
 import { takeEvery, put } from 'redux-saga/effects'
-
-import * as favoritesActions from 'common/store/user-list/favorites/actions'
-import * as followerActions from 'common/store/user-list/followers/actions'
-import * as followingActions from 'common/store/user-list/following/actions'
-import { setMutuals } from 'common/store/user-list/mutuals/actions'
-import * as notificationActions from 'common/store/user-list/notifications/actions'
-import * as repostActions from 'common/store/user-list/reposts/actions'
-import { RepostType } from 'common/store/user-list/reposts/types'
-import * as supportingActions from 'common/store/user-list/supporting/actions'
-import * as topSupporterActions from 'common/store/user-list/top-supporters/actions'
 
 import { setUsers } from './slice'
 import { UserListType, UserListEntityType } from './types'
+const { setMutuals } = mutualsUserListActions
 
 function* watchSetUsers() {
   yield takeEvery(

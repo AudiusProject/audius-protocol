@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 
+import { imageBlank as placeholderArt } from '@audius/common'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import placeholderArt from 'common/assets/img/imageBlank2x.png'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'

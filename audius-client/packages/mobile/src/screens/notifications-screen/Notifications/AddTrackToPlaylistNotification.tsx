@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { getNotificationEntities } from 'audius-client/src/common/store/notifications/selectors'
-import type { AddTrackToPlaylist } from 'audius-client/src/common/store/notifications/types'
+import type { AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType } from '@audius/common'
+import { notificationsSelectors } from '@audius/common'
 import { isEqual } from 'lodash'
 import { View } from 'react-native'
 
@@ -19,6 +19,7 @@ import {
 } from '../Notification'
 import { getEntityRoute, getEntityScreen } from '../Notification/utils'
 import { useDrawerNavigation } from '../useDrawerNavigation'
+const { getNotificationEntities } = notificationsSelectors
 
 const messages = {
   title: 'Track Added to Playlist',
@@ -26,7 +27,7 @@ const messages = {
   toPlaylist: ' to their playlist '
 }
 type AddTrackToPlaylistNotificationProps = {
-  notification: AddTrackToPlaylist
+  notification: AddTrackToPlaylistNotificationType
 }
 
 export const AddTrackToPlaylistNotification = (

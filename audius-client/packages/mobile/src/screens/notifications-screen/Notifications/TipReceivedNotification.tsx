@@ -1,15 +1,17 @@
 import { useCallback } from 'react'
 
-import type { Nullable } from '@audius/common'
-import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
-import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
-import type { TipReceive } from 'audius-client/src/common/store/notifications/types'
-import type { ReactionTypes } from 'audius-client/src/common/store/ui/reactions/slice'
 import {
-  makeGetReactionForSignature,
-  writeReactionValue
-} from 'audius-client/src/common/store/ui/reactions/slice'
-import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
+  useUIAudio,
+  formatNumberCommas,
+  notificationsSelectors,
+  reactionsUIActions,
+  reactionsUISelectors
+} from '@audius/common'
+import type {
+  Nullable,
+  TipReceiveNotification,
+  ReactionTypes
+} from '@audius/common'
 import { Image, View } from 'react-native'
 
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
@@ -34,6 +36,9 @@ import {
 import { ReactionList } from '../Reaction'
 
 import { useGoToProfile } from './useGoToProfile'
+const { writeReactionValue } = reactionsUIActions
+const { makeGetReactionForSignature } = reactionsUISelectors
+const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'You Received a Tip!',
@@ -60,7 +65,7 @@ const useSetReaction = (tipTxSignature: string) => {
 }
 
 type TipReceivedNotificationProps = {
-  notification: TipReceive
+  notification: TipReceiveNotification
   isVisible: boolean
 }
 

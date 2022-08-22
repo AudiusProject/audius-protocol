@@ -1,26 +1,29 @@
-import { ID, User, UserMetadata } from '@audius/common'
+import {
+  ID,
+  User,
+  UserMetadata,
+  stringWeiToBN,
+  decodeHashId,
+  encodeHashId,
+  cacheUsersSelectors,
+  tippingActions,
+  SupportingMapForUser,
+  UserListSagaFactory,
+  supportingUserListActions,
+  supportingUserListSelectors,
+  SUPPORTING_USER_LIST_TAG,
+  SupportingResponse,
+  responseAdapter as adapter
+} from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
-import * as adapter from 'common/services/audius-api-client/ResponseAdapter'
-import { getUser } from 'common/store/cache/users/selectors'
-import { setSupportingForUser } from 'common/store/tipping/slice'
-import { SupportingMapForUser } from 'common/store/tipping/types'
-import UserListSagaFactory from 'common/store/user-list/sagas'
-import { getSupportingError } from 'common/store/user-list/supporting/actions'
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'
-import {
-  getId,
-  getUserList,
-  getUserIds
-} from 'common/store/user-list/supporting/selectors'
-import { USER_LIST_TAG } from 'common/store/user-list/supporting/types'
-import { decodeHashId, encodeHashId } from 'common/utils/hashIds'
-import { stringWeiToBN } from 'common/utils/wallet'
 import { createUserListProvider } from 'components/user-list/utils'
-import {
-  fetchSupporting,
-  SupportingResponse
-} from 'services/audius-backend/Tipping'
+import { fetchSupporting } from 'services/audius-backend/Tipping'
+const { getId, getUserList, getUserIds } = supportingUserListSelectors
+const { getSupportingError } = supportingUserListActions
+const { setSupportingForUser } = tippingActions
+const { getUser } = cacheUsersSelectors
 
 type SupportingProcessExtraType = {
   userId: ID
@@ -104,7 +107,7 @@ function* getSupporting(currentPage: number, pageSize: number) {
 }
 
 const userListSagas = UserListSagaFactory.createSagas({
-  tag: USER_LIST_TAG,
+  tag: SUPPORTING_USER_LIST_TAG,
   fetchUsers: getSupporting,
   stateSelector: getUserList,
   errorDispatcher

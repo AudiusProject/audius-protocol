@@ -1,17 +1,18 @@
 import { useCallback } from 'react'
 
+import {
+  audioRewardsPageActions,
+  TrendingRewardsModalType
+} from '@audius/common'
 import { IconArrow, IconCrown } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import {
-  setTrendingRewardsModalType,
-  TrendingRewardsModalType
-} from 'common/store/pages/audio-rewards/slice'
 import { isMobile } from 'utils/clientUtil'
 
 import styles from './RewardsBanner.module.css'
+const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 const messages = {
   rewards: '$AUDIO REWARDS',

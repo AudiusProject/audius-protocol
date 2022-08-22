@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
 
 import type { ID, Supporting } from '@audius/common'
-import { stringWeiToBN } from 'audius-client/src/common/utils/wallet'
+import { stringWeiToBN, tippingSelectors } from '@audius/common'
 import { MAX_PROFILE_SUPPORTING_TILES } from 'audius-client/src/utils/constants'
-import { getOptimisticSupportingForUser } from 'common/store/tipping/selectors'
 import { FlatList } from 'react-native'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -15,6 +14,7 @@ import { useSelectProfile } from '../selectors'
 import { SupportingTile } from './SupportingTile'
 import { SupportingTileSkeleton } from './SupportingTileSkeleton'
 import { ViewAllSupportingTile } from './ViewAllSupportingTile'
+const { getOptimisticSupportingForUser } = tippingSelectors
 
 type ViewAllData = { viewAll: true; supporting: Supporting[] }
 

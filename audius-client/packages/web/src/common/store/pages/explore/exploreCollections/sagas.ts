@@ -1,16 +1,19 @@
-import { Collection, Status } from '@audius/common'
+import {
+  Collection,
+  Status,
+  accountSelectors,
+  explorePageCollectionsActions,
+  ExploreCollectionsVariant
+} from '@audius/common'
 import { takeEvery, call, put } from 'typed-redux-saga'
 
-import { getAccountStatus } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import Explore from 'services/audius-backend/Explore'
 import { EXPLORE_PAGE } from 'utils/route'
 import { waitForValue, requiresAccount } from 'utils/sagaHelpers'
-
-import { ExploreCollectionsVariant } from '../types'
-
-import { fetch, fetchSucceeded } from './slice'
+const { fetch, fetchSucceeded } = explorePageCollectionsActions
+const getAccountStatus = accountSelectors.getAccountStatus
 
 function* fetchLetThemDJ() {
   const collections = yield* call(Explore.getTopCollections, 'playlist', true)

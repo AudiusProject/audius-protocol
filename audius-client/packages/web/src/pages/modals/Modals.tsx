@@ -1,8 +1,8 @@
 import { ComponentType } from 'react'
 
 import { Client } from '@audius/common'
+import type { Modals as ModalTypes } from '@audius/common'
 
-import type { Modals as ModalTypes } from 'common/store/ui/modals/slice'
 import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'

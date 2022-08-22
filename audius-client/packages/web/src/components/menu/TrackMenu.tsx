@@ -6,34 +6,31 @@ import {
   FavoriteSource,
   RepostSource,
   ShareSource,
-  CreatePlaylistSource
+  CreatePlaylistSource,
+  accountSelectors,
+  cacheCollectionsActions,
+  collectionPageSelectors,
+  tracksSocialActions,
+  addToPlaylistUIActions,
+  newCollectionMetadata
 } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { newCollectionMetadata } from 'common/schemas'
-import { getAccountOwnedPlaylists } from 'common/store/account/selectors'
-import {
-  createPlaylist,
-  addTrackToPlaylist
-} from 'common/store/cache/collections/actions'
-import { getCollectionId } from 'common/store/pages/collection/selectors'
-import {
-  saveTrack,
-  unsaveTrack,
-  repostTrack,
-  undoRepostTrack,
-  shareTrack
-} from 'common/store/social/tracks/actions'
-import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
+const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
+const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
+  tracksSocialActions
+const { getCollectionId } = collectionPageSelectors
+const { createPlaylist, addTrackToPlaylist } = cacheCollectionsActions
+const { getAccountOwnedPlaylists } = accountSelectors
 
 const messages = {
   addToNewPlaylist: 'Add to New Playlist',

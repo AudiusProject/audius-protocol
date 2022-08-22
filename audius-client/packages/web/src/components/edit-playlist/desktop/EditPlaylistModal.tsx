@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  accountActions,
+  cacheCollectionsActions,
+  cacheCollectionsSelectors
+} from '@audius/common'
 import {
   IconPlaylists,
   Modal,
@@ -13,12 +18,6 @@ import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { fetchSavedPlaylists } from 'common/store/account/reducer'
-import {
-  deletePlaylist,
-  editPlaylist
-} from 'common/store/cache/collections/actions'
-import { getCollectionWithUser } from 'common/store/cache/collections/selectors'
 import PlaylistForm from 'components/create-playlist/PlaylistForm'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -32,6 +31,9 @@ import { FEED_PAGE, getPathname, playlistPage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import styles from './EditPlaylistModal.module.css'
+const { deletePlaylist, editPlaylist } = cacheCollectionsActions
+const { getCollectionWithUser } = cacheCollectionsSelectors
+const fetchSavedPlaylists = accountActions.fetchSavedPlaylists
 
 const messages = {
   edit: 'Edit',

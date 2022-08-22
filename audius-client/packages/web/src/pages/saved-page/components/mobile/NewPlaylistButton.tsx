@@ -1,11 +1,14 @@
 import { useCallback } from 'react'
 
-import { Name, CreatePlaylistSource } from '@audius/common'
+import {
+  Name,
+  CreatePlaylistSource,
+  createPlaylistModalUIActions as createPlaylistActions
+} from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
-import * as createPlaylistActions from 'common/store/ui/createPlaylistModal/actions'
 import { AppState } from 'store/types'
 
 import styles from './NewPlaylistButton.module.css'

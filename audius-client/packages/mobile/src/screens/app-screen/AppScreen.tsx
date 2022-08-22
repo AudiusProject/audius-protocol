@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
+import { walletActions } from '@audius/common'
 import { useAppState } from '@react-native-community/hooks'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import type { NavigatorScreenParams } from '@react-navigation/native'
-import { getBalance } from 'audius-client/src/common/store/wallet/slice'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 
@@ -18,6 +18,7 @@ import type { ProfileTabScreenParamList } from './ProfileTabScreen'
 import { ProfileTabScreen } from './ProfileTabScreen'
 import type { TrendingTabScreenParamList } from './TrendingTabScreen'
 import { TrendingTabScreen } from './TrendingTabScreen'
+const { getBalance } = walletActions
 
 export type AppScreenParamList = {
   feed: NavigatorScreenParams<FeedTabScreenParamList>

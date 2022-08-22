@@ -1,8 +1,8 @@
+import { supportingUserListActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-
-import { GET_SUPPORTING_ERROR, getSupportingError } from './actions'
+import * as errorActions from 'store/errors/actions'
+const { GET_SUPPORTING_ERROR, getSupportingError } = supportingUserListActions
 
 type ErrorActions = ReturnType<typeof getSupportingError>
 

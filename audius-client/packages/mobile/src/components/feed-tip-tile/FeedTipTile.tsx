@@ -1,13 +1,12 @@
 import { useCallback, useEffect } from 'react'
 
 import type { User } from '@audius/common'
-import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
-import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
 import {
-  getShowTip,
-  getTipToDisplay
-} from 'audius-client/src/common/store/tipping/selectors'
-import { hideTip } from 'audius-client/src/common/store/tipping/slice'
+  accountSelectors,
+  cacheUsersSelectors,
+  tippingSelectors,
+  tippingActions
+} from '@audius/common'
 import { View } from 'react-native'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
@@ -28,6 +27,11 @@ import { LineupTileSkeleton } from '../lineup-tile'
 import { ReceiverDetails } from './ReceiverDetails'
 import { SendTipButton } from './SendTipButton'
 import { SenderDetails } from './SenderDetails'
+
+const { hideTip } = tippingActions
+const { getShowTip, getTipToDisplay } = tippingSelectors
+const { getUsers } = cacheUsersSelectors
+const { getAccountUser } = accountSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   tile: {

@@ -1,3 +1,4 @@
+import { useImageSize as useImageSizeCommon } from '@audius/common'
 import type {
   ImageSizesObject,
   SquareSizes,
@@ -5,7 +6,6 @@ import type {
   Maybe,
   Nullable
 } from '@audius/common'
-import { useImageSize as useImageSizeCommon } from 'audius-client/src/common/hooks/useImageSize'
 import type { ImageSourcePropType } from 'react-native'
 import { Image } from 'react-native'
 import type { useDispatch } from 'react-redux'

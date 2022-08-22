@@ -1,17 +1,13 @@
-import { Theme } from '@audius/common'
+import { Theme, themeActions, ThemeActions } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import { put, call, spawn, takeEvery } from 'redux-saga/effects'
 
-import {
-  SET_THEME,
-  ThemeActions,
-  setTheme as setThemeAction
-} from 'common/store/ui/theme/actions'
 import { PrefersColorSchemeMessage } from 'services/native-mobile-interface/android/theme'
 import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
 import { getIsIOS } from 'utils/browser'
 import { actionChannelDispatcher } from 'utils/sagaHelpers'
 import { setTheme, PREFERS_DARK_MEDIA_QUERY } from 'utils/theme/theme'
+const { SET_THEME, setTheme: setThemeAction } = themeActions
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

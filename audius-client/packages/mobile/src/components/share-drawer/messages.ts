@@ -1,4 +1,4 @@
-import type { ShareType } from 'audius-client/src/common/store/ui/share-modal/types'
+import type { ShareType } from '@audius/common'
 
 const shareTypeMap: Record<ShareType, string> = {
   track: 'Track',

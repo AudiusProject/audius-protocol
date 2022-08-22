@@ -1,6 +1,6 @@
+import { ExploreCollectionsVariant } from '@audius/common'
 import { connect } from 'react-redux'
 
-import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 

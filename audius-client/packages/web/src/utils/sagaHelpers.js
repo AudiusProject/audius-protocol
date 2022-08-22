@@ -1,6 +1,6 @@
 /** Helper Sagas */
 
-import { Status } from '@audius/common'
+import { Status, accountSelectors } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { eventChannel, END } from 'redux-saga'
 import {
@@ -14,13 +14,13 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import { getAccountUser } from 'common/store/account/selectors'
 import {
   updateRouteOnExit,
   showRequiresAccountModal
 } from 'common/store/pages/signon/actions'
 
 import { SIGN_UP_PAGE } from './route'
+const getAccountUser = accountSelectors.getAccountUser
 
 /**
  * Calls the provided array of calls in batches with delayMs milliseconds between each batch.

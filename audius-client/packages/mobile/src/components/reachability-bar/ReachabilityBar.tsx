@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react'
 
-import { getIsReachable } from 'common/store/reachability/selectors'
+import { reachabilitySelectors } from '@audius/common'
 import { View, Animated } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+const { getIsReachable } = reachabilitySelectors
 
 const messages = {
   alert: 'No Internet Connection'

@@ -4,12 +4,12 @@ import {
   ID,
   ProfilePictureSizes,
   SquareSizes,
-  CoverArtSizes
+  CoverArtSizes,
+  pluralize,
+  imageBlank as placeholderArt
 } from '@audius/common'
 import cn from 'classnames'
 
-import placeholderArt from 'common/assets/img/imageBlank2x.png'
-import { pluralize } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import RepostFavoritesStats, {
   Size

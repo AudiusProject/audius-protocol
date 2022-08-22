@@ -8,34 +8,25 @@ import {
   Name,
   PlaybackSource,
   FavoriteType,
-  SquareSizes
-} from '@audius/common'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { tracksActions } from 'audius-client/src/common/store/pages/track/lineup/actions'
-import {
-  repostTrack,
-  saveTrack,
-  undoRepostTrack,
-  unsaveTrack
-} from 'audius-client/src/common/store/social/tracks/actions'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
-import { setFavorite } from 'audius-client/src/common/store/user-list/favorites/actions'
-import { setRepost } from 'audius-client/src/common/store/user-list/reposts/actions'
-import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
-import { getCanonicalName } from 'audius-client/src/common/utils/genres'
-import {
+  SquareSizes,
+  getCanonicalName,
   formatSeconds,
-  formatDate
-} from 'audius-client/src/common/utils/timeUtil'
+  formatDate,
+  accountSelectors,
+  trackPageLineupActions,
+  tracksSocialActions,
+  OverflowAction,
+  OverflowSource,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  RepostType,
+  repostsUserListActions,
+  favoritesUserListActions
+} from '@audius/common'
 import {
   FAVORITING_USERS_ROUTE,
   REPOSTING_USERS_ROUTE
 } from 'audius-client/src/utils/route'
-import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import { Image, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -56,6 +47,14 @@ import { getTagSearchRoute } from 'app/utils/routes'
 import { useThemeColors } from 'app/utils/theme'
 
 import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
+const { setFavorite } = favoritesUserListActions
+const { setRepost } = repostsUserListActions
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open: openOverflowMenu } = mobileOverflowMenuUIActions
+const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
+  tracksSocialActions
+const { tracksActions } = trackPageLineupActions
+const getUserId = accountSelectors.getUserId
 
 const messages = {
   track: 'track',

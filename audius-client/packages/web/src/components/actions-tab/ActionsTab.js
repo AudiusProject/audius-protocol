@@ -1,6 +1,13 @@
 import { PureComponent } from 'react'
 
-import { ShareSource, RepostSource } from '@audius/common'
+import {
+  ShareSource,
+  RepostSource,
+  accountSelectors,
+  collectionsSocialActions,
+  tracksSocialActions,
+  shareModalUIActions
+} from '@audius/common'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -8,22 +15,16 @@ import { connect } from 'react-redux'
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
 import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
-import { getUserHandle } from 'common/store/account/selectors'
-import {
-  repostCollection,
-  undoRepostCollection
-} from 'common/store/social/collections/actions'
-import {
-  repostTrack,
-  undoRepostTrack
-} from 'common/store/social/tracks/actions'
-import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import Menu from 'components/menu/Menu'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { REPOST_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import styles from './ActionsTab.module.css'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
+const { repostCollection, undoRepostCollection } = collectionsSocialActions
+const getUserHandle = accountSelectors.getUserHandle
 
 const MinimizedActionsTab = (props) => {
   const { isHidden, isDisabled, overflowMenu } = props

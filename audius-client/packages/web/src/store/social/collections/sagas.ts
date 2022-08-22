@@ -6,35 +6,36 @@ import {
   SmartCollectionVariant,
   User,
   makeUid,
-  makeKindId
+  makeKindId,
+  formatShareText,
+  accountSelectors,
+  accountActions,
+  cacheCollectionsSelectors,
+  cacheUsersSelectors,
+  cacheActions,
+  notificationsActions as notificationActions,
+  removeFromPlaylistLibrary,
+  getContext,
+  collectionsSocialActions as socialActions
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import * as accountActions from 'common/store/account/reducer'
-import { getPlaylistLibrary, getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
-import {
-  getCollections,
-  getCollection
-} from 'common/store/cache/collections/selectors'
 import { adjustUserField } from 'common/store/cache/users/sagas'
-import { getUser } from 'common/store/cache/users/selectors'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import * as notificationActions from 'common/store/notifications/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { removeFromPlaylistLibrary } from 'common/store/playlist-library/helpers'
-import * as socialActions from 'common/store/social/collections/actions'
-import { formatShareText } from 'common/utils/formatUtil'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
 import { waitForAccount } from 'utils/sagaHelpers'
 import { share } from 'utils/share'
 
 import watchCollectionErrors from './errorSagas'
+const { getUser } = cacheUsersSelectors
+const { getCollections, getCollection } = cacheCollectionsSelectors
+
+const { getPlaylistLibrary, getUserId } = accountSelectors
 
 /* REPOST COLLECTION */
 

@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 
-import { setFollowers } from 'audius-client/src/common/store/user-list/followers/actions'
-import { setFollowing } from 'audius-client/src/common/store/user-list/following/actions'
+import {
+  followersUserListActions,
+  followingUserListActions
+} from '@audius/common'
 import { Pressable, Text, View } from 'react-native'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -10,6 +12,8 @@ import { makeStyles } from 'app/styles/makeStyles'
 import { formatCount } from 'app/utils/format'
 
 import { useSelectProfile } from './selectors'
+const { setFollowers } = followersUserListActions
+const { setFollowing } = followingUserListActions
 
 const messages = {
   tracks: (count: number) => (count === 1 ? 'track' : 'tracks'),

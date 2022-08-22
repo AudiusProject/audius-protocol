@@ -1,9 +1,7 @@
 import { useMemo } from 'react'
 
-import { DefaultSizes, SquareSizes } from '@audius/common'
+import { DefaultSizes, SquareSizes, useImageSize } from '@audius/common'
 import { render } from '@testing-library/react'
-
-import { useImageSize } from 'common/hooks/useImageSize'
 
 jest.mock('react-redux', () => ({
   useDispatch: () => () => {}

@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
 
 import type { Nullable } from '@audius/common'
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { useTwitterButtonStatus } from 'common/hooks/useTwitterButtonStatus'
-import { fetchUserSocials } from 'common/store/cache/users/actions'
+import {
+  useTwitterButtonStatus,
+  cacheUsersActions,
+  cacheUsersSelectors
+} from '@audius/common'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import type { ButtonProps } from 'app/components/core'
@@ -14,6 +16,8 @@ import type { make } from 'app/services/analytics'
 import { track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { getTwitterLink } from 'app/utils/twitter'
+const { getUser } = cacheUsersSelectors
+const { fetchUserSocials } = cacheUsersActions
 
 const messages = {
   share: 'Share to Twitter'

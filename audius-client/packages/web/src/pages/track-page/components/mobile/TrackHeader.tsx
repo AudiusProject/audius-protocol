@@ -7,18 +7,19 @@ import {
   SquareSizes,
   CoverArtSizes,
   FieldVisibility,
-  Remix
+  Remix,
+  squashNewLines,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  OverflowAction,
+  imageBlank as placeholderArt
 } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
-import placeholderArt from 'common/assets/img/imageBlank2x.png'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
-import { squashNewLines } from 'common/utils/formatUtil'
-import { getCanonicalName } from 'common/utils/genres'
-import { formatSeconds, formatDate } from 'common/utils/timeUtil'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'

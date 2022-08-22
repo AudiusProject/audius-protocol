@@ -1,8 +1,14 @@
-import { ID, CID, LineupState, Track, User } from '@audius/common'
+import {
+  ID,
+  CID,
+  LineupState,
+  Track,
+  User,
+  trackPageLineupActions,
+  QueueItem
+} from '@audius/common'
 import cn from 'classnames'
 
-import { tracksActions } from 'common/store/pages/track/lineup/actions'
-import { QueueItem } from 'common/store/queue/types'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -16,6 +22,7 @@ import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
+const { tracksActions } = trackPageLineupActions
 
 const messages = {
   moreBy: 'More By',

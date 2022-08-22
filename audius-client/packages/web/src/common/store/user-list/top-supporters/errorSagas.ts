@@ -1,8 +1,9 @@
+import { topSupportersUserListActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-
-import { GET_TOP_SUPPORTERS_ERROR, getTopSupportersError } from './actions'
+import * as errorActions from 'store/errors/actions'
+const { GET_TOP_SUPPORTERS_ERROR, getTopSupportersError } =
+  topSupportersUserListActions
 
 type handleTopSupportersError = ReturnType<typeof getTopSupportersError>
 

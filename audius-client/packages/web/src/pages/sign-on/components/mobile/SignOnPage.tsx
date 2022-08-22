@@ -1,19 +1,20 @@
 import { useEffect, useCallback } from 'react'
 
-import { ID, User } from '@audius/common'
+import {
+  ID,
+  User,
+  AccountImage,
+  InstagramProfile,
+  TwitterProfile,
+  PushNotificationSetting,
+  settingsPageActions as settingPageActions
+} from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { animated } from 'react-spring'
 import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 
-import {
-  AccountImage,
-  InstagramProfile,
-  TwitterProfile
-} from 'common/store/account/reducer'
-import * as settingPageActions from 'common/store/pages/settings/actions'
-import { PushNotificationSetting } from 'common/store/pages/settings/types'
 import { Pages, FollowArtistsCategory } from 'common/store/pages/signon/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import FollowPage, {

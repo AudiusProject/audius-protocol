@@ -1,13 +1,13 @@
+import { repostsUserListActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-
-import {
+import * as errorActions from 'store/errors/actions'
+const {
   GET_TRACK_REPOST_ERROR,
   GET_PLAYLIST_REPOST_ERROR,
   trackRepostError,
   playlistRepostError
-} from './actions'
+} = repostsUserListActions
 
 type ErrorActions =
   | ReturnType<typeof trackRepostError>

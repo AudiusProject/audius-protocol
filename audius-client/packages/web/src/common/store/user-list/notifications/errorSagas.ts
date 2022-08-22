@@ -1,10 +1,9 @@
+import { notificationsUserListActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-import {
-  GET_NOTIFICATION_ERROR,
-  getNotificationError
-} from 'common/store/user-list/notifications/actions'
+import * as errorActions from 'store/errors/actions'
+const { GET_NOTIFICATION_ERROR, getNotificationError } =
+  notificationsUserListActions
 
 type ErrorActions = ReturnType<typeof getNotificationError>
 

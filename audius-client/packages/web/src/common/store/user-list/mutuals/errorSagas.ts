@@ -1,8 +1,8 @@
+import { mutualsUserListActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'common/store/errors/actions'
-
-import { GET_MUTUALS_ERROR, getMutualsError } from './actions'
+import * as errorActions from 'store/errors/actions'
+const { GET_MUTUALS_ERROR, getMutualsError } = mutualsUserListActions
 
 type ErrorActions = ReturnType<typeof getMutualsError>
 

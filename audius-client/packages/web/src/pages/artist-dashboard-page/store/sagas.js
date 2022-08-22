@@ -1,16 +1,16 @@
-import { IntKeys } from '@audius/common'
+import { IntKeys, accountSelectors, walletActions } from '@audius/common'
 import { each } from 'lodash'
 import moment from 'moment'
 import { all, call, put, take, takeEvery, getContext } from 'redux-saga/effects'
 
-import { getAccountUser } from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
-import { getBalance } from 'common/store/wallet/slice'
 import { DASHBOARD_PAGE } from 'utils/route'
 import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
 
 import * as dashboardActions from './actions'
+const { getBalance } = walletActions
+const getAccountUser = accountSelectors.getAccountUser
 
 function* fetchDashboardAsync() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')

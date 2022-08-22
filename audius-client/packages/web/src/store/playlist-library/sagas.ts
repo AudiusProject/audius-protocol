@@ -6,7 +6,15 @@ import {
   PlaylistLibraryFolder,
   PlaylistLibraryIdentifier,
   User,
-  makeKindId
+  makeKindId,
+  accountSelectors,
+  AccountCollection,
+  cacheActions,
+  containsTempPlaylist,
+  extractTempPlaylistsFromLibrary,
+  getPlaylistsNotInLibrary,
+  removePlaylistLibraryDuplicates,
+  replaceTempWithResolvedPlaylists
 } from '@audius/common'
 import {
   all,
@@ -18,26 +26,15 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import { AccountCollection } from 'common/store/account/reducer'
-import {
-  getAccountNavigationPlaylists,
-  getAccountUser,
-  getPlaylistLibrary
-} from 'common/store/account/selectors'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
 import { getResult } from 'common/store/confirmer/selectors'
-import {
-  containsTempPlaylist,
-  extractTempPlaylistsFromLibrary,
-  getPlaylistsNotInLibrary,
-  removePlaylistLibraryDuplicates,
-  replaceTempWithResolvedPlaylists
-} from 'common/store/playlist-library/helpers'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
 import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { update } from './slice'
+
+const { getAccountNavigationPlaylists, getAccountUser, getPlaylistLibrary } =
+  accountSelectors
 
 const TEMP_PLAYLIST_UPDATE_HELPER = 'TEMP_PLAYLIST_UPDATE_HELPER'
 

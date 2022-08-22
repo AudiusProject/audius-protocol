@@ -1,4 +1,14 @@
-import { Kind, StringKeys } from '@audius/common'
+import {
+  Kind,
+  StringKeys,
+  encodeHashId,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  cacheActions,
+  queueActions,
+  tracksSocialActions,
+  getContext
+} from '@audius/common'
 import { eventChannel, END } from 'redux-saga'
 import {
   select,
@@ -10,13 +20,6 @@ import {
   delay
 } from 'typed-redux-saga'
 
-import { getContext } from 'common/store'
-import * as cacheActions from 'common/store/cache/actions'
-import { getTrack } from 'common/store/cache/tracks/selectors'
-import { getUser } from 'common/store/cache/users/selectors'
-import * as queueActions from 'common/store/queue/slice'
-import { recordListen } from 'common/store/social/tracks/actions'
-import { encodeHashId } from 'common/utils/hashIds'
 import {
   getAudio,
   getTrackId,
@@ -42,6 +45,9 @@ import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
 import { TAudioStream, AudioState } from './types'
+const { recordListen } = tracksSocialActions
+const { getUser } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

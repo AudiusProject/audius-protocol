@@ -5,21 +5,25 @@ import {
   UserCollectionMetadata,
   Kind,
   Track,
-  makeUid
+  makeUid,
+  accountSelectors,
+  cacheCollectionsSelectors,
+  cacheSelectors,
+  CommonState,
+  getContext
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
-import { CommonState, getContext } from 'common/store'
-import { getUserId } from 'common/store/account/selectors'
-import { getCollections } from 'common/store/cache/collections/selectors'
 import { retrieve } from 'common/store/cache/sagas'
-import { getEntryTimestamp } from 'common/store/cache/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { waitForAccount } from 'utils/sagaHelpers'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
 import { reformat } from './reformat'
+const { getEntryTimestamp } = cacheSelectors
+const { getCollections } = cacheCollectionsSelectors
+const getUserId = accountSelectors.getUserId
 
 function* markCollectionDeleted(
   collectionMetadatas: CollectionMetadata[]

@@ -1,9 +1,7 @@
 import { useCallback, useRef, useLayoutEffect } from 'react'
 
-import type { ID } from '@audius/common'
-import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
-import { getOptimisticSupportersForUser } from 'audius-client/src/common/store/tipping/selectors'
-import type { SupportersMapForUser } from 'audius-client/src/common/store/tipping/types'
+import { cacheUsersSelectors, tippingSelectors } from '@audius/common'
+import type { ID, SupportersMapForUser } from '@audius/common'
 import { LayoutAnimation, Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -16,6 +14,8 @@ import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { useSelectProfile } from '../selectors'
+const { getOptimisticSupportersForUser } = tippingSelectors
+const { getUsers } = cacheUsersSelectors
 
 const messages = {
   topSupporters: 'Top Supporters',

@@ -3,7 +3,22 @@ import {
   Chain,
   WalletAddress,
   Nullable,
-  BooleanKeys
+  BooleanKeys,
+  weiToString,
+  getErrorMessage,
+  accountSelectors,
+  accountActions,
+  cacheActions,
+  tokenDashboardPageActions,
+  AssociatedWallets,
+  ConfirmRemoveWalletAction,
+  TokenDashboardPageModalState,
+  tokenDashboardPageSelectors,
+  walletActions,
+  modalsActions,
+  getContext,
+  newUserMetadata,
+  PhantomProvider
 } from '@audius/common'
 import {
   all,
@@ -16,50 +31,10 @@ import {
 } from 'typed-redux-saga'
 import { WalletLinkProvider } from 'walletlink'
 
-import { newUserMetadata } from 'common/schemas'
-import { PhantomProvider } from 'common/services/audius-backend'
-import { getContext } from 'common/store'
-import { fetchAccountSucceeded } from 'common/store/account/reducer'
-import { getUserId, getAccountUser } from 'common/store/account/selectors'
-import * as cacheActions from 'common/store/cache/actions'
 import { upgradeToCreator } from 'common/store/cache/users/sagas'
 import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import {
-  getSendData,
-  getAssociatedWallets
-} from 'common/store/pages/token-dashboard/selectors'
-import {
-  fetchAssociatedWallets,
-  connectNewWallet,
-  removeWallet as removeWalletAction,
-  pressSend,
-  setModalState,
-  setModalVisibility as setSendAUDIOModalVisibility,
-  confirmSend,
-  setDiscordCode,
-  setIsConnectingWallet,
-  setWalletAddedConfirmed,
-  setAssociatedWallets,
-  confirmRemoveWallet,
-  updateWalletError,
-  preloadWalletProviders
-} from 'common/store/pages/token-dashboard/slice'
-import {
-  AssociatedWallets,
-  ConfirmRemoveWalletAction,
-  ModalState
-} from 'common/store/pages/token-dashboard/types'
 import { fetchServices } from 'common/store/service-selection/slice'
-import { setVisibility } from 'common/store/ui/modals/slice'
-import {
-  send as walletSend,
-  sendSucceeded,
-  getBalance,
-  sendFailed
-} from 'common/store/wallet/slice'
-import { getErrorMessage } from 'common/utils/error'
-import { weiToString } from 'common/utils/wallet'
 import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
@@ -71,12 +46,39 @@ import {
   createSession
 } from 'services/web3-modal'
 import { waitForAccount } from 'utils/sagaHelpers'
+const { setVisibility } = modalsActions
+const {
+  send: walletSend,
+  sendSucceeded,
+  getBalance,
+  sendFailed
+} = walletActions
+const { getSendData, getAssociatedWallets } = tokenDashboardPageSelectors
+const {
+  fetchAssociatedWallets,
+  connectNewWallet,
+  removeWallet: removeWalletAction,
+  pressSend,
+  setModalState,
+  setModalVisibility: setSendAUDIOModalVisibility,
+  confirmSend,
+  setDiscordCode,
+  setIsConnectingWallet,
+  setWalletAddedConfirmed,
+  setAssociatedWallets,
+  confirmRemoveWallet,
+  updateWalletError,
+  preloadWalletProviders
+} = tokenDashboardPageActions
+const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
+
+const { getUserId, getAccountUser } = accountSelectors
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 
 function* pressSendAsync() {
   // Set modal state to input
-  const inputStage: ModalState = {
+  const inputStage: TokenDashboardPageModalState = {
     stage: 'SEND',
     flowState: {
       stage: 'INPUT'
@@ -109,7 +111,7 @@ function* confirmSendAsync() {
         put(setVisibility({ modal: 'SocialProof', visible: true }))
       ])
     } else {
-      const errorState: ModalState = {
+      const errorState: TokenDashboardPageModalState = {
         stage: 'SEND',
         flowState: {
           stage: 'ERROR',
@@ -122,7 +124,7 @@ function* confirmSendAsync() {
   }
 
   // Set modal state + new token + claim balances
-  const sentState: ModalState = {
+  const sentState: TokenDashboardPageModalState = {
     stage: 'SEND',
     flowState: {
       stage: 'CONFIRMED_SEND',

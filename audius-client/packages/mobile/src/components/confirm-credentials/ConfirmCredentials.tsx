@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { Status } from '@audius/common'
-import { getConfirmCredentialsStatus } from 'audius-client/src/common/store/change-password/selectors'
-import { confirmCredentials } from 'audius-client/src/common/store/change-password/slice'
+import {
+  Status,
+  changePasswordSelectors,
+  changePasswordActions
+} from '@audius/common'
 import { View } from 'react-native'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
@@ -13,6 +15,8 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
+const { confirmCredentials } = changePasswordActions
+const { getConfirmCredentialsStatus } = changePasswordSelectors
 
 type Credentials = {
   email: string

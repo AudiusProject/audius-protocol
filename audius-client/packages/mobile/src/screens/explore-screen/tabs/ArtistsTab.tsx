@@ -1,4 +1,4 @@
-import { makeGetExplore } from 'audius-client/src/common/store/pages/explore/selectors'
+import { explorePageSelectors } from '@audius/common'
 import { EXPLORE_PAGE } from 'audius-client/src/utils/route'
 
 import { ArtistCard } from 'app/components/artist-card'
@@ -6,6 +6,7 @@ import { CardList } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { TabInfo } from '../components/TabInfo'
+const { makeGetExplore } = explorePageSelectors
 
 const messages = {
   infoHeader: 'Featured Artists'

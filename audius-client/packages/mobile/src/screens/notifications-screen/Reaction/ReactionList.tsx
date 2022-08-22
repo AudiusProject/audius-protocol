@@ -1,8 +1,7 @@
 import { useCallback, useContext, useRef, useState } from 'react'
 
-import type { Nullable } from '@audius/common'
-import type { ReactionTypes } from 'audius-client/src/common/store/ui/reactions/slice'
-import { reactionOrder } from 'audius-client/src/common/store/ui/reactions/slice'
+import { reactionOrder } from '@audius/common'
+import type { Nullable, ReactionTypes } from '@audius/common'
 import type { PanResponderGestureState } from 'react-native'
 import { View, PanResponder } from 'react-native'
 

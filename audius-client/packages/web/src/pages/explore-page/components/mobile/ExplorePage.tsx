@@ -12,7 +12,11 @@ import {
   SmartCollection,
   Variant as CollectionVariant,
   Status,
-  User
+  User,
+  explorePageActions,
+  ExplorePageTabs as ExploreTabs,
+  ExploreCollectionsVariant,
+  explorePageSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,12 +25,6 @@ import { ReactComponent as IconForYou } from 'assets/img/iconExploreMobileForYou
 import { ReactComponent as IconMoods } from 'assets/img/iconExploreMobileMoods.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
-import { getTab } from 'common/store/pages/explore/selectors'
-import { setTab } from 'common/store/pages/explore/slice'
-import {
-  Tabs as ExploreTabs,
-  ExploreCollectionsVariant
-} from 'common/store/pages/explore/types'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -56,6 +54,8 @@ import { justForYou } from '../desktop/ExplorePage'
 
 import ColorTile from './ColorTile'
 import styles from './ExplorePage.module.css'
+const { getTab } = explorePageSelectors
+const { setTab } = explorePageActions
 
 const messages = {
   pageName: 'Explore',

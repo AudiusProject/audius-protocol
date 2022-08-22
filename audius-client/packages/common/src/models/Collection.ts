@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 
-import { CID, ID, UID } from 'models/Identifiers'
-import { CoverArtSizes } from 'models/ImageSizes'
-import { Repost } from 'models/Repost'
-import { Nullable } from 'utils/typeUtils'
+import { CID, ID, UID } from '../models/Identifiers'
+import { CoverArtSizes } from '../models/ImageSizes'
+import { Repost } from '../models/Repost'
+import { Nullable } from '../utils/typeUtils'
 
 import { Favorite } from './Favorite'
 import { UserTrackMetadata } from './Track'

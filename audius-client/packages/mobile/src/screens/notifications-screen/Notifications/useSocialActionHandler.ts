@@ -1,25 +1,27 @@
 import { useCallback } from 'react'
 
-import type { User, Nullable } from '@audius/common'
 import type {
-  Favorite,
-  Follow,
-  Repost
-} from 'audius-client/src/common/store/notifications/types'
-import { setNotificationId } from 'audius-client/src/common/store/user-list/notifications/actions'
+  User,
+  Nullable,
+  FavoriteNotification,
+  FollowNotification,
+  RepostNotification
+} from '@audius/common'
+import { notificationsUserListActions } from '@audius/common'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { getUserRoute } from 'app/utils/routes'
 
 import { useDrawerNavigation } from '../useDrawerNavigation'
+const { setNotificationId } = notificationsUserListActions
 
 /**
  * onPress handler for social notifications that opens user-lists when notification
  * has multiple users, and opens user profile when just one.
  */
 export const useSocialActionHandler = (
-  notification: Follow | Repost | Favorite,
+  notification: FollowNotification | RepostNotification | FavoriteNotification,
   users: Nullable<User[]>
 ) => {
   const { id, type, userIds } = notification

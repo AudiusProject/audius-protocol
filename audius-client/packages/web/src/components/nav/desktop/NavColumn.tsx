@@ -7,7 +7,19 @@ import {
   SquareSizes,
   PlaylistLibrary as PlaylistLibraryType,
   Status,
-  FeatureFlags
+  FeatureFlags,
+  accountSelectors,
+  averageColorSelectors,
+  cacheCollectionsActions,
+  notificationsSelectors,
+  notificationsActions,
+  addFolderToLibrary,
+  constructPlaylistFolder,
+  collectionsSocialActions,
+  tracksSocialActions,
+  createPlaylistModalUISelectors,
+  createPlaylistModalUIActions as createPlaylistModalActions,
+  imageProfilePicEmpty
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -23,39 +35,9 @@ import {
 import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
-import imageProfilePicEmpty from 'common/assets/img/imageProfilePicEmpty2X.png'
-import {
-  getAccountStatus,
-  getAccountUser,
-  getPlaylistLibrary
-} from 'common/store/account/selectors'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { getDominantColorsByTrack } from 'common/store/average-color/slice'
-import {
-  addTrackToPlaylist,
-  createPlaylist
-} from 'common/store/cache/collections/actions'
-import {
-  toggleNotificationPanel,
-  updatePlaylistLastViewedAt
-} from 'common/store/notifications/actions'
-import {
-  getNotificationPanelIsOpen,
-  getNotificationUnviewedCount
-} from 'common/store/notifications/selectors'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import {
-  addFolderToLibrary,
-  constructPlaylistFolder
-} from 'common/store/playlist-library/helpers'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import { saveCollection } from 'common/store/social/collections/actions'
-import { saveTrack } from 'common/store/social/tracks/actions'
-import * as createPlaylistModalActions from 'common/store/ui/createPlaylistModal/actions'
-import {
-  getHideFolderTab,
-  getIsOpen
-} from 'common/store/ui/createPlaylistModal/selectors'
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import Droppable from 'components/dragndrop/Droppable'
@@ -94,6 +76,17 @@ import NavAudio from './NavAudio'
 import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
 import PlaylistLibrary from './PlaylistLibrary'
+const { getHideFolderTab, getIsOpen } = createPlaylistModalUISelectors
+const { saveTrack } = tracksSocialActions
+const { saveCollection } = collectionsSocialActions
+const { toggleNotificationPanel, updatePlaylistLastViewedAt } =
+  notificationsActions
+const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
+const { getNotificationPanelIsOpen, getNotificationUnviewedCount } =
+  notificationsSelectors
+const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
+const { getAccountStatus, getAccountUser, getPlaylistLibrary } =
+  accountSelectors
 
 const messages = {
   newPlaylistOrFolderTooltip: 'New Playlist or Folder',

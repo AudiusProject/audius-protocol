@@ -1,23 +1,26 @@
-import { Kind, removeNullable, Uid } from '@audius/common'
+import {
+  Kind,
+  removeNullable,
+  Uid,
+  smartCollectionPageSelectors,
+  collectionPageLineupActions as tracksActions,
+  collectionPageSelectors
+} from '@audius/common'
 import { keyBy } from 'lodash'
 import moment from 'moment'
 import { select, call } from 'redux-saga/effects'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import {
-  PREFIX,
-  tracksActions
-} from 'common/store/pages/collection/lineup/actions'
-import {
+import { getPositions } from 'common/store/queue/selectors'
+import { LineupSagas } from 'store/lineup/sagas'
+import { waitForValue } from 'utils/sagaHelpers'
+const {
   getCollection,
   getSmartCollectionVariant,
   getCollectionId,
   getCollectionTracksLineup
-} from 'common/store/pages/collection/selectors'
-import { getCollection as getSmartCollection } from 'common/store/pages/smart-collection/selectors'
-import { getPositions } from 'common/store/queue/selectors'
-import { LineupSagas } from 'store/lineup/sagas'
-import { waitForValue } from 'utils/sagaHelpers'
+} = collectionPageSelectors
+const { getCollection: getSmartCollection } = smartCollectionPageSelectors
 
 function* getCollectionTracks() {
   const smartCollectionVariant = yield select(getSmartCollectionVariant)
@@ -102,7 +105,7 @@ const sourceSelector = (state) => `collection:${getCollectionId(state)}`
 class TracksSagas extends LineupSagas {
   constructor() {
     super(
-      PREFIX,
+      tracksActions.prefix,
       tracksActions,
       getCollectionTracksLineup,
       getCollectionTracks,

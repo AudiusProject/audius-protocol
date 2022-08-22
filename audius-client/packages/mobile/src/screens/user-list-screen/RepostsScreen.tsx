@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 
-import { setRepost } from 'audius-client/src/common/store/user-list/reposts/actions'
-import { getUserList } from 'audius-client/src/common/store/user-list/reposts/selectors'
+import {
+  repostsUserListActions,
+  repostsUserListSelectors
+} from '@audius/common'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -9,6 +11,8 @@ import { useRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
+const { setRepost } = repostsUserListActions
+const { getUserList } = repostsUserListSelectors
 
 const messages = {
   title: 'Reposts'

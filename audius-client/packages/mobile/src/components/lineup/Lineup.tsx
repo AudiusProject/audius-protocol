@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ID, UID } from '@audius/common'
-import { Name, PlaybackSource, Kind, Status } from '@audius/common'
-import { getShowTip } from 'audius-client/src/common/store/tipping/selectors'
+import {
+  Name,
+  PlaybackSource,
+  Kind,
+  Status,
+  tippingSelectors
+} from '@audius/common'
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'
 import { Dimensions, StyleSheet, View } from 'react-native'
@@ -29,6 +34,7 @@ import type {
   LoadingLineupItem
 } from './types'
 import { LineupVariant } from './types'
+const { getShowTip } = tippingSelectors
 
 // The max number of tiles to load
 const MAX_TILES_COUNT = 1000

@@ -1,6 +1,6 @@
 import React, { ComponentType } from 'react'
 
-import { ReactionTypes } from 'common/store/ui/reactions/slice'
+import { ReactionTypes } from '@audius/common'
 
 import { Reaction, ReactionProps as BaseReactionProps } from './Reaction'
 import explode from './exploding_head.json'

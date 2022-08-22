@@ -1,17 +1,19 @@
-import { ID, User } from '@audius/common'
+import {
+  ID,
+  User,
+  cacheUsersSelectors,
+  UserListSagaFactory,
+  followingUserListActions,
+  followingUserListSelectors,
+  FOLLOWING_USER_LIST_TAG
+} from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
-import { getUser } from 'common/store/cache/users/selectors'
-import { getFollowingError } from 'common/store/user-list/following/actions'
 import { watchFollowingError } from 'common/store/user-list/following/errorSagas'
-import {
-  getId,
-  getUserList,
-  getUserIds
-} from 'common/store/user-list/following/selectors'
-import { USER_LIST_TAG } from 'common/store/user-list/following/types'
-import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
+const { getId, getUserList, getUserIds } = followingUserListSelectors
+const { getFollowingError } = followingUserListActions
+const { getUser } = cacheUsersSelectors
 
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,
@@ -52,7 +54,7 @@ function* getFollowing(currentPage: number, pageSize: number) {
 }
 
 const userListSagas = UserListSagaFactory.createSagas({
-  tag: USER_LIST_TAG,
+  tag: FOLLOWING_USER_LIST_TAG,
   fetchUsers: getFollowing,
   stateSelector: getUserList,
   errorDispatcher

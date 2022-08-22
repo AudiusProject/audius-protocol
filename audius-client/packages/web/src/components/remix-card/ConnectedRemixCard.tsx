@@ -1,18 +1,23 @@
 import { useCallback } from 'react'
 
-import { ID, SquareSizes } from '@audius/common'
+import {
+  ID,
+  SquareSizes,
+  cacheTracksSelectors,
+  cacheUsersSelectors
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getTrack } from 'common/store/cache/tracks/selectors'
-import { getUserFromTrack } from 'common/store/cache/users/selectors'
 import RemixCard from 'components/remix-card/RemixCard'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
+const { getTrack } = cacheTracksSelectors
+const { getUserFromTrack } = cacheUsersSelectors
 
 type OwnProps = {
   trackId: ID

@@ -1,6 +1,6 @@
 import { MouseEventHandler } from 'react'
 
-import { formatCount } from 'common/utils/formatUtil'
+import { formatCount } from '@audius/common'
 
 import styles from './OthersLink.module.css'
 

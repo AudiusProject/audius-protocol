@@ -1,7 +1,5 @@
-import {
-  OverflowAction,
-  OverflowActionCallbacks
-} from 'common/store/ui/mobile-overflow-menu/types'
+import { OverflowAction, OverflowActionCallbacks } from '@audius/common'
+
 import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 
 type MobileOverflowModalProps = {

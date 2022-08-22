@@ -1,8 +1,8 @@
+import { AnnouncementNotification } from '@audius/common'
 import { Modal, Scrollbar } from '@audius/stems'
 import ReactMarkdown from 'react-markdown'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
-import { Announcement } from 'common/store/notifications/types'
 
 import { IconAnnouncement } from './Notification/components/icons'
 import styles from './NotificationModal.module.css'
@@ -10,7 +10,7 @@ import styles from './NotificationModal.module.css'
 type NotificationModalProps = {
   isOpen?: boolean
   onClose: () => void
-  notification: Announcement | null
+  notification: AnnouncementNotification | null
 }
 
 /** The NotificationModal is a modal that renders the

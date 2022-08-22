@@ -1,8 +1,13 @@
-import { LineupState, Track } from '@audius/common'
+import {
+  LineupState,
+  Track,
+  lineupActions,
+  lineupReducer
+} from '@audius/common'
 
-import { RESET_SUCCEEDED, stripPrefix } from 'common/store/lineup/actions'
-import { initialLineupState } from 'common/store/lineup/reducer'
 import { PREFIX } from 'pages/deleted-page/store/lineups/more-by/actions'
+const { initialLineupState } = lineupReducer
+const { RESET_SUCCEEDED, stripPrefix } = lineupActions
 
 export const initialState: LineupState<Track> = {
   ...initialLineupState,

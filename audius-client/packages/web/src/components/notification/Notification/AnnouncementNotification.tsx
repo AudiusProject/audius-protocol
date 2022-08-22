@@ -1,12 +1,14 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  notificationsActions,
+  AnnouncementNotification as AnnouncementNotificationType
+} from '@audius/common'
 import ReactMarkdown from 'react-markdown'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { setNotificationModal } from 'common/store/notifications/actions'
-import { Announcement } from 'common/store/notifications/types'
 
 import styles from './AnnouncementNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -15,13 +17,14 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { IconAnnouncement } from './components/icons'
+const { setNotificationModal } = notificationsActions
 
 const messages = {
   readMore: 'Read More'
 }
 
 type AnnouncementNotificationProps = {
-  notification: Announcement
+  notification: AnnouncementNotificationType
 }
 
 export const AnnouncementNotification = (

@@ -1,16 +1,14 @@
-import { Nullable, User } from '@audius/common'
+import { Nullable, User, accountActions, getContext } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { takeEvery, put, call } from 'redux-saga/effects'
 
-import * as accountActions from 'common/store/account/reducer'
-import { setNeedsAccountRecovery } from 'common/store/account/reducer'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
 import { FetchAccountFailed } from 'services/native-mobile-interface/lifecycle'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { MessageType } from 'services/native-mobile-interface/types'
 import { SIGN_UP_PAGE, SIGN_IN_PAGE, doesMatchRoute } from 'utils/route'
 
-import { getContext } from '../effects'
+const { setNeedsAccountRecovery } = accountActions
 
 export const RESET_REQUIRED_KEY = 'password-reset-required'
 export const ENTROPY_KEY = 'hedgehog-entropy-key'

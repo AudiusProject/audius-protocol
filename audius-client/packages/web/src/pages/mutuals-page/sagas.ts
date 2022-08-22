@@ -1,18 +1,20 @@
-import { ID, User } from '@audius/common'
+import {
+  ID,
+  User,
+  cacheUsersSelectors,
+  UserListSagaFactory,
+  mutualsUserListActions,
+  mutualsUserListSelectors,
+  MUTUALS_USER_LIST_TAG,
+  AudiusBackend
+} from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
-import { AudiusBackend } from 'common/services/audius-backend'
-import { getUser } from 'common/store/cache/users/selectors'
-import { getMutualsError } from 'common/store/user-list/mutuals/actions'
 import { watchMutualsError } from 'common/store/user-list/mutuals/errorSagas'
-import {
-  getId,
-  getUserList,
-  getUserIds
-} from 'common/store/user-list/mutuals/selectors'
-import { USER_LIST_TAG } from 'common/store/user-list/mutuals/types'
-import UserListSagaFactory from 'common/store/user-list/sagas'
 import { createUserListProvider } from 'components/user-list/utils'
+const { getMutualsError } = mutualsUserListActions
+const { getId, getUserList, getUserIds } = mutualsUserListSelectors
+const { getUser } = cacheUsersSelectors
 
 type FetchMutualsConfig = {
   limit: number
@@ -60,7 +62,7 @@ function* getMutuals(currentPage: number, pageSize: number) {
 }
 
 const userListSagas = UserListSagaFactory.createSagas({
-  tag: USER_LIST_TAG,
+  tag: MUTUALS_USER_LIST_TAG,
   fetchUsers: getMutuals,
   stateSelector: getUserList,
   errorDispatcher

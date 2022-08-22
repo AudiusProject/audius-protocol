@@ -4,33 +4,21 @@ import {
   RepostSource,
   FavoriteSource,
   Name,
-  PlaybackSource
+  PlaybackSource,
+  Genre,
+  accountSelectors,
+  lineupSelectors,
+  queueActions,
+  RepeatMode,
+  tracksSocialActions,
+  themeSelectors
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
-import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
-import { getLineupHasTracks } from 'common/store/lineup/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import {
-  play,
-  pause,
-  next,
-  previous,
-  repeat,
-  shuffle
-} from 'common/store/queue/slice'
-import { RepeatMode } from 'common/store/queue/types'
-import {
-  repostTrack,
-  undoRepostTrack,
-  saveTrack,
-  unsaveTrack
-} from 'common/store/social/tracks/actions'
-import { getTheme } from 'common/store/ui/theme/selectors'
-import { Genre } from 'common/utils/genres'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -56,6 +44,12 @@ import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './PlayBar.module.css'
 import PlayingTrackInfo from './components/PlayingTrackInfo'
+const { getTheme } = themeSelectors
+const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
+  tracksSocialActions
+const { play, pause, next, previous, repeat, shuffle } = queueActions
+const { getLineupHasTracks } = lineupSelectors
+const { getAccountUser, getUserId } = accountSelectors
 
 const VOLUME_GRANULARITY = 100.0
 const SEEK_INTERVAL = 200

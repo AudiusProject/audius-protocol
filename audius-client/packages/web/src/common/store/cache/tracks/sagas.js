@@ -4,7 +4,15 @@ import {
   SquareSizes,
   Kind,
   Status,
-  makeKindId
+  makeKindId,
+  squashNewLines,
+  formatUrlName,
+  accountSelectors,
+  averageColorActions,
+  cacheTracksSelectors,
+  cacheTracksActions as trackActions,
+  cacheUsersSelectors,
+  cacheActions
 } from '@audius/common'
 import {
   all,
@@ -17,27 +25,20 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import {
-  getAccountUser,
-  getUserId,
-  getUserHandle
-} from 'common/store/account/selectors'
 import { make } from 'common/store/analytics/actions'
-import { setDominantColors } from 'common/store/average-color/slice'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as cacheActions from 'common/store/cache/actions'
-import * as trackActions from 'common/store/cache/tracks/actions'
-import { getTrack } from 'common/store/cache/tracks/selectors'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { getUser } from 'common/store/cache/users/selectors'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { squashNewLines, formatUrlName } from 'common/utils/formatUtil'
 import { fetchCID } from 'services/audius-backend'
 import TrackDownload from 'services/audius-backend/TrackDownload'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
+const { getUser } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
+const setDominantColors = averageColorActions.setDominantColors
+const { getAccountUser, getUserId, getUserHandle } = accountSelectors
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

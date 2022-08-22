@@ -1,11 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
-import { Chain } from '@audius/common'
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 import {
-  getCollectible,
-  getCollectibleOwnerId
-} from 'audius-client/src/common/store/ui/collectible-details/selectors'
+  Chain,
+  cacheUsersSelectors,
+  collectibleDetailsUISelectors
+} from '@audius/common'
 import { ScrollView, View } from 'react-native'
 
 import IconShare from 'app/assets/images/iconShare.svg'
@@ -25,6 +24,8 @@ import { ButtonType } from '../button/Button'
 import { CollectibleDate } from './CollectibleDate'
 import { CollectibleLink } from './CollectibleLink'
 import { CollectibleMedia } from './CollectibleMedia'
+const { getCollectible, getCollectibleOwnerId } = collectibleDetailsUISelectors
+const { getUser } = cacheUsersSelectors
 
 const MODAL_NAME = 'CollectibleDetails'
 

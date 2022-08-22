@@ -1,6 +1,5 @@
-import { PlayableType } from 'models/Identifiers'
-
 import { Collection } from './Collection'
+import { PlayableType } from './Identifiers'
 import { Track } from './Track'
 
 export type Playable =

@@ -1,23 +1,21 @@
 import { useContext, useMemo, useState } from 'react'
 
-import { CreatePlaylistSource, Collection, SquareSizes } from '@audius/common'
+import {
+  CreatePlaylistSource,
+  Collection,
+  SquareSizes,
+  accountSelectors,
+  cacheCollectionsActions,
+  collectionPageSelectors,
+  addToPlaylistUISelectors,
+  newCollectionMetadata
+} from '@audius/common'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselectAdd.svg'
 import { useModalState } from 'common/hooks/useModalState'
-import { newCollectionMetadata } from 'common/schemas'
-import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
-import {
-  addTrackToPlaylist,
-  createPlaylist
-} from 'common/store/cache/collections/actions'
-import { getCollectionId } from 'common/store/pages/collection/selectors'
-import {
-  getTrackId,
-  getTrackTitle
-} from 'common/store/ui/add-to-playlist/selectors'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -28,6 +26,10 @@ import { playlistPage } from 'utils/route'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import styles from './AddToPlaylistModal.module.css'
+const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
+const { getCollectionId } = collectionPageSelectors
+const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
+const getAccountWithOwnPlaylists = accountSelectors.getAccountWithOwnPlaylists
 
 const messages = {
   title: 'Add to Playlist',

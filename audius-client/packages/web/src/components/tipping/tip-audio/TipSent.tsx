@@ -1,19 +1,23 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common'
+import {
+  Name,
+  formatNumberCommas,
+  accountSelectors,
+  tippingSelectors
+} from '@audius/common'
 import { Button, ButtonType, IconTwitterBird, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { getAccountUser } from 'common/store/account/selectors'
 import { useRecord, make } from 'common/store/analytics/actions'
-import { getSendTipData } from 'common/store/tipping/selectors'
-import { formatNumberCommas } from 'common/utils/formatUtil'
 import { openTwitterLink } from 'utils/tweet'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
 import styles from './TipAudio.module.css'
+const { getSendTipData } = tippingSelectors
+const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   sending: 'SENDING',

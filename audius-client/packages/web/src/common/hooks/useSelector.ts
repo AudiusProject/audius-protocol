@@ -1,9 +1,8 @@
+import { CommonState } from '@audius/common'
 import {
   useSelector as untypedUseSelector,
   TypedUseSelectorHook
 } from 'react-redux'
-
-import { CommonState } from 'common/store'
 
 // The TypedUseSelectorHook can't handle selectors created by reselect,
 // as the OutputSelector and OutputParameterSelector take additional

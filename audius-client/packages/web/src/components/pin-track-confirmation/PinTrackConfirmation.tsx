@@ -1,21 +1,18 @@
 import { memo } from 'react'
 
-import { ID } from '@audius/common'
+import { ID, accountSelectors, tracksSocialActions } from '@audius/common'
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { getAccountUser } from 'common/store/account/selectors'
-import {
-  setArtistPick,
-  unsetArtistPick
-} from 'common/store/social/tracks/actions'
 import { cancelSetAsArtistPick } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { getSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/selectors'
 import { PinTrackAction } from 'store/application/ui/setAsArtistPickConfirmation/types'
 import { AppState } from 'store/types'
 
 import styles from './PinTrackConfirmation.module.css'
+const { setArtistPick, unsetArtistPick } = tracksSocialActions
+const getAccountUser = accountSelectors.getAccountUser
 
 type PinTrackConfirmationProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
