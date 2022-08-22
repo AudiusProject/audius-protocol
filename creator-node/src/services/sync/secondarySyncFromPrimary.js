@@ -3,7 +3,6 @@ const axios = require('axios')
 
 const { logger: genericLogger } = require('../../logging')
 const models = require('../../models')
-const { getUserReplicaSet } = require('../../utils')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const {
   getOwnEndpoint,
@@ -52,12 +51,17 @@ const handleSyncFromPrimary = async ({
   }
 
   // Ensure this node is syncing from the user's primary
-  const userReplicaSet = await getUserReplicaSet({
-    wallet,
-    selfEndpoint: thisContentNodeEndpoint,
-    libs,
-    logger: genericLogger
-  })
+  const userReplicaSet = [
+    ...new Set(
+      await getUserReplicaSetEndpointsFromDiscovery({
+        libs,
+        logger: genericLogger,
+        wallet,
+        blockNumber: null,
+        ensurePrimary: false
+      })
+    )
+  ]
   if (userReplicaSet[0] !== creatorNodeEndpoint) {
     throw new Error(
       `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet[0]}`
@@ -136,7 +140,7 @@ const handleSyncFromPrimary = async ({
       thisContentNodeEndpoint !== userReplicaSet[2]
     ) {
       throw new Error(
-        `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: ${userReplicaSet.slice[1]}`
+        `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet?.[1]},${userReplicaSet?.[2]}]`
       )
     }
 
@@ -241,8 +245,7 @@ const handleSyncFromPrimary = async ({
           logger: genericLogger,
           wallet: fetchedWalletPublicKey,
           blockNumber,
-          ensurePrimary: false,
-          myCnodeEndpoint
+          ensurePrimary: false
         })
 
         // filter out current node from user's replica set

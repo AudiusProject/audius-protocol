@@ -100,7 +100,18 @@ describe('test issueSyncRequest job processor', function () {
       '../stateMachineConstants': {
         ...stateMachineConstants,
         SYNC_MONITORING_RETRY_DELAY_MS: 1
-      }
+      },
+      '../../initAudiusLibs': sandbox.stub().resolves({
+        User: {
+          getUsers: sandbox.stub().resolves([
+            {
+              blocknumber: 1,
+              track_blocknumber: 1,
+              creator_node_endpoint: `${primary},${secondary},http://anotherSecondary.co`
+            }
+          ])
+        }
+      })
     }
 
     if (primarySyncFromSecondaryStub) {

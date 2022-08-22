@@ -41,7 +41,7 @@ const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {
   generateDataForSignatureRecovery
 } = require('../../sync/secondarySyncFromPrimaryUtils')
-const initAudiusLibs = require('../../../services/initAudiusLibs')
+const initAudiusLibs = require('../../initAudiusLibs')
 const { generateTimestampAndSignature } = require('../../../apiSigning')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
@@ -252,7 +252,13 @@ async function _handleIssueSyncRequest({
       const userReplicaSet: string[] = [
         ...new Set<string>(
           await getUserReplicaSetEndpointsFromDiscovery({
-            libs: await initAudiusLibs({ logger }),
+            libs: await initAudiusLibs({
+              enableEthContracts: false,
+              enableContracts: false,
+              enableDiscovery: true,
+              enableIdentity: false,
+              logger
+            }),
             logger,
             wallet: userWallet,
             blockNumber: null,
@@ -271,9 +277,7 @@ async function _handleIssueSyncRequest({
         syncRequestParameters.baseURL !== userReplicaSet[1]
       ) {
         throw new Error(
-          `Sync request is not being made to secondary. Request endpoint: ${
-            syncRequestParameters.baseURL
-          } Secondaries: ${userReplicaSet.slice(1)}`
+          `Sync request is not being made to secondary. Request endpoint: ${syncRequestParameters.baseURL} Secondaries: [${userReplicaSet?.[1]},${userReplicaSet?.[2]}]`
         )
       }
 
