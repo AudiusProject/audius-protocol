@@ -156,9 +156,20 @@ const handleSyncFromPrimary = async ({
     }
 
     const { data: body } = resp
-    if (!body.data.hasOwnProperty('cnodeUsers')) {
+    if (!body.data.hasOwnProperty('cnodeUsers') || !body.data.length) {
       returnValue = {
         error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
+        result: 'failure_malformed_export'
+      }
+      throw returnValue.error
+    }
+
+    const fetchedCNodeUser = Object.values(body.data.cnodeUsers)[0]
+    if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
+      returnValue = {
+        error: new Error(
+          `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
+        ),
         result: 'failure_malformed_export'
       }
       throw returnValue.error
@@ -171,6 +182,21 @@ const handleSyncFromPrimary = async ({
       }`
     )
 
+    // Short-circuit if already up to date -- no sync required
+    const {
+      clock: fetchedLatestClockVal,
+      walletPublicKey: fetchedWalletPublicKey
+    } = fetchedCNodeUser
+    if (fetchedLatestClockVal === localMaxClockVal) {
+      genericLogger.info(
+        logPrefix,
+        `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`
+      )
+      return {
+        result: 'success_clocks_already_match'
+      }
+    }
+
     /**
      * For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
      */
@@ -178,15 +204,6 @@ const handleSyncFromPrimary = async ({
     for (const fetchedCNodeUser of Object.values(body.data.cnodeUsers)) {
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
-      if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
-        returnValue = {
-          error: new Error(
-            `Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`
-          ),
-          result: 'failure_malformed_export'
-        }
-        throw returnValue.error
-      }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
 
       /**
@@ -252,13 +269,6 @@ const handleSyncFromPrimary = async ({
           result: 'failure_inconsistent_clock'
         }
         throw returnValue.error
-      } else if (fetchedLatestClockVal === localMaxClockVal) {
-        // Already up to date, no sync necessary
-        genericLogger.info(
-          logPrefix,
-          `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`
-        )
-        continue
       } else if (
         localMaxClockVal !== -1 &&
         fetchedClockRecords[0] &&
