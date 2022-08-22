@@ -1,8 +1,4 @@
-import {
-  UserChallenge,
-  ChallengeRewardID,
-  Specifier
-} from '../../../models/index'
+import { UserChallenge, ChallengeRewardID, Specifier } from '../../../models'
 
 export type TrendingRewardsModalType = 'tracks' | 'playlists' | 'underground'
 export type ChallengeRewardsModalType = ChallengeRewardID

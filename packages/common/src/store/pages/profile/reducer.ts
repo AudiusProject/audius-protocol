@@ -1,11 +1,12 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
-import { Status } from '../../../models/index'
 import { asLineup } from 'store/lineup/reducer'
 import feedReducer from 'store/pages/profile/lineups/feed/reducer'
 import tracksReducer from 'store/pages/profile/lineups/tracks/reducer'
 import { FollowType, CollectionSortMode } from 'store/pages/profile/types'
 import { FOLLOW_USER, FOLLOW_USER_FAILED } from 'store/social/users/actions'
+
+import { Status } from '../../../models'
 
 import {
   FETCH_PROFILE,

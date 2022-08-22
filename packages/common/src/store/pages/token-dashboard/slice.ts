@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Chain } from '../../../models/Chain'
 import { Nullable } from 'utils/typeUtils'
 
+import { Chain } from '../../../models/Chain'
 import { BNWei, StringWei, WalletAddress } from '../../../models/Wallet'
 
 import {

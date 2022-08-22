@@ -5,7 +5,7 @@ import { getTrack as getTrackBase } from 'store/cache/tracks/selectors'
 import { getUser as getUserBase } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 
-import { ID } from '../../../models/index'
+import { ID } from '../../../models'
 import { setVisibility } from '../modals/slice'
 
 import { open, requestOpen } from './slice'

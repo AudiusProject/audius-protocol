@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
 
-import { Kind, Cache, Collection } from '../models/index'
+import { Kind, Cache, Collection } from '../models'
 
 import accountSlice from './account/reducer'
 import averageColorReducer from './average-color/slice'

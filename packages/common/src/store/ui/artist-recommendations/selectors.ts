@@ -1,7 +1,8 @@
-import { ID } from '../../../models/index'
 import { getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
-import { removeNullable, createDeepEqualSelector } from 'utils/index'
+import { removeNullable, createDeepEqualSelector } from 'utils'
+
+import { ID } from '../../../models'
 
 const getRelatedArtistIds = (state: CommonState, props: { id: ID }) =>
   state.ui.artistRecommendations[props.id]?.relatedArtistIds

@@ -1,6 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
 
-import { ID } from '../../models/index'
 import {
   getOptimisticSupporters,
   getOptimisticSupporting,
@@ -10,6 +9,8 @@ import {
 import { getId as getSupportingId } from 'store/user-list/supporting/selectors'
 import { getId as getSupportersId } from 'store/user-list/top-supporters/selectors'
 import { stringWeiToBN } from 'utils/wallet'
+
+import { ID } from '../../models'
 
 export const makeGetOptimisticUserIdsIfNeeded = ({
   userIds,

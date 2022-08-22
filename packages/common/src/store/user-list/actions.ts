@@ -1,6 +1,6 @@
 import { createCustomAction } from 'typesafe-actions'
 
-import { ID } from '../../models/index'
+import { ID } from '../../models'
 
 export const LOAD_MORE = 'USER_LIST/LOAD_MORE'
 export const RESET = 'USER_LIST/RESET'

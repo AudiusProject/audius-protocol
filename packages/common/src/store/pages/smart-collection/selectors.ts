@@ -1,5 +1,6 @@
-import { SmartCollectionVariant } from '../../../models/SmartCollectionVariant'
 import { CommonState } from 'store/commonStore'
+
+import { SmartCollectionVariant } from '../../../models/SmartCollectionVariant'
 
 const getBaseState = (state: CommonState) => state.pages.smartCollection
 

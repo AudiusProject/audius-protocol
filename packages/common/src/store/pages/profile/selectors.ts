@@ -1,10 +1,11 @@
 import moment from 'moment'
 
-import { ID, UserCollection } from '../../../models/index'
 import { getCollections } from 'store/cache/collections/selectors'
 import { getUser, getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
-import { removeNullable, createDeepEqualSelector } from 'utils/index'
+import { removeNullable, createDeepEqualSelector } from 'utils'
+
+import { ID, UserCollection } from '../../../models'
 
 import { CollectionSortMode } from './types'
 

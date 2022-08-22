@@ -2,7 +2,7 @@ import { getCollections as getCachedCollections } from 'store/cache/collections/
 import { getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 
-import { Collection, Status } from '../../../../models/index'
+import { Collection, Status } from '../../../../models'
 import { ExploreCollectionsVariant } from '../types'
 
 const getBaseState = (state: CommonState) => state.pages.exploreCollections

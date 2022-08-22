@@ -1,7 +1,8 @@
 import { createSelector } from 'reselect'
 
-import { ID } from '../../models/Identifiers'
 import { CommonState } from 'store/commonStore'
+
+import { ID } from '../../models/Identifiers'
 
 const getBase = (state: CommonState) => state.stemsUpload
 

@@ -1,4 +1,4 @@
-import { Track, UID, User } from '../../../models/index'
+import { Track, UID, User } from '../../../models'
 
 export enum PlaylistOperations {
   ADD_TRACK = 'ADD_TRACK',

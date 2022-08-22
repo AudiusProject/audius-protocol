@@ -1,12 +1,12 @@
 import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 
-import { ID, TimeRange, StemTrackMetadata } from 'models/index'
+import { ID, TimeRange, StemTrackMetadata } from 'models'
 import { AuthHeaders } from 'services/audius-backend'
 import {
   IntKeys,
   StringKeys,
   RemoteConfigInstance
-} from 'services/remote-config/index'
+} from 'services/remote-config'
 import { SearchKind } from 'store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from 'utils/hashIds'
 import { Nullable, removeNullable } from 'utils/typeUtils'

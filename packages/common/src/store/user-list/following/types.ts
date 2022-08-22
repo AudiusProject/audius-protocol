@@ -1,6 +1,6 @@
 import { UserListStoreState } from 'store/user-list/types'
 
-import { ID } from '../../../models/index'
+import { ID } from '../../../models'
 
 export type FollowingOwnState = {
   id: ID | null
