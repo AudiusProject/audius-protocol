@@ -26,7 +26,6 @@ services:
       args:
         - GF_INSTALL_IMAGE_RENDERER_PLUGIN=true
         - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
-        - GF_SERVER_ROOT_URL=grafana.audius.co
     user: 0:0
     env_file:
       - grafana/.env

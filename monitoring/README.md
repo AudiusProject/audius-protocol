@@ -338,6 +338,35 @@ For large numbers, use the `short` `Unit`.
 
 The `Color Scheme` should remain set to `Classic Palette` to help standardize our visual experience, but sometimes `Green -> Red` or `Red -> Green` palettes are ideal.
 
+#### Data Links
+
+[Data Links](https://grafana.com/docs/grafana/next/panels/configure-data-links/#data-links) allow any point within a Time Series Panel to contain embedded links when clicking on a point. This can be useful for shortcuts to external websites, among other unexplored use cases.
+
+In future iterations, Data Links will be extracted and included in our auto-generated Alerts once we activate AlertManager in future iterations to enable rich Slack alerts.
+
+#### Value Mappings
+
+Currently supported Value Mapping keys are `team` and `mentions`. Below are some supported examples:
+
+| Condition | Display text      |
+| --------- | ----------------- |
+| team      | platform          |
+| team      | content           |
+| team      | monetization      |
+| mentions  | @joaquin @dheeraj |
+
+The `team` value will be applied as an Alert label and thus affects which Alert Notification Policy is triggered.
+
+The `mentions` value is meant to support Slack @mentions, is included in auto-generated Alerts, but is not fully activated until we activate AlertManager in future iterations to enable rich Slack alerts.
+
+Sample Value Mappings that may be considered for future work:
+
+| Condition    | Display text |
+| ------------ | ------------ |
+| channel      | #eng-custom  |
+| critical     | true         |
+| stage-alerts | false        |
+
 #### Thresholds
 
 Setting `Show Thresholds` to `As Lines` and `Thresholds Mode` to `Absolute` will activate Alerts the next time [Alerts are released to Production](#releasing-alerts-to-production).
@@ -352,9 +381,9 @@ Alert extraction uses the following Threshold Color / Alert Label mapping:
 
 | Threshold Color | Alert Labels                |
 | --------------- | --------------------------- |
-| Red             | {`alert`: `p1`}   |
-| Orange          | {`alert`: `p2`} |
-| Yellow          | {`alert`: `p3`}    |
+| Red             | {`alert`: `p1`}             |
+| Orange          | {`alert`: `p2`}             |
+| Yellow          | {`alert`: `p3`}             |
 
 Additionally, all occurrences of `$env` will result in two sets of nearly identical alerts with different `env` labels:
 
@@ -471,6 +500,8 @@ git checkout master
 
 Alerts are extracted from dashboards using the [thresholds](#thresholds) setting. See the previous link for details on how alerts are defined.
 
+Thresholds are continously extraced from panels and Alerts are created using a cronjob which runs every 10 minutes. If an expected Alert has not been generated, confirm that all required fields are present and the output of the cronjob does not have any failures: `/tmp/cron-alerts.log`.
+
 Alerts extracted on one system should not be mixed with another. Alert extraction relies on dashboard IDs which vary by deployment.
 
 Alert extraction will also always overwrite `grafana/dashboards/` and `grafana/alerts`. However, alert extraction should only happen in Production which should maintain a clean git status regardless.
@@ -511,17 +542,19 @@ Alerting is composed of:
 
 ### Alert Rules
 
-Our Alert Rules are currently being serviced by Grafana.
+Our [Alert Rules](https://grafana.com/docs/grafana/latest/alerting) are currently being serviced by Grafana.
 
-We can choose to use [Prometheus' AlertManager](https://prometheus.io/docs/alerting/latest/notification_examples/) in the future.
+We can choose to use [Prometheus' AlertManager](https://prometheus.io/docs/alerting/latest/notification_examples/) in the future to support rich Slack messages that includes support for href links and Slack @mentions.
 
-CUSTOM ALERTS ARE NOT TOUCHED
+Any alert created outside of the [auto-generated Alerts workflow](#releasing-alerts-to-production) will not have any automation applied to it. The Alerts API does not expose any way to grab the manually created Alerts' `uid` and thus, no API operations can be applied without manual intervention.
 
-PROVISIONED ALERTS ARE UPDATED, NOT DELETED, TO PRESERVE HISTORY
+All auto-generated alerts should not be deleted and should instead always be updated. All alert history is lost when an alert is deleted, however, an alert can be updated multiple times via the API while maintaining alert history.
 
 ### Contact Points
 
-ONE SLACK CHANNEL PER POINT
+[Contact Points](https://grafana.com/docs/grafana/latest/alerting/contact-points) are a one-to-one mapping of Contact Points to Slack channel, email address, and PagerDuty Severity Level.
+
+Contact Points merely house API keys and various optional settings for how to interact with a Contact Point. No routing logic is stored with Contact Points.
 
 ### Message Templates
 
@@ -533,13 +566,15 @@ The [default alert template](https://github.com/grafana/grafana/blob/main/pkg/se
 
 ### Notification Policies
 
-NESTED POLICIES
+[Notification Policies](https://grafana.com/docs/grafana/latest/alerting/notifications) handles the routing logic between Alert labels and Contact Points.
 
-ONE OR MANY, ORDERING MATTERS
+Each Notification Policy can also handle Nested Policies allowing for an alert with one specific set of labels to trigger alerts across multiple Contact Points, like multiple Slack channels.
 
-GROUP WAITING
+In addition to Nested Policies, multiple Notification Policies may be triggered if a matching Notification Policy has `Continue matching subsequent sibling nodes` enabled. If enabled, the order in which the Notification Policies are defined is highly important for accurately routing Alerts to all intended Contact Points.
 
-MUTE TIMINGS
+[Alert Groups](https://grafana.com/docs/grafana/latest/alerting/alert-groups) are designed to batch similar Alerts together within specified time windows to avoid multiple downstream Alerts from being triggered by the same incident. We currently group all firing Alerts into 10 second batches per Notification Policy.
+
+[Mute Timings](https://grafana.com/docs/grafana/latest/alerting/notifications/mute-timings) are not actively being utilized at the moment, but could prove useful in future situations.
 
 ## Notes
 

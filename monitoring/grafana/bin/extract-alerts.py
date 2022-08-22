@@ -9,7 +9,7 @@ import click
 
 def sanatize_text(string):
     result = string.replace('"', '\\"')
-    result = string.replace("\n", "\\n")
+    result = result.replace("\n", "\\n")
     return result
 
 
@@ -40,12 +40,30 @@ def extract_alerts(template, dashboard, env):
             description = panel["description"]
             if "---" in description:
                 summary, description = description.split("---")
-        description = sanatize_text(description.strip())
-        summary = sanatize_text(summary.strip())
+        description = description.strip()
+        summary = summary.strip()
 
         if "fieldConfig" in panel:
             if panel["type"] != "timeseries":
                 continue
+
+            mentions = ''
+            team = ''
+            if "mappings" in panel["fieldConfig"]["defaults"]:
+                for mapping in panel["fieldConfig"]["defaults"]["mappings"]:
+                    for key, mapping in mapping["options"].items():
+                        if key == "mentions":
+                            mentions = mapping["text"]
+                        elif key == "team":
+                            team = mapping["text"]
+
+            if "links" in panel["fieldConfig"]["defaults"]:
+                links = []
+                for link in panel["fieldConfig"]["defaults"]["links"]:
+                    links.append(f'<a href="{link["url"]}">{link["title"]}</a>')
+                # do not use HTML until AlertManager allows formatted Slack messages
+                # for link in links:
+                #     summary += f"\n* {link}"
 
             panel_alerts = []
             for step in panel["fieldConfig"]["defaults"]["thresholds"]["steps"]:
@@ -123,7 +141,7 @@ def extract_alerts(template, dashboard, env):
                                     "type": "prometheus",
                                     "uid": "r2_nnDL7z",
                                 },
-                                "expr": sanatize_text(expression),
+                                "expr": expression,
                                 "hide": False,
                                 "intervalMs": 1000,
                                 "maxDataPoints": 43200,
@@ -175,7 +193,7 @@ def extract_alerts(template, dashboard, env):
 
                 title = sanatize_text(panel["title"])
                 title_env = env.upper() if env == "prod" else env.lower()
-                title = f"{title_env} {title_level} Alert on {title}"
+                title = f"{title_env} {title_level} | {title}"
 
                 formatted_text = template.format(
                     alert_id=alert_id,
@@ -185,10 +203,12 @@ def extract_alerts(template, dashboard, env):
                     datasource_uid="r2_nnDL7z",
                     title=title,
                     runbook_url=runbook_url,
-                    description=description,
-                    summary=summary,
+                    description=sanatize_text(description),
+                    summary=sanatize_text(summary),
                     env=env,
                     level=level,
+                    mentions=mentions,
+                    team=team,
                     condition_ref=ref_ids[-1],
                     data=json.dumps(data),
                 )

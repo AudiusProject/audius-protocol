@@ -20,6 +20,8 @@
   }},
   "labels": {{
     "alert": "{level}",
-    "env": "{env}"
+    "env": "{env}",
+    "mentions": "{mentions}",
+    "team": "{team}"
   }}
 }}
