@@ -1,0 +1,217 @@
+/* eslint-disable no-unused-expressions */
+import type { StateMonitoringUser } from 'services/stateMachineManager/stateMonitoring/types'
+
+import chai from 'chai'
+import sinon from 'sinon'
+import nock from 'nock'
+import proxyquire from 'proxyquire'
+import bunyan from 'bunyan'
+import _ from 'lodash'
+
+import recoverOrphanedDataJobProcessor from '../src/services/stateMachineManager/stateReconciliation/recoverOrphanedData.jobProcessor'
+import { QUEUE_NAMES } from '../src/services/stateMachineManager/stateMachineConstants'
+import { DecoratedJobReturnValue } from '../src/services/stateMachineManager/types'
+import { RecoverOrphanedDataJobReturnValue } from '../src/services/stateMachineManager/stateReconciliation/types'
+
+const { getApp } = require('./lib/app')
+const { getLibsMock } = require('./lib/libsMock')
+
+const models = require('../src/models')
+const config = require('../src/config')
+
+chai.use(require('sinon-chai'))
+const { expect } = chai
+
+describe('test recoverOrphanedData job processor', function () {
+  const DISCOVERY_NODE_ENDPOINT = 'http://dn1.co'
+  const THIS_CONTENT_NODE_ENDPOINT = 'http://cn1.co'
+  const PRIMARY_OF_ORPHANED_USER = 'http://cn9.co'
+
+  const USERS: StateMonitoringUser[] = []
+  _.range(1, 21).forEach((userId) => {
+    USERS.push({
+      user_id: userId,
+      wallet: `wallet${userId}`,
+      primary: PRIMARY_OF_ORPHANED_USER,
+      secondary1: 'http://cn2.co',
+      secondary2: 'http://cn3.co',
+      primarySpID: 1,
+      secondary1SpID: 2,
+      secondary2SpID: 3
+    })
+  })
+
+  let server: any,
+    sandbox: sinon.SinonSandbox,
+    originalContentNodeEndpoint: string
+
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    await appInfo.app.get('redisClient').flushdb()
+    server = appInfo.server
+    sandbox = sinon.createSandbox()
+    originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
+    config.set('creatorNodeEndpoint', THIS_CONTENT_NODE_ENDPOINT)
+    nock.disableNetConnect()
+  })
+
+  afterEach(async function () {
+    expect(nock.isDone()).to.be.true
+    await server.close()
+    sandbox.restore()
+    config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+    nock.cleanAll()
+    nock.enableNetConnect()
+  })
+
+  type TestParams = {
+    usersOnNode: StateMonitoringUser[]
+    usersWithNodeInReplicaSet: StateMonitoringUser[]
+    orphanedUsers: StateMonitoringUser[]
+  }
+  function makeMock({
+    usersOnNode,
+    usersWithNodeInReplicaSet,
+    orphanedUsers
+  }: TestParams): typeof recoverOrphanedDataJobProcessor {
+    // Mock request to Discovery to get users with this node in its replica set
+    nock(DISCOVERY_NODE_ENDPOINT)
+      .get('/v1/full/users/content_node/all')
+      .query({
+        creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
+        prev_user_id: 0,
+        max_users: 10000
+      })
+      .reply(200, { data: usersWithNodeInReplicaSet })
+
+    // Mock local db to return users with state on this node
+    const cNodeUserMockAllStub = sandbox.stub().resolves(
+      usersOnNode.map((user) => {
+        return { walletPublicKey: user.wallet }
+      })
+    )
+    const modelsMock = {
+      ...models,
+      CNodeUser: {
+        findAll: cNodeUserMockAllStub
+      }
+    }
+
+    orphanedUsers.forEach((orphanedUser) => {
+      // Mock fetching the primary endpoint for each orphaned user
+      nock(DISCOVERY_NODE_ENDPOINT)
+        .get('/users')
+        .query({ wallet: orphanedUser.wallet })
+        .reply(200, {
+          data: [
+            {
+              creator_node_endpoint: `${orphanedUser.primary},${orphanedUser.secondary1},${orphanedUser.secondary2}`
+            }
+          ]
+        })
+
+      // Mock making a sync request to recover orphaned data for each user with data orphaned on this node
+      nock(PRIMARY_OF_ORPHANED_USER)
+        .post('/merge_primary_and_secondary')
+        .query({
+          wallet: orphanedUser.wallet,
+          endpoint: THIS_CONTENT_NODE_ENDPOINT,
+          forceWipe: true
+        })
+        .reply(200)
+    })
+
+    return proxyquire(
+      '../src/services/stateMachineManager/stateReconciliation/recoverOrphanedData.jobProcessor.ts',
+      {
+        '../../../config': config,
+        '../../../models': modelsMock
+      }
+    ).default
+  }
+
+  type VerifyJobResults = {
+    jobResults: DecoratedJobReturnValue<RecoverOrphanedDataJobReturnValue>
+    numUsersOnNode: number
+    numUsersWithNodeInReplicaSet: number
+    numOrphanedUsers: number
+  }
+  function verifyJobResults({
+    jobResults,
+    numUsersOnNode,
+    numUsersWithNodeInReplicaSet,
+    numOrphanedUsers
+  }: VerifyJobResults) {
+    expect(jobResults.numWalletsOnNode).to.equal(numUsersOnNode)
+    expect(jobResults.numWalletsWithNodeInReplicaSet).to.equal(
+      numUsersWithNodeInReplicaSet
+    )
+    expect(jobResults.numWalletsWithOrphanedData).to.equal(numOrphanedUsers)
+    expect(jobResults.jobsToEnqueue)
+      .to.have.nested.property(QUEUE_NAMES.RECOVER_ORPHANED_DATA)
+      .that.eqls([{ discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT }])
+    expect(jobResults.metricsToRecord).to.eql([
+      {
+        metricName: 'audius_cn_recover_orphaned_data_wallet_counts',
+        metricType: 'GAUGE_SET',
+        metricValue: numOrphanedUsers,
+        metricLabels: {}
+      },
+      {
+        metricName: 'audius_cn_recover_orphaned_data_sync_counts',
+        metricType: 'GAUGE_SET',
+        metricValue: numOrphanedUsers,
+        metricLabels: {}
+      }
+    ])
+  }
+
+  async function processAndTestJob({
+    usersOnNode,
+    usersWithNodeInReplicaSet,
+    orphanedUsers
+  }: TestParams) {
+    const recoverOrphanedDataJobProcessorMock = makeMock({
+      usersOnNode,
+      usersWithNodeInReplicaSet,
+      orphanedUsers
+    })
+    const jobResults = await recoverOrphanedDataJobProcessorMock({
+      discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT,
+      logger: bunyan.createLogger({ name: 'test_logger' })
+    })
+    verifyJobResults({
+      jobResults,
+      numUsersOnNode: usersOnNode.length,
+      numUsersWithNodeInReplicaSet: usersWithNodeInReplicaSet.length,
+      numOrphanedUsers: orphanedUsers.length
+    })
+  }
+
+  it('Hits correct routes when a user has orphaned data', async function () {
+    // Process a job where USERS[0] does NOT have this node in their RS BUT DOES have data on this node (they should be considered orphaned in this case)
+    await processAndTestJob({
+      usersOnNode: USERS,
+      usersWithNodeInReplicaSet: USERS.slice(1),
+      orphanedUsers: [USERS[0]]
+    })
+  })
+
+  it('Does not think data is orphaned with wallet is in RS but no data is on node', async function () {
+    // Process a job where users have this node in their RS BUT no data on this node (they shouldn't be considered orphaned in this case)
+    await processAndTestJob({
+      usersOnNode: [],
+      usersWithNodeInReplicaSet: USERS,
+      orphanedUsers: []
+    })
+  })
+
+  it('Does not think data is orphaned when wallet is in RS but no data is on node', async function () {
+    // Process a job where users have this node in their RS AND data on this node (they shouldn't be considered orphaned in this case)
+    await processAndTestJob({
+      usersOnNode: USERS,
+      usersWithNodeInReplicaSet: USERS,
+      orphanedUsers: []
+    })
+  })
+})

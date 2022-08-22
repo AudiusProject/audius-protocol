@@ -255,7 +255,9 @@ describe('test StateReconciliationManager initialization, events, and job proces
     const MockStateReconciliationManager = proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/index.js',
       {
-        './recoverOrphanedData.jobProcessor': recoverOrphanedDataStub,
+        './recoverOrphanedData.jobProcessor': {
+          default: recoverOrphanedDataStub
+        },
         '../processJob': processJobMock
       }
     )

@@ -36,7 +36,7 @@ const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
  * @param {string} param.discoveryNodeEndpoint the endpoint of a Discovery Node to query
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  */
-module.exports = async function ({
+export default async function ({
   discoveryNodeEndpoint,
   logger
 }: DecoratedJobParams<RecoverOrphanedDataJobParams>): Promise<

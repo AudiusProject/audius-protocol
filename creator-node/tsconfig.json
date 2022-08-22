@@ -22,10 +22,12 @@
     "typeRoots": [
       "./types",
       "./node_modules/@types"
-    ]
+    ],
+    "types": ["mocha"]
   },
   "include": [
     "src",
+    "test",
     "sequelize"
   ],
   "exclude": [
