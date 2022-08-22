@@ -30,10 +30,10 @@ export type WormholeConfig = {
 
 /** Singleton state-manager for Audius Eth Contracts */
 export class Wormhole {
-  hedgehog: Hedgehog
+  hedgehog: Hedgehog | null
   ethWeb3Manager: EthWeb3Manager
   ethContracts: EthContracts
-  identityService: IdentityService
+  identityService: IdentityService | null
   solanaWeb3Manager: SolanaWeb3Manager
   rpcHosts: string[]
   solBridgeAddress: string
@@ -43,10 +43,10 @@ export class Wormhole {
   wormholeSDK: typeof wormholeSDK
 
   constructor(
-    hedgehog: Hedgehog,
+    hedgehog: Hedgehog | null,
     ethWeb3Manager: EthWeb3Manager,
     ethContracts: EthContracts,
-    identityService: IdentityService,
+    identityService: IdentityService | null,
     solanaWeb3Manager: SolanaWeb3Manager,
     rpcHosts: string[],
     solBridgeAddress: string,
@@ -146,6 +146,9 @@ export class Wormhole {
       if (customSignTransaction) {
         signTransaction = customSignTransaction
       } else {
+        if (!this.identityService) {
+          throw new Error('Identity service required to relay raw transaction')
+        }
         signTransaction = async (transaction: Transaction) => {
           const { blockhash } = await connection.getLatestBlockhash()
           // Must call serialize message to set the correct signatures on the transaction
@@ -205,6 +208,10 @@ export class Wormhole {
 
         await connection.confirmTransaction(txid)
       } else {
+        if (!this.identityService) {
+          throw new Error('Identity service required to relay raw transaction')
+        }
+
         transaction.serializeMessage()
 
         const { blockhash } = await connection.getLatestBlockhash()
@@ -247,6 +254,12 @@ export class Wormhole {
     ethTargetAddress: string,
     options = {}
   ) {
+    if (!this.hedgehog) {
+      throw new Error('Hedgehog required for sendTokensFromSolToEthViaWormhole')
+    }
+    if (!this.identityService) {
+      throw new Error('Identity service required to relay raw transaction')
+    }
     const phases = {
       GENERATE_SOL_ROOT_ACCT: 'GENERATE_SOL_ROOT_ACCT',
       TRANSFER_WAUDIO_TO_ROOT: 'TRANSFER_WAUDIO_TO_ROOT',
@@ -397,6 +410,9 @@ export class Wormhole {
     amount: BN,
     solanaAccount: string
   ) {
+    if (!this.hedgehog) {
+      throw new Error('Hedgehog required for _getTransferTokensToEthWormholeParams')
+    }
     const web3 = this.ethWeb3Manager.getWeb3()
     const wormholeClientAddress =
       this.ethContracts.WormholeClient.contractAddress
