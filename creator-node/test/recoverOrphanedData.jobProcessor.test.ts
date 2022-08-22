@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions */
-import type { StateMonitoringUser } from 'services/stateMachineManager/stateMonitoring/types'
+import type { StateMonitoringUser } from '../src/services/stateMachineManager/stateMonitoring/types'
 
 import chai from 'chai'
 import sinon from 'sinon'
