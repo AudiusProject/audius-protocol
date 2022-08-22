@@ -1,12 +1,15 @@
-from typing import List
 import logging  # pylint: disable=C0302
+from typing import List
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
-from src.tasks.entity_manager.entity_manager import entity_manager_update, ENABLE_DEVELOPMENT_FEATURES
+from src.tasks.entity_manager.entity_manager import (
+    ENABLE_DEVELOPMENT_FEATURES,
+    entity_manager_update,
+)
 from src.tasks.entity_manager.utils import TRACK_ID_OFFSET
 from src.utils.db_session import get_db
 from web3 import Web3
@@ -19,7 +22,7 @@ def test_index_valid_track(app, mocker):
     "Tests valid batch of tracks create/update/delete actions"
 
     if not ENABLE_DEVELOPMENT_FEATURES:
-        logger.info('Skipping entity manager track testing')
+        logger.info("Skipping entity manager track testing")
         return
 
     # setup db and mocked txs
