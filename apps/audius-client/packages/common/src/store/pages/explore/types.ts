@@ -1,4 +1,4 @@
-import { ID, Status } from '../../../models/index'
+import { ID, Status } from '../../../models'
 
 export enum ExplorePageTabs {
   FOR_YOU = 'FOR YOU',

@@ -1,4 +1,4 @@
-import { ID, UID, LineupState, Status, User } from '../../../models/index'
+import { ID, UID, LineupState, Status, User } from '../../../models'
 
 export enum FollowType {
   FOLLOWERS = 'followers',

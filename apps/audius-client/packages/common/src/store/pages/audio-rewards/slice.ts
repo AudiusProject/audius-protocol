@@ -5,7 +5,7 @@ import {
   UserChallenge,
   ChallengeRewardID,
   Specifier
-} from '../../../models/index'
+} from '../../../models'
 
 import {
   AudioRewardsClaim,

@@ -24,7 +24,13 @@ export default [
 
     external: [
       ...Object.keys(pkg.dependencies),
-      ...Object.keys(pkg.devDependencies)
+      ...Object.keys(pkg.devDependencies),
+      ...Object.keys(pkg.peerDependencies),
+      'redux-saga/effects',
+      'events',
+      '@audius/sdk/dist/core',
+      'dayjs/plugin/timezone',
+      'dayjs/plugin/utc'
     ]
   }
 ]

@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, UID, Collectible } from '../../models/index'
 import { RepeatMode, Queueable } from 'store/queue/types'
 import { Nullable } from 'utils/typeUtils'
+
+import { ID, UID, Collectible } from '../../models'
 
 type State = {
   order: Queueable[]

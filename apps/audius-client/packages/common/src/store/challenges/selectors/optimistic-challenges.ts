@@ -1,10 +1,4 @@
 import {
-  ChallengeRewardID,
-  OptimisticUserChallenge,
-  UserChallenge,
-  UserChallengeState
-} from '../../../models/AudioRewards'
-import {
   getUndisbursedUserChallenges,
   getUserChallenges,
   getUserChallengesOverrides
@@ -12,6 +6,12 @@ import {
 import { UndisbursedUserChallenge } from 'store/pages/audio-rewards/types'
 import { removeNullable } from 'utils/typeUtils'
 
+import {
+  ChallengeRewardID,
+  OptimisticUserChallenge,
+  UserChallenge,
+  UserChallengeState
+} from '../../../models/AudioRewards'
 import { CommonState } from '../../commonStore'
 
 import { getCompletionStages } from './profile-progress'

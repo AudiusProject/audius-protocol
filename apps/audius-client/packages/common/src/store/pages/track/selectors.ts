@@ -1,4 +1,3 @@
-import { ID } from '../../../models/index'
 import {
   getTrack as getCachedTrack,
   getStatus as getCachedTrackStatus
@@ -6,6 +5,8 @@ import {
 import { getUser as getCachedUser } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 import { PREFIX } from 'store/pages/track/lineup/actions'
+
+import { ID } from '../../../models'
 
 export const getBaseState = (state: CommonState) => state.pages.track
 

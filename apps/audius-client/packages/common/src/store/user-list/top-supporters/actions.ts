@@ -1,6 +1,6 @@
 import { createCustomAction } from 'typesafe-actions'
 
-import { ID } from '../../../models/index'
+import { ID } from '../../../models'
 
 export const SET_TOP_SUPPORTERS = 'TOP_SUPPORTERS_USER_PAGE/SET_TOP_SUPPORTERS'
 export const GET_TOP_SUPPORTERS_ERROR =

@@ -1,6 +1,6 @@
-import { Status } from '../../../models/Status'
 import { getAccountUser } from 'store/account/selectors'
 
+import { Status } from '../../../models/Status'
 import { CommonState } from '../../commonStore'
 
 export const getProfileDescriptionExists = (state: CommonState) => {

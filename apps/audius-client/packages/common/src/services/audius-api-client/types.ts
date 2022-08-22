@@ -12,8 +12,8 @@ import {
   WalletAddress,
   Supporter,
   Supporting
-} from 'models/index'
-import { Nullable } from 'utils/index'
+} from 'models'
+import { Nullable } from 'utils'
 
 export type OpaqueID = string
 

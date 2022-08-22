@@ -1,6 +1,5 @@
 import { createSelector } from 'reselect'
 
-import { Collection, Track } from '../../models/index'
 import { getAccountUser } from 'store/account/selectors'
 import {
   getCollection,
@@ -9,7 +8,9 @@ import {
 import { getTrack, getTracks } from 'store/cache/tracks/selectors'
 import { getUser, getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
-import { Nullable } from 'utils/index'
+import { Nullable } from 'utils'
+
+import { Collection, Track } from '../../models'
 
 import {
   Entity,

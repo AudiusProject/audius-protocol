@@ -1,4 +1,4 @@
-import { ID, LineupState, TimeRange } from '../../../models/index'
+import { ID, LineupState, TimeRange } from '../../../models'
 
 export type TrendingPageState = {
   trendingWeek: LineupState<{ id: ID }>

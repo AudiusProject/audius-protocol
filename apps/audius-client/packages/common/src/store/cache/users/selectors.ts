@@ -1,4 +1,3 @@
-import { ID, Kind, Status, UID, User } from '../../../models/index'
 import {
   getAllEntries,
   getEntry,
@@ -6,6 +5,7 @@ import {
 } from 'store/cache/selectors'
 import { CommonState } from 'store/commonStore'
 
+import { ID, Kind, Status, UID, User } from '../../../models'
 import { getCollection } from '../collections/selectors'
 import { getTrack } from '../tracks/selectors'
 

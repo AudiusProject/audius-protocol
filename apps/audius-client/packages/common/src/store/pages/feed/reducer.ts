@@ -8,7 +8,7 @@ import {
 import { PREFIX as FeedPrefix } from 'store/pages/feed/lineup/actions'
 import feedReducer from 'store/pages/feed/lineup/reducer'
 
-import { FeedFilter } from '../../../models/index'
+import { FeedFilter } from '../../../models'
 
 const initialState = {
   suggestedFollows: [],
