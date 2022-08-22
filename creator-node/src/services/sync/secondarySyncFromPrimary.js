@@ -175,6 +175,22 @@ const handleSyncFromPrimary = async ({
       throw returnValue.error
     }
 
+    const {
+      clock: fetchedLatestClockVal,
+      clockRecords: fetchedClockRecords,
+      walletPublicKey: fetchedWalletPublicKey,
+      latestBlockNumber: fetchedLatestBlockNumber
+    } = fetchedCNodeUser
+    if (wallet !== fetchedWalletPublicKey) {
+      returnValue = {
+        error: new Error(
+          `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
+        ),
+        result: 'failure_malformed_export'
+      }
+      throw returnValue.error
+    }
+
     genericLogger.info(
       logPrefix,
       `Successful export from ${creatorNodeEndpoint} for wallet ${wallet} and requested min clock ${
@@ -183,10 +199,6 @@ const handleSyncFromPrimary = async ({
     )
 
     // Short-circuit if already up to date -- no sync required
-    const {
-      clock: fetchedLatestClockVal,
-      walletPublicKey: fetchedWalletPublicKey
-    } = fetchedCNodeUser
     if (fetchedLatestClockVal === localMaxClockVal) {
       genericLogger.info(
         logPrefix,
@@ -198,19 +210,11 @@ const handleSyncFromPrimary = async ({
     }
 
     /**
-     * For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
+     * Replace CNodeUser's local DB state with retrieved data + fetch + save missing files.
      */
 
-    for (const fetchedCNodeUser of Object.values(body.data.cnodeUsers)) {
-      // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
-      // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
-      const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
-
-      /**
-       * Retrieve user's replica set to use as gateways for content fetching in saveFileForMultihashToFS
-       *
-       * Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
-       */
+      // Retrieve user's replica set to use as gateways for content fetching in saveFileForMultihashToFS.
+      // Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
       let userReplicaSet = []
       try {
         const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
@@ -223,7 +227,7 @@ const handleSyncFromPrimary = async ({
           myCnodeEndpoint
         })
 
-        // filter out current node from user's replica set
+        // Filter out current node from user's replica set
         userReplicaSet = userReplicaSet.filter((url) => url !== myCnodeEndpoint)
 
         // Spread + set uniq's the array
@@ -235,29 +239,13 @@ const handleSyncFromPrimary = async ({
         )
       }
 
-      if (wallet !== fetchedWalletPublicKey) {
-        returnValue = {
-          error: new Error(
-            `Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`
-          ),
-          result: 'failure_malformed_export'
-        }
-        throw returnValue.error
-      }
-
       /**
        * This node (secondary) must compare its local clock state against clock state received in export from primary.
        * Only allow sync if received clock state contains new data and is contiguous with existing data.
        */
 
-      const {
-        latestBlockNumber: fetchedLatestBlockNumber,
-        clock: fetchedLatestClockVal,
-        clockRecords: fetchedClockRecords
-      } = fetchedCNodeUser
-
       const maxClockRecordId = Math.max(
-        ...fetchedCNodeUser.clockRecords.map((record) => record.clock)
+        ...fetchedClockRecords.map((record) => record.clock)
       )
 
       // Error if returned data is not within requested range
@@ -282,7 +270,7 @@ const handleSyncFromPrimary = async ({
         }
         throw returnValue.error
       } else if (
-        !_.isEmpty(fetchedCNodeUser.clockRecords) &&
+        !_.isEmpty(fetchedClockRecords) &&
         maxClockRecordId !== fetchedLatestClockVal
       ) {
         returnValue = {
@@ -549,7 +537,7 @@ const handleSyncFromPrimary = async ({
          */
 
         await models.ClockRecord.bulkCreate(
-          fetchedCNodeUser.clockRecords.map((clockRecord) => ({
+          fetchedClockRecords.map((clockRecord) => ({
             ...clockRecord,
             cnodeUserUUID
           })),
@@ -653,7 +641,6 @@ const handleSyncFromPrimary = async ({
             }
           : returnValue
       }
-    }
   } catch (e) {
     await SyncHistoryAggregator.recordSyncFail(wallet)
     genericLogger.error(
