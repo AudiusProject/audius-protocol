@@ -1,4 +1,4 @@
-// This is used by `ts language service` and testing, so it needs to include the test folder
+// Config used to build the app (no tests)
 {
   "compilerOptions": {
     "baseUrl": "./src",
@@ -8,7 +8,7 @@
     "lib": [
       "es2020"
     ],
-    "outDir": "./build_test",
+    "outDir": "./build",
     "allowJs": true,
     "downlevelIteration": true,
     "strict": true,
@@ -23,15 +23,16 @@
     "typeRoots": [
       "./types",
       "./node_modules/@types"
-    ],
-    "types": ["mocha"]
+    ]
   },
+  "files": [
+    "src/index.ts"
+  ],
   "include": [
-    "src",
-    "test",
     "sequelize"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "test"
   ]
 }
