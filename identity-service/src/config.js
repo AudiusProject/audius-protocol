@@ -313,10 +313,16 @@ const config = convict({
     env: 'solMinimumBalance',
     default: 1000000000
   },
-  mailgunApiKey: {
-    doc: 'Mailgun API key used to send emails',
+  sendgridApiKey: {
+    doc: 'Sendgrid API key used to send emails',
     format: String,
-    env: 'mailgunApiKey',
+    env: 'sendgridApiKey',
+    default: ''
+  },
+  seonApiKey: {
+    doc: 'Seon API key used to validate emails',
+    format: String,
+    env: 'seonApiKey',
     default: ''
   },
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
