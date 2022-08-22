@@ -1,4 +1,4 @@
-import { Gauge, Histogram, Summary } from 'prom-client'
+import { Gauge, Histogram } from 'prom-client'
 import { snakeCase, mapValues } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { exponentialBucketsRange } from './prometheusUtils'
@@ -117,6 +117,10 @@ export const METRIC_LABELS = Object.freeze({
       'multiple_secondaries', // Both secondaries were replaced in the user's replica set
       'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
+    ],
+    result: [
+      'succeess',
+      
     ]
   },
 
