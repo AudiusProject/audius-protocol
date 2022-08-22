@@ -118,6 +118,7 @@
   },
   "standard": {
     "env": [
+      "node",
       "mocha"
     ]
   }

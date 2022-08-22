@@ -8,7 +8,6 @@
     "lib": [
       "es2020"
     ],
-    "outDir": "./build",
     "allowJs": true,
     "downlevelIteration": true,
     "strict": true,

@@ -3,6 +3,7 @@ const axios = require('axios')
 
 const { logger: genericLogger } = require('../../logging')
 const models = require('../../models')
+const { getUserReplicaSet } = require('../../utils')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const {
   getOwnEndpoint,
@@ -29,6 +30,7 @@ const handleSyncFromPrimary = async ({
   const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
     'syncRequestMaxUserFailureCountBeforeSkip'
   )
+  const thisContentNodeEndpoint = nodeConfig.get('creatorNodeEndpoint')
 
   const start = Date.now()
 
@@ -47,6 +49,19 @@ const handleSyncFromPrimary = async ({
       ),
       result: 'failure_sync_in_progress'
     }
+  }
+
+  // Ensure this node is syncing from the user's primary
+  const userReplicaSet = await getUserReplicaSet({
+    wallet,
+    selfEndpoint: thisContentNodeEndpoint,
+    libs,
+    logger: genericLogger
+  })
+  if (userReplicaSet[0] !== creatorNodeEndpoint) {
+    throw new Error(
+      `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet[0]}`
+    )
   }
 
   /**
@@ -71,6 +86,13 @@ const handleSyncFromPrimary = async ({
     let localMaxClockVal
     if (forceResync || forceWipe) {
       genericLogger.warn(`${logPrefix} Forcing resync..`)
+
+      // Ensure we never wipe the data of a primary
+      if (thisContentNodeEndpoint === userReplicaSet[0]) {
+        throw new Error(
+          `Tried to wipe data of a primary. User replica set: ${userReplicaSet}`
+        )
+      }
 
       /**
        * Wipe local DB state
@@ -108,6 +130,16 @@ const handleSyncFromPrimary = async ({
       localMaxClockVal = cnodeUser ? cnodeUser.clock : -1
     }
 
+    // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data)
+    if (
+      thisContentNodeEndpoint !== userReplicaSet[1] &&
+      thisContentNodeEndpoint !== userReplicaSet[2]
+    ) {
+      throw new Error(
+        `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: ${userReplicaSet.slice[1]}`
+      )
+    }
+
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
      *
@@ -122,8 +154,8 @@ const handleSyncFromPrimary = async ({
     }
 
     // This is used only for logging by primary to record endpoint of requesting node
-    if (nodeConfig.get('creatorNodeEndpoint')) {
-      exportQueryParams.source_endpoint = nodeConfig.get('creatorNodeEndpoint')
+    if (thisContentNodeEndpoint) {
+      exportQueryParams.source_endpoint = thisContentNodeEndpoint
     }
 
     const resp = await axios({
@@ -201,10 +233,10 @@ const handleSyncFromPrimary = async ({
        *
        * Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
        */
-      let userReplicaSet = []
+      let fetchedUserReplicaSet = []
       try {
         const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
-        userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+        fetchedUserReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
           libs,
           logger: genericLogger,
           wallet: fetchedWalletPublicKey,
@@ -214,10 +246,12 @@ const handleSyncFromPrimary = async ({
         })
 
         // filter out current node from user's replica set
-        userReplicaSet = userReplicaSet.filter((url) => url !== myCnodeEndpoint)
+        fetchedUserReplicaSet = fetchedUserReplicaSet.filter(
+          (url) => url !== myCnodeEndpoint
+        )
 
         // Spread + set uniq's the array
-        userReplicaSet = [...new Set(userReplicaSet)]
+        fetchedUserReplicaSet = [...new Set(fetchedUserReplicaSet)]
       } catch (e) {
         genericLogger.error(
           logPrefix,
@@ -433,7 +467,7 @@ const handleSyncFromPrimary = async ({
                 genericLogger,
                 trackFile.multihash,
                 trackFile.storagePath,
-                userReplicaSet,
+                fetchedUserReplicaSet,
                 null,
                 trackFile.trackBlockchainId
               )
@@ -478,7 +512,7 @@ const handleSyncFromPrimary = async ({
                     genericLogger,
                     multihash,
                     nonTrackFile.storagePath,
-                    userReplicaSet,
+                    fetchedUserReplicaSet,
                     nonTrackFile.fileName
                   )
                 } else {
@@ -487,7 +521,7 @@ const handleSyncFromPrimary = async ({
                     genericLogger,
                     multihash,
                     nonTrackFile.storagePath,
-                    userReplicaSet
+                    fetchedUserReplicaSet
                   )
                 }
 

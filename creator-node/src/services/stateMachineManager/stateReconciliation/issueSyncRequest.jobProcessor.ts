@@ -18,6 +18,9 @@ const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
 const {
+  getUserReplicaSetEndpointsFromDiscovery
+} = require('../../../middlewares')
+const {
   METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
 const {
@@ -38,6 +41,7 @@ const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {
   generateDataForSignatureRecovery
 } = require('../../sync/secondarySyncFromPrimaryUtils')
+const initAudiusLibs = require('../../../services/initAudiusLibs')
 const { generateTimestampAndSignature } = require('../../../apiSigning')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
@@ -243,6 +247,36 @@ async function _handleIssueSyncRequest({
       syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
       syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
     ) {
+      // Ensure this node is the user's primary making a request to one of the user's secondaries
+      const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
+      const userReplicaSet: string[] = [
+        ...new Set<string>(
+          await getUserReplicaSetEndpointsFromDiscovery({
+            libs: await initAudiusLibs({ logger }),
+            logger,
+            wallet: userWallet,
+            blockNumber: null,
+            ensurePrimary: true,
+            myCnodeEndpoint: thisContentNodeEndpoint
+          })
+        )
+      ]
+      if (userReplicaSet[0] !== thisContentNodeEndpoint) {
+        throw new Error(
+          `This node is not primary for user. This node: ${thisContentNodeEndpoint} Primary: ${userReplicaSet[0]}`
+        )
+      }
+      if (
+        syncRequestParameters.baseURL !== userReplicaSet[0] &&
+        syncRequestParameters.baseURL !== userReplicaSet[1]
+      ) {
+        throw new Error(
+          `Sync request is not being made to secondary. Request endpoint: ${
+            syncRequestParameters.baseURL
+          } Secondaries: ${userReplicaSet.slice(1)}`
+        )
+      }
+
       const data = generateDataForSignatureRecovery(syncRequestParameters.data)
       const { timestamp, signature } = generateTimestampAndSignature(
         data,

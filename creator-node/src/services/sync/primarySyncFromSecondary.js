@@ -48,7 +48,7 @@ module.exports = async function primarySyncFromSecondary({
 
     let libs
     try {
-      libs = await initAudiusLibs({})
+      libs = await initAudiusLibs({ logger })
       decisionTree.recordStage({ name: 'initAudiusLibs() success', log: true })
     } catch (e) {
       decisionTree.recordStage({
@@ -64,12 +64,18 @@ module.exports = async function primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    let userReplicaSet = await getUserReplicaSet({
-      wallet,
-      selfEndpoint,
-      logger,
-      libs
-    })
+    let userReplicaSet = [
+      ...new Set(
+        await getUserReplicaSetEndpointsFromDiscovery({
+          libs,
+          logger,
+          wallet,
+          blockNumber: null,
+          ensurePrimary: false,
+          myCnodeEndpoint: selfEndpoint
+        })
+      )
+    ]
     decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
     // Error if this node is not primary for user
@@ -544,24 +550,4 @@ async function filterOutAlreadyPresentDBEntries({
   }
 
   return filteredEntries
-}
-
-async function getUserReplicaSet({ wallet, libs, logger }) {
-  try {
-    let userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
-      wallet,
-      blockNumber: null,
-      ensurePrimary: false,
-      myCnodeEndpoint: null
-    })
-
-    // Spread + set uniq's the array
-    userReplicaSet = [...new Set(userReplicaSet)]
-
-    return userReplicaSet
-  } catch (e) {
-    throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
-  }
 }
