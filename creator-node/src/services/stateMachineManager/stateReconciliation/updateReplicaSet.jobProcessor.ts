@@ -193,7 +193,9 @@ const updateReplicaSetJobProcessor = async function ({
       ],
       (Date.now() - startTimeMs) / 1000, // Metric is in seconds
       {
-        result
+        result,
+        issuedReconfig: issuedReconfig?.toString() || 'false',
+        reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
       }
     )
   ]

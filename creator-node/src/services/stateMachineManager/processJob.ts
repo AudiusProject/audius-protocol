@@ -50,7 +50,7 @@ module.exports = async function (
   try {
     await redis.set(`latestJobStart_${queueName}`, Date.now())
     result = await jobProcessor({ logger: jobLogger, ...jobData })
-    metricEndTimerFn({ uncaughtError: false, ...getLabels(queueName, result) })
+    metricEndTimerFn({ uncaughtError: false })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error: any) {
     jobLogger.error(`Error processing job: ${error}`)
@@ -60,20 +60,4 @@ module.exports = async function (
   }
 
   return result
-}
-
-/**
- * Creates prometheus label names and values that are specific to the given job type and its results.
- * @param {string} jobName the name of the job to generate metrics for
- * @param {Object} jobResult the result of the job to generate metrics for
- */
-const getLabels = (jobName: string, jobResult: any) => {
-  if (jobName === QUEUE_NAMES.UPDATE_REPLICA_SET) {
-    const { issuedReconfig, newReplicaSet } = jobResult
-    return {
-      issuedReconfig: issuedReconfig || 'false',
-      reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
-    }
-  }
-  return {}
 }
