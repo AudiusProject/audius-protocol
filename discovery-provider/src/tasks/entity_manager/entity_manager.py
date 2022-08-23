@@ -28,7 +28,7 @@ from src.utils import helpers
 logger = logging.getLogger(__name__)
 
 # Please toggle below variable to true for development
-ENABLE_DEVELOPMENT_FEATURES = False
+ENABLE_DEVELOPMENT_FEATURES = True
 
 
 def entity_manager_update(
@@ -122,6 +122,18 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_track(params)
+                    elif (
+                        params.action == Action.FOLLOW
+                        and params.entity_type == EntityType.USER
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        logger.info('Follow created')
+                    elif (
+                        params.action == Action.UNFOLLOW
+                        and params.entity_type == EntityType.USER
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        logger.info('Unfollow created')
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -160,7 +172,6 @@ def collect_entities_to_fetch(
             entity_id = helpers.get_tx_arg(event, "_entityId")
             entity_type = helpers.get_tx_arg(event, "_entityType")
             user_id = helpers.get_tx_arg(event, "_userId")
-
             entities_to_fetch[entity_type].add(entity_id)
             entities_to_fetch[EntityType.USER].add(user_id)
     return entities_to_fetch

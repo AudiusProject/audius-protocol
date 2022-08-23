@@ -18,6 +18,8 @@ class Action(str, Enum):
     CREATE = "Create"
     UPDATE = "Update"
     DELETE = "Delete"
+    FOLLOW = "Follow"
+    UNFOLLOW = "Unfollow"
 
     def __str__(self) -> str:
         return str.__str__(self)
