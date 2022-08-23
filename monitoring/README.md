@@ -385,7 +385,20 @@ Alert extraction uses the following Threshold Color / Alert Label mapping:
 | Orange          | {`alert`: `p2`} |
 | Yellow          | {`alert`: `p3`} |
 
-Additionally, all occurrences of `$env` will result in two sets of nearly identical alerts with different `env` labels:
+Additionally, all occurrences of `$env` will result in two sets of nearly identical Alerts with different `env` labels. One set of Alerts will:
+
+* replace all occurrences of `$env` with `prod`,
+* replace all other template variables with `.*`,
+* and apply an `{env: prod}` Alert label.
+
+The second set of Alerts will:
+
+* only be extracted if `$env` is present,
+* replace all occurrences of `$env` with `stage`,
+* replace all other template variables with `.*`,
+* and apply an `{env: stage}` Alert label.
+
+Example `env` labels:
 
 | Environment | Alert Labels     |
 | ----------- | ---------------- |
