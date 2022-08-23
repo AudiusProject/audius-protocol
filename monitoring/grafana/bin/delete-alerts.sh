@@ -19,10 +19,6 @@ BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
 json_alerts=$(find "${GRAFANA_ALERTS_DIR}" \
                 -name '*.json' \
-                -not -name 'contact-points.json' \
-                -not -name 'policies.json' \
-                -not -name 'mute-timings.json' \
-                -not -name 'templates.json' \
                 -not -name 'alert.template.json')
 
 # delete alert json files

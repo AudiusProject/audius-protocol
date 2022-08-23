@@ -59,50 +59,48 @@ PUSH_FORMATTING='{dashboard: ., overwrite: true}'
 # ids have to be unique
 CLEAR_FOLDER_IDS='del(.[].id)'
 
-path=grafana/dashboards/folders.json
-response=$(curl \
+path=grafana/metadata/folders.json
+curl \
     -s \
     -H "Authorization: Bearer ${BEARER_TOKEN}" \
     -H 'Content-Type: application/json' \
     -H 'Accept: application/json' \
-    ${BASE_URL}/api/folders)
-
-echo ${response} \
-    | jq "${CLEAR_FOLDER_IDS}" \
-    > "${path}"
+    ${BASE_URL}/api/folders \
+        | jq "${CLEAR_FOLDER_IDS}" \
+        > "${path}"
 echo "Saved to: ${path}"
 
-path=grafana/dashboards/library.json
+path=grafana/metadata/library.json
 # save all library panels into a single file
-curl -s "${PASS_URL}/api/library-elements?perPage=100" \
+curl -s ${PASS_URL}/api/library-elements?perPage=100 \
     | jq .result.elements \
     > ${path}
 echo "Saved to: ${path}"
 
-path=grafana/alerts/contact-points.json
-# save all library panels into a single file
-curl -s "${PASS_URL}/api/v1/provisioning/contact-points" \
+path=grafana/metadata/contact-points.json
+# save all contact points into a single file
+curl -s ${PASS_URL}/api/v1/provisioning/contact-points \
     | jq . \
     > ${path}
 echo "Saved to: ${path}"
 
-path=grafana/alerts/policies.json
-# save all library panels into a single file
-curl -s "${PASS_URL}/api/v1/provisioning/policies" \
+path=grafana/metadata/policies.json
+# save all notification policies into a single file
+curl -s ${PASS_URL}/api/v1/provisioning/policies \
     | jq . \
     > ${path}
 echo "Saved to: ${path}"
 
-path=grafana/alerts/mute-timings.json
-# save all library panels into a single file
-curl -s "${PASS_URL}/api/v1/provisioning/mute-timings" \
+path=grafana/metadata/mute-timings.json
+# save all mute timings into a single file
+curl -s ${PASS_URL}/api/v1/provisioning/mute-timings \
     | jq . \
     > ${path}
 echo "Saved to: ${path}"
 
-path=grafana/alerts/templates.json
-# save all library panels into a single file
-curl -s "${PASS_URL}/api/v1/provisioning/templates" \
+path=grafana/metadata/templates.json
+# save all alert templates into a single file
+curl -s ${PASS_URL}/api/v1/provisioning/templates \
     | jq . \
     > ${path}
 echo "Saved to: ${path}"

@@ -10,15 +10,5 @@
       "token": "[REDACTED]"
     },
     "disableResolveMessage": true
-  },
-  {
-    "uid": "qEfFXYkVz",
-    "name": "#eng-token-alerts",
-    "type": "slack",
-    "settings": {
-      "recipient": "C03S95863FV",
-      "token": "[REDACTED]"
-    },
-    "disableResolveMessage": true
   }
 ]

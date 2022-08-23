@@ -97,7 +97,7 @@ def extract_alerts(template, dashboard, env):
                     level_id = 3
                 elif "blue" in step["color"]:
                     level = "debug"
-                    level_id = 3
+                    level_id = 5
                 else:
                     continue
 
