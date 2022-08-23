@@ -274,7 +274,9 @@ const handleSyncFromPrimary = async ({
       })
 
       // Filter out current node from user's replica set
-      fetchedUserReplicaSet = fetchedUserReplicaSet.filter((url) => url !== myCnodeEndpoint)
+      fetchedUserReplicaSet = fetchedUserReplicaSet.filter(
+        (url) => url !== myCnodeEndpoint
+      )
 
       // Spread + set uniq's the array
       fetchedUserReplicaSet = [...new Set(fetchedUserReplicaSet)]
