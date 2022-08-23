@@ -373,6 +373,11 @@ Sample Value Mappings that may be considered for future work:
 | channel      | #eng-custom  |
 | critical     | true         |
 | stage-alerts | false        |
+| component    | discovery    |
+| component    | content      |
+| component    | contracts    |
+| component    | aao          |
+| component    | monetization |
 
 #### Thresholds
 
