@@ -7,7 +7,6 @@ import {
   convertWAudioToWei,
   formatWei,
   weiToString,
-  JupiterTokenSymbol,
   TOKEN_LISTING_MAP,
   buyAudioSelectors,
   PurchaseInfoErrorType,
@@ -15,11 +14,9 @@ import {
   OnRampProvider
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
-import { Jupiter, SwapMode, RouteInfo } from '@jup-ag/core'
+import type { RouteInfo } from '@jup-ag/core'
 import { u64 } from '@solana/spl-token'
 import {
-  Cluster,
-  Connection,
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
@@ -50,10 +47,12 @@ import {
   pollForAudioBalanceChange,
   pollForSolBalanceChange
 } from 'services/audius-backend/BuyAudio'
+import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import {
   createUserBankIfNeeded,
   getUserBank
 } from 'services/audius-backend/waudio'
+
 const {
   calculateAudioPurchaseInfo,
   calculateAudioPurchaseInfoSucceeded,
@@ -69,102 +68,16 @@ const {
   clearFeesCache,
   calculateAudioPurchaseInfoFailed
 } = buyAudioActions
+
 const { getBuyAudioFlowStage, getFeesCache } = buyAudioSelectors
 const { increaseBalance } = walletActions
-const SOLANA_CLUSTER_ENDPOINT = process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT
-const SOLANA_CLUSTER = process.env.REACT_APP_SOLANA_WEB3_CLUSTER
 
 const ERROR_CODE_INSUFFICIENT_FUNDS = 1 // Error code for when the swap fails due to insufficient funds in the wallet
 const ERROR_CODE_SLIPPAGE = 6000 // Error code for when the swap fails due to specified slippage being exceeded
 const SLIPPAGE = 3 // The slippage amount to allow for exchanges
-let _jup: Jupiter
 
 const MEMO_MESSAGES = {
   [OnRampProvider.COINBASE]: 'In-App $AUDIO Purchase: Coinbase'
-}
-
-/**
- * Initializes Jupiter singleton if necessary and returns
- * @returns a Jupiter instance
- */
-function* initJupiterIfNecessary() {
-  if (!_jup) {
-    if (!SOLANA_CLUSTER_ENDPOINT) {
-      throw new Error('Solana Cluster Endpoint is not configured')
-    }
-    const connection = new Connection(SOLANA_CLUSTER_ENDPOINT, 'confirmed')
-    const cluster = (SOLANA_CLUSTER ?? 'mainnet-beta') as Cluster
-    try {
-      _jup = yield* call(Jupiter.load, {
-        connection,
-        cluster,
-        restrictIntermediateTokens: true,
-        wrapUnwrapSOL: true,
-        routeCacheDuration: 5_000 // 5 seconds
-      })
-      console.debug('Using', connection.rpcEndpoint, 'for onRamp RPC')
-    } catch (e) {
-      console.error(
-        'Jupiter failed to initialize with RPC',
-        connection.rpcEndpoint,
-        e
-      )
-      throw e
-    }
-  }
-  return _jup
-}
-
-/**
- * Gets a quote from Jupiter for an exchange from inputTokenSymbol => outputTokenSymbol
- * @returns the best quote including the RouteInfo
- */
-function* getQuote({
-  inputTokenSymbol,
-  outputTokenSymbol,
-  inputAmount,
-  forceFetch,
-  slippage
-}: {
-  inputTokenSymbol: JupiterTokenSymbol
-  outputTokenSymbol: JupiterTokenSymbol
-  inputAmount: number
-  forceFetch?: boolean
-  slippage: number
-}) {
-  const inputToken = TOKEN_LISTING_MAP[inputTokenSymbol]
-  const outputToken = TOKEN_LISTING_MAP[outputTokenSymbol]
-  const amount = JSBI.BigInt(Math.ceil(inputAmount * 10 ** inputToken.decimals))
-  if (!inputToken || !outputToken) {
-    throw new Error(
-      `Tokens not found: ${inputTokenSymbol} => ${outputTokenSymbol}`
-    )
-  }
-  const jup = yield* call(initJupiterIfNecessary)
-  const routes = yield* call([jup, jup.computeRoutes], {
-    inputMint: new PublicKey(inputToken.address),
-    outputMint: new PublicKey(outputToken.address),
-    amount,
-    slippage,
-    swapMode: SwapMode.ExactIn,
-    forceFetch
-  })
-  const bestRoute = routes.routesInfos[0]
-
-  const resultQuote = {
-    inputAmount: convertJSBIToAmountObject(
-      bestRoute.inAmount,
-      inputToken.decimals
-    ),
-    outputAmount: convertJSBIToAmountObject(
-      bestRoute.outAmount,
-      outputToken.decimals
-    ),
-    route: bestRoute,
-    inputTokenSymbol,
-    outputTokenSymbol
-  }
-  return resultQuote
 }
 
 /**
@@ -220,10 +133,9 @@ function* executeSwap({
   account: Keypair
   transactionHandler: TransactionHandler
 }) {
-  const jup = yield* call(initJupiterIfNecessary)
   const {
     transactions: { setupTransaction, swapTransaction, cleanupTransaction }
-  } = yield* call([jup, jup.exchange], {
+  } = yield* call(JupiterSingleton.exchange, {
     routeInfo: route,
     userPublicKey: account.publicKey
   })
@@ -315,10 +227,9 @@ function* getTransactionFees({
 }) {
   let transactionFees = feesCache?.transactionFees ?? 0
   if (!transactionFees) {
-    const jup = yield* call(initJupiterIfNecessary)
     const {
       transactions: { setupTransaction, swapTransaction, cleanupTransaction }
-    } = yield* call([jup, jup.exchange], {
+    } = yield* call(JupiterSingleton.exchange, {
       routeInfo: route,
       userPublicKey: rootAccount
     })
@@ -463,7 +374,7 @@ function* getAudioPurchaseInfo({
     const slippage = SLIPPAGE
 
     // Get AUDIO => SOL quote
-    const reverseQuote = yield* call(getQuote, {
+    const reverseQuote = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'AUDIO',
       outputTokenSymbol: 'SOL',
       inputAmount: audioAmount,
@@ -475,7 +386,7 @@ function* getAudioPurchaseInfo({
     const inSol = Math.ceil(reverseQuote.outputAmount.amount * slippageFactor)
 
     // Get SOL => AUDIO quote to calculate fees
-    const quote = yield* call(getQuote, {
+    const quote = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount: inSol,
@@ -502,7 +413,7 @@ function* getAudioPurchaseInfo({
       existingBalance
 
     // Get SOL => USDC quote to estimate $USD cost
-    const quoteUSD = yield* call(getQuote, {
+    const quoteUSD = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'USDC',
       inputAmount: estimatedLamports / LAMPORTS_PER_SOL,
@@ -613,7 +524,7 @@ function* startBuyAudioFlow({
     }
 
     // Get dummy quote and calculate fees
-    let quote = yield* call(getQuote, {
+    let quote = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount: newBalance / LAMPORTS_PER_SOL,
@@ -630,7 +541,7 @@ function* startBuyAudioFlow({
     console.debug(`Exchanging ${inputAmount} SOL to AUDIO`)
 
     // Get new quote adjusted for fees
-    quote = yield* call(getQuote, {
+    quote = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount,
