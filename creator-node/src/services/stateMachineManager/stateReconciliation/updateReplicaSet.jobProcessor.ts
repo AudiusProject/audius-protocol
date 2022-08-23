@@ -93,6 +93,13 @@ const updateReplicaSetJobProcessor = async function ({
         enableIdentity: true,
         logger
       })
+    } catch (e) {
+      result = 'failure_init_audius_libs'
+      errorMsg = 'failed to init libs'
+      logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
+    }
+
+    try {
       const { services: healthyServicesMap } =
         await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
           performSyncCheck: false,
