@@ -51,20 +51,16 @@ const handleSyncFromPrimary = async ({
   }
 
   // Ensure this node is syncing from the user's primary
-  const userReplicaSet = [
-    ...new Set(
-      await getUserReplicaSetEndpointsFromDiscovery({
-        libs,
-        logger: genericLogger,
-        wallet,
-        blockNumber: null,
-        ensurePrimary: false
-      })
-    )
-  ]
-  if (userReplicaSet[0] !== creatorNodeEndpoint) {
+  const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+    libs,
+    logger: genericLogger,
+    wallet,
+    blockNumber: null,
+    ensurePrimary: false
+  })
+  if (userReplicaSet.primary !== creatorNodeEndpoint) {
     throw new Error(
-      `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet[0]}`
+      `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`
     )
   }
 
@@ -92,9 +88,11 @@ const handleSyncFromPrimary = async ({
       genericLogger.warn(`${logPrefix} Forcing resync..`)
 
       // Ensure we never wipe the data of a primary
-      if (thisContentNodeEndpoint === userReplicaSet[0]) {
+      if (thisContentNodeEndpoint === userReplicaSet.primary) {
         throw new Error(
-          `Tried to wipe data of a primary. User replica set: ${userReplicaSet}`
+          `Tried to wipe data of a primary. User replica set: ${JSON.stringify(
+            userReplicaSet
+          )}`
         )
       }
 
@@ -136,11 +134,11 @@ const handleSyncFromPrimary = async ({
 
     // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data)
     if (
-      thisContentNodeEndpoint !== userReplicaSet[1] &&
-      thisContentNodeEndpoint !== userReplicaSet[2]
+      thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
+      thisContentNodeEndpoint !== userReplicaSet.secondary2
     ) {
       throw new Error(
-        `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet?.[1]},${userReplicaSet?.[2]}]`
+        `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`
       )
     }
 
@@ -259,31 +257,22 @@ const handleSyncFromPrimary = async ({
      * Replace CNodeUser's local DB state with retrieved data + fetch + save missing files.
      */
 
-    // Retrieve user's replica set to use as gateways for content fetching in saveFileForMultihashToFS.
+    // Use user's replica set as gateways for content fetching in saveFileForMultihashToFS.
     // Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
-    let fetchedUserReplicaSet = []
+    let gatewaysToTry = []
     try {
       const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
-      fetchedUserReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-        libs,
-        logger: genericLogger,
-        wallet: fetchedWalletPublicKey,
-        blockNumber,
-        ensurePrimary: false,
-        myCnodeEndpoint
-      })
 
       // Filter out current node from user's replica set
-      fetchedUserReplicaSet = fetchedUserReplicaSet.filter(
-        (url) => url !== myCnodeEndpoint
-      )
-
-      // Spread + set uniq's the array
-      fetchedUserReplicaSet = [...new Set(fetchedUserReplicaSet)]
+      gatewaysToTry = [
+        userReplicaSet.primary,
+        userReplicaSet.secondary1,
+        userReplicaSet.secondary2
+      ].filter((url) => url !== myCnodeEndpoint)
     } catch (e) {
       genericLogger.error(
         logPrefix,
-        `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
       )
     }
 
@@ -469,7 +458,7 @@ const handleSyncFromPrimary = async ({
               genericLogger,
               trackFile.multihash,
               trackFile.storagePath,
-              fetchedUserReplicaSet,
+              gatewaysToTry,
               null,
               trackFile.trackBlockchainId
             )
@@ -514,7 +503,7 @@ const handleSyncFromPrimary = async ({
                   genericLogger,
                   multihash,
                   nonTrackFile.storagePath,
-                  fetchedUserReplicaSet,
+                  gatewaysToTry,
                   nonTrackFile.fileName
                 )
               } else {
@@ -523,7 +512,7 @@ const handleSyncFromPrimary = async ({
                   genericLogger,
                   multihash,
                   nonTrackFile.storagePath,
-                  fetchedUserReplicaSet
+                  gatewaysToTry
                 )
               }
 

@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
+import { ReplicaSet } from '../../../utils'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -249,35 +250,46 @@ async function _handleIssueSyncRequest({
     ) {
       // Ensure this node is the user's primary making a request to one of the user's secondaries
       const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
-      const userReplicaSet: string[] = [
-        ...new Set<string>(
-          await getUserReplicaSetEndpointsFromDiscovery({
-            libs: await initAudiusLibs({
-              enableEthContracts: false,
-              enableContracts: false,
-              enableDiscovery: true,
-              enableIdentity: false,
-              logger
-            }),
-            logger,
-            wallet: userWallet,
-            blockNumber: null,
-            ensurePrimary: true,
-            myCnodeEndpoint: thisContentNodeEndpoint
-          })
-        )
-      ]
-      if (userReplicaSet[0] !== thisContentNodeEndpoint) {
+      const userReplicaSet: ReplicaSet =
+        await getUserReplicaSetEndpointsFromDiscovery({
+          libs: await initAudiusLibs({
+            enableEthContracts: false,
+            enableContracts: false,
+            enableDiscovery: true,
+            enableIdentity: false,
+            logger
+          }),
+          logger,
+          wallet: userWallet,
+          blockNumber: null,
+          ensurePrimary: false
+        })
+      if (userReplicaSet.primary !== thisContentNodeEndpoint) {
         throw new Error(
-          `This node is not primary for user. This node: ${thisContentNodeEndpoint} Primary: ${userReplicaSet[0]}`
+          `This node is not primary for user. This node: ${thisContentNodeEndpoint} Primary: ${userReplicaSet.primary}`
         )
       }
+
+      // Ensure a MergePrimaryAndSecondary request is being made to a secondary
       if (
-        syncRequestParameters.baseURL !== userReplicaSet[0] &&
-        syncRequestParameters.baseURL !== userReplicaSet[1]
+        syncRequestParameters.baseURL !== userReplicaSet.secondary1 &&
+        syncRequestParameters.baseURL !== userReplicaSet.secondary2
       ) {
         throw new Error(
-          `Sync request is not being made to secondary. Request endpoint: ${syncRequestParameters.baseURL} Secondaries: [${userReplicaSet?.[1]},${userReplicaSet?.[2]}]`
+          `Sync request is not being made to secondary. Request endpoint: ${syncRequestParameters.baseURL} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`
+        )
+      }
+
+      // Ensure a MergePrimaryThenWipeSecondary (orphaned data) request is being made to a node outside the Replica Set
+      if (
+        syncRequestParameters.baseURL === userReplicaSet.primary ||
+        syncRequestParameters.baseURL === userReplicaSet.secondary1 ||
+        syncRequestParameters.baseURL === userReplicaSet.secondary2
+      ) {
+        throw new Error(
+          `Orphaned data sync request is being made to node in replica set. Request endpoint: ${
+            syncRequestParameters.baseURL
+          } Replica set: ${JSON.stringify(userReplicaSet)}`
         )
       }
 

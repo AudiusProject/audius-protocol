@@ -2,7 +2,6 @@ const promiseAny = require('promise.any')
 
 const {
   sendResponse,
-  errorResponse,
   errorResponseUnauthorized,
   errorResponseServerError,
   errorResponseBadRequest
@@ -523,7 +522,7 @@ async function getOwnEndpoint({ libs }) {
  * @param {string} myCnodeEndpoint - endpoint of this CN
  * @param {boolean} ensurePrimary - determines if function should error if this CN is not primary
  *
- * @returns {Array} - array of strings of replica set
+ * @returns {ReplicaSet} - replica set object with optional primary, secondary1, and secondary2 properties
  */
 async function getUserReplicaSetEndpointsFromDiscovery({
   wallet,
@@ -692,7 +691,7 @@ async function getUserReplicaSetEndpointsFromDiscovery({
   }
 
   const endpoint = user[0].creator_node_endpoint
-  const userReplicaSet = endpoint ? endpoint.split(',') : []
+  const userReplicaSet = utils.strToReplicaSet(endpoint || ',,')
 
   logger.info(
     `getUserReplicaSetEndpointsFromDiscovery route time ${Date.now() - start}`

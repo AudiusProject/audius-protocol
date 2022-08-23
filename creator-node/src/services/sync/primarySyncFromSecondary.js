@@ -64,22 +64,17 @@ module.exports = async function primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    let userReplicaSet = [
-      ...new Set(
-        await getUserReplicaSetEndpointsFromDiscovery({
-          libs,
-          logger,
-          wallet,
-          blockNumber: null,
-          ensurePrimary: false,
-          myCnodeEndpoint: selfEndpoint
-        })
-      )
-    ]
+    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+      libs,
+      logger,
+      wallet,
+      blockNumber: null,
+      ensurePrimary: false
+    })
     decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
     // Error if this node is not primary for user
-    if (userReplicaSet[0] !== selfEndpoint) {
+    if (userReplicaSet.primary !== selfEndpoint) {
       decisionTree.recordStage({
         name: 'Error - Node is not primary for user',
         data: { userReplicaSet }
@@ -87,8 +82,11 @@ module.exports = async function primarySyncFromSecondary({
       throw new Error(`Node is not primary for user`)
     }
 
-    // filter out current node from user's replica set
-    userReplicaSet = userReplicaSet.filter((url) => url !== selfEndpoint)
+    // Use the user's non-empty secondaries as gateways to try
+    const gatewaysToTry = [
+      userReplicaSet.secondary1,
+      userReplicaSet.secondary2
+    ].filter(Boolean)
 
     // Keep importing data from secondary until full clock range has been retrieved
     let completed = false
@@ -122,7 +120,7 @@ module.exports = async function primarySyncFromSecondary({
       try {
         CIDsThatFailedSaveFileOp = await saveFilesToDisk({
           files: fetchedCNodeUser.files,
-          userReplicaSet,
+          gatewaysToTry,
           wallet,
           libs,
           logger,
@@ -246,7 +244,7 @@ async function fetchExportFromSecondary({
  */
 async function saveFilesToDisk({
   files,
-  userReplicaSet,
+  gatewaysToTry,
   wallet,
   libs,
   logger,
@@ -282,7 +280,7 @@ async function saveFilesToDisk({
           logger,
           trackFile.multihash,
           trackFile.storagePath,
-          userReplicaSet,
+          gatewaysToTry,
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
@@ -323,7 +321,7 @@ async function saveFilesToDisk({
             logger,
             multihash,
             nonTrackFile.storagePath,
-            userReplicaSet,
+            gatewaysToTry,
             nonTrackFile.fileName
           )
         } else {
@@ -332,7 +330,7 @@ async function saveFilesToDisk({
             logger,
             multihash,
             nonTrackFile.storagePath,
-            userReplicaSet
+            gatewaysToTry
           )
         }
 

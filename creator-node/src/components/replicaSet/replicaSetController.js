@@ -11,7 +11,10 @@ const {
 const {
   respondToURSMRequestForSignature
 } = require('./URSMRegistrationComponentService')
-const { ensureStorageMiddleware } = require('../../middlewares')
+const {
+  ensureStorageMiddleware,
+  ensurePrimaryMiddleware
+} = require('../../middlewares')
 const {
   SyncType,
   SYNC_MODES
@@ -224,6 +227,7 @@ router.post(
 )
 router.post(
   '/merge_primary_and_secondary',
+  ensurePrimaryMiddleware,
   handleResponse(mergePrimaryAndSecondaryController)
 )
 
