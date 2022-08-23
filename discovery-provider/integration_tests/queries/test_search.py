@@ -92,7 +92,6 @@ def setup_search(app_module):
         ),
     ]
 
-    # need users for the lexeme dict to work
     users = [
         User(
             blockhash=hex(1),
