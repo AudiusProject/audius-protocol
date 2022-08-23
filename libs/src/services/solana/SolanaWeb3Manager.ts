@@ -1,4 +1,4 @@
-import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import solanaWeb3, { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
 import anchor, { Address, Idl, Program } from '@project-serum/anchor'
@@ -542,6 +542,13 @@ export class SolanaWeb3Manager {
   }) {
     const balance = await this.getBalance({ publicKey })
     return balance > epsilon
+  }
+
+  async getSolBalance(address: string) {
+    const publicKey = new PublicKey(address)
+    const balance = await this.getBalance({ publicKey})
+    const balanceBN = Utils.toBN(balance * LAMPORTS_PER_SOL)
+    return balanceBN
   }
 
   async getSlot() {
