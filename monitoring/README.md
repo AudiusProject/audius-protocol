@@ -73,6 +73,8 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
       - [Graph Styles](#graph-styles)
       - [Axis](#axis)
       - [Standard Options](#standard-options)
+      - [Data Links](#data-links)
+      - [Value Mappings](#value-mappings)
       - [Thresholds](#thresholds)
     - [Saving Dashboards](#saving-dashboards)
       - [Saving Screenshots](#saving-screenshots)
@@ -82,6 +84,11 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
         - [Saving Production Dashboards Locally](#saving-production-dashboards-locally)
     - [Releasing Dashboards to Production](#releasing-dashboards-to-production)
     - [Releasing Alerts to Production](#releasing-alerts-to-production)
+  - [Alerting](#alerting)
+    - [Alert Rules](#alert-rules)
+    - [Contact Points](#contact-points)
+    - [Message Templates](#message-templates)
+    - [Notification Policies](#notification-policies)
   - [Notes](#notes)
     - [SSH Access to `prometheus-grafana-metrics`](#ssh-access-to-prometheus-grafana-metrics)
 
@@ -388,14 +395,14 @@ Alert extraction uses the following Threshold Color / Alert Label mapping:
 Additionally, all occurrences of `$env` will result in two sets of nearly identical Alerts with different `env` labels. One set of Alerts will:
 
 * replace all occurrences of `$env` with `prod`,
-* replace all other template variables with `.*`,
+* replace all other Template Variables with `.*`,
 * and apply an `{env: prod}` Alert label.
 
 The second set of Alerts will:
 
 * only be extracted if `$env` is present,
 * replace all occurrences of `$env` with `stage`,
-* replace all other template variables with `.*`,
+* replace all other Template Variables with `.*`,
 * and apply an `{env: stage}` Alert label.
 
 Example `env` labels:
@@ -407,7 +414,7 @@ Example `env` labels:
 
 Based on the combination of labels, each Alert will be routed to different Grafana Contact Point(s).
 
-All other Template Variables will be replaced with `.*`. If not ideal, a separate panel must be created with the hardcoded filters.
+Since all other Template Variables will be replaced with `.*`. If not ideal, a separate panel must be created with the intended filters being hardcoded.
 
 The largest color dot in the center creates an alert that will fire when the value is **greater than or equal to** the threshold.
 
@@ -513,7 +520,7 @@ git checkout master
 
 Alerts are extracted from dashboards using the [thresholds](#thresholds) setting. See the previous link for details on how alerts are defined.
 
-Thresholds are continously extraced from panels and Alerts are created using a cronjob which runs every 10 minutes. If an expected Alert has not been generated, confirm that all required fields are present and the output of the cronjob does not have any failures: `/tmp/cron-alerts.log`.
+Every 10 minutes, a cronjob will extract Thresholds from Panels and matching Alerts will be created. If an expected Alert has not been generated, confirm that all required fields are present and the output of the cronjob does not have any failures. The cronjob's logs can be found at `/tmp/cron-alerts.log` when ssh'ing into `prometheus-grafana-metrics`.
 
 Alerts extracted on one system should not be mixed with another. Alert extraction relies on dashboard IDs which vary by deployment.
 
@@ -561,7 +568,7 @@ We can choose to use [Prometheus' AlertManager](https://prometheus.io/docs/alert
 
 Any alert created outside of the [auto-generated Alerts workflow](#releasing-alerts-to-production) will not have any automation applied to it. The Alerts API does not expose any way to grab the manually created Alerts' `uid` and thus, no API operations can be applied without manual intervention.
 
-All auto-generated alerts should not be deleted and should instead always be updated. All alert history is lost when an alert is deleted, however, an alert can be updated multiple times via the API while maintaining alert history.
+All auto-generated alerts should not be deleted and should instead always be updated. All alert history is lost when an alert is deleted, however, an alert can be updated multiple times via the API while maintaining alert history. Do note that auto-generated alerts cannot be updated via the UI.
 
 ### Contact Points
 
@@ -579,7 +586,7 @@ The [default alert template](https://github.com/grafana/grafana/blob/main/pkg/se
 
 ### Notification Policies
 
-[Notification Policies](https://grafana.com/docs/grafana/latest/alerting/notifications) handles the routing logic between Alert labels and Contact Points.
+[Notification Policies](https://grafana.com/docs/grafana/latest/alerting/notifications) handle the routing logic between Alert labels and Contact Points.
 
 Each Notification Policy can also handle Nested Policies allowing for an alert with one specific set of labels to trigger alerts across multiple Contact Points, like multiple Slack channels.
 
