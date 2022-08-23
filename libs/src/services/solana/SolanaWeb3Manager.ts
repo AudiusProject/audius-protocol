@@ -1,8 +1,6 @@
 import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
-import anchor, { Address, Idl, Program, Wallet } from '@project-serum/anchor'
-import { idl } from '@audius/anchor-audius-data'
 
 import { transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
@@ -89,12 +87,6 @@ export type SolanaWeb3Config = {
   feePayerKeypairs?: Keypair[]
   // solana web3 connection confirmationTimeout in ms
   confirmationTimeout: number
-  // admin storage PK for audius-data program
-  audiusDataProgramId: PublicKey
-  // program ID for the audius-data Anchor program
-  audiusDataAdminStorageKeypairPublicKey: PublicKey
-  // IDL for the audius-data Anchor program.
-  audiusDataIdl: Idl
 }
 
 /**
@@ -128,10 +120,6 @@ export class SolanaWeb3Manager {
   rewardManagerProgramId!: PublicKey
   rewardManagerProgramPDA!: PublicKey
   rewardManagerTokenPDA!: PublicKey
-  audiusDataProgramId!: PublicKey
-  audiusDataAdminStorageKeypairPublicKey!: PublicKey
-  audiusDataIdl!: Idl
-  anchorProgram!: Program
 
   constructor(
     solanaWeb3Config: SolanaWeb3Config,
@@ -159,10 +147,7 @@ export class SolanaWeb3Manager {
       rewardsManagerTokenPDA,
       useRelay,
       feePayerKeypairs,
-      confirmationTimeout,
-      audiusDataProgramId,
-      audiusDataAdminStorageKeypairPublicKey,
-      audiusDataIdl
+      confirmationTimeout
     } = this.solanaWeb3Config
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
@@ -219,32 +204,6 @@ export class SolanaWeb3Manager {
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(
       rewardsManagerTokenPDA
     )
-    this.audiusDataProgramId = audiusDataProgramId
-    this.audiusDataAdminStorageKeypairPublicKey =
-      audiusDataAdminStorageKeypairPublicKey
-
-    this.audiusDataIdl = audiusDataIdl || idl
-
-    if (
-      this.audiusDataProgramId &&
-      this.audiusDataAdminStorageKeypairPublicKey &&
-      this.audiusDataIdl
-    ) {
-      const connection = new Connection(
-        this.solanaClusterEndpoint,
-        anchor.AnchorProvider.defaultOptions()
-      )
-      const anchorProvider = new anchor.AnchorProvider(
-        connection,
-        Keypair.generate() as unknown as Wallet,
-        anchor.AnchorProvider.defaultOptions()
-      )
-      this.anchorProgram = new anchor.Program(
-        this.audiusDataIdl,
-        audiusDataProgramId,
-        anchorProvider
-      )
-    }
   }
 
   /**
@@ -614,19 +573,6 @@ export class SolanaWeb3Manager {
     const bumpSeed = derivedAddressInfo[1]
 
     return { baseAuthorityAccount, derivedAddress, bumpSeed }
-  }
-
-  /**
-   * Fetch account on Solana given the program derived address
-   */
-  async fetchAccount(pda: PublicKey) {
-    let account
-    try {
-      account = await this.anchorProgram.account?.['user']?.fetch(pda)
-      return account
-    } catch (e) {
-      return null
-    }
   }
 
   /**
