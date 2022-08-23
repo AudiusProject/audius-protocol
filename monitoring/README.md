@@ -379,11 +379,11 @@ summary, description = description.split("---")
 
 Alert extraction uses the following Threshold Color / Alert Label mapping:
 
-| Threshold Color | Alert Labels                |
-| --------------- | --------------------------- |
-| Red             | {`alert`: `p1`}             |
-| Orange          | {`alert`: `p2`}             |
-| Yellow          | {`alert`: `p3`}             |
+| Threshold Color | Alert Labels    |
+| --------------- | --------------- |
+| Red             | {`alert`: `p1`} |
+| Orange          | {`alert`: `p2`} |
+| Yellow          | {`alert`: `p3`} |
 
 Additionally, all occurrences of `$env` will result in two sets of nearly identical alerts with different `env` labels:
 
