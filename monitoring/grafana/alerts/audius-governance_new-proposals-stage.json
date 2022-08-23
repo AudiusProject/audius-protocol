@@ -39,12 +39,14 @@
     "id": 220151,
     "labels": {
       "alert": "p1",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P1 Alert on New Proposals",
+    "title": "stage P1 | New Proposals",
     "uid": "YCgu57m4z_015_P1"
   }
 ]

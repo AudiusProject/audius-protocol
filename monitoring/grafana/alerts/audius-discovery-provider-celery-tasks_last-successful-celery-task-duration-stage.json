@@ -19,7 +19,7 @@
           },
           "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"stage\", host=~\".*\", success=\"True\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -82,12 +82,14 @@
     "id": 150081,
     "labels": {
       "alert": "p1",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P1 Alert on Last Successful Celery Task Duration",
+    "title": "stage P1 | Last Successful Celery Task Duration",
     "uid": "ZUjg533nk_008_P1"
   }
 ]

@@ -19,7 +19,7 @@
           },
           "expr": "sum(audius_exporters_sdk_proposals) - sum(audius_exporters_sdk_proposals offset 1d OR on() vector(87))",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -82,12 +82,14 @@
     "id": 220151,
     "labels": {
       "alert": "p1",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P1 Alert on New Proposals",
+    "title": "PROD P1 | New Proposals",
     "uid": "YCgu57m4z_015_P1"
   }
 ]

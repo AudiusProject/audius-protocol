@@ -39,12 +39,14 @@
     "id": 200043,
     "labels": {
       "alert": "p3",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "@joaquin",
+      "team": "platform"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P3 Alert on Contract Balances",
+    "title": "stage P3 | Contract Balances",
     "uid": "jPaB_Yk4k_004_P3"
   },
   {
@@ -87,12 +89,14 @@
     "id": 200041,
     "labels": {
       "alert": "p1",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "@joaquin",
+      "team": "platform"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P1 Alert on Contract Balances",
+    "title": "stage P1 | Contract Balances",
     "uid": "jPaB_Yk4k_004_P1"
   },
   {
@@ -135,12 +139,14 @@
     "id": 200042,
     "labels": {
       "alert": "p2",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "@joaquin",
+      "team": "platform"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P2 Alert on Contract Balances",
+    "title": "stage P2 | Contract Balances",
     "uid": "jPaB_Yk4k_004_P2"
   }
 ]

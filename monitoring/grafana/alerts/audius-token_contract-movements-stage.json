@@ -39,12 +39,14 @@
     "id": 200051,
     "labels": {
       "alert": "p1",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P1 Alert on Contract Movements",
+    "title": "stage P1 | Contract Movements",
     "uid": "jPaB_Yk4k_005_P1"
   }
 ]

@@ -19,7 +19,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{} - (audius_exporters_alchemy_balance offset 1m)",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -82,12 +82,14 @@
     "id": 200051,
     "labels": {
       "alert": "p1",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P1 Alert on Contract Movements",
+    "title": "PROD P1 | Contract Movements",
     "uid": "jPaB_Yk4k_005_P1"
   }
 ]

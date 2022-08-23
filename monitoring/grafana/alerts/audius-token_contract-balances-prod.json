@@ -19,7 +19,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name=\"NotStaking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -39,7 +39,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name=\"Staking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "B"
         },
@@ -59,7 +59,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name!=\"Staking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "C"
         },
@@ -166,12 +166,14 @@
     "id": 200043,
     "labels": {
       "alert": "p3",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "@joaquin",
+      "team": "platform"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P3 Alert on Contract Balances",
+    "title": "PROD P3 | Contract Balances",
     "uid": "jPaB_Yk4k_004_P3"
   },
   {
@@ -194,7 +196,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name=\"NotStaking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -214,7 +216,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name=\"Staking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "B"
         },
@@ -234,7 +236,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name!=\"Staking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "C"
         },
@@ -341,12 +343,14 @@
     "id": 200041,
     "labels": {
       "alert": "p1",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "@joaquin",
+      "team": "platform"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P1 Alert on Contract Balances",
+    "title": "PROD P1 | Contract Balances",
     "uid": "jPaB_Yk4k_004_P1"
   },
   {
@@ -369,7 +373,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name=\"NotStaking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -389,7 +393,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name=\"Staking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "B"
         },
@@ -409,7 +413,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name!=\"Staking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "C"
         },
@@ -516,12 +520,14 @@
     "id": 200042,
     "labels": {
       "alert": "p2",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "@joaquin",
+      "team": "platform"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P2 Alert on Contract Balances",
+    "title": "PROD P2 | Contract Balances",
     "uid": "jPaB_Yk4k_004_P2"
   }
 ]

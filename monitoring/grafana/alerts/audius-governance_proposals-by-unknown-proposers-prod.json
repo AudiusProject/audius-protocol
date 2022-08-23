@@ -19,7 +19,7 @@
           },
           "expr": "audius_exporters_sdk_proposals_by_unknown_proposers",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -82,12 +82,14 @@
     "id": 220171,
     "labels": {
       "alert": "p1",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P1 Alert on Proposals by Unknown Proposers",
+    "title": "PROD P1 | Proposals by Unknown Proposers",
     "uid": "YCgu57m4z_017_P1"
   }
 ]

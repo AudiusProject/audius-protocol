@@ -19,7 +19,7 @@
           },
           "expr": "audius_exporters_alchemy_balance{address_name=\"Staking\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -82,12 +82,14 @@
     "id": 200173,
     "labels": {
       "alert": "p3",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P3 Alert on Contract Balances (Staking)",
+    "title": "PROD P3 | Contract Balances (Staking)",
     "uid": "jPaB_Yk4k_017_P3"
   }
 ]

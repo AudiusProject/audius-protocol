@@ -39,12 +39,14 @@
     "id": 220203,
     "labels": {
       "alert": "p3",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P3 Alert on Open Proposals",
+    "title": "stage P3 | Open Proposals",
     "uid": "YCgu57m4z_020_P3"
   },
   {
@@ -87,12 +89,14 @@
     "id": 220201,
     "labels": {
       "alert": "p1",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P1 Alert on Open Proposals",
+    "title": "stage P1 | Open Proposals",
     "uid": "YCgu57m4z_020_P1"
   }
 ]

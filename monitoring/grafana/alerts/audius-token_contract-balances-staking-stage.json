@@ -39,12 +39,14 @@
     "id": 200173,
     "labels": {
       "alert": "p3",
-      "env": "stage"
+      "env": "stage",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P3 Alert on Contract Balances (Staking)",
+    "title": "stage P3 | Contract Balances (Staking)",
     "uid": "jPaB_Yk4k_017_P3"
   }
 ]

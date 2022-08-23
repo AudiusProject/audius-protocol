@@ -19,7 +19,7 @@
           },
           "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -82,12 +82,14 @@
     "id": 220203,
     "labels": {
       "alert": "p3",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P3 Alert on Open Proposals",
+    "title": "PROD P3 | Open Proposals",
     "uid": "YCgu57m4z_020_P3"
   },
   {
@@ -110,7 +112,7 @@
           },
           "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
           "hide": false,
-          "intervalMs": 1,
+          "intervalMs": 1000,
           "maxDataPoints": 43200,
           "refId": "A"
         },
@@ -173,12 +175,14 @@
     "id": 220201,
     "labels": {
       "alert": "p1",
-      "env": "prod"
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P1 Alert on Open Proposals",
+    "title": "PROD P1 | Open Proposals",
     "uid": "YCgu57m4z_020_P1"
   }
 ]
