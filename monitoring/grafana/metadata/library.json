@@ -48,9 +48,7 @@
               "mode": "off"
             }
           },
-          "mappings": [
-            
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -274,9 +272,7 @@
           },
           "unit": "s"
         },
-        "overrides": [
-          
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -388,9 +384,7 @@
           },
           "unit": "s"
         },
-        "overrides": [
-          
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -499,9 +493,7 @@
               "mode": "off"
             }
           },
-          "mappings": [
-            
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -517,9 +509,7 @@
           },
           "unit": "s"
         },
-        "overrides": [
-          
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -534,9 +524,7 @@
       },
       "options": {
         "legend": {
-          "calcs": [
-            
-          ],
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom"
         },
@@ -669,9 +657,7 @@
               "mode": "off"
             }
           },
-          "mappings": [
-            
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -687,9 +673,7 @@
           },
           "unit": "s"
         },
-        "overrides": [
-          
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -704,9 +688,7 @@
       },
       "options": {
         "legend": {
-          "calcs": [
-            
-          ],
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom"
         },
