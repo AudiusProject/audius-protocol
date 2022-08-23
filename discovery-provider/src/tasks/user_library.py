@@ -8,6 +8,9 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.social.save import Save, SaveType
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
+)
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
@@ -155,6 +158,11 @@ def add_track_save(
         save_user_id = event_args._userId
         save_track_id = event_args._trackId
 
+        if not premium_content_access_checker.check_access(
+            save_user_id, save_track_id, "track"
+        ):
+            continue
+
         if (save_user_id in track_state_changes) and (
             save_track_id in track_state_changes[save_user_id]
         ):
@@ -254,6 +262,11 @@ def delete_track_save(
         event_args = event["args"]
         save_user_id = event_args._userId
         save_track_id = event_args._trackId
+
+        if not premium_content_access_checker.check_access(
+            save_user_id, save_track_id, "track"
+        ):
+            continue
 
         if (save_user_id in track_state_changes) and (
             save_track_id in track_state_changes[save_user_id]
