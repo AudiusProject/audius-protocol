@@ -47,8 +47,8 @@ def extract_alerts(template, dashboard, env):
             if panel["type"] != "timeseries":
                 continue
 
-            mentions = ''
-            team = ''
+            mentions = ""
+            team = ""
             if "mappings" in panel["fieldConfig"]["defaults"]:
                 for mapping in panel["fieldConfig"]["defaults"]["mappings"]:
                     for key, mapping in mapping["options"].items():
