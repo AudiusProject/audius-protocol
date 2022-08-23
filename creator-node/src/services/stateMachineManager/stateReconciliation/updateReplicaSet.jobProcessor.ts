@@ -550,7 +550,10 @@ const _issueUpdateReplicaSetOp = async (
       )}`
     )
 
-    if (!issueReconfig) return response
+    if (!issueReconfig) {
+      response.error = 'success_issue_reconfig_disabled'
+      return response
+    }
 
     // Create new array of replica set spIds and write to URSM
     for (const endpt of newReplicaSetEndpoints) {
