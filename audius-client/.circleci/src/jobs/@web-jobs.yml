@@ -204,12 +204,13 @@ web-deploy-staging-s3:
 web-deploy-staging-cloudflare:
   working_directory: ~/audius-client
   docker:
-    - image: circleci/node:14.18
+    - image: cimg/python:3.7.12-node
   steps:
     - web-deploy-cloudflare:
         build-type: staging
         environment: staging
         copy-robots: false
+    - web-deploy-sourcemaps-s3
 
 web-deploy-ipfs-staging:
   working_directory: ~/audius-client
@@ -247,7 +248,7 @@ web-update-ipfs-staging-records:
 web-deploy-release-candidate:
   working_directory: ~/audius-client
   docker:
-    - image: circleci/node:14.18
+    - image: cimg/python:3.7.12-node
   steps:
     - web-deploy-cloudflare:
         build-type: production
@@ -283,7 +284,7 @@ web-deploy-production-s3:
 web-deploy-production-cloudflare:
   working_directory: ~/audius-client
   docker:
-    - image: circleci/node:14.18
+    - image: cimg/python:3.7.12-node
   steps:
     - web-deploy-cloudflare:
         build-type: production
@@ -345,7 +346,7 @@ web-deploy-sentry-sourcemaps:
         name: upload-sourcemaps
         command: |
           cd packages/web
-          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite build-production
+          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite sourcemaps
     - run:
         name: finalize-release
         command: |
