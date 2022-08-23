@@ -376,7 +376,6 @@ def configure_celery(celery, test_config=None):
         imports=[
             "src.tasks.index",
             "src.tasks.index_metrics",
-            "src.tasks.index_materialized_views",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
@@ -417,10 +416,6 @@ def configure_celery(celery, test_config=None):
             "synchronize_metrics": {
                 "task": "synchronize_metrics",
                 "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL),
-            },
-            "update_materialized_views": {
-                "task": "update_materialized_views",
-                "schedule": timedelta(seconds=300),
             },
             "index_hourly_play_counts": {
                 "task": "index_hourly_play_counts",
@@ -558,7 +553,6 @@ def configure_celery(celery, test_config=None):
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
     redis_inst.delete("network_peers_lock")
-    redis_inst.delete("materialized_view_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
     redis_inst.delete("index_hourly_play_counts_lock")
