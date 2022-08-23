@@ -446,7 +446,7 @@ export class Track extends Base {
       phase = phases.ASSOCIATING_TRACK
       // Associate the track id with the file metadata and block number
       await this.creatorNode.associateTrack(
-        trackId!,
+        trackId,
         metadataFileUUID,
         txReceipt!.blockNumber,
         transcodedTrackUUID
@@ -561,10 +561,10 @@ export class Track extends Base {
           // Write metadata to chain
           let txReceipt: TransactionReceipt
           let trackId: number
-          if (useEntityManager) {
+          if (useEntityManager && this.contracts.EntityManagerClient) {
             trackId = Track.generateTrackId()
             const response =
-              await this.contracts.EntityManagerClient!.manageEntity(
+              await this.contracts.EntityManagerClient.manageEntity(
                 ownerId,
                 EntityManagerClient.EntityType.TRACK,
                 trackId,
@@ -782,7 +782,7 @@ export class Track extends Base {
   }
 
   // Minimum track ID, intentionally higher than legacy track ID range
-  static MIN_TRACK_ID = 1000000
+  static MIN_TRACK_ID = 2000000
 
   // Maximum track ID, reflects postgres max integer value
   static MAX_TRACK_ID = 2147483647
