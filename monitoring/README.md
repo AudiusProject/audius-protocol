@@ -531,29 +531,6 @@ Alerts extracted on one system should not be mixed with another. Alert extractio
 
 Alert extraction will also always overwrite `grafana/dashboards/` and `grafana/alerts`. However, alert extraction should only happen in Production which should maintain a clean git status regardless.
 
-```bash
-
-# remove all previously generated alerts
-rm grafana/alerts/
-
-# extract alerts from dashboards
-./grafana/bin/extract-alerts.sh
-
-# remove all disabled alerts
-git status
-# bash ./grafana/bin/delete-alerts.sh ${filename}
-
-# confirm changes
-# git checkout -b grafana-alerts-$(date "+%F-%H-%M-%S")
-# git add grafana/alerts/ grafana/dashboards/
-
-# upload alerts
-./grafana/bin/upload-alerts.sh
-
-# return to the master branch prior to logging out
-git checkout master
-```
-
 ## Alerting
 
 Alerting is composed of:
