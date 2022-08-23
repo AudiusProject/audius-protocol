@@ -1,7 +1,15 @@
 import path from 'path'
-import { Configuration, ProvidePlugin, ResolvePluginInstance } from 'webpack'
+
+import {
+  Configuration,
+  ProvidePlugin,
+  ResolvePluginInstance,
+  SourceMapDevToolPlugin
+} from 'webpack'
 
 const isNative = process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
+
+const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
 type ModuleScopePlugin = ResolvePluginInstance & {
   allowedPaths: string[]
@@ -10,7 +18,7 @@ type ModuleScopePlugin = ResolvePluginInstance & {
 // This ensures we can use the resolve.alias for react/react-dom
 function addReactToModuleScopePlugin(plugin: ModuleScopePlugin) {
   const reactLibs = ['react', 'react-dom']
-  const reactPaths = reactLibs.map(reactLib =>
+  const reactPaths = reactLibs.map((reactLib) =>
     path.resolve(__dirname, 'node_modules', reactLib)
   )
   plugin.allowedPaths = [...plugin.allowedPaths, ...reactPaths]
@@ -52,6 +60,10 @@ export default {
           new ProvidePlugin({
             process: 'process/browser',
             Buffer: ['buffer', 'Buffer']
+          }),
+          new SourceMapDevToolPlugin({
+            publicPath: SOURCEMAP_URL,
+            filename: '[file].map'
           })
         ],
         experiments: {
