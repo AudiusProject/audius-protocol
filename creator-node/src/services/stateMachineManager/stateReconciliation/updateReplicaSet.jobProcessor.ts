@@ -101,16 +101,13 @@ const updateReplicaSetJobProcessor = async function ({
         })
       healthyNodes = Object.keys(healthyServicesMap || {})
       if (healthyNodes.length === 0) {
-        result = 'failure_no_healthy_nodes'
         throw new Error(
           'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
         )
       }
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
-      if (result === 'success') {
-        result = 'failure_to_update_replica_set'
-      }
+      result = 'failure_find_healthy_nodes'
       const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(errorMsg)
 
@@ -661,7 +658,6 @@ const _issueUpdateReplicaSetOp = async (
 
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
-    return response
   }
 
   return response
