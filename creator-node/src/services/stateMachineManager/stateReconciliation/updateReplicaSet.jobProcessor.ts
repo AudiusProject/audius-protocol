@@ -146,6 +146,17 @@ const updateReplicaSetJobProcessor = async function ({
       replicaToUserInfoMap,
       enabledReconfigModes
     })
+  } catch (e) {
+    result = 'failure_determine_new_replica_set'
+    logger.error(
+      `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
+        e as Error
+      ).toString()}: ${(e as Error).stack}`
+    )
+    errorMsg = (e as Error).toString()
+  }
+
+  try {
     ;({ errorMsg, issuedReconfig, syncJobsToEnqueue, result } =
       await _issueUpdateReplicaSetOp(
         userId,
@@ -157,14 +168,14 @@ const updateReplicaSetJobProcessor = async function ({
         audiusLibs,
         logger
       ))
-  } catch (e: any) {
-    result = 'failure_to_update_replica_set'
+  } catch (e) {
+    result = 'failure_issue_update_replica_set'
     logger.error(
-      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
-        e.stack
-      }`
+      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
+        e as Error
+      ).toString()}: ${(e as Error).stack}`
     )
-    errorMsg = e.toString()
+    errorMsg = (e as Error).toString()
   }
 
   // Make metrics to record

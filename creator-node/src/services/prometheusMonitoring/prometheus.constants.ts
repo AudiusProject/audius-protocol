@@ -124,7 +124,9 @@ export const METRIC_LABELS = Object.freeze({
       'skip_update_replica_set',
       'failure_no_healthy_nodes',
       'failure_no_valid_sp',
-      'failure_to_update_replica_set'
+      'failure_to_update_replica_set',
+      'failure_issue_update_replica_set',
+      'failure_determine_new_replica_set'
     ]
   },
 
