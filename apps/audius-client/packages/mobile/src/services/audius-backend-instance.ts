@@ -103,9 +103,13 @@ export const audiusBackendInstance = audiusBackend({
   ) => {
     const config = {
       error: false,
-      web3Config: libs.configInternalWeb3(registryAddress, web3ProviderUrls)
+      web3Config: libs.configInternalWeb3(
+        registryAddress,
+        web3ProviderUrls,
+        undefined,
+        entityManagerAddress
+      )
     }
-    console.log(config, 'HI')
     return config
   },
   hedgehogConfig: {
