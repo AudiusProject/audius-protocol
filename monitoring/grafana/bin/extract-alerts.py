@@ -233,7 +233,7 @@ def main(filename):
     Output all alerts from a panel into individual alerts/*.json files.
     """
     click.echo(filename)
-    with open("grafana/alerts/alert.template.json") as f:
+    with open("grafana/metadata/alert.template.json") as f:
         template = f.read()
     with open(filename) as f:
         dashboard = json.loads(f.read())

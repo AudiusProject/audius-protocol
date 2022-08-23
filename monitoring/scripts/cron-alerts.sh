@@ -5,5 +5,8 @@
 
 set -ex
 
+# remove all stale alerts
+rm grafana/alerts/*
+
 ./grafana/bin/extract-alerts.sh
 ./grafana/bin/upload-alerts.sh
