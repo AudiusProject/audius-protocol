@@ -277,14 +277,6 @@ export class AudiusLibs {
     }
   }
 
-  /**
-   * Configures a solana audius-data
-   * This is a stubbed version for native
-   */
-  static configSolanaAudiusData() {
-    return {}
-  }
-
   version: string
 
   ethWeb3Config: EthWeb3Config
