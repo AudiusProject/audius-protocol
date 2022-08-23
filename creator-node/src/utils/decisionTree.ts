@@ -46,7 +46,7 @@ module.exports = class DecisionTree {
         data,
         timestamp,
         duration,
-        fullDuration: previousStage.duration + duration
+        fullDuration: previousStage.fullDuration + duration
       }
     } else {
       stage = {
