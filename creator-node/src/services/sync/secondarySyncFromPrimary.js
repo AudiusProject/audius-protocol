@@ -156,7 +156,10 @@ const handleSyncFromPrimary = async ({
     }
 
     const { data: body } = resp
-    if (!body.data.hasOwnProperty('cnodeUsers') || !body.data.length) {
+    if (
+      !body.data.hasOwnProperty('cnodeUsers') ||
+      _.isEmpty(body.data.cnodeUsers)
+    ) {
       returnValue = {
         error: new Error(`Malformed response from ${creatorNodeEndpoint}.`),
         result: 'failure_malformed_export'
