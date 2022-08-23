@@ -16,9 +16,9 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
   try {
     logger.info(`${new Date()} - processDownloadAppEmail`)
 
-    const mg = expressApp.get('mailgun')
-    if (mg === null) {
-      logger.error('Mailgun not configured')
+    const sg = expressApp.get('sendgrid')
+    if (sg === null) {
+      logger.error('sendgrid not configured')
       return
     }
     // Get all users who have not signed in mobile and not been sent native mobile email within 2 days
@@ -54,7 +54,7 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
       let userEmail = userToEmail.email
 
       let sent = await renderAndSendDownloadAppEmail(
-        mg,
+        sg,
         userEmail
       )
       if (sent) {
@@ -72,7 +72,7 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
 
 // Master function to render and send email for a given userId
 async function renderAndSendDownloadAppEmail (
-  mg,
+  sg,
   userEmail
 ) {
   try {
@@ -86,30 +86,22 @@ async function renderAndSendDownloadAppEmail (
     const emailParams = {
       from: 'The Audius Team <team@audius.co>',
       to: userEmail,
-      bcc: 'forrest@audius.co',
+      bcc: ['forrest@audius.co'],
       html: downloadAppHtml,
-      subject: 'Audius Is Better On The Go 📱'
+      subject: 'Audius Is Better On The Go 📱',
+      asm: {
+        groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+      }
     }
 
     // Send email
-    await sendEmail(mg, emailParams)
+    await sg.send(emailParams)
 
     return true
   } catch (e) {
     logger.error(`Error in renderAndSendDownloadAppEmail ${e}`)
     return false
   }
-}
-
-async function sendEmail (mg, emailParams) {
-  return new Promise((resolve, reject) => {
-    mg.messages().send(emailParams, (error, body) => {
-      if (error) {
-        reject(error)
-      }
-      resolve(body)
-    })
-  })
 }
 
 module.exports = { processDownloadAppEmail }

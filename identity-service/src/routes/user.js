@@ -31,15 +31,13 @@ module.exports = function (app) {
       try {
         let isEmailDeliverable = true
         try {
-          const checkValidEmailUrl = `https://api.mailgun.net/v4/address/validate?address=${encodeURIComponent(email)}`
+          const checkValidEmailUrl = `https://api.seon.io/SeonRestService/email-verification/v1.0/${encodeURIComponent(email)}`
           const checkEmailResponse = await axios.get(checkValidEmailUrl, {
-            auth: {
-              username: 'api', password: config.get('mailgunApiKey')
-            }
+            headers: { 'X-API-KEY': config.get('seonApiKey') }
           })
-          isEmailDeliverable = checkEmailResponse.data.result === 'deliverable' || checkEmailResponse.data.result === 'unknown'
+          isEmailDeliverable = checkEmailResponse.data.deliverable
         } catch (err) {
-          req.logger.error(`Unable to fetch validate email from mailgun for ${email}`, err)
+          req.logger.error(`Unable to fetch validate email from seon for ${email}`, err)
         }
 
         await models.User.create({

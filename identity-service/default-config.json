@@ -49,7 +49,7 @@
   "ethTokenAddress": "",
   "ethRegistryAddress": "",
   "ethOwnerWallet": "",
-  "mailgunApiKey": "",
+  "sendgridApiKey": "",
   "defiPulseApiKey": "",
   "registryAddress": "",
   "awsAccessKeyId": "",
