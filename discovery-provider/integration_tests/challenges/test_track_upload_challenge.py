@@ -134,7 +134,7 @@ def test_track_upload_challenge(app):
 
         # set challenge as active for purposes of test
         session.query(Challenge).filter(Challenge.id == "track-upload").update(
-            {"active": True}
+            {"active": True, "starting_block": 30000000}
         )
 
         session.add(block1)
