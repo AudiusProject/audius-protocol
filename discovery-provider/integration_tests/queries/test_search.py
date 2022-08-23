@@ -11,11 +11,6 @@ from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.models.users.user_balance import UserBalance
 from src.queries.search_es import search_es_full
-from src.queries.search_queries import (
-    playlist_search_query,
-    track_search_query,
-    user_search_query,
-)
 from src.utils.db_session import get_db
 
 
@@ -242,13 +237,6 @@ def setup_search(app_module):
             session.add(balance)
             session.flush()
 
-        # Refresh the lexeme matview
-        session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict;")
-        session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict;")
-
-        session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict;")
-        session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict;")
-
     subprocess.run(
         ["npm", "run", "catchup:ci"],
         env=os.environ,
@@ -261,13 +249,6 @@ def setup_search(app_module):
 
 def test_get_tracks_external(app_module):
     """Tests we get all tracks, including downloaded"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = track_search_query(session, "the track", 10, 0, False, None, False)
-        assert len(res["all"]) == 2
-        assert len(res["saved"]) == 0
 
     search_args = {
         "is_auto_complete": False,
@@ -286,13 +267,6 @@ def test_get_tracks_external(app_module):
 
 def test_get_autocomplete_tracks(app_module):
     """Tests we get all tracks with autocomplete"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = track_search_query(session, "the track", 10, 0, True, None, False)
-        assert len(res["all"]) == 2
-        assert len(res["saved"]) == 0
 
     search_args = {
         "is_auto_complete": True,
@@ -311,13 +285,6 @@ def test_get_autocomplete_tracks(app_module):
 
 def test_get_tracks_internal(app_module):
     """Tests we get all tracks when a user is logged in"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = track_search_query(session, "the track", 10, 0, False, 1, False)
-        assert len(res["all"]) == 2
-        assert len(res["saved"]) == 1
 
     search_args = {
         "is_auto_complete": False,
@@ -337,13 +304,6 @@ def test_get_tracks_internal(app_module):
 
 def test_get_downloadable_tracks(app_module):
     """Tests we get only downloadable results"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = track_search_query(session, "the track", 10, 0, False, None, True)
-        assert len(res["all"]) == 1
-        assert len(res["saved"]) == 0
 
     search_args = {
         "is_auto_complete": False,
@@ -363,13 +323,6 @@ def test_get_downloadable_tracks(app_module):
 
 def test_get_external_users(app_module):
     """Tests we get all users"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = user_search_query(session, "user", 10, 0, False, None)
-        assert len(res["all"]) == 2
-        assert len(res["followed"]) == 0
 
     search_args = {
         "is_auto_complete": False,
@@ -389,13 +342,6 @@ def test_get_external_users(app_module):
 
 def test_get_autocomplete_users(app_module):
     """Tests we get all users with autocomplete"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = user_search_query(session, "user", 10, 0, True, None)
-        assert len(res["all"]) == 2
-        assert len(res["followed"]) == 0
 
     search_args = {
         "is_auto_complete": True,
@@ -415,13 +361,6 @@ def test_get_autocomplete_users(app_module):
 
 def test_get_internal_users(app_module):
     """Tests we get all users when a user is logged in"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = user_search_query(session, "user", 10, 0, False, 2)
-        assert len(res["all"]) == 2
-        assert len(res["followed"]) == 1
 
     search_args = {
         "is_auto_complete": False,
@@ -441,13 +380,6 @@ def test_get_internal_users(app_module):
 
 def test_get_internal_users_no_following(app_module):
     """Tests we get all users for a user that doesn't follow anyone"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = user_search_query(session, "user", 10, 0, False, 1)
-        assert len(res["all"]) == 2
-        assert len(res["followed"]) == 0
 
     search_args = {
         "is_auto_complete": False,
@@ -466,13 +398,6 @@ def test_get_internal_users_no_following(app_module):
 
 def test_get_external_playlists(app_module):
     """Tests we get all playlists"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = playlist_search_query(session, "playlist", 10, 0, False, False, None)
-        assert len(res["all"]) == 1
-        assert len(res["saved"]) == 0
 
     search_args = {
         "is_auto_complete": False,
@@ -491,13 +416,6 @@ def test_get_external_playlists(app_module):
 
 def test_get_autocomplete_playlists(app_module):
     """Tests we get all tracks with autocomplete"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = playlist_search_query(session, "playlist", 10, 0, False, True, None)
-        assert len(res["all"]) == 1
-        assert len(res["saved"]) == 0
 
     search_args = {
         "is_auto_complete": True,
@@ -516,13 +434,6 @@ def test_get_autocomplete_playlists(app_module):
 
 def test_get_internal_playlists(app_module):
     """Tests we get playlists when a user is logged in"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = playlist_search_query(session, "playlist", 10, 0, False, False, 1)
-        assert len(res["all"]) == 1
-        assert len(res["saved"]) == 1
 
     search_args = {
         "is_auto_complete": False,
@@ -541,13 +452,6 @@ def test_get_internal_playlists(app_module):
 
 def test_get_external_albums(app_module):
     """Tests we get all albums"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = playlist_search_query(session, "album", 10, 0, True, False, None)
-        assert len(res["all"]) == 1
-        assert len(res["saved"]) == 0
 
     search_args = {
         "is_auto_complete": False,
@@ -566,13 +470,6 @@ def test_get_external_albums(app_module):
 
 def test_get_autocomplete_albums(app_module):
     """Tests we get all albums with autocomplete"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = playlist_search_query(session, "album", 10, 0, True, True, None)
-        assert len(res["all"]) == 1
-        assert len(res["saved"]) == 0
 
     search_args = {
         "is_auto_complete": True,
@@ -591,13 +488,6 @@ def test_get_autocomplete_albums(app_module):
 
 def test_get_internal_albums(app_module):
     """Tests we get albums when a user is logged in"""
-    with app_module.app_context():
-        db = get_db()
-
-    with db.scoped_session() as session:
-        res = playlist_search_query(session, "album", 10, 0, True, False, 1)
-        assert len(res["all"]) == 1
-        assert len(res["saved"]) == 1
 
     search_args = {
         "is_auto_complete": True,
