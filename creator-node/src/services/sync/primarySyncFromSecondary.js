@@ -74,7 +74,7 @@ module.exports = async function primarySyncFromSecondary({
 
     // Error if this node is not primary for user
     if (userReplicaSet[0] !== selfEndpoint) {
-      decisionTree.recordState({
+      decisionTree.recordStage({
         name: 'Error - Node is not primary for user',
         data: { userReplicaSet }
       })
