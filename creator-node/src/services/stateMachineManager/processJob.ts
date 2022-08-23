@@ -9,7 +9,6 @@ const _ = require('lodash')
 
 const { createChildLogger } = require('../../logging')
 const redis = require('../../redis')
-const { QUEUE_NAMES } = require('./stateMachineConstants')
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.

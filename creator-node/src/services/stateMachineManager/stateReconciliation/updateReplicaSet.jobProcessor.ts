@@ -71,7 +71,7 @@ const updateReplicaSetJobProcessor = async function ({
     issueReconfig: false,
     reconfigType: null
   }
-  let result = 'success'
+  let error
 
   const startTimeMs = Date.now()
 
@@ -94,7 +94,7 @@ const updateReplicaSetJobProcessor = async function ({
         logger
       })
     } catch (e) {
-      result = 'failure_init_audius_libs'
+      error = 'failure_init_audius_libs'
       errorMsg = 'failed to init libs'
       logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
     }
@@ -114,7 +114,7 @@ const updateReplicaSetJobProcessor = async function ({
       }
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
-      result = 'failure_find_healthy_nodes'
+      error = 'failure_find_healthy_nodes'
       const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(errorMsg)
 
@@ -126,7 +126,7 @@ const updateReplicaSetJobProcessor = async function ({
           ],
           (Date.now() - startTimeMs) / 1000, // Metric is in seconds
           {
-            result
+            result: error || 'success'
           }
         )
       ]
@@ -154,7 +154,7 @@ const updateReplicaSetJobProcessor = async function ({
       enabledReconfigModes
     })
   } catch (e) {
-    result = 'failure_determine_new_replica_set'
+    error = 'failure_determine_new_replica_set'
     logger.error(
       `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
         e as Error
@@ -164,7 +164,7 @@ const updateReplicaSetJobProcessor = async function ({
   }
 
   try {
-    ;({ errorMsg, issuedReconfig, syncJobsToEnqueue, result } =
+    ;({ errorMsg, issuedReconfig, syncJobsToEnqueue, error } =
       await _issueUpdateReplicaSetOp(
         userId,
         wallet,
@@ -176,7 +176,7 @@ const updateReplicaSetJobProcessor = async function ({
         logger
       ))
   } catch (e) {
-    result = 'failure_issue_update_replica_set'
+    error = 'failure_issue_update_replica_set'
     logger.error(
       `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
         e as Error
@@ -193,7 +193,7 @@ const updateReplicaSetJobProcessor = async function ({
       ],
       (Date.now() - startTimeMs) / 1000, // Metric is in seconds
       {
-        result,
+        result: error || 'success',
         issuedReconfig: issuedReconfig?.toString() || 'false',
         reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
       }
@@ -495,7 +495,7 @@ const _selectRandomReplicaSetNodes = async (
 }
 
 type IssueUpdateReplicaSetResult = {
-  result: string
+  error: string | undefined
   errorMsg: string
   issuedReconfig: boolean
   syncJobsToEnqueue: IssueSyncRequestJobParams[]
@@ -523,7 +523,7 @@ const _issueUpdateReplicaSetOp = async (
   logger: Logger
 ): Promise<IssueUpdateReplicaSetResult> => {
   const response: IssueUpdateReplicaSetResult = {
-    result: 'success',
+    error: undefined,
     errorMsg: '',
     issuedReconfig: false,
     syncJobsToEnqueue: []
@@ -557,7 +557,7 @@ const _issueUpdateReplicaSetOp = async (
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
       if (!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]) {
-        response.result = 'failure_no_valid_sp'
+        response.error = response.error || 'failure_no_valid_sp'
         response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
           ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
         )} | endpt=${endpt}. Skipping reconfig.`
@@ -588,7 +588,7 @@ const _issueUpdateReplicaSetOp = async (
         [secondary2]: oldSecondary2SpId
       } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
 
-      const { canReconfig, chainPrimarySpId, chainSecondarySpIds } =
+      const { canReconfig, chainPrimarySpId, chainSecondarySpIds, error } =
         await _canReconfig({
           libs: audiusLibs,
           oldPrimarySpId,
@@ -598,8 +598,12 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
 
+      if (error) {
+        response.error = error
+      }
+
       if (!canReconfig) {
-        response.result = 'skip_update_replica_set'
+        response.error = error || 'skip_update_replica_set'
         logger.info(
           `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
         )
@@ -672,9 +676,7 @@ const _issueUpdateReplicaSetOp = async (
       `[_issueUpdateReplicaSetOp] Reconfig SUCCESS: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
   } catch (e: any) {
-    if (response.result === 'success') {
-      response.result = 'failure_to_update_replica_set'
-    }
+    response.error = response.error || 'failure_to_update_replica_set'
 
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
@@ -702,11 +704,14 @@ type CanReconfigParams = {
   userId: number
   logger: Logger
 }
+
 type CanReconfigReturnValue = {
   canReconfig: boolean
+  error?: string
   chainPrimarySpId?: number
   chainSecondarySpIds?: number[]
 }
+
 const _canReconfig = async ({
   libs,
   oldPrimarySpId,
@@ -715,6 +720,7 @@ const _canReconfig = async ({
   userId,
   logger
 }: CanReconfigParams): Promise<CanReconfigReturnValue> => {
+  let error
   try {
     const { primaryId: chainPrimarySpId, secondaryIds: chainSecondarySpIds } =
       await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
@@ -724,6 +730,7 @@ const _canReconfig = async ({
       !chainSecondarySpIds ||
       chainSecondarySpIds.length < 2
     ) {
+      error = 'failure_get_current_replica_set'
       throw new Error(
         `Could not get current replica set: chainPrimarySpId=${chainPrimarySpId} chainSecondarySpIds=${JSON.stringify(
           chainSecondarySpIds || []
@@ -736,6 +743,7 @@ const _canReconfig = async ({
       !oldPrimarySpId || !oldSecondary1SpId || !oldSecondary2SpId
     if (isAnyNodeInReplicaSetDeregistered) {
       return {
+        error,
         canReconfig: true,
         chainPrimarySpId,
         chainSecondarySpIds
@@ -748,9 +756,11 @@ const _canReconfig = async ({
       chainSecondarySpIds[0] === oldSecondary1SpId &&
       chainSecondarySpIds[1] === oldSecondary2SpId
     return {
+      error,
       canReconfig: isReplicaSetCurrent
     }
   } catch (e: any) {
+    error = error || 'failure_can_reconfig'
     logger.error(
       `[_issueUpdateReplicaSetOp] error in _canReconfig. : ${e.message}`
     )
@@ -759,6 +769,7 @@ const _canReconfig = async ({
   // If any error occurs in determining if a reconfig event can happen, default to issuing
   // a reconfig event anyway just to prevent users from keeping an unhealthy replica set
   return {
+    error,
     canReconfig: true
   }
 }
