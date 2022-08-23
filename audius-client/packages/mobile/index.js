@@ -2,9 +2,11 @@ import 'react-native-gesture-handler'
 import { AppRegistry, LogBox } from 'react-native'
 
 import { name as appName } from './app.json'
+// Needed for TextEncoder to work correctly
+import 'text-encoding-polyfill'
 
 require('node-libs-react-native/globals')
-// needed for @solana/web3.js to run correctly
+// Needed for @solana/web3.js to run correctly
 require('react-native-get-random-values')
 require('react-native-url-polyfill/auto')
 
