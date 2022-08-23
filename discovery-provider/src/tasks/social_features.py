@@ -9,6 +9,9 @@ from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
+)
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
@@ -209,6 +212,11 @@ def add_track_repost(
         repost_user_id = event_args._userId
         repost_track_id = event_args._trackId
 
+        if not premium_content_access_checker.check_access(
+            repost_user_id, repost_track_id, "track"
+        ):
+            continue
+
         if (repost_user_id in track_repost_state_changes) and (
             repost_track_id in track_repost_state_changes[repost_user_id]
         ):
@@ -253,6 +261,11 @@ def delete_track_repost(
         event_args = event["args"]
         repost_user_id = event_args._userId
         repost_track_id = event_args._trackId
+
+        if not premium_content_access_checker.check_access(
+            repost_user_id, repost_track_id, "track"
+        ):
+            continue
 
         if (repost_user_id in track_repost_state_changes) and (
             repost_track_id in track_repost_state_changes[repost_user_id]
