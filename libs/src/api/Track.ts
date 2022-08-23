@@ -425,7 +425,7 @@ export class Track extends Base {
         trackId = Track.generateTrackId()
         const response = await this.contracts.EntityManagerClient!.manageEntity(
           ownerId,
-          EntityManagerClient!.EntityType.TRACK,
+          EntityManagerClient.EntityType.TRACK,
           trackId,
           EntityManagerClient.Action.CREATE,
           metadataMultihash
@@ -566,7 +566,7 @@ export class Track extends Base {
             const response =
               await this.contracts.EntityManagerClient!.manageEntity(
                 ownerId,
-                EntityManagerClient!.EntityType.TRACK,
+                EntityManagerClient.EntityType.TRACK,
                 trackId,
                 EntityManagerClient.Action.CREATE,
                 metadataMultihash
@@ -659,7 +659,7 @@ export class Track extends Base {
     if (useEntityManager) {
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         ownerId,
-        EntityManagerClient!.EntityType.TRACK,
+        EntityManagerClient.EntityType.TRACK,
         trackId,
         EntityManagerClient.Action.UPDATE,
         metadataMultihash
@@ -771,7 +771,7 @@ export class Track extends Base {
 
       return await this.contracts.EntityManagerClient!.manageEntity(
         ownerId,
-        EntityManagerClient!.EntityType.TRACK,
+        EntityManagerClient.EntityType.TRACK,
         trackId,
         EntityManagerClient.Action.DELETE,
         ''
@@ -787,7 +787,7 @@ export class Track extends Base {
   // Maximum track ID, reflects postgres max integer value
   static MAX_TRACK_ID = 2147483647
 
-  static generateTrackId (): number {
+  static generateTrackId(): number {
     return Utils.getRandomInt(Track.MIN_TRACK_ID, Track.MAX_TRACK_ID)
   }
   /* ------- PRIVATE  ------- */

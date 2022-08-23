@@ -1,7 +1,10 @@
 import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
 import { Nullable, Utils } from '../utils'
-import { EntityType, Action } from '../services/dataContracts/EntityManagerClient'
+import {
+  EntityType,
+  Action
+} from '../services/dataContracts/EntityManagerClient'
 
 export interface PlaylistOperationResponse {
   /**

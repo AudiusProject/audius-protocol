@@ -4,7 +4,6 @@ import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../data-contracts/signatureSchemas'
 import type { Web3Manager } from '../web3Manager'
 
-
 export enum Action {
   CREATE = 'Create',
   UPDATE = 'Update',
