@@ -270,19 +270,8 @@ export class AudiusLibs {
     rewardsManagerTokenPDA,
     useRelay,
     feePayerSecretKeys,
-    confirmationTimeout,
-    audiusDataAdminStorageKeypairPublicKey,
-    audiusDataProgramId,
-    audiusDataIdl
+    confirmationTimeout
   }: LibsSolanaWeb3Config): SolanaWeb3Config {
-    if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
-      audiusDataAdminStorageKeypairPublicKey = new PublicKey(
-        audiusDataAdminStorageKeypairPublicKey
-      )
-    }
-    if (audiusDataProgramId instanceof String) {
-      audiusDataProgramId = new PublicKey(audiusDataProgramId)
-    }
     return {
       solanaClusterEndpoint,
       mintAddress,
@@ -297,10 +286,7 @@ export class AudiusLibs {
       feePayerKeypairs: feePayerSecretKeys?.map((key) =>
         Keypair.fromSecretKey(key)
       ),
-      confirmationTimeout,
-      audiusDataAdminStorageKeypairPublicKey,
-      audiusDataProgramId,
-      audiusDataIdl
+      confirmationTimeout
     }
   }
 
