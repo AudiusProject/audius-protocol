@@ -6,6 +6,7 @@ import type { Modals as ModalTypes } from '@audius/common'
 import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
+import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import CollectibleDetailsModal from 'components/collectibles/components/CollectibleDetailsModal'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
@@ -89,6 +90,7 @@ const Modals = () => {
       )}
 
       {!NATIVE_MOBILE && <TipAudioModal />}
+      {!NATIVE_MOBILE ? <BuyAudioModal /> : null}
     </>
   )
 }
