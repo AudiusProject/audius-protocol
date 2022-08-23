@@ -1,6 +1,6 @@
 [
   {
-    "id": 3,
+    "id": 5,
     "orgId": 1,
     "folderId": 0,
     "folderUid": "",
@@ -10,6 +10,10 @@
     "type": "timeseries",
     "description": "",
     "model": {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "r2_nnDL7z"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -44,7 +48,9 @@
               "mode": "off"
             }
           },
-          "mappings": [],
+          "mappings": [
+            
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -144,14 +150,32 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 12,
         "x": 0,
-        "y": 30
+        "y": 1
       },
-      "id": 20,
+      "id": 19,
       "libraryPanel": {
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2022-07-09T01:43:48Z",
+          "createdBy": {
+            "avatarUrl": "",
+            "id": 0,
+            "name": ""
+          },
+          "folderName": "General",
+          "folderUid": "",
+          "updated": "2022-07-12T23:16:36Z",
+          "updatedBy": {
+            "avatarUrl": "",
+            "id": 0,
+            "name": ""
+          }
+        },
         "name": "Blockdiff",
-        "uid": "hhRZ9K67k"
+        "uid": "hhRZ9K67k",
+        "version": 2
       },
       "options": {
         "legend": {
@@ -174,7 +198,7 @@
             "type": "prometheus"
           },
           "editorMode": "code",
-          "expr": "audius_dn_health_check_block_difference_latest{environment=~\"$env\", host=~\"$host\"}",
+          "expr": "max by (host) (audius_dn_health_check_block_difference_latest{environment=~\"$env\", host=~\"$host\"})",
           "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
@@ -183,22 +207,22 @@
       "title": "Blockdiff",
       "type": "timeseries"
     },
-    "version": 4,
+    "version": 3,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
-      "created": "2022-07-12T23:13:52Z",
-      "updated": "2022-08-19T22:50:12Z",
+      "created": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-13T23:11:47Z",
       "createdBy": {
         "id": 0,
         "name": "",
         "avatarUrl": ""
       },
       "updatedBy": {
-        "id": 0,
-        "name": "",
-        "avatarUrl": ""
+        "id": 1,
+        "name": "admin",
+        "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56"
       }
     }
   },
@@ -213,10 +237,6 @@
     "type": "bargauge",
     "description": "",
     "model": {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "r2_nnDL7z"
-      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -254,7 +274,9 @@
           },
           "unit": "s"
         },
-        "overrides": []
+        "overrides": [
+          
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -262,30 +284,10 @@
         "x": 0,
         "y": 1
       },
-      "id": 0,
+      "id": 45,
       "libraryPanel": {
-        "description": "",
-        "meta": {
-          "connectedDashboards": 3,
-          "created": "2022-07-12T23:13:52Z",
-          "createdBy": {
-            "avatarUrl": "",
-            "id": 0,
-            "name": ""
-          },
-          "folderName": "General",
-          "folderUid": "",
-          "updated": "2022-07-12T23:43:29Z",
-          "updatedBy": {
-            "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-            "id": 1,
-            "name": "admin"
-          }
-        },
         "name": "Celery Tasks (Active)",
-        "type": "bargauge",
-        "uid": "ilGck637k",
-        "version": 3
+        "uid": "ilGck637k"
       },
       "options": {
         "displayMode": "gradient",
@@ -316,30 +318,30 @@
           "refId": "A"
         }
       ],
-      "title": "Celery Tasks (Active lol)",
+      "title": "Celery Tasks (Active)",
       "type": "bargauge"
     },
-    "version": 6,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 3,
-      "created": "2022-07-12T23:13:52Z",
-      "updated": "2022-08-19T22:50:12Z",
+      "created": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",
         "avatarUrl": ""
       },
       "updatedBy": {
-        "id": 1,
-        "name": "admin",
-        "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56"
+        "id": 0,
+        "name": "",
+        "avatarUrl": ""
       }
     }
   },
   {
-    "id": 2,
+    "id": 4,
     "orgId": 1,
     "folderId": 0,
     "folderUid": "",
@@ -386,7 +388,9 @@
           },
           "unit": "s"
         },
-        "overrides": []
+        "overrides": [
+          
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -431,13 +435,13 @@
       "title": "Celery Tasks (Last Successful Duration)",
       "type": "bargauge"
     },
-    "version": 5,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
-      "created": "2022-07-12T23:13:52Z",
-      "updated": "2022-08-19T22:50:12Z",
+      "created": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -451,7 +455,7 @@
     }
   },
   {
-    "id": 4,
+    "id": 2,
     "orgId": 1,
     "folderId": 0,
     "folderUid": "",
@@ -495,7 +499,9 @@
               "mode": "off"
             }
           },
-          "mappings": [],
+          "mappings": [
+            
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -511,7 +517,9 @@
           },
           "unit": "s"
         },
-        "overrides": []
+        "overrides": [
+          
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -526,7 +534,9 @@
       },
       "options": {
         "legend": {
-          "calcs": [],
+          "calcs": [
+            
+          ],
           "displayMode": "list",
           "placement": "bottom"
         },
@@ -595,13 +605,13 @@
       "title": "POA Indexing",
       "type": "timeseries"
     },
-    "version": 5,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
-      "created": "2022-07-12T23:13:52Z",
-      "updated": "2022-08-19T22:50:12Z",
+      "created": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -615,7 +625,7 @@
     }
   },
   {
-    "id": 5,
+    "id": 3,
     "orgId": 1,
     "folderId": 0,
     "folderUid": "",
@@ -659,7 +669,9 @@
               "mode": "off"
             }
           },
-          "mappings": [],
+          "mappings": [
+            
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -675,7 +687,9 @@
           },
           "unit": "s"
         },
-        "overrides": []
+        "overrides": [
+          
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -690,7 +704,9 @@
       },
       "options": {
         "legend": {
-          "calcs": [],
+          "calcs": [
+            
+          ],
           "displayMode": "list",
           "placement": "bottom"
         },
@@ -759,13 +775,13 @@
       "title": "Solana Plays Indexing",
       "type": "timeseries"
     },
-    "version": 5,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
-      "created": "2022-07-12T23:13:52Z",
-      "updated": "2022-08-19T22:50:12Z",
+      "created": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",
