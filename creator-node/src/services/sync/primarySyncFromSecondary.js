@@ -27,7 +27,7 @@ const SyncRequestMaxUserFailureCountBeforeSkip = config.get(
  * Export data for user from secondary and save locally, until complete
  * Should never error, instead return errorObj, else null
  */
-module.exports = async function primarySyncFromSecondary({
+async function primarySyncFromSecondary({
   wallet,
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
@@ -565,3 +565,5 @@ async function getUserReplicaSet({ wallet, libs, logger }) {
     throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
   }
 }
+
+module.exports = primarySyncFromSecondary
