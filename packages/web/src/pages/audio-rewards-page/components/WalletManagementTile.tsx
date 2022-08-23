@@ -165,9 +165,13 @@ export const WalletManagementTile = () => {
     useSelector(getAccountTotalBalance) ?? null
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   const [, setOpen] = useModalState('AudioBreakdown')
+  const [, setBuyAudioModalOpen] = useModalState('BuyAudio')
   const onClickOpen = useCallback(() => {
     setOpen(true)
   }, [setOpen])
+  const onBuyAudioClicked = useCallback(() => {
+    setBuyAudioModalOpen(true)
+  }, [setBuyAudioModalOpen])
 
   return (
     <div className={styles.walletManagementTile}>
@@ -210,7 +214,7 @@ export const WalletManagementTile = () => {
             </div>
           </div>
         </div>
-        <CoinbasePayButtonCustom />
+        <CoinbasePayButtonCustom onClick={onBuyAudioClicked} />
         <ToggleCollapseButton
           className={styles.advancedToggle}
           showText={messages.showAdvanced}
