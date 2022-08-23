@@ -12,7 +12,7 @@ import { providers } from 'ethers/lib/index'
 import wormholeSDK, { ChainId } from '@certusone/wormhole-sdk'
 
 import { SolanaUtils, wAudioFromWeiAudio } from '../solana'
-import { Utils, sign, getTransferTokensDigest } from '../../utils'
+import { Utils, sign, getTransferTokensDigest, Nullable } from '../../utils'
 import type {
   RpcResponseAndContext,
   SignatureResult,
@@ -30,10 +30,10 @@ export type WormholeConfig = {
 
 /** Singleton state-manager for Audius Eth Contracts */
 export class Wormhole {
-  hedgehog: Hedgehog | null
+  hedgehog: Nullable<Hedgehog>
   ethWeb3Manager: EthWeb3Manager
   ethContracts: EthContracts
-  identityService: IdentityService | null
+  identityService: Nullable<IdentityService>
   solanaWeb3Manager: SolanaWeb3Manager
   rpcHosts: string[]
   solBridgeAddress: string
@@ -411,7 +411,9 @@ export class Wormhole {
     solanaAccount: string
   ) {
     if (!this.hedgehog) {
-      throw new Error('Hedgehog required for _getTransferTokensToEthWormholeParams')
+      throw new Error(
+        'Hedgehog required for _getTransferTokensToEthWormholeParams'
+      )
     }
     const web3 = this.ethWeb3Manager.getWeb3()
     const wormholeClientAddress =
