@@ -51,13 +51,13 @@ web-pr-comment:
 web-build:
   parameters:
     build-type:
-      default: "prod-source-maps"
+      default: 'prod-source-maps'
       type: string
     build-directory:
-      default: "packages/web/build-production"
+      default: 'packages/web/build-production'
       type: string
     build-name:
-      default: "build-production"
+      default: 'build-production'
       type: string
   steps:
     - checkout
@@ -77,7 +77,7 @@ web-build:
 web-distribute:
   parameters:
     build-type:
-      default: "mac-publish-production"
+      default: 'mac-publish-production'
       type: string
   steps:
     - checkout
@@ -99,15 +99,15 @@ web-install-wrangler:
   steps:
     - run:
         name: install wrangler
-        command: "cd packages/web && npm install @cloudflare/wrangler"
+        command: 'cd packages/web && npm install @cloudflare/wrangler'
 
 web-deploy-cloudflare:
   parameters:
     build-type:
-      default: "production"
+      default: 'production'
       type: string
     environment:
-      default: "production"
+      default: 'production'
       type: string
     copy-robots:
       default: false
@@ -117,6 +117,12 @@ web-deploy-cloudflare:
     - attach_workspace:
         at: ./
     - web-install-wrangler
+    - run:
+        name: Move sourcemaps
+        command: |
+          cd packages/web
+          mkdir -p sourcemaps/static/js
+          mv build-<< parameters.build-type >>/static/js/*.map sourcemaps/static/js
     - run:
         name: Set up workers site
         command: |
@@ -136,10 +142,21 @@ web-deploy-cloudflare:
           echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env << parameters.environment >>
           npx wrangler publish --env << parameters.environment >>
 
+web-deploy-sourcemaps-s3:
+  steps:
+    - run:
+        name: install-awscli
+        command: pip install awscli
+    - attach_workspace:
+        at: ./
+    - run:
+        name: Deploy to S3
+        command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --delete --cache-control max-age=604800
+
 web-deploy-ipfs:
   parameters:
     build-type:
-      default: "production"
+      default: 'production'
       type: string
   steps:
     - web-install-awscli
@@ -152,7 +169,7 @@ web-deploy-ipfs:
 web-update-ga-ipfs-build:
   parameters:
     build-type:
-      default: "prod"
+      default: 'prod'
       type: string
   steps:
     - checkout
@@ -171,7 +188,7 @@ web-update-ga-ipfs-build:
 web-publish-build-cids:
   parameters:
     build-type:
-      default: "production"
+      default: 'production'
       type: string
   steps:
     - web-install-awscli
@@ -184,10 +201,10 @@ web-publish-build-cids:
 web-update-ipfs-records:
   parameters:
     dns-name:
-      default: "_dnslink.ipfs.audius.co"
+      default: '_dnslink.ipfs.audius.co'
       type: string
     dns-id:
-      default: "${CLOUDFLARE_PROD_SITE_IPFS_DNS_ID}"
+      default: '${CLOUDFLARE_PROD_SITE_IPFS_DNS_ID}'
       type: string
   steps:
     - attach_workspace:
