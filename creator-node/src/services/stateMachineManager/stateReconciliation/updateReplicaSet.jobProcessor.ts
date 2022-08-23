@@ -93,10 +93,33 @@ const updateReplicaSetJobProcessor = async function ({
         enableIdentity: true,
         logger
       })
-    } catch (e) {
+    } catch (e: any) {
       error = error || 'failure_init_audius_libs'
-      errorMsg = 'failed to init libs'
+      errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
+
+      // Make metrics to record
+      metricsToRecord = [
+        makeHistogramToRecord(
+          METRIC_NAMES[
+            `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+          ],
+          (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+          {
+            issuedReconfig: issuedReconfig?.toString() || 'false',
+            reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
+            result: error || 'success'
+          }
+        )
+      ]
+
+      return {
+        errorMsg,
+        issuedReconfig,
+        newReplicaSet,
+        healthyNodes,
+        metricsToRecord
+      }
     }
 
     try {
@@ -115,8 +138,7 @@ const updateReplicaSetJobProcessor = async function ({
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
       error = error || 'failure_find_healthy_nodes'
-      const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
-      logger.error(errorMsg)
+      errorMsg = `Error finding healthy nodes to select - ${e.message}: ${e.stack}`
 
       // Make metrics to record
       metricsToRecord = [
