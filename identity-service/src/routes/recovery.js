@@ -26,11 +26,11 @@ module.exports = function (app) {
    * Send recovery information to the requested account
    */
   app.post('/recovery', handleResponse(async (req, res, next) => {
-    let mg = req.app.get('mailgun')
-    if (!mg) {
-      req.logger.error('Missing api key')
+    let sg = req.app.get('sendgrid')
+    if (!sg) {
+      req.logger.error('Missing sendgrid api key')
       // Short-circuit if no api key provided, but do not error
-      return successResponse({ msg: 'No mailgun API Key found', status: true })
+      return successResponse({ msg: 'No sendgrid API Key found', status: true })
     }
 
     let { login, data, signature, handle } = req.body
@@ -79,17 +79,13 @@ module.exports = function (app) {
       from: 'Audius Recovery <recovery@audius.co>',
       to: `${email}`,
       subject: 'Save This Email: Audius Password Recovery',
-      html: recoveryHtml
+      html: recoveryHtml,
+      asm: {
+        groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+      }
     }
     try {
-      await new Promise((resolve, reject) => {
-        mg.messages().send(emailParams, (error, body) => {
-          if (error) {
-            reject(error)
-          }
-          resolve(body)
-        })
-      })
+      await sg.send(emailParams)
       await models.UserEvents.update(
         { needsRecoveryEmail: false },
         {
