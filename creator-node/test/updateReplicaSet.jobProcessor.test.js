@@ -306,7 +306,7 @@ describe('test updateReplicaSet job processor', function () {
     const { metricsToRecord, ...rest } = output
 
     expect(metricsToRecord[0].metricLabels.result).to.equal(
-      'failure_to_update_replica_set'
+      'failure_determine_new_replica_set'
     )
     expect(metricsToRecord[0].metricName).to.equal(
       'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'

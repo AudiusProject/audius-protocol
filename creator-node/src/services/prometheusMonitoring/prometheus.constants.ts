@@ -127,7 +127,8 @@ export const METRIC_LABELS = Object.freeze({
       'failure_to_update_replica_set',
       'failure_issue_update_replica_set',
       'failure_determine_new_replica_set',
-      'failure_get_current_replica_set'
+      'failure_get_current_replica_set',
+      'failure_init_audius_libs'
     ]
   },
 

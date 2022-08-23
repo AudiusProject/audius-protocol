@@ -94,7 +94,7 @@ const updateReplicaSetJobProcessor = async function ({
         logger
       })
     } catch (e) {
-      error = 'failure_init_audius_libs'
+      error = error || 'failure_init_audius_libs'
       errorMsg = 'failed to init libs'
       logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
     }
@@ -114,7 +114,7 @@ const updateReplicaSetJobProcessor = async function ({
       }
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
-      error = 'failure_find_healthy_nodes'
+      error = error || 'failure_find_healthy_nodes'
       const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(errorMsg)
 
@@ -153,32 +153,32 @@ const updateReplicaSetJobProcessor = async function ({
       replicaToUserInfoMap,
       enabledReconfigModes
     })
+
+    try {
+      ;({ errorMsg, issuedReconfig, syncJobsToEnqueue, error } =
+        await _issueUpdateReplicaSetOp(
+          userId,
+          wallet,
+          primary,
+          secondary1,
+          secondary2,
+          newReplicaSet,
+          audiusLibs,
+          logger
+        ))
+    } catch (e) {
+      error = error || 'failure_issue_update_replica_set'
+      logger.error(
+        `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
+          e as Error
+        ).toString()}: ${(e as Error).stack}`
+      )
+      errorMsg = (e as Error).toString()
+    }
   } catch (e) {
-    error = 'failure_determine_new_replica_set'
+    error = error || 'failure_determine_new_replica_set'
     logger.error(
       `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
-        e as Error
-      ).toString()}: ${(e as Error).stack}`
-    )
-    errorMsg = (e as Error).toString()
-  }
-
-  try {
-    ;({ errorMsg, issuedReconfig, syncJobsToEnqueue, error } =
-      await _issueUpdateReplicaSetOp(
-        userId,
-        wallet,
-        primary,
-        secondary1,
-        secondary2,
-        newReplicaSet,
-        audiusLibs,
-        logger
-      ))
-  } catch (e) {
-    error = 'failure_issue_update_replica_set'
-    logger.error(
-      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
         e as Error
       ).toString()}: ${(e as Error).stack}`
     )
@@ -603,7 +603,7 @@ const _issueUpdateReplicaSetOp = async (
       }
 
       if (!canReconfig) {
-        response.error = error || 'skip_update_replica_set'
+        response.error = response.error || 'skip_update_replica_set'
         logger.info(
           `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
         )
@@ -760,7 +760,6 @@ const _canReconfig = async ({
       canReconfig: isReplicaSetCurrent
     }
   } catch (e: any) {
-    error = error || 'failure_can_reconfig'
     logger.error(
       `[_issueUpdateReplicaSetOp] error in _canReconfig. : ${e.message}`
     )
