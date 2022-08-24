@@ -111,6 +111,9 @@ class PrometheusMetricNames:
     )
     UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
     USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
+    ENTITY_MANAGER_UPDATE_NUM_CHANGED = "entity_manager_update_num_changed"
+    ENTITY_MANAGER_UPDATE_LATENCY = "entity_manager_update_latency"
+    ENTITY_MANAGER_UPDATE_NUM_ERRORS = "entity_manager_update_num_errors"
 
 
 """
@@ -220,6 +223,19 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS}",
         "Runtimes for src.task.users:user_state_update()",
         ("scope",),
+    ),
+    # PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED: Gauge(
+    #     f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED}",
+    #     "Number changed over time",
+    # ),
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY}",
+        "entity manager",
+        ("scope",),
+    ),
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED}",
+        "entity manager",
     ),
 }
 

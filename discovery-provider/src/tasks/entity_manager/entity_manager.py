@@ -1,5 +1,7 @@
 import logging
+import time
 from collections import defaultdict
+from re import L
 from typing import Any, Dict, List, Set, Tuple
 
 from sqlalchemy.orm.session import Session
@@ -24,6 +26,7 @@ from src.tasks.entity_manager.utils import (
     RecordDict,
 )
 from src.utils import helpers
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +44,11 @@ def entity_manager_update(
     block_hash: str,
     ipfs_metadata: Dict,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
+    metric = PrometheusMetric(PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY)
+    metric_num_changed = PrometheusMetric(
+        PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED
+    )
+
     try:
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
@@ -142,8 +150,11 @@ def entity_manager_update(
         # insert/update all tracks, playlist records in this block
         session.bulk_save_objects(records_to_save)
         num_total_changes += len(records_to_save)
-
+        metric.save_time({"scope": "full"})
+        metric_num_changed.save(num_total_changes)
+        logger.info(f"entity_manager.py | Completed with {num_total_changes}")
     except Exception as e:
+
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
     return num_total_changes, changed_entity_ids
