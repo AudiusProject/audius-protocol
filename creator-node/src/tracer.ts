@@ -85,13 +85,13 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   const wrapper = (...args: Parameters<TFunction>): ReturnType<TFunction> => {
     const spanName = name || fn.name
     const spanOptions = options || {}
-    const output: ReturnType<TFunction> = tracing
+    return tracing
       .getTracer()
       .startActiveSpan(spanName, spanOptions, (span: Span) => {
         try {
           tracing.setSpanAttribute(tracing.CODE_FUNCTION, fn.name)
 
-          // TODO: add skip parameter to instrument testing function to NOT logo certain args
+          // TODO: add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
           const result = fn.call(this, ...args)
           if (result && result.then) {
@@ -109,8 +109,6 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
           throw e
         }
       })
-
-    return output
   }
   // copy function name
   Object.defineProperty(wrapper, 'name', { value: fn.name })

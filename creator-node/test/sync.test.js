@@ -787,8 +787,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
           `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUserTableClock} and exported max ClockRecord val ${clockRecordTableClock}. Fixing and trying again...`
         )
 
-        expect(clockRecordsFindAllStub).to.have.been.calledOnce
-        expect(cNodeUserFindAll).to.have.been.calledOnce
+        expect(clockRecordsFindAllStub).to.have.been.called(1)
+        expect(cNodeUserFindAll).to.have.been.called(1)
       })
     })
   })
