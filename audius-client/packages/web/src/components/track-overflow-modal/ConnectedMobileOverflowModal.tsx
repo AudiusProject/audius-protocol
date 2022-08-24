@@ -21,13 +21,13 @@ import {
   OverflowSource,
   mobileOverflowMenuUISelectors,
   modalsActions,
-  modalsSelectors
+  modalsSelectors,
+  queueSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import { AppState } from 'store/types'
 import {
   albumPage,
@@ -37,6 +37,8 @@ import {
 } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
+
+const { makeGetCurrent } = queueSelectors
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors

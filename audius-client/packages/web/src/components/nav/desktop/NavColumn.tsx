@@ -20,7 +20,8 @@ import {
   createPlaylistModalUISelectors,
   createPlaylistModalUIActions as createPlaylistModalActions,
   imageProfilePicEmpty,
-  playerSelectors
+  playerSelectors,
+  queueSelectors
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -38,7 +39,6 @@ import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import Droppable from 'components/dragndrop/Droppable'
@@ -76,6 +76,7 @@ import NavAudio from './NavAudio'
 import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
 import PlaylistLibrary from './PlaylistLibrary'
+const { makeGetCurrent } = queueSelectors
 const { makeGetCurrent: makeGetCurrentPlayer } = playerSelectors
 const { getHideFolderTab, getIsOpen } = createPlaylistModalUISelectors
 const { saveTrack } = tracksSocialActions

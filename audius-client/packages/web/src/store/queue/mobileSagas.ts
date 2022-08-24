@@ -7,19 +7,11 @@ import {
   cacheUsersSelectors,
   queueActions,
   getContext,
-  playerActions
+  playerActions,
+  queueSelectors
 } from '@audius/common'
 import { all, put, select, takeEvery, call } from 'typed-redux-saga'
 
-import {
-  getOrder,
-  getIndex,
-  getId as getQueueTrackId,
-  getShuffle,
-  getShuffleIndex,
-  getShuffleOrder,
-  getQueueAutoplay
-} from 'common/store/queue/selectors'
 import {
   PersistQueueMessage,
   RepeatModeMessage,
@@ -28,6 +20,16 @@ import {
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import { generateM3U8Variants } from 'utils/hlsUtil'
 import { waitForAccount } from 'utils/sagaHelpers'
+
+const {
+  getOrder,
+  getIndex,
+  getId: getQueueTrackId,
+  getShuffle,
+  getShuffleIndex,
+  getShuffleOrder,
+  getQueueAutoplay
+} = queueSelectors
 const { getUser } = cacheUsersSelectors
 const { persist, queueAutoplay, repeat, shuffle, updateIndex } = queueActions
 const { getTrack } = cacheTracksSelectors
