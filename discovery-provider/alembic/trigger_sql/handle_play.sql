@@ -23,18 +23,21 @@ begin
             (new.play_item_id, 'LISTEN_COUNT', milestone, new.slot, new.created_at)
         on conflict do nothing;
         select tracks.owner_id into owner_user_id from tracks where is_current and track_id = new.play_item_id;
-        insert into notification
-            (user_ids, specifier, type, slot, timestamp, data)
-            values
-            (
-                array[owner_user_id],
-                'milestone:LISTEN_COUNT:id:' || new.play_item_id || ':threshold:' || milestone,
-                'milestone',
-                new.slot,
-                new.created_at,
-                json_build_object('type', 'LISTEN_COUNT', 'track_id', new.play_item_id, 'threshold', milestone)
-            )
-        on conflict do nothing;
+        if owner_user_id is not null then
+            insert into notification
+                (user_ids, specifier, group_id, type, slot, timestamp, data)
+                values
+                (
+                    array[owner_user_id],
+                    owner_user_id,
+                    'milestone:LISTEN_COUNT:id:' || new.play_item_id || ':threshold:' || milestone,
+                    'milestone',
+                    new.slot,
+                    new.created_at,
+                    json_build_object('type', 'LISTEN_COUNT', 'track_id', new.play_item_id, 'threshold', milestone)
+                )
+            on conflict do nothing;
+        end if;
     end if;
     return null;
 end; 

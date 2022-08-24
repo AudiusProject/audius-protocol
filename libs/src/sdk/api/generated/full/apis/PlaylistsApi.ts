@@ -22,6 +22,9 @@ import {
     FullPlaylistResponse,
     FullPlaylistResponseFromJSON,
     FullPlaylistResponseToJSON,
+    FullPlaylistTracksResponse,
+    FullPlaylistTracksResponseFromJSON,
+    FullPlaylistTracksResponseToJSON,
     FullTrendingPlaylistsResponse,
     FullTrendingPlaylistsResponseFromJSON,
     FullTrendingPlaylistsResponseToJSON,
@@ -36,6 +39,13 @@ export interface GetPlaylistRequest {
      * The user ID of the user making the request
      */
     userId?: string;
+}
+
+export interface GetPlaylistTracksRequest {
+    /**
+     * A Playlist ID
+     */
+    playlistId: string;
 }
 
 export interface GetTrendingPlaylistsRequest {
@@ -145,6 +155,26 @@ export class PlaylistsApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<FullPlaylistResponse["data"]>>;
+    }
+
+    /**
+     * Fetch tracks within a playlist.
+     */
+    async getPlaylistTracks(requestParameters: GetPlaylistTracksRequest): Promise<NonNullable<FullPlaylistTracksResponse["data"]>> {
+        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
+            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylistTracks.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/playlists/{playlist_id}/tracks`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<FullPlaylistTracksResponse["data"]>>;
     }
 
     /**

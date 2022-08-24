@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker
-from src.queries.search_config import set_search_similarity
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +60,6 @@ class SessionManager:
         """
         logger.debug("Using new DBAPI connection")
         cursor = dbapi_conn.cursor()
-        set_search_similarity(cursor)
         cursor.close()
 
     def session(self):

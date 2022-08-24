@@ -6,6 +6,7 @@ const { getLibsMock } = require('./lib/libsMock')
 const {
   NAMESPACE_PREFIX
 } = require('../src/services/prometheusMonitoring/prometheus.constants')
+const GenericBullQueue = require('./lib/genericBullQueueMock')
 
 describe('test Prometheus metrics', async function () {
   let app, server, libsMock
@@ -116,5 +117,18 @@ describe('test Prometheus metrics', async function () {
     assert.ok(resp.text.includes(NAMESPACE_PREFIX + '_jobs_failed'))
     assert.ok(resp.text.includes(NAMESPACE_PREFIX + '_jobs_active'))
     assert.ok(resp.text.includes(NAMESPACE_PREFIX + '_jobs_delayed'))
+  })
+
+  it('Checks the duration of a bull queue job', async function () {
+    const genericBullQueue = new GenericBullQueue()
+    const job = await genericBullQueue.addTask({ timeout: 500 })
+
+    await job.finished()
+
+    const resp = await request(app).get('/prometheus_metrics').expect(200)
+    assert.ok(
+      resp.text.includes(NAMESPACE_PREFIX + '_jobs_duration_seconds_bucket')
+    )
+    assert.ok(resp.text.includes(`queue_name="genericBullQueue"`))
   })
 })

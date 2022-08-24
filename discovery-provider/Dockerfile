@@ -72,6 +72,7 @@ RUN cd es-indexer && npm install && npm run build
 
 COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
 
+# ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
 ARG git_sha
 ARG audius_loggly_disable
 ARG audius_loggly_token

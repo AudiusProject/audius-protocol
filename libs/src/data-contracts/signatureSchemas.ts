@@ -64,6 +64,10 @@ const getUserReplicaSetManagerDomain: DomainFn = (chainId, contractAddress) => {
   )
 }
 
+const getEntityManagerDomain: DomainFn = (chainId, contractAddress) => {
+  return getDomainData('Entity Manager', '1', chainId, contractAddress)
+}
+
 export const domains = {
   getSocialFeatureFactoryDomain,
   getUserFactoryDomain,
@@ -71,7 +75,8 @@ export const domains = {
   getPlaylistFactoryDomain,
   getUserLibraryFactoryDomain,
   getIPLDBlacklistFactoryDomain,
-  getUserReplicaSetManagerDomain
+  getUserReplicaSetManagerDomain,
+  getEntityManagerDomain
 }
 
 /* contract signing domain */
@@ -258,6 +263,15 @@ const updateReplicaSet = [
   { name: 'nonce', type: 'bytes32' }
 ]
 
+const manageEntity = [
+  { name: 'userId', type: 'uint' },
+  { name: 'entityType', type: 'string' },
+  { name: 'entityId', type: 'uint' },
+  { name: 'action', type: 'string' },
+  { name: 'metadata', type: 'string' },
+  { name: 'nonce', type: 'bytes32' }
+]
+
 export const schemas = {
   domain,
   addUserRequest,
@@ -289,7 +303,8 @@ export const schemas = {
   deletePlaylistSaveRequest,
   addIPLDBlacklist,
   proposeAddOrUpdateContentNode,
-  updateReplicaSet
+  updateReplicaSet,
+  manageEntity
 }
 
 type MessageSchema = readonly EIP712TypeProperty[]
@@ -1145,6 +1160,34 @@ const getUpdateReplicaSetRequestData = (
   )
 }
 
+const getManageEntityData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  entityType: string,
+  entityId: number,
+  action: string,
+  metadata: string,
+  nonce: string
+) => {
+  const message = {
+    userId,
+    entityType,
+    entityId,
+    action,
+    metadata,
+    nonce
+  }
+  return getRequestData(
+    domains.getEntityManagerDomain,
+    chainId,
+    contractAddress,
+    'ManageEntity',
+    schemas.manageEntity,
+    message
+  )
+}
+
 export const generators = {
   getUpdateUserMultihashRequestData,
   getAddUserRequestData,
@@ -1181,7 +1224,8 @@ export const generators = {
   getUpdatePlaylistDescriptionRequestData,
   addIPLDToBlacklistRequestData,
   getProposeAddOrUpdateContentNodeRequestData,
-  getUpdateReplicaSetRequestData
+  getUpdateReplicaSetRequestData,
+  getManageEntityData
 }
 
 type NodeCrypto = { randomBytes: (size: number) => Buffer }

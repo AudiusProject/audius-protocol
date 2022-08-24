@@ -17,6 +17,7 @@ import {
   querystring
 } from './api/generated/default'
 import {
+  Configuration as ConfigurationFull,
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
   SearchApi as SearchApiFull,
@@ -149,27 +150,27 @@ const initializeApis = ({
 }) => {
   const initializationPromise = discoveryProvider.init()
 
+  const fetchApi = async (url: string) => {
+    // Ensure discovery node is initialized
+    await initializationPromise
+
+    // Append the appName to the query params
+    const urlWithAppName =
+      url + (url.includes('?') ? '&' : '?') + querystring({ app_name: appName })
+
+    return await discoveryProvider._makeRequest(
+      {
+        endpoint: urlWithAppName
+      },
+      undefined,
+      undefined,
+      // Throw errors instead of returning null
+      true
+    )
+  }
+
   const generatedApiClientConfig = new Configuration({
-    fetchApi: async (url: string) => {
-      // Ensure discovery node is initialized
-      await initializationPromise
-
-      // Append the appName to the query params
-      const urlWithAppName =
-        url +
-        (url.includes('?') ? '&' : '?') +
-        querystring({ app_name: appName })
-
-      return await discoveryProvider._makeRequest(
-        {
-          endpoint: urlWithAppName
-        },
-        undefined,
-        undefined,
-        // Throw errors instead of returning null
-        true
-      )
-    }
+    fetchApi
   })
 
   const tracks = new TracksApi(generatedApiClientConfig, discoveryProvider)
@@ -178,13 +179,17 @@ const initializeApis = ({
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
 
+  const generatedApiClientConfigFull = new ConfigurationFull({
+    fetchApi
+  })
+
   const full = {
-    tracks: new TracksApiFull(generatedApiClientConfig as any),
-    users: new UsersApiFull(generatedApiClientConfig as any),
-    search: new SearchApiFull(generatedApiClientConfig as any),
-    playlists: new PlaylistsApiFull(generatedApiClientConfig as any),
-    reactions: new ReactionsApiFull(generatedApiClientConfig as any),
-    tips: new TipsApiFull(generatedApiClientConfig as any)
+    tracks: new TracksApiFull(generatedApiClientConfigFull),
+    users: new UsersApiFull(generatedApiClientConfigFull),
+    search: new SearchApiFull(generatedApiClientConfigFull),
+    playlists: new PlaylistsApiFull(generatedApiClientConfigFull),
+    reactions: new ReactionsApiFull(generatedApiClientConfigFull),
+    tips: new TipsApiFull(generatedApiClientConfigFull)
   }
 
   return {

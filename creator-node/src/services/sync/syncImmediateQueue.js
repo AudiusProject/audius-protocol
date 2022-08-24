@@ -43,31 +43,41 @@ class SyncImmediateQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
+      const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
+        job.data
 
       try {
-        await secondarySyncFromPrimary(
-          this.serviceRegistry,
-          walletPublicKeys,
+        await secondarySyncFromPrimary({
+          serviceRegistry: this.serviceRegistry,
+          wallet,
           creatorNodeEndpoint,
-          null, // blockNumber
-          forceResync
-        )
+          forceResyncConfig,
+          logContext
+        })
       } catch (e) {
-        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}: ${e.message}`
+        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}: ${e.message}`
         logger.error(msg)
         throw e
       }
     })
   }
 
-  async processImmediateSync({
-    walletPublicKeys,
+  /**
+   * Process a manual sync with immediate: true. This holds the promise open until the job finishes processing and returns the result.
+   * It does not return the promise once the job has been added to the queue unlike other queues.
+   */
+  async processManualImmediateSync({
+    wallet,
     creatorNodeEndpoint,
-    forceResync
+    forceResyncConfig,
+    logContext
   }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
-    const job = await this.queue.add(jobProps)
+    const job = await this.queue.add({
+      wallet,
+      creatorNodeEndpoint,
+      forceResyncConfig,
+      logContext
+    })
     const result = await job.finished()
     return result
   }

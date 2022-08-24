@@ -4,16 +4,16 @@ from typing import Dict, cast
 
 from flask_restx import reqparse
 from src import api_helpers
+from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
+from src.queries.query_helpers import SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
 from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.spl_audio import to_wei_string
-
-from .models.common import full_response
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,11 @@ def add_playlist_added_timestamps(playlist):
     added_timestamps = []
     for track in playlist["playlist_contents"]["track_ids"]:
         added_timestamps.append(
-            {"track_id": encode_int_id(track["track"]), "timestamp": track["time"]}
+            {
+                "track_id": encode_int_id(track["track"]),
+                "timestamp": track["time"],
+                "metadata_timestamp": track.get("metadata_time"),
+            }
         )
     return added_timestamps
 
@@ -205,6 +209,10 @@ def extend_track(track):
 
     if "save_count" in track:
         track["favorite_count"] = track["save_count"]
+
+    track["is_streamable"] = (
+        not track["is_delete"] and not track["user"]["is_deactivated"]
+    )
 
     duration = 0.0
     for segment in track["track_segments"]:
@@ -487,6 +495,71 @@ pagination_with_current_user_parser.add_argument(
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 search_parser.add_argument("query", required=True, description="The search query")
 
+track_history_parser = pagination_with_current_user_parser.copy()
+track_history_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+track_history_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+track_history_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+
+user_favorited_tracks_parser = pagination_with_current_user_parser.copy()
+user_favorited_tracks_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+user_favorited_tracks_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+user_favorited_tracks_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+
+user_tracks_route_parser = pagination_with_current_user_parser.copy()
+user_tracks_route_parser.add_argument(
+    "sort",
+    required=False,
+    type=str,
+    default="date",
+    choices=("date", "plays"),
+    description="[Deprecated] Field to sort by",
+)
+user_tracks_route_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+user_tracks_route_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+user_tracks_route_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+
 full_search_parser = pagination_with_current_user_parser.copy()
 full_search_parser.add_argument("query", required=True, description="The search query")
 full_search_parser.add_argument(
@@ -550,6 +623,18 @@ def format_offset(args, max_offset=MAX_LIMIT):
     if offset is None:
         return DEFAULT_OFFSET
     return max(min(int(offset), max_offset), MIN_OFFSET)
+
+
+def format_query(args):
+    return args.get("query", None)
+
+
+def format_sort_method(args):
+    return args.get("sort_method", None)
+
+
+def format_sort_direction(args):
+    return args.get("sort_direction", None)
 
 
 def get_default_max(value, default, max=None):

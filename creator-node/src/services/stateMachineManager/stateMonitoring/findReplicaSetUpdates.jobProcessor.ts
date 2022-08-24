@@ -21,7 +21,7 @@ const {
   QUEUE_NAMES
 } = require('../stateMachineConstants')
 const CNodeHealthManager = require('../CNodeHealthManager')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const config = require('../../../config')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -136,7 +136,7 @@ module.exports = async function ({
   }
 
   return {
-    cNodeEndpointToSpIdMap: CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap(),
+    cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
           [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs
@@ -209,16 +209,16 @@ const _findReplicaSetUpdatesForUser = async (
 
       // Error case 1 - mismatched spID
       if (
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
+        ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary] !==
         secondaryInfo.spId
       ) {
         logger.error(
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${
             secondaryInfo.spId
           }, found ${
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary]
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary]
           }. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
           )}`
         )
         unhealthyReplicas.add(secondary)
@@ -227,7 +227,7 @@ const _findReplicaSetUpdatesForUser = async (
       } else if (unhealthyPeersSet.has(secondary)) {
         logger.error(
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
           )}`
         )
         unhealthyReplicas.add(secondary)
@@ -239,7 +239,7 @@ const _findReplicaSetUpdatesForUser = async (
       ) {
         logger.error(
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${minSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
           )}`
         )
         unhealthyReplicas.add(secondary)
@@ -264,7 +264,7 @@ const _findReplicaSetUpdatesForUser = async (
       // If the map's spId does not match the query's spId, then regardless
       // of the relationship of the node to the user, issue a reconfig for that node
       if (
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[replica.endpoint] !==
+        ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[replica.endpoint] !==
         replica.spId
       ) {
         unhealthyReplicas.add(replica.endpoint)

@@ -12,6 +12,7 @@ const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const { findCIDInNetwork } = require('./utils')
+const DecisionTree = require('./utils/decisionTree')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -114,7 +115,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
- * @return {Boolean} true if success, false if error
+ * @return {Error?} error object or null
  */
 async function saveFileForMultihashToFS(
   libs,
@@ -126,10 +127,10 @@ async function saveFileForMultihashToFS(
   trackId = null,
   numRetries = 5
 ) {
-  // stores all the stages of this function along with associated information relevant to that step
-  // in the try catch below, if any of the nested try/catches throw, it will be caught by the top level try/catch
-  // so we only need to print it once in the global catch or after everthing finishes except for any return statements
-  const decisionTree = []
+  const decisionTree = new DecisionTree({
+    name: `saveFileForMultihashToFS() [multihash: ${multihash}]`,
+    logger
+  })
 
   try {
     // will be modified to directory compatible route later if directory
@@ -145,16 +146,16 @@ async function saveFileForMultihashToFS(
 
     const parsedStoragePath = path.parse(expectedStoragePath).dir
 
-    decisionTree.push({
-      stage: 'About to start running saveFileForMultihashToFS',
-      val: {
+    decisionTree.recordStage({
+      name: 'About to start running saveFileForMultihashToFS()',
+      data: {
         multihash,
         gatewaysToTry,
         gatewayUrlsMapped,
         expectedStoragePath,
         parsedStoragePath
       },
-      time: Date.now()
+      log: true
     })
 
     // Create dir at expected storage path in which to store retrieved data
@@ -162,16 +163,16 @@ async function saveFileForMultihashToFS(
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
       await fs.mkdir(parsedStoragePath, { recursive: true })
-      decisionTree.push({
-        stage: 'Successfully called mkdir on local file system',
-        vals: parsedStoragePath,
-        time: Date.now()
+      decisionTree.recordStage({
+        name: 'Successfully called mkdir on local file system',
+        data: {
+          parsedStoragePath
+        }
       })
     } catch (e) {
-      decisionTree.push({
-        stage: 'Error calling mkdir on local file system',
-        vals: parsedStoragePath,
-        time: Date.now()
+      decisionTree.recordStage({
+        name: 'Error calling mkdir on local file system',
+        data: { parsedStoragePath }
       })
       throw new Error(
         `Error making directory at ${parsedStoragePath} - ${e.message}`
@@ -196,10 +197,9 @@ async function saveFileForMultihashToFS(
             matchObj.outer
           }/${fileNameForImage}`
       )
-      decisionTree.push({
-        stage: 'Updated gatewayUrlsMapped',
-        vals: gatewayUrlsMapped,
-        time: Date.now()
+      decisionTree.recordStage({
+        name: 'Updated gatewayUrlsMapped',
+        data: { gatewayUrlsMapped }
       })
     }
 
@@ -212,18 +212,12 @@ async function saveFileForMultihashToFS(
 
     // If file already stored on disk, return immediately.
     if (await fs.pathExists(expectedStoragePath)) {
-      logger.debug(
-        `File already stored at ${expectedStoragePath} for ${multihash}`
-      )
-      decisionTree.push({
-        stage: 'File already stored on disk',
-        vals: [expectedStoragePath, multihash],
-        time: Date.now()
+      decisionTree.recordStage({
+        name: 'Success - File already stored on disk',
+        data: { expectedStoragePath }
       })
-      // since this is early exit, print the decision tree here
-      _printDecisionTreeObj(decisionTree, logger)
 
-      return expectedStoragePath
+      return
     }
 
     // If file not already stored, fetch and store at storagePath.
@@ -233,24 +227,21 @@ async function saveFileForMultihashToFS(
     if (gatewayUrlsMapped.length > 0) {
       try {
         let response
-        // ..replace(/\/$/, "") removes trailing slashes
-        logger.debug(
-          `Attempting to fetch multihash ${multihash} by racing replica set endpoints`
-        )
 
-        decisionTree.push({
-          stage: 'About to race requests via gateways',
-          vals: gatewayUrlsMapped,
-          time: Date.now()
+        decisionTree.recordStage({
+          name: 'About to race requests via gateways',
+          data: { gatewayUrlsMapped }
         })
+
         // Note - Requests are intentionally not parallel to minimize additional load on gateways
         for (let index = 0; index < gatewayUrlsMapped.length; index++) {
           const url = gatewayUrlsMapped[index]
-          decisionTree.push({
-            stage: 'Fetching from gateway',
-            vals: url,
-            time: Date.now()
+
+          decisionTree.recordStage({
+            name: 'Fetching from gateway',
+            data: { url }
           })
+
           try {
             const resp = await axios({
               method: 'get',
@@ -260,31 +251,25 @@ async function saveFileForMultihashToFS(
             })
             if (resp.data) {
               response = resp
-              decisionTree.push({
-                stage: 'Retrieved file from gateway',
-                vals: url,
-                time: Date.now()
+              decisionTree.recordStage({
+                name: 'Retrieved file from gateway',
+                data: { url }
               })
               break
             }
           } catch (e) {
-            logger.error(
-              `Error fetching file from other cnode ${url} ${e.message}`
-            )
-            decisionTree.push({
-              stage: 'Could not retrieve file from gateway',
-              vals: url,
-              time: Date.now()
+            decisionTree.recordStage({
+              name: 'Error - Could not retrieve file from gateway',
+              data: { url, errorMsg: e.message }
             })
             continue
           }
         }
 
         if (!response || !response.data) {
-          decisionTree.push({
-            stage: `Couldn't find files on other creator nodes, after trying URLs`,
-            vals: null,
-            time: Date.now()
+          decisionTree.recordStage({
+            name: `Error - Could not retrieve file from any gateway`,
+            data: { gatewayUrlsMapped }
           })
           throw new Error(
             `Couldn't find files on other creator nodes, after trying URLs: ${gatewayUrlsMapped.toString()}`
@@ -295,24 +280,20 @@ async function saveFileForMultihashToFS(
         await Utils.writeStreamToFileSystem(response.data, expectedStoragePath)
         fileFound = true
 
-        decisionTree.push({
-          stage: 'Wrote file to file system after fetching from gateway',
-          vals: expectedStoragePath,
-          time: Date.now()
+        decisionTree.recordStage({
+          name: 'Wrote file to file system after fetching from gateway',
+          data: { expectedStoragePath }
         })
-        logger.info(`wrote file to ${expectedStoragePath}`)
       } catch (e) {
         const errorMsg = `Failed to retrieve file for multihash ${multihash} from other creator node gateways`
-        decisionTree.push({
-          stage: errorMsg,
-          vals: e.message,
-          time: Date.now()
+        decisionTree.recordStage({
+          name: errorMsg,
+          data: { errorMsg: e.message }
         })
-        logger.warn(`${errorMsg} || ${e.message}`)
       }
     }
 
-    // If file is not found on disk, check nodes on the rest of the network
+    // If file is not found in replica set, check network (remaining registered nodes)
     if (!fileFound) {
       try {
         const found = await findCIDInNetwork(
@@ -320,38 +301,31 @@ async function saveFileForMultihashToFS(
           multihash,
           logger,
           libs,
-          null,
-          gatewaysToTry
+          /** trackId */ null,
+          /** excludeList */ gatewaysToTry
         )
         if (found) {
-          decisionTree.push({
-            stage: `Found file ${multihash} by calling "findCIDInNetwork"`,
-            vals: multihash,
-            time: Date.now()
+          decisionTree.recordStage({
+            name: `Found file from findCIDInNetwork()`
           })
           fileFound = true
         } else {
-          decisionTree.push({
-            stage: `Failed to retrieve file for multihash ${multihash} by calling findCIDInNetwork`,
-            vals: multihash,
-            time: Date.now()
+          decisionTree.recordStage({
+            name: `Failed to find file from findCIDInNetwork()`
           })
         }
       } catch (e) {
-        decisionTree.push({
-          stage: `Failed to retrieve file for multihash ${multihash} by calling findCIDInNetwork`,
-          vals: multihash,
-          time: Date.now()
+        decisionTree.recordStage({
+          name: `Failed to find file from findCIDInNetwork()`,
+          data: { errorMsg: e.message }
         })
       }
     }
 
     // error if file was not found on any gateway
     if (!fileFound) {
-      decisionTree.push({
-        stage: `Failed to retrieve file for multihash after trying creator node gateways`,
-        vals: multihash,
-        time: Date.now()
+      decisionTree.recordStage({
+        name: `Failed to retrieve file for multihash after trying creator node gateways`
       })
       throw new Error(
         `Failed to retrieve file for multihash ${multihash} after trying creator node gateways`
@@ -361,12 +335,11 @@ async function saveFileForMultihashToFS(
     // verify that the contents of the file match the file's cid
     try {
       const fileSize = (await fs.stat(expectedStoragePath)).size
-      decisionTree.push({
-        stage: 'About to verify the file contents for the CID',
-        vals: multihash,
-        time: Date.now(),
-        fileSize
+      decisionTree.recordStage({
+        name: 'About to verify the file contents for the CID',
+        data: { multihash, fileSize }
       })
+
       const fileIsEmpty = fileSize === 0
       // there is one case where an empty file could be valid, check for that CID explicitly
       if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
@@ -379,23 +352,22 @@ async function saveFileForMultihashToFS(
         expectedStoragePath
       )
       if (multihash !== expectedCid) {
-        decisionTree.push({
-          stage: `File contents don't match their expected CID`,
-          vals: expectedCid,
-          time: Date.now()
+        decisionTree.recordStage({
+          name: `File contents don't match their expected CID`,
+          data: { expectedCid }
         })
-        // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
         throw new Error(
           `File contents don't match their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
         )
       }
-      decisionTree.push({
-        stage: 'Successfully verified the file contents for the CID',
-        vals: multihash,
-        time: Date.now()
+      decisionTree.recordStage({
+        name: 'Successfully verified the file contents for the CID',
+        data: { multihash }
       })
     } catch (e) {
+      // On error, delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
       await removeFile(expectedStoragePath)
+
       if (numRetries > 0) {
         return saveFileForMultihashToFS(
           libs,
@@ -408,43 +380,25 @@ async function saveFileForMultihashToFS(
           numRetries - 1
         )
       }
-      decisionTree.push({
-        stage: `Error during content verification for multihash`,
-        vals: multihash,
-        time: Date.now()
+      decisionTree.recordStage({
+        name: `Error during content verification for multihash`
       })
       throw new Error(
         `Error during content verification for multihash ${multihash} ${e.message}`
       )
     }
-    // If error, return boolean failure indicator + print logs
   } catch (e) {
-    decisionTree.push({
-      stage: `saveFileForMultihashToFS error`,
-      vals: e.message,
-      time: Date.now()
+    decisionTree.recordStage({
+      name: `Uncaught Error`,
+      data: { errorMsg: e.message }
     })
-    _printDecisionTreeObj(decisionTree, logger)
 
-    return false
+    return e
+  } finally {
+    decisionTree.printTree()
   }
 
-  // If no error, return boolean success indicator
-  return true
-}
-
-const _printDecisionTreeObj = (decisionTree, logger) => {
-  try {
-    logger.info(
-      'saveFileForMultihashToFS decision tree',
-      JSON.stringify(decisionTree)
-    )
-  } catch (e) {
-    logger.error(
-      'error printing saveFileForMultihashToFS decision tree',
-      decisionTree
-    )
-  }
+  // If no error, return nothing
 }
 
 /**

@@ -23,7 +23,7 @@ const {
   SYNC_MODES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const initAudiusLibs = require('../../initAudiusLibs')
 
@@ -45,7 +45,7 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
  * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
-module.exports = async function ({
+const updateReplicaSetJobProcessor = async function ({
   logger,
   wallet,
   userId,
@@ -58,37 +58,6 @@ module.exports = async function ({
 }: DecoratedJobParams<UpdateReplicaSetJobParams>): Promise<
   DecoratedJobReturnValue<UpdateReplicaSetJobReturnValue>
 > {
-  /**
-   * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
-   * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
-   * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
-   * There will be an explicit clock value check on the newly selected replica set nodes instead.
-   */
-  let audiusLibs = null
-  let healthyNodes = []
-  healthyNodes = await getCachedHealthyNodes()
-  if (healthyNodes.length === 0) {
-    audiusLibs = await initAudiusLibs({
-      enableEthContracts: true,
-      enableContracts: true,
-      enableDiscovery: false,
-      enableIdentity: true,
-      logger
-    })
-    const { services: healthyServicesMap } =
-      await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-        performSyncCheck: false,
-        whitelist: reconfigNodeWhitelist,
-        log: true
-      })
-    healthyNodes = Object.keys(healthyServicesMap || {})
-    if (healthyNodes.length === 0)
-      throw new Error(
-        'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
-      )
-    await cacheHealthyNodes(healthyNodes)
-  }
-
   let errorMsg = ''
   let issuedReconfig = false
   let syncJobsToEnqueue: IssueSyncRequestJobParams[] = []
@@ -99,6 +68,49 @@ module.exports = async function ({
     issueReconfig: false,
     reconfigType: null
   }
+
+  /**
+   * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
+   * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+   * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+   * There will be an explicit clock value check on the newly selected replica set nodes instead.
+   */
+  let audiusLibs = null
+  let healthyNodes = []
+  healthyNodes = await getCachedHealthyNodes()
+  if (healthyNodes.length === 0) {
+    try {
+      audiusLibs = await initAudiusLibs({
+        enableEthContracts: true,
+        enableContracts: true,
+        enableDiscovery: false,
+        enableIdentity: true,
+        logger
+      })
+      const { services: healthyServicesMap } =
+        await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+          performSyncCheck: false,
+          whitelist: reconfigNodeWhitelist,
+          log: true
+        })
+      healthyNodes = Object.keys(healthyServicesMap || {})
+      if (healthyNodes.length === 0)
+        throw new Error(
+          'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
+        )
+      await cacheHealthyNodes(healthyNodes)
+    } catch (e: any) {
+      const errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
+      logger.error(errorMsg)
+      return {
+        errorMsg,
+        issuedReconfig,
+        newReplicaSet,
+        healthyNodes
+      }
+    }
+  }
+
   try {
     newReplicaSet = await _determineNewReplicaSet({
       logger,
@@ -124,7 +136,9 @@ module.exports = async function ({
       ))
   } catch (e: any) {
     logger.error(
-      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}`
+      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
+        e.stack
+      }`
     )
     errorMsg = e.toString()
   }
@@ -370,19 +384,20 @@ const _selectRandomReplicaSetNodes = async (
   ]} ||`
 
   const newReplicaNodesSet = new Set<string>()
+
+  const viablePotentialReplicas = healthyNodes.filter(
+    (node) => !healthyReplicaSet.has(node)
+  )
+
   let selectNewReplicaSetAttemptCounter = 0
   while (
     newReplicaNodesSet.size < numberOfUnhealthyReplicas &&
     selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS
   ) {
-    const randomHealthyNode = _.sample(healthyNodes)
+    const randomHealthyNode = _.sample(viablePotentialReplicas)
 
     // If node is already present in new replica set or is part of the existing replica set, keep finding a unique healthy node
-    if (
-      newReplicaNodesSet.has(randomHealthyNode) ||
-      healthyReplicaSet.has(randomHealthyNode)
-    )
-      continue
+    if (newReplicaNodesSet.has(randomHealthyNode)) continue
 
     // If the node was marked as healthy before, keep finding a unique healthy node
     if (unhealthyReplicasSet.has(randomHealthyNode)) {
@@ -406,7 +421,9 @@ const _selectRandomReplicaSetNodes = async (
       }
     } catch (e: any) {
       // Something went wrong in checking clock value. Reselect another secondary.
-      logger.error(`${logStr} ${e.message}`)
+      logger.error(
+        `${logStr} randomHealthyNode=${randomHealthyNode} ${e.message}`
+      )
     }
   }
 
@@ -479,15 +496,15 @@ const _issueUpdateReplicaSetOp = async (
     for (const endpt of newReplicaSetEndpoints) {
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
-      if (!CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]) {
+      if (!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]) {
         response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
-          CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+          ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
         )} | endpt=${endpt}. Skipping reconfig.`
         logger.error(response.errorMsg)
         return response
       }
       newReplicaSetSPIds.push(
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]
+        ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]
       )
     }
 
@@ -503,21 +520,53 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
       }
-      await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+
+      const {
+        [primary]: oldPrimarySpId,
+        [secondary1]: oldSecondary1SpId,
+        [secondary2]: oldSecondary2SpId
+      } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
+
+      const { canReconfig, chainPrimarySpId, chainSecondarySpIds } =
+        await _canReconfig({
+          libs: audiusLibs,
+          oldPrimarySpId,
+          oldSecondary1SpId,
+          oldSecondary2SpId,
+          userId,
+          logger
+        })
+
+      if (!canReconfig) {
+        logger.info(
+          `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
+        )
+        return response
+      }
+
+      await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
         userId,
-        newReplicaSetSPIds[0], // primary
-        newReplicaSetSPIds.slice(1) // [secondary1, secondary2]
-      )
-      const timeElapsedMs = Date.now() - startTimeMs
-      logger.info(
-        `[_issueUpdateReplicaSetOp] updateReplicaSet took ${timeElapsedMs}ms for userId=${userId} wallet=${wallet} `
+        newReplicaSetSPIds[0], // new primary
+        newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+        // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+        oldPrimarySpId || chainPrimarySpId,
+        [
+          oldSecondary1SpId || chainSecondarySpIds?.[0],
+          oldSecondary2SpId || chainSecondarySpIds?.[1]
+        ]
       )
 
       response.issuedReconfig = true
+      logger.info(
+        `[_issueUpdateReplicaSetOp] _updateReplicaSet took ${
+          Date.now() - startTimeMs
+        }ms for userId=${userId} wallet=${wallet}`
+      )
     } catch (e: any) {
-      const timeElapsedMs = Date.now() - startTimeMs
       throw new Error(
-        `UserReplicaSetManagerClient.updateReplicaSet() Failed in ${timeElapsedMs}ms - Error ${e.message}`
+        `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${
+          Date.now() - startTimeMs
+        }ms - Error ${e.message}`
       )
     }
 
@@ -579,3 +628,74 @@ const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
   return enabledReconfigModes.includes(mode)
 }
+
+type CanReconfigParams = {
+  libs: any
+  oldPrimarySpId: number
+  oldSecondary1SpId: number
+  oldSecondary2SpId: number
+  userId: number
+  logger: Logger
+}
+type CanReconfigReturnValue = {
+  canReconfig: boolean
+  chainPrimarySpId?: number
+  chainSecondarySpIds?: number[]
+}
+const _canReconfig = async ({
+  libs,
+  oldPrimarySpId,
+  oldSecondary1SpId,
+  oldSecondary2SpId,
+  userId,
+  logger
+}: CanReconfigParams): Promise<CanReconfigReturnValue> => {
+  try {
+    const { primaryId: chainPrimarySpId, secondaryIds: chainSecondarySpIds } =
+      await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+
+    if (
+      !chainPrimarySpId ||
+      !chainSecondarySpIds ||
+      chainSecondarySpIds.length < 2
+    ) {
+      throw new Error(
+        `Could not get current replica set: chainPrimarySpId=${chainPrimarySpId} chainSecondarySpIds=${JSON.stringify(
+          chainSecondarySpIds || []
+        )}`
+      )
+    }
+
+    // Reconfig is necessary if endpoint doesn't exist in mapping because this means the node was deregistered
+    const isAnyNodeInReplicaSetDeregistered =
+      !oldPrimarySpId || !oldSecondary1SpId || !oldSecondary2SpId
+    if (isAnyNodeInReplicaSetDeregistered) {
+      return {
+        canReconfig: true,
+        chainPrimarySpId,
+        chainSecondarySpIds
+      }
+    }
+
+    // Reconfig should only happen when the replica set that triggered the reconfig matches the chain
+    const isReplicaSetCurrent =
+      chainPrimarySpId === oldPrimarySpId &&
+      chainSecondarySpIds[0] === oldSecondary1SpId &&
+      chainSecondarySpIds[1] === oldSecondary2SpId
+    return {
+      canReconfig: isReplicaSetCurrent
+    }
+  } catch (e: any) {
+    logger.error(
+      `[_issueUpdateReplicaSetOp] error in _canReconfig. : ${e.message}`
+    )
+  }
+
+  // If any error occurs in determining if a reconfig event can happen, default to issuing
+  // a reconfig event anyway just to prevent users from keeping an unhealthy replica set
+  return {
+    canReconfig: true
+  }
+}
+
+module.exports = updateReplicaSetJobProcessor

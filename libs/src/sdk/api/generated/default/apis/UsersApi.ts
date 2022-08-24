@@ -300,9 +300,21 @@ export interface GetTracksByUserRequest {
      */
     userId?: string;
     /**
-     * Field to sort by
+     * [Deprecated] Field to sort by
      */
     sort?: GetTracksByUserSortEnum;
+    /**
+     * The filter query
+     */
+    query?: string;
+    /**
+     * The sort method
+     */
+    sortMethod?: GetTracksByUserSortMethodEnum;
+    /**
+     * The sort direction
+     */
+    sortDirection?: GetTracksByUserSortDirectionEnum;
 }
 
 export interface GetTracksByUserHandleRequest {
@@ -323,9 +335,21 @@ export interface GetTracksByUserHandleRequest {
      */
     userId?: string;
     /**
-     * Field to sort by
+     * [Deprecated] Field to sort by
      */
     sort?: GetTracksByUserHandleSortEnum;
+    /**
+     * The filter query
+     */
+    query?: string;
+    /**
+     * The sort method
+     */
+    sortMethod?: GetTracksByUserHandleSortMethodEnum;
+    /**
+     * The sort direction
+     */
+    sortDirection?: GetTracksByUserHandleSortDirectionEnum;
 }
 
 export interface GetUserRequest {
@@ -370,6 +394,18 @@ export interface GetUsersTrackHistoryRequest {
      * The user ID of the user making the request
      */
     userId?: string;
+    /**
+     * The filter query
+     */
+    query?: string;
+    /**
+     * The sort method
+     */
+    sortMethod?: GetUsersTrackHistorySortMethodEnum;
+    /**
+     * The sort direction
+     */
+    sortDirection?: GetUsersTrackHistorySortDirectionEnum;
 }
 
 export interface SearchUsersRequest {
@@ -810,6 +846,18 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort'] = requestParameters.sort;
         }
 
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         return this.request({
@@ -844,6 +892,18 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.sort !== undefined) {
             queryParameters['sort'] = requestParameters.sort;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -946,6 +1006,18 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['user_id'] = requestParameters.userId;
         }
 
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         return this.request({
@@ -1018,7 +1090,76 @@ export enum GetTracksByUserSortEnum {
     * @export
     * @enum {string}
     */
+export enum GetTracksByUserSortMethodEnum {
+    Title = 'title',
+    ArtistName = 'artist_name',
+    ReleaseDate = 'release_date',
+    LastListenDate = 'last_listen_date',
+    AddedDate = 'added_date',
+    Length = 'length',
+    Plays = 'plays',
+    Reposts = 'reposts',
+    Saves = 'saves'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserSortDirectionEnum {
+    Asc = 'asc',
+    Desc = 'desc'
+}
+/**
+    * @export
+    * @enum {string}
+    */
 export enum GetTracksByUserHandleSortEnum {
     Date = 'date',
     Plays = 'plays'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserHandleSortMethodEnum {
+    Title = 'title',
+    ArtistName = 'artist_name',
+    ReleaseDate = 'release_date',
+    LastListenDate = 'last_listen_date',
+    AddedDate = 'added_date',
+    Length = 'length',
+    Plays = 'plays',
+    Reposts = 'reposts',
+    Saves = 'saves'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserHandleSortDirectionEnum {
+    Asc = 'asc',
+    Desc = 'desc'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetUsersTrackHistorySortMethodEnum {
+    Title = 'title',
+    ArtistName = 'artist_name',
+    ReleaseDate = 'release_date',
+    LastListenDate = 'last_listen_date',
+    AddedDate = 'added_date',
+    Length = 'length',
+    Plays = 'plays',
+    Reposts = 'reposts',
+    Saves = 'saves'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetUsersTrackHistorySortDirectionEnum {
+    Asc = 'asc',
+    Desc = 'desc'
 }

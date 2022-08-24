@@ -35,6 +35,10 @@ const {
 } = require('../stateMachineConstants')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+const {
+  generateDataForSignatureRecovery
+} = require('../../sync/secondarySyncFromPrimaryUtils')
+const { generateTimestampAndSignature } = require('../../../apiSigning')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
@@ -204,8 +208,10 @@ async function _handleIssueSyncRequest({
    * Eventually should make this more robust, but proceeding with caution
    */
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-    // Short-circuit if this syncMode is disabled
-    if (!mergePrimaryAndSecondaryEnabled) {
+    const fromManualRoute = syncRequestParameters.data.from_manual_route
+
+    // Short-circuit if this syncMode is disabled or if manual route override not provided
+    if (!mergePrimaryAndSecondaryEnabled && !fromManualRoute) {
       return { result: 'success_mode_disabled' }
     }
 
@@ -230,11 +236,21 @@ async function _handleIssueSyncRequest({
    */
   try {
     if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-      const syncRequestParametersForceResync = {
+      const data = generateDataForSignatureRecovery(syncRequestParameters.data)
+      const { timestamp, signature } = generateTimestampAndSignature(
+        data,
+        config.get('delegatePrivateKey')
+      )
+
+      await axios({
         ...syncRequestParameters,
-        data: { ...syncRequestParameters.data, forceResync: true }
-      }
-      await axios(syncRequestParametersForceResync)
+        data: {
+          ...syncRequestParameters.data,
+          forceResync: true,
+          timestamp,
+          signature
+        }
+      })
     } else {
       await axios(syncRequestParameters)
     }

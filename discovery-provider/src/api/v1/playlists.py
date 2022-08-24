@@ -44,7 +44,7 @@ from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
-from .models.tracks import track
+from .models.tracks import track, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -121,11 +121,6 @@ class Playlist(Resource):
         return response
 
 
-playlist_tracks_response = make_response(
-    "playlist_tracks_response", ns, fields.List(fields.Nested(track))
-)
-
-
 @full_ns.route(PLAYLIST_ROUTE)
 class FullPlaylist(Resource):
     @ns.doc(
@@ -140,13 +135,20 @@ class FullPlaylist(Resource):
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
-
         playlist = get_playlist(playlist_id, current_user_id)
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
         response = success_response([playlist] if playlist else [])
         return response
+
+
+playlist_tracks_response = make_response(
+    "playlist_tracks_response", ns, fields.List(fields.Nested(track))
+)
+full_playlist_tracks_response = make_full_response(
+    "full_playlist_tracks_response", full_ns, fields.List(fields.Nested(track_full))
+)
 
 
 @ns.route("/<string:playlist_id>/tracks")
@@ -159,6 +161,23 @@ class PlaylistTracks(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(playlist_tracks_response)
+    @cache(ttl_sec=5)
+    def get(self, playlist_id):
+        decoded_id = decode_with_abort(playlist_id, ns)
+        tracks = get_tracks_for_playlist(decoded_id)
+        return success_response(tracks)
+
+
+@full_ns.route("/<string:playlist_id>/tracks")
+class FullPlaylistTracks(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Playlist Tracks""",
+        description="""Fetch tracks within a playlist.""",
+        params={"playlist_id": "A Playlist ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(full_playlist_tracks_response)
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         decoded_id = decode_with_abort(playlist_id, ns)
