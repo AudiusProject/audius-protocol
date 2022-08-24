@@ -72,7 +72,7 @@ const updateReplicaSetJobProcessor = async function ({
     issueReconfig: false,
     reconfigType: null
   }
-  let error
+  let result
 
   const startTimeMs = Date.now()
 
@@ -95,7 +95,7 @@ const updateReplicaSetJobProcessor = async function ({
         logger
       })
     } catch (e: any) {
-      error = UpdateReplicaSetJobResult.FailureInitAudiusLibs
+      result = UpdateReplicaSetJobResult.FailureInitAudiusLibs
       errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
 
@@ -109,7 +109,7 @@ const updateReplicaSetJobProcessor = async function ({
           {
             issuedReconfig: issuedReconfig?.toString() || 'false',
             reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
-            result: error.toString()
+            result: result.toString()
           }
         )
       ]
@@ -138,7 +138,7 @@ const updateReplicaSetJobProcessor = async function ({
       }
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
-      error = UpdateReplicaSetJobResult.FailureFindHealthyNodes
+      result = UpdateReplicaSetJobResult.FailureFindHealthyNodes
       errorMsg = `Error finding healthy nodes to select - ${e.message}: ${e.stack}`
 
       // Make metrics to record
@@ -151,7 +151,7 @@ const updateReplicaSetJobProcessor = async function ({
           {
             issuedReconfig: issuedReconfig?.toString() || 'false',
             reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
-            result: error.toString()
+            result: result.toString()
           }
         )
       ]
@@ -180,7 +180,7 @@ const updateReplicaSetJobProcessor = async function ({
     })
 
     try {
-      ;({ errorMsg, issuedReconfig, syncJobsToEnqueue, error } =
+      ;({ errorMsg, issuedReconfig, syncJobsToEnqueue, result } =
         await _issueUpdateReplicaSetOp(
           userId,
           wallet,
@@ -192,7 +192,7 @@ const updateReplicaSetJobProcessor = async function ({
           logger
         ))
     } catch (e: any) {
-      error = UpdateReplicaSetJobResult.FailureIssueUpdateReplicaSet
+      result = UpdateReplicaSetJobResult.FailureIssueUpdateReplicaSet
       logger.error(
         `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
           e.stack
@@ -201,7 +201,7 @@ const updateReplicaSetJobProcessor = async function ({
       errorMsg = e.toString()
     }
   } catch (e: any) {
-    error = UpdateReplicaSetJobResult.FailureDetermineNewReplicaSet
+    result = UpdateReplicaSetJobResult.FailureDetermineNewReplicaSet
     logger.error(
       `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
         e.stack
@@ -218,7 +218,7 @@ const updateReplicaSetJobProcessor = async function ({
       ],
       (Date.now() - startTimeMs) / 1000, // Metric is in seconds
       {
-        result: error || UpdateReplicaSetJobResult.Success,
+        result: result || UpdateReplicaSetJobResult.Success,
         issuedReconfig: issuedReconfig?.toString() || 'false',
         reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
       }
@@ -520,7 +520,7 @@ const _selectRandomReplicaSetNodes = async (
 }
 
 type IssueUpdateReplicaSetResult = {
-  error?: UpdateReplicaSetJobResult
+  result?: UpdateReplicaSetJobResult
   errorMsg: string
   issuedReconfig: boolean
   syncJobsToEnqueue: IssueSyncRequestJobParams[]
@@ -548,7 +548,7 @@ const _issueUpdateReplicaSetOp = async (
   logger: Logger
 ): Promise<IssueUpdateReplicaSetResult> => {
   const response: IssueUpdateReplicaSetResult = {
-    error: undefined,
+    result: undefined,
     errorMsg: '',
     issuedReconfig: false,
     syncJobsToEnqueue: []
@@ -576,7 +576,7 @@ const _issueUpdateReplicaSetOp = async (
     )
 
     if (!issueReconfig) {
-      response.error = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
+      response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
       return response
     }
 
@@ -585,7 +585,7 @@ const _issueUpdateReplicaSetOp = async (
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
       if (!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]) {
-        response.error = UpdateReplicaSetJobResult.FailureNoValidSP
+        response.result = UpdateReplicaSetJobResult.FailureNoValidSP
         response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
           ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
         )} | endpt=${endpt}. Skipping reconfig.`
@@ -627,11 +627,11 @@ const _issueUpdateReplicaSetOp = async (
         })
 
       if (error) {
-        response.error = error
+        response.result = error
       }
 
       if (!canReconfig) {
-        response.error = UpdateReplicaSetJobResult.SkipUpdateReplicaSet
+        response.result = UpdateReplicaSetJobResult.SkipUpdateReplicaSet
         logger.info(
           `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
         )
@@ -704,7 +704,7 @@ const _issueUpdateReplicaSetOp = async (
       `[_issueUpdateReplicaSetOp] Reconfig SUCCESS: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
   } catch (e: any) {
-    response.error = UpdateReplicaSetJobResult.FailureToUpdateReplicaSet
+    response.result = UpdateReplicaSetJobResult.FailureToUpdateReplicaSet
 
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
