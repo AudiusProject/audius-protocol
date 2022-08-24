@@ -379,15 +379,14 @@
 }
 .twitterButton .twitterIcon {
   margin-right: 8px !important;
-  fill: var(--static-white) !important;
 }
 .twitterButton .twitterIcon path {
-  fill: var(--static-white) !important;
+  fill: var(--static-white);
 }
 .twitterButton .twitterIcon svg {
   width: 24px;
   height: 18px;
-  fill: var(--static-white) !important;
+  fill: var(--static-white);
 }
 .buttonSpacer {
   width: 10px;
