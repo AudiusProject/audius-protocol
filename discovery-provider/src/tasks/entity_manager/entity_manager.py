@@ -18,6 +18,7 @@ from src.tasks.entity_manager.track import create_track, delete_track, update_tr
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
+    EntitiesToFetch,
     EntityType,
     ExistingRecordDict,
     ManageEntityParameters,
@@ -160,20 +161,26 @@ def entity_manager_update(
         raise e
     return num_total_changes, changed_entity_ids
 
-
 def collect_entities_to_fetch(
     update_task,
     entity_manager_txs,
 ):
-    entities_to_fetch: Dict[EntityType, Set[int]] = defaultdict(set)
+    entities_to_fetch: EntitiesToFetch = defaultdict(set)
+
     for tx_receipt in entity_manager_txs:
         entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
         for event in entity_manager_event_tx:
             entity_id = helpers.get_tx_arg(event, "_entityId")
             entity_type = helpers.get_tx_arg(event, "_entityType")
             user_id = helpers.get_tx_arg(event, "_userId")
+            action = helpers.get_tx_arg(event, "_action")
             entities_to_fetch[entity_type].add(entity_id)
             entities_to_fetch[EntityType.USER].add(user_id)
+
+            # Query follow operations as needed
+            if entity_type == EntityType.USER and (action == Action.FOLLOW or action == Action.UNFOLLOW):
+                entities_to_fetch[EntityType.FOLLOW].add((user_id, entity_id))
+
     return entities_to_fetch
 
 
