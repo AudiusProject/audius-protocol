@@ -90,10 +90,12 @@ describe('test recoverOrphanedData job processor', function () {
         return { walletPublicKey: user.wallet }
       })
     )
+    const cNodeUserCountStub = sandbox.stub().resolves(usersOnNode.length)
     const modelsMock = {
       ...models,
       CNodeUser: {
-        findAll: cNodeUserMockAllStub
+        findAll: cNodeUserMockAllStub,
+        count: cNodeUserCountStub
       }
     }
 
