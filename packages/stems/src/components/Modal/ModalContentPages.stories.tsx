@@ -41,7 +41,7 @@ const Template: Story<ModalProps> = ({
         <ModalHeader>
           <ModalTitle title={`Page ${currentPage + 1}`} />
         </ModalHeader>
-        <ModalContentPages height={100} currentPage={currentPage}>
+        <ModalContentPages currentPage={currentPage}>
           <p>There was once a walrus named Rufus.</p>
           <p>Rufus had no friends</p>
           <p>Then Rufus met a hare.</p>
