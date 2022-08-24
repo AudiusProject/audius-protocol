@@ -1,18 +1,16 @@
 import {
   Status,
-  formatNumberCommas,
   PurchaseInfoErrorType,
-  buyAudioSelectors
+  buyAudioSelectors,
+  formatNumberString
 } from '@audius/common'
 import { IconCaretDown } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import IconAUDIOSrc from 'assets/img/iconAUDIO.png'
-import IconSOLSrc from 'assets/img/iconSOL.png'
-import IconUSDSrc from 'assets/img/iconUSD.png'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
+import { IconAUDIO, IconSOL, IconUSD } from './Icons'
 import styles from './PurchaseQuote.module.css'
 
 const messages = {
@@ -24,39 +22,6 @@ const messages = {
   aboveMaximumError: (maximum: number) =>
     `Value Exceeds Purchase Limit of ${maximum} $AUDIO`,
   unknownError: 'Something went wrong'
-}
-
-type FormatOptions = { minDecimals?: number; maxDecimals?: number }
-const formatNumber = (number?: string, options?: FormatOptions) => {
-  if (!number) {
-    return null
-  }
-  const parts = number.split('.')
-  const res =
-    parts.length > 1 && parts[1] !== undefined
-      ? parts[0] +
-        '.' +
-        parts[1]
-          .substring(0, options?.maxDecimals ?? parts[1].length)
-          .padEnd(options?.minDecimals ?? 0, '0')
-      : parts[0]
-  return formatNumberCommas(res)
-}
-
-const Icon = ({ src, alt }: { src: string; alt: string }) => {
-  return <img src={src} alt={alt} width={24} height={24} />
-}
-
-const IconAUDIO = () => {
-  return <Icon src={IconAUDIOSrc} alt={'AUDIO Token Icon'} />
-}
-
-const IconSOL = () => {
-  return <Icon src={IconSOLSrc} alt={'SOL Token Icon'} />
-}
-
-const IconUSD = () => {
-  return <Icon src={IconUSDSrc} alt={'USD Logo'} />
 }
 
 export const PurchaseQuote = () => {
@@ -89,15 +54,18 @@ export const PurchaseQuote = () => {
         ) : (
           <>
             <IconSOL />
-            {formatNumber(purchaseInfo?.estimatedSOL.uiAmountString, {
+            {formatNumberString(purchaseInfo?.estimatedSOL.uiAmountString, {
               maxDecimals: 2
             })}
             <span className={styles.tokenLabel}>{messages.sol}</span>
             <IconCaretDown className={styles.caret} />
             <IconAUDIO />
-            {formatNumber(purchaseInfo?.desiredAudioAmount.uiAmountString, {
-              maxDecimals: 2
-            })}
+            {formatNumberString(
+              purchaseInfo?.desiredAudioAmount.uiAmountString,
+              {
+                maxDecimals: 2
+              }
+            )}
             <span className={styles.tokenLabel}>{messages.audio}</span>
             {purchaseInfoStatus === Status.LOADING ? (
               <LoadingSpinner className={styles.spinner} />
@@ -115,7 +83,7 @@ export const PurchaseQuote = () => {
         </div>
         <div className={styles.dollarEstimate}>
           <span className={styles.tokenLabel}>$</span>
-          {formatNumber(
+          {formatNumberString(
             !purchaseInfo?.isError
               ? purchaseInfo?.estimatedUSD.uiAmountString ?? '0'
               : '0',

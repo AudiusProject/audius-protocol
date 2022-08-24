@@ -19,8 +19,8 @@ import { ReactComponent as IconSettings } from 'assets/img/iconSettings.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { CoinbasePayButtonCustom } from 'components/coinbase-pay-button'
+import { CollapsibleContent } from 'components/collapsible-content'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
-import { ToggleCollapseButton } from 'components/toggle-collapse-button'
 import { isMobile } from 'utils/clientUtil'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
@@ -188,7 +188,7 @@ export const WalletManagementTile = () => {
           className={styles.payWithCoinbaseButton}
           onClick={onBuyAudioClicked}
         />
-        <ToggleCollapseButton
+        <CollapsibleContent
           id='advanced-wallet-actions'
           className={styles.toggle}
           toggleButtonClassName={styles.advancedToggle}
@@ -196,7 +196,7 @@ export const WalletManagementTile = () => {
           hideText={messages.hideAdvanced}
         >
           <AdvancedWalletActions />
-        </ToggleCollapseButton>
+        </CollapsibleContent>
       </div>
     </div>
   )
