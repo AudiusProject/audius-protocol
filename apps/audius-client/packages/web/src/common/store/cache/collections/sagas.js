@@ -802,7 +802,7 @@ function* orderPlaylistAsync(action) {
     userId,
     action.playlistId,
     trackIds,
-    playlist
+    updatedPlaylist
   )
   yield put(
     cacheActions.update(Kind.COLLECTIONS, [
