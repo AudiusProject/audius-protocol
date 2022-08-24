@@ -1,4 +1,9 @@
-import type { Span, SpanContext, AttributeValue } from '@opentelemetry/api'
+import type {
+  Span,
+  SpanContext,
+  SpanOptions,
+  AttributeValue
+} from '@opentelemetry/api'
 import { trace, context, SpanStatusCode } from '@opentelemetry/api'
 
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
@@ -12,7 +17,6 @@ import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
-import { PgInstrumentation } from '@opentelemetry/instrumentation-pg'
 
 const SERVICE_NAME = 'content-node'
 
@@ -45,9 +49,6 @@ export const setupTracing = () => {
       // Adds spans to redis operations
       new RedisInstrumentation(),
 
-      // Adds spans to postgres transactions
-      new PgInstrumentation(),
-
       // Injects traceid, spanid, and SpanContext into bunyan logs
       new BunyanInstrumentation({
         // Adds a hook to logs that injects more span info
@@ -63,6 +64,56 @@ export const setupTracing = () => {
 
   // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
   provider.register()
+}
+
+/**
+ * Higher-order function that adds opentelemetry tracing to a function.
+ * Usage of this would look like
+ * ```
+ * const someFunction = instrumentTracing({ fn: _someFunction })
+ * ```
+ */
+export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
+  name,
+  fn,
+  options
+}: {
+  name?: string
+  fn: TFunction
+  options?: SpanOptions
+}) => {
+  return (...args: Parameters<TFunction>): ReturnType<TFunction> => {
+    const spanName = name || fn.name
+    const spanOptions = options || {}
+    const wrapper = tracing
+      .getTracer()
+      .startActiveSpan(spanName, spanOptions, (span: Span) => {
+        try {
+          tracing.setSpanAttribute(tracing.CODE_FUNCTION, fn.name)
+
+          // TODO: add skip parameter to instrument testing function to NOT logo certain args
+          // tracing.setSpanAttribute('args', JSON.stringify(args))
+          const result = fn.apply(this, args)
+          if (result && result.then) {
+            return result.then((val: any) => {
+              span.end()
+              return val
+            })
+          }
+
+          span.end()
+          return result
+        } catch (e: any) {
+          tracing.recordException(e)
+          span.end()
+          throw e
+        }
+      })
+
+    // copy function name
+    Object.defineProperty(wrapper, 'name', { value: fn.name })
+    return wrapper
+  }
 }
 
 /**
@@ -137,5 +188,6 @@ export const tracing = {
 
 module.exports = {
   setupTracing,
+  instrumentTracing,
   tracing
 }
