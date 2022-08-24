@@ -520,7 +520,7 @@ const _selectRandomReplicaSetNodes = async (
 }
 
 type IssueUpdateReplicaSetResult = {
-  result?: UpdateReplicaSetJobResult
+  result: UpdateReplicaSetJobResult
   errorMsg: string
   issuedReconfig: boolean
   syncJobsToEnqueue: IssueSyncRequestJobParams[]
@@ -548,7 +548,7 @@ const _issueUpdateReplicaSetOp = async (
   logger: Logger
 ): Promise<IssueUpdateReplicaSetResult> => {
   const response: IssueUpdateReplicaSetResult = {
-    result: undefined,
+    result: UpdateReplicaSetJobResult.Success,
     errorMsg: '',
     issuedReconfig: false,
     syncJobsToEnqueue: []
