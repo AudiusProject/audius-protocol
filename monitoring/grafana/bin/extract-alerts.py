@@ -192,7 +192,7 @@ def extract_alerts(template, dashboard, env):
                 alert_id = (dashboard_id * 10000) + (panel_id * 10) + level_id + 100000
 
                 title = sanatize_text(panel["title"])
-                title_env = env.upper() if env == "prod" else env.lower()
+                title_env = env.upper()
                 title = f"{title_env} {title_level} | {title}"
 
                 formatted_text = template.format(

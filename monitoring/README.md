@@ -349,8 +349,6 @@ The `Color Scheme` should remain set to `Classic Palette` to help standardize ou
 
 [Data Links](https://grafana.com/docs/grafana/next/panels/configure-data-links/#data-links) allow any point within a Time Series Panel to contain embedded links when clicking on a point. This can be useful for shortcuts to external websites, among other unexplored use cases.
 
-In future iterations, Data Links will be extracted and included in our auto-generated Alerts once we activate AlertManager in future iterations to enable rich Slack alerts.
-
 #### Value Mappings
 
 Currently supported Value Mapping keys are `team` and `mentions`. Below are some supported examples:
@@ -360,24 +358,10 @@ Currently supported Value Mapping keys are `team` and `mentions`. Below are some
 | team      | platform          |
 | team      | content           |
 | team      | monetization      |
+| team      | infra             |
 | mentions  | @joaquin @dheeraj |
 
 The `team` value will be applied as an Alert label and thus affects which Alert Notification Policy is triggered.
-
-The `mentions` value is meant to support Slack @mentions, is included in auto-generated Alerts, but is not fully activated until we activate AlertManager in future iterations to enable rich Slack alerts.
-
-Sample Value Mappings that may be considered for future work:
-
-| Condition    | Display text |
-| ------------ | ------------ |
-| channel      | #eng-custom  |
-| critical     | true         |
-| stage-alerts | false        |
-| component    | discovery    |
-| component    | content      |
-| component    | contracts    |
-| component    | aao          |
-| component    | monetization |
 
 #### Thresholds
 
