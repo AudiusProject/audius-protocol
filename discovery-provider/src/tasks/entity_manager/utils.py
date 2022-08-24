@@ -34,14 +34,6 @@ class EntityType(str, Enum):
     def __str__(self) -> str:
         return str.__str__(self)
 
-
-class EntitiesToFetch(TypedDict):
-    EntityType.USER: Set[int]
-    EntityType.TRACK: Set[int]
-    EntityType.PLAYLIST: Set[int]
-    EntityType.FOLLOW: Set[Tuple]
-
-
 class RecordDict(TypedDict):
     playlists: Dict[int, List[Playlist]]
     tracks: Dict[int, List[Track]]

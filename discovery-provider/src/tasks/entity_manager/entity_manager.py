@@ -18,7 +18,6 @@ from src.tasks.entity_manager.track import create_track, delete_track, update_tr
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
-    EntitiesToFetch,
     EntityType,
     ExistingRecordDict,
     ManageEntityParameters,
@@ -166,7 +165,7 @@ def collect_entities_to_fetch(
     update_task,
     entity_manager_txs,
 ):
-    entities_to_fetch: EntitiesToFetch = defaultdict(set)
+    entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
 
     for tx_receipt in entity_manager_txs:
         entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
