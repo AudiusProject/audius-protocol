@@ -13,6 +13,7 @@ import type {
   UpdateReplicaSetJobReturnValue
 } from './types'
 import { makeHistogramToRecord } from '../stateMachineUtils'
+import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
 
 const _ = require('lodash')
 
@@ -94,7 +95,7 @@ const updateReplicaSetJobProcessor = async function ({
         logger
       })
     } catch (e: any) {
-      error = error || 'failure_init_audius_libs'
+      error = UpdateReplicaSetJobResult.FailureInitAudiusLibs
       errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
 
@@ -108,7 +109,7 @@ const updateReplicaSetJobProcessor = async function ({
           {
             issuedReconfig: issuedReconfig?.toString() || 'false',
             reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
-            result: error || 'success'
+            result: error.toString()
           }
         )
       ]
@@ -137,7 +138,7 @@ const updateReplicaSetJobProcessor = async function ({
       }
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
-      error = error || 'failure_find_healthy_nodes'
+      error = UpdateReplicaSetJobResult.FailureFindHealthyNodes
       errorMsg = `Error finding healthy nodes to select - ${e.message}: ${e.stack}`
 
       // Make metrics to record
@@ -150,7 +151,7 @@ const updateReplicaSetJobProcessor = async function ({
           {
             issuedReconfig: issuedReconfig?.toString() || 'false',
             reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
-            result: error || 'success'
+            result: error.toString()
           }
         )
       ]
@@ -190,23 +191,23 @@ const updateReplicaSetJobProcessor = async function ({
           audiusLibs,
           logger
         ))
-    } catch (e) {
-      error = error || 'failure_issue_update_replica_set'
+    } catch (e: any) {
+      error = UpdateReplicaSetJobResult.FailureIssueUpdateReplicaSet
       logger.error(
-        `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
-          e as Error
-        ).toString()}: ${(e as Error).stack}`
+        `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
+          e.stack
+        }`
       )
-      errorMsg = (e as Error).toString()
+      errorMsg = e.toString()
     }
-  } catch (e) {
-    error = error || 'failure_determine_new_replica_set'
+  } catch (e: any) {
+    error = UpdateReplicaSetJobResult.FailureDetermineNewReplicaSet
     logger.error(
-      `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${(
-        e as Error
-      ).toString()}: ${(e as Error).stack}`
+      `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
+        e.stack
+      }`
     )
-    errorMsg = (e as Error).toString()
+    errorMsg = e.toString()
   }
 
   // Make metrics to record
@@ -217,7 +218,7 @@ const updateReplicaSetJobProcessor = async function ({
       ],
       (Date.now() - startTimeMs) / 1000, // Metric is in seconds
       {
-        result: error || 'success',
+        result: error || UpdateReplicaSetJobResult.Success,
         issuedReconfig: issuedReconfig?.toString() || 'false',
         reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
       }
@@ -519,7 +520,7 @@ const _selectRandomReplicaSetNodes = async (
 }
 
 type IssueUpdateReplicaSetResult = {
-  error: string | undefined
+  error?: UpdateReplicaSetJobResult
   errorMsg: string
   issuedReconfig: boolean
   syncJobsToEnqueue: IssueSyncRequestJobParams[]
@@ -575,7 +576,7 @@ const _issueUpdateReplicaSetOp = async (
     )
 
     if (!issueReconfig) {
-      response.error = 'success_issue_reconfig_disabled'
+      response.error = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
       return response
     }
 
@@ -584,7 +585,7 @@ const _issueUpdateReplicaSetOp = async (
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
       if (!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]) {
-        response.error = response.error || 'failure_no_valid_sp'
+        response.error = UpdateReplicaSetJobResult.FailureNoValidSP
         response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
           ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
         )} | endpt=${endpt}. Skipping reconfig.`
@@ -630,7 +631,7 @@ const _issueUpdateReplicaSetOp = async (
       }
 
       if (!canReconfig) {
-        response.error = response.error || 'skip_update_replica_set'
+        response.error = UpdateReplicaSetJobResult.SkipUpdateReplicaSet
         logger.info(
           `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
         )
@@ -703,7 +704,7 @@ const _issueUpdateReplicaSetOp = async (
       `[_issueUpdateReplicaSetOp] Reconfig SUCCESS: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
   } catch (e: any) {
-    response.error = response.error || 'failure_to_update_replica_set'
+    response.error = UpdateReplicaSetJobResult.FailureToUpdateReplicaSet
 
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
@@ -734,7 +735,7 @@ type CanReconfigParams = {
 
 type CanReconfigReturnValue = {
   canReconfig: boolean
-  error?: string
+  error?: UpdateReplicaSetJobResult
   chainPrimarySpId?: number
   chainSecondarySpIds?: number[]
 }
@@ -757,7 +758,7 @@ const _canReconfig = async ({
       !chainSecondarySpIds ||
       chainSecondarySpIds.length < 2
     ) {
-      error = 'failure_get_current_replica_set'
+      error = UpdateReplicaSetJobResult.FailureGetCurrentReplicaSet
       throw new Error(
         `Could not get current replica set: chainPrimarySpId=${chainPrimarySpId} chainSecondarySpIds=${JSON.stringify(
           chainSecondarySpIds || []
