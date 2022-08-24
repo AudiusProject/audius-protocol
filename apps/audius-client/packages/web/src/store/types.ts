@@ -35,7 +35,6 @@ import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import { UploadPageState } from 'pages/upload-page/store/types'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
-import PlayerReducer from 'store/player/slice'
 import PlaylistLibraryReducer from 'store/playlist-library/slice'
 
 import { BackendState } from '../common/store/backend/types'
@@ -113,7 +112,6 @@ export type AppState = CommonState & {
 
   // Playback
   queue: ReturnType<typeof QueueReducer>
-  player: ReturnType<typeof PlayerReducer>
 
   // Misc
   router: RouterState

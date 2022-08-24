@@ -17,7 +17,8 @@ import {
   cacheTracksSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
-  shareModalUIActions
+  shareModalUIActions,
+  playerSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -39,7 +40,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { getUid, getPlaying, getBuffering } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
 import { fullTrackPage, profilePage } from 'utils/route'
@@ -52,6 +52,7 @@ import styles from './ConnectedTrackTile.module.css'
 import TrackTile from './TrackTile'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
+const { getUid, getPlaying, getBuffering } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors

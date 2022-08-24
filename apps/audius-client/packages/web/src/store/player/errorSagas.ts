@@ -1,5 +1,8 @@
-import { error } from 'store/player/slice'
+import { playerActions } from '@audius/common'
+
 import { createErrorSagas } from 'utils/errorSagas'
+
+const { error } = playerActions
 
 type PlayerErrors = ReturnType<typeof error>
 

@@ -1,13 +1,17 @@
 import { useEffect, useCallback, ComponentType } from 'react'
 
-import { Playable, User, lineupSelectors } from '@audius/common'
+import {
+  Playable,
+  User,
+  lineupSelectors,
+  playerSelectors
+} from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import { LineupVariant } from 'components/lineup/types'
-import { getPlaying, getBuffering } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 
@@ -15,6 +19,7 @@ import { DeletedPageProps as DesktopDeletedPageProps } from './components/deskto
 import { DeletedPageProps as MobileDeletedPageProps } from './components/mobile/DeletedPage'
 import { moreByActions } from './store/lineups/more-by/actions'
 import { getLineup } from './store/selectors'
+const { getPlaying, getBuffering } = playerSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
 
 type OwnProps = {

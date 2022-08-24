@@ -20,7 +20,8 @@ import {
   SavedPageTrack,
   TrackRecord,
   SavedPageCollection,
-  tracksSocialActions as socialActions
+  tracksSocialActions as socialActions,
+  playerSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -29,13 +30,13 @@ import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
+const { getPlaying, getBuffering } = playerSelectors
 const { getSavedTracksLineup } = savedPageSelectors
 const { updatePlaylistLastViewedAt } = notificationsActions
 const { getPlaylistUpdates } = notificationsSelectors

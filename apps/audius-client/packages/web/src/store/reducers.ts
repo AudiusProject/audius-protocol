@@ -34,7 +34,6 @@ import scrollLock from 'store/application/ui/scrollLock/reducer'
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/reducer'
-import player from 'store/player/slice'
 import playlistLibrary from 'store/playlist-library/slice'
 
 export const commonStoreReducers = clientStoreReducers()
@@ -69,7 +68,6 @@ const createRootReducer = (routeHistory: History) =>
 
     // Playback
     queue,
-    player,
 
     // Remote config/flags
     remoteConfig,

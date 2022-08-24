@@ -20,7 +20,8 @@ import {
   themeSelectors,
   RepostType,
   favoritesUserListActions,
-  repostsUserListActions
+  repostsUserListActions,
+  playerSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -28,7 +29,6 @@ import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { PlaylistTileProps } from 'components/track/types'
-import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import {
   albumPage,
@@ -42,6 +42,7 @@ import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
 
 import PlaylistTile from './PlaylistTile'
+const { getUid, getBuffering, getPlaying } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { getTheme } = themeSelectors

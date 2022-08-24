@@ -1,20 +1,18 @@
-import { UID, ID, Collectible, Nullable } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import NativeMobileAudio from 'audio/NativeMobileAudio'
+import { UID, ID, Collectible } from '../../models'
+import { Nullable } from '../../utils'
 
-import { AudioState } from './types'
+import { AudioPlayer } from './types'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
-type State = {
+export type PlayerState = {
   // Identifiers for the audio that's playing.
   uid: UID | null
   trackId: ID | null
 
   collectible: Collectible | null
 
-  audio: AudioState
+  audio: Nullable<AudioPlayer>
 
   // Keep 'playing' in the store separately from the audio
   // object to allow components to subscribe to changes.
@@ -29,7 +27,7 @@ type State = {
   counter: number
 }
 
-export const initialState: State = {
+export const initialState: PlayerState = {
   uid: null,
   trackId: null,
 
@@ -37,7 +35,7 @@ export const initialState: State = {
 
   // In the case of native mobile, use the native mobile audio
   // player directly. Otherwise, it is set dynamically
-  audio: NATIVE_MOBILE ? new NativeMobileAudio() : null,
+  audio: null,
 
   playing: false,
   buffering: false,
@@ -45,7 +43,7 @@ export const initialState: State = {
 }
 
 type SetAudioStreamPayload = {
-  audio: AudioState
+  audio: AudioPlayer
 }
 
 type PlayPayload = {
@@ -113,7 +111,7 @@ const slice = createSlice({
       // Redux toolkit seems to do something to state.audio's type (some destructured form?)
       state.audio = audio as typeof state.audio
     },
-    play: (state, action: PayloadAction<PlayPayload>) => {},
+    play: (_state, _action: PayloadAction<PlayPayload>) => {},
     playSucceeded: (state, action: PayloadAction<PlaySucceededPayload>) => {
       const { uid, trackId } = action.payload
       state.playing = true
@@ -123,8 +121,8 @@ const slice = createSlice({
       state.collectible = null
     },
     playCollectible: (
-      state,
-      action: PayloadAction<PlayCollectiblePayload>
+      _state,
+      _action: PayloadAction<PlayCollectiblePayload>
     ) => {},
     playCollectibleSucceeded: (
       state,
@@ -136,14 +134,14 @@ const slice = createSlice({
       state.trackId = null
       state.collectible = collectible || state.collectible
     },
-    pause: (state, action: PayloadAction<PausePayload>) => {
+    pause: (state, _action: PayloadAction<PausePayload>) => {
       state.playing = false
     },
     setBuffering: (state, action: PayloadAction<SetBufferingPayload>) => {
       const { buffering } = action.payload
       state.buffering = buffering
     },
-    stop: (state, action: PayloadAction<StopPayload>) => {
+    stop: (state, _action: PayloadAction<StopPayload>) => {
       state.playing = false
       state.uid = null
       state.trackId = null
@@ -154,14 +152,14 @@ const slice = createSlice({
       state.uid = uid
       state.trackId = trackId
     },
-    reset: (state, action: PayloadAction<ResetPayload>) => {},
+    reset: (_state, _action: PayloadAction<ResetPayload>) => {},
     resetSuceeded: (state, action: PayloadAction<ResetSucceededPayload>) => {
       const { shouldAutoplay } = action.payload
       state.playing = shouldAutoplay
       state.counter = state.counter + 1
     },
-    seek: (state, actions: PayloadAction<SeekPayload>) => {},
-    error: (state, actions: PayloadAction<ErrorPayload>) => {},
+    seek: (_state, _actions: PayloadAction<SeekPayload>) => {},
+    error: (_state, _actions: PayloadAction<ErrorPayload>) => {},
     incrementCount: (state) => {
       state.counter = state.counter + 1
     }
@@ -186,3 +184,4 @@ export const {
 } = slice.actions
 
 export default slice.reducer
+export const actions = slice.actions
