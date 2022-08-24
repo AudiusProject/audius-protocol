@@ -34,7 +34,12 @@ export const makeTrackPublic = (trackId) => ({
   trackId
 })
 
-export const fetchTrack = (trackId, slug, handle, canBeUnlisted) => ({
+export const fetchTrack = (
+  trackId: Nullable<number>,
+  slug?: string,
+  handle?: string,
+  canBeUnlisted?: boolean
+) => ({
   type: FETCH_TRACK,
   trackId,
   slug,
