@@ -125,7 +125,7 @@ def entity_manager_update(
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
-                        f"entity_manager.py | failed to process tx error {e} | with params {params}"
+                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
         # compile records_to_save
         records_to_save = []

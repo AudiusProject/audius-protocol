@@ -12,9 +12,10 @@ from celery.schedules import crontab, timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
+from opentelemetry.instrumentation.flask import FlaskInstrumentor  # type: ignore
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
-from src import api_helpers, exceptions
+from src import api_helpers, exceptions, tracer
 from src.api.v1 import api as api_v1
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
@@ -213,7 +214,9 @@ def create(test_config=None, mode="app"):
     assert isinstance(mode, str), f"Expected string, provided {arg_type}"
     assert mode in ("app", "celery"), f"Expected app/celery, provided {mode}"
 
+    tracer.configure_tracer()
     app = Flask(__name__)
+    FlaskInstrumentor().instrument_app(app)
 
     # Tell Flask that it should respect the X-Forwarded-For and X-Forwarded-Proto
     # headers coming from a proxy (if any).
@@ -373,7 +376,6 @@ def configure_celery(celery, test_config=None):
         imports=[
             "src.tasks.index",
             "src.tasks.index_metrics",
-            "src.tasks.index_materialized_views",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
@@ -414,10 +416,6 @@ def configure_celery(celery, test_config=None):
             "synchronize_metrics": {
                 "task": "synchronize_metrics",
                 "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL),
-            },
-            "update_materialized_views": {
-                "task": "update_materialized_views",
-                "schedule": timedelta(seconds=300),
             },
             "index_hourly_play_counts": {
                 "task": "index_hourly_play_counts",
@@ -555,7 +553,6 @@ def configure_celery(celery, test_config=None):
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
     redis_inst.delete("network_peers_lock")
-    redis_inst.delete("materialized_view_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
     redis_inst.delete("index_hourly_play_counts_lock")

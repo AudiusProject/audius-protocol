@@ -154,7 +154,8 @@ async function saveFileForMultihashToFS(
         gatewayUrlsMapped,
         expectedStoragePath,
         parsedStoragePath
-      }
+      },
+      log: true
     })
 
     // Create dir at expected storage path in which to store retrieved data
@@ -213,8 +214,7 @@ async function saveFileForMultihashToFS(
     if (await fs.pathExists(expectedStoragePath)) {
       decisionTree.recordStage({
         name: 'Success - File already stored on disk',
-        data: { expectedStoragePath },
-        log: true
+        data: { expectedStoragePath }
       })
 
       return
@@ -260,8 +260,7 @@ async function saveFileForMultihashToFS(
           } catch (e) {
             decisionTree.recordStage({
               name: 'Error - Could not retrieve file from gateway',
-              data: { url, errorMsg: e.message },
-              log: true
+              data: { url, errorMsg: e.message }
             })
             continue
           }
@@ -283,15 +282,13 @@ async function saveFileForMultihashToFS(
 
         decisionTree.recordStage({
           name: 'Wrote file to file system after fetching from gateway',
-          data: { expectedStoragePath },
-          log: true
+          data: { expectedStoragePath }
         })
       } catch (e) {
         const errorMsg = `Failed to retrieve file for multihash ${multihash} from other creator node gateways`
         decisionTree.recordStage({
           name: errorMsg,
-          data: { errorMsg: e.message },
-          log: true
+          data: { errorMsg: e.message }
         })
       }
     }
@@ -393,14 +390,15 @@ async function saveFileForMultihashToFS(
   } catch (e) {
     decisionTree.recordStage({
       name: `Uncaught Error`,
-      data: { errorMsg: e.message },
-      log: true
+      data: { errorMsg: e.message }
     })
 
     return e
+  } finally {
+    decisionTree.printTree()
   }
 
-  // Else return nothing
+  // If no error, return nothing
 }
 
 /**

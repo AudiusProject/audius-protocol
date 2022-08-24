@@ -73,6 +73,7 @@ export const METRIC_LABELS = Object.freeze({
     mode: ['force_resync', 'default'],
     result: [
       'success',
+      'success_clocks_already_match',
       'failure_force_resync_check',
       'failure_delete_db_data',
       'failure_sync_secondary_from_primary',
