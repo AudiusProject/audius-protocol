@@ -128,13 +128,13 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        logger.info('Follow created')
+                        logger.info("Follow created")
                     elif (
                         params.action == Action.UNFOLLOW
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        logger.info('Unfollow created')
+                        logger.info("Unfollow created")
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -161,6 +161,7 @@ def entity_manager_update(
         raise e
     return num_total_changes, changed_entity_ids
 
+
 def collect_entities_to_fetch(
     update_task,
     entity_manager_txs,
@@ -178,7 +179,9 @@ def collect_entities_to_fetch(
             entities_to_fetch[EntityType.USER].add(user_id)
 
             # Query follow operations as needed
-            if entity_type == EntityType.USER and (action == Action.FOLLOW or action == Action.UNFOLLOW):
+            if entity_type == EntityType.USER and (
+                action == Action.FOLLOW or action == Action.UNFOLLOW
+            ):
                 entities_to_fetch[EntityType.FOLLOW].add((user_id, entity_id))
 
     return entities_to_fetch
