@@ -183,6 +183,20 @@ const _findReplicaSetUpdatesForUser = async (
     secondary2SpID
   } = user
 
+  // If the user was on an old client (pre-URSM), they could have a null replica set on URSM.
+  // This will be resolved by client-side sanity checks next time they use the client.
+  // Any replica set update we issue here will fail because they have no primary SP ID that can be verified from chain.
+  if (
+    primarySpID === null &&
+    secondary1SpID === null &&
+    secondary1SpID === null
+  ) {
+    logger.error(
+      `User ${wallet} has null SP IDs for their entire replica set. Replica set endpoints: [${primary},${secondary1},${secondary2}]`
+    )
+    return requiredUpdateReplicaSetOps
+  }
+
   /**
    * If this node is primary for user, check both secondaries for health
    * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
@@ -267,6 +281,17 @@ const _findReplicaSetUpdatesForUser = async (
         ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[replica.endpoint] !==
         replica.spId
       ) {
+        logger.error(
+          `_findReplicaSetUpdatesForUser(): Replica ${
+            replica.endpoint
+          } for user ${wallet} mismatched spID. Expected ${
+            replica.spId
+          }, found ${
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[replica.endpoint]
+          }. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
+          )}`
+        )
         unhealthyReplicas.add(replica.endpoint)
       } else if (unhealthyPeersSet.has(replica.endpoint)) {
         // Else, continue with conducting extra health check if the current observed node is a primary, and
@@ -280,6 +305,9 @@ const _findReplicaSetUpdatesForUser = async (
         }
 
         if (addToUnhealthyReplicas) {
+          logger.error(
+            `_findReplicaSetUpdatesForUser(): Replica ${replica.endpoint} for user ${wallet} was already marked unhealthy and failed an additional health check if it was primary.`
+          )
           unhealthyReplicas.add(replica.endpoint)
         }
       }

@@ -67,7 +67,7 @@ export const QUEUE_NAMES = {
   // Queue to find replica set updates
   FIND_REPLICA_SET_UPDATES: 'find-replica-set-updates-queue',
   // Queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
-  FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-to-endpoint-sp-id-map-queue',
+  FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-endpoint-to-sp-id-map-queue',
   // Queue to issue a manual sync
   MANUAL_SYNC: 'manual-sync-queue',
   // Queue to issue a recurring sync
