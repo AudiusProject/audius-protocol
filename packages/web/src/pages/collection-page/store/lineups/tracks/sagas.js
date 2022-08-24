@@ -37,7 +37,7 @@ function* getCollectionTracks() {
 
   const trackIds = track.map((t) => t.track)
   // TODO: Conform all timestamps to be of the same format so we don't have to do any special work here.
-  const times = track.map((t) => t.time)
+  const times = track.map((t) => t.metadata_time ?? t.time)
 
   // Reconcile fetching this playlist with the queue.
   // Search the queue for its currently playing uids. If any are sourced
