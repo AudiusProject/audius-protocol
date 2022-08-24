@@ -14,6 +14,7 @@ from src.models.social.save import Save
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.entity_manager.playlist import (
     create_playlist,
     delete_playlist,
@@ -27,6 +28,7 @@ from src.tasks.entity_manager.social_features import (
     delete_social_record,
 )
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
+from src.tasks.entity_manager.user import create_user, update_user
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
@@ -39,6 +41,7 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
+from src.utils.indexing_errors import EntityMissingRequiredFieldError
 
 logger = logging.getLogger(__name__)
 
@@ -102,12 +105,14 @@ def entity_manager_update(
                     start_time_tx = time.time()
                     params = ManageEntityParameters(
                         session,
+                        update_task.redis,
                         challenge_bus,
                         event,
                         new_records,  # actions below populate these records
                         existing_records,
                         pending_track_routes,
                         ipfs_metadata,
+                        update_task.web3,
                         block_timestamp,
                         block_number,
                         event_blockhash,

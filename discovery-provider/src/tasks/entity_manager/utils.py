@@ -11,11 +11,12 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.utils import helpers
+from web3 import Web3
 from web3.datastructures import AttributeDict
 
 PLAYLIST_ID_OFFSET = 400_000
-TRACK_ID_OFFSET = 1_000_000
-
+TRACK_ID_OFFSET = 2_000_000
+USER_ID_OFFSET = 3_000_000
 
 class Action(str, Enum):
     CREATE = "Create"
@@ -75,12 +76,14 @@ class ManageEntityParameters:
     def __init__(
         self,
         session,
+        redis,
         challenge_bus: ChallengeEventBus,
         event: AttributeDict,
         new_records: RecordDict,
         existing_records: ExistingRecordDict,
         pending_track_routes: List[TrackRoute],
         ipfs_metadata: Dict[str, Dict[str, Dict]],
+        web3: Web3,
         block_timestamp: int,
         block_number: int,
         event_blockhash: str,
@@ -96,7 +99,9 @@ class ManageEntityParameters:
         self.block_integer_time = int(block_timestamp)
 
         self.session = session
+        self.redis = redis
         self.challenge_bus = challenge_bus
+        self.web3 = web3
         self.pending_track_routes = pending_track_routes
 
         self.event = event
@@ -129,3 +134,7 @@ class ManageEntityParameters:
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
     return (user_id, entity_type.capitalize(), entity_id)
+
+    def add_user_record(self, user_id: int, user: User):
+        self.new_records["users"][user_id].append(user)
+        self.existing_records["users"][user_id] = user

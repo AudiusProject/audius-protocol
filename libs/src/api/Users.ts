@@ -7,6 +7,7 @@ import {
   setSpIDForEndpoint
 } from '../services/creatorNode'
 import type { ServiceProvider } from './ServiceProvider'
+import { EntityManagerClient } from '../services/dataContracts/EntityManagerClient'
 
 // User metadata fields that are required on the metadata object and can have
 // null or non-null values
@@ -384,7 +385,7 @@ export class Users extends Base {
    * creator_node_endpoint); this should error if the metadata given attempts to set them.
    * @param {Object} metadata metadata to associate with the user
    */
-  async addUser(metadata: UserMetadata) {
+  async addUser(metadata: UserMetadata, useEntityManager: boolean) {
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
@@ -394,12 +395,27 @@ export class Users extends Base {
     if (currentUser?.handle) {
       userId = currentUser.user_id
     } else {
-      userId = (
-        await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
-      ).userId
+      userId = Users.generateUserId() 
     }
-    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } =
-      await this._addUserOperations(userId, newMetadata)
+    let blockHash: string | undefined
+    let blockNumber: number
+
+    if (useEntityManager) {
+      // 
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        userId,
+        EntityManagerClient.EntityType.USER,
+        userId,
+        EntityManagerClient.Action.CREATE,
+        newMetadata
+      )
+      blockHash = response.txReceipt.blockHash
+      blockNumber = response.txReceipt.blockNumber
+    } else {
+      const result = await this._addUserOperations(userId, newMetadata)
+      blockHash = result.latestBlockHash
+      blockNumber = result.latestBlockNumber
+    }
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
@@ -1018,5 +1034,15 @@ export class Users extends Base {
       setSpIDForEndpoint(endpoint, spID)
     }
     return spID
+  }
+  
+  // Minimum user ID, intentionally higher than legacy user ID range
+  static MIN_USER_ID = 2000000
+
+  // Maximum user ID, reflects postgres max integer value
+  static MAX_USER_ID = 2147483647
+
+  static generateUserId(): number {
+    return Utils.getRandomInt(Users.MIN_USER_ID, Users.MAX_USER_ID)
   }
 }
