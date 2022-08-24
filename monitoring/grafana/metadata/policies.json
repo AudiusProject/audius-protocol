@@ -2,7 +2,17 @@
   "receiver": "#eng-alerts-debug",
   "routes": [
     {
-      "receiver": "#eng-alerts-debug",
+      "receiver": "#eng-token-alerts",
+      "object_matchers": [
+        [
+          "channel",
+          "=",
+          "slack-eng-token-alerts"
+        ]
+      ]
+    },
+    {
+      "receiver": "#eng-prod-incidents",
       "object_matchers": [
         [
           "alert",
@@ -15,11 +25,63 @@
           "prod"
         ]
       ],
+      "routes": [
+        {
+          "receiver": "PagerDuty | Content (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "content"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Platform (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "platform"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Client (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "client"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Infrastructure (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "infra"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Monetization (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "monetization"
+            ]
+          ]
+        }
+      ],
       "group_wait": "10s",
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-alerts-debug",
+      "receiver": "#eng-prod-incidents",
       "object_matchers": [
         [
           "alert",
@@ -32,11 +94,63 @@
           "prod"
         ]
       ],
+      "routes": [
+        {
+          "receiver": "PagerDuty | Content (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "content"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Platform (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "platform"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Client (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "client"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Infrastructure (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "infra"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Monetization (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "monetization"
+            ]
+          ]
+        }
+      ],
       "group_wait": "10s",
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-alerts-debug",
+      "receiver": "#eng-prod-incidents",
       "object_matchers": [
         [
           "alert",
@@ -49,11 +163,63 @@
           "prod"
         ]
       ],
+      "routes": [
+        {
+          "receiver": "PagerDuty | Content (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "content"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Platform (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "platform"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Client (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "client"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Infrastructure (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "infra"
+            ]
+          ]
+        },
+        {
+          "receiver": "PagerDuty | Monetization (P3)",
+          "object_matchers": [
+            [
+              "team",
+              "=",
+              "monetization"
+            ]
+          ]
+        }
+      ],
       "group_wait": "10s",
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-alerts-debug",
+      "receiver": "#eng-stage-incidents",
       "object_matchers": [
         [
           "alert",
@@ -70,7 +236,7 @@
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-alerts-debug",
+      "receiver": "#eng-stage-incidents",
       "object_matchers": [
         [
           "alert",
@@ -87,7 +253,7 @@
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-alerts-debug",
+      "receiver": "#eng-stage-incidents",
       "object_matchers": [
         [
           "alert",

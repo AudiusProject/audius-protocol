@@ -6,9 +6,208 @@
     "settings": {
       "recipient": "C03STD3UXMG",
       "text": "{{ template \"mymessage\" . }}",
-      "title": "{{ template \"title\" . }}",
+      "title": "{{ template \"slack-title\" . }}",
       "token": "[REDACTED]"
     },
     "disableResolveMessage": true
+  },
+  {
+    "uid": "DAYT7DW4k",
+    "name": "#eng-prod-incidents",
+    "type": "slack",
+    "settings": {
+      "recipient": "CFMRNGFT7",
+      "text": "{{ template \"mymessage\" . }}",
+      "title": "{{ template \"slack-title\" . }}",
+      "token": "[REDACTED]"
+    },
+    "disableResolveMessage": true
+  },
+  {
+    "uid": "VeoxnvZ4k",
+    "name": "#eng-stage-incidents",
+    "type": "slack",
+    "settings": {
+      "recipient": "CQ4CZAD6Y",
+      "text": "{{ template \"mymessage\" . }}",
+      "title": "{{ template \"slack-title\" . }}",
+      "token": "[REDACTED]"
+    },
+    "disableResolveMessage": true
+  },
+  {
+    "uid": "qEfFXYkVz",
+    "name": "#eng-token-alerts",
+    "type": "slack",
+    "settings": {
+      "recipient": "C03S95863FV",
+      "token": "[REDACTED]"
+    },
+    "disableResolveMessage": true
+  },
+  {
+    "uid": "pqQCSvW4k",
+    "name": "PagerDuty | Client (P1)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "critical",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "Tj46SvWVz",
+    "name": "PagerDuty | Client (P2)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "error",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "VhDgHvZVk",
+    "name": "PagerDuty | Client (P3)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "warning",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "Uy3N7vW4k",
+    "name": "PagerDuty | Content (P1)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "critical",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "syTVnvZVk",
+    "name": "PagerDuty | Content (P2)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "error",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "bfE7MDWVk",
+    "name": "PagerDuty | Content (P3)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "warning",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "9JvHSvW4k",
+    "name": "PagerDuty | Infrastructure (P1)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "critical",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "hf3DSDWVz",
+    "name": "PagerDuty | Infrastructure (P2)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "error",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "A6RKSvZVk",
+    "name": "PagerDuty | Infrastructure (P3)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "warning",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "j3dZNvZ4z",
+    "name": "PagerDuty | Monetization (P1)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "critical",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "jY4MHvWVk",
+    "name": "PagerDuty | Monetization (P2)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "error",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "UKD7HvZVk",
+    "name": "PagerDuty | Monetization (P3)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "warning",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "F-7TIDZ4z",
+    "name": "PagerDuty | Platform (P1)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "critical",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "k_aAIvWVk",
+    "name": "PagerDuty | Platform (P2)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "error",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
+  },
+  {
+    "uid": "Xd7bIvWVk",
+    "name": "PagerDuty | Platform (P3)",
+    "type": "pagerduty",
+    "settings": {
+      "integrationKey": "[REDACTED]",
+      "severity": "warning",
+      "summary": "{{ template \"pagerduty-title\" . }}"
+    },
+    "disableResolveMessage": false
   }
 ]
