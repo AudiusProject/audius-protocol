@@ -17,10 +17,11 @@
     "url": "git+https://github.com/AudiusProject/audius-client.git"
   },
   "scripts": {
+    "build": "rollup -c",
     "lint": "eslint --cache src",
     "lint:fix": "npm run lint -- --fix",
-    "build": "rollup -c",
-    "start": "rollup -c -w"
+    "start": "rollup -c -w",
+    "typecheck": "tsc --noEmit"
   },
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-client/issues"
