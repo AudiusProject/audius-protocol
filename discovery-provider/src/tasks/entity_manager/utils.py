@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Set, Tuple, TypedDict
+from typing import Dict, List, TypedDict
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.playlists.playlist import Playlist
@@ -33,6 +33,7 @@ class EntityType(str, Enum):
 
     def __str__(self) -> str:
         return str.__str__(self)
+
 
 class RecordDict(TypedDict):
     playlists: Dict[int, List[Playlist]]
