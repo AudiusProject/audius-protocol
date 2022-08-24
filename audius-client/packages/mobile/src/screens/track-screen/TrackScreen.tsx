@@ -1,11 +1,15 @@
+import { useEffect } from 'react'
+
 import {
   lineupSelectors,
   trackPageLineupActions,
+  trackPageActions,
   trackPageSelectors
 } from '@audius/common'
 import { trackRemixesPage } from 'audius-client/src/utils/route'
-import { omit } from 'lodash'
+import { useSelector } from 'common/hooks/useSelector'
 import { Text, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button, Screen } from 'app/components/core'
@@ -16,6 +20,7 @@ import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { TrackScreenMainContent } from './TrackScreenMainContent'
+const { fetchTrack } = trackPageActions
 const { tracksActions } = trackPageLineupActions
 const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -51,20 +56,16 @@ export const TrackScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation()
   const { params } = useRoute<'Track'>()
+  const dispatch = useDispatch()
 
   // params is incorrectly typed and can sometimes be undefined
-  const { searchTrack } = params ?? {}
+  const { searchTrack, id } = params ?? {}
 
-  const cachedTrack = useSelectorWeb(
-    (state) => getTrack(state, params),
-    // Omitting uneeded fields from the equality check because they are
-    // causing extra renders when added to the `track` object
-    (a, b) => {
-      const omitUneeded = <T extends object | null>(o: T) =>
-        omit(o, ['_stems', '_remix_parents'])
-      return isEqual(omitUneeded(a), omitUneeded(b))
-    }
-  )
+  useEffect(() => {
+    dispatch(fetchTrack(id))
+  }, [dispatch, id])
+
+  const cachedTrack = useSelector((state) => getTrack(state, params))
 
   const track = cachedTrack ?? searchTrack
 

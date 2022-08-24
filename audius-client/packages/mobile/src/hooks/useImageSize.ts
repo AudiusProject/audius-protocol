@@ -8,9 +8,7 @@ import type {
 } from '@audius/common'
 import type { ImageSourcePropType } from 'react-native'
 import { Image } from 'react-native'
-import type { useDispatch } from 'react-redux'
-
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useDispatch } from 'react-redux'
 
 type UseImageSizeOptions = Parameters<typeof useImageSizeCommon>[0]
 
@@ -33,7 +31,7 @@ export const getUseImageSizeHook = <Sizes extends SquareSizes | WidthSizes>({
       size: Sizes
     }
   ) => {
-    const dispatch = useDispatchWeb() as typeof useDispatch
+    const dispatch = useDispatch()
 
     // This resolves a statically imported image into a uri
     const defaultImage = Image.resolveAssetSource(defaultImageSource).uri
