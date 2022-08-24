@@ -88,6 +88,11 @@ class CNodeHealthManager {
   async isNodeHealthy(peer, performSimpleCheck = false) {
     try {
       const verboseHealthCheckResp = await this.queryVerboseHealthCheck(peer)
+      // if node returns healthy: false consider that unhealthy just like non-200 response
+      const { healthy } = verboseHealthCheckResp
+      if (!healthy) {
+        throw new Error(`Node health check returned healthy: false`)
+      }
       if (!performSimpleCheck) {
         this.determinePeerHealth(verboseHealthCheckResp)
       }
@@ -133,11 +138,6 @@ class CNodeHealthManager {
    */
   determinePeerHealth(verboseHealthCheckResp) {
     // Check for sufficient minimum storage size
-    const { healthy } = verboseHealthCheckResp
-    if (!healthy) {
-      throw new Error(`Node health check returned healthy: false`)
-    }
-
     const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
     if (
       storagePathSize &&
@@ -235,6 +235,7 @@ class CNodeHealthManager {
    */
   async isPrimaryHealthy(primary) {
     const isHealthy = await this.isNodeHealthy(primary, true)
+    logger.info(`primary isHealthy ${isHealthy}`)
 
     if (!isHealthy) {
       const failedTimestamp =
