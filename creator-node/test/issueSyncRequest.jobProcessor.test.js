@@ -156,7 +156,10 @@ describe('test issueSyncRequest job processor', function () {
       syncRequestParameters
     })
     expect(result).to.have.deep.property('error', {})
-    expect(result).to.have.deep.property('jobsToEnqueue', {})
+    expect(result).to.have.deep.property('jobsToEnqueue', {
+      [QUEUE_NAMES.MANUAL_SYNC]: [],
+      [QUEUE_NAMES.RECURRING_SYNC]: []
+    })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
@@ -208,7 +211,10 @@ describe('test issueSyncRequest job processor', function () {
     expect(result).to.have.deep.property('error', {
       message: expectedErrorMessage
     })
-    expect(result).to.have.deep.property('jobsToEnqueue', {})
+    expect(result).to.have.deep.property('jobsToEnqueue', {
+      [QUEUE_NAMES.MANUAL_SYNC]: [],
+      [QUEUE_NAMES.RECURRING_SYNC]: []
+    })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
@@ -283,7 +289,8 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue]
+      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue],
+      [QUEUE_NAMES.RECURRING_SYNC]: []
     })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
@@ -360,7 +367,8 @@ describe('test issueSyncRequest job processor', function () {
     })
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue]
+      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue],
+      [QUEUE_NAMES.RECURRING_SYNC]: []
     })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
@@ -421,7 +429,10 @@ describe('test issueSyncRequest job processor', function () {
       syncRequestParameters
     })
     expect(result).to.have.deep.property('error', {})
-    expect(result).to.have.deep.property('jobsToEnqueue', {})
+    expect(result).to.have.deep.property('jobsToEnqueue', {
+      [QUEUE_NAMES.MANUAL_SYNC]: [],
+      [QUEUE_NAMES.RECURRING_SYNC]: []
+    })
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
@@ -488,7 +499,10 @@ describe('test issueSyncRequest job processor', function () {
         syncRequestParameters
       })
       expect(result).to.have.deep.property('error', {})
-      expect(result).to.have.deep.property('jobsToEnqueue', {})
+      expect(result).to.have.deep.property('jobsToEnqueue', {
+        [QUEUE_NAMES.MANUAL_SYNC]: [],
+        [QUEUE_NAMES.RECURRING_SYNC]: []
+      })
       expect(result.metricsToRecord).to.have.lengthOf(1)
       expect(result.metricsToRecord[0]).to.have.deep.property(
         'metricName',
@@ -555,7 +569,10 @@ describe('test issueSyncRequest job processor', function () {
         'error',
         primarySyncFromSecondaryError
       )
-      expect(result).to.have.deep.property('jobsToEnqueue', {})
+      expect(result).to.have.deep.property('jobsToEnqueue', {
+        [QUEUE_NAMES.MANUAL_SYNC]: [],
+        [QUEUE_NAMES.RECURRING_SYNC]: []
+      })
       expect(result.metricsToRecord).to.have.lengthOf(1)
       expect(result.metricsToRecord[0]).to.have.deep.property(
         'metricName',
@@ -613,7 +630,10 @@ describe('test issueSyncRequest job processor', function () {
         syncRequestParameters
       })
       expect(result).to.have.deep.property('error', {})
-      expect(result).to.have.deep.property('jobsToEnqueue', {})
+      expect(result).to.have.deep.property('jobsToEnqueue', {
+        [QUEUE_NAMES.MANUAL_SYNC]: [],
+        [QUEUE_NAMES.RECURRING_SYNC]: []
+      })
       expect(result.metricsToRecord).to.have.lengthOf(1)
       expect(result.metricsToRecord[0]).to.have.deep.property(
         'metricName',

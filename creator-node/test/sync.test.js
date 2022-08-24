@@ -1060,8 +1060,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
       const absoluteStoragePath = path.resolve(storagePath)
       await fs.emptyDir(path.resolve(absoluteStoragePath))
 
-      nock.cleanAll()
-
       maxExportClockValueRange = originalMaxExportClockValueRange
       process.env.maxExportClockValueRange = maxExportClockValueRange
 
@@ -1076,6 +1074,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
     afterEach(function () {
       config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+      nock.cleanAll()
     })
 
     it('Syncs correctly from clean user state with mocked export object', async function () {
@@ -1655,8 +1654,6 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
    * Setup mocks, deps
    */
   beforeEach(async function () {
-    nock.cleanAll()
-
     await destroyUsers()
 
     await redisClient.flushdb()
@@ -1696,6 +1693,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   afterEach(async function () {
     await server.close()
     config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+    nock.cleanAll()
   })
 
   it('Primary correctly syncs from secondary when primary has no state', async function () {

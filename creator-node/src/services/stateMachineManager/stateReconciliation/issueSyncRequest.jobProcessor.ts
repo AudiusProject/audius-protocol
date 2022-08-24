@@ -12,6 +12,8 @@ import type {
   SyncRequestAxiosParams
 } from './types'
 
+import { QUEUE_NAMES } from '../stateMachineConstants'
+
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
 
@@ -31,7 +33,6 @@ const {
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
 const {
   SYNC_MONITORING_RETRY_DELAY_MS,
-  QUEUE_NAMES,
   SYNC_MODES,
   SyncType,
   MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
@@ -67,7 +68,8 @@ type HandleIssueSyncReqParams = {
 type HandleIssueSyncReqResult = {
   result: string
   error?: any
-  syncReqToEnqueue?: IssueSyncRequestJobParams
+  syncReqsToEnqueue: IssueSyncRequestJobParams[]
+  additionalSync?: IssueSyncRequestJobParams
 }
 type AdditionalSyncIsRequiredResponse = {
   outcome: string
@@ -94,14 +96,18 @@ module.exports = async function ({
 }: DecoratedJobParams<IssueSyncRequestJobParams>): Promise<
   DecoratedJobReturnValue<IssueSyncRequestJobReturnValue>
 > {
-  let jobsToEnqueue: JobsToEnqueue = {}
+  const jobsToEnqueue: JobsToEnqueue = {
+    [QUEUE_NAMES.MANUAL_SYNC]: [],
+    [QUEUE_NAMES.RECURRING_SYNC]: []
+  }
   let metricsToRecord = []
   let error: any = {}
 
   const startTimeMs = Date.now()
 
   const {
-    syncReqToEnqueue,
+    syncReqsToEnqueue,
+    additionalSync,
     result,
     error: errorResp
   } = await _handleIssueSyncRequest({
@@ -117,25 +123,28 @@ module.exports = async function ({
 
   // Enqueue a new sync request if one needs to be enqueued and we haven't retried too many times yet
   const maxRetries =
-    syncReqToEnqueue?.syncType === SyncType.Manual
+    additionalSync?.syncType === SyncType.Manual
       ? MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS
       : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-  if (!_.isEmpty(syncReqToEnqueue)) {
+  if (!_.isEmpty(additionalSync)) {
     if (attemptNumber < maxRetries) {
       logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
       const queueName =
-        syncReqToEnqueue?.syncType === SyncType.Manual
+        additionalSync?.syncType === SyncType.Manual
           ? QUEUE_NAMES.MANUAL_SYNC
           : QUEUE_NAMES.RECURRING_SYNC
-      jobsToEnqueue = {
-        [queueName]: [{ ...syncReqToEnqueue, attemptNumber: attemptNumber + 1 }]
-      }
+      jobsToEnqueue[queueName]!.push({
+        ...additionalSync!,
+        attemptNumber: attemptNumber + 1
+      })
     } else {
       logger.info(
-        `Gave up retrying issue-sync-request (type: ${syncReqToEnqueue?.syncType}) after ${attemptNumber} failed attempts`
+        `Gave up retrying issue-sync-request (type: ${additionalSync?.syncType}) after ${attemptNumber} failed attempts`
       )
     }
   }
+
+  jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]!.push(...syncReqsToEnqueue)
 
   // Make metrics to record
   metricsToRecord = [
@@ -163,11 +172,13 @@ async function _handleIssueSyncRequest({
   syncRequestParameters,
   logger
 }: HandleIssueSyncReqParams): Promise<HandleIssueSyncReqResult> {
+  const syncReqsToEnqueue: IssueSyncRequestJobParams[] = []
+
   if (!syncRequestParameters?.data?.wallet?.length) {
-    return { result: 'failure_missing_wallet' }
+    return { result: 'failure_missing_wallet', syncReqsToEnqueue }
   }
   if (syncMode === SYNC_MODES.None) {
-    return { result: 'success' }
+    return { result: 'success', syncReqsToEnqueue }
   }
 
   const userWallet = syncRequestParameters.data.wallet[0]
@@ -204,7 +215,8 @@ async function _handleIssueSyncRequest({
       result: 'failure_secondary_failure_count_threshold_met',
       error: {
         message: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
-      }
+      },
+      syncReqsToEnqueue
     }
   }
 
@@ -218,9 +230,37 @@ async function _handleIssueSyncRequest({
   ) {
     const syncEvenIfDisabled = syncRequestParameters.data.sync_even_if_disabled
 
-    // Short-circuit if this syncMode is disabled or if manual route override not provided
+    // Short-circuit if this syncMode is disabled and override flag is not set
     if (!mergePrimaryAndSecondaryEnabled && !syncEvenIfDisabled) {
-      return { result: 'success_mode_disabled' }
+      return { result: 'success_mode_disabled', syncReqsToEnqueue }
+    }
+
+    const userReplicaSet: ReplicaSet =
+      await getUserReplicaSetEndpointsFromDiscovery({
+        libs: await initAudiusLibs({
+          enableEthContracts: false,
+          enableContracts: false,
+          enableDiscovery: true,
+          enableIdentity: false,
+          logger
+        }),
+        logger,
+        wallet: userWallet,
+        blockNumber: null,
+        ensurePrimary: false
+      })
+
+    const syncCorrectnessError = _ensureSyncsEnqueuedToCorrectNodes(
+      userReplicaSet,
+      syncMode,
+      syncRequestParameters.baseURL
+    )
+    if (syncCorrectnessError) {
+      return {
+        result: 'failure_sync_correctness',
+        error: syncCorrectnessError,
+        syncReqsToEnqueue
+      }
     }
 
     const error = await primarySyncFromSecondary({
@@ -231,8 +271,31 @@ async function _handleIssueSyncRequest({
     if (error) {
       return {
         result: 'failure_primary_sync_from_secondary',
-        error
+        error,
+        syncReqsToEnqueue
       }
+    }
+
+    // Add syncs to be returned to later sync recovered orphaned data from this primary to secondaries
+    if (syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary) {
+      ;[userReplicaSet.secondary1, userReplicaSet.secondary2]
+        .filter(Boolean)
+        .forEach((secondary) => {
+          syncReqsToEnqueue.push({
+            syncType: SyncType.Recurring,
+            syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+            syncRequestParameters: {
+              baseURL: secondary!,
+              url: '/sync',
+              method: 'post',
+              data: {
+                creator_node_endpoint: userReplicaSet.primary!,
+                sync_type: SyncType.Recurring,
+                wallet: [userWallet]
+              }
+            }
+          })
+        })
     }
   }
 
@@ -248,51 +311,6 @@ async function _handleIssueSyncRequest({
       syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
       syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
     ) {
-      // Ensure this node is the user's primary making a request to one of the user's secondaries
-      const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
-      const userReplicaSet: ReplicaSet =
-        await getUserReplicaSetEndpointsFromDiscovery({
-          libs: await initAudiusLibs({
-            enableEthContracts: false,
-            enableContracts: false,
-            enableDiscovery: true,
-            enableIdentity: false,
-            logger
-          }),
-          logger,
-          wallet: userWallet,
-          blockNumber: null,
-          ensurePrimary: false
-        })
-      if (userReplicaSet.primary !== thisContentNodeEndpoint) {
-        throw new Error(
-          `This node is not primary for user. This node: ${thisContentNodeEndpoint} Primary: ${userReplicaSet.primary}`
-        )
-      }
-
-      // Ensure a MergePrimaryAndSecondary request is being made to a secondary
-      if (
-        syncRequestParameters.baseURL !== userReplicaSet.secondary1 &&
-        syncRequestParameters.baseURL !== userReplicaSet.secondary2
-      ) {
-        throw new Error(
-          `Sync request is not being made to secondary. Request endpoint: ${syncRequestParameters.baseURL} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`
-        )
-      }
-
-      // Ensure a MergePrimaryThenWipeSecondary (orphaned data) request is being made to a node outside the Replica Set
-      if (
-        syncRequestParameters.baseURL === userReplicaSet.primary ||
-        syncRequestParameters.baseURL === userReplicaSet.secondary1 ||
-        syncRequestParameters.baseURL === userReplicaSet.secondary2
-      ) {
-        throw new Error(
-          `Orphaned data sync request is being made to node in replica set. Request endpoint: ${
-            syncRequestParameters.baseURL
-          } Replica set: ${JSON.stringify(userReplicaSet)}`
-        )
-      }
-
       const data = generateDataForSignatureRecovery(syncRequestParameters.data)
       const { timestamp, signature } = generateTimestampAndSignature(
         data,
@@ -314,9 +332,9 @@ async function _handleIssueSyncRequest({
     }
   } catch (e: any) {
     // Retry a failed sync in all scenarios except recovering orphaned data
-    let syncReqToEnqueue
+    let additionalSync
     if (syncMode !== SYNC_MODES.MergePrimaryThenWipeSecondary) {
-      syncReqToEnqueue = {
+      additionalSync = {
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
         syncRequestParameters
@@ -328,7 +346,8 @@ async function _handleIssueSyncRequest({
       error: {
         message: `${logMsgString} || Error issuing sync request: ${e.message}`
       },
-      syncReqToEnqueue
+      syncReqsToEnqueue,
+      additionalSync
     }
   }
 
@@ -338,17 +357,19 @@ async function _handleIssueSyncRequest({
   ]
 
   // Wait until has sync has completed (within time threshold)
-  const { outcome, syncReqToEnqueue } = await _additionalSyncIsRequired(
-    primaryClockValue,
-    syncType,
-    syncMode,
-    syncRequestParameters,
-    logger
-  )
+  const { outcome, syncReqToEnqueue: additionalSync } =
+    await _additionalSyncIsRequired(
+      primaryClockValue,
+      syncType,
+      syncMode,
+      syncRequestParameters,
+      logger
+    )
 
   return {
     result: outcome,
-    syncReqToEnqueue
+    syncReqsToEnqueue,
+    additionalSync
   }
 }
 
@@ -519,4 +540,39 @@ const _additionalSyncIsRequired = async (
   }
 
   return response
+}
+
+const _ensureSyncsEnqueuedToCorrectNodes = (
+  userReplicaSet: ReplicaSet,
+  syncMode: string,
+  syncTargetEndpoint: string
+) => {
+  // Ensure this node is the user's primary
+  const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
+  if (userReplicaSet.primary !== thisContentNodeEndpoint) {
+    return `This node is not primary for user. This node: ${thisContentNodeEndpoint} Primary: ${userReplicaSet.primary}`
+  }
+
+  // Ensure a MergePrimaryAndSecondary request is being made to a secondary
+  if (
+    syncMode === SYNC_MODES.MergePrimaryAndSecondary &&
+    syncTargetEndpoint !== userReplicaSet.secondary1 &&
+    syncTargetEndpoint !== userReplicaSet.secondary2
+  ) {
+    return `Sync request is not being made to secondary. Request endpoint: ${syncTargetEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`
+  }
+
+  // Ensure a MergePrimaryThenWipeSecondary (orphaned data) request is being made to a node outside the Replica Set
+  if (
+    syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary &&
+    (syncTargetEndpoint === userReplicaSet.primary ||
+      syncTargetEndpoint === userReplicaSet.secondary1 ||
+      syncTargetEndpoint === userReplicaSet.secondary2)
+  ) {
+    return `Orphaned data sync request is being made to node in replica set. Request endpoint: ${syncTargetEndpoint} Replica set: ${JSON.stringify(
+      userReplicaSet
+    )}`
+  }
+
+  return ''
 }

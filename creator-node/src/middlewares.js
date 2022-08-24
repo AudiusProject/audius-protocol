@@ -10,6 +10,7 @@ const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
+const { strToReplicaSet } = require('./utils/index')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
@@ -691,7 +692,7 @@ async function getUserReplicaSetEndpointsFromDiscovery({
   }
 
   const endpoint = user[0].creator_node_endpoint
-  const userReplicaSet = utils.strToReplicaSet(endpoint || ',,')
+  const userReplicaSet = strToReplicaSet(endpoint || ',,')
 
   logger.info(
     `getUserReplicaSetEndpointsFromDiscovery route time ${Date.now() - start}`
