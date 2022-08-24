@@ -1,13 +1,9 @@
-import {
-  UID,
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  CommonState,
-  playerSelectors
-} from '@audius/common'
 import { createSelector } from 'reselect'
 
-import { AppState } from 'store/types'
+import { UID } from '../../models'
+import { cacheUsersSelectors, cacheTracksSelectors } from '../cache'
+import { playerSelectors } from '../player'
+import { CommonState } from '../reducers'
 
 const { getUid: getPlayerUid, getTrackId: getPlayerTrackId } = playerSelectors
 const { getUser } = cacheUsersSelectors
@@ -44,9 +40,9 @@ export const getCollectible = (state: CommonState) => {
   return state.queue.order[state.queue.index].collectible ?? null
 }
 
-const getCurrentTrack = (state: AppState) =>
+const getCurrentTrack = (state: CommonState) =>
   getTrack(state, { id: getPlayerTrackId(state) })
-const getCurrentUser = (state: AppState) => {
+const getCurrentUser = (state: CommonState) => {
   const track = getCurrentTrack(state)
   const queueable = state.queue.order[state.queue.index]
   if (track || queueable?.artistId) {

@@ -4,16 +4,17 @@ import {
   Uid,
   smartCollectionPageSelectors,
   collectionPageLineupActions as tracksActions,
-  collectionPageSelectors
+  collectionPageSelectors,
+  queueSelectors
 } from '@audius/common'
 import { keyBy } from 'lodash'
 import moment from 'moment'
 import { select, call } from 'redux-saga/effects'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { getPositions } from 'common/store/queue/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
+const { getPositions } = queueSelectors
 const {
   getCollection,
   getSmartCollectionVariant,

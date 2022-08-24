@@ -9,7 +9,8 @@ import {
   trendingPageLineupActions,
   trendingPageSelectors,
   trendingPageActions,
-  playerSelectors
+  playerSelectors,
+  queueSelectors
 } from '@audius/common'
 import {
   push as pushRoute,
@@ -20,9 +21,9 @@ import { matchPath, withRouter } from 'react-router-dom'
 
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
+const { makeGetCurrent } = queueSelectors
 
 const { getBuffering, getPlaying } = playerSelectors
 const {

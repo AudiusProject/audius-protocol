@@ -1,13 +1,19 @@
 import { useMemo } from 'react'
 
-import { LineupState, lineupSelectors, playerSelectors } from '@audius/common'
+import {
+  LineupState,
+  lineupSelectors,
+  playerSelectors,
+  queueSelectors
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import { LineupVariant } from 'components/lineup/types'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
+
+const { makeGetCurrent } = queueSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getBuffering, getPlaying } = playerSelectors
 

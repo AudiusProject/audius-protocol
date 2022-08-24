@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { queueActions, RepeatMode } from '@audius/common'
-import { getRepeat, getShuffle } from 'common/store/queue/selectors'
+import { queueActions, queueSelectors, RepeatMode } from '@audius/common'
 import { Animated, View, StyleSheet } from 'react-native'
 
 import IconNext from 'app/assets/images/iconNext.svg'
@@ -18,6 +17,7 @@ import type { ThemeColors } from 'app/utils/theme'
 import { PlayButton } from './PlayButton'
 import { RepeatButton } from './RepeatButton'
 import { ShuffleButton } from './ShuffleButton'
+const { getRepeat, getShuffle } = queueSelectors
 const { shuffle, repeat } = queueActions
 
 const createStyles = (themeColors: ThemeColors) =>
