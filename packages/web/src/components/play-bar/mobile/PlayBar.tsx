@@ -10,14 +10,14 @@ import {
   tracksSocialActions,
   Nullable,
   AudioPlayer,
-  playerSelectors
+  playerSelectors,
+  queueSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -28,6 +28,7 @@ import { AppState } from 'store/types'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import styles from './PlayBar.module.css'
+const { makeGetCurrent } = queueSelectors
 const { getAudio, getBuffering, getCounter, getPlaying } = playerSelectors
 const { recordListen, saveTrack, unsaveTrack } = tracksSocialActions
 const { pause, play } = queueActions

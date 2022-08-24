@@ -5,13 +5,12 @@ import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
 import cn from 'classnames'
 
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import Visualizer1 from 'utils/visualizer/visualizer-1.js'
 import Toast from 'components/toast/Toast'
 
 import styles from './VisualizerProvider.module.css'
 import { MountPlacement, ComponentPlacement } from 'components/types'
-import { playerSelectors, themeSelectors } from '@audius/common'
+import { playerSelectors, queueSelectors, themeSelectors } from '@audius/common'
 
 import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
@@ -28,6 +27,7 @@ import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
+const { makeGetCurrent } = queueSelectors
 const { getAudio, getPlaying } = playerSelectors
 const { getTheme } = themeSelectors
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack

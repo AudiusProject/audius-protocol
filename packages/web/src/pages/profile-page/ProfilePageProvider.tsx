@@ -33,7 +33,8 @@ import {
   usersSocialActions as socialActions,
   createPlaylistModalUIActions as createPlaylistModalActions,
   newUserMetadata,
-  playerSelectors
+  playerSelectors,
+  queueSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -44,7 +45,6 @@ import { Dispatch } from 'redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
 import { getIsDone } from 'common/store/confirmer/selectors'
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
@@ -55,6 +55,7 @@ import { parseUserRoute } from 'utils/route/userRouteParser'
 
 import { ProfilePageProps as DesktopProfilePageProps } from './components/desktop/ProfilePage'
 import { ProfilePageProps as MobileProfilePageProps } from './components/mobile/ProfilePage'
+const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions

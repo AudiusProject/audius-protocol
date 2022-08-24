@@ -38,7 +38,8 @@ import {
   collectionsSocialActions as socialCollectionsActions,
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
-  playerSelectors
+  playerSelectors,
+  queueSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -47,7 +48,6 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import {
@@ -74,6 +74,7 @@ import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
+const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions

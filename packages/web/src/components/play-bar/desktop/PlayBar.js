@@ -13,14 +13,14 @@ import {
   tracksSocialActions,
   themeSelectors,
   playerActions,
-  playerSelectors
+  playerSelectors,
+  queueSelectors
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -37,6 +37,7 @@ import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './PlayBar.module.css'
 import PlayingTrackInfo from './components/PlayingTrackInfo'
+const { makeGetCurrent } = queueSelectors
 const {
   getAudio,
   getCollectible,

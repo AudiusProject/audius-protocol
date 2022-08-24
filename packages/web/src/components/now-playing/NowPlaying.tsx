@@ -23,7 +23,8 @@ import {
   Nullable,
   AudioPlayer,
   playerActions,
-  playerSelectors
+  playerSelectors,
+  queueSelectors
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import cn from 'classnames'
@@ -32,7 +33,6 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
-import { makeGetCurrent } from 'common/store/queue/selectors'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -55,6 +55,7 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
+const { makeGetCurrent } = queueSelectors
 const { getAudio, getBuffering, getCounter, getPlaying } = playerSelectors
 
 const { seek, reset } = playerActions
