@@ -1,6 +1,8 @@
 import { Button, ButtonProps, ButtonType } from '@audius/stems'
+import cn from 'classnames'
 
 import { ReactComponent as CoinbaseLogo } from 'assets/img/coinbase-pay/LogoCoinbase.svg'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import styles from './CoinbasePayButtonCustom.module.css'
 
@@ -10,6 +12,8 @@ const messages = {
 }
 
 export const CoinbasePayButtonCustom = (props: Partial<ButtonProps>) => {
+  const darkMode = isDarkMode() || isMatrix()
+  const { className, textClassName, ...otherProps } = props
   return (
     <Button
       aria-label={messages.buyWithCoinbase}
@@ -25,9 +29,13 @@ export const CoinbasePayButtonCustom = (props: Partial<ButtonProps>) => {
       }
       type={ButtonType.GLASS}
       includeHoverAnimations
-      className={styles.coinbaseButton}
-      textClassName={styles.textClassName}
-      {...props}
+      className={cn(
+        styles.coinbaseButton,
+        { [styles.darkMode]: darkMode },
+        className
+      )}
+      textClassName={cn(styles.textClassName, textClassName)}
+      {...otherProps}
     />
   )
 }
