@@ -1,0 +1,25 @@
+.inputPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.conversionNotice {
+  margin: -12px -24px 0;
+  padding: 12px 24px 26px;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 150%;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+  border-top: 1px solid var(--neutral-light-8);
+  background: var(--neutral-light-10);
+}
+
+.buyButtonContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 108px;
+}
