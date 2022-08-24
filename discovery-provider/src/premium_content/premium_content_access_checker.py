@@ -4,16 +4,13 @@ from typing import Dict, Optional, Tuple
 
 from src.models.tracks.track import Track
 from src.premium_content.helpers import does_user_have_nft_collection
-from src.premium_content.types import PREMIUM_CONTENT_CONDITIONS, PremiumContentType
+from src.premium_content.types import PremiumContentType
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
 
 class PremiumContentAccessChecker:
-    def __init__(self):
-        pass
-
     # check if content is premium
     # - if not, then user has access
     # - if so, check whether user fulfills the conditions
@@ -98,7 +95,7 @@ class PremiumContentAccessChecker:
             return False
 
         condition, value = list(premium_conditions.items())[0]
-        if condition != PREMIUM_CONTENT_CONDITIONS.NFT_COLLECTION.value:
+        if condition != "nft-collection":
             return False
 
         return does_user_have_nft_collection(user_id, value)

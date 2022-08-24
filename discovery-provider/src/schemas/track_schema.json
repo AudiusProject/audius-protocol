@@ -351,6 +351,7 @@
             "required": [
                 "nft-collection"
             ],
+            "$comment": "Once we allow other conditions, we need to update the required property to [] as users will determine what conditions they're gating their content on; the conditions won't necessarily include 'nft-collection'.",
             "title": "PremiumConditions"
         }
     }

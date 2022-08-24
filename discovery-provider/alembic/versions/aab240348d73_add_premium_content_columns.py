@@ -17,8 +17,6 @@ depends_on = None
 
 
 def upgrade():
-    connection = op.get_bind()
-
     op.add_column(
         "tracks",
         sa.Column("is_premium", sa.Boolean(), nullable=False, server_default="false"),
@@ -28,6 +26,7 @@ def upgrade():
         sa.Column("premium_conditions", postgresql.JSONB(), nullable=True),
     )
 
+    connection = op.get_bind()
     connection.execute(
         """
         begin;
@@ -39,10 +38,6 @@ def upgrade():
 
 def downgrade():
     connection = op.get_bind()
-
-    op.drop_column("tracks", "premium_conditions")
-    op.drop_column("tracks", "is_premium")
-
     connection.execute(
         """
         begin;
@@ -50,3 +45,6 @@ def downgrade():
         commit;
     """
     )
+
+    op.drop_column("tracks", "premium_conditions")
+    op.drop_column("tracks", "is_premium")
