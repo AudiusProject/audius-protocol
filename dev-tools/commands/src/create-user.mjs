@@ -49,4 +49,6 @@ program.command("create-user")
     } catch (err) {
       program.error(err.message);
     }
+
+    process.exit(0);
   });

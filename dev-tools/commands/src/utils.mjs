@@ -8,14 +8,13 @@ export const initializeAudiusLibs = async () => {
       process.env.ETH_PROVIDER_URL,
       process.env.ETH_OWNER_WALLET,
     ),
-    web3Config: AudiusLibs.configExternalWeb3(
+    web3Config: AudiusLibs.configInternalWeb3(
       process.env.POA_REGISTRY_ADDRESS,
       process.env.POA_PROVIDER_URL,
-      "1000000000001",
     ),
     solanaWeb3Config: AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: process.env.SOLANA_ENDPOINT,
-      mintAddress: process.env.SOLANA_MINT_PUBLIC_KEY,
+      mintAddress: process.env.SOLANA_TOKEN_MINT_PUBLIC_KEY,
       claimableTokenProgramAddress: process.env.SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY,
       rewardsManagerProgramId: process.env.SOLANA_REWARD_MANAGER_PUBLIC_KEY,
       rewardsManagerProgramPDA: process.env.SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY,
