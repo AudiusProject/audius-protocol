@@ -7,9 +7,9 @@ import useMeasure from 'react-use-measure'
 import { ReactComponent as IconCaretDownLine } from 'assets/img/iconCaretDownLine.svg'
 import { ReactComponent as IconCaretUpLine } from 'assets/img/iconCaretUpLine.svg'
 
-import styles from './ToggleCollapseButton.module.css'
+import styles from './CollapsibleContent.module.css'
 
-type ToggleCollapseButtonProps = {
+type CollapsibleContentProps = {
   id: string
   className?: string
   toggleButtonClassName?: string
@@ -20,7 +20,7 @@ type ToggleCollapseButtonProps = {
   children: React.ReactNode
 }
 
-export const ToggleCollapseButton = ({
+export const CollapsibleContent = ({
   id,
   className,
   toggleButtonClassName,
@@ -29,7 +29,7 @@ export const ToggleCollapseButton = ({
   showText,
   hideText,
   children
-}: ToggleCollapseButtonProps) => {
+}: CollapsibleContentProps) => {
   const [isCollapsed, setIsCollapsed] = useState(!showByDefault)
 
   const handleToggle = useCallback(() => {

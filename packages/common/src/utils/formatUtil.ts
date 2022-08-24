@@ -175,3 +175,28 @@ export const parseWeiNumber = (number: string) => {
     return null
   }
 }
+
+type FormatOptions = {
+  minDecimals?: number
+  maxDecimals?: number
+  excludeCommas?: boolean
+}
+
+export const formatNumberString = (
+  number?: string,
+  options?: FormatOptions
+) => {
+  if (!number) {
+    return null
+  }
+  const parts = number.split('.')
+  const res =
+    parts.length > 1 && parts[1] !== undefined
+      ? parts[0] +
+        '.' +
+        parts[1]
+          .substring(0, options?.maxDecimals ?? parts[1].length)
+          .padEnd(options?.minDecimals ?? 0, '0')
+      : parts[0]
+  return options?.excludeCommas ? res : formatNumberCommas(res)
+}
