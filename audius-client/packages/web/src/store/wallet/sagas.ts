@@ -117,6 +117,10 @@ function* sendAsync({
           yield* put(sendFailed({ error: errorMessage }))
           return
         }
+        yield* put(
+          sendFailed({ error: 'Something has gone wrong, please try again.' })
+        )
+        return
       }
     }
 
