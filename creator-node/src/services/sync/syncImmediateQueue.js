@@ -46,6 +46,7 @@ class SyncImmediateQueue {
       const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
         job.data
 
+      const start = Date.now()
       try {
         await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
@@ -54,9 +55,17 @@ class SyncImmediateQueue {
           forceResyncConfig,
           logContext
         })
+        logger.info(
+          `syncImmediateQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint} in ${
+            Date.now() - start
+          }ms`
+        )
       } catch (e) {
-        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}: ${e.message}`
-        logger.error(msg)
+        logger.error(
+          `syncImmediateQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} in ${
+            Date.now() - start
+          }ms: ${e.message}`
+        )
         throw e
       }
     })

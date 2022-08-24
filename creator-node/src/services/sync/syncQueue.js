@@ -58,6 +58,7 @@ class SyncQueue {
       } = job.data
 
       let result = {}
+      const start = Date.now()
       try {
         result = await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
@@ -67,10 +68,16 @@ class SyncQueue {
           forceResyncConfig,
           logContext
         })
+        logger.info(
+          `syncQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint} in ${
+            Date.now() - start
+          }ms`
+        )
       } catch (e) {
         logger.error(
-          `secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}`,
-          e.message
+          `syncQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} in ${
+            Date.now() - start
+          }ms: ${e.message}`
         )
         result = { error: e.message }
       }
