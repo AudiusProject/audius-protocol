@@ -22,6 +22,7 @@ export { Scrollbar, ScrollbarProps } from './components/Scrollbar'
 export {
   Modal,
   ModalContent,
+  ModalContentPages,
   ModalHeader,
   ModalTitle,
   ModalProps,
