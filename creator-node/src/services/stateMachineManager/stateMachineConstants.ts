@@ -158,3 +158,17 @@ export const FETCH_FILES_HASH_NUM_RETRIES = 3
 
 // Seconds to hold the cache of healthy content nodes for update-replica-set jobs
 export const HEALTHY_SERVICES_TTL_SEC = 60 /* 1 min */
+
+export enum UpdateReplicaSetJobResult {
+  Success = 'success',
+  SuccessIssueReconfigDisabled = 'success_issue_reconfig_disabled',
+  FailureFindHealthyNodes = 'failure_find_healthy_nodes',
+  SkipUpdateReplicaSet = 'skip_update_replica_set',
+  FailureNoHealthyNodes = 'failure_no_healthy_nodes',
+  FailureNoValidSP = 'failure_no_valid_sp',
+  FailureToUpdateReplicaSet = 'failure_to_update_replica_set',
+  FailureIssueUpdateReplicaSet = 'failure_issue_update_replica_set',
+  FailureDetermineNewReplicaSet = 'failure_determine_new_replica_set',
+  FailureGetCurrentReplicaSet = 'failure_get_current_replica_set',
+  FailureInitAudiusLibs = 'failure_init_audius_libs'
+}
