@@ -132,7 +132,8 @@ const handleSyncFromPrimary = async ({
       localMaxClockVal = cnodeUser ? cnodeUser.clock : -1
     }
 
-    // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data)
+    // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data).
+    // We know we're not wiping an orphaned node at this point because it would've returned earlier if forceWipe=true
     if (
       thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
       thisContentNodeEndpoint !== userReplicaSet.secondary2
