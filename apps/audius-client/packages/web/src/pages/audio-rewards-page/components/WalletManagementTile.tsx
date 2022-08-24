@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import {
   Nullable,
@@ -13,8 +13,6 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconCaretDownLine } from 'assets/img/iconCaretDownLine.svg'
-import { ReactComponent as IconCaretUpLine } from 'assets/img/iconCaretUpLine.svg'
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { ReactComponent as IconSettings } from 'assets/img/iconSettings.svg'
@@ -22,6 +20,7 @@ import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { CoinbasePayButtonCustom } from 'components/coinbase-pay-button'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
+import { ToggleCollapseButton } from 'components/toggle-collapse-button'
 import { isMobile } from 'utils/clientUtil'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
@@ -101,7 +100,7 @@ const AdvancedWalletActions = () => {
           minWidth={200}
         />
         <Button
-          className={cn(styles.advancedButton, styles.receiveBtn)}
+          className={cn(styles.advancedButton)}
           text={messages.receiveLabel}
           textClassName={styles.textClassName}
           onClick={onClickReceive}
@@ -110,7 +109,7 @@ const AdvancedWalletActions = () => {
           minWidth={200}
         />
         <Button
-          className={cn(styles.advancedButton, styles.connectWalletsBtn)}
+          className={cn(styles.advancedButton, styles.manageWalletsButton)}
           text={
             hasMultipleWallets
               ? messages.manageWallets
@@ -128,35 +127,6 @@ const AdvancedWalletActions = () => {
         )}
       </div>
     </div>
-  )
-}
-
-const ToggleCollapseButton = ({
-  className,
-  showText,
-  hideText,
-  children
-}: {
-  className?: string
-  showText: string
-  hideText: string
-  children: React.ReactNode
-}) => {
-  const [isCollapsed, setIsCollapsed] = useState(true)
-  const handleToggle = useCallback(() => {
-    setIsCollapsed((isCollapsed) => !isCollapsed)
-  }, [setIsCollapsed])
-  return (
-    <>
-      {isCollapsed ? null : children}
-      <div
-        className={cn(styles.toggleCollapsedButton, className)}
-        onClick={handleToggle}
-      >
-        <span>{isCollapsed ? showText : hideText}</span>
-        {isCollapsed ? <IconCaretDownLine /> : <IconCaretUpLine />}
-      </div>
-    </>
   )
 }
 
@@ -214,9 +184,14 @@ export const WalletManagementTile = () => {
             </div>
           </div>
         </div>
-        <CoinbasePayButtonCustom onClick={onBuyAudioClicked} />
+        <CoinbasePayButtonCustom
+          className={styles.payWithCoinbaseButton}
+          onClick={onBuyAudioClicked}
+        />
         <ToggleCollapseButton
-          className={styles.advancedToggle}
+          id='advanced-wallet-actions'
+          className={styles.toggle}
+          toggleButtonClassName={styles.advancedToggle}
           showText={messages.showAdvanced}
           hideText={messages.hideAdvanced}
         >
