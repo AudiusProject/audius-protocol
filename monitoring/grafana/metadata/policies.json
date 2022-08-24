@@ -12,7 +12,7 @@
       ]
     },
     {
-      "receiver": "#eng-prod-incidents",
+      "receiver": "#eng-incidents-prod",
       "object_matchers": [
         [
           "alert",
@@ -81,7 +81,7 @@
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-prod-incidents",
+      "receiver": "#eng-incidents-prod",
       "object_matchers": [
         [
           "alert",
@@ -150,7 +150,7 @@
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-prod-incidents",
+      "receiver": "#eng-incidents-prod",
       "object_matchers": [
         [
           "alert",
@@ -219,7 +219,7 @@
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-stage-incidents",
+      "receiver": "#eng-incidents-stage",
       "object_matchers": [
         [
           "alert",
@@ -236,7 +236,7 @@
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-stage-incidents",
+      "receiver": "#eng-incidents-stage",
       "object_matchers": [
         [
           "alert",
@@ -253,7 +253,7 @@
       "group_interval": "10s"
     },
     {
-      "receiver": "#eng-stage-incidents",
+      "receiver": "#eng-incidents-stage",
       "object_matchers": [
         [
           "alert",

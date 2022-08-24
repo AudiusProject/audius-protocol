@@ -13,7 +13,7 @@
   },
   {
     "uid": "DAYT7DW4k",
-    "name": "#eng-prod-incidents",
+    "name": "#eng-incidents-prod",
     "type": "slack",
     "settings": {
       "recipient": "CFMRNGFT7",
@@ -25,7 +25,7 @@
   },
   {
     "uid": "VeoxnvZ4k",
-    "name": "#eng-stage-incidents",
+    "name": "#eng-incidents-stage",
     "type": "slack",
     "settings": {
       "recipient": "CQ4CZAD6Y",
