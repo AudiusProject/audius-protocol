@@ -38,6 +38,7 @@ import trendingPlaylists from './pages/trending-playlists/slice'
 import trendingUnderground from './pages/trending-underground/slice'
 import trending from './pages/trending/reducer'
 import { TrendingPageState } from './pages/trending/types'
+import player, { PlayerState } from './player/slice'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
@@ -110,6 +111,7 @@ export const reducers = () => ({
 
   // Playback
   queue,
+  player,
 
   // Wallet
   wallet,
@@ -200,6 +202,7 @@ export type CommonState = {
 
   // Playback
   queue: ReturnType<typeof queue>
+  player: PlayerState
 
   // Wallet
   wallet: ReturnType<typeof wallet>

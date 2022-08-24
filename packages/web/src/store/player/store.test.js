@@ -1,9 +1,8 @@
+import { playerReducer, playerActions } from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 
 import * as sagas from 'store/player/sagas'
-import reducer from 'store/player/slice'
-import * as actions from 'store/player/slice'
 import { noopReducer } from 'store/testHelper'
 
 const initialTracks = {
@@ -35,12 +34,12 @@ const makeInitialPlayer = (playing) => ({
 describe('watchPlay', () => {
   it('plays uid', async () => {
     const initialPlayer = makeInitialPlayer(false)
-    const { storeState } = await expectSaga(sagas.watchPlay, actions)
+    const { storeState } = await expectSaga(sagas.watchPlay, playerActions)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
           users: noopReducer(initialUsers),
-          player: reducer
+          player: playerReducer
         }),
         {
           tracks: initialTracks,
@@ -48,7 +47,7 @@ describe('watchPlay', () => {
           player: initialPlayer
         }
       )
-      .dispatch(actions.play({ uid: '123', trackId: 1, onEnd: () => {} }))
+      .dispatch(playerActions.play({ uid: '123', trackId: 1, onEnd: () => {} }))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: true
@@ -59,12 +58,12 @@ describe('watchPlay', () => {
 
   it('plays by resuming', async () => {
     const initialPlayer = makeInitialPlayer(true)
-    const { storeState } = await expectSaga(sagas.watchPlay, actions)
+    const { storeState } = await expectSaga(sagas.watchPlay, playerActions)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
           users: noopReducer(initialUsers),
-          player: reducer
+          player: playerReducer
         }),
         {
           tracks: initialTracks,
@@ -72,7 +71,7 @@ describe('watchPlay', () => {
           player: initialPlayer
         }
       )
-      .dispatch(actions.play({}))
+      .dispatch(playerActions.play({}))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: true
@@ -84,18 +83,18 @@ describe('watchPlay', () => {
 describe('watchPause', () => {
   it('pauses', async () => {
     const initialPlayer = makeInitialPlayer(false)
-    const { storeState } = await expectSaga(sagas.watchPause, actions)
+    const { storeState } = await expectSaga(sagas.watchPause, playerActions)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
-          player: reducer
+          player: playerReducer
         }),
         {
           tracks: initialTracks,
           player: initialPlayer
         }
       )
-      .dispatch(actions.pause({}))
+      .dispatch(playerActions.pause({}))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: false
@@ -107,18 +106,18 @@ describe('watchPause', () => {
 describe('watchStop', () => {
   it('stops', async () => {
     const initialPlayer = makeInitialPlayer(false)
-    const { storeState } = await expectSaga(sagas.watchStop, actions)
+    const { storeState } = await expectSaga(sagas.watchStop, playerActions)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
-          player: reducer
+          player: playerReducer
         }),
         {
           tracks: initialTracks,
           player: initialPlayer
         }
       )
-      .dispatch(actions.stop({}))
+      .dispatch(playerActions.stop({}))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: false
@@ -130,18 +129,18 @@ describe('watchStop', () => {
 describe('watchSeek', () => {
   it('seeks', async () => {
     const initialPlayer = makeInitialPlayer(true)
-    const { storeState } = await expectSaga(sagas.watchSeek, actions)
+    const { storeState } = await expectSaga(sagas.watchSeek, playerActions)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
-          player: reducer
+          player: playerReducer
         }),
         {
           tracks: initialTracks,
           player: initialPlayer
         }
       )
-      .dispatch(actions.seek({ seconds: 30 }))
+      .dispatch(playerActions.seek({ seconds: 30 }))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: true

@@ -17,7 +17,9 @@ import {
   cacheSelectors,
   queueActions,
   RepeatMode,
-  QueueSource
+  QueueSource,
+  playerActions,
+  playerSelectors
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -36,16 +38,12 @@ import {
   getUndershot
 } from 'common/store/queue/selectors'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
-import {
-  getTrackId as getPlayerTrackId,
-  getUid as getPlayerUid
-} from 'store/player/selectors'
-import * as playerActions from 'store/player/slice'
 import { waitForAccount } from 'utils/sagaHelpers'
 
 import { getRecommendedTracks } from '../recommendation/sagas'
 
 import mobileSagas from './mobileSagas'
+const { getTrackId: getPlayerTrackId, getUid: getPlayerUid } = playerSelectors
 const {
   add,
   clear,

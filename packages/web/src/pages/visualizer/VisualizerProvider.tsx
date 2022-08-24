@@ -6,14 +6,13 @@ import { connect } from 'react-redux'
 import cn from 'classnames'
 
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import { getAudio, getPlaying } from 'store/player/selectors'
 import Visualizer1 from 'utils/visualizer/visualizer-1.js'
 import Toast from 'components/toast/Toast'
 
 import styles from './VisualizerProvider.module.css'
 import { MountPlacement, ComponentPlacement } from 'components/types'
-import { themeSelectors } from '@audius/common'
-const { getTheme } = themeSelectors
+import { playerSelectors, themeSelectors } from '@audius/common'
+
 import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
 import { make, TrackEvent } from 'common/store/analytics/actions'
@@ -25,10 +24,13 @@ import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrac
 import AudioStream from 'audio/AudioStream'
 import { webglSupported } from './utils'
 import { averageColorSelectors } from '@audius/common'
-const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+
+const { getAudio, getPlaying } = playerSelectors
+const { getTheme } = themeSelectors
+const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 
 const Artwork = ({ track }: { track?: Track | null }) => {
   const { track_id, _cover_art_sizes } = track || {}

@@ -2,15 +2,14 @@ import {
   UID,
   cacheTracksSelectors,
   cacheUsersSelectors,
-  CommonState
+  CommonState,
+  playerSelectors
 } from '@audius/common'
 import { createSelector } from 'reselect'
 
-import {
-  getUid as getPlayerUid,
-  getTrackId as getPlayerTrackId
-} from 'store/player/selectors'
 import { AppState } from 'store/types'
+
+const { getUid: getPlayerUid, getTrackId: getPlayerTrackId } = playerSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 

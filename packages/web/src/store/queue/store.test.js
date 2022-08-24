@@ -5,7 +5,9 @@ import {
   queueReducer as reducer,
   queueActions as actions,
   RepeatMode,
-  QueueSource
+  QueueSource,
+  playerReducer,
+  playerActions
 } from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
@@ -13,7 +15,6 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 import { take } from 'redux-saga/effects'
 
 import AudioStream from 'audio/AudioStream'
-import playerReducer, * as playerActions from 'store/player/slice'
 import * as sagas from 'store/queue/sagas'
 import { getRecommendedTracks } from 'store/recommendation/sagas'
 import { noopReducer } from 'store/testHelper'

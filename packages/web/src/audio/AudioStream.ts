@@ -191,8 +191,8 @@ class AudioStream {
   load = (
     segments: TrackSegment[],
     onEnd: () => void,
-    prefetchedSegments = [],
-    gateways = [],
+    prefetchedSegments: string[] = [],
+    gateways: string[] = [],
     info = { id: '', title: '', artist: '' },
     forceStreamSrc: string | null = null
   ) => {
@@ -220,7 +220,7 @@ class AudioStream {
         const m3u8 = generateM3U8(segments, prefetchedSegments)
         // eslint-disable-next-line
         class creatorFLoader extends fLoader {
-          getFallbacks = () => gateways
+          getFallbacks = () => gateways as never[]
           getTrackId = () => info.id
         }
         const hlsConfig = { ...HlsConfig, fLoader: creatorFLoader }

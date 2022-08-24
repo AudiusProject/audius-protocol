@@ -1,10 +1,10 @@
-import { Genre } from '@audius/common'
+import { Genre, playerSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
-
-import { makeGetCurrent } from 'store/player/selectors'
 
 import ForwardSkipButton, { ForwardSkipButtonProps } from './ForwardSkipButton'
 import NextButton, { NextButtonProps } from './NextButton'
+
+const { makeGetCurrent } = playerSelectors
 
 type NextButtonProviderProps = NextButtonProps | ForwardSkipButtonProps
 

@@ -4,7 +4,9 @@ import {
   LineupBaseActions,
   lineupReducer,
   queueReducer,
-  initialQueueState
+  initialQueueState,
+  playerReducer,
+  initialPlayerState
 } from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
@@ -16,9 +18,6 @@ import cacheSagas from 'common/store/cache/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { initialState as initialConfirmerState } from 'common/store/confirmer/reducer'
 import { LineupSagas } from 'store/lineup/sagas'
-import playerReducer, {
-  initialState as initialPlayerState
-} from 'store/player/slice'
 import { noopReducer, allSagas } from 'store/testHelper'
 const { asLineup, initialLineupState } = lineupReducer
 const { asCache, initialCacheState } = cacheReducer
