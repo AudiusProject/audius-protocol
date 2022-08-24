@@ -75,7 +75,20 @@ const handleExport = async (req, res) => {
  *  cnodeUsers Map Object containing all db data keyed on cnodeUserUUID
  * }
  */
-router.get('/export', handleResponse(handleExport))
+router.get(
+  '/export',
+  handleResponse(
+    instrumentTracing({
+      name: '/export',
+      fn: handleExport,
+      options: {
+        attributes: {
+          [tracing.CODE_FILEPATH]: __filename
+        }
+      }
+    })
+  )
+)
 
 /** Checks if node sync is in progress for wallet. */
 router.get(
