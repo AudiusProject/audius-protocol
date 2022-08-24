@@ -12,7 +12,7 @@ import { initOnRamp } from '@coinbase/cbpay-js'
 export const allowedCoinbasePayTokens = ['SOL']
 
 type ResetParams = {
-  destinationWallet?: string
+  destinationWalletAddress?: string
   presetCryptoAmount?: number
   presetFiatAmount?: number
   onSuccess?: () => void
@@ -32,10 +32,9 @@ export const CoinbasePayContext = createContext<{
 })
 
 export const CoinbasePayButtonProvider = ({
-  destinationWalletAddress,
-  children
-}: {
-  destinationWalletAddress?: string
+  children,
+  ...resetProps
+}: ResetParams & {
   children: ReactNode
 }) => {
   const [isReady, setIsReady] = useState(false)
@@ -44,14 +43,13 @@ export const CoinbasePayButtonProvider = ({
 
   const resetParams = useCallback(
     ({
-      destinationWallet,
+      destinationWalletAddress,
       presetCryptoAmount,
       presetFiatAmount,
       onSuccess,
       onExit
     }: ResetParams) => {
-      const address = destinationWallet ?? destinationWalletAddress
-      if (address) {
+      if (destinationWalletAddress) {
         setIsReady(false)
         cbInstance.current?.destroy()
         cbInstance.current = initOnRamp({
@@ -59,7 +57,7 @@ export const CoinbasePayButtonProvider = ({
           widgetParameters: {
             destinationWallets: [
               {
-                address,
+                address: destinationWalletAddress,
                 assets: ['SOL']
               }
             ],
@@ -88,8 +86,9 @@ export const CoinbasePayButtonProvider = ({
           closeOnSuccess: true
         })
       }
+      return () => cbInstance.current?.destroy()
     },
-    [cbInstance, destinationWalletAddress, setIsOpen]
+    [cbInstance, setIsOpen]
   )
 
   const open = useCallback(() => {
@@ -100,8 +99,8 @@ export const CoinbasePayButtonProvider = ({
   }, [cbInstance, setIsOpen])
 
   useEffect(() => {
-    resetParams({})
-  }, [resetParams])
+    resetParams(resetProps)
+  }, [resetParams, resetProps])
 
   return (
     <CoinbasePayContext.Provider

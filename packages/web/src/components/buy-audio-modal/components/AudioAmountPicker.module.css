@@ -1,0 +1,63 @@
+.presetAmountButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.presetAmountButton {
+  flex: 1 30%;
+}
+
+.customAmountButton {
+  flex: 1 0 100%;
+}
+
+.customAmountButtonText {
+  font-size: var(--font-l);
+  line-height: 22px;
+  text-transform: uppercase;
+}
+
+.customAmountInput {
+  padding: 16px;
+  color: var(--neutral);
+  background-color: var(--neutral-light-10);
+  border: 1px solid var(--neutral-light-8);
+  font-size: var(--font-xl);
+  font-weight: var(--font-medium);
+}
+
+.customAmountLabel {
+  bottom: 17px;
+  right: 16px;
+  color: var(--neutral);
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+}
+
+.amountPreviewContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 66px;
+
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  color: var(--neutral-light-5);
+  line-height: 140%;
+}
+
+.amountPreviewBuy {
+  letter-spacing: 0.1em;
+}
+
+.amountPreview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: var(--font-2xl);
+  color: var(--secondary);
+}
