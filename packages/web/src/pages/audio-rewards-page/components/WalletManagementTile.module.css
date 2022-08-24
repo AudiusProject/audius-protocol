@@ -99,29 +99,7 @@
   align-self: flex-start;
 }
 
-.toggleCollapsedButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
-  color: var(--neutral-light-4);
-  padding: 8px 24px;
-  gap: 5px;
-}
-.toggleCollapsedButton:hover {
-  cursor: pointer;
-}
-.toggleCollapsedButton:hover span {
-  color: var(--secondary);
-  transition: color 0.07s ease-out;
-}
-.toggleCollapsedButton:hover svg path {
-  fill: var(--secondary);
-  transition: fill 0.07s ease-out;
-}
-
-.advancedToggle {
+.toggle .advancedToggle {
   width: 100%;
   border-top: 1px solid var(--neutral-light-8);
   padding-top: 20px;
@@ -133,6 +111,7 @@
   align-items: center;
   width: 100%;
   padding-top: 16px;
+  padding-bottom: 24px;
   gap: 16px;
   border-top: 1px solid var(--neutral-light-8);
 }
@@ -157,4 +136,9 @@
 .advancedButton.disabled {
   opacity: 0.5;
   background-color: hsla(0, 0%, 100%, 0.1);
+}
+
+.manageWalletsButton:hover,
+.payWithCoinbaseButton:hover {
+  transform: perspective(1px) scale3d(1.02, 1.02, 1.02) !important;
 }
