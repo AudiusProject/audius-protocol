@@ -48,7 +48,10 @@ type SdkConfig = {
   /**
    * Configuration for the DiscoveryProvider client
    */
-  discoveryProviderConfig?: Omit<DiscoveryProviderConfig, 'userStateManager' | 'ethContracts' | 'web3Manager'>
+  discoveryProviderConfig?: Omit<
+    DiscoveryProviderConfig,
+    'userStateManager' | 'ethContracts' | 'web3Manager'
+  >
   /**
    * Configuration for the Ethereum contracts client
    */
