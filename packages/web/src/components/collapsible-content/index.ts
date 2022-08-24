@@ -1,1 +1,1 @@
-export * from './ToggleCollapseButton'
+export * from './CollapsibleContent'
