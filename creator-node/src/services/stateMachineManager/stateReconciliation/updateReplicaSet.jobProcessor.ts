@@ -72,7 +72,7 @@ const updateReplicaSetJobProcessor = async function ({
     issueReconfig: false,
     reconfigType: null
   }
-  let result
+  let result: UpdateReplicaSetJobResult
 
   const startTimeMs = Date.now()
 
@@ -109,7 +109,7 @@ const updateReplicaSetJobProcessor = async function ({
           {
             issuedReconfig: issuedReconfig?.toString() || 'false',
             reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
-            result: result.toString()
+            result
           }
         )
       ]
@@ -151,7 +151,7 @@ const updateReplicaSetJobProcessor = async function ({
           {
             issuedReconfig: issuedReconfig?.toString() || 'false',
             reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
-            result: result.toString()
+            result
           }
         )
       ]
