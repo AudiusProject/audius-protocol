@@ -19,7 +19,8 @@ import {
   tracksSocialActions,
   createPlaylistModalUISelectors,
   createPlaylistModalUIActions as createPlaylistModalActions,
-  imageProfilePicEmpty
+  imageProfilePicEmpty,
+  playerSelectors
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -55,7 +56,6 @@ import { resetState as resetUploadState } from 'pages/upload-page/store/actions'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
-import { makeGetCurrent as makeGetCurrentPlayer } from 'store/player/selectors'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { AppState } from 'store/types'
 import {
@@ -76,6 +76,7 @@ import NavAudio from './NavAudio'
 import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
 import PlaylistLibrary from './PlaylistLibrary'
+const { makeGetCurrent: makeGetCurrentPlayer } = playerSelectors
 const { getHideFolderTab, getIsOpen } = createPlaylistModalUISelectors
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions

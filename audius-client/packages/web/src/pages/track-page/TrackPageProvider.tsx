@@ -31,7 +31,8 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   tracksSocialActions as socialTracksActions,
-  usersSocialActions as socialUsersActions
+  usersSocialActions as socialUsersActions,
+  playerSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -49,7 +50,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { getPlaying, getBuffering } from 'store/player/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
@@ -70,6 +70,7 @@ import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
 import { TRENDING_BADGE_LIMIT } from './store/sagas'
+const { getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions

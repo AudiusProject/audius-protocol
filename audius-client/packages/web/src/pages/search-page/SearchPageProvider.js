@@ -7,7 +7,8 @@ import {
   searchResultsPageActions as searchPageActions,
   searchResultsPageSelectors,
   SearchKind,
-  searchResultsPageTracksLineupActions as tracksActions
+  searchResultsPageTracksLineupActions as tracksActions,
+  playerSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -16,7 +17,6 @@ import { withRouter } from 'react-router-dom'
 
 import { make } from 'common/store/analytics/actions'
 import { makeGetCurrent } from 'common/store/queue/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
 import {
   NOT_FOUND_PAGE,
   SEARCH_CATEGORY_PAGE,
@@ -25,6 +25,7 @@ import {
 } from 'utils/route'
 
 import * as helpers from './helpers'
+const { getPlaying, getBuffering } = playerSelectors
 const {
   makeGetSearchArtists,
   makeGetSearchPlaylists,

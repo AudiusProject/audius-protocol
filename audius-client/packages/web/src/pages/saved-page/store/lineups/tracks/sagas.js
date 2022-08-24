@@ -6,14 +6,15 @@ import {
   savedPageActions as saveActions,
   savedPageSelectors,
   queueActions,
-  tracksSocialActions
+  tracksSocialActions,
+  playerSelectors
 } from '@audius/common'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'store/lineup/sagas'
-import { getUid as getPlayerUid } from 'store/player/selectors'
+const { getUid: getPlayerUid } = playerSelectors
 const { SAVE_TRACK, UNSAVE_TRACK } = tracksSocialActions
 const { getLocalSaves, getLocalSave, getSavedTracksLineupUid, getSaves } =
   savedPageSelectors

@@ -37,7 +37,8 @@ import {
   favoritesUserListActions,
   collectionsSocialActions as socialCollectionsActions,
   tracksSocialActions as socialTracksActions,
-  usersSocialActions as socialUsersActions
+  usersSocialActions as socialUsersActions,
+  playerSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -57,7 +58,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { getPlaying, getBuffering } from 'store/player/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import {
@@ -74,6 +74,7 @@ import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
+const { getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions

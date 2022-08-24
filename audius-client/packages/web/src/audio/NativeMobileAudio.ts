@@ -1,4 +1,4 @@
-import { TrackSegment } from '@audius/common'
+import { TrackSegment, AudioInfo } from '@audius/common'
 
 import {
   PlayTrackMessage,
@@ -6,7 +6,6 @@ import {
   GetPositionMessage,
   SeekMessage
 } from 'services/native-mobile-interface/player'
-import { Info } from 'store/player/types'
 import { generateM3U8Variants } from 'utils/hlsUtil'
 
 const PUBLIC_IPFS_GATEWAY = 'http://cloudflare-ipfs.com/ipfs/'
@@ -31,7 +30,7 @@ class NativeMobileAudio {
     onEnd: () => void,
     prefetchedSegments: string[],
     gateways: string[],
-    info: Info
+    info: AudioInfo
   ) => {
     const m3u8Gateways = gateways.concat(PUBLIC_IPFS_GATEWAY)
     this.m3u8 = generateM3U8Variants(segments, [], m3u8Gateways)
