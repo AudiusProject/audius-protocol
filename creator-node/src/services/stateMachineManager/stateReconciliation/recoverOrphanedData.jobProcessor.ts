@@ -86,39 +86,42 @@ export default async function ({
 const _saveWalletsOnThisNodeToRedis = async () => {
   await redisClient.del(WALLETS_ON_NODE_KEY)
 
-  // Make paginated SQL queries to find all wallets with data on this node
-  type WalletSqlRow = { walletPublicKey: string }
-  let prevWalletPublicKey = '0x'
-  const walletsOnThisNodeArr: string[] = []
+  type WalletSqlRow = {
+    walletPublicKey: string
+    cnodeUserUUID: string
+  }
   let walletSqlRows: WalletSqlRow[] = []
-  do {
+
+  // Make paginated SQL queries to find all wallets with data on this node.
+  // Table is indexed on column `cnodeUserUUID`
+  const numCNodeUsers = await models.CNodeUser.count()
+  let prevCnodeUserUUID = '00000000-0000-0000-0000-000000000000'
+  for (let i = 0; i < numCNodeUsers; i += NUM_USERS_PER_QUERY) {
     walletSqlRows = await models.CNodeUser.findAll({
-      attributes: ['walletPublicKey'],
-      order: [['walletPublicKey', 'ASC']],
+      attributes: ['walletPublicKey', 'cnodeUserUUID'],
+      order: [['cnodeUserUUID', 'ASC']],
       where: {
-        walletPublicKey: {
-          [models.Sequelize.Op.gte]: prevWalletPublicKey
+        cnodeUserUUID: {
+          [models.Sequelize.Op.gte]: prevCnodeUserUUID
         }
       },
       limit: NUM_USERS_PER_QUERY
     })
-    walletSqlRows?.forEach((row) =>
-      walletsOnThisNodeArr.push(row.walletPublicKey)
-    )
 
-    // Move pagination cursor to the end
-    prevWalletPublicKey = walletsOnThisNodeArr.length
-      ? walletsOnThisNodeArr[walletsOnThisNodeArr.length - 1]
-      : '0x'
-  } while (
-    walletSqlRows?.length === NUM_USERS_PER_QUERY &&
-    prevWalletPublicKey !== '0x'
-  )
+    if (walletSqlRows?.length) {
+      // Save the wallets to a redis set
+      const walletsOnThisNodeArr: string[] = []
+      walletSqlRows.forEach((row) =>
+        walletsOnThisNodeArr.push(row.walletPublicKey)
+      )
+      await redisClient.sadd(WALLETS_ON_NODE_KEY, walletsOnThisNodeArr)
 
-  // Save the wallets as a redis set and return the set cardinality
-  const numWalletsOnNode: number = walletsOnThisNodeArr.length
-    ? await redisClient.sadd(WALLETS_ON_NODE_KEY, walletsOnThisNodeArr)
-    : 0
+      // Move pagination cursor to the end
+      prevCnodeUserUUID = walletSqlRows[walletSqlRows.length - 1].cnodeUserUUID
+    }
+  }
+
+  const numWalletsOnNode = await redisClient.scard(WALLETS_ON_NODE_KEY)
   return numWalletsOnNode
 }
 
@@ -135,9 +138,7 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
   // Make paginated Discovery queries to find all wallets with this current node in their replica set (primary or secondary)
   let prevUserId = 0
   let batchOfUsers: StateMonitoringUser[] = []
-  const walletsWithNodeInReplicaSetArr: string[] = []
   do {
-    // Get batch of users and all it to the array of all wallets
     try {
       batchOfUsers = await getNodeUsers(
         discoveryNodeEndpoint,
@@ -145,14 +146,23 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
         prevUserId,
         NUM_USERS_PER_QUERY
       )
-      batchOfUsers?.forEach((user) =>
-        walletsWithNodeInReplicaSetArr.push(user.wallet)
-      )
 
-      // Move pagination cursor to the end of the batch
-      prevUserId = batchOfUsers?.length
-        ? batchOfUsers[batchOfUsers.length - 1].user_id
-        : 0
+      if (batchOfUsers?.length) {
+        // Save the wallets to a redis set
+        const walletsWithNodeInReplicaSetArr: string[] = []
+        batchOfUsers.forEach((user) =>
+          walletsWithNodeInReplicaSetArr.push(user.wallet)
+        )
+        await redisClient.sadd(
+          WALLETS_WITH_NODE_IN_REPLICA_SET_KEY,
+          walletsWithNodeInReplicaSetArr
+        )
+
+        // Move pagination cursor to the end of the batch
+        prevUserId = batchOfUsers[batchOfUsers.length - 1].user_id
+      } else {
+        prevUserId = 0
+      }
     } catch (e: any) {
       logger.error(
         `Error fetching batch of users from ${discoveryNodeEndpoint}: ${e.message}`
@@ -163,14 +173,9 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
     }
   } while (batchOfUsers?.length === NUM_USERS_PER_QUERY && prevUserId !== 0)
 
-  // Save the wallets as a redis set and return the set cardinality
-  const numWalletsWithNodeInReplicaSet: number =
-    walletsWithNodeInReplicaSetArr.length
-      ? await redisClient.sadd(
-          WALLETS_WITH_NODE_IN_REPLICA_SET_KEY,
-          walletsWithNodeInReplicaSetArr
-        )
-      : 0
+  const numWalletsWithNodeInReplicaSet = await redisClient.scard(
+    WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
+  )
   return numWalletsWithNodeInReplicaSet
 }
 
