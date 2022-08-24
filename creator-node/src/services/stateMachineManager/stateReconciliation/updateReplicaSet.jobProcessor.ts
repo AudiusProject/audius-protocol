@@ -62,7 +62,6 @@ const updateReplicaSetJobProcessor = async function ({
   DecoratedJobReturnValue<UpdateReplicaSetJobReturnValue>
 > {
   let errorMsg = ''
-  let metricsToRecord = []
   let issuedReconfig = false
   let syncJobsToEnqueue: IssueSyncRequestJobParams[] = []
   let newReplicaSet: NewReplicaSet = {
@@ -99,27 +98,24 @@ const updateReplicaSetJobProcessor = async function ({
       errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
 
-      // Make metrics to record
-      metricsToRecord = [
-        makeHistogramToRecord(
-          METRIC_NAMES[
-            `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
-          ],
-          (Date.now() - startTimeMs) / 1000, // Metric is in seconds
-          {
-            issuedReconfig: issuedReconfig?.toString() || 'false',
-            reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
-            result
-          }
-        )
-      ]
-
       return {
         errorMsg,
         issuedReconfig,
         newReplicaSet,
         healthyNodes,
-        metricsToRecord
+        metricsToRecord: [
+          makeHistogramToRecord(
+            METRIC_NAMES[
+              `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+            ],
+            (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+            {
+              issuedReconfig: issuedReconfig?.toString() || 'false',
+              reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
+              result
+            }
+          )
+        ]
       }
     }
 
@@ -141,27 +137,24 @@ const updateReplicaSetJobProcessor = async function ({
       result = UpdateReplicaSetJobResult.FailureFindHealthyNodes
       errorMsg = `Error finding healthy nodes to select - ${e.message}: ${e.stack}`
 
-      // Make metrics to record
-      metricsToRecord = [
-        makeHistogramToRecord(
-          METRIC_NAMES[
-            `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
-          ],
-          (Date.now() - startTimeMs) / 1000, // Metric is in seconds
-          {
-            issuedReconfig: issuedReconfig?.toString() || 'false',
-            reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
-            result
-          }
-        )
-      ]
-
       return {
         errorMsg,
         issuedReconfig,
         newReplicaSet,
         healthyNodes,
-        metricsToRecord
+        metricsToRecord: [
+          makeHistogramToRecord(
+            METRIC_NAMES[
+              `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+            ],
+            (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+            {
+              issuedReconfig: issuedReconfig?.toString() || 'false',
+              reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
+              result
+            }
+          )
+        ]
       }
     }
   }
@@ -210,27 +203,24 @@ const updateReplicaSetJobProcessor = async function ({
     errorMsg = e.toString()
   }
 
-  // Make metrics to record
-  metricsToRecord = [
-    makeHistogramToRecord(
-      METRIC_NAMES[
-        `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
-      ],
-      (Date.now() - startTimeMs) / 1000, // Metric is in seconds
-      {
-        result: result || UpdateReplicaSetJobResult.Success,
-        issuedReconfig: issuedReconfig?.toString() || 'false',
-        reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
-      }
-    )
-  ]
-
   return {
     errorMsg,
     issuedReconfig,
     newReplicaSet,
     healthyNodes,
-    metricsToRecord,
+    metricsToRecord: [
+      makeHistogramToRecord(
+        METRIC_NAMES[
+          `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+        ],
+        (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+        {
+          result: result || UpdateReplicaSetJobResult.Success,
+          issuedReconfig: issuedReconfig?.toString() || 'false',
+          reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
+        }
+      )
+    ],
     jobsToEnqueue: syncJobsToEnqueue?.length
       ? {
           [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
