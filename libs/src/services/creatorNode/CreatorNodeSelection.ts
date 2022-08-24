@@ -403,7 +403,8 @@ export class CreatorNodeSelection extends ServiceSelection {
           storagePathSize,
           storagePathUsed
         )
-        isHealthy = isUp && versionIsUpToDate && hasEnoughStorage && isHealthyStatus
+        isHealthy =
+          isUp && versionIsUpToDate && hasEnoughStorage && isHealthyStatus
       }
 
       if (!isHealthy) {
