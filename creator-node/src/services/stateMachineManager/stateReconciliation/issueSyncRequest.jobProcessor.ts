@@ -465,7 +465,10 @@ const _additionalSyncIsRequired = async (
        * Note - secondaryClockValue can be greater than primaryClockValue if additional
        *    data was written to primary after primaryClockValue was computed
        */
-      if (secondaryClockValue >= primaryClockValue) {
+      if (
+        secondaryClockValue >= primaryClockValue &&
+        syncMode !== SYNC_MODES.MergePrimaryAndSecondary
+      ) {
         secondaryCaughtUpToPrimary = true
         break
       }

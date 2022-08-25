@@ -13,7 +13,8 @@ import { StateMonitoringUser } from '../stateMonitoring/types'
 
 import {
   ORPHANED_DATA_NUM_USERS_PER_QUERY,
-  ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
+  ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH,
+  ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS
 } from '../stateMachineConstants'
 
 const { QUEUE_NAMES } = require('../stateMachineConstants')
@@ -22,6 +23,7 @@ const config = require('../../../config')
 const redisClient: Redis = require('../../../redis')
 const models = require('../../../models')
 const asyncRetry = require('../../../utils/asyncRetry')
+const Utils = require('../../../utils')
 
 const WALLETS_ON_NODE_KEY = 'orphanedDataWalletsWithStateOnNode'
 const WALLETS_WITH_NODE_IN_REPLICA_SET_KEY =
@@ -253,6 +255,9 @@ const _batchIssueReqsToRecoverOrphanedData = async (
         )
       }
     }
+
+    // Delay processing the next batch to avoid spamming requests
+    await Utils.timeout(ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS, false)
   }
   return requestsIssued
 }
