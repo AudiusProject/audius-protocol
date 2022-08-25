@@ -556,7 +556,7 @@ const handleSyncFromPrimary = async ({
 
       genericLogger.info(
         logPrefix,
-        `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${numCIDsThatFailedSaveFileOp} skipped.`
+        `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
       // track that sync for this user was successful

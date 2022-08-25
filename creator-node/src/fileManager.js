@@ -103,6 +103,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
 async function fetchFileFromNetworkAndWriteToDisk({
   libs,
   gatewayContentRoutes,
+  targetGateways,
   multihash,
   path,
   numRetries,
@@ -116,7 +117,10 @@ async function fetchFileFromNetworkAndWriteToDisk({
   })
 
   // Note - Requests are intentionally not parallel to minimize additional load on gateways
+  let url
   for (const contentUrl of gatewayContentRoutes) {
+    url = contentUrl
+
     decisionTree.recordStage({
       name: 'Fetching from gateway',
       data: { replicaUrl: contentUrl }
@@ -140,20 +144,17 @@ async function fetchFileFromNetworkAndWriteToDisk({
               e.response?.status === 401 ||
               e.response?.status === 400
             ) {
-              bail(
-                new Error(
-                  `Content multihash=${multihash} is delisted from ${contentUrl}`
-                )
-              )
+              bail(new Error(`Content is delisted`))
+              return
             }
 
             throw new Error(
-              `Failed to fetch content multihash=${multihash} with statusCode=${e.response?.status}. Retrying..`
+              `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
             )
           }
 
           if (!response || !response.data || !response.data.data) {
-            throw new Error('Received empty response')
+            throw new Error(`Received empty response`)
           }
 
           return response.data.data
@@ -175,14 +176,19 @@ async function fetchFileFromNetworkAndWriteToDisk({
 
       decisionTree.recordStage({
         name: 'Wrote file to file system after fetching from gateway',
-        data: { expectedStoragePath }
+        data: { expectedStoragePath: path }
       })
 
       return
     } catch (e) {
       decisionTree.recordStage({
         name: 'Error - Could not retrieve file from gateway',
-        data: { url, errorMsg: e.message, statusCode: e.response?.status }
+        data: {
+          url,
+          errorMsg: e.message,
+          statusCode: e.response?.status,
+          multihash
+        }
       })
     }
   }
@@ -195,7 +201,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
       logger,
       libs,
       /** trackId */ null,
-      /** excludeList */ gatewaysToTry
+      /** excludeList */ targetGateways
     )
 
     if (!found) {
@@ -233,7 +239,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
  * @param {String} multihash CID
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
  *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
- * @param {Array} gatewaysToTry List of gateway endpoints to try. May be all the registered Content Nodes, or just the user replica set.
+ * @param {Array} targetGateways List of gateway endpoints to try. May be all the registered Content Nodes, or just the user replica set.
  * @param {String?} fileNameForImage file name if the CID is image in dir.
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
@@ -245,7 +251,7 @@ async function saveFileForMultihashToFS(
   logger,
   multihash,
   expectedStoragePath,
-  gatewaysToTry,
+  targetGateways,
   fileNameForImage = null,
   trackId = null,
   numRetries = 5
@@ -260,7 +266,7 @@ async function saveFileForMultihashToFS(
     // TODO - don't concat url's by hand like this, use module like urljoin
     // ..replace(/\/$/, "") removes trailing slashes
 
-    let gatewayContentRoutes = gatewaysToTry.map((endpoint) => {
+    let gatewayContentRoutes = targetGateways.map((endpoint) => {
       let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
       if (trackId) baseUrl += `?trackId=${trackId}`
 
@@ -273,7 +279,7 @@ async function saveFileForMultihashToFS(
       name: 'About to start running saveFileForMultihashToFS()',
       data: {
         multihash,
-        gatewaysToTry,
+        gatewaysToTry: targetGateways,
         gatewayContentRoutes,
         expectedStoragePath,
         parsedStoragePath
@@ -314,7 +320,7 @@ async function saveFileForMultihashToFS(
       // in the case of a directory, override the gatewayUrlsMapped array to look like
       // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
       // ..replace(/\/$/, "") removes trailing slashes
-      gatewayContentRoutes = gatewaysToTry.map(
+      gatewayContentRoutes = targetGateways.map(
         (endpoint) =>
           `${endpoint.replace(/\/$/, '')}/ipfs/${
             matchObj.outer
@@ -345,6 +351,7 @@ async function saveFileForMultihashToFS(
     await fetchFileFromNetworkAndWriteToDisk({
       libs,
       gatewayContentRoutes,
+      targetGateways,
       multihash,
       path: expectedStoragePath,
       numRetries,
@@ -394,7 +401,7 @@ async function saveFileForMultihashToFS(
           logger,
           multihash,
           expectedStoragePath,
-          gatewaysToTry,
+          targetGateways,
           fileNameForImage,
           trackId,
           numRetries - 1

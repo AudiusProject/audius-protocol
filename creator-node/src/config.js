@@ -628,7 +628,7 @@ const config = convict({
     doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
     format: 'nat',
     env: 'syncRequestMaxUserFailureCountBeforeSkip',
-    default: 5 
+    default: 5
   },
   skippedCIDsRetryQueueJobIntervalMs: {
     doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',

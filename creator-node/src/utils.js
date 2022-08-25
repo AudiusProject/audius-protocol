@@ -6,15 +6,16 @@ const spawn = require('child_process').spawn
 const stream = require('stream')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
-const { logger: genericLogger } = require('./logging.js')
 
+const asyncRetry = require('./utils/asyncRetry')
+const { logger: genericLogger } = require('./logging.js')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
 const { libs } = require('@audius/sdk')
-const LibsUtils = libs.Utils
 
+const LibsUtils = libs.Utils
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
 class Utils {
@@ -118,7 +119,8 @@ async function findCIDInNetwork(
   logger,
   libs,
   trackId = null,
-  excludeList = []
+  excludeList = [],
+  numRetries = 5
 ) {
   if (!config.get('findCIDInNetworkEnabled')) return
   let found = false
@@ -149,7 +151,7 @@ async function findCIDInNetwork(
         asyncFn: async (bail) => {
           let response
           try {
-            respone = await axios({
+            response = await axios({
               method: 'get',
               url: `${endpoint}/file_lookup`,
               params: {
@@ -169,10 +171,9 @@ async function findCIDInNetwork(
               e.response?.status === 400
             ) {
               bail(
-                new Error(
-                  `Content multihash=${cid} is delisted from ${contentUrl}`
-                )
+                new Error(`Content multihash=${cid} is delisted on ${endpoint}`)
               )
+              return
             }
 
             throw new Error(
