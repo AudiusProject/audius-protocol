@@ -387,6 +387,9 @@ export class CreatorNodeSelection extends ServiceSelection {
           this.currentVersion as string,
           resp.response.data.data.version
         )
+
+        const { healthy: isHealthyStatus } = resp.response.data.data
+
         const { storagePathSize, storagePathUsed, maxStorageUsedPercent } =
           resp.response.data.data
         if (maxStorageUsedPercent) {
@@ -400,7 +403,8 @@ export class CreatorNodeSelection extends ServiceSelection {
           storagePathSize,
           storagePathUsed
         )
-        isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
+        isHealthy =
+          isUp && versionIsUpToDate && hasEnoughStorage && isHealthyStatus
       }
 
       if (!isHealthy) {
