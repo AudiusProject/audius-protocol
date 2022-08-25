@@ -130,6 +130,8 @@ def entity_manager_update(
         # compile records_to_save
         records_to_save = []
         for playlist_records in new_records["playlists"].values():
+            if not playlist_records:
+                continue
             # invalidate all playlists besides the last one
             for i in range(len(playlist_records)):
                 playlist_records[i].is_current = False
