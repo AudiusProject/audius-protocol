@@ -137,13 +137,15 @@ def test_index_valid_playlists(app, mocker):
         all_playlists: List[Playlist] = session.query(Playlist).all()
         assert len(all_playlists) == 4
 
-        playlist_1: Playlist = (
+        playlists_1 = (
             session.query(Playlist)
             .filter(
                 Playlist.is_current == True, Playlist.playlist_id == PLAYLIST_ID_OFFSET
             )
-            .first()
+            .all()
         )
+        assert len(playlists_1) == 1
+        playlist_1 = playlists_1[0]
         assert datetime.timestamp(playlist_1.last_added_to) == 1585336422
         assert playlist_1.playlist_name == "playlist 1 updated"
         assert playlist_1.is_delete == True
