@@ -60,6 +60,9 @@ def entity_manager_update(
             session, entities_to_fetch
         )
 
+        # copy original record since existing_records will be modified
+        original_records = copy_original_records(existing_records)
+
         new_records: RecordDict = {
             "playlists": defaultdict(list),
             "tracks": defaultdict(list),
@@ -137,9 +140,9 @@ def entity_manager_update(
                 playlist_records[i].is_current = False
 
             # invalidate existing record only if it's being updated
-            existing_playlist_id = playlist_records[0].playlist_id
-            if existing_playlist_id in existing_records["playlists"]:
-                existing_records["playlists"][existing_playlist_id].is_current = False
+            playlist_id = playlist_records[0].playlist_id
+            if playlist_id in original_records["playlists"]:
+                original_records["playlists"][playlist_id].is_current = False
 
             # flip is_current to true for the last tx in each playlist
             playlist_records[-1].is_current = True
@@ -158,6 +161,15 @@ def entity_manager_update(
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
     return num_total_changes, changed_entity_ids
+
+
+def copy_original_records(existing_records):
+    original_records = {}
+    for entity_type in existing_records:
+        original_records[entity_type] = {}
+        for entity_id, entity in existing_records[entity_type].items():
+            original_records[entity_type][entity_id] = entity
+    return original_records
 
 
 def collect_entities_to_fetch(

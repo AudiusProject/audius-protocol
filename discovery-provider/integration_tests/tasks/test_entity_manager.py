@@ -77,6 +77,20 @@ def test_index_valid_playlists(app, mocker):
                 )
             },
         ],
+        "UpdatePlaylist3Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 2,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "QmUpdatePlaylist3",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -111,12 +125,25 @@ def test_index_valid_playlists(app, mocker):
             "playlist_image_sizes_multihash": "",
             "playlist_name": "playlist 1 updated",
         },
+        "QmUpdatePlaylist3": {
+            "playlist_contents": {"track_ids": []},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "playlist 3 updated",
+        },
     }
 
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-        ]
+        ],
+        "playlists": [
+            {
+                "playlist_id": PLAYLIST_ID_OFFSET + 2,
+                "playlist_owner_id": 1,
+                "playlist_name": "playlist 3",
+            }
+        ],
     }
     populate_mock_db(db, entities)
 
@@ -135,32 +162,51 @@ def test_index_valid_playlists(app, mocker):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 4
+        assert len(all_playlists) == 6
 
-        playlist_1: Playlist = (
+        playlists_1: List[Playlist] = (
             session.query(Playlist)
             .filter(
                 Playlist.is_current == True, Playlist.playlist_id == PLAYLIST_ID_OFFSET
             )
-            .first()
+            .all()
         )
+        assert len(playlists_1) == 1
+        playlist_1 = playlists_1[0]
         assert datetime.timestamp(playlist_1.last_added_to) == 1585336422
         assert playlist_1.playlist_name == "playlist 1 updated"
         assert playlist_1.is_delete == True
         assert playlist_1.is_current == True
 
-        playlist_2: Playlist = (
+        playlists_2: List[Playlist] = (
             session.query(Playlist)
             .filter(
                 Playlist.is_current == True,
                 Playlist.playlist_id == PLAYLIST_ID_OFFSET + 1,
             )
-            .first()
+            .all()
         )
+        assert len(playlists_2) == 1
+        playlist_2 = playlists_2[0]
         assert playlist_2.last_added_to == None
         assert playlist_2.playlist_name == "playlist 2"
         assert playlist_2.is_delete == False
         assert playlist_2.is_current == True
+
+        playlists_3: List[Playlist] = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True,
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET + 2,
+            )
+            .all()
+        )
+        assert len(playlists_3) == 1
+        playlist_3 = playlists_3[0]
+        assert playlist_3.last_added_to == None
+        assert playlist_3.playlist_name == "playlist 3 updated"
+        assert playlist_3.is_delete == False
+        assert playlist_3.is_current == True
 
 
 def test_index_invalid_playlists(app, mocker):
