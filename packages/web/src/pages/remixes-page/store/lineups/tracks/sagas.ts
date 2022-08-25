@@ -3,14 +3,14 @@ import {
   remixesPageLineupActions as tracksActions,
   remixesPageActions,
   remixesPageSelectors,
-  getContext
+  getContext,
+  waitForAccount
 } from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'store/lineup/sagas'
 import { AppState } from 'store/types'
-import { waitForAccount } from 'utils/sagaHelpers'
 const { getTrackId, getLineup } = remixesPageSelectors
 const { setCount } = remixesPageActions
 const getUserId = accountSelectors.getUserId

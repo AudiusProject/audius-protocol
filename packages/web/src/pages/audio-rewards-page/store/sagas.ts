@@ -17,7 +17,9 @@ import {
   audioRewardsPageSelectors,
   solanaSelectors,
   walletActions,
-  modalsActions
+  modalsActions,
+  waitForAccount,
+  waitForValue
 } from '@audius/common'
 import {
   call,
@@ -36,7 +38,6 @@ import { show as showMusicConfetti } from 'components/music-confetti/store/slice
 import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
 import { getCognitoExists } from 'services/audius-backend/Cognito'
 import { AUDIO_PAGE } from 'utils/route'
-import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 import {
   foregroundPollingDaemon,
   visibilityPollingDaemon

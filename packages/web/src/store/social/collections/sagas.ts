@@ -16,7 +16,8 @@ import {
   notificationsActions as notificationActions,
   removeFromPlaylistLibrary,
   getContext,
-  collectionsSocialActions as socialActions
+  collectionsSocialActions as socialActions,
+  waitForAccount
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -28,7 +29,6 @@ import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
-import { waitForAccount } from 'utils/sagaHelpers'
 import { share } from 'utils/share'
 
 import watchCollectionErrors from './errorSagas'

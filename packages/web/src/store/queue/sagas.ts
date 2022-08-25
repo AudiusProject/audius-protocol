@@ -18,6 +18,7 @@ import {
   queueActions,
   RepeatMode,
   QueueSource,
+  waitForAccount,
   playerActions,
   playerSelectors,
   queueSelectors
@@ -26,11 +27,11 @@ import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 import { getRecommendedTracks } from '../recommendation/sagas'
 
 import mobileSagas from './mobileSagas'
+
 const {
   getCollectible,
   getId: getQueueTrackId,
@@ -44,7 +45,9 @@ const {
   getUid,
   getUndershot
 } = queueSelectors
+
 const { getTrackId: getPlayerTrackId, getUid: getPlayerUid } = playerSelectors
+
 const {
   add,
   clear,

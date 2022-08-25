@@ -5,7 +5,7 @@ import {
 } from '@audius/common'
 import { takeEvery, put } from 'redux-saga/effects'
 
-import { requiresAccount } from 'utils/sagaHelpers'
+import { requiresAccount } from 'utils/requiresAccount'
 const { setVisibility } = modalsActions
 const fetchSavedPlaylists = accountActions.fetchSavedPlaylists
 

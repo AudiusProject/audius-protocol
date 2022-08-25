@@ -12,7 +12,8 @@ import {
   feedPageLineupActions as feedActions,
   feedPageSelectors,
   GetSocialFeedArgs,
-  CommonState
+  CommonState,
+  waitForAccount
 } from '@audius/common'
 import { select, all } from 'redux-saga/effects'
 
@@ -24,7 +25,6 @@ import {
   getStartedSignOnProcess
 } from 'common/store/pages/signon/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
 const { getFeedFilter } = feedPageSelectors
 const getAccountUser = accountSelectors.getAccountUser
 

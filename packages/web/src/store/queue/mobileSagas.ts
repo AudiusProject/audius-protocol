@@ -7,6 +7,7 @@ import {
   cacheUsersSelectors,
   queueActions,
   getContext,
+  waitForAccount,
   playerActions,
   queueSelectors
 } from '@audius/common'
@@ -19,7 +20,6 @@ import {
 } from 'services/native-mobile-interface/queue'
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import { generateM3U8Variants } from 'utils/hlsUtil'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 const {
   getOrder,
@@ -30,6 +30,7 @@ const {
   getShuffleOrder,
   getQueueAutoplay
 } = queueSelectors
+
 const { getUser } = cacheUsersSelectors
 const { persist, queueAutoplay, repeat, shuffle, updateIndex } = queueActions
 const { getTrack } = cacheTracksSelectors

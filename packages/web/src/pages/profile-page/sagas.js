@@ -12,7 +12,8 @@ import {
   profilePageActions as profileActions,
   reachabilitySelectors,
   tippingActions,
-  artistRecommendationsUIActions as artistRecommendationsActions
+  artistRecommendationsUIActions as artistRecommendationsActions,
+  waitForAccount
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -47,7 +48,6 @@ import {
   MAX_PROFILE_TOP_SUPPORTERS
 } from 'utils/constants'
 import { dataURLtoFile } from 'utils/fileUtils'
-import { waitForAccount } from 'utils/sagaHelpers'
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =

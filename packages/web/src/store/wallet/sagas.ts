@@ -11,14 +11,14 @@ import {
   tokenDashboardPageActions,
   walletSelectors,
   walletActions,
-  getContext
+  getContext,
+  waitForAccount
 } from '@audius/common'
 import BN from 'bn.js'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 const {
   getBalance,

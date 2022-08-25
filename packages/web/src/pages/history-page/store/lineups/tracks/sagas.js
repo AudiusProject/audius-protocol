@@ -1,14 +1,14 @@
 import {
   Kind,
   accountSelectors,
-  historyPageTracksLineupActions as tracksActions
+  historyPageTracksLineupActions as tracksActions,
+  waitForAccount
 } from '@audius/common'
 import { keyBy } from 'lodash'
 import { call, getContext, select } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'store/lineup/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
 const getUserId = accountSelectors.getUserId
 const PREFIX = tracksActions.prefix
 

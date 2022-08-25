@@ -2,13 +2,13 @@ import {
   TimeRange,
   accountSelectors,
   trendingPageLineupActions,
-  trendingPageSelectors
+  trendingPageSelectors,
+  waitForAccount
 } from '@audius/common'
 import { select } from 'redux-saga/effects'
 
 import { retrieveTrending } from 'pages/track-page/store/retrieveTrending'
 import { LineupSagas } from 'store/lineup/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
 const { getTrendingGenre } = trendingPageSelectors
 const {
   TRENDING_WEEK_PREFIX,
