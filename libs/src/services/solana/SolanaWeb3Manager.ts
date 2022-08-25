@@ -305,7 +305,7 @@ export class SolanaWeb3Manager {
   /**
    * Gets a solana bank account from the current we3 provider's eth address
    */
-  async getUserBank() {
+  async deriveUserBank() {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
