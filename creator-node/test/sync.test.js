@@ -8,6 +8,7 @@ const chai = require('chai')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 
+const middlewares = require('../src/middlewares')
 const config = require('../src/config')
 const models = require('../src/models')
 const { getApp, getServiceRegistryMock } = require('./lib/app')
@@ -794,9 +795,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
   })
 
   describe('Test secondarySyncFromPrimary function', async function () {
-    let serviceRegistryMock
+    let serviceRegistryMock, originalContentNodeEndpoint
 
-    const TEST_ENDPOINT = 'http://test-cn.co'
+    const MOCK_CN1 = 'http://mock-cn1.audius.co'
+    const MOCK_CN2 = 'http://mock-cn2.audius.co'
+    const MOCK_CN3 = 'http://mock-cn3.audius.co'
+    const TEST_ENDPOINT_PRIMARY = MOCK_CN1
+    const USER_REPLICA_SET = `${MOCK_CN1},${MOCK_CN2},${MOCK_CN3}`
     const { pubKey } = testEthereumConstants
     const userWallets = [pubKey.toLowerCase()]
 
@@ -833,6 +838,16 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
       libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
 
+      // Make chain return user's replica set
+      const getUsersStub = sinon.stub().resolves([
+        {
+          blocknumber: 1,
+          track_blocknumber: 1,
+          creator_node_endpoint: USER_REPLICA_SET
+        }
+      ])
+      libsMock.User = { ...libsMock.User, getUsers: getUsersStub }
+
       // Associate user with with blockchain ID
       const associateRequest = {
         blockchainUserId: 1,
@@ -866,14 +881,14 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
     const setupMocks = (sampleExport, contentIsAvailable = true) => {
       // Mock /export route response
-      nock(TEST_ENDPOINT)
+      nock(TEST_ENDPOINT_PRIMARY)
         .persist()
         .get((uri) => uri.includes('/export'))
         .reply(200, sampleExport)
 
       // This text 'audius is cool' is mapped to the hash in the dummy json data
       // If changes are made to the response body, make the corresponding changes to the hash too
-      nock('http://mock-cn1.audius.co')
+      nock(MOCK_CN1)
         .persist()
         .get((uri) =>
           uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
@@ -884,7 +899,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
             : [404, 'audius is less cool']
         })
 
-      nock('http://mock-cn2.audius.co')
+      nock(MOCK_CN2)
         .persist()
         .get((uri) =>
           uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
@@ -895,7 +910,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
             : [404, 'audius is less cool']
         })
 
-      nock('http://mock-cn3.audius.co')
+      nock(MOCK_CN3)
         .persist()
         .get((uri) =>
           uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
@@ -1045,10 +1060,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
       const absoluteStoragePath = path.resolve(storagePath)
       await fs.emptyDir(path.resolve(absoluteStoragePath))
 
-      nock.cleanAll()
-
       maxExportClockValueRange = originalMaxExportClockValueRange
       process.env.maxExportClockValueRange = maxExportClockValueRange
+
+      originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
 
       const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
       server = appInfo.server
@@ -1057,7 +1072,15 @@ describe('Test secondarySyncFromPrimary()', async function () {
       serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
     })
 
+    afterEach(function () {
+      config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+      nock.cleanAll()
+    })
+
     it('Syncs correctly from clean user state with mocked export object', async function () {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
       const {
         sampleExport,
         cnodeUser: exportedCnodeUser,
@@ -1074,10 +1097,20 @@ describe('Test secondarySyncFromPrimary()', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      const result = await secondarySyncFromPrimary({
+      const secondarySyncFromPrimaryMock = proxyquire(
+        '../src/services/sync/secondarySyncFromPrimary',
+        {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares,
+            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          }
+        }
+      )
+      const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
-        creatorNodeEndpoint: TEST_ENDPOINT
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY
       })
 
       assert.deepStrictEqual(result, {
@@ -1097,7 +1130,39 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
     })
 
+    it("Fails sync when this syncing from a node that's not the user's primary", async function () {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
+      const { sampleExport } = unpackSampleExportData(sampleExportDummyCIDPath)
+      setupMocks(sampleExport)
+
+      // Call secondarySyncFromPrimary
+      const secondarySyncFromPrimaryMock = proxyquire(
+        '../src/services/sync/secondarySyncFromPrimary',
+        {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares,
+            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          }
+        }
+      )
+      return expect(
+        secondarySyncFromPrimaryMock({
+          serviceRegistry: serviceRegistryMock,
+          wallet: userWallets[0],
+          creatorNodeEndpoint: MOCK_CN3
+        })
+      ).to.eventually.be.rejectedWith(
+        `Node being synced from is not primary. Node being synced from: http://mock-cn3.audius.co Primary: http://mock-cn1.audius.co`
+      )
+    })
+
     it('Syncs correctly when cnodeUser data already exists locally', async function () {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
       const {
         sampleExport,
         cnodeUser: exportedCnodeUser,
@@ -1123,10 +1188,20 @@ describe('Test secondarySyncFromPrimary()', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      const result = await secondarySyncFromPrimary({
+      const secondarySyncFromPrimaryMock = proxyquire(
+        '../src/services/sync/secondarySyncFromPrimary',
+        {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares,
+            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          }
+        }
+      )
+      const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
-        creatorNodeEndpoint: TEST_ENDPOINT
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY
       })
 
       assert.deepStrictEqual(result, {
@@ -1145,6 +1220,9 @@ describe('Test secondarySyncFromPrimary()', async function () {
     })
 
     it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true', async () => {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
       const {
         sampleExport,
         cnodeUser: exportedCnodeUser,
@@ -1170,21 +1248,26 @@ describe('Test secondarySyncFromPrimary()', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary with `forceResync` = true
-      const secondarySyncFromPrimary = proxyquire(
+      const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
           './secondarySyncFromPrimaryUtils': {
             shouldForceResync: async () => {
               return true
             }
+          },
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares,
+            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
           }
         }
       )
 
-      const result = await secondarySyncFromPrimary({
+      const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
-        creatorNodeEndpoint: TEST_ENDPOINT,
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY,
         blockNumber: null
       })
 
@@ -1206,6 +1289,9 @@ describe('Test secondarySyncFromPrimary()', async function () {
     })
 
     it('Syncs correctly from clean user state, even when content is unavailable, by skipping files', async function () {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
       const {
         sampleExport,
         cnodeUser: exportedCnodeUser,
@@ -1225,7 +1311,11 @@ describe('Test secondarySyncFromPrimary()', async function () {
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
-          './../../config': config
+          './../../config': config,
+          '../../middlewares': {
+            ...middlewares,
+            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          }
         }
       )
 
@@ -1239,11 +1329,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
           secondarySyncFromPrimaryMock({
             serviceRegistry: serviceRegistryMock,
             wallet: userWallets[0],
-            creatorNodeEndpoint: TEST_ENDPOINT
+            creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY
           })
-        ).to.eventually.be.rejectedWith(
-          `Error: User Sync failed due to ${numUniqueCIDs} failing saveFileForMultihashToFS op. userSyncFailureCount = ${i} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
-        ).and.be.an.instanceOf(Error)
+        )
+          .to.eventually.be.rejectedWith(
+            `Error: User Sync failed due to ${numUniqueCIDs} failing saveFileForMultihashToFS op. userSyncFailureCount = ${i} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
+          )
+          .and.be.an.instanceOf(Error)
 
         // Ensure no user data created
         assert.strictEqual(await models.CNodeUser.count(), 0)
@@ -1253,7 +1345,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
-        creatorNodeEndpoint: TEST_ENDPOINT
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY
       })
 
       assert.deepStrictEqual(result, {
@@ -1265,7 +1357,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
       )
 
       // Update files with skipped = true
-      const skippedExportedFiles = exportedFiles.map(file => ({ ...file, skipped: true }))
+      const skippedExportedFiles = exportedFiles.map((file) => ({
+        ...file,
+        skipped: true
+      }))
 
       await verifyLocalStateForUser({
         cnodeUserUUID: newCNodeUserUUID,
@@ -1279,7 +1374,11 @@ describe('Test secondarySyncFromPrimary()', async function () {
 })
 
 describe('Test primarySyncFromSecondary() with mocked export', async () => {
-  let server, app, serviceRegistryMock, primarySyncFromSecondaryStub
+  let server,
+    app,
+    serviceRegistryMock,
+    primarySyncFromSecondaryStub,
+    originalContentNodeEndpoint
 
   const NODES = {
     CN1: 'http://mock-cn1.audius.co',
@@ -1555,8 +1654,6 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
    * Setup mocks, deps
    */
   beforeEach(async function () {
-    nock.cleanAll()
-
     await destroyUsers()
 
     await redisClient.flushdb()
@@ -1571,7 +1668,12 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     server = appInfo.server
     app = appInfo.app
 
-    config.set('syncRequestMaxUserFailureCountBeforeSkip', SyncRequestMaxUserFailureCountBeforeSkip)
+    config.set(
+      'syncRequestMaxUserFailureCountBeforeSkip',
+      SyncRequestMaxUserFailureCountBeforeSkip
+    )
+    originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
+    config.set('creatorNodeEndpoint', NODES.CN1)
 
     // Define mocks
 
@@ -1590,6 +1692,8 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   // close server
   afterEach(async function () {
     await server.close()
+    config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+    nock.cleanAll()
   })
 
   it('Primary correctly syncs from secondary when primary has no state', async function () {

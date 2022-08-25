@@ -56,7 +56,7 @@ export const QUEUE_HISTORY = Object.freeze({
   // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
   UPDATE_REPLICA_SET: 100_000,
   // Max number of completed/failed jobs to keep in redis for the recover-orphaned-data queue
-  RECOVER_ORPHANED_DATA: 10_000
+  RECOVER_ORPHANED_DATA: 100_000
 })
 
 export const QUEUE_NAMES = {
@@ -98,7 +98,7 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   // Max millis to run an update-replica-set job for before marking it as stalled
   UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000,
   // Max millis to run a recover-orphaned-data job for before marking it as stalled
-  RECOVER_ORPHANED_DATA: 60 /* min */ * 60 * 1000
+  RECOVER_ORPHANED_DATA: 5 /* hours */ * 60 /* min */ * 60 * 1000
 })
 
 /**
@@ -151,7 +151,10 @@ export const SYNC_MODES = Object.freeze({
   SyncSecondaryFromPrimary: 'SYNC_SECONDARY_FROM_PRIMARY',
 
   // Edge case - secondary has state that primary needs: primary should merge its local state with secondary's state, and have secondary re-sync its entire local state
-  MergePrimaryAndSecondary: 'MERGE_PRIMARY_AND_SECONDARY'
+  MergePrimaryAndSecondary: 'MERGE_PRIMARY_AND_SECONDARY',
+
+  // Edge case - same as MergePrimaryAndSecondary but wipes secondary's state instead of re-syncing from primary
+  MergePrimaryThenWipeSecondary: 'MERGE_PRIMARY_THEN_WIPE_SECONDARY'
 })
 
 export const FETCH_FILES_HASH_NUM_RETRIES = 3
@@ -172,3 +175,9 @@ export enum UpdateReplicaSetJobResult {
   FailureGetCurrentReplicaSet = 'failure_get_current_replica_set',
   FailureInitAudiusLibs = 'failure_init_audius_libs'
 }
+
+// Number of users to query in each orphaned data recovery query to Discovery and to its own db
+export const ORPHANED_DATA_NUM_USERS_PER_QUERY = 10_000
+
+// Number of users to fetch from redis and issue requests for (sequentially) in each batch
+export const ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH = 1000

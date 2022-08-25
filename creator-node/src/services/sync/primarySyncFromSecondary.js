@@ -48,7 +48,7 @@ module.exports = async function primarySyncFromSecondary({
 
     let libs
     try {
-      libs = await initAudiusLibs({})
+      libs = await initAudiusLibs({ logger })
       decisionTree.recordStage({ name: 'initAudiusLibs() success', log: true })
     } catch (e) {
       decisionTree.recordStage({
@@ -64,16 +64,17 @@ module.exports = async function primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    let userReplicaSet = await getUserReplicaSet({
-      wallet,
-      selfEndpoint,
+    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+      libs,
       logger,
-      libs
+      wallet,
+      blockNumber: null,
+      ensurePrimary: false
     })
     decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
     // Error if this node is not primary for user
-    if (userReplicaSet[0] !== selfEndpoint) {
+    if (userReplicaSet.primary !== selfEndpoint) {
       decisionTree.recordStage({
         name: 'Error - Node is not primary for user',
         data: { userReplicaSet }
@@ -81,8 +82,11 @@ module.exports = async function primarySyncFromSecondary({
       throw new Error(`Node is not primary for user`)
     }
 
-    // filter out current node from user's replica set
-    userReplicaSet = userReplicaSet.filter((url) => url !== selfEndpoint)
+    // Use the user's non-empty secondaries as gateways to try
+    const gatewaysToTry = [
+      userReplicaSet.secondary1,
+      userReplicaSet.secondary2
+    ].filter(Boolean)
 
     // Keep importing data from secondary until full clock range has been retrieved
     let completed = false
@@ -121,7 +125,7 @@ module.exports = async function primarySyncFromSecondary({
         // saveFilesToDisk() will short-circuit if files already exist on disk
         CIDsThatFailedSaveFileOp = await saveFilesToDisk({
           files: fetchedCNodeUser.files,
-          userReplicaSet,
+          gatewaysToTry,
           wallet,
           libs,
           logger,
@@ -247,7 +251,7 @@ async function fetchExportFromSecondary({
  */
 async function saveFilesToDisk({
   files,
-  userReplicaSet,
+  gatewaysToTry,
   wallet,
   libs,
   logger,
@@ -283,7 +287,7 @@ async function saveFilesToDisk({
           logger,
           trackFile.multihash,
           trackFile.storagePath,
-          userReplicaSet,
+          gatewaysToTry,
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
@@ -324,7 +328,7 @@ async function saveFilesToDisk({
             logger,
             multihash,
             nonTrackFile.storagePath,
-            userReplicaSet,
+            gatewaysToTry,
             nonTrackFile.fileName
           )
         } else {
@@ -333,7 +337,7 @@ async function saveFilesToDisk({
             logger,
             multihash,
             nonTrackFile.storagePath,
-            userReplicaSet
+            gatewaysToTry
           )
         }
 
@@ -598,24 +602,4 @@ async function filterOutAlreadyPresentDBEntries({
   }
 
   return filteredEntries
-}
-
-async function getUserReplicaSet({ wallet, libs, logger }) {
-  try {
-    let userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
-      wallet,
-      blockNumber: null,
-      ensurePrimary: false,
-      myCnodeEndpoint: null
-    })
-
-    // Spread + set uniq's the array
-    userReplicaSet = [...new Set(userReplicaSet)]
-
-    return userReplicaSet
-  } catch (e) {
-    throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
-  }
 }
