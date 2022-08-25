@@ -10,7 +10,6 @@ const {
 } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 
 const handleSyncFromPrimary = async ({

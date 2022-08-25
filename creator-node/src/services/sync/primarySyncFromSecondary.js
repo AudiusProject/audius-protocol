@@ -13,7 +13,6 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const asyncRetry = require('../../utils/asyncRetry')
 const DecisionTree = require('../../utils/decisionTree')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
