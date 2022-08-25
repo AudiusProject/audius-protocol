@@ -1,6 +1,10 @@
 const Bull = require('bull')
 
-const { logger } = require('../../logging')
+const {
+  logger,
+  logInfoWithDuration,
+  logErrorWithDuration
+} = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
@@ -58,6 +62,7 @@ class SyncQueue {
       } = job.data
 
       let result = {}
+      const startTime = Date.now()
       try {
         result = await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
@@ -67,10 +72,14 @@ class SyncQueue {
           forceResyncConfig,
           logContext
         })
+        logInfoWithDuration(
+          { logger, startTime },
+          `syncQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
+        )
       } catch (e) {
-        logger.error(
-          `secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}`,
-          e.message
+        logErrorWithDuration(
+          { logger, startTime },
+          `syncQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} - ${e.message}`
         )
         result = { error: e.message }
       }
