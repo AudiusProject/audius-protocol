@@ -21,7 +21,8 @@ const TYPE_STYLE_MAP = {
   [Type.COMMON_ALT]: styles.commonAlt,
   [Type.DISABLED]: styles.disabled,
   [Type.GLASS]: styles.glass,
-  [Type.WHITE]: styles.white
+  [Type.WHITE]: styles.white,
+  [Type.TEXT]: styles.textButton
 }
 
 /**

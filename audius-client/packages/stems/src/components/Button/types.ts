@@ -8,7 +8,8 @@ export enum Type {
   COMMON_ALT = 'commonAlt',
   DISABLED = 'disabled',
   GLASS = 'glass',
-  WHITE = 'white'
+  WHITE = 'white',
+  TEXT = 'text'
 }
 
 export enum Size {
