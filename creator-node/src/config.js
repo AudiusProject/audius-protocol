@@ -530,7 +530,7 @@ const config = convict({
     doc: 'Maximum number of users to process in each SnapbackSM job',
     format: 'nat',
     env: 'snapbackUsersPerJob',
-    default: 1000
+    default: 2000
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
@@ -628,7 +628,7 @@ const config = convict({
     doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
     format: 'nat',
     env: 'syncRequestMaxUserFailureCountBeforeSkip',
-    default: 10
+    default: 5 
   },
   skippedCIDsRetryQueueJobIntervalMs: {
     doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',

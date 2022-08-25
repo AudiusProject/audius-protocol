@@ -143,24 +143,66 @@ async function findCIDInNetwork(
   )
   let node
 
-  for (let index = 0; index < creatorNodesFiltered.length; index++) {
-    node = creatorNodesFiltered[index]
+  for (const { endpoint } of creatorNodesFiltered) {
     try {
-      const resp = await axios({
-        method: 'get',
-        url: `${node.endpoint}/file_lookup`,
-        params: {
-          filePath,
-          timestamp,
-          delegateWallet,
-          signature,
-          trackId
+      const streamData = await asyncRetry({
+        asyncFn: async (bail) => {
+          let response
+          try {
+            respone = await axios({
+              method: 'get',
+              url: `${endpoint}/file_lookup`,
+              params: {
+                filePath,
+                timestamp,
+                delegateWallet,
+                signature,
+                trackId
+              },
+              responseType: 'stream',
+              timeout: 1000
+            })
+          } catch (e) {
+            if (
+              e.response?.status === 403 ||
+              e.response?.status === 401 ||
+              e.response?.status === 400
+            ) {
+              bail(
+                new Error(
+                  `Content multihash=${cid} is delisted from ${contentUrl}`
+                )
+              )
+            }
+
+            throw new Error(
+              `Failed to fetch content multihash=${cid} with statusCode=${e.response?.status}. Retrying..`
+            )
+          }
+
+          if (!response || !response.data || !response.data.data) {
+            throw new Error('Received empty response')
+          }
+
+          return response.data.data
         },
-        responseType: 'stream',
-        timeout: 1000
+        logger,
+        logLabel: 'fetchFileFromNetworkAndWriteToDisk',
+        options: {
+          retries: numRetries,
+          minTimeout: 3000
+        }
       })
-      if (resp.data) {
-        await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
+
+      if (!streamData) {
+        throw new Error('Empty content returned from file lookup')
+      }
+      if (streamData) {
+        await writeStreamToFileSystem(
+          streamData,
+          filePath,
+          /* createDir */ true
+        )
 
         // Verify that the file written matches the hash expected
         const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
@@ -170,12 +212,12 @@ async function findCIDInNetwork(
         if (cid !== expectedCID) {
           await fs.unlink(filePath)
           logger.error(
-            `findCIDInNetwork - File contents from ${node.endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+            `findCIDInNetwork - File contents from ${endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
           )
         } else {
           found = true
           logger.info(
-            `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
+            `findCIDInNetwork - successfully fetched file ${filePath} from node ${endpoint}`
           )
           break
         }
@@ -183,7 +225,7 @@ async function findCIDInNetwork(
     } catch (e) {
       // Do not error and stop the flow of execution for functions that call it
       logger.error(
-        `findCIDInNetwork fetch error from ${node.endpoint} - ${e.toString()}`
+        `findCIDInNetwork fetch error from ${endpoint} - ${e.toString()}`
       )
       continue
     }

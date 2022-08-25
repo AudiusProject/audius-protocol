@@ -493,46 +493,6 @@ const handleSyncFromPrimary = async ({
       genericLogger.info(logPrefix, 'Saved all non-track files to disk.')
 
       /**
-       * Handle scenario where failed to retrieve/save > 0 CIDs
-       * Reject sync if number of failures for user is below threshold, else proceed and mark unretrieved files as skipped
-       */
-      const numCIDsThatFailedSaveFileOp = CIDsThatFailedSaveFileOp.size
-      if (numCIDsThatFailedSaveFileOp > 0) {
-        const userSyncFailureCount =
-          await UserSyncFailureCountService.incrementFailureCount(
-            fetchedWalletPublicKey
-          )
-
-        // Throw error if failure threshold not yet reached
-        if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
-          const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
-          genericLogger.error(logPrefix, errorMsg)
-          returnValue = {
-            error: new Error(errorMsg),
-            result: 'failure_skip_threshold_not_reached'
-          }
-          throw returnValue.error
-
-          // If max failure threshold reached, continue with sync and reset failure count
-        } else {
-          // Reset falure count so subsequent user syncs will not always succeed & skip
-          await UserSyncFailureCountService.resetFailureCount(
-            fetchedWalletPublicKey
-          )
-
-          genericLogger.info(
-            logPrefix,
-            `User Sync continuing with ${numCIDsThatFailedSaveFileOp} skipped files, since SyncRequestMaxUserFailureCountBeforeSkip (${SyncRequestMaxUserFailureCountBeforeSkip}) reached.`
-          )
-        }
-      } else {
-        // Reset failure count if all files were successfully saved
-        await UserSyncFailureCountService.resetFailureCount(
-          fetchedWalletPublicKey
-        )
-      }
-
-      /**
        * Write all records to DB
        */
 

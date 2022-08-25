@@ -13,6 +13,7 @@ const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const { findCIDInNetwork } = require('./utils')
 const DecisionTree = require('./utils/decisionTree')
+const asyncRetry = require('./utils/asyncRetry')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -99,6 +100,128 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
   return dstPath
 }
 
+async function fetchFileFromNetworkAndWriteToDisk({
+  libs,
+  gatewayContentRoutes,
+  multihash,
+  path,
+  numRetries,
+  logger,
+  decisionTree
+}) {
+  // First try to fetch from other cnode gateways if user has non-empty replica set.
+  decisionTree.recordStage({
+    name: 'About to race requests via gateways',
+    data: { gatewayContentRoutes }
+  })
+
+  // Note - Requests are intentionally not parallel to minimize additional load on gateways
+  for (const contentUrl of gatewayContentRoutes) {
+    decisionTree.recordStage({
+      name: 'Fetching from gateway',
+      data: { replicaUrl: contentUrl }
+    })
+
+    try {
+      const streamData = await asyncRetry({
+        asyncFn: async (bail) => {
+          let response
+          try {
+            response = await axios({
+              method: 'get',
+              url: contentUrl,
+              responseType: 'stream',
+              timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+            })
+          } catch (e) {
+            // Do not retry fetching content if content is delisted or request is bad
+            if (
+              e.response?.status === 403 ||
+              e.response?.status === 401 ||
+              e.response?.status === 400
+            ) {
+              bail(
+                new Error(
+                  `Content multihash=${multihash} is delisted from ${contentUrl}`
+                )
+              )
+            }
+
+            throw new Error(
+              `Failed to fetch content multihash=${multihash} with statusCode=${e.response?.status}. Retrying..`
+            )
+          }
+
+          if (!response || !response.data || !response.data.data) {
+            throw new Error('Received empty response')
+          }
+
+          return response.data.data
+        },
+        logger,
+        logLabel: 'fetchFileFromNetworkAndWriteToDisk',
+        options: {
+          retries: numRetries,
+          minTimeout: 3000
+        }
+      })
+
+      decisionTree.recordStage({
+        name: 'Retrieved file from gateway',
+        data: { url: contentUrl }
+      })
+
+      await Utils.writeStreamToFileSystem(streamData, path)
+
+      decisionTree.recordStage({
+        name: 'Wrote file to file system after fetching from gateway',
+        data: { expectedStoragePath }
+      })
+
+      return
+    } catch (e) {
+      decisionTree.recordStage({
+        name: 'Error - Could not retrieve file from gateway',
+        data: { url, errorMsg: e.message, statusCode: e.response?.status }
+      })
+    }
+  }
+
+  // If file is not found in replica set, check network (remaining registered nodes)
+  try {
+    const found = await findCIDInNetwork(
+      path,
+      multihash,
+      logger,
+      libs,
+      /** trackId */ null,
+      /** excludeList */ gatewaysToTry
+    )
+
+    if (!found) {
+      throw new Error(`Did not find multihash=${multihash} from network`)
+    }
+
+    decisionTree.recordStage({
+      name: 'Found file from findCIDInNetwork()'
+    })
+
+    return
+  } catch (e) {
+    decisionTree.recordStage({
+      name: `Failed to find file from findCIDInNetwork()`,
+      data: { errorMsg: e.message }
+    })
+  }
+
+  // error if file was not found on any gateway
+  const errorMsg = `Failed to retrieve file for multihash ${multihash} after trying all creator node gateways`
+  decisionTree.recordStage({
+    name: errorMsg
+  })
+  throw new Error(errorMsg)
+}
+
 /**
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
@@ -110,7 +233,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @param {String} multihash CID
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
  *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
- * @param {Array} gatewaysToTry List of gateway endpoints to try
+ * @param {Array} gatewaysToTry List of gateway endpoints to try. May be all the registered Content Nodes, or just the user replica set.
  * @param {String?} fileNameForImage file name if the CID is image in dir.
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
@@ -137,7 +260,7 @@ async function saveFileForMultihashToFS(
     // TODO - don't concat url's by hand like this, use module like urljoin
     // ..replace(/\/$/, "") removes trailing slashes
 
-    let gatewayUrlsMapped = gatewaysToTry.map((endpoint) => {
+    let gatewayContentRoutes = gatewaysToTry.map((endpoint) => {
       let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
       if (trackId) baseUrl += `?trackId=${trackId}`
 
@@ -151,7 +274,7 @@ async function saveFileForMultihashToFS(
       data: {
         multihash,
         gatewaysToTry,
-        gatewayUrlsMapped,
+        gatewayContentRoutes,
         expectedStoragePath,
         parsedStoragePath
       },
@@ -191,7 +314,7 @@ async function saveFileForMultihashToFS(
       // in the case of a directory, override the gatewayUrlsMapped array to look like
       // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
       // ..replace(/\/$/, "") removes trailing slashes
-      gatewayUrlsMapped = gatewaysToTry.map(
+      gatewayContentRoutes = gatewaysToTry.map(
         (endpoint) =>
           `${endpoint.replace(/\/$/, '')}/ipfs/${
             matchObj.outer
@@ -199,18 +322,17 @@ async function saveFileForMultihashToFS(
       )
       decisionTree.recordStage({
         name: 'Updated gatewayUrlsMapped',
-        data: { gatewayUrlsMapped }
+        data: { gatewayContentRoutes }
       })
     }
 
     /**
      * Attempts to fetch CID:
-     *  - If file already stored on disk, return immediately.
-     *  - If file not already stored, request from user's replica set gateways in parallel.
-     * Each step, if successful, stores retrieved file to disk.
+     *  - If file already stored on disk, return immediately
+     *  - If file not already stored, request from user's replica set gateways in parallel and write to disk if file exists
+     *  - If file does not exist on user's replca set, try the network and write to disk if file exists
      */
 
-    // If file already stored on disk, return immediately.
     if (await fs.pathExists(expectedStoragePath)) {
       decisionTree.recordStage({
         name: 'Success - File already stored on disk',
@@ -220,117 +342,15 @@ async function saveFileForMultihashToFS(
       return
     }
 
-    // If file not already stored, fetch and store at storagePath.
-    let fileFound = false
-
-    // First try to fetch from other cnode gateways if user has non-empty replica set.
-    if (gatewayUrlsMapped.length > 0) {
-      try {
-        let response
-
-        decisionTree.recordStage({
-          name: 'About to race requests via gateways',
-          data: { gatewayUrlsMapped }
-        })
-
-        // Note - Requests are intentionally not parallel to minimize additional load on gateways
-        for (let index = 0; index < gatewayUrlsMapped.length; index++) {
-          const url = gatewayUrlsMapped[index]
-
-          decisionTree.recordStage({
-            name: 'Fetching from gateway',
-            data: { url }
-          })
-
-          try {
-            const resp = await axios({
-              method: 'get',
-              url,
-              responseType: 'stream',
-              timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-            })
-            if (resp.data) {
-              response = resp
-              decisionTree.recordStage({
-                name: 'Retrieved file from gateway',
-                data: { url }
-              })
-              break
-            }
-          } catch (e) {
-            decisionTree.recordStage({
-              name: 'Error - Could not retrieve file from gateway',
-              data: { url, errorMsg: e.message }
-            })
-            continue
-          }
-        }
-
-        if (!response || !response.data) {
-          decisionTree.recordStage({
-            name: `Error - Could not retrieve file from any gateway`,
-            data: { gatewayUrlsMapped }
-          })
-          throw new Error(
-            `Couldn't find files on other creator nodes, after trying URLs: ${gatewayUrlsMapped.toString()}`
-          )
-        }
-
-        // Write file to disk
-        await Utils.writeStreamToFileSystem(response.data, expectedStoragePath)
-        fileFound = true
-
-        decisionTree.recordStage({
-          name: 'Wrote file to file system after fetching from gateway',
-          data: { expectedStoragePath }
-        })
-      } catch (e) {
-        const errorMsg = `Failed to retrieve file for multihash ${multihash} from other creator node gateways`
-        decisionTree.recordStage({
-          name: errorMsg,
-          data: { errorMsg: e.message }
-        })
-      }
-    }
-
-    // If file is not found in replica set, check network (remaining registered nodes)
-    if (!fileFound) {
-      try {
-        const found = await findCIDInNetwork(
-          expectedStoragePath,
-          multihash,
-          logger,
-          libs,
-          /** trackId */ null,
-          /** excludeList */ gatewaysToTry
-        )
-        if (found) {
-          decisionTree.recordStage({
-            name: `Found file from findCIDInNetwork()`
-          })
-          fileFound = true
-        } else {
-          decisionTree.recordStage({
-            name: `Failed to find file from findCIDInNetwork()`
-          })
-        }
-      } catch (e) {
-        decisionTree.recordStage({
-          name: `Failed to find file from findCIDInNetwork()`,
-          data: { errorMsg: e.message }
-        })
-      }
-    }
-
-    // error if file was not found on any gateway
-    if (!fileFound) {
-      decisionTree.recordStage({
-        name: `Failed to retrieve file for multihash after trying creator node gateways`
-      })
-      throw new Error(
-        `Failed to retrieve file for multihash ${multihash} after trying creator node gateways`
-      )
-    }
+    await fetchFileFromNetworkAndWriteToDisk({
+      libs,
+      gatewayContentRoutes,
+      multihash,
+      path: expectedStoragePath,
+      numRetries,
+      logger,
+      decisionTree
+    })
 
     // verify that the contents of the file match the file's cid
     try {

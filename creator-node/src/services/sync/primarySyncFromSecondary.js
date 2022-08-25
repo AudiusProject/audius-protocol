@@ -19,10 +19,6 @@ const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
 const DEFAULT_LOG_CONTEXT = {}
 const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
-const SyncRequestMaxUserFailureCountBeforeSkip = config.get(
-  'syncRequestMaxUserFailureCountBeforeSkip'
-)
-
 /**
  * Export data for user from secondary and save locally, until complete
  * Should never error, instead return errorObj, else null
@@ -336,32 +332,6 @@ async function saveFilesToDisk({
         }
       })
     )
-  }
-
-  /**
-   * Handle case where some CIDs were not successfully saved
-   * Reject whole operation until threshold reached, then proceed and mark those CIDs as skipped
-   */
-  if (CIDsThatFailedSaveFileOp.size > 0) {
-    const userSyncFailureCount =
-      await UserSyncFailureCountService.incrementFailureCount(wallet)
-
-    // Throw error if failure threshold not yet reached
-    if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
-      throw new Error(
-        `[saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Cannot proceed because UserSyncFailureCount = ${userSyncFailureCount} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    } else {
-      // If threshold reached, reset failure count and continue
-      await UserSyncFailureCountService.resetFailureCount(wallet)
-
-      logger.info(
-        `${logPrefix} [saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Proceeding anyway because UserSyncFailureCount = ${userSyncFailureCount} reached SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    }
-  } else {
-    // Reset failure count if all CIDs were successfully saved
-    await UserSyncFailureCountService.resetFailureCount(wallet)
   }
 
   return CIDsThatFailedSaveFileOp
