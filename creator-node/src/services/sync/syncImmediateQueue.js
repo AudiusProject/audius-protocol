@@ -3,7 +3,8 @@ const Bull = require('bull')
 const {
   logger,
   logInfoWithDuration,
-  logErrorWithDuration
+  logErrorWithDuration,
+  getStartTime
 } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
@@ -50,7 +51,7 @@ class SyncImmediateQueue {
       const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
         job.data
 
-      const startTime = Date.now()
+      const startTime = getStartTime()
       try {
         await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
