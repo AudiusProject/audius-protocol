@@ -23,7 +23,9 @@ import {
   tippingActions,
   walletSelectors,
   walletActions,
-  getContext
+  getContext,
+  waitForAccount,
+  waitForValue
 } from '@audius/common'
 import BN from 'bn.js'
 import {
@@ -52,7 +54,6 @@ import {
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
   MAX_PROFILE_TOP_SUPPORTERS
 } from 'utils/constants'
-import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { updateTipsStorage } from './storageUtils'
 const { decreaseBalance } = walletActions

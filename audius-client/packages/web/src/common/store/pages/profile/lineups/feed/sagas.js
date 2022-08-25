@@ -6,13 +6,13 @@ import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   profilePageSelectors,
-  profilePageFeedLineupActions as feedActions
+  profilePageFeedLineupActions as feedActions,
+  waitForAccount
 } from '@audius/common'
 import { select, call } from 'redux-saga/effects'
 
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 import { retrieveUserReposts } from './retrieveUserReposts'
 const { getProfileUserId, getProfileFeedLineup, getProfileUserHandle } =

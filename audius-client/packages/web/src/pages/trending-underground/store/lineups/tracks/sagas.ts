@@ -3,13 +3,13 @@ import {
   accountSelectors,
   trendingUndergroundPageLineupSelectors,
   trendingUndergroundPageLineupActions,
-  getContext
+  getContext,
+  waitForAccount
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'store/lineup/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 const { getLineup } = trendingUndergroundPageLineupSelectors
 const getUserId = accountSelectors.getUserId

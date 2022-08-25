@@ -1,10 +1,14 @@
-import { Name, accountSelectors, getContext } from '@audius/common'
+import {
+  Name,
+  accountSelectors,
+  getContext,
+  waitForAccount
+} from '@audius/common'
 import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as searchActions from 'components/search-bar/store/actions'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 import mobileSagas from './mobileSagas'
 import { getSearch } from './selectors'

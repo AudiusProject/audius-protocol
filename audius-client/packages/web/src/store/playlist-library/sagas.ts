@@ -1,5 +1,4 @@
 import {
-  ID,
   Kind,
   PlaylistIdentifier,
   PlaylistLibrary,
@@ -14,7 +13,9 @@ import {
   extractTempPlaylistsFromLibrary,
   getPlaylistsNotInLibrary,
   removePlaylistLibraryDuplicates,
-  replaceTempWithResolvedPlaylists
+  replaceTempWithResolvedPlaylists,
+  waitForAccount,
+  waitForValue
 } from '@audius/common'
 import {
   all,
@@ -29,7 +30,6 @@ import {
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { getResult } from 'common/store/confirmer/selectors'
 import { updateProfileAsync } from 'pages/profile-page/sagas'
-import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { update } from './slice'
 
@@ -47,7 +47,7 @@ function* resolveTempPlaylists(
   playlist: PlaylistLibraryIdentifier | PlaylistLibraryFolder
 ) {
   if (playlist.type === 'temp_playlist') {
-    const { playlist_id }: { playlist_id: ID } = yield call(
+    const { playlist_id } = yield call(
       waitForValue,
       getResult,
       {

@@ -12,7 +12,9 @@ import {
   cacheTracksSelectors,
   cacheTracksActions as trackActions,
   cacheUsersSelectors,
-  cacheActions
+  cacheActions,
+  waitForAccount,
+  waitForValue
 } from '@audius/common'
 import {
   all,
@@ -34,7 +36,6 @@ import * as signOnActions from 'common/store/pages/signon/actions'
 import { fetchCID } from 'services/audius-backend'
 import TrackDownload from 'services/audius-backend/TrackDownload'
 import { dominantColor } from 'utils/imageProcessingUtil'
-import { waitForValue, waitForAccount } from 'utils/sagaHelpers'
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors

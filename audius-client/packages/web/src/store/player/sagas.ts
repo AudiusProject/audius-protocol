@@ -8,10 +8,12 @@ import {
   queueActions,
   tracksSocialActions,
   getContext,
+  actionChannelDispatcher,
   TAudioPlayer,
   AudioPlayer,
   playerActions,
-  playerSelectors
+  playerSelectors,
+  waitForValue
 } from '@audius/common'
 import { eventChannel, END } from 'redux-saga'
 import {
@@ -25,11 +27,8 @@ import {
 } from 'typed-redux-saga'
 
 import NativeMobileAudio from 'audio/NativeMobileAudio'
-import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
-const { getAudio, getTrackId, getUid, getCounter, getPlaying } = playerSelectors
-
 const {
   setAudioStream: setAudioStreamAction,
   play,
@@ -44,6 +43,9 @@ const {
   seek,
   error: errorAction
 } = playerActions
+
+const { getAudio, getTrackId, getUid, getCounter, getPlaying } = playerSelectors
+
 const { recordListen } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors

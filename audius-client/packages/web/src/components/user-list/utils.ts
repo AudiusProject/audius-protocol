@@ -5,13 +5,13 @@ import {
   accountSelectors,
   getContext,
   AudiusAPIClient,
-  AudiusBackend
+  AudiusBackend,
+  waitForAccount
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
-import { waitForAccount } from 'utils/sagaHelpers'
 const { getAccountUser, getUserId } = accountSelectors
 
 export type UserListProviderArgs<T, U = void> = {

@@ -4,14 +4,14 @@ import {
   DoubleKeys,
   accountSelectors,
   getContext,
-  artistRecommendationsUIActions as artistRecommendationsActions
+  artistRecommendationsUIActions as artistRecommendationsActions,
+  waitForAccount
 } from '@audius/common'
 import { Action } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'redux-saga/effects'
 
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 const getUserId = accountSelectors.getUserId
 

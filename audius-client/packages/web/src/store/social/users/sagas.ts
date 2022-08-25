@@ -7,7 +7,8 @@ import {
   cacheActions,
   cacheUsersSelectors,
   getContext,
-  usersSocialActions as socialActions
+  usersSocialActions as socialActions,
+  waitForAccount
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -18,7 +19,6 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { profilePage } from 'utils/route'
-import { waitForAccount } from 'utils/sagaHelpers'
 import { share } from 'utils/share'
 
 import errorSagas from './errorSagas'
