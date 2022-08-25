@@ -11,6 +11,10 @@ has_current_user_saved = "has_current_user_saved"
 followee_reposts = "followee_reposts"
 # array - followees of current user that have saved given track/playlist
 followee_saves = "followee_saves"
+# boolean - has current user unlocked track if premium
+has_current_user_unlocked = "has_current_user_unlocked"
+# string - signature required to access premium content
+premium_content_signature = "premium_content_signature"
 
 # remix track specific
 remix_of = "remix_of"  # dictionary - contains an array of parent track ids
