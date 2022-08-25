@@ -2,7 +2,6 @@ import { ID, UserTrack, Nullable, getContext } from '@audius/common'
 import { call } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import Explore from 'services/audius-backend/Explore'
 
 export function* getRecommendedTracks(
   genre: string,
@@ -21,7 +20,8 @@ export function* getRecommendedTracks(
 
 export function* getLuckyTracks(limit: number) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const latestTrackID = yield* call(Explore.getLatestTrackID)
+  const explore = yield* getContext('explore')
+  const latestTrackID = yield* call([explore, 'getLatestTrackID'])
   const ids = Array.from({ length: limit }, () =>
     Math.floor(Math.random() * latestTrackID)
   )

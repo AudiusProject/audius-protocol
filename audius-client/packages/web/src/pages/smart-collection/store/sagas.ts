@@ -16,7 +16,6 @@ import { takeEvery, put, call, select } from 'typed-redux-saga'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
-import Explore from 'services/audius-backend/Explore'
 import { getLuckyTracks } from 'store/recommendation/sagas'
 import { requiresAccount } from 'utils/requiresAccount'
 import { EXPLORE_PAGE } from 'utils/route'
@@ -38,11 +37,8 @@ const { getAccountStatus, getUserId } = accountSelectors
 const COLLECTIONS_LIMIT = 25
 
 function* fetchHeavyRotation() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const topListens = yield* call(
-    Explore.getTopUserListens,
-    audiusBackendInstance
-  )
+  const explore = yield* getContext('explore')
+  const topListens = yield* call([explore, 'getTopUserListens'])
 
   const users = yield* call(
     retrieveUsers,
@@ -67,13 +63,14 @@ function* fetchHeavyRotation() {
 }
 
 function* fetchBestNewReleases() {
+  const explore = yield* getContext('explore')
   yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
   }
   const tracks = yield* call(
-    Explore.getTopFolloweeTracksFromWindow,
+    [explore, 'getTopFolloweeTracksFromWindow'],
     currentUserId,
     'month'
   )
@@ -96,12 +93,8 @@ function* fetchBestNewReleases() {
 }
 
 function* fetchUnderTheRadar() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const tracks = yield* call(
-    Explore.getFeedNotListenedTo,
-    undefined,
-    audiusBackendInstance
-  )
+  const explore = yield* getContext('explore')
+  const tracks = yield* call([explore, 'getFeedNotListenedTo'])
 
   const trackIds = tracks
     .filter((track: UserTrack) => !track.user.is_deactivated)
@@ -127,7 +120,9 @@ function* fetchMostLoved() {
   if (currentUserId == null) {
     return
   }
-  const tracks = yield* call(Explore.getMostLovedTracks, currentUserId)
+
+  const explore = yield* getContext('explore')
+  const tracks = yield* call([explore, 'getMostLovedTracks'], currentUserId)
   const trackIds = tracks
     .filter((track) => !track.user.is_deactivated)
     .map((track: UserTrackMetadata) => ({
@@ -164,17 +159,16 @@ function* fetchFeelingLucky() {
 }
 
 function* fetchRemixables() {
-  const apiClient = yield* getContext('apiClient')
+  const explore = yield* getContext('explore')
   yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
   }
   const tracks = yield* call(
-    Explore.getRemixables,
+    [explore, 'getRemixables'],
     currentUserId,
-    75, // limit
-    apiClient
+    75 // limit
   )
 
   // Limit the number of times an artist can appear

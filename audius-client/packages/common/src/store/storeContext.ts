@@ -2,6 +2,7 @@ import { AnalyticsEvent } from '../models/Analytics'
 import { AudiusAPIClient } from '../services/audius-api-client'
 import { AudiusBackend } from '../services/audius-backend'
 import { Env } from '../services/env'
+import { Explore } from '../services/explore'
 import { FingerprintClient } from '../services/fingerprint'
 import { LocalStorage } from '../services/local-storage'
 import { FeatureFlags, RemoteConfigInstance } from '../services/remote-config'
@@ -31,4 +32,5 @@ export type CommonStoreContext = {
   localStorage: LocalStorage
   isNativeMobile: boolean
   env: Env
+  explore: Explore
 }
