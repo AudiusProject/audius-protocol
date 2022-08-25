@@ -294,7 +294,7 @@ export class Wormhole {
       const associatedTokenAccount =
         await this.solanaWeb3Manager.findAssociatedTokenAddress(solanaAddress)
       const tokenAccountInfo =
-        await this.solanaWeb3Manager.getAssociatedTokenAccountInfo(
+        await this.solanaWeb3Manager.getTokenAccountInfo(
           associatedTokenAccount.toString()
         )
 
