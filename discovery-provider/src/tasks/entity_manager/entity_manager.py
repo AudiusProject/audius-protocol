@@ -131,8 +131,14 @@ def entity_manager_update(
         records_to_save = []
         for playlist_records in new_records["playlists"].values():
             # invalidate all playlists besides the last one
-            for record in playlist_records:
-                record.is_current = False
+            for i in range(len(playlist_records)):
+                playlist_records[i].is_current = False
+
+            # invalidate existing record only if it's being updated
+            existing_playlist_id = playlist_records[0].playlist_id
+            if existing_playlist_id in existing_records["playlists"]:
+                existing_records["playlists"][existing_playlist_id].is_current = False
+
             # flip is_current to true for the last tx in each playlist
             playlist_records[-1].is_current = True
             records_to_save.extend(playlist_records)
