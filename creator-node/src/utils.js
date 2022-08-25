@@ -197,30 +197,25 @@ async function findCIDInNetwork(
       if (!streamData) {
         throw new Error('Empty content returned from file lookup')
       }
-      if (streamData) {
-        await writeStreamToFileSystem(
-          streamData,
-          filePath,
-          /* createDir */ true
-        )
 
-        // Verify that the file written matches the hash expected
-        const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
-          filePath
-        )
+      await writeStreamToFileSystem(streamData, filePath, /* createDir */ true)
 
-        if (cid !== expectedCID) {
-          await fs.unlink(filePath)
-          logger.error(
-            `findCIDInNetwork - File contents from ${endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
-          )
-        } else {
-          found = true
-          logger.info(
-            `findCIDInNetwork - successfully fetched file ${filePath} from node ${endpoint}`
-          )
-          break
-        }
+      // Verify that the file written matches the hash expected
+      const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
+        filePath
+      )
+
+      if (cid !== expectedCID) {
+        await fs.unlink(filePath)
+        logger.error(
+          `findCIDInNetwork - File contents from ${endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+        )
+      } else {
+        found = true
+        logger.info(
+          `findCIDInNetwork - successfully fetched file ${filePath} from node ${endpoint}`
+        )
+        break
       }
     } catch (e) {
       // Do not error and stop the flow of execution for functions that call it
