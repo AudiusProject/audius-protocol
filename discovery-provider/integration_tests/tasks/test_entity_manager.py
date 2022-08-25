@@ -147,6 +147,7 @@ def test_index_valid_playlists(app, mocker):
         assert datetime.timestamp(playlist_1.last_added_to) == 1585336422
         assert playlist_1.playlist_name == "playlist 1 updated"
         assert playlist_1.is_delete == True
+        assert playlist_1.is_current == True
 
         playlist_2: Playlist = (
             session.query(Playlist)
@@ -159,6 +160,7 @@ def test_index_valid_playlists(app, mocker):
         assert playlist_2.last_added_to == None
         assert playlist_2.playlist_name == "playlist 2"
         assert playlist_2.is_delete == False
+        assert playlist_2.is_current == True
 
 
 def test_index_invalid_playlists(app, mocker):
@@ -364,3 +366,4 @@ def test_index_invalid_playlists(app, mocker):
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
         assert len(all_playlists) == 1  # no new playlists indexed
+        assert all_playlists[0].is_current == True
