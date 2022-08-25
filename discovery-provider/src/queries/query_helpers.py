@@ -442,43 +442,7 @@ def populate_track_metadata(
 
         # has current user unlocked premium tracks
         # if so, also populate corresponding signatures
-        for track in tracks:
-            if not track.is_premium:
-                continue
-
-            has_current_user_unlocked_track = (
-                premium_content_access_checker.check_access(
-                    current_user_id, track.track_id, "track"
-                )
-            )
-            track[
-                response_name_constants.has_current_user_unlocked
-            ] = has_current_user_unlocked_track
-
-            if has_current_user_unlocked_track:
-                current_user_wallet = (
-                    session.query(User.wallet)
-                    .filter(
-                        User.user_id == current_user_id,
-                        User.is_current == True,
-                    )
-                    .one_or_none()
-                )
-                if not current_user_wallet:
-                    logger.warn(
-                        f"query_helpers.py | populate_track_metadata | no wallet for current_user_id {current_user_id}"
-                    )
-                    continue
-
-                track[
-                    response_name_constants.premium_content_signature
-                ] = get_premium_content_signature(
-                    {
-                        "id": track_id,
-                        "type": "track",
-                        "user_wallet": current_user_wallet,
-                    }
-                )
+        _populate_premium_track_metadata(session, tracks, current_user_id)
 
     for track in tracks:
         track_id = track["track_id"]
@@ -533,6 +497,44 @@ def populate_track_metadata(
             track[response_name_constants.remix_of] = None
 
     return tracks
+
+
+def _populate_premium_track_metadata(session, tracks, current_user_id):
+    for track in tracks:
+        if not track["is_premium"]:
+            continue
+
+        has_current_user_unlocked_track = premium_content_access_checker.check_access(
+            current_user_id, track["track_id"], "track"
+        )
+        track[
+            response_name_constants.has_current_user_unlocked
+        ] = has_current_user_unlocked_track
+
+        if has_current_user_unlocked_track:
+            current_user_wallet = (
+                session.query(User.wallet)
+                .filter(
+                    User.user_id == current_user_id,
+                    User.is_current == True,
+                )
+                .one_or_none()
+            )
+            if not current_user_wallet:
+                logger.warn(
+                    f"query_helpers.py | populate_track_metadata | no wallet for current_user_id {current_user_id}"
+                )
+                continue
+
+            track[
+                response_name_constants.premium_content_signature
+            ] = get_premium_content_signature(
+                {
+                    "id": track["track_id"],
+                    "type": "track",
+                    "user_wallet": current_user_wallet,
+                }
+            )
 
 
 def get_track_remix_metadata(session, tracks, current_user_id):
