@@ -8,6 +8,7 @@ import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import confirmerSagas from 'common/store/confirmer/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
+import searchBarSagas from 'common/store/search-bar/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import walletSagas from 'common/store/wallet/sagas'
@@ -24,6 +25,7 @@ export default function* rootSaga() {
     ...analyticsSagas(),
     ...accountSagas(),
     ...confirmerSagas(),
+    ...searchBarSagas(),
 
     // Cache
     ...coreCacheSagas(),

@@ -14,12 +14,16 @@ import { matchPath } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
 import { make } from 'common/store/analytics/actions'
-import { getSearch } from 'components/search-bar/store/selectors'
+import {
+  fetchSearch,
+  cancelFetchSearch,
+  clearSearch
+} from 'common/store/search-bar/actions'
+import { getSearch } from 'common/store/search-bar/selectors'
 import Bar from 'components/search/SearchBar'
 import { albumPage, playlistPage, profilePage, getPathname } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
-import { fetchSearch, cancelFetchSearch, clearSearch } from './store/actions'
 
 class ConnectedSearchBar extends Component {
   state = {
