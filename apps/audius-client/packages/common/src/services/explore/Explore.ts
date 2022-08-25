@@ -1,23 +1,20 @@
 import {
-  ID,
   Collection,
   FeedFilter,
+  ID,
   UserCollectionMetadata,
-  UserTrack,
-  removeNullable,
-  encodeHashId,
-  responseAdapter as adapter,
+  UserTrack
+} from '../../models'
+import { encodeHashId, removeNullable } from '../../utils'
+import {
   APIPlaylist,
   APITrack,
   AudiusAPIClient,
-  AudiusBackend,
-  AuthHeaders
-} from '@audius/common'
+  responseAdapter
+} from '../audius-api-client'
+import { AudiusBackend, AuthHeaders } from '../audius-backend'
 
 type CollectionWithScore = APIPlaylist & { score: number }
-
-// @ts-ignore
-const libs = () => window.audiusLibs
 
 const scoreComparator = <T extends { score: number }>(a: T, b: T) =>
   b.score - a.score
@@ -31,15 +28,26 @@ type UserListens = {
   [key: number]: number
 }
 
-class Explore {
+type ExploreConfig = {
+  audiusBackendInstance: AudiusBackend
+  apiClient: AudiusAPIClient
+}
+
+export class Explore {
+  audiusBackendInstance: AudiusBackend
+  apiClient: AudiusAPIClient
+
+  constructor(config: ExploreConfig) {
+    this.audiusBackendInstance = config.audiusBackendInstance
+    this.apiClient = config.apiClient
+  }
+
   /** TRACKS ENDPOINTS */
-  static async getTopUserListens(
-    audiusBackendInstance: AudiusBackend
-  ): Promise<TopUserListen[]> {
+  async getTopUserListens(): Promise<TopUserListen[]> {
     try {
-      const { data, signature } = await audiusBackendInstance.signData()
+      const { data, signature } = await this.audiusBackendInstance.signData()
       return fetch(
-        `${audiusBackendInstance.identityServiceUrl}/users/listens/top`,
+        `${this.audiusBackendInstance.identityServiceUrl}/users/listens/top`,
         {
           headers: {
             [AuthHeaders.Message]: data,
@@ -55,15 +63,12 @@ class Explore {
     }
   }
 
-  static async getUserListens(
-    trackIds: ID[],
-    audiusBackendInstance: AudiusBackend
-  ): Promise<UserListens> {
+  async getUserListens(trackIds: ID[]): Promise<UserListens> {
     try {
-      const { data, signature } = await audiusBackendInstance.signData()
+      const { data, signature } = await this.audiusBackendInstance.signData()
       const idQuery = trackIds.map((id) => `&trackIdList=${id}`).join('')
       return fetch(
-        `${audiusBackendInstance.identityServiceUrl}/users/listens?${idQuery}`,
+        `${this.audiusBackendInstance.identityServiceUrl}/users/listens?${idQuery}`,
         {
           headers: {
             [AuthHeaders.Message]: data,
@@ -79,32 +84,30 @@ class Explore {
     }
   }
 
-  static async getTopFolloweeTracksFromWindow(
+  async getTopFolloweeTracksFromWindow(
     userId: ID,
     window: string,
     limit = 25
   ): Promise<UserTrack[]> {
     try {
       const encodedUserId = encodeHashId(userId)
-      const tracks = await libs().discoveryProvider.getBestNewReleases(
+      const libs = await this.audiusBackendInstance.getAudiusLibs()
+      const tracks = await libs.discoveryProvider.getBestNewReleases(
         encodedUserId,
         window,
         limit,
         true
       )
-      return tracks.map(adapter.makeTrack).filter(removeNullable)
+      return tracks.map(responseAdapter.makeTrack).filter(removeNullable)
     } catch (e) {
       console.error(e)
       return []
     }
   }
 
-  static async getFeedNotListenedTo(
-    limit = 25,
-    audiusBackendInstance: AudiusBackend
-  ) {
+  async getFeedNotListenedTo(limit = 25) {
     try {
-      const lineupItems = await audiusBackendInstance.getSocialFeed({
+      const lineupItems = await this.audiusBackendInstance.getSocialFeed({
         filter: FeedFilter.ORIGINAL,
         offset: 0,
         limit: 100,
@@ -117,10 +120,7 @@ class Explore {
       )
       const trackIds = tracks.map((track) => track.track_id)
 
-      const listens: any = await Explore.getUserListens(
-        trackIds,
-        audiusBackendInstance
-      )
+      const listens: any = await this.getUserListens(trackIds)
 
       const notListenedToTracks = tracks.filter(
         (track) => !listens[track.track_id]
@@ -132,13 +132,9 @@ class Explore {
     }
   }
 
-  static async getRemixables(
-    currentUserId: ID,
-    limit = 25,
-    apiClient: AudiusAPIClient
-  ) {
+  async getRemixables(currentUserId: ID, limit = 25) {
     try {
-      const tracks = await apiClient.getRemixables({
+      const tracks = await this.apiClient.getRemixables({
         limit,
         currentUserId
       })
@@ -150,10 +146,11 @@ class Explore {
     }
   }
 
-  static async getTopFolloweeSaves(limit = 25) {
+  async getTopFolloweeSaves(limit = 25) {
     try {
+      const libs = await this.audiusBackendInstance.getAudiusLibs()
       const tracks: UserTrack[] =
-        await libs().discoveryProvider.getTopFolloweeSaves('track', limit, true)
+        await libs.discoveryProvider.getTopFolloweeSaves('track', limit, true)
       return tracks
     } catch (e) {
       console.error(e)
@@ -161,25 +158,27 @@ class Explore {
     }
   }
 
-  static async getMostLovedTracks(userId: ID, limit = 25) {
+  async getMostLovedTracks(userId: ID, limit = 25) {
     try {
       const encodedUserId = encodeHashId(userId)
+      const libs = await this.audiusBackendInstance.getAudiusLibs()
       const tracks: APITrack[] =
-        await libs().discoveryProvider.getMostLovedTracks(
+        await libs.discoveryProvider.getMostLovedTracks(
           encodedUserId,
           limit,
           true
         )
-      return tracks.map(adapter.makeTrack).filter(removeNullable)
+      return tracks.map(responseAdapter.makeTrack).filter(removeNullable)
     } catch (e) {
       console.error(e)
       return []
     }
   }
 
-  static async getLatestTrackID(): Promise<number> {
+  async getLatestTrackID(): Promise<number> {
     try {
-      const latestTrackID = await libs().discoveryProvider.getLatest('track')
+      const libs = await this.audiusBackendInstance.getAudiusLibs()
+      const latestTrackID = await libs.discoveryProvider.getLatest('track')
       return latestTrackID
     } catch (e) {
       console.error(e)
@@ -188,20 +187,21 @@ class Explore {
   }
 
   /** PLAYLIST ENDPOINTS */
-  static async getTopCollections(
+  async getTopCollections(
     type?: 'playlist' | 'album',
     followeesOnly?: boolean,
     limit = 20
   ): Promise<Collection[]> {
     try {
-      const playlists = await libs().discoveryProvider.getTopFullPlaylists({
+      const libs = await this.audiusBackendInstance.getAudiusLibs()
+      const playlists = await libs.discoveryProvider.getTopFullPlaylists({
         type,
         limit,
         mood: undefined,
         filter: followeesOnly ? 'followees' : undefined,
         withUsers: true
       })
-      const adapted = playlists.map(adapter.makePlaylist)
+      const adapted = playlists.map(responseAdapter.makePlaylist)
       return adapted
     } catch (e) {
       console.error(e)
@@ -209,13 +209,14 @@ class Explore {
     }
   }
 
-  static async getTopPlaylistsForMood(
+  async getTopPlaylistsForMood(
     moods: string[],
     limit = 16
   ): Promise<UserCollectionMetadata[]> {
     try {
+      const libs = await this.audiusBackendInstance.getAudiusLibs()
       const requests = moods.map((mood) => {
-        return libs().discoveryProvider.getTopFullPlaylists({
+        return libs.discoveryProvider.getTopFullPlaylists({
           type: 'playlist',
           limit,
           mood,
@@ -231,12 +232,10 @@ class Explore {
       const playlists: APIPlaylist[] = allPlaylists
         .sort(scoreComparator)
         .slice(0, 20)
-      return playlists.map(adapter.makePlaylist).filter(removeNullable)
+      return playlists.map(responseAdapter.makePlaylist).filter(removeNullable)
     } catch (e) {
       console.error(e)
       return []
     }
   }
 }
-
-export default Explore
