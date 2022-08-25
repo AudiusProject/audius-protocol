@@ -3,7 +3,8 @@ const Bull = require('bull')
 const {
   logger,
   logInfoWithDuration,
-  logErrorWithDuration
+  logErrorWithDuration,
+  getStartTime
 } = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
@@ -63,7 +64,7 @@ class SyncQueue {
       } = job.data
 
       let result = {}
-      const startTime = Date.now()
+      const startTime = getStartTime()
       try {
         result = await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
