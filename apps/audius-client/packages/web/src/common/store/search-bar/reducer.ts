@@ -1,14 +1,14 @@
 import { Status } from '@audius/common'
 
+import { ActionsMap } from 'utils/reducer'
+
 import {
   FETCH_SEARCH_REQUESTED,
   FETCH_SEARCH_SUCCEEDED,
   FETCH_SEARCH_FAILED,
   CLEAR_SEARCH,
   SearchBarActions
-} from 'components/search-bar/store/actions'
-import { ActionsMap } from 'utils/reducer'
-
+} from './actions'
 import SearchBarState from './types'
 
 const initialState = {
