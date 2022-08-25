@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@amplitude/node": "^1.9.2",
-    "@audius/sdk": "0.0.35",
+    "@audius/sdk": "0.0.40",
     "@certusone/wormhole-sdk": "0.1.1",
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
     "@opentelemetry/instrumentation": "^0.31.0",
