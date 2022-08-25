@@ -565,11 +565,9 @@ export class AudiusLibs {
     }
     await Promise.all(contractsToInit)
     if (
-      this.hedgehog &&
       this.wormholeConfig &&
       this.ethWeb3Manager &&
       this.ethContracts &&
-      this.identityService &&
       this.solanaWeb3Manager
     ) {
       this.wormholeClient = new Wormhole(

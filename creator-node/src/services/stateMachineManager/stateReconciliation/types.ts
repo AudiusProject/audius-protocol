@@ -4,9 +4,10 @@ export type SyncRequestAxiosData = {
   sync_type?: string
   immediate?: boolean
   forceResync?: boolean
+  forceWipe?: boolean
   timestamp?: string
   signature?: string
-  from_manual_route?: boolean
+  sync_even_if_disabled?: boolean
 }
 
 export type SyncRequestAxiosParams = {
@@ -88,7 +89,11 @@ export type UpdateReplicaSetJobReturnValue = {
 }
 
 // Recover orphaned data job
-export type RecoverOrphanedDataJobParams = {}
+export type RecoverOrphanedDataJobParams = {
+  discoveryNodeEndpoint: string
+}
 export type RecoverOrphanedDataJobReturnValue = {
-  usersWithOrphanedData: any[] // TODO: Choose user type
+  numWalletsOnNode: number
+  numWalletsWithNodeInReplicaSet: number
+  numWalletsWithOrphanedData: number
 }

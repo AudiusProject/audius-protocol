@@ -103,7 +103,6 @@ def update_playlist(params: ManageEntityParameters):
     playlist_id = params.entity_id
     metadata = params.ipfs_metadata[params.metadata_cid]
     existing_playlist = params.existing_records["playlists"][playlist_id]
-    existing_playlist.is_current = False  # invalidate
     if (
         playlist_id in params.new_records["playlists"]
     ):  # override with last updated playlist is in this block
@@ -131,7 +130,6 @@ def delete_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
 
     existing_playlist = params.existing_records["playlists"][params.entity_id]
-    existing_playlist.is_current = False  # invalidate old playlist
     if params.entity_id in params.new_records["playlists"]:
         # override with last updated playlist is in this block
         existing_playlist = params.new_records["playlists"][params.entity_id][-1]
@@ -253,12 +251,14 @@ def process_playlist_data_event(
         playlist_record, playlist_metadata, block_integer_time
     )
 
+    playlist_record.last_added_to = None
     track_ids = playlist_record.playlist_contents["track_ids"]
-    last_added_to = track_ids[0]["time"] if track_ids else None
-    for track_obj in playlist_record.playlist_contents["track_ids"]:
-        if track_obj["time"] > last_added_to:
-            last_added_to = track_obj["time"]
-    playlist_record.last_added_to = datetime.utcfromtimestamp(last_added_to)
+    if track_ids:
+        last_added_to = track_ids[0]["time"]
+        for track_obj in playlist_record.playlist_contents["track_ids"]:
+            if track_obj["time"] > last_added_to:
+                last_added_to = track_obj["time"]
+        playlist_record.last_added_to = datetime.utcfromtimestamp(last_added_to)
 
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
