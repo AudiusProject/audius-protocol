@@ -1,16 +1,10 @@
 import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
-import type { Nullable } from '../utils'
-
-export enum Action {
-  CREATE = 'Create',
-  UPDATE = 'Update',
-  DELETE = 'Delete'
-}
-
-export enum EntityType {
-  PLAYLIST = 'Playlist'
-}
+import { Nullable, Utils } from '../utils'
+import {
+  EntityType,
+  Action
+} from '../services/dataContracts/EntityManagerClient'
 
 export interface PlaylistOperationResponse {
   /**
@@ -48,11 +42,7 @@ export class EntityManager extends Base {
   /**
    * Generate random integer between two known values
    */
-  getRandomInt(min: number, max: number): number {
-    min = Math.ceil(min)
-    max = Math.floor(max)
-    return Math.floor(Math.random() * (max - min) + min)
-  }
+  getRandomInt = Utils.getRandomInt
 
   mapTimestamps(addedTimestamps: PlaylistTrack[]) {
     const trackIds = addedTimestamps.map((trackObj) => ({

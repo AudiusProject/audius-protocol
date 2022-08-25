@@ -147,7 +147,7 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
  * makeHistogramToRecord('response_time', 1000, { code: '200' })
  * @param {string} metricName the name of the metric from prometheus.constants
  * @param {number} metricValue the value to observe
- * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ * @param {Record<string, string>} [metricLabels] the optional mapping of metric label name => metric label value
  */
 const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
   return makeMetricToRecord(

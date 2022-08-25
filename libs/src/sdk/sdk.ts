@@ -4,7 +4,7 @@ import {
 } from '../services/discoveryProvider'
 import { EthContracts, EthContractsConfig } from '../services/ethContracts'
 import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
-import { IdentityService } from '../services/identity'
+import { IdentityService, IdentityServiceConfig } from '../services/identity'
 import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
 import { TracksApi } from './api/TracksApi'
@@ -50,11 +50,14 @@ type SdkConfig = {
   /**
    * Configuration for the DiscoveryProvider client
    */
-  discoveryProviderConfig?: DiscoveryProviderConfig
+  discoveryProviderConfig?: Omit<
+    DiscoveryProviderConfig,
+    'userStateManager' | 'ethContracts' | 'web3Manager'
+  >
   /**
    * Configuration for the Ethereum contracts client
    */
-  ethContractsConfig?: EthContractsConfig
+  ethContractsConfig?: Omit<EthContractsConfig, 'ethWeb3Manager'>
   /**
    * Configuration for the Ethereum Web3 client
    */
@@ -62,7 +65,7 @@ type SdkConfig = {
   /**
    * Configuration for the IdentityService client
    */
-  identityServiceConfig?: IdentityService
+  identityServiceConfig?: IdentityServiceConfig
   /**
    * Optional custom local storage
    */

@@ -1,11 +1,12 @@
-import { Gauge, Histogram, Summary } from 'prom-client'
+import { Gauge, Histogram } from 'prom-client'
 import { snakeCase, mapValues } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { exponentialBucketsRange } from './prometheusUtils'
 import {
   QUEUE_NAMES as STATE_MACHINE_JOB_NAMES,
   SyncType,
-  SYNC_MODES
+  SYNC_MODES,
+  UpdateReplicaSetJobResult
   // eslint-disable-next-line import/no-unresolved
 } from '../stateMachineManager/stateMachineConstants'
 import * as config from '../../config'
@@ -123,7 +124,11 @@ export const METRIC_LABELS = Object.freeze({
       'multiple_secondaries', // Both secondaries were replaced in the user's replica set
       'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
-    ]
+    ],
+    // https://stackoverflow.com/questions/18111657/how-to-get-names-of-enum-entries
+    result: Object.values(UpdateReplicaSetJobResult).filter(
+      (value) => typeof value === 'string'
+    ) as string[]
   },
 
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
