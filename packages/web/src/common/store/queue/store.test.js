@@ -15,8 +15,8 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 import { take } from 'redux-saga/effects'
 
 import AudioStream from 'audio/AudioStream'
-import * as sagas from 'store/queue/sagas'
-import { getRecommendedTracks } from 'store/recommendation/sagas'
+import * as sagas from 'common/store/queue/sagas'
+import { getRecommendedTracks } from 'common/store/recommendation/sagas'
 import { noopReducer } from 'store/testHelper'
 
 const initialTracks = {

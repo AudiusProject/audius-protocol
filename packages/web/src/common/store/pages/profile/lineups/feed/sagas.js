@@ -12,7 +12,7 @@ import {
 import { select, call } from 'redux-saga/effects'
 
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
-import { LineupSagas } from 'store/lineup/sagas'
+import { LineupSagas } from 'common/store/lineup/sagas'
 
 import { retrieveUserReposts } from './retrieveUserReposts'
 const { getProfileUserId, getProfileFeedLineup, getProfileUserHandle } =

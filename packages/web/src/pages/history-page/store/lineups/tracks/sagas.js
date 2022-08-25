@@ -8,7 +8,7 @@ import { keyBy } from 'lodash'
 import { call, getContext, select } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { LineupSagas } from 'store/lineup/sagas'
+import { LineupSagas } from 'common/store/lineup/sagas'
 const getUserId = accountSelectors.getUserId
 const PREFIX = tracksActions.prefix
 

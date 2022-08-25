@@ -36,7 +36,7 @@ const { getSearchTracksLineup } = searchResultsPageSelectors
 const { getLineup } = trackPageSelectors
 const { getCurrentDiscoverTrendingLineup } = trendingPageSelectors
 
-export const getLineupSelectorForRoute = (state) => {
+export const getLineupSelectorForRoute = () => {
   const matchPage = (path) => {
     const match = matchPath(getPathname(), {
       path,

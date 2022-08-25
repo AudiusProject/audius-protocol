@@ -21,6 +21,7 @@ export function* getRecommendedTracks(
 export function* getLuckyTracks(limit: number) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const explore = yield* getContext('explore')
+
   const latestTrackID = yield* call([explore, 'getLatestTrackID'])
   const ids = Array.from({ length: limit }, () =>
     Math.floor(Math.random() * latestTrackID)

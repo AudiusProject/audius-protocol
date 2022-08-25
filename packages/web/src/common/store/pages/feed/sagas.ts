@@ -10,9 +10,8 @@ import { call, put, take, fork, takeEvery } from 'redux-saga/effects'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
+import feedSagas from 'common/store/pages/feed/lineup/sagas'
 import { fetchSuggestedFollowUserIds } from 'common/store/pages/signon/sagas'
-
-import feedSagas from './lineups/feed/sagas'
 
 function* fetchSuggestedFollowUsers() {
   yield call(waitForBackendSetup)

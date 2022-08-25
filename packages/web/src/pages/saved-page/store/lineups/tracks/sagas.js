@@ -13,7 +13,7 @@ import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { LineupSagas } from 'store/lineup/sagas'
+import { LineupSagas } from 'common/store/lineup/sagas'
 const { getUid: getPlayerUid } = playerSelectors
 const { SAVE_TRACK, UNSAVE_TRACK } = tracksSocialActions
 const { getLocalSaves, getLocalSave, getSavedTracksLineupUid, getSaves } =

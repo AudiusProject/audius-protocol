@@ -16,7 +16,7 @@ import { takeEvery, put, call, select } from 'typed-redux-saga'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
-import { getLuckyTracks } from 'store/recommendation/sagas'
+import { getLuckyTracks } from 'common/store/recommendation/sagas'
 import { requiresAccount } from 'utils/requiresAccount'
 import { EXPLORE_PAGE } from 'utils/route'
 
