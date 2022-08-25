@@ -174,7 +174,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     )
   })
 
-  it.only('returns false when determinePeerHealth throws with performSimpleCheck=false', async function () {
+  it('returns false when determinePeerHealth throws with performSimpleCheck=false', async function () {
     // Stub functions that isNodeHealthy() will call
     const node = 'http://some_content_node.co'
     const isNodeHealthyError = new Error('Node health check returned healthy: false')
