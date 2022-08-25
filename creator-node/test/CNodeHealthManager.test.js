@@ -174,9 +174,10 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     )
   })
 
-  it('returns false when determinePeerHealth throws with performSimpleCheck=false', async function () {
+  it.only('returns false when determinePeerHealth throws with performSimpleCheck=false', async function () {
     // Stub functions that isNodeHealthy() will call
     const node = 'http://some_content_node.co'
+    const isNodeHealthyError = new Error('Node health check returned healthy: false')
     const determinePeerHealthError = new Error('test determinePeerHealthError')
     const verboseHealthCheckResp = { healthy: false }
     const queryVerboseHealthCheckStub = sandbox
@@ -191,11 +192,9 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const isHealthy = await CNodeHealthManager.isNodeHealthy(node, false)
     expect(isHealthy).to.be.false
     expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)
-    expect(determinePeerHealthStub).to.have.been.calledOnceWithExactly(
-      verboseHealthCheckResp
-    )
+    expect(determinePeerHealthStub).to.not.have.been.called.called
     expect(logErrorStub).to.have.been.called.calledOnceWithExactly(
-      `isNodeHealthy() peer=${node} is unhealthy: ${determinePeerHealthError.toString()}`
+      `isNodeHealthy() peer=${node} is unhealthy: ${isNodeHealthyError.toString()}`
     )
   })
 

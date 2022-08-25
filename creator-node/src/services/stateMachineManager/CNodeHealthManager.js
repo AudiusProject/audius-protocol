@@ -235,7 +235,6 @@ class CNodeHealthManager {
    */
   async isPrimaryHealthy(primary) {
     const isHealthy = await this.isNodeHealthy(primary, true)
-    logger.info(`primary isHealthy ${isHealthy}`)
 
     if (!isHealthy) {
       const failedTimestamp =
