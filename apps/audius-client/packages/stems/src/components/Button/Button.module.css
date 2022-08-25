@@ -359,3 +359,56 @@
     0 4px 12px -4px rgba(0, 0, 0, 0.3);
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
 }
+
+/* Text Button */
+.textButton {
+  background: none;
+  border: none;
+  outline: none;
+  padding: 8px 24px;
+  font-weight: var(--font-bold);
+}
+
+.textButton.button.medium,
+.textButton.button.small,
+.textButton.button.tiny {
+  height: unset;
+}
+
+.textButton.medium,
+.textButton.medium .textLabel {
+  font-size: var(--font-m);
+}
+.textButton.small,
+.textButton.small .textLabel {
+  font-size: var(--font-s);
+}
+.textButton.tiny,
+.textButton.tiny .textLabel {
+  font-size: var(--font-xs);
+}
+
+.textButton.button .icon svg {
+  width: calc(1em - 2px);
+  height: calc(1em - 2px);
+}
+
+.textButton:hover .textLabel {
+  color: var(--secondary);
+}
+
+.textButton .icon.left {
+  margin-right: var(--unit-1);
+}
+
+.textButton .icon.right {
+  margin-left: var(--unit-1);
+}
+
+.textButton .icon path {
+  transition: all var(--quick);
+}
+
+.textButton:hover .icon path {
+  fill: var(--secondary);
+}
