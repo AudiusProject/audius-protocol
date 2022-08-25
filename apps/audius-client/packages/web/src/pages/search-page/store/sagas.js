@@ -2,7 +2,8 @@ import {
   trimToAlphaNumeric,
   accountSelectors,
   searchResultsPageActions as searchPageActions,
-  searchResultsPageTracksLineupActions as tracksLineupActions
+  searchResultsPageTracksLineupActions as tracksLineupActions,
+  waitForAccount
 } from '@audius/common'
 import { select, call, takeLatest, put, getContext } from 'redux-saga/effects'
 
@@ -12,7 +13,6 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import tracksSagas from 'pages/search-page/store/lineups/tracks/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
 const getUserId = accountSelectors.getUserId
 
 export function* getTagSearchResults(tag, kind, limit, offset) {

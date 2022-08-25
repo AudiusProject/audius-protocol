@@ -18,7 +18,8 @@ import {
   modalsActions,
   getContext,
   newUserMetadata,
-  PhantomProvider
+  PhantomProvider,
+  waitForAccount
 } from '@audius/common'
 import {
   all,
@@ -45,7 +46,6 @@ import {
   loadWalletConnect,
   createSession
 } from 'services/web3-modal'
-import { waitForAccount } from 'utils/sagaHelpers'
 const { setVisibility } = modalsActions
 const {
   send: walletSend,

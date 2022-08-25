@@ -8,7 +8,9 @@ import {
   settingsPageActions,
   profilePageActions,
   solanaSelectors,
-  modalsActions
+  modalsActions,
+  waitForAccount,
+  waitForValue
 } from '@audius/common'
 import {
   call,
@@ -43,7 +45,6 @@ import {
   shouldRequestBrowserPermission
 } from 'utils/browserNotifications'
 import { isElectron, isMobile } from 'utils/clientUtil'
-import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import { identify } from '../analytics/actions'
 

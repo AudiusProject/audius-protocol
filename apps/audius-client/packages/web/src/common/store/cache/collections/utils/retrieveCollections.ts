@@ -10,13 +10,13 @@ import {
   cacheCollectionsSelectors,
   cacheSelectors,
   CommonState,
-  getContext
+  getContext,
+  waitForAccount
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'

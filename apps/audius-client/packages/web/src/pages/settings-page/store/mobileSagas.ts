@@ -7,7 +7,8 @@ import {
   PushNotificationSetting,
   settingsPageActions as actions,
   getContext,
-  AudiusBackend
+  AudiusBackend,
+  waitForValue
 } from '@audius/common'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
@@ -16,7 +17,6 @@ import {
   EnablePushNotificationsMessage,
   DisablePushNotificationsMessage
 } from 'services/native-mobile-interface/notifications'
-import { waitForValue } from 'utils/sagaHelpers'
 const { getPushNotificationSettings } = settingsPageSelectors
 const getAccountUser = accountSelectors.getAccountUser
 

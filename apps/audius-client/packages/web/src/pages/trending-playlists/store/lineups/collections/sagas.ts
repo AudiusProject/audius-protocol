@@ -4,13 +4,13 @@ import {
   accountSelectors,
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions,
-  getContext
+  getContext,
+  waitForAccount
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { LineupSagas } from 'store/lineup/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
 const { getLineup } = trendingPlaylistsPageLineupSelectors
 const getUserId = accountSelectors.getUserId
 

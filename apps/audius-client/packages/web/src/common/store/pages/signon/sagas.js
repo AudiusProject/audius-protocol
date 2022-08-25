@@ -11,7 +11,8 @@ import {
   cacheUsersSelectors,
   collectionsSocialActions,
   solanaSelectors,
-  usersSocialActions as socialActions
+  usersSocialActions as socialActions,
+  waitForAccount
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import {
@@ -44,7 +45,6 @@ import { isValidEmailString } from 'utils/email'
 import { withTimeout } from 'utils/network'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'

@@ -10,12 +10,12 @@ import {
   getContext,
   cacheSelectors,
   cacheTracksActions as trackActions,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  waitForAccount
 } from '@audius/common'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
-import { waitForAccount } from 'utils/sagaHelpers'
 
 import {
   fetchAndProcessRemixes,

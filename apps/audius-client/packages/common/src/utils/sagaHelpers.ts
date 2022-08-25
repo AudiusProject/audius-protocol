@@ -1,8 +1,7 @@
 /** Helper Sagas */
 
-import { Status, accountSelectors } from '@audius/common'
-import { push as pushRoute } from 'connected-react-router'
-import { eventChannel, END } from 'redux-saga'
+import { eventChannel, END, EventChannel } from 'redux-saga'
+import { ActionPattern } from 'redux-saga/effects'
 import {
   all,
   call,
@@ -12,23 +11,19 @@ import {
   spawn,
   take,
   takeEvery
-} from 'redux-saga/effects'
+} from 'typed-redux-saga'
+import { Action } from 'typesafe-actions'
 
-import {
-  updateRouteOnExit,
-  showRequiresAccountModal
-} from 'common/store/pages/signon/actions'
-
-import { SIGN_UP_PAGE } from './route'
-const getAccountUser = accountSelectors.getAccountUser
+import { Status } from '../models/Status'
 
 /**
  * Calls the provided array of calls in batches with delayMs milliseconds between each batch.
- * @param {Array<Function*>} calls
- * @param {number} batchSize
- * @param {number} delayMs
  */
-export function* batchYield(calls, batchSize, delayMs) {
+export function* batchYield(
+  calls: Generator[],
+  batchSize: number,
+  delayMs: number
+) {
   let remainingCalls = calls
   while (remainingCalls.length > 0) {
     yield all(remainingCalls.slice(0, batchSize))
@@ -42,14 +37,17 @@ export function* batchYield(calls, batchSize, delayMs) {
  * dispatches the action.
  * @param {Object} channel
  */
-export function* actionChannelDispatcher(channel) {
+export function* actionChannelDispatcher(channel: EventChannel<any>) {
   while (true) {
-    const action = yield take(channel)
+    const action: Action<any> = yield take(channel)
     yield put(action)
   }
 }
 
-export function* channelCanceller(channel, action) {
+export function* channelCanceller(
+  channel: EventChannel<Action<any>>,
+  action: ActionPattern<Action<any>>
+) {
   yield take(action)
   channel.close()
 }
@@ -59,17 +57,25 @@ export function* channelCanceller(channel, action) {
  * @param {function} selector
  * @param {object} args passed on to the selector
  * @param {(v: any) => bool} customCheck special check to run rather than checking truthy-ness
+ *
+ * NOTE: Ideally this would have a type parameter for TValue returned from the selector, but
+ * typed-redux-saga `call` seems to just throw this away resulting in `unknown` type of the result.
+ * Leaving as any for now and can revisit
  */
-export function* waitForValue(selector, args = {}, customCheck = () => true) {
-  let value = yield select(selector, args)
+export function* waitForValue(
+  selector: (state: any, selectorArgs?: any) => any,
+  args?: any,
+  customCheck: (value: any) => boolean = () => true
+) {
+  let value = yield* select(selector, args)
   while (!value || !customCheck(value)) {
-    yield take()
-    value = yield select(selector, args)
+    yield* take()
+    value = yield* select(selector, args)
   }
   return value
 }
 
-function doEveryImpl(millis, times) {
+function doEveryImpl(millis: number, times: number | null) {
   return eventChannel((emitter) => {
     // Emit once at the start
     emitter(times || true)
@@ -97,8 +103,12 @@ function doEveryImpl(millis, times) {
  * @param {function *} fn
  * @param {number?} times
  */
-export function* doEvery(millis, fn, times = null) {
-  const chan = yield call(doEveryImpl, millis, times)
+export function* doEvery(
+  millis: number,
+  fn: (...args: any) => any,
+  times: number | null = null
+) {
+  const chan: EventChannel<any> = yield call(doEveryImpl, millis, times)
   yield spawn(function* () {
     yield takeEvery(chan, fn)
   })
@@ -106,31 +116,10 @@ export function* doEvery(millis, fn, times = null) {
 }
 
 export function* waitForAccount() {
-  yield call(
+  yield* call(
     waitForValue,
     (state) => state.account.status,
     null,
     (status) => status !== Status.LOADING
   )
-}
-
-/**
- * Checks if the user is signed in with an account.
- * If they are signed in, `fn` is invoked, otherwise, the
- * user is directed to the sign-up page.
- * @param {function *} fn
- * @param {string=} route optional route to go to on closing the sign up page/modal
- */
-export function requiresAccount(fn, route) {
-  return function* (...args) {
-    yield* waitForAccount()
-    const account = yield select(getAccountUser)
-    if (!account) {
-      if (route) yield put(updateRouteOnExit(route))
-      yield put(pushRoute(SIGN_UP_PAGE))
-      yield put(showRequiresAccountModal())
-    } else {
-      return yield call(fn, ...args)
-    }
-  }
 }
