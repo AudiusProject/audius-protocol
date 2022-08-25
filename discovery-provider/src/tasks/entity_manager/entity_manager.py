@@ -2,10 +2,12 @@ import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
+from sqlalchemy import and_, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -14,6 +16,7 @@ from src.tasks.entity_manager.playlist import (
     delete_playlist,
     update_playlist,
 )
+from src.tasks.entity_manager.social_features import create_follow
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
@@ -127,13 +130,14 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        logger.info("Follow created")
+                        print("!!! Follow created")
+                        create_follow(params)
                     elif (
                         params.action == Action.UNFOLLOW
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        logger.info("Unfollow created")
+                        print("!!! Unfollow created")
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -221,6 +225,36 @@ def fetch_existing_entities(
         .all()
     )
     existing_entities["users"] = {user.user_id: user for user in users}
+    print("FETCHING")
+    # print(entities_to_fetch)
+    follow_ops_to_fetch = list(entities_to_fetch[EntityType.FOLLOW])
+    print(follow_ops_to_fetch)
+
+    and_queries = []
+    for follow_to_fetch in follow_ops_to_fetch:
+        follower = follow_to_fetch[0]
+        followee = follow_to_fetch[1]
+        print(f"Follower={follower}, followee={followee}")
+        and_queries.append(
+            and_(
+                Follow.followee_user_id == followee,
+                Follow.follower_user_id == follower,
+                Follow.is_current == True
+            )
+        )
+    follow_query: List[Follow] = (
+        session.query(Follow).filter(
+            or_(
+                *and_queries
+            )
+        )
+        .all()
+    )
+    print(follow_query)
+    # Fetch relevant follow entities
+    # follows: List[Follow] (
+    #     session.query(Follow)
+    # )
 
     return existing_entities
 

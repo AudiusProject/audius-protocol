@@ -4,6 +4,7 @@ from typing import Dict, List, TypedDict
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -38,12 +39,14 @@ class EntityType(str, Enum):
 class RecordDict(TypedDict):
     playlists: Dict[int, List[Playlist]]
     tracks: Dict[int, List[Track]]
+    follows: Dict[str, List[Follow]]
 
 
 class ExistingRecordDict(TypedDict):
     playlists: Dict[int, Playlist]
     tracks: Dict[int, Track]
     users: Dict[int, User]
+    follows: Dict[str, Follow]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -92,3 +95,7 @@ class ManageEntityParameters:
     def add_track_record(self, track_id: int, track: Track):
         self.new_records["tracks"][track_id].append(track)
         self.existing_records["tracks"][track_id] = track
+
+    def add_follow_record(self, follow_id: str, follow: Follow):
+        self.new_records["follow"][follow_id].append(follow)
+        self.existing_records["follow"][follow_id] = follow
