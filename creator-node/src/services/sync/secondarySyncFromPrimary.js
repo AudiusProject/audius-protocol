@@ -24,9 +24,6 @@ const handleSyncFromPrimary = async ({
   const FileSaveMaxConcurrency = nodeConfig.get(
     'nodeSyncFileSaveMaxConcurrency'
   )
-  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
-    'syncRequestMaxUserFailureCountBeforeSkip'
-  )
 
   const start = Date.now()
 
