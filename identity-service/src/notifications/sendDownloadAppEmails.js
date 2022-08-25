@@ -47,7 +47,8 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
 
     for (let userToEmail of emailUsers) {
       if (!userToEmail.isEmailDeliverable) {
-        logger.info(`Unable to deliver download app email to ${userToEmail.handle} ${userToEmail.email}`)
+        // TODO fix docker logs so /var/logs/messages are rotated 
+        // logger.info(`Unable to deliver download app email to ${userToEmail.handle} ${userToEmail.email}`)
         continue
       }
 
