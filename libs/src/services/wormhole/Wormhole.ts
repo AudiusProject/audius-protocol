@@ -294,8 +294,8 @@ export class Wormhole {
       const associatedTokenAccount =
         await this.solanaWeb3Manager.findAssociatedTokenAddress(solanaAddress)
       const tokenAccountInfo = await this.solanaWeb3Manager.getTokenAccountInfo(
-          associatedTokenAccount.toString()
-        )
+        associatedTokenAccount.toString()
+      )
 
       // If it's not a valid token account, create the token account
       if (!tokenAccountInfo) {
