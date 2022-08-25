@@ -152,7 +152,11 @@ module.exports = async function ({
       _addToDecisionTree(
         decisionTree,
         'retrieveUserInfoFromReplicaSet Success',
-        logger
+        logger,
+        {
+          newUnhealthyPeerSetLength: retrieveUserInfoResp.unhealthyPeers.size,
+          newUnhealthyPeers: Array.from(retrieveUserInfoResp.unhealthyPeers)
+        }
       )
     } catch (e: any) {
       logger.error(e.stack)
