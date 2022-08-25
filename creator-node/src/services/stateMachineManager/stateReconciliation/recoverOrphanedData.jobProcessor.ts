@@ -11,6 +11,11 @@ import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
 import { makeGaugeSetToRecord } from '../stateMachineUtils'
 import { StateMonitoringUser } from '../stateMonitoring/types'
 
+import {
+  ORPHANED_DATA_NUM_USERS_PER_QUERY,
+  ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
+} from '../stateMachineConstants'
+
 const { QUEUE_NAMES } = require('../stateMachineConstants')
 const { getNodeUsers } = require('../stateMonitoring/stateMonitoringUtils')
 const config = require('../../../config')
@@ -22,8 +27,6 @@ const WALLETS_ON_NODE_KEY = 'orphanedDataWalletsWithStateOnNode'
 const WALLETS_WITH_NODE_IN_REPLICA_SET_KEY =
   'orphanedDataWalletsWithNodeInReplicaSet'
 const WALLETS_ORPHANED_KEY = 'oprhanedDataWallets'
-const NUM_USERS_PER_QUERY = 10_000
-const NUM_USERS_TO_RECOVER_PER_BATCH = 1000
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 
@@ -96,7 +99,7 @@ const _saveWalletsOnThisNodeToRedis = async () => {
   // Table is indexed on column `cnodeUserUUID`
   const numCNodeUsers = await models.CNodeUser.count()
   let prevCnodeUserUUID = '00000000-0000-0000-0000-000000000000'
-  for (let i = 0; i < numCNodeUsers; i += NUM_USERS_PER_QUERY) {
+  for (let i = 0; i < numCNodeUsers; i += ORPHANED_DATA_NUM_USERS_PER_QUERY) {
     walletSqlRows = await models.CNodeUser.findAll({
       attributes: ['walletPublicKey', 'cnodeUserUUID'],
       order: [['cnodeUserUUID', 'ASC']],
@@ -105,7 +108,7 @@ const _saveWalletsOnThisNodeToRedis = async () => {
           [models.Sequelize.Op.gte]: prevCnodeUserUUID
         }
       },
-      limit: NUM_USERS_PER_QUERY
+      limit: ORPHANED_DATA_NUM_USERS_PER_QUERY
     })
 
     if (walletSqlRows?.length) {
@@ -144,7 +147,7 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
         discoveryNodeEndpoint,
         thisContentNodeEndpoint,
         prevUserId,
-        NUM_USERS_PER_QUERY
+        ORPHANED_DATA_NUM_USERS_PER_QUERY
       )
 
       if (batchOfUsers?.length) {
@@ -171,7 +174,10 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
       // This will cause extra users to be marked as orphaned, which is okay because orphaned data
       // recovery will short circuit later to avoid wiping state on any node in the user's replica set.
     }
-  } while (batchOfUsers?.length === NUM_USERS_PER_QUERY && prevUserId !== 0)
+  } while (
+    batchOfUsers?.length === ORPHANED_DATA_NUM_USERS_PER_QUERY &&
+    prevUserId !== 0
+  )
 
   const numWalletsWithNodeInReplicaSet = await redisClient.scard(
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
@@ -213,11 +219,11 @@ const _batchIssueReqsToRecoverOrphanedData = async (
   for (
     let i = 0;
     i < numWalletsWithOrphanedData;
-    i += NUM_USERS_TO_RECOVER_PER_BATCH
+    i += ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
   ) {
     const walletsWithOrphanedData = await redisClient.spop(
       WALLETS_ORPHANED_KEY,
-      NUM_USERS_TO_RECOVER_PER_BATCH
+      ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
     )
     if (!walletsWithOrphanedData?.length) return requestsIssued
 

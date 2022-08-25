@@ -227,7 +227,6 @@ router.post(
 )
 router.post(
   '/merge_primary_and_secondary',
-  ensurePrimaryMiddleware,
   handleResponse(mergePrimaryAndSecondaryController)
 )
 

@@ -161,3 +161,9 @@ export const FETCH_FILES_HASH_NUM_RETRIES = 3
 
 // Seconds to hold the cache of healthy content nodes for update-replica-set jobs
 export const HEALTHY_SERVICES_TTL_SEC = 60 /* 1 min */
+
+// Number of users to query in each orphaned data recovery query to Discovery and to its own db
+export const ORPHANED_DATA_NUM_USERS_PER_QUERY = 10_000
+
+// Number of users to fetch from redis and issue requests for (sequentially) in each batch
+export const ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH = 1000

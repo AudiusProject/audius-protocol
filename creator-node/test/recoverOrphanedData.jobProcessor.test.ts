@@ -12,6 +12,7 @@ import recoverOrphanedDataJobProcessor from '../src/services/stateMachineManager
 import { QUEUE_NAMES } from '../src/services/stateMachineManager/stateMachineConstants'
 import { DecoratedJobReturnValue } from '../src/services/stateMachineManager/types'
 import { RecoverOrphanedDataJobReturnValue } from '../src/services/stateMachineManager/stateReconciliation/types'
+import * as stateMachineConstants from '../src/services/stateMachineManager/stateMachineConstants'
 
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
@@ -68,21 +69,28 @@ describe('test recoverOrphanedData job processor', function () {
     usersOnNode: StateMonitoringUser[]
     usersWithNodeInReplicaSet: StateMonitoringUser[]
     orphanedUsers: StateMonitoringUser[]
+    pagination?: {
+      ORPHANED_DATA_NUM_USERS_PER_QUERY: number
+      ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH: number
+    }
   }
   function makeMock({
     usersOnNode,
     usersWithNodeInReplicaSet,
-    orphanedUsers
+    orphanedUsers,
+    pagination
   }: TestParams): typeof recoverOrphanedDataJobProcessor {
     // Mock request to Discovery to get users with this node in its replica set
-    nock(DISCOVERY_NODE_ENDPOINT)
-      .get('/v1/full/users/content_node/all')
-      .query({
-        creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
-        prev_user_id: 0,
-        max_users: 10000
-      })
-      .reply(200, { data: usersWithNodeInReplicaSet })
+    if (_.isEmpty(pagination)) {
+      nock(DISCOVERY_NODE_ENDPOINT)
+        .get('/v1/full/users/content_node/all')
+        .query({
+          creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
+          prev_user_id: 0,
+          max_users: 10000
+        })
+        .reply(200, { data: usersWithNodeInReplicaSet })
+    }
 
     // Mock local db to return users with state on this node
     const cNodeUserMockAllStub = sandbox.stub().resolves(
@@ -127,7 +135,16 @@ describe('test recoverOrphanedData job processor', function () {
       '../src/services/stateMachineManager/stateReconciliation/recoverOrphanedData.jobProcessor.ts',
       {
         '../../../config': config,
-        '../../../models': modelsMock
+        '../../../models': modelsMock,
+        '../stateMachineConstants': pagination
+          ? {
+              ...stateMachineConstants,
+              ORPHANED_DATA_NUM_USERS_PER_QUERY:
+                pagination.ORPHANED_DATA_NUM_USERS_PER_QUERY,
+              ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH:
+                pagination.ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
+            }
+          : stateMachineConstants
       }
     ).default
   }
@@ -171,12 +188,14 @@ describe('test recoverOrphanedData job processor', function () {
   async function processAndTestJob({
     usersOnNode,
     usersWithNodeInReplicaSet,
-    orphanedUsers
+    orphanedUsers,
+    pagination
   }: TestParams) {
     const recoverOrphanedDataJobProcessorMock = makeMock({
       usersOnNode,
       usersWithNodeInReplicaSet,
-      orphanedUsers
+      orphanedUsers,
+      pagination
     })
     const jobResults = await recoverOrphanedDataJobProcessorMock({
       discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT,
@@ -196,6 +215,82 @@ describe('test recoverOrphanedData job processor', function () {
       usersOnNode: USERS,
       usersWithNodeInReplicaSet: USERS.slice(1),
       orphanedUsers: [USERS[0]]
+    })
+  })
+
+  it('Hits correct routes when first 2 users have orphaned data, pagination length = 1', async function () {
+    // Use 4 users
+    const users = USERS.slice(0, 4)
+
+    // Mock only users at index 2 and 3 as having this node in their replica set
+    nock(DISCOVERY_NODE_ENDPOINT)
+      .get('/v1/full/users/content_node/all')
+      .query({
+        creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
+        prev_user_id: 0,
+        max_users: 1
+      })
+      .reply(200, { data: [users[2]] })
+    nock(DISCOVERY_NODE_ENDPOINT)
+      .get('/v1/full/users/content_node/all')
+      .query({
+        creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
+        prev_user_id: 3,
+        max_users: 1
+      })
+      .reply(200, { data: [users[3]] })
+    nock(DISCOVERY_NODE_ENDPOINT)
+      .get('/v1/full/users/content_node/all')
+      .query({
+        creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
+        prev_user_id: 4,
+        max_users: 1
+      })
+      .reply(200, { data: [] })
+
+    // Process a job where users[0] and users[1] do NOT have this node in their RS BUT DO have data on this node (they should be considered orphaned in this case)
+    await processAndTestJob({
+      usersOnNode: users,
+      usersWithNodeInReplicaSet: users.slice(2),
+      orphanedUsers: [users[0], users[1]],
+      pagination: {
+        ORPHANED_DATA_NUM_USERS_PER_QUERY: 1,
+        ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH: 1
+      }
+    })
+  })
+
+  it('Hits correct routes when first 2 users have orphaned data, pagination length = 2', async function () {
+    // Use 4 users
+    const users = USERS.slice(0, 4)
+
+    // Mock only users at index 2 and 3 as having this node in their replica set
+    nock(DISCOVERY_NODE_ENDPOINT)
+      .get('/v1/full/users/content_node/all')
+      .query({
+        creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
+        prev_user_id: 0,
+        max_users: 2
+      })
+      .reply(200, { data: [users[2], users[3]] })
+    nock(DISCOVERY_NODE_ENDPOINT)
+      .get('/v1/full/users/content_node/all')
+      .query({
+        creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
+        prev_user_id: 4,
+        max_users: 2
+      })
+      .reply(200, { data: [] })
+
+    // Process a job where users[0] and users[1] do NOT have this node in their RS BUT DO have data on this node (they should be considered orphaned in this case)
+    await processAndTestJob({
+      usersOnNode: users,
+      usersWithNodeInReplicaSet: users.slice(2),
+      orphanedUsers: [users[0], users[1]],
+      pagination: {
+        ORPHANED_DATA_NUM_USERS_PER_QUERY: 2,
+        ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH: 2
+      }
     })
   })
 
