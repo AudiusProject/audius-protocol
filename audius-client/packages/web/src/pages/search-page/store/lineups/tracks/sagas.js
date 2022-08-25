@@ -6,6 +6,7 @@ import {
 } from '@audius/common'
 import { select, all, call } from 'redux-saga/effects'
 
+import { LineupSagas } from 'common/store/lineup/sagas'
 import {
   getCategory,
   getQuery,
@@ -16,7 +17,6 @@ import {
   getSearchResults,
   getTagSearchResults
 } from 'pages/search-page/store/sagas'
-import { LineupSagas } from 'store/lineup/sagas'
 import { isMobile } from 'utils/clientUtil'
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
   searchResultsPageSelectors

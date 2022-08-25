@@ -7,8 +7,8 @@ import {
 } from '@audius/common'
 import { select } from 'redux-saga/effects'
 
+import { LineupSagas } from 'common/store/lineup/sagas'
 import { retrieveTrending } from 'pages/track-page/store/retrieveTrending'
-import { LineupSagas } from 'store/lineup/sagas'
 const { getTrendingGenre } = trendingPageSelectors
 const {
   TRENDING_WEEK_PREFIX,

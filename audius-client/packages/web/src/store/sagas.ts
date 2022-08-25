@@ -18,7 +18,10 @@ import usersSagas from 'common/store/cache/users/sagas'
 import confirmerSagas from 'common/store/confirmer/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
 import explorePageSagas from 'common/store/pages/explore/sagas'
+import feedPageSagas from 'common/store/pages/feed/sagas'
 import signOnSaga from 'common/store/pages/signon/sagas'
+import mobileQueueSagas from 'common/store/queue/mobileSagas'
+import queueSagas from 'common/store/queue/sagas'
 import reachabilitySagas from 'common/store/reachability/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import serviceSelectionSagas from 'common/store/service-selection/sagas'
@@ -40,7 +43,6 @@ import collectionSagas from 'pages/collection-page/store/sagas'
 import deactivateAccountSagas from 'pages/deactivate-account-page/store/sagas'
 import deletedSagas from 'pages/deleted-page/store/sagas'
 import favoritePageSagas from 'pages/favorites-page/sagas'
-import feedPageSagas from 'pages/feed-page/store/sagas'
 import followersPageSagas from 'pages/followers-page/sagas'
 import followingPageSagas from 'pages/following-page/sagas'
 import historySagas from 'pages/history-page/store/sagas'
@@ -71,7 +73,6 @@ import errorSagas from 'store/errors/sagas'
 import oauthSagas from 'store/oauth/sagas'
 import playerSagas from 'store/player/sagas'
 import playlistLibrarySagas from 'store/playlist-library/sagas'
-import queueSagas from 'store/queue/sagas'
 import routingSagas from 'store/routing/sagas'
 import socialSagas from 'store/social/sagas'
 import solanaSagas from 'store/solana/sagas'
@@ -83,7 +84,7 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export default function* rootSaga() {
   yield fork(setupBackend)
-  const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
+  let sagas = ([] as (() => Generator<any, void, any>)[]).concat(
     // Config
     analyticsSagas(),
     webAnalyticsSagas(),
@@ -185,6 +186,7 @@ export default function* rootSaga() {
   )
   if (NATIVE_MOBILE) {
     sagas.push(initInterface)
+    sagas = sagas.concat(mobileQueueSagas())
   }
   yield all(sagas.map(fork))
 }

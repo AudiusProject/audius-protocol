@@ -17,7 +17,7 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import cacheSagas from 'common/store/cache/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { initialState as initialConfirmerState } from 'common/store/confirmer/reducer'
-import { LineupSagas } from 'store/lineup/sagas'
+import { LineupSagas } from 'common/store/lineup/sagas'
 import { noopReducer, allSagas } from 'store/testHelper'
 const { asLineup, initialLineupState } = lineupReducer
 const { asCache, initialCacheState } = cacheReducer
