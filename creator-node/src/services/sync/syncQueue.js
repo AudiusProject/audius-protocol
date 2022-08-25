@@ -57,6 +57,7 @@ class SyncQueue {
         wallet,
         creatorNodeEndpoint,
         forceResyncConfig,
+        forceWipe,
         blockNumber,
         logContext
       } = job.data
@@ -70,6 +71,7 @@ class SyncQueue {
           creatorNodeEndpoint,
           blockNumber,
           forceResyncConfig,
+          forceWipe,
           logContext
         })
         logInfoWithDuration(
@@ -93,6 +95,7 @@ class SyncQueue {
     creatorNodeEndpoint,
     blockNumber,
     forceResyncConfig,
+    forceWipe,
     logContext
   }) {
     const job = await this.queue.add({
@@ -100,6 +103,7 @@ class SyncQueue {
       creatorNodeEndpoint,
       blockNumber,
       forceResyncConfig,
+      forceWipe,
       logContext
     })
     return job
