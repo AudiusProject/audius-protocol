@@ -1,6 +1,10 @@
 const Bull = require('bull')
 
-const { logger } = require('../../logging')
+const {
+  logger,
+  logInfoWithDuration,
+  logErrorWithDuration
+} = require('../../logging')
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
@@ -46,6 +50,7 @@ class SyncImmediateQueue {
       const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
         job.data
 
+      const startTime = Date.now()
       try {
         await secondarySyncFromPrimary({
           serviceRegistry: this.serviceRegistry,
@@ -54,9 +59,15 @@ class SyncImmediateQueue {
           forceResyncConfig,
           logContext
         })
+        logInfoWithDuration(
+          { logger, startTime },
+          `syncImmediateQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
+        )
       } catch (e) {
-        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}: ${e.message}`
-        logger.error(msg)
+        logErrorWithDuration(
+          { logger, startTime },
+          `syncImmediateQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} - ${e.message}`
+        )
         throw e
       }
     })

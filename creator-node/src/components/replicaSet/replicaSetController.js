@@ -11,7 +11,10 @@ const {
 const {
   respondToURSMRequestForSignature
 } = require('./URSMRegistrationComponentService')
-const { ensureStorageMiddleware } = require('../../middlewares')
+const {
+  ensureStorageMiddleware,
+  ensurePrimaryMiddleware
+} = require('../../middlewares')
 const {
   SyncType,
   SYNC_MODES
@@ -122,6 +125,7 @@ const syncRouteController = async (req, res) => {
           },
           wallet
         },
+        forceWipe: req.body.forceWipe,
         logContext: req.logContext
       })
     } catch (e) {
@@ -151,6 +155,7 @@ const syncRouteController = async (req, res) => {
           },
           wallet
         },
+        forceWipe: req.body.forceWipe,
         logContext: req.logContext
       })
       delete syncDebounceQueue[wallet]
@@ -169,21 +174,23 @@ const syncRouteController = async (req, res) => {
  */
 const mergePrimaryAndSecondaryController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
-  const manualSyncQueue = serviceRegistry.manualSyncQueue
-  const config = serviceRegistry.nodeConfig
+  const { recurringSyncQueue, nodeConfig: config } = serviceRegistry
 
   const selfEndpoint = config.get('creatorNodeEndpoint')
 
   const wallet = req.query.wallet
   const endpoint = req.query.endpoint
+  const forceWipe = req.query.forceWipe
+  const syncEvenIfDisabled = req.query.syncEvenIfDisabled
 
   if (!wallet || !endpoint) {
     return errorResponseBadRequest(`Must provide wallet and endpoint params`)
   }
 
-  const syncType = SyncType.Manual
-  const syncMode = SYNC_MODES.MergePrimaryAndSecondary
-  const immediate = true
+  const syncType = SyncType.Recurring
+  const syncMode = forceWipe
+    ? SYNC_MODES.MergePrimaryThenWipeSecondary
+    : SYNC_MODES.MergePrimaryAndSecondary
 
   const syncRequestParameters = {
     baseURL: endpoint,
@@ -193,12 +200,12 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
       wallet: [wallet],
       creator_node_endpoint: selfEndpoint,
       sync_type: syncType,
-      immediate,
-      from_manual_route: true
+      sync_even_if_disabled: syncEvenIfDisabled,
+      forceWipe: !!forceWipe
     }
   }
 
-  await manualSyncQueue.add({
+  await recurringSyncQueue.add({
     syncType,
     syncMode,
     syncRequestParameters

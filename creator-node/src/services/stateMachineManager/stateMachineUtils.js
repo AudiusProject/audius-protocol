@@ -147,7 +147,7 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
  * makeHistogramToRecord('response_time', 1000, { code: '200' })
  * @param {string} metricName the name of the metric from prometheus.constants
  * @param {number} metricValue the value to observe
- * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ * @param {Record<string, string>} [metricLabels] the optional mapping of metric label name => metric label value
  */
 const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
   return makeMetricToRecord(
@@ -171,6 +171,23 @@ const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
     METRIC_RECORD_TYPE.GAUGE_INC,
     metricName,
     incBy,
+    metricLabels
+  )
+}
+
+/**
+ * Returns an object that can be returned from any state machine job to record setting a gauge metric.
+ * Example: to call testGuage.set({ status: 'success' }, 1), you would call this function with:
+ * makeGaugeSetToRecord('test_gauge', 1, { status: 'success' })
+ * @param {string} metricName the name of the metric from prometheus.constants
+ * @param {number} valueToSet the metric value to set Metric#set for the prometheus gauge
+ * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ */
+const makeGaugeSetToRecord = (metricName, valueToSet, metricLabels = {}) => {
+  return makeMetricToRecord(
+    METRIC_RECORD_TYPE.GAUGE_SET,
+    metricName,
+    valueToSet,
     metricLabels
   )
 }
@@ -210,7 +227,7 @@ const makeMetricToRecord = (
       )}`
     )
   }
-  const labelNames = Object.keys(METRIC_LABELS[metricName])
+  const labelNames = Object.keys(METRIC_LABELS[metricName] || {})
   for (const [labelName, labelValue] of Object.entries(metricLabels)) {
     if (!labelNames?.includes(labelName)) {
       throw new Error(
@@ -298,6 +315,7 @@ module.exports = {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord,
   makeGaugeIncToRecord,
+  makeGaugeSetToRecord,
   retrieveUserInfoFromReplicaSet,
   makeQueue,
   registerQueueEvents
