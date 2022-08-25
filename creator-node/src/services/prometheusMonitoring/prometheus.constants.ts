@@ -36,6 +36,7 @@ export const METRIC_TYPES = Object.freeze({
  */
 export const METRIC_RECORD_TYPE = Object.freeze({
   GAUGE_INC: 'GAUGE_INC',
+  GAUGE_SET: 'GAUGE_SET',
   HISTOGRAM_OBSERVE: 'HISTOGRAM_OBSERVE'
 })
 
@@ -54,7 +55,10 @@ const metricNames: Record<string, string> = {
   JOBS_DELAYED_TOTAL_GAUGE: 'jobs_delayed_total',
   JOBS_DURATION_SECONDS_HISTOGRAM: 'jobs_duration_seconds',
   JOBS_WAITING_DURATION_SECONDS_HISTOGRAM: 'jobs_waiting_duration_seconds',
-  JOBS_ATTEMPTS_HISTOGRAM: 'jobs_attempts'
+  JOBS_ATTEMPTS_HISTOGRAM: 'jobs_attempts',
+  RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE:
+    'recover_orphaned_data_wallet_counts',
+  RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE: 'recover_orphaned_data_sync_counts'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -71,7 +75,7 @@ export const METRIC_NAMES = Object.freeze(
 
 export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
-    mode: ['force_resync', 'default'],
+    mode: ['force_resync', 'default', 'force_wipe'],
     result: [
       'success',
       'success_clocks_already_match',
@@ -100,6 +104,7 @@ export const METRIC_LABELS = Object.freeze({
       'success_mode_disabled',
       'success_secondary_caught_up',
       'success_secondary_partially_caught_up',
+      'failure_sync_correctness',
       'failure_missing_wallet',
       'failure_secondary_failure_count_threshold_met',
       'failure_primary_sync_from_secondary',
@@ -190,6 +195,22 @@ type Metric = {
 }
 
 export const METRICS: Record<string, Metric> = Object.freeze({
+  [METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE,
+      help: 'Number of wallets found with data orphaned on this node',
+      labelNames: []
+    }
+  },
+  [METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE,
+      help: 'Number of syncs enqueued to recover data orphaned on this node',
+      labelNames: []
+    }
+  },
   [METRIC_NAMES.JOBS_COMPLETED_TOTAL_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {

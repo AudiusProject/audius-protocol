@@ -60,6 +60,7 @@ def entity_manager_update(
             session, entities_to_fetch
         )
 
+        # copy original record since existing_records will be modified
         original_records = copy_original_records(existing_records)
 
         new_records: RecordDict = {
