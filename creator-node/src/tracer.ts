@@ -2,10 +2,11 @@ import type {
   Span,
   SpanContext,
   SpanOptions,
-  AttributeValue
+  AttributeValue,
+  Tracer
 } from '@opentelemetry/api'
-import { trace, context, SpanStatusCode } from '@opentelemetry/api'
 
+import { trace, context, SpanStatusCode } from '@opentelemetry/api'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
 import { Resource } from '@opentelemetry/resources'
@@ -36,6 +37,15 @@ export const setupTracing = () => {
       [ResourceAttributesSC.SERVICE_NAME]: SERVICE_NAME
     })
   })
+
+  /**
+   * prebuilt tracing instrumentations are registered
+   * in order to add trace information and context to
+   * commonly used library
+   *
+   * e.g. `ExpressInstrumention()` monkey-patches express routes and middlewares
+   * with spans
+   */
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
@@ -68,9 +78,20 @@ export const setupTracing = () => {
 
 /**
  * Higher-order function that adds opentelemetry tracing to a function.
+ * This wrapper works for both sync and async functions
+ *
+ * @param {string?} param.name optional name to give to the span, defaults to the function name
+ * @param {TFunction} param.fn the generic function to instrument
+ * @param {SpanOptions} param.options objects to pass into the span
+ * @returns the instrumented function
+ * @throws rethrows any errors from the original fn
+ *
  * Usage of this would look like
  * ```
  * const someFunction = instrumentTracing({ fn: _someFunction })
+ * const result = someFunction(args))
+ * // or
+ * const result = await someFunction(args)
  * ```
  */
 export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
@@ -82,6 +103,7 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   fn: TFunction
   options?: SpanOptions
 }) => {
+  // build a wrapper around `fn` that accepts the same parameters and returns the same return type
   const wrapper = (...args: Parameters<TFunction>): ReturnType<TFunction> => {
     const spanName = name || fn.name
     const spanOptions = options || {}
@@ -94,7 +116,15 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
           // TODO: add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
           const result = fn.call(this, ...args)
+
+          // if `fn` is async, await the result
           if (result && result.then) {
+            /**
+             * by handling promise like this, the caller to this wrapper
+             * can still use normal async/await syntax to `await` the result
+             * of this wrapper
+             * i.e. `const output = await instrumentTracing({ fn: _someFunction })(args)`
+             */
             return result.then((val: any) => {
               span.end()
               return val
@@ -106,6 +136,8 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
         } catch (e: any) {
           tracing.recordException(e)
           span.end()
+
+          // rethrow any errors
           throw e
         }
       })
@@ -131,22 +163,42 @@ export const tracing = {
    * This function fetches the tracer from the application context
    * @returns {Tracer} the tracer for content node
    */
-  getTracer: () => {
+  getTracer: (): Tracer => {
     return trace.getTracer(SERVICE_NAME)
   },
 
   /**
-   * Helper function that gets the current active span or return `undefined` if there is no active span
+   * @returns {Span | undefined} the current active span or `undefined` if there is no active span
    */
   getActiveSpan: (): Span | undefined => {
     return trace.getSpan(context.active())
   },
 
+  /**
+   * Adds a key-value style attribute to the current span
+   * @param name the attribute key
+   * @param value the attribute value
+   */
   setSpanAttribute: (name: string, value: AttributeValue) => {
     const span = tracing.getActiveSpan()
     span?.setAttribute(name, value)
   },
 
+  /**
+   * log a message with severity 'debug' on the current span
+   * @param {string} msg the message to log
+   */
+  debug: (msg: string) => {
+    const span = tracing.getActiveSpan()
+    span?.addEvent(msg, {
+      'log.severity': 'debug'
+    })
+  },
+
+  /**
+   * log a message with severity 'info' on the current span
+   * @param {string} msg the message to log
+   */
   info: (msg: string) => {
     const span = tracing.getActiveSpan()
     span?.addEvent(msg, {
@@ -154,6 +206,10 @@ export const tracing = {
     })
   },
 
+  /**
+   * log a message with severity 'warn' on the current span
+   * @param {string} msg the message to log
+   */
   warn: (msg: string) => {
     const span = tracing.getActiveSpan()
     span?.addEvent(msg, {
@@ -161,6 +217,10 @@ export const tracing = {
     })
   },
 
+  /**
+   * log a message with severity 'error' on the current span
+   * @param {string} msg the message to log
+   */
   error: (msg: string) => {
     const span = tracing.getActiveSpan()
     span?.setStatus({ code: SpanStatusCode.ERROR, message: msg })
@@ -169,6 +229,10 @@ export const tracing = {
     })
   },
 
+  /**
+   * records errors on the current trace and sets the span status to `ERROR`
+   * @param {Error} error the error to record on the span
+   */
   recordException: (error: Error) => {
     const span = tracing.getActiveSpan()
     span?.recordException(error)
