@@ -102,7 +102,7 @@ export const challenges = {
   firstPlaylistShortDescription:
     'Create your first playlist & add a track to it',
   firstPlaylistProgressLabel: 'Not Earned',
-  firstPlaylistButton: 'Create Your First Playlist'
+  firstPlaylistButton: 'Create a Playlist'
 }
 
 export type ChallengesParamList = {
