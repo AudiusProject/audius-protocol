@@ -4,30 +4,41 @@ import {
   accountSelectors,
   explorePageCollectionsActions,
   ExploreCollectionsVariant,
-  waitForValue
+  waitForValue,
+  getContext
 } from '@audius/common'
 import { takeEvery, call, put } from 'typed-redux-saga'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
-import Explore from 'services/audius-backend/Explore'
 import { requiresAccount } from 'utils/requiresAccount'
 import { EXPLORE_PAGE } from 'utils/route'
 const { fetch, fetchSucceeded } = explorePageCollectionsActions
 const getAccountStatus = accountSelectors.getAccountStatus
 
 function* fetchLetThemDJ() {
-  const collections = yield* call(Explore.getTopCollections, 'playlist', true)
+  const explore = yield* getContext('explore')
+  const collections = yield* call(
+    [explore, 'getTopCollections'],
+    'playlist',
+    true
+  )
   return collections
 }
 
 function* fetchTopAlbums() {
-  const collections = yield* call(Explore.getTopCollections, 'album', false)
+  const explore = yield* getContext('explore')
+  const collections = yield* call(
+    [explore, 'getTopCollections'],
+    'album',
+    false
+  )
   return collections
 }
 
 function* fetchMoodPlaylists(moods: string[]) {
-  const collections = yield* call(Explore.getTopPlaylistsForMood, moods)
+  const explore = yield* getContext('explore')
+  const collections = yield* call([explore, 'getTopPlaylistsForMood'], moods)
   return collections
 }
 
