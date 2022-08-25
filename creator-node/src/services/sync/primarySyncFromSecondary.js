@@ -88,8 +88,13 @@ module.exports = async function primarySyncFromSecondary({
     let completed = false
     let exportClockRangeMin = 0
     while (!completed) {
-      const decisionTreeData = { exportClockRangeMin }
+      decisionTree.recordStage({
+        name: 'Begin data import batch',
+        data: { exportClockRangeMin },
+        log: true
+      })
 
+      // Fetch export for CNodeUser from secondary
       let fetchedCNodeUser
       try {
         fetchedCNodeUser = await fetchExportFromSecondary({
@@ -100,13 +105,12 @@ module.exports = async function primarySyncFromSecondary({
         })
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Success',
-          data: decisionTreeData,
           log: true
         })
       } catch (e) {
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Error',
-          data: { ...decisionTreeData, errorMsg: e.message }
+          data: { errorMsg: e.message }
         })
         throw e
       }
@@ -114,6 +118,7 @@ module.exports = async function primarySyncFromSecondary({
       // Save all files to disk separately from DB writes to minimize DB transaction duration
       let CIDsThatFailedSaveFileOp
       try {
+        // saveFilesToDisk() will short-circuit if files already exist on disk
         CIDsThatFailedSaveFileOp = await saveFilesToDisk({
           files: fetchedCNodeUser.files,
           userReplicaSet,
@@ -125,7 +130,8 @@ module.exports = async function primarySyncFromSecondary({
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Success',
           data: {
-            ...decisionTreeData,
+            numSaved:
+              fetchedCNodeUser.files.length - CIDsThatFailedSaveFileOp.size,
             numCIDsThatFailedSaveFileOp: CIDsThatFailedSaveFileOp.size,
             CIDsThatFailedSaveFileOp
           },
@@ -134,25 +140,26 @@ module.exports = async function primarySyncFromSecondary({
       } catch (e) {
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Error',
-          data: { ...decisionTreeData, errorMsg: e.message }
+          data: { errorMsg: e.message }
         })
         throw e
       }
 
+      // Save all entries from export to DB
       try {
         await saveEntriesToDB({
           fetchedCNodeUser,
-          CIDsThatFailedSaveFileOp
+          CIDsThatFailedSaveFileOp,
+          decisionTree
         })
         decisionTree.recordStage({
           name: 'saveEntriesToDB() Success',
-          data: decisionTreeData,
           log: true
         })
       } catch (e) {
         decisionTree.recordStage({
           name: 'saveEntriesToDB() Error',
-          data: { ...decisionTreeData, errorMsg: e.message }
+          data: { errorMsg: e.message }
         })
         throw e
       }
@@ -235,7 +242,7 @@ async function fetchExportFromSecondary({
 /**
  * Fetch data for all files & save to disk
  *
- * - `saveFileForMultihashToFS` will exit early if files already exist on disk
+ * - `saveFileForMultihashToFS` will short-circuit if file already exists on disk
  * - Performed in batches to limit concurrent load
  */
 async function saveFilesToDisk({
@@ -370,8 +377,17 @@ async function saveFilesToDisk({
 /**
  * Saves all entries to DB that don't already exist in DB
  */
-async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
+async function saveEntriesToDB({
+  fetchedCNodeUser,
+  CIDsThatFailedSaveFileOp,
+  decisionTree
+}) {
   const transaction = await models.sequelize.transaction()
+
+  decisionTree.recordStage({
+    name: 'Begin saveEntriesToDB()',
+    log: true
+  })
 
   try {
     let {
@@ -393,6 +409,12 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
      */
     if (localCNodeUser) {
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
+
+      decisionTree.recordStage({
+        name: 'Begin filterOutAlreadyPresentDBEntries()',
+        data: { cnodeUserUUID },
+        log: true
+      })
 
       const audiusUserComparisonFields = [
         'blockchainId',
@@ -431,6 +453,11 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
         transaction,
         comparisonFields: fileComparisonFields
       })
+
+      decisionTree.recordStage({
+        name: 'filterOutAlreadyPresentDBEntries() Success',
+        log: true
+      })
     } else {
       /**
        * Create CNodeUser DB record if not already present
@@ -442,6 +469,11 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
       )
 
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
+
+      decisionTree.recordStage({
+        name: 'Create local CNodeUser DB Record - Success',
+        log: true
+      })
     }
 
     // Aggregate all entries into single array
@@ -466,18 +498,40 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
       })
     )
 
+    decisionTree.recordStage({
+      name: 'Aggregated all entries',
+      log: true
+    })
+
     // Sort by clock asc to preserve original insert order
     allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
 
     // Write all entries to DB
     for await (const { tableInstance, entry } of allEntries) {
-      await DBManager.createNewDataRecord(
-        _.omit(entry, ['cnodeUserUUID']),
-        cnodeUserUUID,
-        tableInstance,
-        transaction
-      )
+      try {
+        await DBManager.createNewDataRecord(
+          _.omit(entry, ['cnodeUserUUID']),
+          cnodeUserUUID,
+          tableInstance,
+          transaction
+        )
+      } catch (e) {
+        decisionTree.recordStage({
+          name: 'DBManager.createNewDataRecord() Error',
+          data: {
+            errorMsg: e.message,
+            sourceTable: tableInstance.name,
+            entry
+          },
+          log: true
+        })
+        throw e
+      }
     }
+    decisionTree.recordStage({
+      name: 'Wrote all entries to DB',
+      log: true
+    })
 
     await transaction.commit()
   } catch (e) {
