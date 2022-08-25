@@ -76,7 +76,7 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     link: () => EXPLORE_HEAVY_ROTATION_PAGE
   },
   firstPlaylist: {
-    label: 'Create Your First Playlist',
+    label: 'Create a Playlist',
     leftIcon: null,
     rightIcon: <IconArrow />,
     link: () => FAVORITES_PAGE
@@ -263,7 +263,7 @@ export const challengeRewardsConfig: Record<
     fullDescription: () => 'Create your first playlist & add a track to it',
     progressLabel: 'Not Earned',
     amount: amounts['first-playlist'],
-    panelButtonText: 'Create Your First Playlist',
+    panelButtonText: 'Create a Playlist',
     modalButtonInfo: {
       incomplete: linkButtonMap.firstPlaylist,
       inProgress: linkButtonMap.firstPlaylist,
