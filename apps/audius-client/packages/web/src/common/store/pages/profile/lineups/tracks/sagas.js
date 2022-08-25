@@ -15,7 +15,7 @@ import {
 import { all, call, select, takeEvery, put } from 'redux-saga/effects'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { LineupSagas } from 'store/lineup/sagas'
+import { LineupSagas } from 'common/store/lineup/sagas'
 
 import { retrieveUserTracks } from './retrieveUserTracks'
 const { SET_ARTIST_PICK } = tracksSocialActions

@@ -9,7 +9,7 @@ import {
 import { call, put, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { LineupSagas } from 'store/lineup/sagas'
+import { LineupSagas } from 'common/store/lineup/sagas'
 import { AppState } from 'store/types'
 const { getTrackId, getLineup } = remixesPageSelectors
 const { setCount } = remixesPageActions

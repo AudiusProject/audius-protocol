@@ -21,16 +21,13 @@ import {
   waitForAccount,
   playerActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  getContext
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
-
-import { getRecommendedTracks } from '../recommendation/sagas'
-
-import mobileSagas from './mobileSagas'
+import { getRecommendedTracks } from 'common/store/recommendation/sagas'
 
 const {
   getCollectible,
@@ -65,7 +62,6 @@ const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
 export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
@@ -233,6 +229,10 @@ export function* watchPlay() {
       // If nothing is queued, grab the proper lineup, queue it and play it
       const index = yield* select(getIndex)
       if (index === -1) {
+        const getLineupSelectorForRoute = yield* getContext(
+          'getLineupSelectorForRoute'
+        )
+        if (!getLineupSelectorForRoute) return
         // @ts-ignore todo
         const lineup: LineupState<{ id: number }> = yield* select(
           getLineupSelectorForRoute()
@@ -455,7 +455,7 @@ const sagas = () => {
     watchAdd,
     watchRemove
   ]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
+  return sagas
 }
 
 export default sagas

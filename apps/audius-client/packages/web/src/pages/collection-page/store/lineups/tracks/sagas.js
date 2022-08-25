@@ -13,7 +13,7 @@ import moment from 'moment'
 import { select, call } from 'redux-saga/effects'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { LineupSagas } from 'store/lineup/sagas'
+import { LineupSagas } from 'common/store/lineup/sagas'
 const { getPositions } = queueSelectors
 const {
   getCollection,

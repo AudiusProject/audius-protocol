@@ -8,8 +8,8 @@ import {
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
+import { LineupSagas } from 'common/store/lineup/sagas'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
-import { LineupSagas } from 'store/lineup/sagas'
 const { PREFIX, tracksActions } = trackPageLineupActions
 const { getLineup, getSourceSelector: sourceSelector } = trackPageSelectors
 const { getTrack } = cacheTracksSelectors
