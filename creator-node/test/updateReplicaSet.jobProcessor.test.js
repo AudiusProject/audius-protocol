@@ -144,20 +144,28 @@ describe('test updateReplicaSet job processor', function () {
       retrieveClockValueForUserFromReplicaStub
     })
 
+    const output = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.ONE_SECONDARY.key]
+    })
+
+    const { metricsToRecord, ...rest } = output
+
+    expect(metricsToRecord[0].metricLabels.result).to.equal('success')
+    expect(metricsToRecord[0].metricName).to.equal(
+      'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
+    )
+    expect(metricsToRecord[0].metricType).to.equal('HISTOGRAM_OBSERVE')
+
     // Verify job outputs the correct results: update secondary1 to randomHealthyNode
-    return expect(
-      updateReplicaSetJobProcessor({
-        logger,
-        wallet,
-        userId,
-        primary,
-        secondary1,
-        secondary2,
-        unhealthyReplicas,
-        replicaToUserInfoMap,
-        enabledReconfigModes: [RECONFIG_MODES.ONE_SECONDARY.key]
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
+    expect(rest).to.be.deep.equal({
       errorMsg: '',
       issuedReconfig: true,
       newReplicaSet: {
@@ -218,20 +226,30 @@ describe('test updateReplicaSet job processor', function () {
       retrieveClockValueForUserFromReplicaStub
     })
 
+    const output = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.RECONFIG_DISABLED.key] // Disable reconfigs
+    })
+
+    const { metricsToRecord, ...rest } = output
+
+    expect(metricsToRecord[0].metricLabels.result).to.equal(
+      'success_issue_reconfig_disabled'
+    )
+    expect(metricsToRecord[0].metricName).to.equal(
+      'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
+    )
+    expect(metricsToRecord[0].metricType).to.equal('HISTOGRAM_OBSERVE')
+
     // Verify job outputs the correct results: find update from secondary1 to randomHealthyNode but don't issue it
-    return expect(
-      updateReplicaSetJobProcessor({
-        logger,
-        wallet,
-        userId,
-        primary,
-        secondary1,
-        secondary2,
-        unhealthyReplicas,
-        replicaToUserInfoMap,
-        enabledReconfigModes: [RECONFIG_MODES.RECONFIG_DISABLED.key] // Disable reconfigs
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
+    expect(rest).to.be.deep.equal({
       errorMsg: '',
       issuedReconfig: false,
       newReplicaSet: {
@@ -275,20 +293,30 @@ describe('test updateReplicaSet job processor', function () {
       retrieveClockValueForUserFromReplicaStub
     })
 
+    const output = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
+    })
+
+    const { metricsToRecord, ...rest } = output
+
+    expect(metricsToRecord[0].metricLabels.result).to.equal(
+      'failure_determine_new_replica_set'
+    )
+    expect(metricsToRecord[0].metricName).to.equal(
+      'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
+    )
+    expect(metricsToRecord[0].metricType).to.equal('HISTOGRAM_OBSERVE')
+
     // Verify job outputs the correct results: entire replica set is falsy because we can't sync if all nodes in the RS are unhealthy
-    return expect(
-      updateReplicaSetJobProcessor({
-        logger,
-        wallet,
-        userId,
-        primary,
-        secondary1,
-        secondary2,
-        unhealthyReplicas,
-        replicaToUserInfoMap,
-        enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
+    expect(rest).to.be.deep.equal({
       errorMsg: `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfUnhealthyReplicas=3 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`,
       issuedReconfig: false,
       newReplicaSet: {

@@ -11,7 +11,7 @@ const {
   errorResponseServerError
 } = require('../apiHelpers')
 const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
-const { validateMetadata } = require('../utils/index.js')
+const { validateMetadata } = require('../utils/index')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
