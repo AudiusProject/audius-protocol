@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
-from typing import Any, Optional, TypedDict
+from typing import Any, List, Optional, TypedDict
 
 import redis
 from sqlalchemy import func
@@ -13,6 +13,7 @@ from src.models.social.save import SaveType
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
+from src.premium_content.constants import SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
 from src.queries.get_trending_tracks import (
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
@@ -193,11 +194,27 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
             strategy.get_track_score("week", track) for track in track_scoring_data
         ]
         sorted_tracks = sorted(scored_tracks, key=lambda k: k["score"], reverse=True)
-        sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
+
+        # Only limit the number of sorted tracks here if we are not later
+        # filtering out the premium tracks. Otherwise, the number of
+        # tracks we return later may be smaller than the limit.
+        # If we don't limit it here, we limit it later after getting the
+        # unpopulated tracks.
+        should_apply_limit_early = not SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
+        if should_apply_limit_early:
+            sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
 
         # Get unpopulated metadata
         track_ids = [track["track_id"] for track in sorted_tracks]
-        tracks = get_unpopulated_tracks(session, track_ids)
+        tracks = get_unpopulated_tracks(
+            session, track_ids, filter_premium=SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
+        )
+
+        # Make sure to apply the limit if not previously applied
+        # because of the filtering out of premium tracks
+        if not should_apply_limit_early:
+            tracks = tracks[:UNDERGROUND_TRENDING_LENGTH]
+
         return (tracks, track_ids)
 
     return wrapped

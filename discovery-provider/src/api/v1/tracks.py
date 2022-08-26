@@ -252,9 +252,21 @@ class BulkTracks(Resource):
         if slug and handle:
             routes_parsed.append({"handle": handle, "slug": slug})
         if ids:
-            tracks = get_tracks({"with_users": True, "id": decode_ids_array(ids)})
+            tracks = get_tracks(
+                {
+                    "with_users": True,
+                    "id": decode_ids_array(ids),
+                    "filter_premium": True,
+                }
+            )
         else:
-            tracks = get_tracks({"with_users": True, "routes": routes_parsed})
+            tracks = get_tracks(
+                {
+                    "with_users": True,
+                    "routes": routes_parsed,
+                    "filter_premium": True,
+                }
+            )
         if not tracks:
             if handle and slug:
                 abort_not_found(f"{handle}/{slug}", ns)
@@ -379,8 +391,13 @@ class TrackStream(Resource):
         args = {
             "id": [decoded_id],
             "with_users": True,
+            "filter_premium": True,
         }
         tracks = get_tracks(args)
+
+        if not tracks:
+            abort_not_found(track_id, ns)
+
         track = tracks[0]
         if track["is_delete"] or track["user"]["is_deactivated"]:
             abort_not_found(track_id, ns)
@@ -429,6 +446,7 @@ class TrackSearchResult(Resource):
             "limit": 10,
             "offset": 0,
             "only_downloadable": args["only_downloadable"],
+            "filter_premium": True,
         }
         response = search(search_args)
         return success_response(response["tracks"])
@@ -483,6 +501,7 @@ class Trending(Resource):
             abort_bad_path_param("version", ns)
 
         args = trending_parser.parse_args()
+        args["filter_premium"] = True
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
@@ -617,6 +636,7 @@ class RecommendedTrack(Resource):
         args = recommended_track_parser.parse_args()
         limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
         args["limit"] = max(TRENDING_LIMIT, limit)
+        args["filter_premium"] = True
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )

@@ -156,11 +156,17 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
                     cache_start_time = time.time()
                     if strategy.use_mat_view:
                         res = generate_unpopulated_trending_from_mat_views(
-                            session, genre, time_range, strategy
+                            session=session,
+                            genre=genre,
+                            time_range=time_range,
+                            strategy=strategy,
                         )
                     else:
                         res = generate_unpopulated_trending(
-                            session, genre, time_range, strategy
+                            session=session,
+                            genre=genre,
+                            time_range=time_range,
+                            strategy=strategy,
                         )
                     key = make_trending_cache_key(time_range, genre, version)
                     set_json_cached_key(redis, key, res)

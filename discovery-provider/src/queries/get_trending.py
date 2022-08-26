@@ -1,6 +1,7 @@
 import logging
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
+from src.premium_content.constants import SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
 from src.queries.get_trending_tracks import (
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
@@ -23,6 +24,9 @@ def get_trending(args, strategy):
         "with_users": True,
         "limit": TRENDING_LIMIT,
         "offset": 0,
+        "filter_premium": args.get(
+            "filter_premium", SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
+        ),
     }
 
     # decode and add user_id if necessary

@@ -2,6 +2,7 @@ import logging  # pylint: disable=C0302
 import random
 
 from src.api.v1.helpers import extend_track, to_dict
+from src.premium_content.constants import SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
 from src.queries.get_trending_tracks import TRENDING_TTL_SEC, get_trending_tracks
 from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
@@ -22,6 +23,9 @@ def get_recommended_tracks(args, strategy):
         "with_users": True,
         "limit": args.get("limit"),
         "offset": 0,
+        "filter_premium": args.get(
+            "filter_premium", SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
+        ),
     }
 
     # decode and add user_id if necessary

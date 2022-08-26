@@ -360,13 +360,22 @@ def default_function_score(dsl, ranking_field):
     }
 
 
-def track_dsl(search_str, current_user_id, must_saved=False, only_downloadable=False):
+def track_dsl(
+    search_str,
+    current_user_id,
+    must_saved=False,
+    only_downloadable=False,
+    filter_premium=False,
+):
+    dsl_must = [
+        *base_match(search_str),
+        {"term": {"is_unlisted": {"value": False}}},
+        {"term": {"is_delete": False}},
+    ]
+    if filter_premium:
+        dsl_must.append({"term": {"is_premium": {"value": False}}})
     dsl = {
-        "must": [
-            *base_match(search_str),
-            {"term": {"is_unlisted": {"value": False}}},
-            {"term": {"is_delete": False}},
-        ],
+        "must": dsl_must,
         "must_not": [
             {"exists": {"field": "stem_of"}},
         ],
