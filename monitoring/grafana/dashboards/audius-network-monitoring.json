@@ -237,7 +237,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "((sum without(run_id,instance) (audius_nm_users_with_all_foundation_node_replica_set{environment=~\"$env\"})) / (sum without(run_id,instance) (audius_nm_user_count{environment=~\"$env\"}))) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "((sum without(run_id,instance) (audius_nm_users_with_all_foundation_node_replica_set{environment=~\"$env\"})) / (sum without(run_id,instance) (audius_nm_user_count{environment=~\"$env\"}))) * 100",
             "hide": false,
             "legendFormat": "%",
             "range": true,
@@ -630,32 +630,7 @@
             },
             "unit": "short"
           },
-          "overrides": [
-            {
-              "__systemRef": "hideSeriesFrom",
-              "matcher": {
-                "id": "byNames",
-                "options": {
-                  "mode": "exclude",
-                  "names": [
-                    "https://creatornode9.staging.audius.co"
-                  ],
-                  "prefix": "All except:",
-                  "readOnly": true
-                }
-              },
-              "properties": [
-                {
-                  "id": "custom.hideFrom",
-                  "value": {
-                    "legend": false,
-                    "tooltip": false,
-                    "viz": true
-                  }
-                }
-              ]
-            }
-          ]
+          "overrides": []
         },
         "gridPos": {
           "h": 10,
@@ -753,7 +728,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "red"
+                  "color": "red",
+                  "value": null
                 },
                 {
                   "color": "yellow",
@@ -799,7 +775,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "(sum without (run_id,instance) (audius_nm_fully_synced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "(sum without (run_id,instance) (audius_nm_fully_synced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) * 100",
             "interval": "2h",
             "legendFormat": "Fully synced %",
             "range": true,
@@ -810,7 +786,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "(sum without (run_id,instance) (audius_nm_partially_synced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "(sum without (run_id,instance) (audius_nm_partially_synced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) * 100",
             "hide": false,
             "interval": "2h",
             "legendFormat": "Partially synced %",
@@ -822,7 +798,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "(sum without (run_id,instance) (audius_nm_unsynced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "(sum without (run_id,instance) (audius_nm_unsynced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) * 100",
             "hide": false,
             "interval": "2h",
             "legendFormat": "Unsynced %",
@@ -834,7 +810,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "(sum without (run_id,instance) (audius_nm_no_primary_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "(sum without (run_id,instance) (audius_nm_no_primary_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) * 100",
             "hide": false,
             "interval": "2h",
             "legendFormat": "No primary %",
@@ -857,7 +833,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "purple",
@@ -961,7 +938,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "blue"
+                  "color": "blue",
+                  "value": null
                 },
                 {
                   "color": "blue",
@@ -1002,7 +980,7 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "sum(audius_nm_fully_synced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "sum(audius_nm_fully_synced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) * 100",
             "format": "time_series",
             "instant": true,
             "legendFormat": "fully synced user %",
@@ -1015,7 +993,7 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "sum(audius_nm_partially_synced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "sum(audius_nm_partially_synced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) * 100",
             "hide": false,
             "instant": true,
             "legendFormat": "partially synced user %",
@@ -1028,7 +1006,7 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "sum(audius_nm_unsynced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "sum(audius_nm_unsynced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) * 100",
             "hide": false,
             "instant": true,
             "legendFormat": "unsynced user count",
@@ -1041,7 +1019,7 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "sum(audius_nm_no_primary_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "expr": "sum(audius_nm_no_primary_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) * 100",
             "hide": false,
             "instant": true,
             "legendFormat": "users with null primary count",
@@ -1096,7 +1074,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -1220,7 +1199,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -1740,7 +1720,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "orange",
@@ -1846,7 +1827,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "orange",
@@ -1938,7 +1920,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -2073,7 +2056,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -2203,7 +2187,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
