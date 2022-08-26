@@ -14,6 +14,7 @@ const initAudiusLibs = require('../initAudiusLibs')
 const asyncRetry = require('../../utils/asyncRetry')
 const DecisionTree = require('../../utils/decisionTree')
 const UserSyncFailureCountService = require('./UserSyncFailureCountService')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
@@ -27,7 +28,7 @@ const SyncRequestMaxUserFailureCountBeforeSkip = config.get(
  * Export data for user from secondary and save locally, until complete
  * Should never error, instead return errorObj, else null
  */
-module.exports = async function primarySyncFromSecondary({
+async function _primarySyncFromSecondary({
   wallet,
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
@@ -48,9 +49,11 @@ module.exports = async function primarySyncFromSecondary({
 
     let libs
     try {
+      tracing.info('init AudiusLibs')
       libs = await initAudiusLibs({ logger })
       decisionTree.recordStage({ name: 'initAudiusLibs() success', log: true })
     } catch (e) {
+      tracing.recordException(e)
       decisionTree.recordStage({
         name: 'initAudiusLibs() Error',
         data: { errorMsg: e.message }
@@ -108,6 +111,7 @@ module.exports = async function primarySyncFromSecondary({
           log: true
         })
       } catch (e) {
+        tracing.recordException(e)
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Error',
           data: { ...decisionTreeData, errorMsg: e.message }
@@ -136,6 +140,7 @@ module.exports = async function primarySyncFromSecondary({
           log: true
         })
       } catch (e) {
+        tracing.recordException(e)
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Error',
           data: { ...decisionTreeData, errorMsg: e.message }
@@ -171,6 +176,7 @@ module.exports = async function primarySyncFromSecondary({
 
     decisionTree.recordStage({ name: 'Complete Success' })
   } catch (e) {
+    tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
     return e
   } finally {
@@ -180,10 +186,19 @@ module.exports = async function primarySyncFromSecondary({
   }
 }
 
+const primarySyncFromSecondary = instrumentTracing({
+  fn: _primarySyncFromSecondary,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
+
 /**
  * Fetch export for wallet from secondary for max clock range, starting at clockRangeMin
  */
-async function fetchExportFromSecondary({
+async function _fetchExportFromSecondary({
   wallet,
   secondary,
   clockRangeMin,
@@ -235,6 +250,15 @@ async function fetchExportFromSecondary({
 
   return fetchedCNodeUser
 }
+
+const fetchExportFromSecondary = instrumentTracing({
+  fn: _fetchExportFromSecondary,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
 
 /**
  * Fetch data for all files & save to disk
@@ -549,3 +573,5 @@ async function filterOutAlreadyPresentDBEntries({
 
   return filteredEntries
 }
+
+module.exports = primarySyncFromSecondary
