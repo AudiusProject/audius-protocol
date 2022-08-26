@@ -8,8 +8,10 @@ import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import confirmerSagas from 'common/store/confirmer/sagas'
 import collectionPageSagas from 'common/store/pages/collection/sagas'
+import feedPageSagas from 'common/store/pages/feed/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
+import queueSagas from 'common/store/queue/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
@@ -35,6 +37,9 @@ export default function* rootSaga() {
     ...tracksSagas(),
     ...usersSagas(),
 
+    // Playback
+    queueSagas(),
+
     // Sign in / Sign out
     ...signOnSagas(),
     ...signOutSagas(),
@@ -47,6 +52,7 @@ export default function* rootSaga() {
     // Pages
     ...trackPageSagas(),
     ...collectionPageSagas(),
+    ...feedPageSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),
