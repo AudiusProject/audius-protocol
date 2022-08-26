@@ -28,7 +28,7 @@ cat ${new_uids} | sort | sponge ${new_uids}
 
 # delete all UIDs that no longer exist
 for uid in $(comm -23 ${old_uids} ${new_uids}); do
-    ./grafana/bin/delete-alert.sh ${uid}
+    bash ./grafana/bin/delete-alert.sh ${uid}
 done
 
 # remove temp files
