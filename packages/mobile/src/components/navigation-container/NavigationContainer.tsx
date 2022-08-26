@@ -112,6 +112,9 @@ const NavigationContainer = ({ children }: Props) => {
                         Reposts: 'reposts',
                         Collectibles: 'collectibles'
                       }
+                    },
+                    SettingsScreen: {
+                      path: 'settings'
                     }
                   }
                 }
