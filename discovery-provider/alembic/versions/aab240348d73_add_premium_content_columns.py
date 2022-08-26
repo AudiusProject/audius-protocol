@@ -30,7 +30,7 @@ def upgrade():
     connection.execute(
         """
         begin;
-            CREATE INDEX IF NOT EXISTS track_is_premium_idx ON tracks (is_premium);
+            CREATE INDEX IF NOT EXISTS track_is_premium_idx ON tracks (is_premium, is_current, is_delete);
         commit;
     """
     )
