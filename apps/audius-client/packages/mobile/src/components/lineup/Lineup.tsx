@@ -11,6 +11,7 @@ import {
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'
 import { Dimensions, StyleSheet, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { SectionList } from 'app/components/core'
 import {
@@ -18,7 +19,6 @@ import {
   TrackTile,
   LineupTileSkeleton
 } from 'app/components/lineup-tile'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
@@ -141,7 +141,7 @@ export const Lineup = ({
   ...listProps
 }: LineupProps) => {
   const showTip = useSelectorWeb(getShowTip)
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
   useScrollToTop(() => {
@@ -187,7 +187,7 @@ export const Lineup = ({
     if (shouldLoadMore) {
       const itemLoadCount = itemCounts.initial + page * itemCounts.loadMore
 
-      dispatchWeb(actions.setPage(page + 1))
+      dispatch(actions.setPage(page + 1))
 
       const limit =
         Math.min(itemLoadCount, Math.max(countOrDefault, itemCounts.minimum)) -
@@ -196,7 +196,7 @@ export const Lineup = ({
       if (loadMore) {
         loadMore(offset, limit, page === 0)
       } else {
-        dispatchWeb(
+        dispatch(
           actions.fetchLineupMetadatas(offset, limit, page === 0, fetchPayload)
         )
       }
@@ -204,7 +204,7 @@ export const Lineup = ({
   }, [
     actions,
     countOrDefault,
-    dispatchWeb,
+    dispatch,
     fetchPayload,
     includeLineupStatus,
     itemCounts,
@@ -247,7 +247,7 @@ export const Lineup = ({
       // we remove the web-view.
       setImmediate(() => {
         if (!isPlayingUid || !isPlaying) {
-          dispatchWeb(actions.play(uid))
+          dispatch(actions.play(uid))
           track(
             make({
               eventName: Name.PLAYBACK_PLAY,
@@ -256,7 +256,7 @@ export const Lineup = ({
             })
           )
         } else {
-          dispatchWeb(actions.pause())
+          dispatch(actions.pause())
           track(
             make({
               eventName: Name.PLAYBACK_PAUSE,
@@ -267,7 +267,7 @@ export const Lineup = ({
         }
       })
     },
-    [actions, dispatchWeb]
+    [actions, dispatch]
   )
 
   const getLineupTileComponent = (item: LineupItem) => {

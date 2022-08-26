@@ -23,7 +23,6 @@ import { useSelector } from 'react-redux'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import type { AppState } from 'app/store'
 import { getPlayingUid } from 'app/store/audio/selectors'
@@ -40,15 +39,9 @@ const getUserId = accountSelectors.getUserId
 export const TrackTile = (props: LineupItemProps) => {
   const { uid } = props
 
-  // Using isEqual as the equality function to prevent rerenders due to object references
-  // not being preserved when syncing redux state from client.
-  // This can be removed when no longer dependent on web client
-  const track = useSelectorWeb((state) => getTrack(state, { uid }), isEqual)
+  const track = useSelector((state) => getTrack(state, { uid }))
 
-  const user = useSelectorWeb(
-    (state) => getUserFromTrack(state, { uid }),
-    isEqual
-  )
+  const user = useSelector((state) => getUserFromTrack(state, { uid }))
 
   if (!track || !user) {
     console.warn('Track or user missing for TrackTile, preventing render')
@@ -75,7 +68,7 @@ const TrackTileComponent = ({
 }: TrackTileProps) => {
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
-  const currentUserId = useSelectorWeb(getUserId)
+  const currentUserId = useSelector(getUserId)
   const isPlayingUid = useSelector(
     (state: AppState) => getPlayingUid(state) === lineupTileProps.uid
   )
