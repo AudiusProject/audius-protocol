@@ -30,6 +30,7 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import Tooltip from 'components/tooltip/Tooltip'
+import { audioPlayer } from 'services/audio-player'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import { setupHotkeys } from 'utils/hotkeyUtil'
 import { collectibleDetailsPage, profilePage } from 'utils/route'
@@ -39,7 +40,6 @@ import styles from './PlayBar.module.css'
 import PlayingTrackInfo from './components/PlayingTrackInfo'
 const { makeGetCurrent } = queueSelectors
 const {
-  getAudio,
   getCollectible,
   getPlaying,
   getCounter,
@@ -96,7 +96,7 @@ class PlayBar extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { audio, isPlaying, playCounter } = this.props
+    const { isPlaying, playCounter } = this.props
     if (!isPlaying) {
       clearInterval(this.seekInterval)
       this.seekInterval = null
@@ -104,7 +104,7 @@ class PlayBar extends Component {
 
     if (isPlaying && !this.seekInterval) {
       this.seekInterval = setInterval(() => {
-        const trackPosition = audio.getPosition()
+        const trackPosition = audioPlayer.getPosition()
         this.setState({ trackPosition })
       }, SEEK_INTERVAL)
     }
@@ -120,8 +120,8 @@ class PlayBar extends Component {
 
     // If there was an intent to set initial volume and audio is defined
     // set the initial volume
-    if (this.state.initialVolume !== null && audio) {
-      audio.setVolume(this.state.initialVolume)
+    if (this.state.initialVolume !== null && audioPlayer) {
+      audioPlayer.setVolume(this.state.initialVolume)
       this.setState({
         initialVolume: null
       })
@@ -160,14 +160,13 @@ class PlayBar extends Component {
   togglePlay = () => {
     const {
       currentQueueItem: { track },
-      audio,
       isPlaying,
       play,
       pause,
       record
     } = this.props
 
-    if (audio && isPlaying) {
+    if (audioPlayer && isPlaying) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -203,10 +202,9 @@ class PlayBar extends Component {
   }
 
   updateVolume = (volume) => {
-    const { audio } = this.props
-    if (audio) {
+    if (audioPlayer) {
       // If we already have an audio object set the volume immediately!
-      audio.setVolume(volume / VOLUME_GRANULARITY)
+      audioPlayer.setVolume(volume / VOLUME_GRANULARITY)
     } else {
       // Store volume in the state so that when audio does mount we can set it
       this.setState({
@@ -237,14 +235,13 @@ class PlayBar extends Component {
 
   onPrevious = () => {
     const {
-      audio,
       seek,
       previous,
       reset,
       currentQueueItem: { track }
     } = this.props
     if (track?.genre === Genre.PODCASTS) {
-      const position = audio.getPosition()
+      const position = audioPlayer.getPosition()
       const newPosition = position - SKIP_DURATION_SEC
       seek(Math.max(0, newPosition))
       this.setState({
@@ -263,14 +260,13 @@ class PlayBar extends Component {
 
   onNext = () => {
     const {
-      audio,
       seek,
       next,
       currentQueueItem: { track }
     } = this.props
     if (track?.genre === Genre.PODCASTS) {
-      const duration = audio.getDuration()
-      const position = audio.getPosition()
+      const duration = audioPlayer.getDuration()
+      const position = audioPlayer.getPosition()
       const newPosition = position + SKIP_DURATION_SEC
       seek(Math.min(newPosition, duration))
       this.setState({
@@ -289,7 +285,6 @@ class PlayBar extends Component {
   render() {
     const {
       currentQueueItem: { uid, track, user },
-      audio,
       collectible,
       isPlaying,
       isBuffering,
@@ -322,7 +317,7 @@ class PlayBar extends Component {
       isOwner = track.owner_id === userId
       trackPermalink = track.permalink
 
-      duration = audio.getDuration()
+      duration = audioPlayer.getDuration()
       trackId = track.track_id
       reposted = track.has_current_user_reposted
       favorited = track.has_current_user_saved || false
@@ -336,7 +331,7 @@ class PlayBar extends Component {
       isVerified = user.is_verified
       profilePictureSizes = user._profile_picture_sizes
       isOwner = this.props.accountUser?.user_id === user.user_id
-      duration = audio.getDuration()
+      duration = audioPlayer.getDuration()
 
       reposted = false
       favorited = false
@@ -384,7 +379,7 @@ class PlayBar extends Component {
                 isPlaying={isPlaying && !isBuffering}
                 isDisabled={!uid && !collectible}
                 includeTimestamps
-                elapsedSeconds={audio?.getPosition()}
+                elapsedSeconds={audioPlayer?.getPosition()}
                 totalSeconds={duration}
                 style={{
                   railListenedColor: 'var(--track-slider-rail)',
@@ -486,7 +481,6 @@ const makeMapStateToProps = () => {
     accountUser: getAccountUser(state),
     currentQueueItem: getCurrentQueueItem(state),
     playCounter: getCounter(state),
-    audio: getAudio(state),
     collectible: getCollectible(state),
     isPlaying: getPlaying(state),
     isBuffering: getBuffering(state),

@@ -1,5 +1,5 @@
-import { TrackSegment } from '../../models'
-import { Nullable } from '../../utils'
+import { TrackSegment } from '../models'
+import { Nullable } from '../utils'
 
 export type AudioInfo = {
   id: string
@@ -8,7 +8,13 @@ export type AudioInfo = {
   artwork?: string
 }
 
+export enum AudioError {
+  AUDIO = 'AUDIO',
+  HLS = 'HLS'
+}
+
 export type AudioPlayer = {
+  audio: HTMLAudioElement
   load: (
     segments: TrackSegment[],
     onEnd: () => void,
@@ -25,8 +31,7 @@ export type AudioPlayer = {
   isBuffering: () => boolean
   getPosition: () => number | Promise<number>
   getDuration: () => number
-}
-
-export type TAudioPlayer = {
-  new (): AudioPlayer
+  onBufferingChange: (isBuffering: boolean) => void
+  onError: (error: string, data: string | Event) => void
+  audioCtx: Nullable<AudioContext>
 }

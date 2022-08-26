@@ -1,4 +1,3 @@
-export * from './types'
 export {
   default as playerReducer,
   actions as playerActions,

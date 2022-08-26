@@ -20,15 +20,15 @@ import { Track } from '@audius/common'
 import { SquareSizes } from '@audius/common'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrackInfo'
-import AudioStream from 'audio/AudioStream'
 import { webglSupported } from './utils'
 import { averageColorSelectors } from '@audius/common'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { audioPlayer } from 'services/audio-player'
 
 const { makeGetCurrent } = queueSelectors
-const { getAudio, getPlaying } = playerSelectors
+const { getPlaying } = playerSelectors
 const { getTheme } = themeSelectors
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 
@@ -57,7 +57,6 @@ const messages = (browser: string) => ({
 const Visualizer = ({
   isVisible,
   currentQueueItem,
-  audio,
   playing,
   theme,
   dominantColors,
@@ -99,9 +98,8 @@ const Visualizer = ({
 
   // Rebind audio
   useEffect(() => {
-    if (audio && (audio as AudioStream).audioCtx && playing)
-      Visualizer1?.bind(audio)
-  }, [isVisible, playing, audio, currentQueueItem])
+    if (audioPlayer.audioCtx && playing) Visualizer1?.bind(audioPlayer)
+  }, [isVisible, playing, currentQueueItem])
 
   useEffect(() => {
     if (isVisible) {
@@ -226,7 +224,6 @@ const makeMapStateToProps = () => {
     const currentQueueItem = getCurrentQueueItem(state)
     return {
       currentQueueItem,
-      audio: getAudio(state),
       playing: getPlaying(state),
       theme: getTheme(state),
       dominantColors: getDominantColorsByTrack(state, {
