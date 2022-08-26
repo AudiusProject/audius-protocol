@@ -5,7 +5,7 @@ import _ from 'lodash'
 
 const asyncRetry = require('../../utils/asyncRetry')
 
-const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
+const EXPORT_REQ_TIMEOUT_MS = 60 /* sec */ * 1000 /* millis */
 const EXPORT_REQ_MAX_RETRIES = 3
 
 type ExportQueryParams = {
