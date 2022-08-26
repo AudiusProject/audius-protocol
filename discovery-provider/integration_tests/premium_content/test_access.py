@@ -30,19 +30,25 @@ def test_track_access(app):
         # test non-existent track
         non_exisent_track_id = 3
         is_premium, does_user_have_access = premium_content_access_checker.check_access(
-            user_entities[0]["user_id"], non_exisent_track_id, "track"
+            user_id=user_entities[0]["user_id"],
+            premium_content_id=non_exisent_track_id,
+            premium_content_type="track",
         )
         assert not is_premium and does_user_have_access
 
         # test non-premium track
         is_premium, does_user_have_access = premium_content_access_checker.check_access(
-            user_entities[1]["user_id"], non_premium_track_entity["track_id"], "track"
+            user_id=user_entities[1]["user_id"],
+            premium_content_id=non_premium_track_entity["track_id"],
+            premium_content_type="track",
         )
         assert not is_premium and does_user_have_access
 
         # test premium track with user who has access
         is_premium, does_user_have_access = premium_content_access_checker.check_access(
-            user_entities[1]["user_id"], premium_track_entity["track_id"], "track"
+            user_id=user_entities[1]["user_id"],
+            premium_content_id=premium_track_entity["track_id"],
+            premium_content_type="track",
         )
         assert is_premium and does_user_have_access
 

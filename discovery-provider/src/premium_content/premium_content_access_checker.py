@@ -56,7 +56,9 @@ class PremiumContentAccessChecker:
             return is_premium, True
 
         does_user_have_access = self._evaluate_conditions(
-            user_id, cast(int, content_owner_id), premium_conditions
+            user_id=user_id,
+            premium_content_owner_id=cast(int, content_owner_id),
+            premium_conditions=premium_conditions,
         )
         return True, does_user_have_access
 
@@ -86,7 +88,7 @@ class PremiumContentAccessChecker:
     # For now, we only support one condition, which is the ownership
     # of an NFT from a given collection.
     def _evaluate_conditions(
-        self, user_id: int, track_owner_id: int, premium_conditions: Dict
+        self, user_id: int, premium_content_owner_id: int, premium_conditions: Dict
     ):
         if len(premium_conditions) != 1:
             logging.info(
