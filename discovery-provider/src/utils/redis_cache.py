@@ -144,6 +144,7 @@ def cache(**kwargs):
                 if cached_resp:
                     if transform is not None:
                         return transform(cached_resp)
+
                     return cached_resp, 200
 
             response = func(*args, **kwargs)
@@ -152,6 +153,7 @@ def cache(**kwargs):
                 resp, status_code = response
                 if status_code < 400:
                     set_json_cached_key(redis, key, resp, ttl_sec)
+
                 return resp, status_code
             set_json_cached_key(redis, key, response, ttl_sec)
             return transform(response)

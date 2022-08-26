@@ -1,15 +1,45 @@
-// Issue sync request job
+export type SyncRequestAxiosData = {
+  wallet: string[]
+  creator_node_endpoint?: string
+  sync_type?: string
+  immediate?: boolean
+  forceResync?: boolean
+  forceWipe?: boolean
+  timestamp?: string
+  signature?: string
+  sync_even_if_disabled?: boolean
+}
+
 export type SyncRequestAxiosParams = {
   baseURL: string
   url: string
   method: string
-  data: {
-    wallet: string[]
-    creator_node_endpoint?: string
-    sync_type?: string
-    immediate?: boolean
-  }
+  data: SyncRequestAxiosData
 }
+
+// Issue sync request job
+export type ForceResyncSigningData = {
+  wallet: string[]
+  creator_node_endpoint?: string
+  sync_type?: string
+  immediate?: boolean
+}
+
+export type ForceResyncAuthParams = {
+  data: ForceResyncSigningData
+  timestamp: string
+  signature: string
+}
+
+export type ForceResyncConfig = {
+  signatureData: ForceResyncAuthParams
+  wallet: string
+  forceResync?: boolean
+  libs: any
+  logContext?: any
+  logger?: any
+} | null
+
 export type IssueSyncRequestJobParams = {
   syncType: string
   syncMode: string
@@ -56,4 +86,14 @@ export type UpdateReplicaSetJobReturnValue = {
   issuedReconfig: boolean
   newReplicaSet: NewReplicaSet
   healthyNodes: string[]
+}
+
+// Recover orphaned data job
+export type RecoverOrphanedDataJobParams = {
+  discoveryNodeEndpoint: string
+}
+export type RecoverOrphanedDataJobReturnValue = {
+  numWalletsOnNode: number
+  numWalletsWithNodeInReplicaSet: number
+  numWalletsWithOrphanedData: number
 }

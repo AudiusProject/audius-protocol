@@ -1,7 +1,6 @@
 import logging  # pylint: disable=C0302
 
 import sqlalchemy
-from flask.globals import request
 from sqlalchemy import desc
 from src import exceptions
 from src.models.playlists.playlist import Playlist
@@ -15,24 +14,10 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_cache import extract_key, use_redis_cache
 
 logger = logging.getLogger(__name__)
 
 UNPOPULATED_PLAYLIST_CACHE_DURATION_SEC = 10
-
-
-def make_cache_key(args):
-    cache_keys = {"user_id": args.get("user_id"), "with_users": args.get("with_users")}
-
-    if args.get("playlist_id"):
-        ids = args.get("playlist_id")
-        ids = map(str, ids)
-        ids = ",".join(ids)
-        cache_keys["playlist_id"] = ids
-
-    key = extract_key(f"unpopulated-playlist:{request.path}", cache_keys.items())
-    return key
 
 
 def get_playlists(args):
@@ -91,18 +76,10 @@ def get_playlists(args):
             playlist_ids = list(
                 map(lambda playlist: playlist["playlist_id"], playlists)
             )
-
             return (playlists, playlist_ids)
 
         try:
-            # Get unpopulated playlists, either via
-            # redis cache or via get_unpopulated_playlists
-            key = make_cache_key(args)
-
-            (playlists, playlist_ids) = use_redis_cache(
-                key, UNPOPULATED_PLAYLIST_CACHE_DURATION_SEC, get_unpopulated_playlists
-            )
-
+            (playlists, playlist_ids) = get_unpopulated_playlists()
             # bundle peripheral info into playlist results
             playlists = populate_playlist_metadata(
                 session,

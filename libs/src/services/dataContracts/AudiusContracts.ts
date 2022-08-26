@@ -10,6 +10,7 @@ import { PlaylistFactoryClient } from './PlaylistFactoryClient'
 import { UserLibraryFactoryClient } from './UserLibraryFactoryClient'
 import { IPLDBlacklistFactoryClient } from './IPLDBlacklistFactoryClient'
 import { UserReplicaSetManagerClient } from './UserReplicaSetManagerClient'
+import { EntityManagerClient } from './EntityManagerClient'
 import type { Web3Manager } from '../web3Manager'
 import type { ContractClient } from '../contracts/ContractClient'
 import { abi as RegistryABI } from '../../data-contracts/ABIs/Registry.json'
@@ -20,6 +21,7 @@ import { abi as PlaylistFactoryABI } from '../../data-contracts/ABIs/PlaylistFac
 import { abi as UserLibraryFactoryABI } from '../../data-contracts/ABIs/UserLibraryFactory.json'
 import { abi as IPLDBlacklistFactoryABI } from '../../data-contracts/ABIs/IPLDBlacklistFactory.json'
 import { abi as UserReplicaSetManagerABI } from '../../data-contracts/ABIs/UserReplicaSetManager.json'
+import { abi as EntityManagerABI } from '../../data-contracts/ABIs/EntityManager.json'
 
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
@@ -33,6 +35,7 @@ const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 export class AudiusContracts {
   web3Manager: Web3Manager
   registryAddress: string
+  entityManagerAddress: string
   isServer: boolean
   logger: Logger
   RegistryClient: RegistryClient
@@ -42,6 +45,7 @@ export class AudiusContracts {
   PlaylistFactoryClient: PlaylistFactoryClient
   UserLibraryFactoryClient: UserLibraryFactoryClient
   IPLDBlacklistFactoryClient: IPLDBlacklistFactoryClient
+  EntityManagerClient: EntityManagerClient | undefined
   contractClients: ContractClient[]
   UserReplicaSetManagerClient: UserReplicaSetManagerClient | undefined | null
   contracts: Record<string, string> | undefined
@@ -50,11 +54,13 @@ export class AudiusContracts {
   constructor(
     web3Manager: Web3Manager,
     registryAddress: string,
+    entityManagerAddress: string,
     isServer: boolean,
     logger: Logger = console
   ) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
+    this.entityManagerAddress = entityManagerAddress
     this.isServer = isServer
     this.logger = logger
 
@@ -122,6 +128,18 @@ export class AudiusContracts {
       this.UserLibraryFactoryClient,
       this.IPLDBlacklistFactoryClient
     ]
+
+    if (this.entityManagerAddress) {
+      this.EntityManagerClient = new EntityManagerClient(
+        this.web3Manager,
+        EntityManagerABI,
+        'EntityManager',
+        this.getRegistryAddressForContract,
+        this.logger,
+        this.entityManagerAddress
+      )
+      this.contractClients.push(this.EntityManagerClient)
+    }
   }
 
   async init() {

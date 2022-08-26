@@ -364,7 +364,11 @@ export class CreatorNodeSelection extends ServiceSelection {
       sortByVersion: false,
       currentVersion: this.currentVersion,
       timeout: this.timeout,
-      equivalencyDelta: this.equivalencyDelta
+      equivalencyDelta: this.equivalencyDelta,
+      headers: {
+        'User-Agent':
+          'Axios - @audius/sdk - CreatorNodeSelection.ts#_performHealthChecks'
+      }
     })
 
     const healthyServices = healthCheckedServices.filter((resp) => {
@@ -383,6 +387,9 @@ export class CreatorNodeSelection extends ServiceSelection {
           this.currentVersion as string,
           resp.response.data.data.version
         )
+
+        const { healthy: isHealthyStatus } = resp.response.data.data
+
         const { storagePathSize, storagePathUsed, maxStorageUsedPercent } =
           resp.response.data.data
         if (maxStorageUsedPercent) {
@@ -396,7 +403,8 @@ export class CreatorNodeSelection extends ServiceSelection {
           storagePathSize,
           storagePathUsed
         )
-        isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
+        isHealthy =
+          isUp && versionIsUpToDate && hasEnoughStorage && isHealthyStatus
       }
 
       if (!isHealthy) {

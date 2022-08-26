@@ -45,12 +45,12 @@ tear_down () {
 
 run_unit_tests () {
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha --require ts-node/register --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' --exit
+  ./node_modules/mocha/bin/mocha --require ts-node/register --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' 'src/**/*.test.ts' --exit
 }
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha --require ts-node/register test/*.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
+  ./node_modules/mocha/bin/mocha --require ts-node/register test/*.test.js test/*.test.ts --timeout "${INTEGRATION_TIMEOUT}" --exit
 }
 
 ARG1=${@:$OPTIND:1}
@@ -117,7 +117,6 @@ export spOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 # Setting peerSetManager env vars
 export peerHealthCheckRequestTimeout=2000
 # bytes; 10gb
-export minimumStoragePathSize=10000000000
 # bytes; 2gb 
 export minimumMemoryAvailable=2000000000
 export maxFileDescriptorsAllocatedPercentage=95

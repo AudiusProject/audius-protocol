@@ -5,7 +5,7 @@ import type {
 } from './types'
 
 const initAudiusLibs = require('../../initAudiusLibs')
-const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 
 /**
  * Processes a job to update the cNodeEndpoint->spId map by reading the chain.
@@ -28,7 +28,7 @@ module.exports = async function ({
       enableIdentity: false,
       logger
     })
-    await NodeToSpIdManager.updateCnodeEndpointToSpIdMap(
+    await ContentNodeInfoManager.updateContentNodeChainInfo(
       audiusLibs.ethContracts
     )
   } catch (e: any) {
@@ -36,7 +36,7 @@ module.exports = async function ({
     logger.error(`updateEndpointToSpIdMap Error: ${errorMsg}`)
   }
   return {
-    cNodeEndpointToSpIdMap: NodeToSpIdManager.getCNodeEndpointToSpIdMap(),
+    cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
     errorMsg
   }
 }

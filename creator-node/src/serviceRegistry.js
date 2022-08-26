@@ -64,6 +64,7 @@ class ServiceRegistry {
     this.manualSyncQueue = null // Handles jobs for issuing a manual sync request
     this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
     this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
+    this.recoverOrphanedDataQueue = null // Handles jobs for finding+reconciling state on nodes outside of a user's replica set
     this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
 
     // Flags that indicate whether categories of services have been initialized
@@ -194,6 +195,7 @@ class ServiceRegistry {
         new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
+        new BullAdapter(this.recoverOrphanedDataQueue, { readOnlyMode: true }),
         new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
@@ -313,7 +315,8 @@ class ServiceRegistry {
       cNodeEndpointToSpIdMapQueue,
       manualSyncQueue,
       recurringSyncQueue,
-      updateReplicaSetQueue
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
     this.monitorStateQueue = monitorStateQueue
     this.findSyncRequestsQueue = findSyncRequestsQueue
@@ -322,6 +325,7 @@ class ServiceRegistry {
     this.manualSyncQueue = manualSyncQueue
     this.recurringSyncQueue = recurringSyncQueue
     this.updateReplicaSetQueue = updateReplicaSetQueue
+    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround

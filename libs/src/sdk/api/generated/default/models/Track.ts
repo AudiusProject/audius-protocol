@@ -134,5 +134,11 @@ export interface Track {
      * @memberof Track
      */
     permalink?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Track
+     */
+    is_streamable?: boolean;
 }
 

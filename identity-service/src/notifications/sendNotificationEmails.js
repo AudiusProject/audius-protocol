@@ -15,8 +15,8 @@ const {
   weekInHours
 } = require('./constants')
 
-// Mailgun object
-let mg
+// Sendgrid object
+let sg
 const EmailFrequency = notificationUtils.EmailFrequency
 
 const loggingContext = {
@@ -62,9 +62,9 @@ async function processEmailNotifications (expressApp, audiusLibs) {
   try {
     logger.info(loggingContext, `${new Date()} - processEmailNotifications`)
 
-    mg = expressApp.get('mailgun')
-    if (mg === null) {
-      logger.error('processEmailNotifications - Mailgun not configured')
+    sg = expressApp.get('sendgrid')
+    if (sg === null) {
+      logger.error('processEmailNotifications - Sendgrid not configured')
       return
     }
 
@@ -393,7 +393,10 @@ async function renderAndSendNotificationEmail (
       to: `${userEmail}`,
       bcc: 'audius-email-test@audius.co',
       html: notifHtml,
-      subject: emailSubject
+      subject: emailSubject,
+      asm: {
+        groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+      }
     }
 
     // Send email
@@ -431,17 +434,9 @@ async function cacheEmail (cacheParams) {
 }
 
 async function sendEmail (emailParams) {
-  return new Promise((resolve, reject) => {
-    if (mg === null) {
-      resolve()
-    }
-    mg.messages().send(emailParams, (error, body) => {
-      if (error) {
-        reject(error)
-      }
-      resolve(body)
-    })
-  })
+  if (sg !== null) {
+    await sg.send(emailParams)
+  }
 }
 
 module.exports = { renderAndSendNotificationEmail, processEmailNotifications }

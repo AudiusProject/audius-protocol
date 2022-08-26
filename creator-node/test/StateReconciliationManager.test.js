@@ -79,13 +79,22 @@ describe('test StateReconciliationManager initialization, events, and job proces
       stateReconciliationManager,
       'registerQueueEventHandlersAndJobProcessors'
     )
-    const { manualSyncQueue, recurringSyncQueue, updateReplicaSetQueue } =
-      await stateReconciliationManager.init(getPrometheusRegistry())
+    const discoveryNodeEndpoint = 'https://dn1.co'
+    const {
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
+    } = await stateReconciliationManager.init(
+      discoveryNodeEndpoint,
+      getPrometheusRegistry()
+    )
 
     // Verify that the queues were successfully initialized and that their event listeners were registered
     expect(manualSyncQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(recurringSyncQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(updateReplicaSetQueue).to.exist.and.to.be.instanceOf(BullQueue)
+    expect(recoverOrphanedDataQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(
       stateReconciliationManager.registerQueueEventHandlersAndJobProcessors
     ).to.have.been.calledOnce
@@ -110,6 +119,13 @@ describe('test StateReconciliationManager initialization, events, and job proces
     )
       .to.have.property('updateReplicaSetQueue')
       .that.has.deep.property('name', QUEUE_NAMES.UPDATE_REPLICA_SET)
+    expect(
+      stateReconciliationManager.registerQueueEventHandlersAndJobProcessors.getCall(
+        0
+      ).args[0]
+    )
+      .to.have.property('recoverOrphanedDataQueue')
+      .that.has.deep.property('name', QUEUE_NAMES.RECOVER_ORPHANED_DATA)
   })
 
   it('processes manual sync jobs with expected data and returns the expected results', async function () {
@@ -228,6 +244,34 @@ describe('test StateReconciliationManager initialization, events, and job proces
       unhealthyReplicas,
       replicaSetNodesToUserClockStatusesMap,
       enabledReconfigModes
+    })
+  })
+
+  it('processes recoverOrphanedData jobs with expected data and returns the expected results', async function () {
+    // Mock StateReconciliationManager to have recoverOrphanedData job processor return dummy data and mocked processJob util
+    const expectedResult = { test: 'test' }
+    const recoverOrphanedDataStub = sandbox.stub().resolves(expectedResult)
+    const { processJobMock, loggerStub } = getProcessJobMock()
+    const MockStateReconciliationManager = proxyquire(
+      '../src/services/stateMachineManager/stateReconciliation/index.js',
+      {
+        './recoverOrphanedData.jobProcessor': {
+          default: recoverOrphanedDataStub
+        },
+        '../processJob': processJobMock
+      }
+    )
+
+    // Verify that StateReconciliationManager returns our dummy data
+    const job = {}
+    await expect(
+      new MockStateReconciliationManager().makeRecoverOrphanedDataJob(
+        getPrometheusRegistry()
+      )(job)
+    ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
+    expect(recoverOrphanedDataStub).to.have.been.calledOnceWithExactly({
+      logger: loggerStub,
+      ...job
     })
   })
 })

@@ -2,7 +2,6 @@ const promiseAny = require('promise.any')
 
 const {
   sendResponse,
-  errorResponse,
   errorResponseUnauthorized,
   errorResponseServerError,
   errorResponseBadRequest
@@ -11,6 +10,7 @@ const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
+const { strToReplicaSet } = require('./utils/index')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
@@ -508,7 +508,7 @@ async function getOwnEndpoint({ libs }) {
 }
 
 /**
- * Retrieves user replica set from discprov
+ * Retrieves user replica set endpoints from discprov
  *
  * Polls discprov conditionally as follows:
  *    - If blockNumber provided, polls discprov until it has indexed that blocknumber (for up to 200 seconds)
@@ -516,24 +516,26 @@ async function getOwnEndpoint({ libs }) {
  *      - Errors if retrieved primary does not match myCnodeEndpoint
  *    - If neither of above conditions are met, falls back to single discprov query without polling
  *
+ * @param {string} wallet - wallet used to query discprov for user data
  * @param {Object} serviceRegistry
  * @param {Object} logger
- * @param {string} wallet - wallet used to query discprov for user data
  * @param {number} blockNumber - blocknumber of eth TX preceding CN call
  * @param {string} myCnodeEndpoint - endpoint of this CN
  * @param {boolean} ensurePrimary - determines if function should error if this CN is not primary
  *
- * @returns {Array} - array of strings of replica set
+ * @returns {ReplicaSet} - replica set object with optional primary, secondary1, and secondary2 properties
  */
-async function getCreatorNodeEndpoints({
+async function getUserReplicaSetEndpointsFromDiscovery({
+  wallet,
   libs,
   logger,
-  wallet,
   blockNumber,
   ensurePrimary,
   myCnodeEndpoint
 }) {
-  logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
+  logger.info(
+    `Starting getUserReplicaSetEndpointsFromDiscovery for wallet ${wallet}`
+  )
   const start = Date.now()
 
   let user = null
@@ -551,7 +553,7 @@ async function getCreatorNodeEndpoints({
     let discprovBlockNumber = -1
     for (let retry = 1; retry <= MaxRetries; retry++) {
       logger.info(
-        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${
+        `getUserReplicaSetEndpointsFromDiscovery retry #${retry}/${MaxRetries} || time from start: ${
           Date.now() - start2
         } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
       )
@@ -584,7 +586,7 @@ async function getCreatorNodeEndpoints({
 
       await utils.timeout(RetryTimeout)
       logger.info(
-        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
+        `getUserReplicaSetEndpointsFromDiscovery AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
           Date.now() - start2
         } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
       )
@@ -609,7 +611,7 @@ async function getCreatorNodeEndpoints({
      * Errors if retrieved primary does not match myCnodeEndpoint
      */
     logger.info(
-      `getCreatorNodeEndpoints || no blockNumber passed, retrying until DN returns same endpoint`
+      `getUserReplicaSetEndpointsFromDiscovery || no blockNumber passed, retrying until DN returns same endpoint`
     )
 
     const start2 = Date.now()
@@ -621,7 +623,7 @@ async function getCreatorNodeEndpoints({
     let returnedPrimaryEndpoint = null
     for (let retry = 1; retry <= MaxRetries; retry++) {
       logger.info(
-        `getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${
+        `getUserReplicaSetEndpointsFromDiscovery retry #${retry}/${MaxRetries} || time from start: ${
           Date.now() - start2
         } myCnodeEndpoint ${myCnodeEndpoint}`
       )
@@ -650,7 +652,7 @@ async function getCreatorNodeEndpoints({
 
       await utils.timeout(RetryTimeout)
       logger.info(
-        `getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
+        `getUserReplicaSetEndpointsFromDiscovery AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
           Date.now() - start2
         } myCnodeEndpoint ${myCnodeEndpoint}`
       )
@@ -674,7 +676,7 @@ async function getCreatorNodeEndpoints({
      * If neither of above conditions are met, falls back to single discprov query without polling
      */
     logger.info(
-      `getCreatorNodeEndpoints || ensurePrimary === false, fetching user without retries`
+      `getUserReplicaSetEndpointsFromDiscovery || ensurePrimary === false, fetching user without retries`
     )
     user = await libs.User.getUsers(1, 0, null, wallet)
   }
@@ -690,9 +692,11 @@ async function getCreatorNodeEndpoints({
   }
 
   const endpoint = user[0].creator_node_endpoint
-  const userReplicaSet = endpoint ? endpoint.split(',') : []
+  const userReplicaSet = strToReplicaSet(endpoint || ',,')
 
-  logger.info(`getCreatorNodeEndpoints route time ${Date.now() - start}`)
+  logger.info(
+    `getUserReplicaSetEndpointsFromDiscovery route time ${Date.now() - start}`
+  )
   return userReplicaSet
 }
 
@@ -920,5 +924,5 @@ module.exports = {
   ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
   getOwnEndpoint,
-  getCreatorNodeEndpoints
+  getUserReplicaSetEndpointsFromDiscovery
 }

@@ -21,7 +21,7 @@ const {
   QUEUE_NAMES
 } = require('../stateMachineConstants')
 const CNodeHealthManager = require('../CNodeHealthManager')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
+const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const config = require('../../../config')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -136,7 +136,7 @@ module.exports = async function ({
   }
 
   return {
-    cNodeEndpointToSpIdMap: CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap(),
+    cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
           [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs
@@ -183,6 +183,20 @@ const _findReplicaSetUpdatesForUser = async (
     secondary2SpID
   } = user
 
+  // If the user was on an old client (pre-URSM), they could have a null replica set on URSM.
+  // This will be resolved by client-side sanity checks next time they use the client.
+  // Any replica set update we issue here will fail because they have no primary SP ID that can be verified from chain.
+  if (
+    primarySpID === null &&
+    secondary1SpID === null &&
+    secondary1SpID === null
+  ) {
+    logger.error(
+      `User ${wallet} has null SP IDs for their entire replica set. Replica set endpoints: [${primary},${secondary1},${secondary2}]`
+    )
+    return requiredUpdateReplicaSetOps
+  }
+
   /**
    * If this node is primary for user, check both secondaries for health
    * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
@@ -209,16 +223,16 @@ const _findReplicaSetUpdatesForUser = async (
 
       // Error case 1 - mismatched spID
       if (
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
+        ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary] !==
         secondaryInfo.spId
       ) {
         logger.error(
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${
             secondaryInfo.spId
           }, found ${
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary]
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary]
           }. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
           )}`
         )
         unhealthyReplicas.add(secondary)
@@ -227,7 +241,7 @@ const _findReplicaSetUpdatesForUser = async (
       } else if (unhealthyPeersSet.has(secondary)) {
         logger.error(
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
           )}`
         )
         unhealthyReplicas.add(secondary)
@@ -239,7 +253,7 @@ const _findReplicaSetUpdatesForUser = async (
       ) {
         logger.error(
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${minSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
           )}`
         )
         unhealthyReplicas.add(secondary)
@@ -264,9 +278,20 @@ const _findReplicaSetUpdatesForUser = async (
       // If the map's spId does not match the query's spId, then regardless
       // of the relationship of the node to the user, issue a reconfig for that node
       if (
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[replica.endpoint] !==
+        ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[replica.endpoint] !==
         replica.spId
       ) {
+        logger.error(
+          `_findReplicaSetUpdatesForUser(): Replica ${
+            replica.endpoint
+          } for user ${wallet} mismatched spID. Expected ${
+            replica.spId
+          }, found ${
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[replica.endpoint]
+          }. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
+            ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
+          )}`
+        )
         unhealthyReplicas.add(replica.endpoint)
       } else if (unhealthyPeersSet.has(replica.endpoint)) {
         // Else, continue with conducting extra health check if the current observed node is a primary, and
@@ -280,6 +305,9 @@ const _findReplicaSetUpdatesForUser = async (
         }
 
         if (addToUnhealthyReplicas) {
+          logger.error(
+            `_findReplicaSetUpdatesForUser(): Replica ${replica.endpoint} for user ${wallet} was already marked unhealthy and failed an additional health check if it was primary.`
+          )
           unhealthyReplicas.add(replica.endpoint)
         }
       }

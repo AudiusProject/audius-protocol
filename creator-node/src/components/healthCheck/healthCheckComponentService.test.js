@@ -149,6 +149,8 @@ describe('Test Health Check', function () {
     config.set('snapbackUsersPerJob', 2)
     config.set('stateMonitoringQueueRateLimitInterval', 20_000)
     config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
+    config.set('recoverOrphanedDataQueueRateLimitInterval', 50_000)
+    config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
     config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
@@ -214,6 +216,8 @@ describe('Test Health Check', function () {
       snapbackUsersPerJob: 2,
       stateMonitoringQueueRateLimitInterval: 20_000,
       stateMonitoringQueueRateLimitJobsPerInterval: 2,
+      recoverOrphanedDataQueueRateLimitInterval: 50_000,
+      recoverOrphanedDataQueueRateLimitJobsPerInterval: 1,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
@@ -267,6 +271,8 @@ describe('Test Health Check', function () {
     config.set('snapbackUsersPerJob', 2)
     config.set('stateMonitoringQueueRateLimitInterval', 20_000)
     config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
+    config.set('recoverOrphanedDataQueueRateLimitInterval', 50_000)
+    config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
     config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
@@ -327,6 +333,8 @@ describe('Test Health Check', function () {
       snapbackUsersPerJob: 2,
       stateMonitoringQueueRateLimitInterval: 20_000,
       stateMonitoringQueueRateLimitJobsPerInterval: 2,
+      recoverOrphanedDataQueueRateLimitInterval: 50_000,
+      recoverOrphanedDataQueueRateLimitJobsPerInterval: 1,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
@@ -429,6 +437,8 @@ describe('Test Health Check', function () {
       snapbackUsersPerJob: 2,
       stateMonitoringQueueRateLimitInterval: 20_000,
       stateMonitoringQueueRateLimitJobsPerInterval: 2,
+      recoverOrphanedDataQueueRateLimitInterval: 50_000,
+      recoverOrphanedDataQueueRateLimitJobsPerInterval: 1,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
@@ -513,6 +523,8 @@ describe('Test Health Check Verbose', function () {
     config.set('snapbackUsersPerJob', 2)
     config.set('stateMonitoringQueueRateLimitInterval', 20_000)
     config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
+    config.set('recoverOrphanedDataQueueRateLimitInterval', 50_000)
+    config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
 
@@ -572,6 +584,8 @@ describe('Test Health Check Verbose', function () {
       snapbackUsersPerJob: 2,
       stateMonitoringQueueRateLimitInterval: 20_000,
       stateMonitoringQueueRateLimitJobsPerInterval: 2,
+      recoverOrphanedDataQueueRateLimitInterval: 50_000,
+      recoverOrphanedDataQueueRateLimitJobsPerInterval: 1,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
@@ -625,6 +639,8 @@ describe('Test Health Check Verbose', function () {
     config.set('snapbackUsersPerJob', 2)
     config.set('stateMonitoringQueueRateLimitInterval', 20_000)
     config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
+    config.set('recoverOrphanedDataQueueRateLimitInterval', 50_000)
+    config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
 
@@ -660,5 +676,27 @@ describe('Test Health Check Verbose', function () {
     )
 
     assert.deepStrictEqual(verboseRes, defaultRes)
+  })
+
+  it('Should check that considerNodeUnhealthy env var returns healthy false', async function () {
+    config.set('considerNodeUnhealthy', true)
+
+    const defaultRes = await healthCheck(
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
+        trustedNotifierManager: trustedNotifierManagerMock
+      },
+      mockLogger,
+      sequelizeMock,
+      getMonitorsMock,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
+      2
+    )
+
+    assert.deepStrictEqual(defaultRes.healthy, false)
   })
 })

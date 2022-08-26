@@ -9,6 +9,15 @@ const web3 = new Web3()
  */
 const MAX_SIGNATURE_AGE_MS = 300000
 
+const generateSignature = (data, privateKey) => {
+  // JSON stringify automatically removes white space given 1 param
+  const toSignStr = JSON.stringify(sortKeys(data))
+  const toSignHash = web3.utils.keccak256(toSignStr)
+  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+
+  return signedResponse.signature
+}
+
 /**
  * Generate the timestamp and signature for api signing
  * @param {object} data
@@ -17,12 +26,9 @@ const MAX_SIGNATURE_AGE_MS = 300000
 const generateTimestampAndSignature = (data, privateKey) => {
   const timestamp = new Date().toISOString()
   const toSignObj = { ...data, timestamp }
-  // JSON stringify automatically removes white space given 1 param
-  const toSignStr = JSON.stringify(sortKeys(toSignObj))
-  const toSignHash = web3.utils.keccak256(toSignStr)
-  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+  const signature = generateSignature(toSignObj, privateKey)
 
-  return { timestamp, signature: signedResponse.signature }
+  return { timestamp, signature }
 }
 
 // Keeps track of a cached listen signature
@@ -70,15 +76,18 @@ const recoverWallet = (data, signature) => {
 }
 
 /**
- * Returns boolean indicating if provided timestamp is older than MAX_SIGNATURE_AGE
+ * Returns boolean indicating if provided timestamp is older than maxTTL
  * @param {string} signatureTimestamp unix timestamp string when signature was generated
  */
-const signatureHasExpired = (signatureTimestamp) => {
+const signatureHasExpired = (
+  signatureTimestamp,
+  maxTTL = MAX_SIGNATURE_AGE_MS
+) => {
   const signatureTimestampDate = new Date(signatureTimestamp)
   const currentTimestampDate = new Date()
   const signatureAge = currentTimestampDate - signatureTimestampDate
 
-  return signatureAge >= MAX_SIGNATURE_AGE_MS
+  return signatureAge >= maxTTL
 }
 
 /**
@@ -199,6 +208,7 @@ function validateSPId(spID) {
 
 module.exports = {
   generateTimestampAndSignature,
+  generateSignature,
   generateListenTimestampAndSignature,
   generateTimestampAndSignatureForSPVerification,
   recoverWallet,

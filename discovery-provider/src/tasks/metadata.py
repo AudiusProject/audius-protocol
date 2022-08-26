@@ -45,3 +45,13 @@ user_metadata_format = {
     "events": None,
     "is_deactivated": None,
 }
+
+playlist_metadata_format = {
+    "playlist_id": None,
+    "playlist_contents": None,
+    "playlist_name": None,
+    "playlist_image_sizes_multihash": None,
+    "description": None,
+    "is_album": None,
+    "is_private": None,
+}

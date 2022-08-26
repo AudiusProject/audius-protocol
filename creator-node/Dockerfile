@@ -66,9 +66,10 @@ FROM base
 COPY --from=builder /app/node_modules node_modules
 COPY . .
 
-# Compile js code to typescript based on tsconfig.json
-RUN node_modules/.bin/tsc --project ./
+# Compile js code to typescript based on tsconfig.build.json
+RUN node_modules/.bin/tsc --project tsconfig.build.json
 
+# ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
 ARG git_sha
 ARG audius_loggly_disable
 ARG audius_loggly_token
