@@ -20,7 +20,6 @@ def validate_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     playlist_id = params.entity_id
     if user_id not in params.existing_records["users"]:
-        # metric.save_time("scope=user_does_not_exist")
         raise Exception("User does not exists")
 
     wallet = params.existing_records["users"][user_id].wallet
