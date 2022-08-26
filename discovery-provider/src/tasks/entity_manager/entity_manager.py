@@ -1,7 +1,5 @@
 import logging
-import time
 from collections import defaultdict
-from re import L
 from typing import Any, Dict, List, Set, Tuple
 
 from sqlalchemy.orm.session import Session
@@ -44,11 +42,6 @@ def entity_manager_update(
     block_hash: str,
     ipfs_metadata: Dict,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
-    metric = PrometheusMetric(PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY)
-    metric_num_changed = PrometheusMetric(
-        PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED
-    )
-
     try:
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
@@ -56,9 +49,18 @@ def entity_manager_update(
         event_blockhash = update_task.web3.toHex(block_hash)
 
         changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
-
         if not entity_manager_txs:
             return num_total_changes, changed_entity_ids
+
+        metric_latency = PrometheusMetric(
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY
+        )
+        metric_num_changed = PrometheusMetric(
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED
+        )
+        metric_num_errors = PrometheusMetric(
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_ERRORS
+        )
 
         # collect events by entity type and action
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
@@ -67,6 +69,9 @@ def entity_manager_update(
         existing_records: ExistingRecordDict = fetch_existing_entities(
             session, entities_to_fetch
         )
+
+        # copy original record since existing_records will be modified
+        original_records = copy_original_records(existing_records)
 
         new_records: RecordDict = {
             "playlists": defaultdict(list),
@@ -135,6 +140,7 @@ def entity_manager_update(
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
+                    metric_num_errors.save(1, {"entity_type": params.entity_type})
         # compile records_to_save
         records_to_save = []
         for playlist_records in new_records["playlists"].values():
@@ -145,9 +151,9 @@ def entity_manager_update(
                 playlist_records[i].is_current = False
 
             # invalidate existing record only if it's being updated
-            existing_playlist_id = playlist_records[0].playlist_id
-            if existing_playlist_id in existing_records["playlists"]:
-                existing_records["playlists"][existing_playlist_id].is_current = False
+            playlist_id = playlist_records[0].playlist_id
+            if playlist_id in original_records["playlists"]:
+                original_records["playlists"][playlist_id].is_current = False
 
             # flip is_current to true for the last tx in each playlist
             playlist_records[-1].is_current = True
@@ -161,14 +167,29 @@ def entity_manager_update(
         # insert/update all tracks, playlist records in this block
         session.bulk_save_objects(records_to_save)
         num_total_changes += len(records_to_save)
-        metric.save_time({"scope": "full"})
-        metric_num_changed.save(num_total_changes)
-        logger.info(f"entity_manager.py | Completed with {num_total_changes}")
-    except Exception as e:
 
+        metric_latency.save_time()
+        metric_num_changed.save(
+            len(new_records["playlists"]), {"entity_type": "playlist"}
+        )
+        metric_num_changed.save(len(new_records["tracks"]), {"entity_type": "track"})
+        metric_num_changed.save(num_total_changes, {"entity_type": "all"})
+        logger.info(
+            f"entity_manager.py | Completed with {num_total_changes} total changes"
+        )
+    except Exception as e:
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
     return num_total_changes, changed_entity_ids
+
+
+def copy_original_records(existing_records):
+    original_records = {}
+    for entity_type in existing_records:
+        original_records[entity_type] = {}
+        for entity_id, entity in existing_records[entity_type].items():
+            original_records[entity_type][entity_id] = entity
+    return original_records
 
 
 def collect_entities_to_fetch(

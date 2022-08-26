@@ -31,10 +31,10 @@ def save_duration_metric(metric_group):
 
                 try:
                     histogram_metric.save_time(
-                        {"func_name": func.__name__, "success": True}
+                        {"func_name": func.__name__, "success": "true"}
                     )
                     gauge_metric.save_time(
-                        {"func_name": func.__name__, "success": True}
+                        {"func_name": func.__name__, "success": "true"}
                     )
                 except Exception as e:
                     logger.exception("Failed to save successful metrics", e)
@@ -46,10 +46,10 @@ def save_duration_metric(metric_group):
             except Exception as e:
                 try:
                     histogram_metric.save_time(
-                        {"func_name": func.__name__, "success": False}
+                        {"func_name": func.__name__, "success": "false"}
                     )
                     gauge_metric.save_time(
-                        {"func_name": func.__name__, "success": False}
+                        {"func_name": func.__name__, "success": "false"}
                     )
                 except Exception as inner_e:
                     logger.exception("Failed to save unsuccessful metrics", inner_e)
@@ -224,18 +224,19 @@ PrometheusRegistry = {
         "Runtimes for src.task.users:user_state_update()",
         ("scope",),
     ),
-    # PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED: Gauge(
-    #     f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED}",
-    #     "Number changed over time",
-    # ),
-    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY}",
-        "entity manager",
-        ("scope",),
-    ),
     PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED}",
-        "entity manager",
+        "Number of entities changed by entity type",
+        ("entity_type",),
+    ),
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_ERRORS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_ERRORS}",
+        "Number of errors by entity type",
+        ("entity_type",),
+    ),
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY}",
+        "Latency for entity",
     ),
 }
 
@@ -265,9 +266,8 @@ class PrometheusMetric:
         this_metric = self.metric
         if labels:
             this_metric = this_metric.labels(**labels)
-
         if isinstance(this_metric, Histogram):
-            this_metric.observe(value)
+            this_metric.observe(value, labels)
         elif isinstance(this_metric, Gauge):
             this_metric.set(value)
 
