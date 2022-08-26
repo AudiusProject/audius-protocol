@@ -5,7 +5,7 @@ import {
   BuyAudioStage,
   formatNumberString
 } from '@audius/common'
-import { IconCaretDown } from '@audius/stems'
+import { IconCaretDown, IconMultiselectRemove } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { CollapsibleContent } from 'components/collapsible-content'
@@ -14,7 +14,8 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { IconAUDIO, IconSOL, IconUSD } from './Icons'
 import styles from './InProgressPage.module.css'
 
-const { getAudioPurchaseInfo, getBuyAudioFlowStage } = buyAudioSelectors
+const { getAudioPurchaseInfo, getBuyAudioFlowStage, getBuyAudioFlowError } =
+  buyAudioSelectors
 
 const messages = {
   pleaseHold: 'Please hold on. This may take a few moments.',
@@ -27,7 +28,12 @@ const messages = {
   lessInfo: 'Less Info',
   usd: 'USD',
   sol: 'SOL',
-  audio: '$AUDIO'
+  audio: '$AUDIO',
+  coinbaseClosedErrorMessage: 'Coinbase Pay Was Closed Unexpectedly',
+  swapErrorMessage:
+    'Refresh and we’ll try again.\nDon’t worry your funds are safe!',
+  coinbaseErrorMessage:
+    'Something’s gone wrong with Coinbase.\nPlease check your email for more information.'
 }
 
 type Token = {
@@ -39,6 +45,7 @@ type Token = {
 export const InProgressPage = () => {
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
   const buyAudioFlowStage = useSelector(getBuyAudioFlowStage)
+  const isError = useSelector(getBuyAudioFlowError)
   const isStepOne = buyAudioFlowStage === BuyAudioStage.PURCHASING
   let firstToken: Token | undefined
   let secondToken: Token | undefined
@@ -78,12 +85,24 @@ export const InProgressPage = () => {
     <div className={styles.inProgressPage}>
       <div className={styles.header}>{messages.pleaseHold}</div>
       <div className={styles.loader}>
-        <LoadingSpinner className={styles.spinner} />
+        {isError ? (
+          <IconMultiselectRemove />
+        ) : (
+          <LoadingSpinner className={styles.spinner} />
+        )}
         <span className={styles.headerCaps}>
           {isStepOne ? messages.step1 : messages.step2}
         </span>
       </div>
-      {isStepOne ? (
+      {isError ? (
+        <div className={styles.error}>
+          {buyAudioFlowStage === BuyAudioStage.PURCHASING
+            ? messages.coinbaseClosedErrorMessage
+            : buyAudioFlowStage === BuyAudioStage.CONFIRMING_PURCHASE
+            ? messages.coinbaseErrorMessage
+            : messages.swapErrorMessage}
+        </div>
+      ) : isStepOne ? (
         <div className={styles.callToAction}>
           {messages.completeWithCoinbase}
         </div>
