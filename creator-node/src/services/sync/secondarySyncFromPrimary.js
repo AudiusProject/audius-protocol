@@ -85,7 +85,9 @@ const handleSyncFromPrimary = async ({
   try {
     let localMaxClockVal
     if (forceResync || forceWipe) {
-      genericLogger.warn(`${logPrefix} Forcing resync..`)
+      genericLogger.warn(
+        `${logPrefix} Forcing ${forceResync ? 'resync' : 'wipe'}..`
+      )
 
       // Ensure we never wipe the data of a primary
       if (thisContentNodeEndpoint === userReplicaSet.primary) {
