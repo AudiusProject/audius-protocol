@@ -7,7 +7,7 @@ chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
-const { CancelToken } = require('axios').default
+const { default: CancelToken } = require('axios')
 const assert = require('assert')
 
 const DBManager = require('../src/dbManager')
