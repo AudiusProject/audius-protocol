@@ -76,3 +76,11 @@
   justify-content: center;
   gap: 8px;
 }
+
+.error {
+  white-space: pre-line;
+  color: var(--accent-red);
+  text-align: center;
+  font-weight: var(--font-demi-bold);
+  line-height: 150%;
+}
