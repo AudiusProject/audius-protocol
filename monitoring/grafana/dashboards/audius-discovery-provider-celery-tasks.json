@@ -63,7 +63,7 @@
           "name": "Celery Tasks (Active)",
           "type": "bargauge",
           "uid": "ilGck637k",
-          "version": 2
+          "version": 3
         },
         "id": 3,
         "gridPos": {
@@ -94,7 +94,7 @@
           "name": "Celery Tasks (Last Successful Duration)",
           "type": "bargauge",
           "uid": "3en9tpenk",
-          "version": 2
+          "version": 3
         },
         "id": 4,
         "gridPos": {

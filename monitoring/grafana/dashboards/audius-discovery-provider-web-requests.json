@@ -30,30 +30,27 @@
     "liveNow": false,
     "panels": [
       {
-        "collapsed": false,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
           "y": 0
         },
-        "id": 2,
-        "panels": [],
-        "title": "Celery Task Duration",
+        "id": 4,
+        "title": "Latency",
         "type": "row"
       },
       {
-        "description": "",
         "fieldConfig": {
           "defaults": {
             "color": {
               "mode": "palette-classic"
             },
             "custom": {
-              "axisLabel": "Task Duration",
+              "axisLabel": "Average Latency (Max by route)",
               "axisPlacement": "auto",
               "barAlignment": 0,
-              "drawStyle": "line",
+              "drawStyle": "points",
               "fillOpacity": 0,
               "gradientMode": "none",
               "hideFrom": {
@@ -65,7 +62,8 @@
               "lineWidth": 1,
               "pointSize": 5,
               "scaleDistribution": {
-                "type": "linear"
+                "log": 2,
+                "type": "log"
               },
               "showPoints": "auto",
               "spanNulls": false,
@@ -96,35 +94,38 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 8,
+          "h": 14,
           "w": 24,
           "x": 0,
           "y": 1
         },
-        "id": 4,
-        "maxPerRow": 3,
+        "id": 2,
         "options": {
           "legend": {
-            "calcs": [],
-            "displayMode": "list",
-            "placement": "bottom"
+            "calcs": [
+              "mean",
+              "max",
+              "lastNotNull"
+            ],
+            "displayMode": "table",
+            "placement": "bottom",
+            "sortBy": "Last *",
+            "sortDesc": true
           },
           "tooltip": {
-            "mode": "single",
-            "sort": "none"
+            "mode": "multi",
+            "sort": "desc"
           }
         },
-        "repeat": "task_name",
-        "repeatDirection": "h",
         "targets": [
           {
             "datasource": {
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
+            "expr": "max by (route) (rate(audius_dn_flask_route_duration_seconds_sum{environment=~\"$env\", host=~\"$host\", route=~\"$route\"}[5m]) / rate(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\", host=~\"$host\", route=~\"$route\"}[5m]))",
             "hide": false,
-            "legendFormat": "p50",
+            "legendFormat": "{{route}}",
             "range": true,
             "refId": "B"
           },
@@ -133,47 +134,14 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
+            "expr": "sum(rate(audius_dn_flask_route_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])) / sum(rate(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "hide": false,
-            "legendFormat": "p90",
-            "range": true,
-            "refId": "C"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p95",
-            "range": true,
-            "refId": "D"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p99",
+            "legendFormat": "average",
             "range": true,
             "refId": "A"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", func_name=\"$task_name\"}[5m])) by (le))",
-            "hide": false,
-            "legendFormat": "p999",
-            "range": true,
-            "refId": "E"
           }
         ],
-        "title": "Celery Task Duration ($task_name)",
+        "title": "Latency by Route",
         "type": "timeseries"
       }
     ],
@@ -237,16 +205,16 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_celery_task_duration_seconds_bucket, func_name)",
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}, route)",
           "description": "",
           "hide": 0,
           "includeAll": true,
-          "label": "Task Name",
+          "label": "Route",
           "multi": true,
-          "name": "task_name",
+          "name": "route",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_celery_task_duration_seconds_bucket, func_name)",
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}, route)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
@@ -283,8 +251,8 @@
       ]
     },
     "timezone": "",
-    "title": "Audius - Discovery Provider - Celery Task Details",
-    "uid": "W9FaXK6nk",
+    "title": "Audius - Discovery Provider - Web Requests",
+    "uid": "o9DHogz4z",
     "version": null,
     "weekStart": ""
   },

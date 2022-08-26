@@ -31,6 +31,322 @@
     "liveNow": false,
     "panels": [
       {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 49,
+        "panels": [],
+        "title": "Users Entirely on Foundation Nodes",
+        "type": "row"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "semi-dark-purple",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "percentunit"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 0,
+          "y": 1
+        },
+        "id": 51,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "9.0.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "audius_nm_users_with_all_foundation_node_replica_set{environment=~\"$env\"} / audius_nm_user_count{environment=~\"$env\"}",
+            "instant": true,
+            "legendFormat": "Users Entirely on Foundation Nodes",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "Users Entirely on Foundation Nodes",
+        "type": "stat"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "semi-dark-purple",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 6,
+          "y": 1
+        },
+        "id": 45,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "9.0.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "exemplar": false,
+            "expr": "audius_nm_users_with_all_foundation_node_replica_set{environment=~\"$env\"}",
+            "instant": true,
+            "legendFormat": "fully on foundation nodes",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "Users Entirely on Foundation nodes",
+        "type": "stat"
+      },
+      {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "%",
+              "axisPlacement": "left",
+              "axisSoftMin": -2,
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "max": 95,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 12,
+          "y": 1
+        },
+        "id": 59,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "hidden",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "((sum without(run_id,instance) (audius_nm_users_with_all_foundation_node_replica_set{environment=~\"$env\"})) / (sum without(run_id,instance) (audius_nm_user_count{environment=~\"$env\"}))) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "hide": false,
+            "legendFormat": "%",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Users entirely on foundation nodes %",
+        "type": "timeseries"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 32,
+              "gradientMode": "hue",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "min": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 18,
+          "y": 1
+        },
+        "id": 47,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum by(host) (audius_nm_users_with_all_foundation_node_replica_set{environment=~\"$env\"})",
+            "legendFormat": "users",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Users Entirely on Foundation nodes",
+        "type": "timeseries"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 7
+        },
+        "id": 27,
+        "panels": [],
+        "title": "User Node Distribution",
+        "type": "row"
+      },
+      {
         "description": "The number of users with a specific content node as their primary",
         "fieldConfig": {
           "defaults": {
@@ -45,15 +361,17 @@
                 "viz": false
               }
             },
-            "mappings": []
+            "decimals": 1,
+            "mappings": [],
+            "unit": "short"
           },
           "overrides": []
         },
         "gridPos": {
-          "h": 9,
+          "h": 8,
           "w": 12,
           "x": 0,
-          "y": 0
+          "y": 8
         },
         "id": 4,
         "options": {
@@ -63,6 +381,8 @@
           "legend": {
             "displayMode": "table",
             "placement": "right",
+            "sortBy": "Percent",
+            "sortDesc": false,
             "values": [
               "percent",
               "value"
@@ -112,15 +432,17 @@
                 "viz": false
               }
             },
-            "mappings": []
+            "decimals": 1,
+            "mappings": [],
+            "unit": "short"
           },
           "overrides": []
         },
         "gridPos": {
-          "h": 9,
+          "h": 8,
           "w": 12,
           "x": 12,
-          "y": 0
+          "y": 8
         },
         "id": 2,
         "options": {
@@ -166,109 +488,6 @@
         "type": "piechart"
       },
       {
-        "description": "The number of users whose content nodes are fully synced (i.e. clock values are all the same), partially synced (i.e. clock values are same one primary and one secondary), or unsynced (i.e. the primary isn't synced with either seondary)",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "purple",
-                  "value": null
-                },
-                {
-                  "color": "purple",
-                  "value": 80
-                }
-              ]
-            }
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 9
-        },
-        "id": 6,
-        "options": {
-          "displayMode": "basic",
-          "minVizHeight": 10,
-          "minVizWidth": 0,
-          "orientation": "auto",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "showUnfilled": true
-        },
-        "pluginVersion": "9.0.1",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "audius_nm_fully_synced_user_count{environment=~\"$env\"}",
-            "instant": true,
-            "legendFormat": "fully synced user count",
-            "range": false,
-            "refId": "A"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "audius_nm_partially_synced_user_count{environment=~\"$env\"}",
-            "hide": false,
-            "instant": true,
-            "legendFormat": "partially synced user count",
-            "range": false,
-            "refId": "B"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "audius_nm_unsynced_user_count{environment=~\"$env\"}",
-            "hide": false,
-            "instant": true,
-            "legendFormat": "unsynced user count",
-            "range": false,
-            "refId": "C"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "audius_nm_no_primary_user_count{environment=~\"$env\"}",
-            "hide": false,
-            "instant": true,
-            "legendFormat": "users with null primary count",
-            "range": false,
-            "refId": "D"
-          }
-        ],
-        "title": "User Status",
-        "type": "bargauge"
-      },
-      {
-        "description": "",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -277,7 +496,7 @@
             "custom": {
               "axisLabel": "",
               "axisPlacement": "auto",
-              "barAlignment": 1,
+              "barAlignment": 0,
               "drawStyle": "line",
               "fillOpacity": 0,
               "gradientMode": "none",
@@ -287,15 +506,12 @@
                 "viz": false
               },
               "lineInterpolation": "linear",
-              "lineStyle": {
-                "fill": "solid"
-              },
               "lineWidth": 1,
-              "pointSize": 1,
+              "pointSize": 5,
               "scaleDistribution": {
                 "type": "linear"
               },
-              "showPoints": "always",
+              "showPoints": "auto",
               "spanNulls": false,
               "stacking": {
                 "group": "A",
@@ -318,22 +534,29 @@
                   "value": 80
                 }
               ]
-            }
+            },
+            "unit": "short"
           },
           "overrides": []
         },
         "gridPos": {
-          "h": 8,
+          "h": 10,
           "w": 12,
-          "x": 12,
-          "y": 9
+          "x": 0,
+          "y": 16
         },
-        "id": 22,
+        "id": 53,
         "options": {
           "legend": {
-            "calcs": [],
-            "displayMode": "list",
-            "placement": "bottom"
+            "calcs": [
+              "lastNotNull",
+              "mean",
+              "delta"
+            ],
+            "displayMode": "table",
+            "placement": "bottom",
+            "sortBy": "Last *",
+            "sortDesc": true
           },
           "tooltip": {
             "mode": "single",
@@ -345,9 +568,573 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "builder",
-            "expr": "audius_nm_fully_synced_user_count{environment=~\"$env\"}",
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum without (run_id,instance) (audius_nm_primary_user_count{environment=~\"$env\"})",
+            "instant": false,
+            "legendFormat": "{{endpoint}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Primary Users Count by Content Node",
+        "type": "timeseries"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "__systemRef": "hideSeriesFrom",
+              "matcher": {
+                "id": "byNames",
+                "options": {
+                  "mode": "exclude",
+                  "names": [
+                    "https://creatornode9.staging.audius.co"
+                  ],
+                  "prefix": "All except:",
+                  "readOnly": true
+                }
+              },
+              "properties": [
+                {
+                  "id": "custom.hideFrom",
+                  "value": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 12,
+          "y": 16
+        },
+        "id": 54,
+        "options": {
+          "legend": {
+            "calcs": [
+              "lastNotNull",
+              "mean",
+              "delta"
+            ],
+            "displayMode": "table",
+            "placement": "bottom",
+            "sortBy": "Last *",
+            "sortDesc": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum without (run_id,instance) (audius_nm_all_user_count{environment=~\"$env\"})",
+            "instant": false,
+            "legendFormat": "{{endpoint}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "All Users Count by Content Node",
+        "type": "timeseries"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 26
+        },
+        "id": 37,
+        "panels": [],
+        "title": "User Status",
+        "type": "row"
+      },
+      {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Percent%",
+              "axisPlacement": "auto",
+              "axisSoftMax": 100,
+              "axisSoftMin": 0,
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "area"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red"
+                },
+                {
+                  "color": "yellow",
+                  "value": 80
+                },
+                {
+                  "color": "green",
+                  "value": 90
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 27
+        },
+        "id": 56,
+        "options": {
+          "legend": {
+            "calcs": [
+              "last",
+              "mean",
+              "max"
+            ],
+            "displayMode": "table",
+            "placement": "bottom",
+            "sortBy": "Last",
+            "sortDesc": true
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "(sum without (run_id,instance) (audius_nm_fully_synced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "interval": "2h",
+            "legendFormat": "Fully synced %",
+            "range": true,
+            "refId": "Fully Synced %"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "(sum without (run_id,instance) (audius_nm_partially_synced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "Partially synced %",
+            "range": true,
+            "refId": "Partially Synced %"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "(sum without (run_id,instance) (audius_nm_unsynced_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "Unsynced %",
+            "range": true,
+            "refId": "Unsynced %"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "(sum without (run_id,instance) (audius_nm_no_primary_user_count{environment=~\"$env\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"$env\"})) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "No primary %",
+            "range": true,
+            "refId": "No primary %"
+          }
+        ],
+        "title": "User Status Percent (over time)",
+        "type": "timeseries"
+      },
+      {
+        "description": "The number of users whose content nodes are fully synced (i.e. clock values are all the same), partially synced (i.e. clock values are same one primary and one secondary), or unsynced (i.e. the primary isn't synced with either seondary)",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "purple"
+                },
+                {
+                  "color": "purple",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 12,
+          "y": 27
+        },
+        "id": 43,
+        "options": {
+          "displayMode": "basic",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "9.0.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum(audius_nm_fully_synced_user_count{environment=~\"$env\"})",
             "format": "time_series",
+            "instant": true,
+            "legendFormat": "fully synced user count",
+            "range": false,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum(audius_nm_partially_synced_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "instant": true,
+            "legendFormat": "partially synced user count",
+            "range": false,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum(audius_nm_unsynced_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "instant": true,
+            "legendFormat": "unsynced user count",
+            "range": false,
+            "refId": "C"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum(audius_nm_no_primary_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "instant": true,
+            "legendFormat": "users with null primary count",
+            "range": false,
+            "refId": "D"
+          }
+        ],
+        "title": "User Status (current)",
+        "type": "bargauge"
+      },
+      {
+        "description": "The number of users whose content nodes are fully synced (i.e. clock values are all the same), partially synced (i.e. clock values are same one primary and one secondary), or unsynced (i.e. the primary isn't synced with either seondary)",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "decimals": 1,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "blue"
+                },
+                {
+                  "color": "blue",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 18,
+          "y": 27
+        },
+        "id": 62,
+        "options": {
+          "displayMode": "basic",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "9.0.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum(audius_nm_fully_synced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "format": "time_series",
+            "instant": true,
+            "legendFormat": "fully synced user %",
+            "range": false,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum(audius_nm_partially_synced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "hide": false,
+            "instant": true,
+            "legendFormat": "partially synced user %",
+            "range": false,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum(audius_nm_unsynced_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "hide": false,
+            "instant": true,
+            "legendFormat": "unsynced user count",
+            "range": false,
+            "refId": "C"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum(audius_nm_no_primary_user_count{environment=~\"$env\"}) / sum(audius_nm_user_count{environment=~\"$env\"}) README.md bin data docker-compose.yml exporters grafana prometheus scripts 100",
+            "hide": false,
+            "instant": true,
+            "legendFormat": "users with null primary count",
+            "range": false,
+            "refId": "D"
+          }
+        ],
+        "title": "User Status Percent (current)",
+        "type": "bargauge"
+      },
+      {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Users",
+              "axisPlacement": "auto",
+              "barAlignment": 1,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineStyle": {
+                "fill": "solid"
+              },
+              "lineWidth": 1,
+              "pointSize": 1,
+              "scaleDistribution": {
+                "log": 2,
+                "type": "log"
+              },
+              "showPoints": "always",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green"
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 35
+        },
+        "id": 38,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(audius_nm_fully_synced_user_count{environment=~\"$env\"})",
+            "format": "time_series",
+            "interval": "2h",
             "legendFormat": "fully synced users",
             "range": true,
             "refId": "A"
@@ -356,9 +1143,10 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "builder",
-            "expr": "audius_nm_partially_synced_user_count{environment=~\"$env\"}",
+            "editorMode": "code",
+            "expr": "sum(audius_nm_partially_synced_user_count{environment=~\"$env\"})",
             "hide": false,
+            "interval": "2h",
             "legendFormat": "partially synced users",
             "range": true,
             "refId": "B"
@@ -367,9 +1155,10 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "builder",
-            "expr": "audius_nm_unsynced_user_count{environment=~\"$env\"}",
+            "editorMode": "code",
+            "expr": "sum(audius_nm_unsynced_user_count{environment=~\"$env\"})",
             "hide": false,
+            "interval": "2h",
             "legendFormat": "unsynced users",
             "range": true,
             "refId": "C"
@@ -378,17 +1167,550 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "builder",
-            "expr": "audius_nm_no_primary_user_count{environment=~\"$env\"}",
+            "editorMode": "code",
+            "expr": "sum(audius_nm_no_primary_user_count{environment=~\"$env\"})",
             "hide": false,
+            "interval": "2h",
             "legendFormat": "users with null primary",
             "range": true,
             "refId": "D"
           }
         ],
-        "title": "User Status over Time",
+        "title": "User Status Counts (over time) logarithmic)",
         "transformations": [],
         "type": "timeseries"
+      },
+      {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green"
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 35
+        },
+        "id": 57,
+        "options": {
+          "legend": {
+            "calcs": [
+              "last",
+              "mean"
+            ],
+            "displayMode": "table",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "asc"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum without (run_id,instance) (audius_nm_fully_synced_user_count{environment=~\"$env\"})",
+            "interval": "2h",
+            "legendFormat": "Fully synced",
+            "range": true,
+            "refId": "Fully Synced"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum without (run_id,instance) (audius_nm_partially_synced_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "Partially synced",
+            "range": true,
+            "refId": "Partially Synced"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum without (run_id,instance) (audius_nm_unsynced_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "Unsynced",
+            "range": true,
+            "refId": "Unsynced"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum without (run_id,instance) (audius_nm_no_primary_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "No primary",
+            "range": true,
+            "refId": "No primary"
+          }
+        ],
+        "title": "User Status Count (over time) (linear)",
+        "type": "timeseries"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 43
+        },
+        "id": 61,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Users",
+                  "axisPlacement": "auto",
+                  "barAlignment": 1,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineStyle": {
+                    "fill": "solid"
+                  },
+                  "lineWidth": 1,
+                  "pointSize": 1,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "always",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 0,
+              "y": 44
+            },
+            "id": 39,
+            "options": {
+              "legend": {
+                "calcs": [],
+                "displayMode": "hidden",
+                "placement": "bottom"
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus"
+                },
+                "editorMode": "code",
+                "expr": "sum by (host) (audius_nm_fully_synced_user_count{environment=~\"$env\"})",
+                "format": "time_series",
+                "legendFormat": "__auto",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "Synced Users",
+            "transformations": [],
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Users",
+                  "axisPlacement": "auto",
+                  "barAlignment": 1,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineStyle": {
+                    "fill": "solid"
+                  },
+                  "lineWidth": 1,
+                  "pointSize": 1,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "always",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 6,
+              "y": 44
+            },
+            "id": 40,
+            "options": {
+              "legend": {
+                "calcs": [],
+                "displayMode": "hidden",
+                "placement": "bottom"
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus"
+                },
+                "editorMode": "code",
+                "expr": "sum by (host) (audius_nm_partially_synced_user_count{environment=~\"$env\"})",
+                "format": "time_series",
+                "legendFormat": "__auto",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "Partially Synced Users",
+            "transformations": [],
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Users",
+                  "axisPlacement": "auto",
+                  "barAlignment": 1,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineStyle": {
+                    "fill": "solid"
+                  },
+                  "lineWidth": 1,
+                  "pointSize": 1,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "always",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 12,
+              "y": 44
+            },
+            "id": 41,
+            "options": {
+              "legend": {
+                "calcs": [],
+                "displayMode": "hidden",
+                "placement": "bottom"
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus"
+                },
+                "editorMode": "code",
+                "expr": "sum by (host) (audius_nm_unsynced_user_count{environment=~\"$env\"})",
+                "format": "time_series",
+                "legendFormat": "__auto",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "Unsynced Users",
+            "transformations": [],
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Users",
+                  "axisPlacement": "auto",
+                  "barAlignment": 1,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineStyle": {
+                    "fill": "solid"
+                  },
+                  "lineWidth": 1,
+                  "pointSize": 1,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "always",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 6,
+              "x": 18,
+              "y": 44
+            },
+            "id": 42,
+            "options": {
+              "legend": {
+                "calcs": [],
+                "displayMode": "hidden",
+                "placement": "bottom"
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus"
+                },
+                "editorMode": "code",
+                "expr": "sum by (host) (audius_nm_no_primary_user_count{environment=~\"$env\"})",
+                "format": "time_series",
+                "legendFormat": "__auto",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "Users w/o Primary",
+            "transformations": [],
+            "type": "timeseries"
+          }
+        ],
+        "title": "[Deprecated] User Status",
+        "type": "row"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 44
+        },
+        "id": 33,
+        "panels": [],
+        "title": "Missed Users",
+        "type": "row"
       },
       {
         "description": "The number of users skipped because of network monitoring job errors",
@@ -398,7 +1720,7 @@
               "mode": "thresholds"
             },
             "custom": {
-              "axisLabel": "",
+              "axisLabel": "Users",
               "axisPlacement": "auto",
               "axisSoftMin": 0,
               "fillOpacity": 80,
@@ -418,8 +1740,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "orange",
@@ -438,7 +1759,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 17
+          "y": 45
         },
         "id": 8,
         "options": {
@@ -450,7 +1771,9 @@
               "lastNotNull"
             ],
             "displayMode": "table",
-            "placement": "right"
+            "placement": "right",
+            "sortBy": "Last *",
+            "sortDesc": true
           },
           "orientation": "auto",
           "showValue": "auto",
@@ -468,7 +1791,7 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "builder",
+            "editorMode": "code",
             "exemplar": false,
             "expr": "audius_nm_missed_users_count{environment=~\"$env\"}",
             "instant": true,
@@ -481,7 +1804,7 @@
         "type": "barchart"
       },
       {
-        "description": "",
+        "description": "The number of users skipped because of network monitoring job errors",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -490,10 +1813,10 @@
             "custom": {
               "axisLabel": "",
               "axisPlacement": "auto",
-              "barAlignment": 1,
+              "barAlignment": 0,
               "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
+              "fillOpacity": 34,
+              "gradientMode": "hue",
               "hideFrom": {
                 "legend": false,
                 "tooltip": false,
@@ -503,19 +1826,19 @@
               "lineStyle": {
                 "fill": "solid"
               },
-              "lineWidth": 1,
-              "pointSize": 1,
+              "lineWidth": 4,
+              "pointSize": 5,
               "scaleDistribution": {
                 "type": "linear"
               },
-              "showPoints": "always",
+              "showPoints": "auto",
               "spanNulls": false,
               "stacking": {
                 "group": "A",
                 "mode": "none"
               },
               "thresholdsStyle": {
-                "mode": "off"
+                "mode": "line"
               }
             },
             "mappings": [],
@@ -523,15 +1846,19 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
-                  "color": "red",
-                  "value": 80
+                  "color": "orange",
+                  "value": 50000
+                },
+                {
+                  "color": "dark-red",
+                  "value": 200000
                 }
               ]
-            }
+            },
+            "unit": "short"
           },
           "overrides": []
         },
@@ -539,13 +1866,13 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 17
+          "y": 45
         },
-        "id": 25,
+        "id": 20,
         "options": {
           "legend": {
             "calcs": [],
-            "displayMode": "list",
+            "displayMode": "hidden",
             "placement": "bottom"
           },
           "tooltip": {
@@ -558,50 +1885,30 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "builder",
-            "expr": "audius_nm_fully_synced_user_count{environment=~\"$env\"}",
-            "format": "time_series",
-            "legendFormat": "fully synced users",
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum by(run_id) (audius_nm_missed_users_count{environment=~\"$env\"})",
+            "instant": false,
+            "legendFormat": "run {{run_id}}",
             "range": true,
             "refId": "A"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "audius_nm_partially_synced_user_count{environment=~\"$env\"}",
-            "hide": false,
-            "legendFormat": "partially synced users",
-            "range": true,
-            "refId": "B"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "audius_nm_unsynced_user_count{environment=~\"$env\"}",
-            "hide": false,
-            "legendFormat": "unsynced users",
-            "range": true,
-            "refId": "C"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "audius_nm_no_primary_user_count{environment=~\"$env\"}",
-            "hide": false,
-            "legendFormat": "users with null primary",
-            "range": true,
-            "refId": "D"
           }
         ],
-        "title": "User Status over Time (Dheeraj dev, do not use)",
-        "transformations": [],
+        "title": "Total Missed Users by Job",
         "type": "timeseries"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 53
+        },
+        "id": 35,
+        "panels": [],
+        "title": "Job Durations",
+        "type": "row"
       },
       {
         "description": "The amount of time it takes for the various steps in a network monitoring job to finish",
@@ -647,7 +1954,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 25
+          "y": 54
         },
         "id": 18,
         "options": {
@@ -666,7 +1973,7 @@
             "mode": "single",
             "sort": "none"
           },
-          "xTickLabelRotation": 15,
+          "xTickLabelRotation": 0,
           "xTickLabelSpacing": 0
         },
         "pluginVersion": "9.0.1",
@@ -675,7 +1982,7 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "builder",
+            "editorMode": "code",
             "exemplar": false,
             "expr": "audius_nm_total_job_duration{environment=~\"$env\"}",
             "instant": true,
@@ -727,7 +2034,7 @@
         "type": "barchart"
       },
       {
-        "description": "The number of users skipped because of network monitoring job errors",
+        "description": "The amount of time it takes for the various steps in a network monitoring job to finish",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -738,18 +2045,15 @@
               "axisPlacement": "auto",
               "barAlignment": 0,
               "drawStyle": "line",
-              "fillOpacity": 34,
-              "gradientMode": "hue",
+              "fillOpacity": 0,
+              "gradientMode": "none",
               "hideFrom": {
                 "legend": false,
                 "tooltip": false,
                 "viz": false
               },
               "lineInterpolation": "linear",
-              "lineStyle": {
-                "fill": "solid"
-              },
-              "lineWidth": 4,
+              "lineWidth": 1,
               "pointSize": 5,
               "scaleDistribution": {
                 "type": "linear"
@@ -761,7 +2065,7 @@
                 "mode": "none"
               },
               "thresholdsStyle": {
-                "mode": "line+area"
+                "mode": "off"
               }
             },
             "mappings": [],
@@ -769,18 +2073,15 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "purple"
                 },
                 {
                   "color": "red",
-                  "value": 50000
-                },
-                {
-                  "color": "dark-red",
-                  "value": 200000
+                  "value": 3600
                 }
               ]
-            }
+            },
+            "unit": "s"
           },
           "overrides": []
         },
@@ -788,9 +2089,9 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 25
+          "y": 54
         },
-        "id": 20,
+        "id": 65,
         "options": {
           "legend": {
             "calcs": [],
@@ -802,21 +2103,61 @@
             "sort": "none"
           }
         },
+        "pluginVersion": "9.0.1",
         "targets": [
           {
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "builder",
+            "editorMode": "code",
             "exemplar": false,
-            "expr": "sum by(run_id) (audius_nm_missed_users_count{environment=~\"$env\"})",
+            "expr": "sum without (run_id) (audius_nm_total_job_duration{environment=~\"$env\"})",
             "instant": false,
-            "legendFormat": "run {{run_id}}",
+            "legendFormat": "total job duration",
             "range": true,
             "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum without (run_id) (audius_nm_indexing_discovery_duration{environment=~\"$env\"})",
+            "hide": false,
+            "instant": false,
+            "legendFormat": "indexing discovery duration",
+            "range": true,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum without (run_id) (audius_nm_indexing_content_duration{environment=~\"$env\"})",
+            "hide": false,
+            "instant": false,
+            "legendFormat": "indexing content duration",
+            "range": true,
+            "refId": "C"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "sum without (run_id) (audius_nm_generating_metrics_duration{environment=~\"$env\"})",
+            "hide": false,
+            "instant": false,
+            "legendFormat": "generating metrics duration",
+            "range": true,
+            "refId": "D"
           }
         ],
-        "title": "Total Missed Users by Job",
+        "title": "Job Durations",
         "type": "timeseries"
       },
       {
@@ -878,7 +2219,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 33
+          "y": 62
         },
         "id": 24,
         "options": {
@@ -908,6 +2249,142 @@
         ],
         "title": "Avg Batch Duration",
         "type": "timeseries"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 70
+        },
+        "id": 29,
+        "panels": [
+          {
+            "description": "",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 1,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineStyle": {
+                    "fill": "solid"
+                  },
+                  "lineWidth": 1,
+                  "pointSize": 1,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "always",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 55
+            },
+            "id": 25,
+            "options": {
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom"
+              },
+              "tooltip": {
+                "mode": "single",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus"
+                },
+                "editorMode": "builder",
+                "expr": "audius_nm_fully_synced_user_count{environment=~\"$env\"}",
+                "format": "time_series",
+                "legendFormat": "fully synced users",
+                "range": true,
+                "refId": "A"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus"
+                },
+                "editorMode": "builder",
+                "expr": "audius_nm_partially_synced_user_count{environment=~\"$env\"}",
+                "hide": false,
+                "legendFormat": "partially synced users",
+                "range": true,
+                "refId": "B"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus"
+                },
+                "editorMode": "builder",
+                "expr": "audius_nm_unsynced_user_count{environment=~\"$env\"}",
+                "hide": false,
+                "legendFormat": "unsynced users",
+                "range": true,
+                "refId": "C"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus"
+                },
+                "editorMode": "builder",
+                "expr": "audius_nm_no_primary_user_count{environment=~\"$env\"}",
+                "hide": false,
+                "legendFormat": "users with null primary",
+                "range": true,
+                "refId": "D"
+              }
+            ],
+            "title": "User Status over Time (Dheeraj dev, do not use)",
+            "transformations": [],
+            "type": "timeseries"
+          }
+        ],
+        "title": "Experimental",
+        "type": "row"
       }
     ],
     "refresh": "30m",
@@ -924,7 +2401,7 @@
           },
           "definition": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
           "hide": 0,
-          "includeAll": true,
+          "includeAll": false,
           "label": "Environment",
           "multi": false,
           "name": "env",

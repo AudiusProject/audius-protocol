@@ -1,0 +1,2856 @@
+{
+  "dashboard": {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "description": "",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 38,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of issuing an outgoing sync request",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 8,
+              "x": 0,
+              "y": 1
+            },
+            "hideTimeOverride": true,
+            "id": 39,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(result) (count_over_time(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "timeTo": "now",
+            "title": "Result for Issuing Outgoing Sync (Past Hour)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of processing an incoming sync",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 8,
+              "x": 8,
+              "y": 1
+            },
+            "hideTimeOverride": true,
+            "id": 40,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(result) (count_over_time(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "timeTo": "now",
+            "title": "Result for Processing Incoming Sync (Past Hour)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of processing an incoming sync",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 8,
+              "x": 16,
+              "y": 1
+            },
+            "hideTimeOverride": true,
+            "id": 44,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(result) (count_over_time(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[7d]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-7d",
+            "timeTo": "now",
+            "title": "Result for Processing Incoming Sync (Past Week)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of issuing an outgoing sync request",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 8,
+              "x": 0,
+              "y": 11
+            },
+            "hideTimeOverride": true,
+            "id": 41,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(result) (count_over_time(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[24h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-1d",
+            "timeTo": "now",
+            "title": "Result for Issuing Outgoing Sync (Past Day)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of processing an incoming sync",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 8,
+              "x": 8,
+              "y": 11
+            },
+            "hideTimeOverride": true,
+            "id": 42,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(result) (count_over_time(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[24h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-1d",
+            "timeTo": "now",
+            "title": "Result for Processing Incoming Sync (Past Day)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of issuing an outgoing sync request",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 8,
+              "x": 16,
+              "y": 11
+            },
+            "hideTimeOverride": true,
+            "id": 43,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(result) (count_over_time(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[7d]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-7d",
+            "timeTo": "now",
+            "title": "Result for Issuing Outgoing Sync (Past Week)",
+            "type": "piechart"
+          }
+        ],
+        "title": "Sync Results",
+        "type": "row"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 1
+        },
+        "id": 34,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that a node successfully issues an outgoing sync request vs number of times per hour a node successfully processes an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are processed correctly.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Syncs Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 12,
+              "w": 8,
+              "x": 0,
+              "y": 2
+            },
+            "id": 35,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Syncs Processed Successfully Per Hour (Incoming)",
+                "range": true,
+                "refId": "incoming per hour"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Syncs Issued Successfully Per Hour (Outgoing)",
+                "range": true,
+                "refId": "outgoing per hour"
+              }
+            ],
+            "title": "Outgoing vs Incoming Sync Successes (Aggregate)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that a node fails when issuing+monitoring an outgoing sync request vs number of times per hour a node fails to process an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are failing for reasons that are tracked when processing syncs.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Syncs Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 12,
+              "w": 8,
+              "x": 8,
+              "y": 2
+            },
+            "id": 36,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(le) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result!~\"succes*\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Syncs Issued Unsuccessfully Per Hour (Outgoing)",
+                "range": true,
+                "refId": "incoming per hour"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(le) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"failure_missing_wallet|failure_secondary_failure_count_threshold_met|failure_primary_sync_from_secondary|failure_issue_sync_request|failure_secondary_failed_to_progress\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Syncs Processed Unsuccessfully Per Hour (Incoming)",
+                "range": true,
+                "refId": "outgoing per hour"
+              }
+            ],
+            "title": "Outgoing vs Incoming Sync Failures (Aggregate)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that a node successfully issues an outgoing sync request vs number of times per hour a node successfully processes an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are processed correctly.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Syncs Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 12,
+              "w": 8,
+              "x": 16,
+              "y": 2
+            },
+            "id": 56,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "max(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Max Syncs Processed Successfully Per Hour (Incoming)",
+                "range": true,
+                "refId": "A"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "min(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Min Syncs Processed Successfully Per Hour (Incoming)",
+                "range": true,
+                "refId": "B"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "max(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Max Syncs Issued Successfully Per Hour (Outgoing)",
+                "range": true,
+                "refId": "C"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "min(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Min Syncs Issued Successfully Per Hour (Outgoing)",
+                "range": true,
+                "refId": "D"
+              }
+            ],
+            "title": "Outgoing vs Incoming Sync Successes (Outliers)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "Syncs Issued vs Processed Overview",
+        "type": "row"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 2
+        },
+        "id": 54,
+        "panels": [],
+        "title": "Syncs Issued vs Processed Per Host",
+        "type": "row"
+      },
+      {
+        "description": "Number of times per hour that a node successfully issues an outgoing sync request vs number of times per hour a node successfully processes an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are processed correctly.",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Syncs Per Hour",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "none"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 13,
+          "w": 8,
+          "x": 0,
+          "y": 3
+        },
+        "id": 45,
+        "maxPerRow": 3,
+        "options": {
+          "legend": {
+            "calcs": [
+              "mean",
+              "max",
+              "lastNotNull"
+            ],
+            "displayMode": "table",
+            "placement": "bottom",
+            "sortBy": "Max",
+            "sortDesc": true
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        },
+        "repeat": "host",
+        "repeatDirection": "h",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "exemplar": false,
+            "expr": "increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success\", host=~\"$host\"}[1h])",
+            "format": "time_series",
+            "hide": false,
+            "instant": false,
+            "legendFormat": "Syncs Processed Successfully Per Hour (Incoming)",
+            "range": true,
+            "refId": "incoming per hour"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "exemplar": false,
+            "expr": "increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success_clocks_already_match\", host=~\"$host\"}[1h])",
+            "format": "time_series",
+            "hide": false,
+            "instant": false,
+            "legendFormat": "Syncs Processed Successfully Per Hour (Incoming No-op)",
+            "range": true,
+            "refId": "incoming per hour (no-op)"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "exemplar": false,
+            "expr": "sum by(host) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
+            "format": "time_series",
+            "hide": false,
+            "instant": false,
+            "legendFormat": "Syncs Issued Successfully Per Hour (Outgoing)",
+            "range": true,
+            "refId": "outgoing per hour"
+          }
+        ],
+        "title": "Outgoing vs Incoming Sync Successes $host",
+        "type": "timeseries"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 42
+        },
+        "id": 26,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that processing a sync fails for each reason (aggregated across all hosts).",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Failures Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 13,
+              "w": 24,
+              "x": 0,
+              "y": 4
+            },
+            "id": 28,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(le, result) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result!~\"success\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}} {{result}}",
+                "range": true,
+                "refId": "counts per hour"
+              }
+            ],
+            "title": "Process Sync Failures Per Hour By Reason (Aggregate)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that processing a sync fails for each reason per host.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Failures Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 13,
+              "w": 24,
+              "x": 0,
+              "y": 17
+            },
+            "id": 27,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(host, le, result) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result!~\"success\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}} {{result}}",
+                "range": true,
+                "refId": "counts per hour"
+              }
+            ],
+            "title": "Process Sync Failures Per Hour By Reason (Per Host)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "Process Sync - Failure Counts",
+        "type": "row"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 43
+        },
+        "id": 16,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that a node spends processing a sync (i.e., a secondary syncing from a primary).",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 9,
+              "w": 24,
+              "x": 0,
+              "y": 1
+            },
+            "id": 18,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom"
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(0.5, sum by(le) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", result=~\"$process_sync_result\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "p50",
+                "range": true,
+                "refId": "p50"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(0.9, sum by(le) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", result=~\"$process_sync_result\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "p90",
+                "range": true,
+                "refId": "p90"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(0.95, sum by(le) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", result=~\"$process_sync_result\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "p95",
+                "range": true,
+                "refId": "p95"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(0.99, sum by(le) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", result=~\"$process_sync_result\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "p99",
+                "range": true,
+                "refId": "p99"
+              }
+            ],
+            "title": "Time Spent Processing (Aggregate)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that a node spends processing a sync (i.e., a secondary syncing from a primary).",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 9,
+              "w": 24,
+              "x": 0,
+              "y": 10
+            },
+            "id": 17,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(${percentile:raw}, sum by(host, le) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", result=~\"$process_sync_result\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}}",
+                "range": true,
+                "refId": "percentile"
+              }
+            ],
+            "title": "$percentile Time Spent Processing (Per Host)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "Process Sync - Duration Overview",
+        "type": "row"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 44
+        },
+        "id": 21,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that a node spends processing a sync (i.e., a secondary syncing from a primary) that completes successfully.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "points",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 6
+            },
+            "id": 19,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "histogram_quantile(${percentile:raw}, sum by(host, le) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}}",
+                "range": true,
+                "refId": "p90"
+              }
+            ],
+            "title": "Time Spent Processing Successful Sync (${percentile})",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that a node spends processing a sync (i.e., a secondary syncing from a primary) that fails to complete for any reason.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "points",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 6
+            },
+            "id": 22,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "histogram_quantile(${percentile:raw}, sum by(host, le) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", result!~\"succes*\", host=~\"$host\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}}",
+                "range": true,
+                "refId": "percentile"
+              }
+            ],
+            "title": "Time Spent Processing Failed Sync ($percentile)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that a node spends processing a sync (i.e., a secondary syncing from a primary) that fails to complete for any reason.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 13,
+              "w": 24,
+              "x": 0,
+              "y": 14
+            },
+            "id": 23,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "histogram_quantile(${percentile:raw}, sum by(host, le, result) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", result!~\"succes*\", host=~\"$host\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}} {{result}}",
+                "range": true,
+                "refId": "percentile"
+              }
+            ],
+            "title": "Time Spent Processing Failed Sync By Failure Reason ($percentile Per Host)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that a node spends processing a sync (i.e., a secondary syncing from a primary) that fails to complete for any reason.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 13,
+              "w": 24,
+              "x": 0,
+              "y": 27
+            },
+            "id": 24,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "histogram_quantile(${percentile:raw}, sum by(le, result) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{environment=~\"$env\", result!~\"succes*\", host=~\"$host\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}} {{result}}",
+                "range": true,
+                "refId": "percentile"
+              }
+            ],
+            "title": "Time Spent Processing Failed Sync By Failure Reason ($percentile Aggregate)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "Process Sync - Duration by Success/Failure",
+        "type": "row"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 45
+        },
+        "id": 30,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that Node A issues a sync request to Node B and sees a failure when monitoring Node B for sync completion (aggregated across all hosts)",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Failures Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 13,
+              "w": 24,
+              "x": 0,
+              "y": 7
+            },
+            "id": 31,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(le, result) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"failure_issue_sync_request|failure_secondary_failed_to_progress|failure_primary_sync_from_secondary|failure_missing_wallet|failure_secondary_failure_count_threshold_met\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}} {{result}}",
+                "range": true,
+                "refId": "counts per hour"
+              }
+            ],
+            "title": "Issue Sync Request Failures Per Hour By Reason (Aggregate)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that Node A issues a sync request to Node B and sees a failure when monitoring Node B for sync completion (aggregated across all hosts)",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Failures Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 13,
+              "w": 24,
+              "x": 0,
+              "y": 20
+            },
+            "id": 32,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(le, result, host) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"failure_issue_sync_request|failure_secondary_failed_to_progress|failure_primary_sync_from_secondary|failure_missing_wallet|failure_secondary_failure_count_threshold_met\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}} {{result}}",
+                "range": true,
+                "refId": "counts per hour"
+              }
+            ],
+            "title": "Issue Sync Request Failures Per Hour By Reason (Per Host)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "Issue and Wait for Outgoing Sync - Failure Counts",
+        "type": "row"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 46
+        },
+        "id": 6,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that a node spends waiting for a sync request to be completed after issuing it (either for write quorum or state machine -- this is different from the node actually processing the sync).",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 9,
+              "w": 24,
+              "x": 0,
+              "y": 3
+            },
+            "id": 9,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom"
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(0.5, sum by(le) (rate(audius_cn_issue_sync_request_duration_seconds_bucket{environment=~\"$env\", sync_mode=~\"$sync_mode\", host=~\"$host\", result=~\"$issue_sync_result\", sync_type=~\"$sync_type\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "p50",
+                "range": true,
+                "refId": "p50"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(0.9, sum by(le) (rate(audius_cn_issue_sync_request_duration_seconds_bucket{environment=~\"$env\", sync_mode=~\"$sync_mode\", host=~\"$host\", result=~\"$issue_sync_result\", sync_type=~\"$sync_type\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "p90",
+                "range": true,
+                "refId": "p90"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(0.95, sum by(le) (rate(audius_cn_issue_sync_request_duration_seconds_bucket{environment=~\"$env\", sync_mode=~\"$sync_mode\", host=~\"$host\", result=~\"$issue_sync_result\", sync_type=~\"$sync_type\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "p95",
+                "range": true,
+                "refId": "p95"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(0.99, sum by(le) (rate(audius_cn_issue_sync_request_duration_seconds_bucket{environment=~\"$env\", sync_mode=~\"$sync_mode\", host=~\"$host\", result=~\"$issue_sync_result\", sync_type=~\"$sync_type\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "p99",
+                "range": true,
+                "refId": "p99"
+              }
+            ],
+            "title": "Time Spent Waiting (Aggregate)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that a node spends waiting for a sync request to be completed after issuing it (either for write quorum or state machine -- this is different from the node actually processing the sync).",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 9,
+              "w": 24,
+              "x": 0,
+              "y": 12
+            },
+            "id": 3,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(${percentile:raw}, sum by(host, le) (rate(audius_cn_issue_sync_request_duration_seconds_bucket{environment=~\"$env\", sync_mode=~\"$sync_mode\", host=~\"$host\", result=~\"$issue_sync_result\", sync_type=~\"$sync_type\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}}",
+                "range": true,
+                "refId": "p99"
+              }
+            ],
+            "title": "$percentile Time Spent Waiting (Per Host)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "Issue and Wait for Outgoing Sync - Duration Overview",
+        "type": "row"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 47
+        },
+        "id": 8,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that state machine jobs (recurring syncs) or write quorum (manual syncs) wait for a sync request to be completed on the secondary that they issued it to. This only counts when the sync was successful, including if another sync was required (e.g., the sync completed but the clock value on the secondary didn't fully catch up to the primary).",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "points",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "log": 2,
+                    "type": "log"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 4
+            },
+            "id": 2,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(${percentile:raw}, sum by(host, le) (rate(audius_cn_issue_sync_request_duration_seconds_bucket{environment=~\"$env\", result=~\"success_mode_disabled|success_secondary_caught_up|success|success_secondary_partially_caught_up\", sync_mode=~\"$sync_mode\", host=~\"$host\", sync_type=~\"$sync_type\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}}",
+                "range": true,
+                "refId": "p90"
+              }
+            ],
+            "title": "Time Spent Waiting For Successful Sync ($percentile)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Time that state machine jobs (recurring syncs) or write quorum (manual syncs) wait for a sync request to be completed on the secondary that they issued it to. This only counts when the sync was unsuccessful.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisLabel": "Time Spent",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "points",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 4
+            },
+            "id": 4,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom"
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "histogram_quantile(${percentile:raw}, sum by(host, le) (rate(audius_cn_issue_sync_request_duration_seconds_bucket{environment=~\"$env\", result=~\"failure_secondary_failure_count_threshold_met|failure_primary_sync_from_secondary|failure_issue_sync_request|failure_secondary_failed_to_progress|failure_missing_wallet\", sync_mode=~\"$sync_mode\", host=~\"$host\", sync_type=~\"$sync_type\"}[5m])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{host}}",
+                "range": true,
+                "refId": "p90"
+              }
+            ],
+            "title": "Time Spent Waiting For Failed Sync ($percentile)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "Issue and Wait for Outgoing Sync - Duration By Success/Failure",
+        "type": "row"
+      }
+    ],
+    "refresh": "30m",
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "definition": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
+          "description": "",
+          "hide": 0,
+          "includeAll": false,
+          "label": "Environment",
+          "multi": false,
+          "name": "env",
+          "options": [],
+          "query": {
+            "query": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 2,
+          "type": "query"
+        },
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "definition": "label_values({__name__=~\"audius_cn_default_nodejs_heap_space_size_total_bytes\", environment=~\"$env\"}, host)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Host",
+          "multi": true,
+          "name": "host",
+          "options": [],
+          "query": {
+            "query": "label_values({__name__=~\"audius_cn_default_nodejs_heap_space_size_total_bytes\", environment=~\"$env\"}, host)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query"
+        },
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "definition": "label_values({__name__=~\"audius_cn_issue_sync_request_duration_seconds_bucket\", environment=~\"$env\"}, sync_mode)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Sync Mode",
+          "multi": true,
+          "name": "sync_mode",
+          "options": [],
+          "query": {
+            "query": "label_values({__name__=~\"audius_cn_issue_sync_request_duration_seconds_bucket\", environment=~\"$env\"}, sync_mode)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query"
+        },
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "definition": "label_values({__name__=~\"audius_cn_issue_sync_request_duration_seconds_bucket\", environment=~\"$env\"}, sync_type)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Sync Type",
+          "multi": true,
+          "name": "sync_type",
+          "options": [],
+          "query": {
+            "query": "label_values({__name__=~\"audius_cn_issue_sync_request_duration_seconds_bucket\", environment=~\"$env\"}, sync_type)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query"
+        },
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "definition": "label_values({__name__=~\"audius_cn_issue_sync_request_duration_seconds_bucket\", environment=~\"$env\"}, result)",
+          "description": "Outcome that Node A sees when it issues a sync request to Node B and polls it for completion (or times out)",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Issue Sync Result",
+          "multi": true,
+          "name": "issue_sync_result",
+          "options": [],
+          "query": {
+            "query": "label_values({__name__=~\"audius_cn_issue_sync_request_duration_seconds_bucket\", environment=~\"$env\"}, result)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query"
+        },
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "definition": "label_values({__name__=~\"audius_cn_secondary_sync_from_primary_duration_seconds\", environment=~\"$env\"}, result)",
+          "description": "Outcome of the node attempting to execute a sync",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Process Sync Result",
+          "multi": true,
+          "name": "process_sync_result",
+          "options": [],
+          "query": {
+            "query": "label_values({__name__=~\"audius_cn_secondary_sync_from_primary_duration_seconds\", environment=~\"$env\"}, result)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query"
+        },
+        {
+          "description": "",
+          "hide": 0,
+          "includeAll": false,
+          "label": "Percentile",
+          "multi": false,
+          "name": "percentile",
+          "options": [
+            {
+              "selected": true,
+              "text": "p50",
+              "value": "0.5"
+            },
+            {
+              "selected": false,
+              "text": "p90",
+              "value": "0.9"
+            },
+            {
+              "selected": false,
+              "text": "p95",
+              "value": "0.95"
+            },
+            {
+              "selected": false,
+              "text": "p99",
+              "value": "0.99"
+            }
+          ],
+          "query": "p50 : 0.5, p90 : 0.9, p95 : 0.95, p99 : 0.99",
+          "queryValue": "",
+          "skipUrlSync": false,
+          "type": "custom"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-2h",
+      "to": "now"
+    },
+    "timepicker": {
+      "nowDelay": "1m",
+      "refresh_intervals": [
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "timezone": "",
+    "title": "Audius - Content Node - Syncs",
+    "uid": "yTR-QagVk",
+    "version": null,
+    "weekStart": ""
+  },
+  "overwrite": true
+}

@@ -63,7 +63,7 @@
           "name": "Blockdiff",
           "type": "timeseries",
           "uid": "hhRZ9K67k",
-          "version": 3
+          "version": 7
         },
         "id": 19,
         "gridPos": {
@@ -190,7 +190,7 @@
           "name": "POA Indexing",
           "type": "timeseries",
           "uid": "erW7rK6nk",
-          "version": 2
+          "version": 3
         },
         "id": 1,
         "gridPos": {
@@ -221,7 +221,7 @@
           "name": "Solana Plays Indexing",
           "type": "timeseries",
           "uid": "0aIn9F6nk",
-          "version": 2
+          "version": 3
         },
         "id": 3,
         "gridPos": {
