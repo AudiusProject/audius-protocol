@@ -36,7 +36,8 @@
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
-              "type": "linear"
+              "log": 2,
+              "type": "log"
             },
             "showPoints": "auto",
             "spanNulls": false,
@@ -154,8 +155,9 @@
       },
       "id": 19,
       "libraryPanel": {
+        "description": "",
         "meta": {
-          "connectedDashboards": 1,
+          "connectedDashboards": 2,
           "created": "2022-07-09T01:43:48Z",
           "createdBy": {
             "avatarUrl": "",
@@ -164,16 +166,17 @@
           },
           "folderName": "General",
           "folderUid": "",
-          "updated": "2022-07-12T23:16:36Z",
+          "updated": "2022-07-23T13:58:42Z",
           "updatedBy": {
-            "avatarUrl": "",
-            "id": 0,
-            "name": ""
+            "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+            "id": 1,
+            "name": "admin"
           }
         },
         "name": "Blockdiff",
+        "type": "timeseries",
         "uid": "hhRZ9K67k",
-        "version": 2
+        "version": 6
       },
       "options": {
         "legend": {
@@ -186,8 +189,8 @@
           "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -205,13 +208,13 @@
       "title": "Blockdiff",
       "type": "timeseries"
     },
-    "version": 3,
+    "version": 7,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-13T23:11:47Z",
+      "updated": "2022-07-23T14:03:03Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -317,13 +320,13 @@
       "title": "Celery Tasks (Active)",
       "type": "bargauge"
     },
-    "version": 2,
+    "version": 3,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 3,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-12T23:16:36Z",
+      "updated": "2022-07-13T23:43:23Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -429,13 +432,13 @@
       "title": "Celery Tasks (Last Successful Duration)",
       "type": "bargauge"
     },
-    "version": 2,
+    "version": 3,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-12T23:16:36Z",
+      "updated": "2022-07-13T23:43:23Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -593,13 +596,13 @@
       "title": "POA Indexing",
       "type": "timeseries"
     },
-    "version": 2,
+    "version": 3,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-12T23:16:36Z",
+      "updated": "2022-07-13T23:43:23Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -757,13 +760,13 @@
       "title": "Solana Plays Indexing",
       "type": "timeseries"
     },
-    "version": 2,
+    "version": 3,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-12T23:16:36Z",
+      "updated": "2022-07-13T23:43:23Z",
       "createdBy": {
         "id": 0,
         "name": "",
