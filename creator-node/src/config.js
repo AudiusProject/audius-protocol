@@ -454,6 +454,12 @@ const config = convict({
 
   /** sync / snapback configs */
 
+  syncForceWipeEnabled: {
+    doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeEnabled',
+    default: false
+  },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',
