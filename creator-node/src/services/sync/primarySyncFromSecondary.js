@@ -432,7 +432,8 @@ async function saveEntriesToDB({
         tableInstance: models.AudiusUser,
         fetchedEntries: fetchedAudiusUsers,
         transaction,
-        comparisonFields: audiusUserComparisonFields
+        comparisonFields: audiusUserComparisonFields,
+        decisionTree
       })
 
       const trackComparisonFields = [
@@ -446,7 +447,8 @@ async function saveEntriesToDB({
         tableInstance: models.Track,
         fetchedEntries: fetchedTracks,
         transaction,
-        comparisonFields: trackComparisonFields
+        comparisonFields: trackComparisonFields,
+        decisionTree
       })
 
       const fileComparisonFields = ['fileUUID']
@@ -455,7 +457,8 @@ async function saveEntriesToDB({
         tableInstance: models.File,
         fetchedEntries: fetchedFiles,
         transaction,
-        comparisonFields: fileComparisonFields
+        comparisonFields: fileComparisonFields,
+        decisionTree
       })
 
       decisionTree.recordStage({
@@ -563,7 +566,8 @@ async function filterOutAlreadyPresentDBEntries({
   tableInstance,
   fetchedEntries,
   transaction,
-  comparisonFields
+  comparisonFields,
+  decisionTree
 }) {
   let filteredEntries = fetchedEntries
 
@@ -572,12 +576,23 @@ async function filterOutAlreadyPresentDBEntries({
 
   let complete = false
   while (!complete) {
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Begin',
+      data: { offset, numFetchedEntries: filteredEntries.length },
+      log: true
+    })
+
     const localEntries = await tableInstance.findAll({
       where: { cnodeUserUUID },
       limit,
       offset,
       order: [['clock', 'ASC']],
       transaction
+    })
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Retrieved local entries',
+      data: { numLocalEntries: localEntries.length },
+      log: true
     })
 
     // filter out everything in `localEntries` from `filteredEntries
@@ -593,6 +608,10 @@ async function filterOutAlreadyPresentDBEntries({
       })
       return !alreadyPresent
     })
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Filtered entries',
+      log: true
+    })
 
     offset += limit
 
@@ -600,6 +619,11 @@ async function filterOutAlreadyPresentDBEntries({
       complete = true
     }
   }
+
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Complete',
+    data: { numFilteredEntries: filteredEntries.length }
+  })
 
   return filteredEntries
 }
