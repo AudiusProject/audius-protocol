@@ -467,7 +467,7 @@ const _additionalSyncIsRequired = async (
        */
       if (
         secondaryClockValue >= primaryClockValue &&
-        syncMode !== SYNC_MODES.MergePrimaryAndSecondary
+        syncMode !== SYNC_MODES.MergePrimaryThenWipeSecondary
       ) {
         secondaryCaughtUpToPrimary = true
         break
