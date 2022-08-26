@@ -18,6 +18,7 @@ const BlacklistManager = require('./blacklistManager')
 const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
+const { instrumentTracing, tracing } = require('./tracer')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -259,7 +260,7 @@ async function ensureStorageMiddleware(req, res, next) {
  * @dev TODO - move out of middlewares layer because it's not used as middleware -- just as a function some routes call
  * @param ignoreWriteQuorum true if write quorum should not be enforced (don't fail the request if write quorum fails)
  */
-async function issueAndWaitForSecondarySyncRequests(
+async function _issueAndWaitForSecondarySyncRequests(
   req,
   ignoreWriteQuorum = false
 ) {
@@ -448,6 +449,15 @@ async function issueAndWaitForSecondarySyncRequests(
     }
   }
 }
+
+const issueAndWaitForSecondarySyncRequests = instrumentTracing({
+  fn: _issueAndWaitForSecondarySyncRequests,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
 
 /**
  * Retrieves current FQDN registered on-chain with node's owner wallet
