@@ -22,8 +22,17 @@ import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
 const SERVICE_NAME = 'content-node'
 
 /**
- * Initializes a tracer for content node as well as registers import instrumentions
+ * Initializes a tracer for content node as well as registers instrumentions
  * for packages that are frequently used
+ * WARNING: this function should be run before any other imports
+ * i.e.
+ * ```
+ * import { setupTracing } from './tracer'
+ * setupTracing()
+ * // all other imports
+ * import { foo } from 'bar'
+ * import { isEven } from 'pg'
+ * ```
  */
 export const setupTracing = () => {
   /**
@@ -113,7 +122,7 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
         try {
           tracing.setSpanAttribute(tracing.CODE_FUNCTION, fn.name)
 
-          // TODO: add skip parameter to instrument testing function to NOT log certain args
+          // TODO add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
           const result = fn.call(this, ...args)
 
@@ -132,6 +141,8 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
           }
 
           span.end()
+
+          // re-return result from synchronous function
           return result
         } catch (e: any) {
           tracing.recordException(e)
