@@ -561,7 +561,7 @@ async function saveEntriesToDB({
  * @param {string[]} comparisonFields fields to use for equality comparison
  * @returns {Object[]} filteredEntries filtered version of fetchedEntries
  */
-async function filterOutAlreadyPresentDBEntries({
+async function filterOutAlreadyPresentDBEntriesOld({
   cnodeUserUUID,
   tableInstance,
   fetchedEntries,
@@ -636,4 +636,151 @@ async function filterOutAlreadyPresentDBEntries({
   })
 
   return filteredEntries
+}
+
+/**
+ * Given fetchedEntries, filters out entries already present in local DB
+ *
+ * @notice This function could potentially take a long time as it fetches every single row in `tableInstance` for `cnodeUserUUID`
+ *    Memory consumption is minimized by batching this call, but it can still take a long time for users with lots of data
+ *
+ * @param {Object} param
+ * @param {string} param.cnodeUserUUID
+ * @param {*} param.tableInstance Sequelize model instance to query
+ * @param {Object[]} param.fetchedEntries array of entry objects to filter out
+ * @param {*} param.transaction Sequelize transaction
+ * @param {string[]} comparisonFields fields to use for equality comparison
+ * @returns {Object[]} filteredEntries filtered version of fetchedEntries
+ */
+async function filterOutAlreadyPresentDBEntries({
+  cnodeUserUUID,
+  tableInstance,
+  fetchedEntries,
+  transaction,
+  comparisonFields,
+  decisionTree
+}) {
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Begin',
+    data: {
+      tableName: tableInstance.name,
+      numFetchedEntries: fetchedEntries.length
+    },
+    log: true
+  })
+
+  // Timestamp is attached to prevent race conditions where same user is processed twice
+  const timestamp = Date.now()
+  const LOCAL_DB_ENTRIES_SET_KEY = `FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_LOCAL_ENTRIES_SET:::${cnodeUserUUID}:::${timestamp}`
+  const FETCHED_ENTRIES_SET_KEY = `FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_FETCHED_ENTRIES_SET:::${cnodeUserUUID}:::${timestamp}`
+  const UNIQUE_FETCHED_ENTRIES_SET_KEY = `FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_UNIQUE_FETCHED_ENTRIES_SET:::${cnodeUserUUID}:::${timestamp}`
+  await redis.del(
+    LOCAL_DB_ENTRIES_SET_KEY,
+    FETCHED_ENTRIES_SET_KEY,
+    UNIQUE_FETCHED_ENTRIES_SET_KEY
+  )
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Reset redis state',
+    log: true
+  })
+
+  /** Store all fetched entries into redis set (have to serialize arrays) */
+  const fetchedEntriesComparable = fetchedEntries.map((entry) =>
+    JSON.stringify(_.pick(entry, comparisonFields))
+  )
+  const numFetchedEntriesAdded = await redis.sadd(
+    FETCHED_ENTRIES_SET_KEY,
+    fetchedEntriesComparable
+  )
+  if (numFetchedEntriesAdded !== fetchedEntries.length) {
+    throw new Error(
+      `Failed to add all entries to redis set for ${FETCHED_ENTRIES_SET_KEY}`
+    )
+  }
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Set FETCHED_ENTRIES_SET_KEY',
+    log: true
+  })
+
+  /** Store all local DB entries into redis set */
+  const limit = DB_QUERY_LIMIT
+  let offset = 0
+  let complete = false
+  let numLocalEntriesAdded = 0
+  while (!complete) {
+    let localEntries = await tableInstance.findAll({
+      where: { cnodeUserUUID },
+      limit,
+      offset,
+      order: [['clock', 'ASC']],
+      transaction
+    })
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Retrieved local entries',
+      data: { numLocalEntries: localEntries.length, limit, offset },
+      log: true
+    })
+
+    localEntries = localEntries.map((entry) =>
+      JSON.stringify(_.pick(entry, comparisonFields))
+    )
+    if (localEntries.length > 0) {
+      const numLocalEntriesAddedBatch = await redis.sadd(
+        LOCAL_DB_ENTRIES_SET_KEY,
+        localEntries
+      )
+      if (numLocalEntriesAddedBatch !== localEntries.length) {
+        throw new Error(
+          `Failed to add all entries to redis set for ${LOCAL_DB_ENTRIES_SET_KEY}`
+        )
+      }
+      numLocalEntriesAdded += numLocalEntriesAddedBatch
+    }
+
+    offset += limit
+
+    if (localEntries.length < limit) {
+      complete = true
+    }
+  }
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Set LOCAL_DB_ENTRIES_SET_KEY',
+    data: { numLocalEntriesAdded },
+    log: true
+  })
+
+  // uniqueFetchedEntries set = fetchedEntries set - localDBEntries set
+  const numUniqueFetchedEntriesComparable = await redis.sdiffstore(
+    UNIQUE_FETCHED_ENTRIES_SET_KEY,
+    FETCHED_ENTRIES_SET_KEY,
+    LOCAL_DB_ENTRIES_SET_KEY
+  )
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Computed unique fetched entries in redis',
+    data: { numUniqueFetchedEntries: numUniqueFetchedEntriesComparable },
+    log: true
+  })
+
+  // Filter fetchedEntries to the newFetchedEntriesComparable set from redis
+  const uniqueFetchedEntriesComparable = await redis.smembers(
+    UNIQUE_FETCHED_ENTRIES_SET_KEY
+  )
+  const uniqueFetchedEntries = _.intersectionWith(
+    fetchedEntries,
+    uniqueFetchedEntriesComparable,
+    (fetchedEntry, uniqueEntryComparable) => {
+      const fetchedEntryComparable = JSON.stringify(
+        _.pick(fetchedEntry, comparisonFields)
+      )
+      return _.isEqual(fetchedEntryComparable, uniqueEntryComparable)
+    }
+  )
+
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Great Success',
+    data: { numUniqueFetchedEntries: uniqueFetchedEntries.length },
+    log: true
+  })
+
+  return uniqueFetchedEntries
 }
