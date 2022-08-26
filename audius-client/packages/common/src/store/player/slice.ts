@@ -3,16 +3,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { UID, ID, Collectible } from '../../models'
 import { Nullable } from '../../utils'
 
-import { AudioPlayer } from './types'
-
 export type PlayerState = {
   // Identifiers for the audio that's playing.
   uid: UID | null
   trackId: ID | null
 
   collectible: Collectible | null
-
-  audio: Nullable<AudioPlayer>
 
   // Keep 'playing' in the store separately from the audio
   // object to allow components to subscribe to changes.
@@ -33,17 +29,9 @@ export const initialState: PlayerState = {
 
   collectible: null,
 
-  // In the case of native mobile, use the native mobile audio
-  // player directly. Otherwise, it is set dynamically
-  audio: null,
-
   playing: false,
   buffering: false,
   counter: 0
-}
-
-type SetAudioStreamPayload = {
-  audio: AudioPlayer
 }
 
 type PlayPayload = {
@@ -106,11 +94,6 @@ const slice = createSlice({
   name: 'player',
   initialState,
   reducers: {
-    setAudioStream: (state, action: PayloadAction<SetAudioStreamPayload>) => {
-      const { audio } = action.payload
-      // Redux toolkit seems to do something to state.audio's type (some destructured form?)
-      state.audio = audio as typeof state.audio
-    },
     play: (_state, _action: PayloadAction<PlayPayload>) => {},
     playSucceeded: (state, action: PayloadAction<PlaySucceededPayload>) => {
       const { uid, trackId } = action.payload
@@ -167,7 +150,6 @@ const slice = createSlice({
 })
 
 export const {
-  setAudioStream,
   play,
   playSucceeded,
   playCollectible,

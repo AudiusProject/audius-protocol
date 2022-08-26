@@ -20,8 +20,6 @@ import {
   OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
-  Nullable,
-  AudioPlayer,
   playerActions,
   playerSelectors,
   queueSelectors
@@ -43,6 +41,7 @@ import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleBut
 import { PlayButtonStatus } from 'components/play-bar/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { audioPlayer } from 'services/audio-player'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import { AppState } from 'store/types'
 import {
@@ -56,7 +55,7 @@ import { withNullGuard } from 'utils/withNullGuard'
 import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
 const { makeGetCurrent } = queueSelectors
-const { getAudio, getBuffering, getCounter, getPlaying } = playerSelectors
+const { getBuffering, getCounter, getPlaying } = playerSelectors
 
 const { seek, reset } = playerActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -72,7 +71,6 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 type OwnProps = {
   onClose: () => void
-  audio: Nullable<AudioPlayer>
 }
 
 type NowPlayingProps = OwnProps &
@@ -108,7 +106,6 @@ const NowPlaying = g(
     currentQueueItem,
     currentUserId,
     playCounter,
-    audio,
     isPlaying,
     isBuffering,
     play,
@@ -155,12 +152,12 @@ const NowPlaying = g(
     const startSeeking = useCallback(() => {
       clearInterval(seekInterval.current)
       seekInterval.current = window.setInterval(async () => {
-        if (!audio) return
-        const position = await audio.getPosition()
-        const duration = await audio.getDuration()
+        if (!audioPlayer) return
+        const position = await audioPlayer.getPosition()
+        const duration = await audioPlayer.getDuration()
         setTiming({ position, duration })
       }, SEEK_INTERVAL)
-    }, [audio, setTiming])
+    }, [setTiming])
 
     // Clean up
     useEffect(() => {
@@ -505,7 +502,6 @@ function makeMapStateToProps() {
       currentQueueItem,
       currentUserId: getUserId(state),
       playCounter: getCounter(state),
-      audio: getAudio(state),
       isPlaying: getPlaying(state),
       isBuffering: getBuffering(state),
       isCasting: getIsCasting(state),

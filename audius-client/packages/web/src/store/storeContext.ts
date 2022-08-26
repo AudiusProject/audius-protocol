@@ -1,6 +1,7 @@
 import { CommonStoreContext } from '@audius/common'
 
 import * as analytics from 'services/analytics'
+import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
@@ -28,5 +29,6 @@ export const storeContext: CommonStoreContext = {
   isNativeMobile: false,
   env,
   explore,
-  getLineupSelectorForRoute
+  getLineupSelectorForRoute,
+  audioPlayer
 }
