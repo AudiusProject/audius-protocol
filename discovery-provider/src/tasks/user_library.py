@@ -158,12 +158,12 @@ def add_track_save(
         save_user_id = event_args._userId
         save_track_id = event_args._trackId
 
-        _, can_user_save_track = premium_content_access_checker.check_access(
+        premium_content_access = premium_content_access_checker.check_access(
             user_id=save_user_id,
             premium_content_id=save_track_id,
             premium_content_type="track",
         )
-        if not can_user_save_track:
+        if not premium_content_access["does_user_have_access"]:
             continue
 
         if (save_user_id in track_state_changes) and (
@@ -266,12 +266,12 @@ def delete_track_save(
         save_user_id = event_args._userId
         save_track_id = event_args._trackId
 
-        _, can_user_unsave_track = premium_content_access_checker.check_access(
+        premium_content_access = premium_content_access_checker.check_access(
             user_id=save_user_id,
             premium_content_id=save_track_id,
             premium_content_type="track",
         )
-        if not can_user_unsave_track:
+        if not premium_content_access["does_user_have_access"]:
             continue
 
         if (save_user_id in track_state_changes) and (

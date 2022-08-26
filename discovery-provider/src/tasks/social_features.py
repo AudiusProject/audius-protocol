@@ -212,12 +212,12 @@ def add_track_repost(
         repost_user_id = event_args._userId
         repost_track_id = event_args._trackId
 
-        _, can_user_repost_track = premium_content_access_checker.check_access(
+        premium_content_access = premium_content_access_checker.check_access(
             user_id=repost_user_id,
             premium_content_id=repost_track_id,
             premium_content_type="track",
         )
-        if not can_user_repost_track:
+        if not premium_content_access["does_user_have_access"]:
             continue
 
         if (repost_user_id in track_repost_state_changes) and (
@@ -265,12 +265,12 @@ def delete_track_repost(
         repost_user_id = event_args._userId
         repost_track_id = event_args._trackId
 
-        _, can_user_unrepost_track = premium_content_access_checker.check_access(
+        premium_content_access = premium_content_access_checker.check_access(
             user_id=repost_user_id,
             premium_content_id=repost_track_id,
             premium_content_type="track",
         )
-        if not can_user_unrepost_track:
+        if not premium_content_access["does_user_have_access"]:
             continue
 
         if (repost_user_id in track_repost_state_changes) and (

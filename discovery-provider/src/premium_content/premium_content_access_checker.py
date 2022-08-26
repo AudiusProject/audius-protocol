@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Dict, Optional, Tuple, cast
+from typing import Dict, Optional, Tuple, TypedDict, cast
 
 from src.models.tracks.track import Track
 from src.premium_content.helpers import does_user_have_nft_collection
@@ -8,6 +8,11 @@ from src.premium_content.types import PremiumContentType
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
+
+
+class PremiumContentAccessResponse(TypedDict):
+    is_premium: bool
+    does_user_have_access: bool
 
 
 class PremiumContentAccessChecker:
@@ -25,11 +30,11 @@ class PremiumContentAccessChecker:
         user_id: int,
         premium_content_id: int,
         premium_content_type: PremiumContentType,
-    ) -> Tuple[bool, bool]:
+    ) -> PremiumContentAccessResponse:
         # for now, we only allow tracks to be premium
         # premium playlists will come later
         if premium_content_type != "track":
-            return False, True
+            return {"is_premium": False, "does_user_have_access": True}
 
         (
             is_premium,
@@ -44,23 +49,23 @@ class PremiumContentAccessChecker:
                 logger.warn(
                     f"premium_content_access_checker.py | _aggregate_conditions | non-premium content with id {premium_content_id} and type {premium_content_type} has premium conditions."
                 )
-            return False, True
+            return {"is_premium": False, "does_user_have_access": True}
 
+        # premium_conditions should always be true here because we know
+        # that is_premium is true if we get here and it makes no sense
+        # to have a premium track with no conditions
         if not premium_conditions:
-            # is_premium should always be false here as it makes
-            # no sense to have a premium track with no conditions
-            if is_premium:
-                logger.warn(
-                    f"premium_content_access_checker.py | _aggregate_conditions | premium content with id {premium_content_id} and type {premium_content_type} has no premium conditions."
-                )
-            return is_premium, True
+            logger.warn(
+                f"premium_content_access_checker.py | _aggregate_conditions | premium content with id {premium_content_id} and type {premium_content_type} has no premium conditions."
+            )
+            return {"is_premium": is_premium, "does_user_have_access": True}
 
         does_user_have_access = self._evaluate_conditions(
             user_id=user_id,
             premium_content_owner_id=cast(int, content_owner_id),
             premium_conditions=premium_conditions,
         )
-        return True, does_user_have_access
+        return {"is_premium": True, "does_user_have_access": does_user_have_access}
 
     # Returns a tuple of (bool, Dict | None, int | None) -> (track is premium, track premium conditions, track owner id)
     def _is_content_premium(
