@@ -40,7 +40,7 @@ class ServiceRegistry {
     // Some services are initialized to `null` and will be initialized in helper functions
 
     this.redis = redisClient // Redis Client
-    this.prometheusRegistry = new PrometheusRegistry() // Service that tracks metrics
+    this.prometheusRegistry = PrometheusRegistry // Service that tracks metrics
     this.libs = null // instance of Audius Libs
     this.blacklistManager = BlacklistManager // Service that handles blacklisted content
     this.stateMachineManager = null // Service that manages user states

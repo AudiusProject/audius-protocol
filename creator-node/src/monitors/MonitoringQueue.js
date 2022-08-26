@@ -3,6 +3,7 @@ const redis = require('../redis')
 const config = require('../config')
 const { MONITORS, getMonitorRedisKey } = require('./monitors')
 const { logger } = require('../logging')
+const prometheusRegistry = require('../services/prometheusMonitoring/prometheusRegistry')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -48,11 +49,11 @@ class MonitoringQueue {
 
           // Iterate over each monitor and set a new value if the cached
           // value is not fresh.
-          Object.values(MONITORS).forEach(async (monitor) => {
+          Object.keys(MONITORS).forEach(async (monitorKey) => {
             try {
-              await this.refresh(monitor)
+              await this.refresh(MONITORS[monitorKey], monitorKey)
             } catch (e) {
-              this.logStatus(`Error on ${monitor.name} ${e}`)
+              this.logStatus(`Error on ${monitorKey} ${e}`)
             }
           })
 
@@ -71,29 +72,34 @@ class MonitoringQueue {
    * them on init
    */
   async seedInitialValues() {
-    await this.refresh(MONITORS.STORAGE_PATH_SIZE)
-    await this.refresh(MONITORS.STORAGE_PATH_USED)
+    await this.refresh(MONITORS.STORAGE_PATH_SIZE, 'STORAGE_PATH_SIZE')
+    await this.refresh(MONITORS.STORAGE_PATH_USED, 'STORAGE_PATH_USED')
   }
 
-  async refresh(monitor) {
-    const key = getMonitorRedisKey(monitor)
+  async refresh(monitorVal, monitorKey) {
+    const key = getMonitorRedisKey(monitorVal)
     const ttlKey = `${key}:ttl`
 
     // If the value is fresh, exit early
     const isFresh = await redis.get(ttlKey)
     if (isFresh) return
 
-    const value = await monitor.func()
-    this.logStatus(`Computed value for ${monitor.name} ${value}`)
+    const value = await monitorVal.func()
+    this.logStatus(`Computed value for ${monitorVal.name} ${value}`)
+
+    const metric = prometheusRegistry.getMetric(
+      prometheusRegistry.metricNames[`MONITOR_${monitorKey}`]
+    )
+    metric.set({}, value)
 
     // Set the value
     redis.set(key, value)
 
-    if (monitor.ttl) {
+    if (monitorVal.ttl) {
       // Set a TTL (in seconds) key to track when this value needs refreshing.
       // We store a separate TTL key rather than expiring the value itself
       // so that in the case of an error, the current value can still be read
-      redis.set(ttlKey, 1, 'EX', monitor.ttl)
+      redis.set(ttlKey, 1, 'EX', monitorVal.ttl)
     }
   }
 
