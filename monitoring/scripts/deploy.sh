@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# crontab:
+# 0 0 * * * cd ~/audius-protocol/monitoring && scripts/deploy.sh prod
+
 set -ex
 
 PROM_ENV="${1:-local}"
