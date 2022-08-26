@@ -20,7 +20,7 @@ class PremiumContentAccessChecker:
     # - if not, then user has access
     # - if so, check whether user fulfills the conditions
     #
-    # Returns a tuple of (bool, bool) -> (track is premium, user has access)
+    # Returns a dictionary: { track is premium, user has access }
     #
     # Note: premium content id for type should exist, but just in case it does not,
     # we return true for user access so that (non-existent) track does not change
@@ -31,16 +31,10 @@ class PremiumContentAccessChecker:
         premium_content_id: int,
         premium_content_type: PremiumContentType,
     ) -> PremiumContentAccessResponse:
-        # for now, we only allow tracks to be premium
-        # premium playlists will come later
-        if premium_content_type != "track":
-            return {"is_premium": False, "does_user_have_access": True}
-
-        (
-            is_premium,
-            premium_conditions,
-            content_owner_id,
-        ) = self._is_content_premium(premium_content_id)
+        premium_content_data = self._get_premium_content_data(premium_content_id)
+        is_premium = premium_content_data["is_premium"]
+        premium_conditions = premium_content_data["premium_conditions"]
+        content_owner_id = premium_content_data["content_owner_id"]
 
         if not is_premium:
             # premium_conditions should always be null here as it makes
@@ -67,10 +61,18 @@ class PremiumContentAccessChecker:
         )
         return {"is_premium": True, "does_user_have_access": does_user_have_access}
 
-    # Returns a tuple of (bool, Dict | None, int | None) -> (track is premium, track premium conditions, track owner id)
-    def _is_content_premium(
-        self, premium_content_id: int
-    ) -> Tuple[bool, Optional[Dict], Optional[int]]:
+    # Returns a dictionary { content is premium, premium content conditions, content owner id }
+    def _get_premium_content_data(
+        self, premium_content_id: int, premium_content_type: PremiumContentType
+    ):
+        # for now, we only allow tracks to be premium; premium playlists will come later
+        if premium_content_type != "track":
+            return {
+                "is_premium": False,
+                "premium_conditions": None,
+                "owner_id": None,
+            }
+
         db = db_session.get_db_read_replica()
         with db.scoped_session() as session:
             track = (
@@ -86,7 +88,11 @@ class PremiumContentAccessChecker:
             if not track:
                 return False, None, None
 
-            return track.is_premium, track.premium_conditions, track.owner_id
+            return {
+                "is_premium": track.is_premium,
+                "premium_conditions": track.premium_conditions,
+                "owner_id": track.owner_id,
+            }
 
     # There will eventually be another step prior to this one where
     # we aggregate multiple conditions and evaluate them altogether.
