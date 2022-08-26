@@ -38,7 +38,10 @@ class StateMachineManager {
       recurringSyncQueue,
       updateReplicaSetQueue,
       recoverOrphanedDataQueue
-    } = await stateReconciliationManager.init(prometheusRegistry)
+    } = await stateReconciliationManager.init(
+      audiusLibs.discoveryProvider.discoveryProviderEndpoint,
+      prometheusRegistry
+    )
 
     // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
     const queueNameToQueueMap = {

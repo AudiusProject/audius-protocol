@@ -18,6 +18,7 @@ const handleSyncFromPrimary = async ({
   wallet,
   creatorNodeEndpoint,
   forceResyncConfig,
+  forceWipe,
   logContext,
   blockNumber = null
 }) => {
@@ -28,6 +29,7 @@ const handleSyncFromPrimary = async ({
   const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
     'syncRequestMaxUserFailureCountBeforeSkip'
   )
+  const thisContentNodeEndpoint = nodeConfig.get('creatorNodeEndpoint')
 
   const start = Date.now()
 
@@ -46,6 +48,20 @@ const handleSyncFromPrimary = async ({
       ),
       result: 'failure_sync_in_progress'
     }
+  }
+
+  // Ensure this node is syncing from the user's primary
+  const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+    libs,
+    logger: genericLogger,
+    wallet,
+    blockNumber: null,
+    ensurePrimary: false
+  })
+  if (userReplicaSet.primary !== creatorNodeEndpoint) {
+    throw new Error(
+      `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`
+    )
   }
 
   /**
@@ -68,8 +84,17 @@ const handleSyncFromPrimary = async ({
   let returnValue = {}
   try {
     let localMaxClockVal
-    if (forceResync) {
+    if (forceResync || forceWipe) {
       genericLogger.warn(`${logPrefix} Forcing resync..`)
+
+      // Ensure we never wipe the data of a primary
+      if (thisContentNodeEndpoint === userReplicaSet.primary) {
+        throw new Error(
+          `Tried to wipe data of a primary. User replica set: ${JSON.stringify(
+            userReplicaSet
+          )}`
+        )
+      }
 
       /**
        * Wipe local DB state
@@ -93,12 +118,29 @@ const handleSyncFromPrimary = async ({
         }
         throw returnValue.error
       }
+
+      if (forceWipe) {
+        return {
+          result: 'success'
+        }
+      }
     } else {
       // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
       const cnodeUser = await models.CNodeUser.findOne({
         where: { walletPublicKey: wallet }
       })
       localMaxClockVal = cnodeUser ? cnodeUser.clock : -1
+    }
+
+    // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data).
+    // We know we're not wiping an orphaned node at this point because it would've returned earlier if forceWipe=true
+    if (
+      thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
+      thisContentNodeEndpoint !== userReplicaSet.secondary2
+    ) {
+      throw new Error(
+        `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`
+      )
     }
 
     /**
@@ -115,8 +157,8 @@ const handleSyncFromPrimary = async ({
     }
 
     // This is used only for logging by primary to record endpoint of requesting node
-    if (nodeConfig.get('creatorNodeEndpoint')) {
-      exportQueryParams.source_endpoint = nodeConfig.get('creatorNodeEndpoint')
+    if (thisContentNodeEndpoint) {
+      exportQueryParams.source_endpoint = thisContentNodeEndpoint
     }
 
     const resp = await axios({
@@ -216,29 +258,22 @@ const handleSyncFromPrimary = async ({
      * Replace CNodeUser's local DB state with retrieved data + fetch + save missing files.
      */
 
-    // Retrieve user's replica set to use as gateways for content fetching in saveFileForMultihashToFS.
+    // Use user's replica set as gateways for content fetching in saveFileForMultihashToFS.
     // Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
-    let userReplicaSet = []
+    let gatewaysToTry = []
     try {
       const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
-      userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-        libs,
-        logger: genericLogger,
-        wallet: fetchedWalletPublicKey,
-        blockNumber,
-        ensurePrimary: false,
-        myCnodeEndpoint
-      })
 
       // Filter out current node from user's replica set
-      userReplicaSet = userReplicaSet.filter((url) => url !== myCnodeEndpoint)
-
-      // Spread + set uniq's the array
-      userReplicaSet = [...new Set(userReplicaSet)]
+      gatewaysToTry = [
+        userReplicaSet.primary,
+        userReplicaSet.secondary1,
+        userReplicaSet.secondary2
+      ].filter((url) => url !== myCnodeEndpoint)
     } catch (e) {
       genericLogger.error(
         logPrefix,
-        `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
       )
     }
 
@@ -424,7 +459,7 @@ const handleSyncFromPrimary = async ({
               genericLogger,
               trackFile.multihash,
               trackFile.storagePath,
-              userReplicaSet,
+              gatewaysToTry,
               null,
               trackFile.trackBlockchainId
             )
@@ -469,7 +504,7 @@ const handleSyncFromPrimary = async ({
                   genericLogger,
                   multihash,
                   nonTrackFile.storagePath,
-                  userReplicaSet,
+                  gatewaysToTry,
                   nonTrackFile.fileName
                 )
               } else {
@@ -478,7 +513,7 @@ const handleSyncFromPrimary = async ({
                   genericLogger,
                   multihash,
                   nonTrackFile.storagePath,
-                  userReplicaSet
+                  gatewaysToTry
                 )
               }
 
@@ -688,6 +723,7 @@ async function secondarySyncFromPrimary({
   creatorNodeEndpoint,
   forceResyncConfig,
   logContext,
+  forceWipe = false,
   blockNumber = null
 }) {
   const { prometheusRegistry } = serviceRegistry
@@ -697,7 +733,11 @@ async function secondarySyncFromPrimary({
   )
   const metricEndTimerFn = secondarySyncFromPrimaryMetric.startTimer()
 
-  const mode = forceResyncConfig?.forceResync ? 'force_resync' : 'default'
+  // forceWipe only wipes data from the secondary and and doesn't resync from the primary.
+  // This flag takes precedence over forceResync, which wipes and then resyncs, if both are present
+  let mode = 'default'
+  if (forceResyncConfig?.forceResync) mode = 'force_resync'
+  if (forceWipe) mode = 'force_wipe'
 
   const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,
@@ -705,6 +745,7 @@ async function secondarySyncFromPrimary({
     creatorNodeEndpoint,
     blockNumber,
     forceResyncConfig,
+    forceWipe,
     logContext
   })
   metricEndTimerFn({ result, mode })

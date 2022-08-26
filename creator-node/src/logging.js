@@ -137,6 +137,22 @@ function logInfoWithDuration({ logger, startTime }, msg) {
   }
 }
 
+/**
+ * Prints the log message with the duration
+ * @param {Object} logger
+ * @param {number} startTime the start time
+ * @param {string} msg the message to print
+ */
+function logErrorWithDuration({ logger, startTime }, msg) {
+  const durationMs = getDuration({ startTime })
+
+  if (durationMs) {
+    logger.error({ duration: durationMs }, msg)
+  } else {
+    logger.error(msg)
+  }
+}
+
 module.exports = {
   logger,
   loggingMiddleware,
@@ -145,5 +161,6 @@ module.exports = {
   getStartTime,
   getDuration,
   createChildLogger,
-  logInfoWithDuration
+  logInfoWithDuration,
+  logErrorWithDuration
 }

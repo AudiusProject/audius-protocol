@@ -1,0 +1,18 @@
+// Config used to build the app (no tests)
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./build",
+    "types": ["node"]
+  },
+  "include": [
+    "src",
+    "sequelize"
+  ],
+  "exclude": [
+    "node_modules",
+    "test",
+    "src/**/*.test.js",
+    "src/**/*.test.ts"
+  ]
+}
