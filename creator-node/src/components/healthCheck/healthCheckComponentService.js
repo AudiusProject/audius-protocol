@@ -130,9 +130,11 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
+  const healthy = !config.get('considerNodeUnhealthy')
+
   const response = {
     ...versionInfo,
-    healthy: true,
+    healthy,
     git: process.env.GIT_SHA,
     selectedDiscoveryProvider: 'none',
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),

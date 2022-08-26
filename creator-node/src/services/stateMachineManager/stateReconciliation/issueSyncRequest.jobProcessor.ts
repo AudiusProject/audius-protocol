@@ -238,7 +238,7 @@ async function _handleIssueSyncRequest({
     const userReplicaSet: ReplicaSet =
       await getUserReplicaSetEndpointsFromDiscovery({
         libs: await initAudiusLibs({
-          enableEthContracts: false,
+          enableEthContracts: true,
           enableContracts: false,
           enableDiscovery: true,
           enableIdentity: false,
