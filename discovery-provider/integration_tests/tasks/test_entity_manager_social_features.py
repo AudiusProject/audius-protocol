@@ -4,6 +4,7 @@ from typing import List
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import PLAYLIST_ID_OFFSET
 from src.utils.db_session import get_db
@@ -97,3 +98,11 @@ def test_index_valid_social_features(app, mocker):
             block_hash=0,
             ipfs_metadata=test_metadata,
         )
+        all_follows: List[Follow] = session.query(Follow).all()
+        assert len(all_follows) == 2
+        first_follow = all_follows[0]
+        second_follow = all_follows[1]
+        assert first_follow.is_current == True
+        assert second_follow.is_current == True
+        assert first_follow.follower_user_id == 1
+        assert second_follow.follower_user_id == 3

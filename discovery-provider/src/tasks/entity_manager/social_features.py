@@ -18,7 +18,6 @@ def validate_follow_tx(params: ManageEntityParameters):
 
 def create_follow(params: ManageEntityParameters):
     validate_follow_tx(params)
-    print("Valid follow detected")
     # Check if follow already exists first
     follower_user_id = params.user_id
     followee_user_id = params.entity_id

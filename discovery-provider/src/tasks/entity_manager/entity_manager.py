@@ -142,7 +142,6 @@ def entity_manager_update(
                     ):
                         print("!!! Unfollow created")
                 except Exception as e:
-                    print(e)
                     # swallow exception to keep indexing
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with event {event}"
@@ -170,10 +169,10 @@ def entity_manager_update(
             track_records[-1].is_current = True
             records_to_save.extend(track_records)
 
-        # for follow_records in new_records["follows"].values():
+        for follow_records in new_records["follows"].values():
         # flip is_current to true for the last follow tx
-        # follow_records[-1].is_current = True
-        # records_to_save.extend(follow_records)
+            follow_records[-1].is_current = True
+            records_to_save.extend(follow_records)
 
         # insert/update all tracks, playlist records in this block
         session.bulk_save_objects(records_to_save)
@@ -254,16 +253,13 @@ def fetch_existing_entities(
         .all()
     )
     existing_entities["users"] = {user.user_id: user for user in users}
-    print("FETCHING")
     # print(entities_to_fetch)
     follow_ops_to_fetch: list[Tuple] = list(entities_to_fetch[EntityType.FOLLOW])
-    print(follow_ops_to_fetch)
 
     and_queries = []
     for follow_to_fetch in follow_ops_to_fetch:
         follower = follow_to_fetch[0]
         followee = follow_to_fetch[1]
-        print(f"Follower={follower}, followee={followee}")
         and_queries.append(
             and_(
                 Follow.followee_user_id == followee,

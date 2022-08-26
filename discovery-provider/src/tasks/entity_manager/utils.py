@@ -97,6 +97,5 @@ class ManageEntityParameters:
         self.existing_records["tracks"][track_id] = track
 
     def add_follow_record(self, follow_id: str, follow: Follow):
-        print(self.new_records)
         self.new_records["follows"][follow_id].append(follow)
-        print("3rd...added follow record")
+        self.existing_records["follows"][follow_id] = follow
