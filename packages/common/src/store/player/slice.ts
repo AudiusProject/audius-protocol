@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { UID, ID, Collectible } from '../../models'
-import { Nullable } from '../../utils'
+import { Maybe, Nullable } from '../../utils'
 
 export type PlayerState = {
   // Identifiers for the audio that's playing.
@@ -21,6 +21,9 @@ export type PlayerState = {
   // Unique integer that increments every time something is "played."
   // E.g. replaying a track doesn't change uid or trackId, but counter changes.
   counter: number
+
+  // Seek time into the track when a user scrubs forward or backward
+  seek: number | null
 }
 
 export const initialState: PlayerState = {
@@ -31,14 +34,15 @@ export const initialState: PlayerState = {
 
   playing: false,
   buffering: false,
-  counter: 0
+  counter: 0,
+  seek: null
 }
 
-type PlayPayload = {
+type PlayPayload = Maybe<{
   uid?: Nullable<UID>
   trackId?: ID
   onEnd?: (...args: any) => any
-}
+}>
 
 type PlaySucceededPayload = {
   uid?: Nullable<UID>
@@ -54,12 +58,12 @@ type PlayCollectibleSucceededPayload = {
   collectible: Collectible
 }
 
-type PausePayload = {
+type PausePayload = Maybe<{
   // Optionally allow only setting state which doesn't actually
   // invoke a .pause on the internal audio object. This is used in
   // native mobile audio only.
   onlySetState?: boolean
-}
+}>
 
 type StopPayload = {}
 
@@ -141,8 +145,11 @@ const slice = createSlice({
       state.playing = shouldAutoplay
       state.counter = state.counter + 1
     },
-    seek: (_state, _actions: PayloadAction<SeekPayload>) => {},
-    error: (_state, _actions: PayloadAction<ErrorPayload>) => {},
+    seek: (state, action: PayloadAction<SeekPayload>) => {
+      const { seconds } = action.payload
+      state.seek = seconds
+    },
+    error: (_state, _action: PayloadAction<ErrorPayload>) => {},
     incrementCount: (state) => {
       state.counter = state.counter + 1
     }

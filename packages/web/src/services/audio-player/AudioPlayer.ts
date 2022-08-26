@@ -1,8 +1,8 @@
-import { TrackSegment, decodeHashId } from '@audius/common'
+import { TrackSegment, decodeHashId, hlsUtils } from '@audius/common'
 import Hls from 'hls.js'
 
 import { fetchCID } from 'services/audius-backend'
-import { generateM3U8, generateM3U8Variants } from 'utils/hlsUtil'
+const { generateM3U8, generateM3U8Variants } = hlsUtils
 
 declare global {
   interface Window {
@@ -217,7 +217,7 @@ export class AudioPlayer {
           this.hls.destroy()
         }
         // Hls.js via MediaExtensions
-        const m3u8 = generateM3U8(segments, prefetchedSegments)
+        const m3u8 = generateM3U8({ segments, prefetchedSegments })
         // eslint-disable-next-line
         class creatorFLoader extends fLoader {
           getFallbacks = () => gateways as never[]
@@ -273,11 +273,11 @@ export class AudioPlayer {
         // Native HLS (ios Safari)
         const m3u8Gateways =
           gateways.length > 0 ? [gateways[0]] : [PUBLIC_IPFS_GATEWAY]
-        const m3u8 = generateM3U8Variants(
+        const m3u8 = generateM3U8Variants({
           segments,
           prefetchedSegments,
-          m3u8Gateways
-        )
+          gateways: m3u8Gateways
+        })
 
         this.audio.src = m3u8
         this.audio.title =

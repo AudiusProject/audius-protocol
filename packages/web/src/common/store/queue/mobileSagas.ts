@@ -9,7 +9,8 @@ import {
   getContext,
   waitForAccount,
   playerActions,
-  queueSelectors
+  queueSelectors,
+  hlsUtils
 } from '@audius/common'
 import { all, put, select, takeEvery, call } from 'typed-redux-saga'
 
@@ -19,7 +20,7 @@ import {
   ShuffleMessage
 } from 'services/native-mobile-interface/queue'
 import { MessageType, Message } from 'services/native-mobile-interface/types'
-import { generateM3U8Variants } from 'utils/hlsUtil'
+const { generateM3U8Variants } = hlsUtils
 
 const {
   getOrder,
@@ -72,7 +73,10 @@ function* getTrackInfo(id: ID, uid: UID) {
     : track.cover_art
 
   const m3u8Gateways = gateways.concat(PUBLIC_IPFS_GATEWAY)
-  const m3u8 = generateM3U8Variants(track.track_segments, [], m3u8Gateways)
+  const m3u8 = generateM3U8Variants({
+    segments: track.track_segments,
+    gateways: m3u8Gateways
+  })
   return {
     title: track.title,
     artist: owner.name,

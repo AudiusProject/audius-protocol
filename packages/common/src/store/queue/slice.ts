@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { RepeatMode, Queueable } from 'store/queue/types'
-import { Nullable } from 'utils/typeUtils'
 
 import { ID, UID, Collectible } from '../../models'
+import { Maybe, Nullable } from '../../utils'
 
 type State = {
   order: Queueable[]
@@ -64,12 +64,12 @@ type PersistPayload = {}
 
 type PausePayload = {}
 
-type NextPayload = {
+type NextPayload = Maybe<{
   // Whether or not to skip if in repeat mode (passive vs. active next)
   skip?: boolean
-}
+}>
 
-type PreviousPayload = {}
+type PreviousPayload = undefined
 
 type UpdateIndexPayload = {
   index: number
@@ -124,7 +124,7 @@ const slice = createSlice({
     pause: (_state, _action: PayloadAction<PausePayload>) => {},
     // Skips the next track in the queue
     next: (state, action: PayloadAction<NextPayload>) => {
-      const { skip } = action.payload
+      const skip = action.payload?.skip
 
       if (state.order.length === 0) return
 

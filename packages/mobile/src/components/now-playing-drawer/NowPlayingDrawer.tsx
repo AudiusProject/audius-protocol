@@ -207,7 +207,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
         dispatch(seek({ type: SEEK, seconds: Math.max(0, newPosition) }))
       }
     } else {
-      dispatchWeb(previous({}))
+      dispatchWeb(previous())
       setMediaKey((mediaKey) => mediaKey + 1)
     }
   }, [dispatch, dispatchWeb, setMediaKey, track])
