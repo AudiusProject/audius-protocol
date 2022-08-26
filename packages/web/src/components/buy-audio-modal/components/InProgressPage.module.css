@@ -37,14 +37,16 @@
 .showMoreToggle {
   width: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 .showMoreToggle:global(.collapsed) {
   border-top: 1px solid var(--neutral-light-8);
 }
 .showMoreToggle .showMoreToggleButton {
-  margin: 0 auto;
-  padding: 24px 0;
-  font-size: var(--large);
+  padding-top: 24px;
+  padding-bottom: 24px;
 }
 
 .moreInfo {
