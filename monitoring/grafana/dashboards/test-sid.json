@@ -410,7 +410,7 @@
             "refId": "A"
           }
         ],
-        "title": "MergePrimaryAndSecondary IssueSyncRequest Counts[1m] By SyncType, Host, Result",
+        "title": "MergePrimaryAndSecondary IssueSyncRequest Counts[1m]  By SyncType, Host, Result",
         "type": "timeseries"
       },
       {
