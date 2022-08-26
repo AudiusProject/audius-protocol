@@ -192,7 +192,9 @@ const handleSyncFromPrimary = async ({
         resp.data = JSON.parse(resp.request.responseText)
       } else {
         returnValue = {
-          error: new Error(`Malformed export response from ${creatorNodeEndpoint}. resp.request.responseText missing.`),
+          error: new Error(
+            `Malformed export response from ${creatorNodeEndpoint}. resp.request.responseText missing.`
+          ),
           result: 'failure_malformed_export'
         }
         throw returnValue.error
@@ -205,7 +207,9 @@ const handleSyncFromPrimary = async ({
       _.isEmpty(body.data.cnodeUsers)
     ) {
       returnValue = {
-        error: new Error(`Malformed export response from ${creatorNodeEndpoint}. cnodeUsers object missing`),
+        error: new Error(
+          `Malformed export response from ${creatorNodeEndpoint}. cnodeUsers object missing`
+        ),
         result: 'failure_malformed_export'
       }
       throw returnValue.error
