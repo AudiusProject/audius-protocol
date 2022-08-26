@@ -50,7 +50,7 @@ import {
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import {
   createUserBankIfNeeded,
-  getUserBank
+  deriveUserBank
 } from 'services/audius-backend/waudio'
 
 const {
@@ -233,7 +233,7 @@ function* getTransactionFees({
       routeInfo: route,
       userPublicKey: rootAccount
     })
-    const userBank = yield* call(getUserBank)
+    const userBank = yield* call(deriveUserBank)
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
       {
@@ -594,7 +594,7 @@ function* startBuyAudioFlow({
     })
 
     // Transfer AUDIO to userbank
-    const userBank = yield* call(getUserBank)
+    const userBank = yield* call(deriveUserBank)
     yield* put(transferStarted())
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,

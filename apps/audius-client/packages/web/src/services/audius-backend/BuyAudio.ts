@@ -115,9 +115,7 @@ export const getAudioAccountInfo = async ({
 }) => {
   await waitForLibsInit()
   const tokenAccountInfo: AccountInfo | null =
-    await libs().solanaWeb3Manager.getAssociatedTokenAccountInfo(
-      tokenAccount.toString()
-    )
+    await libs().solanaWeb3Manager.getTokenAccountInfo(tokenAccount.toString())
   return tokenAccountInfo
 }
 
