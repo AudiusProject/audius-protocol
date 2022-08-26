@@ -14,6 +14,7 @@ export const getPlaying = (state: CommonState) => state.player.playing
 export const getPaused = (state: CommonState) => !state.player.playing
 export const getCounter = (state: CommonState) => state.player.counter
 export const getBuffering = (state: CommonState) => state.player.buffering
+export const getSeek = (state: CommonState) => state.player.seek
 
 export const getCurrentTrack = (state: CommonState) =>
   getTrack(state, { id: getTrackId(state) })

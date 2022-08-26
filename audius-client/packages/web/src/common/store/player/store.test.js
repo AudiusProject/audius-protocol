@@ -2,8 +2,9 @@ import { playerReducer, playerActions } from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 
-import * as sagas from 'store/player/sagas'
 import { noopReducer } from 'store/testHelper'
+
+import * as sagas from './sagas'
 
 const initialTracks = {
   entries: {

@@ -57,7 +57,7 @@ export function* watchPlay() {
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    const { uid, trackId, onEnd } = action.payload
+    const { uid, trackId, onEnd } = action.payload ?? {}
 
     if (!FORCE_MP3_STREAM_TRACK_IDS) {
       FORCE_MP3_STREAM_TRACK_IDS = new Set(
@@ -166,7 +166,7 @@ export function* watchCollectiblePlay() {
 
 export function* watchPause() {
   yield* takeLatest(pause.type, function* (action: ReturnType<typeof pause>) {
-    const { onlySetState } = action.payload
+    const onlySetState = action.payload?.onlySetState
 
     const audioPlayer = yield* getContext('audioPlayer')
     if (onlySetState) return
