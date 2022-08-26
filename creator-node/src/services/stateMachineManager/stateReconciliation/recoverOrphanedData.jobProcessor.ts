@@ -129,9 +129,7 @@ const _saveWalletsOnThisNodeToRedis = async (logger: Logger) => {
   }
 
   const numWalletsOnNode = await redisClient.scard(WALLETS_ON_NODE_KEY)
-  logger.info(
-    `Orphaned data recovery found ${numWalletsOnNode} wallets with data on this node`
-  )
+  logger.info(`Found ${numWalletsOnNode} wallets with data on this node`)
   return numWalletsOnNode
 }
 
@@ -190,7 +188,7 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
   )
   logger.info(
-    `Orphaned data recovery found ${numWalletsWithNodeInReplicaSet} wallets with this node in their replica set`
+    `Found ${numWalletsWithNodeInReplicaSet} wallets with this node in their replica set`
   )
   return numWalletsWithNodeInReplicaSet
 }
@@ -207,7 +205,7 @@ const _saveWalletsWithOrphanedDataToRedis = async (logger: Logger) => {
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
   )
   logger.info(
-    `Orphaned data recovery found ${numWalletsOrphaned} wallets with data orphaned on this node`
+    `Found ${numWalletsOrphaned} wallets with data orphaned on this node`
   )
   return numWalletsOrphaned
 }
@@ -268,7 +266,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
     }
 
     logger.info(
-      `Orphaned data recovery issued /merge_primary_and_secondary requests for ${i}/${numWalletsWithOrphanedData} wallets`
+      `Issued /merge_primary_and_secondary requests for ${i}/${numWalletsWithOrphanedData} wallets`
     )
     // Delay processing the next batch to avoid spamming requests
     await Utils.timeout(ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS, false)
