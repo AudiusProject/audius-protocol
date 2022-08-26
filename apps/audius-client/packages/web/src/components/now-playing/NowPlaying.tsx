@@ -526,7 +526,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(next({ skip: true }))
     },
     previous: () => {
-      dispatch(previous({}))
+      dispatch(previous())
     },
     reset: (shouldAutoplay: boolean) => {
       dispatch(reset({ shouldAutoplay }))

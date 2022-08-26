@@ -287,7 +287,7 @@ export function* watchPause() {
 
 export function* watchNext() {
   yield* takeEvery(next.type, function* (action: ReturnType<typeof next>) {
-    const { skip } = action.payload
+    const skip = action.payload?.skip
 
     // If the queue has overshot the end, reset the song
     const overshot = yield* select(getOvershot)
@@ -400,7 +400,7 @@ export function* watchPrevious() {
       // If we move to a previous song that's been
       // deleted, skip over it.
       if (track && (track.is_delete || user?.is_deactivated)) {
-        yield* put(previous({}))
+        yield* put(previous())
       } else {
         const index = yield* select(getIndex)
         if (index >= 0) {
