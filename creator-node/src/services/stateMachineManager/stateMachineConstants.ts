@@ -98,7 +98,7 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   // Max millis to run an update-replica-set job for before marking it as stalled
   UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000,
   // Max millis to run a recover-orphaned-data job for before marking it as stalled
-  RECOVER_ORPHANED_DATA: 5 /* hours */ * 60 /* min */ * 60 * 1000
+  RECOVER_ORPHANED_DATA: 3 /* hours */ * 60 /* min */ * 60 * 1000
 })
 
 /**
@@ -184,3 +184,7 @@ export const ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH = 50
 
 // Milliseconds to wait between processing every ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH users
 export const ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS = 1000
+
+// Milliseconds after which to gracefully end a recover-orphaned-data job early
+export const MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS =
+  2 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000
