@@ -168,12 +168,16 @@ def entity_manager_update(
         session.bulk_save_objects(records_to_save)
         num_total_changes += len(records_to_save)
 
+        # update metrics
         metric_latency.save_time()
         metric_num_changed.save(
-            len(new_records["playlists"]), {"entity_type": "playlist"}
+            len(new_records["playlists"]), {"entity_type": EntityType.PLAYLIST.value}
         )
-        metric_num_changed.save(len(new_records["tracks"]), {"entity_type": "track"})
+        metric_num_changed.save(
+            len(new_records["tracks"]), {"entity_type": EntityType.TRACK.value}
+        )
         metric_num_changed.save(num_total_changes, {"entity_type": "all"})
+
         logger.info(
             f"entity_manager.py | Completed with {num_total_changes} total changes"
         )
