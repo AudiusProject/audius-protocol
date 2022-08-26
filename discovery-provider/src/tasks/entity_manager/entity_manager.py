@@ -69,6 +69,7 @@ def entity_manager_update(
         new_records: RecordDict = {
             "playlists": defaultdict(list),
             "tracks": defaultdict(list),
+            "follows": defaultdict(list)
         }
 
         pending_track_routes: List[TrackRoute] = []
@@ -271,11 +272,8 @@ def fetch_existing_entities(
             )
         )
     follow_query: List[Follow] = session.query(Follow).filter(or_(*and_queries)).all()
-    print(follow_query)
-    # Fetch relevant follow entities
-    # follows: List[Follow] (
-    #     session.query(Follow)
-    # )
+    existing_entities["follows"] = {}
+    # TODO: Populate the above w/existing follows
 
     return existing_entities
 
