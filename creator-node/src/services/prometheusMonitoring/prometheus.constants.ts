@@ -105,6 +105,8 @@ export const METRIC_LABELS = Object.freeze({
       'success_mode_disabled',
       'success_secondary_caught_up',
       'success_secondary_partially_caught_up',
+      'success_orphan_wiped',
+      'failure_orphan_not_wiped',
       'failure_sync_correctness',
       'failure_missing_wallet',
       'failure_secondary_failure_count_threshold_met',

@@ -87,7 +87,7 @@ describe('test recoverOrphanedData job processor', function () {
         .query({
           creator_node_endpoint: THIS_CONTENT_NODE_ENDPOINT,
           prev_user_id: 0,
-          max_users: 10000
+          max_users: 2000
         })
         .reply(200, { data: usersWithNodeInReplicaSet })
     }
