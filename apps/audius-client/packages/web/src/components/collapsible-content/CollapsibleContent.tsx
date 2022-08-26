@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
@@ -45,22 +46,22 @@ export const CollapsibleContent = ({
     <div className={cn(className, { collapsed: isCollapsed })}>
       <div
         id={id}
-        className={styles.toggleCollapsedContentsContainer}
+        className={styles.collapsibleContainer}
         style={{ height: isCollapsed ? collapsedHeight : bounds.height }}
       >
-        <div ref={ref} className={styles.toggleCollapsedContents}>
-          {children}
-        </div>
+        <div ref={ref}>{children}</div>
       </div>
-      <button
+      <Button
         className={cn(styles.toggleCollapsedButton, toggleButtonClassName)}
+        iconClassName={styles.toggleCollapsedButtonIcon}
         aria-controls={id}
         aria-expanded={!isCollapsed}
+        type={ButtonType.TEXT}
+        size={ButtonSize.SMALL}
+        text={isCollapsed ? showText : hideText}
+        rightIcon={isCollapsed ? <IconCaretDownLine /> : <IconCaretUpLine />}
         onClick={handleToggle}
-      >
-        <span>{isCollapsed ? showText : hideText}</span>
-        {isCollapsed ? <IconCaretDownLine /> : <IconCaretUpLine />}
-      </button>
+      />
     </div>
   )
 }

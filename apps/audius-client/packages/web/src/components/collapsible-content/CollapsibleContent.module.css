@@ -1,33 +1,17 @@
-.toggleCollapsedButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
-  color: var(--neutral-light-4);
-  padding: 8px 24px;
-  gap: 5px;
-
-  background: transparent;
-  outline: 0;
-  border: 0;
-}
-.toggleCollapsedButton:hover {
-  cursor: pointer;
-}
-.toggleCollapsedButton:hover span {
-  color: var(--secondary);
-  transition: color 0.07s ease-out;
-}
-.toggleCollapsedButton:hover svg path {
-  fill: var(--secondary);
-  transition: fill 0.07s ease-out;
-}
-.toggleCollapsedContentsContainer {
+.collapsibleContainer {
   /** Unfortunately, this calcluates to overflow: auto hidden; */
   overflow: visible hidden;
   /** Hack to hide horizontal scrollbars **/
   padding: 0 150px;
   margin: 0 -150px;
   transition: height var(--quick);
+}
+
+.toggleCollapsedButton {
+  color: var(--neutral-light-4);
+  margin: 0 auto;
+}
+
+.toggleCollapsedButton .toggleCollapsedButtonIcon path {
+  fill: var(--neutral-light-4);
 }

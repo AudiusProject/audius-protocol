@@ -99,9 +99,10 @@
   align-self: flex-start;
 }
 
-.toggle .advancedToggle {
-  width: 100%;
+.toggle {
   border-top: 1px solid var(--neutral-light-8);
+}
+.toggle .advancedToggle {
   padding-top: 20px;
 }
 
@@ -111,9 +112,9 @@
   align-items: center;
   width: 100%;
   padding-top: 16px;
-  padding-bottom: 24px;
+  padding-bottom: 16px;
   gap: 16px;
-  border-top: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--neutral-light-8);
 }
 .advancedOptions {
   display: flex;
