@@ -619,7 +619,7 @@ async function filterOutAlreadyPresentDBEntries({
     UNIQUE_FETCHED_ENTRIES_SET_KEY
   )
   decisionTree.recordStage({
-    name: 'filterOutAlreadyPresentDBEntries() Reset redis state',
+    name: 'filterOutAlreadyPresentDBEntries() Ensure clean starting redis state',
     log: true
   })
 
@@ -714,6 +714,16 @@ async function filterOutAlreadyPresentDBEntries({
       return _.isEqual(fetchedEntryComparable, uniqueEntryComparable)
     }
   )
+
+  await redis.del(
+    LOCAL_DB_ENTRIES_SET_KEY,
+    FETCHED_ENTRIES_SET_KEY,
+    UNIQUE_FETCHED_ENTRIES_SET_KEY
+  )
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Ensure clean final redis state',
+    log: true
+  })
 
   decisionTree.recordStage({
     name: 'filterOutAlreadyPresentDBEntries() Great Success',
