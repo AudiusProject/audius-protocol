@@ -29,7 +29,6 @@ import { useSelector } from 'react-redux'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { AppState } from 'app/store'
 import { getPlayingUid } from 'app/store/audio/selectors'
 
@@ -51,20 +50,11 @@ const getUserId = accountSelectors.getUserId
 export const CollectionTile = (props: LineupItemProps) => {
   const { uid } = props
 
-  const collection = useSelectorWeb(
-    (state) => getCollection(state, { uid }),
-    isEqual
-  )
+  const collection = useSelector((state) => getCollection(state, { uid }))
 
-  const tracks = useSelectorWeb(
-    (state) => getTracksFromCollection(state, { uid }),
-    isEqual
-  )
+  const tracks = useSelector((state) => getTracksFromCollection(state, { uid }))
 
-  const user = useSelectorWeb(
-    (state) => getUserFromCollection(state, { uid }),
-    isEqual
-  )
+  const user = useSelector((state) => getUserFromCollection(state, { uid }))
 
   if (!collection || !tracks || !user) {
     console.warn(
@@ -102,7 +92,7 @@ const CollectionTileComponent = ({
 }: CollectionTileProps) => {
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
-  const currentUserId = useSelectorWeb(getUserId)
+  const currentUserId = useSelector(getUserId)
   const currentTrack = useSelector((state: AppState) => {
     const uid = getPlayingUid(state)
     return tracks.find((track) => track.uid === uid) ?? null
