@@ -9,8 +9,9 @@ const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
-const recoverOrphanedDataJobProcessor =
-  require('./recoverOrphanedData.jobProcessor').default
+const {
+  default: recoverOrphanedDataJobProcessor
+} = require('./recoverOrphanedData.jobProcessor')
 
 const recurringSyncLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.RECURRING_SYNC

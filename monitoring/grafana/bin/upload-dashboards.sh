@@ -17,7 +17,7 @@ set +o allexport
 
 BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
-folders=grafana/dashboards/folders.json
+folders=grafana/metadata/folders.json
 cat ${folders} \
     | jq -cr '.[]' \
     | while read -r folder;
@@ -40,7 +40,7 @@ cat ${folders} \
     done
 
 # upload dashboard json files
-json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json' -not -name 'library.json' -not -name 'folders.json')
+json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json')
 for json_dashboard in ${json_dashboards}
 do
     curl \
