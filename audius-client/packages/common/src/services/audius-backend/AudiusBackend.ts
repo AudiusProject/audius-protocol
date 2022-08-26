@@ -840,7 +840,7 @@ export const audiusBackend = ({
         console.error(e)
       }
       try {
-        const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
+        const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
         account.userBank = userBank.toString()
         return getUserImages(account)
       } catch (e) {
@@ -2852,7 +2852,7 @@ export const audiusBackend = ({
     await waitForLibsInit()
 
     try {
-      const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
+      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
       if (!ownerWAudioBalance) {
@@ -2924,16 +2924,15 @@ export const audiusBackend = ({
 
     // Check when sending waudio if the user has a user bank acccount
     let tokenAccountInfo =
-      await audiusLibs.solanaWeb3Manager.getAssociatedTokenAccountInfo(address)
+      await audiusLibs.solanaWeb3Manager.getTokenAccountInfo(address)
     if (!tokenAccountInfo) {
       console.info('Provided recipient solana address was not a token account')
       // If not, check to see if it already has an associated token account.
       const associatedTokenAccount =
         await audiusLibs.solanaWeb3Manager.findAssociatedTokenAddress(address)
-      tokenAccountInfo =
-        await audiusLibs.solanaWeb3Manager.getAssociatedTokenAccountInfo(
-          associatedTokenAccount.toString()
-        )
+      tokenAccountInfo = await audiusLibs.solanaWeb3Manager.getTokenAccountInfo(
+        associatedTokenAccount.toString()
+      )
 
       // If it's not a valid token account, we need to make one first
       if (!tokenAccountInfo) {
@@ -2995,7 +2994,7 @@ export const audiusBackend = ({
    */
   async function transferAudioToWAudio(balance: number) {
     await waitForLibsInit()
-    const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
+    const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
     return audiusLibs.Account.proxySendTokensFromEthToSol(
       balance,
       userBank.toString()

@@ -8,14 +8,14 @@ import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 // @ts-ignore
 const libs = () => window.audiusLibs
 
-export const getUserBank = async () => {
+export const deriveUserBank = async () => {
   await waitForLibsInit()
-  return (await libs().solanaWeb3Manager.getUserBank()) as PublicKey
+  return (await libs().solanaWeb3Manager.deriveUserBank()) as PublicKey
 }
 
 export const doesUserBankExist = async () => {
   await waitForLibsInit()
-  const userBank: PublicKey = await libs().solanaWeb3Manager.getUserBank()
+  const userBank: PublicKey = await libs().solanaWeb3Manager.deriveUserBank()
   const doesExist = await checkIsCreatedTokenAccount(userBank.toString())
   return doesExist
 }
@@ -23,7 +23,7 @@ export const doesUserBankExist = async () => {
 export const checkIsCreatedTokenAccount = async (addr: string) => {
   await waitForLibsInit()
   const tokenAccount: Nullable<AccountInfo> =
-    await libs().solanaWeb3Manager.getAssociatedTokenAccountInfo(addr)
+    await libs().solanaWeb3Manager.getTokenAccountInfo(addr)
   return tokenAccount != null
 }
 
