@@ -133,7 +133,6 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        print("!!! Follow created")
                         create_follow(params)
                     elif (
                         params.action == Action.UNFOLLOW
@@ -142,6 +141,7 @@ def entity_manager_update(
                     ):
                         print("!!! Unfollow created")
                 except Exception as e:
+                    print(e)
                     # swallow exception to keep indexing
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with event {event}"
@@ -168,6 +168,11 @@ def entity_manager_update(
             # flip is_current to true for the last tx in each playlist
             track_records[-1].is_current = True
             records_to_save.extend(track_records)
+
+        # for follow_records in new_records["follows"].values():
+            # flip is_current to true for the last follow tx
+            # follow_records[-1].is_current = True
+            # records_to_save.extend(follow_records)
 
         # insert/update all tracks, playlist records in this block
         session.bulk_save_objects(records_to_save)

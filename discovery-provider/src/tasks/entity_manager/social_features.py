@@ -13,6 +13,7 @@ def validate_follow_tx(params: ManageEntityParameters):
         raise Exception("Followee does not exist")
 
     # TODO: Validate rest of the options here
+    # IE limit set of actions
 
 def create_follow(params: ManageEntityParameters):
     validate_follow_tx(params)
@@ -32,5 +33,4 @@ def create_follow(params: ManageEntityParameters):
     )
     # Follow ID = <follower_user_id>,<followee_user_id>
     follow_id = f"{follower_user_id},{followee_user_id}"
-
     params.add_follow_record(follow_id, follow_record)
