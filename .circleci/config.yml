@@ -834,8 +834,7 @@ jobs:
             export NVM_VERSION="v0.35.3"
             export NODE_VERSION="v14.18.1"
             sudo apt update -y
-            sudo apt upgrade -y
-            sudo DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
+            sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
             sudo apt install curl -y
             curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
             source ~/.bashrc
