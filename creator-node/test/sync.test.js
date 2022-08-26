@@ -1215,12 +1215,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         clockRecords: exportedClockRecords
       } = unpackSampleExportData(sampleExportDummyCIDPath)
 
-      const numUniqueCIDs = (new Set(exportedFiles.map(file => file.multihash))).size
-
       setupMocks(sampleExport, false)
-
-      const SyncRequestMaxUserFailureCountBeforeSkip = 3
-      config.set('syncRequestMaxUserFailureCountBeforeSkip', SyncRequestMaxUserFailureCountBeforeSkip)
 
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
@@ -1229,25 +1224,11 @@ describe('Test secondarySyncFromPrimary()', async function () {
         }
       )
 
+      // TODO: need to make numRetries like 2 or 1
+
       // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
-
-      // Ensure secondarySyncFromPrimary() fails until SyncRequestMaxUserFailureCountBeforeSkip reached
-      for (let i = 1; i < SyncRequestMaxUserFailureCountBeforeSkip; i++) {
-        await expect(
-          secondarySyncFromPrimaryMock({
-            serviceRegistry: serviceRegistryMock,
-            wallet: userWallets[0],
-            creatorNodeEndpoint: TEST_ENDPOINT
-          })
-        ).to.eventually.be.rejectedWith(
-          `Error: User Sync failed due to ${numUniqueCIDs} failing saveFileForMultihashToFS op. userSyncFailureCount = ${i} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
-        ).and.be.an.instanceOf(Error)
-
-        // Ensure no user data created
-        assert.strictEqual(await models.CNodeUser.count(), 0)
-      }
 
       // Ensure secondarySyncFromPrimary() succeeds after threshold reached
       const result = await secondarySyncFromPrimaryMock({
@@ -1265,7 +1246,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
       )
 
       // Update files with skipped = true
-      const skippedExportedFiles = exportedFiles.map(file => ({ ...file, skipped: true }))
+      const skippedExportedFiles = exportedFiles.map((file) => ({
+        ...file,
+        skipped: true
+      }))
 
       await verifyLocalStateForUser({
         cnodeUserUUID: newCNodeUserUUID,
@@ -1571,7 +1555,10 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     server = appInfo.server
     app = appInfo.app
 
-    config.set('syncRequestMaxUserFailureCountBeforeSkip', SyncRequestMaxUserFailureCountBeforeSkip)
+    config.set(
+      'syncRequestMaxUserFailureCountBeforeSkip',
+      SyncRequestMaxUserFailureCountBeforeSkip
+    )
 
     // Define mocks
 
@@ -2030,7 +2017,8 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       clockRecords: exportedClockRecords
     } = unpackExportDataFromFile(exportFilePath)
 
-    const numUniqueCIDs = (new Set(exportedFiles.map(file => file.multihash))).size
+    const numUniqueCIDs = new Set(exportedFiles.map((file) => file.multihash))
+      .size
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks(false)
@@ -2048,7 +2036,10 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
         wallet: USER_1_WALLET,
         selfEndpoint: SELF
       })
-      assert.deepStrictEqual(error.message, `[saveFilesToDisk] Failed to save ${numUniqueCIDs} files to disk. Cannot proceed because UserSyncFailureCount = ${i} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`)
+      assert.deepStrictEqual(
+        error.message,
+        `[saveFilesToDisk] Failed to save ${numUniqueCIDs} files to disk. Cannot proceed because UserSyncFailureCount = ${i} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
+      )
     }
 
     const error = await primarySyncFromSecondaryStub({
@@ -2061,7 +2052,10 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Verify DB state after sync
      */
-    const skippedExportedFiles = exportedFiles.map(file => ({ ...file, skipped: true }))
+    const skippedExportedFiles = exportedFiles.map((file) => ({
+      ...file,
+      skipped: true
+    }))
     const exportedUserData = {
       exportedCnodeUser,
       exportedAudiusUsers,

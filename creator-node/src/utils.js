@@ -171,7 +171,9 @@ async function findCIDInNetwork(
               e.response?.status === 400
             ) {
               bail(
-                new Error(`Content multihash=${cid} is delisted on ${endpoint}`)
+                new Error(
+                  `Content multihash=${cid} is delisted, request is unauthorized, or request is bad on ${endpoint} with statusCode=${e.response?.status}`
+                )
               )
               return
             }
@@ -181,11 +183,11 @@ async function findCIDInNetwork(
             )
           }
 
-          if (!response || !response.data || !response.data.data) {
+          if (!response || !response.data) {
             throw new Error('Received empty response')
           }
 
-          return response.data.data
+          return response.data
         },
         logger,
         logLabel: 'fetchFileFromNetworkAndWriteToDisk',
