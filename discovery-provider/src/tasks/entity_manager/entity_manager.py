@@ -170,9 +170,9 @@ def entity_manager_update(
             records_to_save.extend(track_records)
 
         # for follow_records in new_records["follows"].values():
-            # flip is_current to true for the last follow tx
-            # follow_records[-1].is_current = True
-            # records_to_save.extend(follow_records)
+        # flip is_current to true for the last follow tx
+        # follow_records[-1].is_current = True
+        # records_to_save.extend(follow_records)
 
         # insert/update all tracks, playlist records in this block
         session.bulk_save_objects(records_to_save)
@@ -255,7 +255,7 @@ def fetch_existing_entities(
     existing_entities["users"] = {user.user_id: user for user in users}
     print("FETCHING")
     # print(entities_to_fetch)
-    follow_ops_to_fetch = list(entities_to_fetch[EntityType.FOLLOW])
+    follow_ops_to_fetch: list[Tuple] = list(entities_to_fetch[EntityType.FOLLOW])
     print(follow_ops_to_fetch)
 
     and_queries = []
@@ -267,17 +267,10 @@ def fetch_existing_entities(
             and_(
                 Follow.followee_user_id == followee,
                 Follow.follower_user_id == follower,
-                Follow.is_current == True
+                Follow.is_current == True,
             )
         )
-    follow_query: List[Follow] = (
-        session.query(Follow).filter(
-            or_(
-                *and_queries
-            )
-        )
-        .all()
-    )
+    follow_query: List[Follow] = session.query(Follow).filter(or_(*and_queries)).all()
     print(follow_query)
     # Fetch relevant follow entities
     # follows: List[Follow] (

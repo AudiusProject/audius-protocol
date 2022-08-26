@@ -15,6 +15,7 @@ def validate_follow_tx(params: ManageEntityParameters):
     # TODO: Validate rest of the options here
     # IE limit set of actions
 
+
 def create_follow(params: ManageEntityParameters):
     validate_follow_tx(params)
     print("Valid follow detected")

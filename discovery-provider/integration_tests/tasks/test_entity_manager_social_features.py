@@ -20,7 +20,7 @@ def test_index_valid_social_features(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(None, web3, None)
 
-    '''
+    """
     const resp = await this.manageEntity({
         userId,
         entityType: EntityType.USER,
@@ -28,7 +28,7 @@ def test_index_valid_social_features(app, mocker):
         action: isUnfollow ? Action.UNFOLLOW : Action.FOLLOW,
         metadataMultihash: ''
       })
-    '''
+    """
     # Users 1 & 3 both follow User 2
     tx_receipts = {
         "FollowUserTx1": [
@@ -74,8 +74,7 @@ def test_index_valid_social_features(app, mocker):
         side_effect=get_events_side_effect,
         autospec=True,
     )
-    test_metadata = {
-    }
+    test_metadata = {}
 
     entities = {
         "users": [
@@ -98,4 +97,3 @@ def test_index_valid_social_features(app, mocker):
             block_hash=0,
             ipfs_metadata=test_metadata,
         )
-
