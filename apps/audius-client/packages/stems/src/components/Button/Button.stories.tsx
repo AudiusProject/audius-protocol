@@ -56,3 +56,7 @@ Glass.args = { type: Type.GLASS }
 // White
 export const White = Template.bind({})
 White.args = { type: Type.WHITE }
+
+// Text
+export const Text = Template.bind({})
+Text.args = { type: Type.TEXT }
