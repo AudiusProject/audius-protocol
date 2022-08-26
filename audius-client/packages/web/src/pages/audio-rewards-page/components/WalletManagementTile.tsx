@@ -31,8 +31,8 @@ const { pressReceive, pressSend, pressConnectWallets } =
 const { getAccountBalance, getAccountTotalBalance } = walletSelectors
 
 const messages = {
-  receiveLabel: 'Receive $AUDIO',
-  sendLabel: 'Send $AUDIO',
+  receiveLabel: 'Receive',
+  sendLabel: 'Send',
   audio: '$AUDIO',
   manageWallets: 'Manage Wallets',
   connectWallets: 'Connect Other Wallets',
