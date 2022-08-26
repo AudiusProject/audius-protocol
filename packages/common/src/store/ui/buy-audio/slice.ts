@@ -38,6 +38,7 @@ type CalculateAudioPurchaseInfoSucceededPayload = Omit<PurchaseInfo, 'isError'>
 type CalculateAudioPurchaseInfoFailedPayload = PurchaseInfoError
 type BuyAudioState = {
   stage: BuyAudioStage
+  error?: boolean
   purchaseInfoStatus: Status
   purchaseInfo?: PurchaseInfo | (PurchaseInfoError & { isError: true })
   feesCache: {
@@ -103,12 +104,13 @@ const slice = createSlice({
     },
     restart: (state) => {
       state.stage = BuyAudioStage.START
+      state.error = undefined
     },
     onRampOpened: (state, _action: PayloadAction<PurchaseInfo>) => {
       state.stage = BuyAudioStage.PURCHASING
     },
     onRampCanceled: (state) => {
-      state.stage = BuyAudioStage.START
+      state.error = true
     },
     onRampSucceeded: (state) => {
       state.stage = BuyAudioStage.CONFIRMING_PURCHASE
@@ -124,6 +126,9 @@ const slice = createSlice({
     },
     transferCompleted: (state) => {
       state.stage = BuyAudioStage.FINISH
+    },
+    buyAudioFlowFailed: (state) => {
+      state.error = true
     }
   }
 })
