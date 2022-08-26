@@ -303,7 +303,7 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets a solana bank account from the current we3 provider's eth address
+   * Gets a solana bank account from the current web3 provider's eth address
    */
   async deriveUserBank() {
     if (!this.web3Manager) {
@@ -321,8 +321,8 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets the info for a user bank/wAudio token account given a solana address.
-   * If the solanaAddress is not a valid token account, returns `null`
+   * Gets the info for a user bank/wAudio token account given a spl-token address.
+   * If the address is not a valid token account, returns `null`
    */
   async getTokenAccountInfo(solanaAddress: string) {
     try {
