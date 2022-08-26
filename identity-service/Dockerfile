@@ -20,12 +20,10 @@ COPY scripts/wait /usr/bin/wait
 COPY . .
 
 ARG git_sha
-ARG audius_loggly_disable
 ARG audius_loggly_token
 ARG audius_loggly_tags
 
 ENV GIT_SHA=$git_sha
-ENV logglyDisable=$audius_loggly_disable
 ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
 
