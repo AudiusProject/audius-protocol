@@ -569,16 +569,14 @@ async function filterOutAlreadyPresentDBEntries({
   comparisonFields,
   decisionTree
 }) {
-  let filteredEntries = fetchedEntries
-
+  const alreadyPresentEntries = []
   const limit = DB_QUERY_LIMIT
   let offset = 0
-
   let complete = false
   while (!complete) {
     decisionTree.recordStage({
       name: 'filterOutAlreadyPresentDBEntries() Begin',
-      data: { offset, numFetchedEntries: filteredEntries.length },
+      data: { offset, numFetchedEntries: fetchedEntries.length },
       log: true
     })
 
@@ -595,19 +593,23 @@ async function filterOutAlreadyPresentDBEntries({
       log: true
     })
 
-    // filter out everything in `localEntries` from `filteredEntries
-    filteredEntries = filteredEntries.filter((fetchedEntry) => {
+    // Find all entries from `fetchedEntries` are already present in `localEntries` batch
+    for (const fetchedEntry of fetchedEntries) {
+      // Determine if fetchedEntry exists in localEntries
       let alreadyPresent = false
-      localEntries.forEach((localEntry) => {
+      for (const localEntry of localEntries) {
         const obj1 = _.pick(fetchedEntry, comparisonFields)
         const obj2 = _.pick(localEntry, comparisonFields)
         const isEqual = _.isEqual(obj1, obj2)
         if (isEqual) {
           alreadyPresent = true
         }
-      })
-      return !alreadyPresent
-    })
+      }
+
+      if (alreadyPresent) {
+        alreadyPresentEntries.push(fetchedEntry)
+      }
+    }
     decisionTree.recordStage({
       name: 'filterOutAlreadyPresentDBEntries() Filtered entries',
       log: true
@@ -617,6 +619,14 @@ async function filterOutAlreadyPresentDBEntries({
 
     if (localEntries.length < limit) {
       complete = true
+    }
+  }
+
+  // Remove everything in `alreadyPresentEntries` from `fetchedEntries`
+  const filteredEntries = []
+  for (const fetchedEntry of fetchedEntries) {
+    if (!alreadyPresentEntries.includes(fetchedEntry)) {
+      filteredEntries.push(fetchedEntry)
     }
   }
 
