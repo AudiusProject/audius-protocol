@@ -69,7 +69,7 @@ def entity_manager_update(
         new_records: RecordDict = {
             "playlists": defaultdict(list),
             "tracks": defaultdict(list),
-            "follows": defaultdict(list)
+            "follows": defaultdict(list),
         }
 
         pending_track_routes: List[TrackRoute] = []
@@ -170,7 +170,7 @@ def entity_manager_update(
             records_to_save.extend(track_records)
 
         for follow_records in new_records["follows"].values():
-        # flip is_current to true for the last follow tx
+            # flip is_current to true for the last follow tx
             follow_records[-1].is_current = True
             records_to_save.extend(follow_records)
 

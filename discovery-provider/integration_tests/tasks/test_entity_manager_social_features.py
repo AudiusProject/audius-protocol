@@ -13,7 +13,7 @@ from web3.datastructures import AttributeDict
 
 
 def test_index_valid_social_features(app, mocker):
-    "Tests valid batch of playlists create/update/delete actions"
+    "Tests valid batch of social create/update/delete actions"
 
     # setup db and mocked txs
     with app.app_context():
