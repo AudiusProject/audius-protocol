@@ -14,7 +14,6 @@ import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { take } from 'redux-saga/effects'
 
-import AudioStream from 'audio/AudioStream'
 import * as sagas from 'common/store/queue/sagas'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
 import { noopReducer } from 'store/testHelper'
@@ -60,7 +59,6 @@ const makeInitialPlayer = (config = {}) => ({
   // Identifier for the audio that's playing.
   uid: null,
   trackId: null,
-  audio: new AudioStream(),
   // Keep 'playing' in the store separately from the audio
   // object to allow components to subscribe to changes.
   playing: false,

@@ -1,4 +1,5 @@
 import { AnalyticsEvent, LineupState, Track } from '../models'
+import { AudioPlayer } from '../services/audio-player'
 import { AudiusAPIClient } from '../services/audius-api-client'
 import { AudiusBackend } from '../services/audius-backend'
 import { Env } from '../services/env'
@@ -38,4 +39,5 @@ export type CommonStoreContext = {
   // A helper that returns the appropriate lineup selector for the current
   // route or screen.
   getLineupSelectorForRoute?: () => (state: CommonState) => LineupState<Track>
+  audioPlayer: AudioPlayer
 }

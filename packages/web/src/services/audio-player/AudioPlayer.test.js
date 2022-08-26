@@ -1,6 +1,6 @@
 import Hls from 'hls.js'
 
-import AudioStream from 'audio/AudioStream'
+import AudioPlayer from './AudioPlayer'
 
 jest.mock('hls.js', () => {
   const hls = jest.fn().mockImplementation(() => ({
@@ -59,7 +59,7 @@ describe('load hls.js', () => {
         multihash: 'c'
       }
     ]
-    audioStream = new AudioStream()
+    audioStream = new AudioPlayer()
   })
 
   it('loads segments with hlsjs', () => {
@@ -91,7 +91,7 @@ describe('load native hls', () => {
         multihash: 'c'
       }
     ]
-    audioStream = new AudioStream()
+    audioStream = new AudioPlayer()
   })
 
   it('loads segments with native hls', () => {
@@ -131,7 +131,7 @@ describe('play', () => {
       dispatchEvent: jest.fn(),
       play
     }))
-    const audioStream = new AudioStream()
+    const audioStream = new AudioPlayer()
     audioStream.load([{ duration: 6 }], () => {})
     audioStream.play()
 
@@ -150,7 +150,7 @@ describe('pause', () => {
       dispatchEvent: jest.fn(),
       pause
     }))
-    const audioStream = new AudioStream()
+    const audioStream = new AudioPlayer()
     audioStream.load([{ duration: 6 }], () => {})
     audioStream.pause()
 
@@ -167,7 +167,7 @@ describe('stop', () => {
       dispatchEvent: jest.fn(),
       pause
     }))
-    const audioStream = new AudioStream()
+    const audioStream = new AudioPlayer()
     audioStream.load([{ duration: 6 }], () => {})
     audioStream.stop()
 

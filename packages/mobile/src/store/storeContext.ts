@@ -27,5 +27,7 @@ export const storeContext: CommonStoreContext = {
   localStorage,
   isNativeMobile: true,
   env,
-  explore
+  explore,
+  // Shim in main, but defined in native-reloaded branch
+  audioPlayer: {} as any
 }
