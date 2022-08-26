@@ -19,7 +19,8 @@
   "scripts": {
     "lint": "eslint --cache src",
     "lint:fix": "npm run lint -- --fix",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "start": "rollup -c -w"
   },
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-client/issues"
