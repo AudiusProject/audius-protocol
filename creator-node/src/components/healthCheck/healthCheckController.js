@@ -61,6 +61,13 @@ const healthCheckController = async (req) => {
     randomBytesToSign
   )
 
+  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
+  const storagePathSizeMetric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.STORAGE_PATH_SIZE_BYTES
+  )
+  storagePathSizeMetric.set({ type: 'total' }, response.storagePathSize)
+  storagePathSizeMetric.set({ type: 'used' }, response.storagePathUsed)
+
   if (enforceStateMachineQueueHealth) {
     const { stateMachineJobs } = response
     const {
