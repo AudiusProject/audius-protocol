@@ -26,6 +26,8 @@ const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
 
+const { saveFileForMultihashToFS } = require('../src/fileManager')
+
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
@@ -44,7 +46,7 @@ const sampleExportDummyCIDFromClock2Path = path.resolve(
   'syncAssets/sampleExportDummyCIDFromClock2.json'
 )
 
-describe('Test secondarySyncFromPrimary()', async function () {
+describe.only('Test secondarySyncFromPrimary()', async function () {
   let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get(
@@ -1217,10 +1219,33 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       setupMocks(sampleExport, false)
 
+      // Mock the number of retries to 1 to speed up test
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
-          './../../config': config
+          '../../fileManager': {
+            saveFileForMultihashToFS: async function (
+              libs,
+              logger,
+              multihash,
+              expectedStoragePath,
+              targetGateways,
+              fileNameForImage = null,
+              trackId = null
+            ) {
+              console.log('I AM MOCKED')
+              return saveFileForMultihashToFS(
+                libs,
+                logger,
+                multihash,
+                expectedStoragePath,
+                targetGateways,
+                fileNameForImage,
+                trackId,
+                1 /* numRetries */
+              )
+            }
+          }
         }
       )
 
@@ -1262,7 +1287,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
   })
 })
 
-describe('Test primarySyncFromSecondary() with mocked export', async () => {
+describe.only('Test primarySyncFromSecondary() with mocked export', async () => {
   let server, app, serviceRegistryMock, primarySyncFromSecondaryStub
 
   const NODES = {

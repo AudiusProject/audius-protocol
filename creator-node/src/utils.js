@@ -168,7 +168,8 @@ async function findCIDInNetwork(
             if (
               e.response?.status === 403 ||
               e.response?.status === 401 ||
-              e.response?.status === 400
+              e.response?.status === 400 ||
+              e.response?.status === 404 // not found
             ) {
               bail(
                 new Error(

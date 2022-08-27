@@ -140,9 +140,9 @@ async function fetchFileFromNetworkAndWriteToDisk({
           } catch (e) {
             // Do not retry fetching content if content is delisted or request is bad
             if (
-              e.response?.status === 403 ||
-              e.response?.status === 401 ||
-              e.response?.status === 400
+              e.response?.status === 403 || // delist
+              e.response?.status === 401 || // unauth
+              e.response?.status === 400 // bad request
             ) {
               bail(
                 new Error(
@@ -258,7 +258,7 @@ async function saveFileForMultihashToFS(
   targetGateways,
   fileNameForImage = null,
   trackId = null,
-  numRetries = 5
+  numRetries = 3
 ) {
   const decisionTree = new DecisionTree({
     name: `saveFileForMultihashToFS() [multihash: ${multihash}]`,
