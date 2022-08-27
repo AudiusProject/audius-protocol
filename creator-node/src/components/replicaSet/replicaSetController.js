@@ -26,6 +26,7 @@ const {
 const {
   generateDataForSignatureRecovery
 } = require('../../services/sync/secondarySyncFromPrimaryUtils')
+const { tracing, instrumentTracing } = require('../../tracer')
 
 const router = express.Router()
 
@@ -70,7 +71,7 @@ const respondToURSMRequestForProposalController = async (req) => {
  *
  * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
-const syncRouteController = async (req, res) => {
+const _syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   if (
     _.isEmpty(serviceRegistry?.syncQueue) ||
@@ -112,6 +113,7 @@ const syncRouteController = async (req, res) => {
 
   if (immediate) {
     try {
+      tracing.info('processing manual immediate sync')
       await processManualImmediateSync({
         serviceRegistry,
         wallet,
@@ -126,9 +128,11 @@ const syncRouteController = async (req, res) => {
           wallet
         },
         forceWipe: req.body.forceWipe,
-        logContext: req.logContext
+        logContext: req.logContext,
+        parentSpanContext: tracing.currentSpanContext()
       })
     } catch (e) {
+      tracing.recordException(e)
       return errorResponseServerError(e)
     }
   } else {
@@ -141,6 +145,7 @@ const syncRouteController = async (req, res) => {
       )
     }
     syncDebounceQueue[wallet] = setTimeout(async function () {
+      tracing.info('enqueuing sync')
       await enqueueSync({
         serviceRegistry,
         wallet,
@@ -156,7 +161,8 @@ const syncRouteController = async (req, res) => {
           wallet
         },
         forceWipe: req.body.forceWipe,
-        logContext: req.logContext
+        logContext: req.logContext,
+        parentSpanContext: tracing.currentSpanContext()
       })
       delete syncDebounceQueue[wallet]
     }, debounceTime)
@@ -167,6 +173,15 @@ const syncRouteController = async (req, res) => {
 
   return successResponse()
 }
+
+const syncRouteController = instrumentTracing({
+  fn: _syncRouteController,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
 
 /**
  * Adds a job to manualSyncQueue to issue a sync to secondary with syncMode MergePrimaryAndSecondary

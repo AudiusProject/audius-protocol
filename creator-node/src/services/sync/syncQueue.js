@@ -1,4 +1,5 @@
 const Bull = require('bull')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 const {
   logger,
@@ -54,41 +55,69 @@ class SyncQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const {
+      const { parentSpanContext } = job.data
+      const untracedProcessTask = this.processTask
+      const processTask = instrumentTracing({
+        name: 'syncQueue.process',
+        fn: untracedProcessTask,
+        options: {
+          links: parentSpanContext
+            ? [
+                {
+                  context: parentSpanContext
+                }
+              ]
+            : [],
+          attributes: {
+            [tracing.CODE_FILEPATH]: __filename
+          }
+        }
+      })
+
+      // `processTask()` on longer has access to `this` after going through the tracing wrapper
+      // so to mitigate that, we're manually adding `this.serviceRegistry` to the job data
+      job.data = { ...job.data, serviceRegistry: this.serviceRegistry }
+      return await processTask(job)
+    })
+  }
+
+  async processTask(job) {
+    const {
+      wallet,
+      creatorNodeEndpoint,
+      forceResyncConfig,
+      forceWipe,
+      blockNumber,
+      logContext,
+      serviceRegistry
+    } = job.data
+
+    let result = {}
+    const startTime = getStartTime()
+    try {
+      result = await secondarySyncFromPrimary({
+        serviceRegistry,
         wallet,
         creatorNodeEndpoint,
+        blockNumber,
         forceResyncConfig,
         forceWipe,
-        blockNumber,
         logContext
-      } = job.data
+      })
+      logInfoWithDuration(
+        { logger, startTime },
+        `syncQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
+      )
+    } catch (e) {
+      tracing.recordException(e)
+      logErrorWithDuration(
+        { logger, startTime },
+        `syncQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} - ${e.message}`
+      )
+      result = { error: e.message }
+    }
 
-      let result = {}
-      const startTime = getStartTime()
-      try {
-        result = await secondarySyncFromPrimary({
-          serviceRegistry: this.serviceRegistry,
-          wallet,
-          creatorNodeEndpoint,
-          blockNumber,
-          forceResyncConfig,
-          forceWipe,
-          logContext
-        })
-        logInfoWithDuration(
-          { logger, startTime },
-          `syncQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
-        )
-      } catch (e) {
-        logErrorWithDuration(
-          { logger, startTime },
-          `syncQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} - ${e.message}`
-        )
-        result = { error: e.message }
-      }
-
-      return result
-    })
+    return result
   }
 
   async enqueueSync({
@@ -97,7 +126,8 @@ class SyncQueue {
     blockNumber,
     forceResyncConfig,
     forceWipe,
-    logContext
+    logContext,
+    parentSpanContext
   }) {
     const job = await this.queue.add({
       wallet,
@@ -105,7 +135,8 @@ class SyncQueue {
       blockNumber,
       forceResyncConfig,
       forceWipe,
-      logContext
+      logContext,
+      parentSpanContext
     })
     return job
   }

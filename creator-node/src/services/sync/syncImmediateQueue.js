@@ -1,4 +1,5 @@
 const Bull = require('bull')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 const {
   logger,
@@ -48,30 +49,61 @@ class SyncImmediateQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
-        job.data
+      const { parentSpanContext } = job.data
+      const untracedProcessTask = this.processTask
+      const processTask = instrumentTracing({
+        name: 'syncImmediateQueue.process',
+        fn: untracedProcessTask,
+        options: {
+          links: parentSpanContext
+            ? [
+                {
+                  context: parentSpanContext
+                }
+              ]
+            : [],
+          attributes: {
+            [tracing.CODE_FILEPATH]: __filename
+          }
+        }
+      })
 
-      const startTime = getStartTime()
-      try {
-        await secondarySyncFromPrimary({
-          serviceRegistry: this.serviceRegistry,
-          wallet,
-          creatorNodeEndpoint,
-          forceResyncConfig,
-          logContext
-        })
-        logInfoWithDuration(
-          { logger, startTime },
-          `syncImmediateQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
-        )
-      } catch (e) {
-        logErrorWithDuration(
-          { logger, startTime },
-          `syncImmediateQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} - ${e.message}`
-        )
-        throw e
-      }
+      // `processTask()` on longer has access to `this` after going through the tracing wrapper
+      // so to mitigate that, we're manually adding `this.serviceRegistry` to the job data
+      job.data = { ...job.data, serviceRegistry: this.serviceRegistry }
+      return await processTask(job)
     })
+  }
+
+  async processTask(job) {
+    const {
+      wallet,
+      creatorNodeEndpoint,
+      forceResyncConfig,
+      logContext,
+      serviceRegistry
+    } = job.data
+
+    const startTime = getStartTime()
+    try {
+      await secondarySyncFromPrimary({
+        serviceRegistry,
+        wallet,
+        creatorNodeEndpoint,
+        forceResyncConfig,
+        logContext
+      })
+      logInfoWithDuration(
+        { logger, startTime },
+        `syncImmediateQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
+      )
+    } catch (e) {
+      logErrorWithDuration(
+        { logger, startTime },
+        `syncImmediateQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} - ${e.message}`
+      )
+      throw e
+    }
   }
 
   /**
@@ -82,13 +114,15 @@ class SyncImmediateQueue {
     wallet,
     creatorNodeEndpoint,
     forceResyncConfig,
-    logContext
+    logContext,
+    parentSpanContext
   }) {
     const job = await this.queue.add({
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
-      logContext
+      logContext,
+      parentSpanContext
     })
     const result = await job.finished()
     return result
