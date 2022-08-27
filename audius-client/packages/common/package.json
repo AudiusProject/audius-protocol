@@ -1,6 +1,6 @@
 {
   "name": "@audius/common",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Common utilities and store for web and mobile.",
   "private": "true",
   "author": "Audius",
@@ -26,20 +26,20 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
-    "@optimizely/optimizely-sdk": "4.0.0",
-    "typed-redux-saga": "1.3.1",
-    "bn.js": "4.11.6",
-    "moment": "2.24.0",
-    "numeral": "2.0.6",
-    "@reduxjs/toolkit": "1.3.4",
-    "lodash": "4.17.21",
-    "reselect": "4.0.0",
-    "typesafe-actions": "5.1.0",
-    "hashids": "2.2.1",
     "@audius/sdk": "0.0.34",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
+    "@optimizely/optimizely-sdk": "4.0.0",
+    "@reduxjs/toolkit": "1.3.4",
+    "bn.js": "4.11.6",
     "dayjs": "1.10.7",
-    "jsbi": "4.3.0"
+    "hashids": "2.2.1",
+    "jsbi": "4.3.0",
+    "lodash": "4.17.21",
+    "moment": "2.24.0",
+    "numeral": "2.0.6",
+    "reselect": "4.0.0",
+    "typed-redux-saga": "1.3.1",
+    "typesafe-actions": "5.1.0"
   },
   "devDependencies": {
     "@rollup/plugin-image": "^2.1.1",
@@ -56,11 +56,11 @@
     "rollup-plugin-typescript2": "0.32.1"
   },
   "peerDependencies": {
-    "redux": "4.0.5",
+    "@solana/spl-token": "0.1.8",
+    "@solana/web3.js": "1.24.1",
     "react": "17.0.2",
     "react-redux": "7.2.0",
-    "redux-saga": "1.1.3",
-    "@solana/spl-token": "0.1.8",
-    "@solana/web3.js": "1.24.1"
+    "redux": "4.0.5",
+    "redux-saga": "1.1.3"
   }
 }
