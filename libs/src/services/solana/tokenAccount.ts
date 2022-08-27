@@ -34,7 +34,7 @@ export async function findAssociatedTokenAddress({
   return addresses[0]
 }
 
-type GetAssociatedTokenAccountInfoConfig = {
+type GetTokenAccountInfoConfig = {
   tokenAccountAddressKey: PublicKey
   mintKey: PublicKey
   solanaTokenProgramKey: PublicKey
@@ -44,12 +44,12 @@ type GetAssociatedTokenAccountInfoConfig = {
 /**
  * Gets token account information (e.g. balance, ownership, etc.)
  */
-export async function getAssociatedTokenAccountInfo({
+export async function getTokenAccountInfo({
   tokenAccountAddressKey,
   mintKey,
   solanaTokenProgramKey,
   connection
-}: GetAssociatedTokenAccountInfoConfig) {
+}: GetTokenAccountInfoConfig) {
   const token = new Token(
     connection,
     mintKey,
