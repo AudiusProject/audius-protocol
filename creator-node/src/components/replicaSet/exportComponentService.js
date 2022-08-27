@@ -99,7 +99,6 @@ const exportComponentService = async ({
       const curCnodeUserClockVal = cnodeUser.clock
 
       // Resets cnodeUser clock value to requestedClockRangeMax to ensure consistency with clockRecords data
-      // Also ensures secondary knows there is more data to sync
       if (cnodeUser.clock > requestedClockRangeMax) {
         // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
         cnodeUser.clock = requestedClockRangeMax
@@ -123,10 +122,11 @@ const exportComponentService = async ({
         }
       }
 
+      // Ensure localClockMax represents actual CNodeUser clock value from full data, so secondary knows there is more data to sync
       cnodeUser.clockInfo = {
         requestedClockRangeMin,
         requestedClockRangeMax,
-        localClockMax: cnodeUser.clock
+        localClockMax: curCnodeUserClockVal
       }
     }
 
