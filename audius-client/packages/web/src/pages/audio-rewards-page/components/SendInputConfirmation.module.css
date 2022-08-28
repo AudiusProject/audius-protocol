@@ -25,3 +25,20 @@
 .buttonWrapper {
   margin: 24px 0px;
 }
+
+.errorMessage {
+  margin: 8px 32px 32px 32px;
+  color: var(--accent-red);
+  font-weight: var(--font-demi-bold);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.loadingSpinner {
+  height: 24px;
+  width: 24px;
+}
+
+.loadingSpinner g path {
+  stroke: var(--static-white) !important;
+}
