@@ -10,6 +10,7 @@ import {
   accountActions,
   tokenDashboardPageActions,
   walletSelectors,
+  InputSendDataAction,
   walletActions,
   getContext,
   waitForAccount
@@ -19,6 +20,7 @@ import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
+import { getAssociatedTokenRentExemptionMinimum } from 'services/audius-backend/BuyAudio'
 
 const {
   getBalance,
@@ -30,8 +32,12 @@ const {
 } = walletActions
 const { getAccountBalance, getFreezeUntilTime, getLocalBalanceDidChange } =
   walletSelectors
-const { fetchAssociatedWallets, transferEthAudioToSolWAudio } =
-  tokenDashboardPageActions
+const {
+  fetchAssociatedWallets,
+  transferEthAudioToSolWAudio,
+  setCanRecipientReceiveWAudio,
+  inputSendData
+} = tokenDashboardPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 const getAccountUser = accountSelectors.getAccountUser
 
@@ -221,12 +227,44 @@ function* fetchBalanceAsync() {
   }
 }
 
+/**
+ * Check if we can send WAudio to a recipient by checking if they already have
+ * an associated WAudio token account, or if they have enough SOL to create one.
+ */
+function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
+  const walletClient = yield* getContext('walletClient')
+  const address = action.payload.wallet
+  const associatedTokenAccount = yield* call(() =>
+    walletClient.getAssociatedTokenAccountInfo(address)
+  )
+  if (!associatedTokenAccount) {
+    const balance: BNWei = yield* call(() =>
+      walletClient.getWalletSolBalance(address)
+    )
+    const minRentForATA = yield* call(getAssociatedTokenRentExemptionMinimum)
+    const minRentBN = new BN(minRentForATA)
+    if (balance.lt(minRentBN)) {
+      yield* put(
+        setCanRecipientReceiveWAudio({ canRecipientReceiveWAudio: 'false' })
+      )
+      return
+    }
+  }
+  yield* put(
+    setCanRecipientReceiveWAudio({ canRecipientReceiveWAudio: 'true' })
+  )
+}
+
 function* watchSend() {
   yield* takeEvery(send.type, sendAsync)
 }
 
 function* watchGetBalance() {
   yield* takeEvery(getBalance.type, fetchBalanceAsync)
+}
+
+function* watchInputSendData() {
+  yield* takeEvery(inputSendData.type, checkAssociatedTokenAccountOrSol)
 }
 
 function* watchFetchAccountSucceeded() {
@@ -242,7 +280,12 @@ function* watchFetchAccountSucceeded() {
 }
 
 const sagas = () => {
-  return [watchGetBalance, watchSend, watchFetchAccountSucceeded]
+  return [
+    watchGetBalance,
+    watchInputSendData,
+    watchSend,
+    watchFetchAccountSucceeded
+  ]
 }
 
 export default sagas

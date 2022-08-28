@@ -14,6 +14,7 @@ type SendingState =
       amount: StringWei
       recipientWallet: string
       chain: Chain
+      canRecipientReceiveWAudio: CanReceiveWAudio
     }
   | {
       stage: 'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL'
@@ -46,6 +47,8 @@ export type TokenDashboardPageModalState = Nullable<
   | { stage: 'DISCORD_CODE' }
 >
 
+export type CanReceiveWAudio = 'false' | 'loading' | 'true'
+
 export type AssociatedWallet = {
   address: string
   balance: any // TODO(nkang) `any` should be `BNWei`
@@ -55,6 +58,12 @@ export type AssociatedWallet = {
 export type AssociatedWallets = AssociatedWallet[]
 
 export type ConfirmRemoveWalletAction = PayloadAction<{
+  wallet: WalletAddress
+  chain: Chain
+}>
+
+export type InputSendDataAction = PayloadAction<{
+  amount: StringWei
   wallet: WalletAddress
   chain: Chain
 }>
