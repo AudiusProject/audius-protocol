@@ -222,19 +222,19 @@ async function monitorState({
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
     userSecondarySyncMetricsMap,
-    parentSpanContext: tracing.currentSpanContext
+    parentSpanContext: tracing.currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
     userSecondarySyncMetricsMap,
-    parentSpanContext: tracing.currentSpanContext,
+    parentSpanContext: tracing.currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {
     lastProcessedUserId: lastProcessedUser?.user_id || 0,
     discoveryNodeEndpoint,
-    parentSpanContext: tracing.currentSpanContext,
+    parentSpanContext: tracing.currentSpanContext()
   }
   return {
     jobsToEnqueue: {
@@ -288,7 +288,7 @@ const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
     logger.info(
       `monitor-state job processor Decision Tree${JSON.stringify(decisionTree)}`
     )
-  } catch (e) {
+  } catch (e: any) {
     tracing.recordException(e)
     logger.error(
       `Error printing monitor-state job processor Decision Tree ${decisionTree}`
