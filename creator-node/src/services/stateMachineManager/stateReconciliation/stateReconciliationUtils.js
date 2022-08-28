@@ -57,7 +57,10 @@ const getNewOrExistingSyncReq = ({
     )
 
     return {
-      duplicateSyncReq: duplicateSyncJobInfo
+      duplicateSyncReq: {
+        ...duplicateSyncJobInfo,
+        parentSpanContext: tracing.currentSpanContext()
+      }
     }
   }
 
@@ -80,7 +83,8 @@ const getNewOrExistingSyncReq = ({
   const syncReqToEnqueue = {
     syncType,
     syncMode,
-    syncRequestParameters
+    syncRequestParameters,
+    parentSpanContext: tracing.currentSpanContext()
   }
 
   SyncRequestDeDuplicator.recordSync(
@@ -91,6 +95,7 @@ const getNewOrExistingSyncReq = ({
     immediate
   )
 
+  tracing.info(JSON.stringify(syncReqToEnqueue))
   return { syncReqToEnqueue }
 }
 
@@ -98,7 +103,7 @@ const getNewOrExistingSyncReq = ({
  * Issues syncRequest for user against secondary, and polls for replication up to primary
  * If secondary fails to sync within specified timeoutMs, will error
  */
-const _issueSyncRequestsUntilSynced = async (
+const issueSyncRequestsUntilSynced = async (
   primaryUrl,
   secondaryUrl,
   wallet,
@@ -164,15 +169,6 @@ const _issueSyncRequestsUntilSynced = async (
   )
 }
 
-const issueSyncRequestsUntilSynced = instrumentTracing({
-  fn: _issueSyncRequestsUntilSynced,
-  options: {
-    attributes: {
-      [tracing.CODE_FILEPATH]: __filename
-    }
-  }
-})
-
 const getCachedHealthyNodes = async () => {
   const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)
   return healthyNodes
@@ -188,8 +184,12 @@ const cacheHealthyNodes = async (healthyNodes) => {
 }
 
 module.exports = {
-  getNewOrExistingSyncReq,
-  issueSyncRequestsUntilSynced,
-  getCachedHealthyNodes,
-  cacheHealthyNodes
+  getNewOrExistingSyncReq: instrumentTracing({
+    fn: getNewOrExistingSyncReq
+  }),
+  issueSyncRequestsUntilSynced: instrumentTracing({
+    fn: issueSyncRequestsUntilSynced
+  }),
+  getCachedHealthyNodes: instrumentTracing({ fn: getCachedHealthyNodes }),
+  cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes })
 }

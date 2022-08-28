@@ -9,6 +9,7 @@ import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
 
 import { Queue } from 'bull'
+import { instrumentTracing, tracing } from '../../tracer'
 
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES } = require('./stateMachineConstants')
@@ -47,7 +48,7 @@ const {
  * - bulk-enqueues all jobs under result[QUEUE_NAMES.STATE_RECONCILIATION] into the state reconciliation queue
  * - records metrics from result.metricsToRecord
  */
-module.exports = function (
+function makeOnCompleteCallback(
   nameOfQueueWithCompletedJob: TQUEUE_NAMES,
   queueNameToQueueMap: QueueNameToQueueMap,
   prometheusRegistry: any
@@ -195,3 +196,13 @@ const recordMetrics = (
     }
   }
 }
+
+module.exports = instrumentTracing({
+  name: 'onComplete bull queue callback',
+  fn: makeOnCompleteCallback,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})

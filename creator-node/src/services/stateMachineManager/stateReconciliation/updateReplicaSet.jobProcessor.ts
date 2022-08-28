@@ -14,6 +14,7 @@ import type {
 } from './types'
 import { makeHistogramToRecord } from '../stateMachineUtils'
 import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 const _ = require('lodash')
 
@@ -86,6 +87,7 @@ const updateReplicaSetJobProcessor = async function ({
   healthyNodes = await getCachedHealthyNodes()
   if (healthyNodes.length === 0) {
     try {
+      tracing.info('init AudiusLibs')
       audiusLibs = await initAudiusLibs({
         enableEthContracts: true,
         enableContracts: true,
@@ -94,6 +96,7 @@ const updateReplicaSetJobProcessor = async function ({
         logger
       })
     } catch (e: any) {
+      tracing.recordException(e)
       result = UpdateReplicaSetJobResult.FailureInitAudiusLibs
       errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
@@ -134,6 +137,7 @@ const updateReplicaSetJobProcessor = async function ({
       }
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
+      tracing.recordException(e)
       result = UpdateReplicaSetJobResult.FailureFindHealthyNodes
       errorMsg = `Error finding healthy nodes to select - ${e.message}: ${e.stack}`
 
@@ -185,6 +189,7 @@ const updateReplicaSetJobProcessor = async function ({
           logger
         ))
     } catch (e: any) {
+      tracing.recordException(e)
       result = UpdateReplicaSetJobResult.FailureIssueUpdateReplicaSet
       logger.error(
         `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
@@ -194,6 +199,7 @@ const updateReplicaSetJobProcessor = async function ({
       errorMsg = e.toString()
     }
   } catch (e: any) {
+    tracing.recordException(e)
     result = UpdateReplicaSetJobResult.FailureDetermineNewReplicaSet
     logger.error(
       `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
@@ -591,6 +597,7 @@ const _issueUpdateReplicaSetOp = async (
     const startTimeMs = Date.now()
     try {
       if (!audiusLibs) {
+        tracing.info('init AudiusLibs')
         audiusLibs = await initAudiusLibs({
           enableEthContracts: false,
           enableContracts: true,
@@ -791,4 +798,26 @@ const _canReconfig = async ({
   }
 }
 
-module.exports = updateReplicaSetJobProcessor
+module.exports = async (
+  params: DecoratedJobParams<UpdateReplicaSetJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'updateReplicaSet.jobProcessor',
+    fn: updateReplicaSetJobProcessor,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
+}

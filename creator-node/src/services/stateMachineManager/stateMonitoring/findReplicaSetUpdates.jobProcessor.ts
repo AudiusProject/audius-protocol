@@ -13,6 +13,7 @@ import type {
   FindReplicaSetUpdatesJobReturnValue,
   StateMonitoringUser
 } from './types'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 const _: LoDashStatic = require('lodash')
 
@@ -42,7 +43,7 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} param.userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
  */
-module.exports = async function ({
+async function findReplicaSetUpdates({
   logger,
   users,
   unhealthyPeers,
@@ -53,7 +54,7 @@ module.exports = async function ({
 > {
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
 
-  // Parallelize calling _findReplicaSetUpdatesForUser on chunks of 500 users at a time
+  // Parallelize calling findReplicaSetUpdatesForUser on chunks of 500 users at a time
   const userBatches: StateMonitoringUser[][] = _.chunk(
     users,
     FIND_REPLICA_SET_UPDATES_BATCH_SIZE
@@ -66,7 +67,7 @@ module.exports = async function ({
     const resultBatch: PromiseSettledResult<UpdateReplicaSetOp[]>[] =
       await Promise.allSettled(
         userBatch.map((user: StateMonitoringUser) =>
-          _findReplicaSetUpdatesForUser(
+          findReplicaSetUpdatesForUser(
             user,
             thisContentNodeEndpoint,
             unhealthyPeersSet,
@@ -100,7 +101,7 @@ module.exports = async function ({
     if (promiseStatus === 'rejected') {
       const { reason } = promiseResult
       logger.error(
-        `_findReplicaSetUpdatesForUser() encountered unexpected failure: ${
+        `findReplicaSetUpdatesForUser() encountered unexpected failure: ${
           reason.message || reason
         }`
       )
@@ -125,7 +126,8 @@ module.exports = async function ({
               updateReplicaSetOp.secondary1,
               updateReplicaSetOp.secondary2
             ]
-          )
+          ),
+          parentSpanContext: tracing.currentSpanContext()
         })
       }
     } else {
@@ -329,6 +331,15 @@ const _findReplicaSetUpdatesForUser = async (
   return requiredUpdateReplicaSetOps
 }
 
+const findReplicaSetUpdatesForUser = instrumentTracing({
+  fn: _findReplicaSetUpdatesForUser,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
+
 /**
  * Filters input map to only include the given wallet and replica set nodes
  * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
@@ -356,4 +367,28 @@ const _transformAndFilterReplicaToUserInfoMap = (
       // Only include nodes in the user's replica set
       .filter(([node, _]) => replicaSet.includes(node))
   )
+}
+
+module.exports = async (
+  params: DecoratedJobParams<FindReplicaSetUpdateJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'findReplicaSetUpdates.jobProcessor',
+    fn: findReplicaSetUpdates,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
 }
