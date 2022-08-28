@@ -12,6 +12,7 @@ const {
 const {
   processTranscodeAndSegments
 } = require('./components/tracks/trackContentUploadManager')
+const { instrumentTracing, tracing } = require('./tracer')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
@@ -54,7 +55,22 @@ class AsyncProcessingQueue {
     this.libs = libs
 
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
-      await this.processTask(job, done)
+      const { logContext } = job.data
+      const processTask = instrumentTracing({
+        name: 'AsyncProcessingQueue.process',
+        context: this,
+        fn: this.processTask,
+        options: {
+          attributes: {
+            options: {
+              requestID: logContext.requestID,
+              [tracing.CODE_FILEPATH]: __filename
+            }
+          }
+        }
+      })
+
+      await processTask(job, done)
     })
 
     this.PROCESS_NAMES = PROCESS_NAMES
@@ -98,6 +114,7 @@ class AsyncProcessingQueue {
         const response = await this.monitorProgress(task, func, job.data)
         done(null, { response })
       } catch (e) {
+        tracing.recordException(e)
         this.logError(
           `Could not process taskType=${task} uuid=${
             logContext.requestID
@@ -116,6 +133,9 @@ class AsyncProcessingQueue {
     logger.info(
       `AsyncProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
     )
+    tracing.info(
+      `AsyncProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+    )
   }
 
   async logError(message, logContext = {}) {
@@ -123,6 +143,9 @@ class AsyncProcessingQueue {
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
     logger.error(
+      `AsyncProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
+    )
+    tracing.error(
       `AsyncProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
     )
   }
