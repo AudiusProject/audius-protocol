@@ -48,6 +48,16 @@ export class WalletClient {
     }
   }
 
+  async getAssociatedTokenAccountInfo(address: string) {
+    try {
+      const tokenAccountInfo =
+        await this.audiusBackendInstance.getAssociatedTokenAccountInfo(address)
+      return tokenAccountInfo
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   async transferTokensFromEthToSol(): Promise<void> {
     const balance = await this.audiusBackendInstance.getBalance(true)
     if (balance.gt(new BN('0'))) {
@@ -125,6 +135,18 @@ export class WalletClient {
     } catch (err) {
       console.error(err)
       return []
+    }
+  }
+
+  async getWalletSolBalance(wallet: string): Promise<BNWei> {
+    try {
+      const balance = await this.audiusBackendInstance.getAddressSolBalance(
+        wallet
+      )
+      return balance as BNWei
+    } catch (err) {
+      console.error(err)
+      throw err
     }
   }
 

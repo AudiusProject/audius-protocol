@@ -8,6 +8,7 @@ import { BNWei, StringWei, WalletAddress } from '../../../models/Wallet'
 
 import {
   AssociatedWallets,
+  CanReceiveWAudio,
   ConfirmRemoveWalletAction,
   TokenDashboardPageModalState,
   TokenDashboardState
@@ -56,13 +57,7 @@ const slice = createSlice({
     },
     inputSendData: (
       state,
-      {
-        payload: { amount, wallet, chain }
-      }: PayloadAction<{
-        amount: StringWei
-        wallet: WalletAddress
-        chain: Chain
-      }>
+      { payload: { amount, wallet, chain } }: InputSendDataAction
     ) => {
       const newState: TokenDashboardPageModalState = {
         stage: 'SEND' as const,
@@ -70,10 +65,29 @@ const slice = createSlice({
           stage: 'AWAITING_CONFIRMATION',
           amount,
           recipientWallet: wallet,
-          chain
+          chain,
+          canRecipientReceiveWAudio: 'loading'
         }
       }
       state.modalState = newState
+    },
+    setCanRecipientReceiveWAudio: (
+      state,
+      {
+        payload: { canRecipientReceiveWAudio }
+      }: PayloadAction<{ canRecipientReceiveWAudio: CanReceiveWAudio }>
+    ) => {
+      if (
+        state.modalState?.stage === 'SEND' &&
+        state.modalState.flowState.stage === 'AWAITING_CONFIRMATION'
+      ) {
+        state.modalState.flowState.canRecipientReceiveWAudio =
+          canRecipientReceiveWAudio
+      } else {
+        console.error(
+          'Tried to set canRecipientReceiveWAudio outside of correct flow state.'
+        )
+      }
     },
     transferEthAudioToSolWAudio: (state) => {
       if (
@@ -293,7 +307,8 @@ export const {
   updateWalletError,
   preloadWalletProviders,
   resetStatus,
-  transferEthAudioToSolWAudio
+  transferEthAudioToSolWAudio,
+  setCanRecipientReceiveWAudio
 } = slice.actions
 export const actions = slice.actions
 export default slice

@@ -1,22 +1,33 @@
+import { useEffect, useState } from 'react'
+
 import {
   BNWei,
   StringAudio,
   WalletAddress,
   stringAudioToBN,
-  weiToAudio
+  weiToAudio,
+  tokenDashboardPageSelectors
 } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
+
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useSelector } from 'utils/reducer'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 
 import DashboardTokenValueSlider from './DashboardTokenValueSlider'
 import DisplayAudio from './DisplayAudio'
 import styles from './SendInputConfirmation.module.css'
+const { getCanRecipientReceiveWAudio } = tokenDashboardPageSelectors
 
 const messages = {
   title: "YOU'RE ABOUT TO SEND",
-  sendButton: 'SEND $AUDIO'
+  sendButton: 'SEND $AUDIO',
+  errorMessage:
+    'This account does not contain enough SOL to create an $AUDIO wallet.'
 }
+
+const LOADING_DURATION = 1000
 
 type SendInputConfirmationProps = {
   balance: BNWei
@@ -40,6 +51,21 @@ const SendInputConfirmation = ({
   recipientAddress,
   onSend
 }: SendInputConfirmationProps) => {
+  const [hasLoadingDurationElapsed, setHasLoadingDurationElapsed] =
+    useState(false)
+  const canRecipientReceiveWAudio = useSelector(getCanRecipientReceiveWAudio)
+  const isLongLoading =
+    hasLoadingDurationElapsed && canRecipientReceiveWAudio === 'loading'
+
+  // State to help determine whether to show a loading spinner,
+  // for example if Solana is being slow
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHasLoadingDurationElapsed(true)
+    }, LOADING_DURATION)
+    return () => clearTimeout(timer)
+  })
+
   return (
     <ModalBodyWrapper>
       <div className={styles.titleWrapper}>
@@ -55,10 +81,19 @@ const SendInputConfirmation = ({
       <div className={styles.buttonWrapper}>
         <Button
           text={messages.sendButton}
-          onClick={onSend}
+          onClick={canRecipientReceiveWAudio === 'true' ? onSend : undefined}
           type={ButtonType.PRIMARY_ALT}
+          disabled={canRecipientReceiveWAudio === 'false' || isLongLoading}
+          rightIcon={
+            isLongLoading ? (
+              <LoadingSpinner className={styles.loadingSpinner} />
+            ) : null
+          }
         />
       </div>
+      {canRecipientReceiveWAudio === 'false' ? (
+        <div className={styles.errorMessage}>{messages.errorMessage}</div>
+      ) : null}
     </ModalBodyWrapper>
   )
 }
