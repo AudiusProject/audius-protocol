@@ -189,7 +189,16 @@ def extract_alerts(template, dashboard, env):
 
                 title_level = level.title()
                 alert_uid = f"{dashboard_uid}_{panel_id:03}_{title_level}_{env}"
-                alert_id = (dashboard_id * 10000) + (panel_id * 10) + level_id + 100000
+
+                # arbitrary, deterministic id generation with an offset to allow for
+                # 100k manually created panels
+                alert_id = (
+                    (dashboard_id * 100000)
+                    + (panel_id * 100)
+                    + (level_id * 10)
+                    + int(env == "prod")
+                    + 100000
+                )
 
                 title = sanatize_text(panel["title"])
                 title_env = env.upper()
