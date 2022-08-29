@@ -542,6 +542,8 @@ All auto-generated alerts should not be deleted and should instead always be upd
 
 Contact Points merely house API keys and various optional settings for how to interact with a Contact Point. No routing logic is stored with Contact Points.
 
+Contact Points are not created using Grafana's Alert Provisioning API and must be recreated by hand in a disaster recovery scenario. However, we do use the Grafana Alert Provisioning API to save snapshots of all [manually created Contact Points](https://grafana.com/docs/grafana/latest/alerting/contact-points/create-contact-point) routinely.
+
 ### Message Templates
 
 [Message Templates](https://grafana.com/docs/grafana/latest/alerting/contact-points/message-templating/) use the [Golang Templating Language](https://pkg.go.dev/text/template).
@@ -550,6 +552,8 @@ Contact Points merely house API keys and various optional settings for how to in
 
 The [default alert template](https://github.com/grafana/grafana/blob/main/pkg/services/ngalert/notifier/channels/default_template.go) is a good place to learn what options are available. Some [additional high-level information](https://grafana.com/docs/grafana/latest/alerting/contact-points/message-templating/template-data) can be found in the Grafana docs as well as an [example template](https://grafana.com/docs/grafana/latest/alerting/contact-points/message-templating/example-template/).
 
+We use the Grafana's Alert Provisioning API to save snapshots of all Message Templates. To recreate Message Templates in bulk, modify the related sections within the Configuration JSON under the [Admin tab within Grafana Alerting](http://grafana.audius.co/alerting/admin).
+
 ### Notification Policies
 
 [Notification Policies](https://grafana.com/docs/grafana/latest/alerting/notifications) handle the routing logic between Alert labels and Contact Points.
@@ -557,6 +561,8 @@ The [default alert template](https://github.com/grafana/grafana/blob/main/pkg/se
 Each Notification Policy can also handle Nested Policies allowing for an alert with one specific set of labels to trigger alerts across multiple Contact Points, like multiple Slack channels.
 
 In addition to Nested Policies, multiple Notification Policies may be triggered if a matching Notification Policy has `Continue matching subsequent sibling nodes` enabled. If enabled, the order in which the Notification Policies are defined is highly important for accurately routing Alerts to all intended Contact Points.
+
+We use the Grafana's Alert Provisioning API to save snapshots of all Notification Policies. To recreate Notification Policies in bulk, modify the related section within the Configuration JSON under the [Admin tab within Grafana Alerting](http://grafana.audius.co/alerting/admin) using Contact Points that have already been created.
 
 [Alert Groups](https://grafana.com/docs/grafana/latest/alerting/alert-groups) are designed to batch similar Alerts together within specified time windows to avoid multiple downstream Alerts from being triggered by the same incident. We currently group all firing Alerts into 10 second batches per Notification Policy.
 
