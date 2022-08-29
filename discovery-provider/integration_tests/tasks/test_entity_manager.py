@@ -235,13 +235,11 @@ def test_index_valid_playlists(app, mocker):
             .all()
         )
         assert len(albums) == 1
-        albums = albums[0]
-        assert albums.last_added_to == 1660927554
-        assert albums.playlist_name == "album"
-        assert playlist_3.is_delete == False
-        assert playlist_3.is_current == True
-
-    pass
+        album = albums[0]
+        assert datetime.timestamp(album.last_added_to) == 1585336422
+        assert album.playlist_name == "album"
+        assert album.is_delete == False
+        assert album.is_current == True
 
 
 def test_index_invalid_playlists(app, mocker):
