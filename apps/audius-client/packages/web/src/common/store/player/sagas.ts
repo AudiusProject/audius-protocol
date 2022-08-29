@@ -10,7 +10,8 @@ import {
   getContext,
   actionChannelDispatcher,
   playerActions,
-  playerSelectors
+  playerSelectors,
+  Nullable
 } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import {
@@ -305,7 +306,7 @@ function* recordListenWorker() {
   // Store the last seen play counter to make sure we only record
   // a listen for each "unique" track play. Using an id here wouldn't
   // be enough because the user might have "repeat single" mode turned on.
-  let lastSeenPlayCounter = null
+  let lastSeenPlayCounter: Nullable<number> = null
   while (true) {
     const trackId = yield* select(getTrackId)
     const playCounter = yield* select(getCounter)
