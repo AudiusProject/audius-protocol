@@ -351,7 +351,7 @@ The `Color Scheme` should remain set to `Classic Palette` to help standardize ou
 
 #### Value Mappings
 
-Currently supported Value Mapping keys are `team` and `mentions`. Below are some supported examples:
+Currently supported Value Mapping keys are `team`, `mentions`, and `alert_series`. Below are some supported examples:
 
 | Condition    | Display text      |
 | ------------ | ----------------- |
@@ -363,6 +363,8 @@ Currently supported Value Mapping keys are `team` and `mentions`. Below are some
 | alert_series | A,B,D             |
 
 The `team` value will be applied as an Alert label and thus affects which Alert Notification Policy is triggered.
+
+The `alert_series` value will be split by commas and only targets with matching `refIds`, or Query Names, will be extracted.
 
 #### Thresholds
 
