@@ -736,10 +736,20 @@
                 "mode": "none"
               },
               "thresholdsStyle": {
-                "mode": "area"
+                "mode": "line"
               }
             },
-            "mappings": [],
+            "mappings": [
+              {
+                "options": {
+                  "alert_series": {
+                    "index": 0,
+                    "text": "Fully Synced %"
+                  }
+                },
+                "type": "value"
+              }
+            ],
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -748,11 +758,11 @@
                   "value": null
                 },
                 {
-                  "color": "yellow",
+                  "color": "semi-dark-yellow",
                   "value": 80
                 },
                 {
-                  "color": "green",
+                  "color": "semi-dark-green",
                   "value": 90
                 }
               ]

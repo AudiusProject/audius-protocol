@@ -353,13 +353,14 @@ The `Color Scheme` should remain set to `Classic Palette` to help standardize ou
 
 Currently supported Value Mapping keys are `team` and `mentions`. Below are some supported examples:
 
-| Condition | Display text      |
-| --------- | ----------------- |
-| team      | platform          |
-| team      | content           |
-| team      | money             |
-| team      | infra             |
-| mentions  | @joaquin @dheeraj |
+| Condition    | Display text      |
+| ------------ | ----------------- |
+| team         | platform          |
+| team         | content           |
+| team         | money             |
+| team         | infra             |
+| mentions     | @joaquin @dheeraj |
+| alert_series | A,B,D             |
 
 The `team` value will be applied as an Alert label and thus affects which Alert Notification Policy is triggered.
 
