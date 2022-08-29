@@ -773,7 +773,7 @@ export class AudiusAPIClient {
     retry = true
   ) {
     const encodedTrackId = this._encodeOrThrow(id)
-    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const encodedCurrentUserId = encodeHashId(currentUserId ?? null)
 
     this._assertInitialized()
 
