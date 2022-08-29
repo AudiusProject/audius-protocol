@@ -1,7 +1,7 @@
 [
   {
     "annotations": {
-      "__alertId__": "jPaB_Yk4k_005_P1",
+      "__alertId__": "jPaB_Yk4k_005_P1_prod",
       "__dashboardUid__": "jPaB_Yk4k",
       "__panelId__": "5",
       "description": "",
@@ -77,9 +77,9 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "ARwYXYzVk",
+    "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 200051,
+    "id": 2900511,
     "labels": {
       "alert": "p1",
       "env": "prod",
@@ -90,6 +90,6 @@
     "orgID": 1,
     "ruleGroup": "group",
     "title": "PROD P1 | Contract Movements",
-    "uid": "jPaB_Yk4k_005_P1"
+    "uid": "jPaB_Yk4k_005_P1_prod"
   }
 ]

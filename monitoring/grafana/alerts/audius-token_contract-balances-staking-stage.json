@@ -1,7 +1,7 @@
 [
   {
     "annotations": {
-      "__alertId__": "jPaB_Yk4k_017_P3",
+      "__alertId__": "jPaB_Yk4k_017_P3_stage",
       "__dashboardUid__": "jPaB_Yk4k",
       "__panelId__": "17",
       "description": "If this number dips, we may have lost a service provider.",
@@ -34,9 +34,9 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "ARwYXYzVk",
+    "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 200173,
+    "id": 2901730,
     "labels": {
       "alert": "p3",
       "env": "stage",
@@ -46,7 +46,7 @@
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P3 | Contract Balances (Staking)",
-    "uid": "jPaB_Yk4k_017_P3"
+    "title": "STAGE P3 | Contract Balances (Staking)",
+    "uid": "jPaB_Yk4k_017_P3_stage"
   }
 ]

@@ -1,12 +1,12 @@
 [
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_020_P3_prod",
-      "__dashboardUid__": "YCgu57m4z",
+      "__alertId__": "Y4Tx_K3nz_020_P2_prod",
+      "__dashboardUid__": "Y4Tx_K3nz",
       "__panelId__": "20",
-      "description": "The number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
-      "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=20",
-      "summary": "The number of open proposals at the moment."
+      "description": "The number of users skipped because of network monitoring job errors",
+      "runbook_url": "http://grafana.audius.co/d/Y4Tx_K3nz?viewPanel=20",
+      "summary": ""
     },
     "condition": "B",
     "data": [
@@ -17,7 +17,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
+          "expr": "sum by(run_id) (audius_nm_missed_users_count{environment=~\"prod\"})",
           "hide": false,
           "intervalMs": 1000,
           "maxDataPoints": 43200,
@@ -37,7 +37,7 @@
             {
               "evaluator": {
                 "params": [
-                  1,
+                  50000,
                   0
                 ],
                 "type": "gt"
@@ -79,9 +79,9 @@
     "execErrState": "Alerting",
     "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 3002031,
+    "id": 702021,
     "labels": {
-      "alert": "p3",
+      "alert": "p2",
       "env": "prod",
       "mentions": "",
       "team": ""
@@ -89,17 +89,17 @@
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P3 | Open Proposals",
-    "uid": "YCgu57m4z_020_P3_prod"
+    "title": "PROD P2 | Total Missed Users by Job",
+    "uid": "Y4Tx_K3nz_020_P2_prod"
   },
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_020_P1_prod",
-      "__dashboardUid__": "YCgu57m4z",
+      "__alertId__": "Y4Tx_K3nz_020_P1_prod",
+      "__dashboardUid__": "Y4Tx_K3nz",
       "__panelId__": "20",
-      "description": "The number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
-      "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=20",
-      "summary": "The number of open proposals at the moment."
+      "description": "The number of users skipped because of network monitoring job errors",
+      "runbook_url": "http://grafana.audius.co/d/Y4Tx_K3nz?viewPanel=20",
+      "summary": ""
     },
     "condition": "B",
     "data": [
@@ -110,7 +110,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "audius_exporters_sdk_proposals{outcome=\"InProgress\"}",
+          "expr": "sum by(run_id) (audius_nm_missed_users_count{environment=~\"prod\"})",
           "hide": false,
           "intervalMs": 1000,
           "maxDataPoints": 43200,
@@ -130,10 +130,10 @@
             {
               "evaluator": {
                 "params": [
-                  2,
+                  200000,
                   0
                 ],
-                "type": "gt"
+                "type": "lt"
               },
               "operator": {
                 "type": "or"
@@ -172,7 +172,7 @@
     "execErrState": "Alerting",
     "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 3002011,
+    "id": 702011,
     "labels": {
       "alert": "p1",
       "env": "prod",
@@ -182,7 +182,7 @@
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "PROD P1 | Open Proposals",
-    "uid": "YCgu57m4z_020_P1_prod"
+    "title": "PROD P1 | Total Missed Users by Job",
+    "uid": "Y4Tx_K3nz_020_P1_prod"
   }
 ]

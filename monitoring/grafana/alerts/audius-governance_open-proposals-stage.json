@@ -1,7 +1,7 @@
 [
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_020_P3",
+      "__alertId__": "YCgu57m4z_020_P3_stage",
       "__dashboardUid__": "YCgu57m4z",
       "__panelId__": "20",
       "description": "The number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
@@ -34,9 +34,9 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "ARwYXYzVk",
+    "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 220203,
+    "id": 3002030,
     "labels": {
       "alert": "p3",
       "env": "stage",
@@ -46,12 +46,12 @@
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P3 | Open Proposals",
-    "uid": "YCgu57m4z_020_P3"
+    "title": "STAGE P3 | Open Proposals",
+    "uid": "YCgu57m4z_020_P3_stage"
   },
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_020_P1",
+      "__alertId__": "YCgu57m4z_020_P1_stage",
       "__dashboardUid__": "YCgu57m4z",
       "__panelId__": "20",
       "description": "The number open proposals should typically be 1, which will send a Slack notification.\n\n2 opened PRs at the same time will aggressively escalate to on-call.",
@@ -84,9 +84,9 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "ARwYXYzVk",
+    "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 220201,
+    "id": 3002010,
     "labels": {
       "alert": "p1",
       "env": "stage",
@@ -96,7 +96,7 @@
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P1 | Open Proposals",
-    "uid": "YCgu57m4z_020_P1"
+    "title": "STAGE P1 | Open Proposals",
+    "uid": "YCgu57m4z_020_P1_stage"
   }
 ]
