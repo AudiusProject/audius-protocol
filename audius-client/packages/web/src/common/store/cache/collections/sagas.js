@@ -602,9 +602,13 @@ function* removeTrackFromPlaylistAsync(action) {
       return false
     }
 
-    if (t.metadata_time && t.metadata_time !== action.timestamp) {
-      // entity manager is enabled
-      return false
+    if (t.metadata_time) {
+      if (t.metadata_time === action.timestamp) {
+        // entity manager is enabled
+        return true
+      } else {
+        return false
+      }
     }
 
     if (t.time !== action.timestamp) {
