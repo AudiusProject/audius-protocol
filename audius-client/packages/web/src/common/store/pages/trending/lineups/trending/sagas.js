@@ -8,7 +8,8 @@ import {
 import { select } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { retrieveTrending } from 'pages/track-page/store/retrieveTrending'
+
+import { retrieveTrending } from './retrieveTrending'
 const { getTrendingGenre } = trendingPageSelectors
 const {
   TRENDING_WEEK_PREFIX,

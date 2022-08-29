@@ -15,7 +15,6 @@ import {
 import { call, put, select } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { AppState } from 'store/types'
 const { getLastFetchedTrendingGenre, getTrendingGenre } = trendingPageSelectors
 const { setLastFetchedTrendingGenre } = trendingPageActions
@@ -38,6 +37,11 @@ export function* retrieveTrending({
   currentUserId
 }: RetrieveTrendingArgs): Generator<any, Track[], any> {
   const apiClient = yield* getContext('apiClient')
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusLibs = yield call(audiusBackendInstance.getAudiusLibs)
+  const web3 = audiusLibs.web3Manager.getWeb3()
+
   yield call(remoteConfigInstance.waitForRemoteConfig)
   const TF = new Set(
     remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []
@@ -67,9 +71,10 @@ export function* retrieveTrending({
     currentUserId,
     timeRange
   })
+
   if (TF.size > 0) {
     apiTracks = apiTracks.filter((t) => {
-      const shaId = window.Web3.utils.sha3(t.track_id.toString())
+      const shaId = web3.utils.sha3(t.track_id.toString())
       return !TF.has(shaId)
     })
   }
