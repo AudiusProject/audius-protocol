@@ -11,9 +11,7 @@ const {
 const {
   respondToURSMRequestForSignature
 } = require('./URSMRegistrationComponentService')
-const {
-  ensureStorageMiddleware
-} = require('../../middlewares')
+const { ensureStorageMiddleware } = require('../../middlewares')
 const {
   SyncType,
   SYNC_MODES

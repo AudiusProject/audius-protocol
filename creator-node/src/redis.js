@@ -129,7 +129,7 @@ const deleteAllKeysMatchingPattern = async function (keyPattern) {
   const stream = redisClient.scanStream({
     match: keyPattern
   })
-  let deletedKeysSet = new Set()
+  const deletedKeysSet = new Set()
   return new Promise((resolve, reject) => {
     stream.on('data', function (keys) {
       // `keys` is an array of strings representing key names

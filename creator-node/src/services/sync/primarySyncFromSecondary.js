@@ -543,7 +543,7 @@ async function filterOutAlreadyPresentDBEntries({
    * fetchedEntries = entries received from export
    * localEntries = entries in local DB
    * set(fetchedUniqueEntries) = set(fetchedEntries) - set(localEntries)
-   * 
+   *
    * For below logic, a redis Set is used for each of 3 above data sets
    */
 

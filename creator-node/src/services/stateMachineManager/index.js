@@ -162,14 +162,18 @@ class StateMachineManager {
 
   /**
    * Ensure clean redis state for primarySyncFromSecondary():filterOutAlreadyPresentDBEntries() at server restart
-   * 
+   *
    * Throws on internal error
    */
   async ensureCleanFilterOutAlreadyPresentDBEntriesRedisState() {
-    const keyPattern = FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS.FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_PREFIX +
-    '*'
+    const keyPattern =
+      FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS.FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_PREFIX +
+      '*'
     const numDeleted = await redis.deleteAllKeysMatchingPattern(keyPattern)
-    baseLogger.info({ numDeleted }, `ensureCleanFilterOutAlreadyPresentDBEntriesRedisState: Deleted all redis keys matching pattern ${keyPattern}`)
+    baseLogger.info(
+      { numDeleted },
+      `ensureCleanFilterOutAlreadyPresentDBEntriesRedisState: Deleted all redis keys matching pattern ${keyPattern}`
+    )
   }
 }
 
