@@ -100,7 +100,6 @@ const exportComponentService = async ({
 
       // Resets cnodeUser clock value to requestedClockRangeMax to ensure consistency with clockRecords data
       if (cnodeUser.clock > requestedClockRangeMax) {
-        // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
         cnodeUser.clock = requestedClockRangeMax
         logger.info(
           `exportComponentService() - cnodeUserUUID:${cnodeUser.cnodeUserUUID} - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`
