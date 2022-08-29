@@ -1,27 +1,27 @@
-"use strict";
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("UserBankTransactionMetadata", {
+    return queryInterface.createTable('UserBankTransactionMetadata', {
       transactionSignature: {
         type: Sequelize.STRING,
         primaryKey: true,
-        allowNull: false,
+        allowNull: false
       },
       metadata: {
         type: Sequelize.JSONB,
-        allowNull: false,
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE,
-      },
-    });
+        type: Sequelize.DATE
+      }
+    })
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("UserBankTransactionMetadata");
-  },
-};
+    return queryInterface.dropTable('UserBankTransactionMetadata')
+  }
+}
