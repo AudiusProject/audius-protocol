@@ -283,7 +283,7 @@ async function saveFileForMultihashToFS(
       name: 'About to start running saveFileForMultihashToFS()',
       data: {
         multihash,
-        gatewaysToTry: targetGateways,
+        targetGateways,
         gatewayContentRoutes,
         expectedStoragePath,
         parsedStoragePath
@@ -369,7 +369,7 @@ async function saveFileForMultihashToFS(
         asyncFn: async () => {
           const fileSize = (await fs.stat(expectedStoragePath)).size
           decisionTree.recordStage({
-            name: `About to verify the file contents for the CID`,
+            name: 'About to verify the file contents for the CID',
             data: { multihash, fileSize }
           })
 
@@ -386,7 +386,7 @@ async function saveFileForMultihashToFS(
           )
           if (multihash !== expectedCid) {
             decisionTree.recordStage({
-              name: `File contents don't match their expected CID`,
+              name: "File contents don't match their expected CID",
               data: { expectedCid }
             })
             throw new Error(
@@ -394,7 +394,7 @@ async function saveFileForMultihashToFS(
             )
           }
           decisionTree.recordStage({
-            name: `Successfully verified the file contents for the CID`,
+            name: 'Successfully verified the file contents for the CID',
             data: { multihash }
           })
         },
