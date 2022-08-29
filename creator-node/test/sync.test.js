@@ -25,7 +25,6 @@ const sessionManager = require('../src/sessionManager')
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
-const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
