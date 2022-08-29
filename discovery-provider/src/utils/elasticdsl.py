@@ -37,7 +37,15 @@ def pluck_hits(found):
 def docs_and_ids(found, id_set=False):
     docs = []
     ids = []
-    for hit in found["hits"]["hits"]:
+
+    if "hits" in found:
+        hits = found["hits"]["hits"]
+    elif "docs" in found:
+        hits = found["docs"]
+
+    for hit in hits:
+        if "_source" not in hit:
+            continue
         docs.append(hit["_source"])
         ids.append(hit["_id"])
     if id_set:
@@ -46,7 +54,11 @@ def docs_and_ids(found, id_set=False):
 
 
 def hits_by_id(found):
-    return {h["_id"]: h["_source"] for h in found["hits"]["hits"]}
+    if "hits" in found:
+        hits = found["hits"]["hits"]
+    elif "docs" in found:
+        hits = found["docs"]
+    return {h["_id"]: h["_source"] for h in hits if "_source" in h}
 
 
 def populate_user_metadata_es(user, current_user):

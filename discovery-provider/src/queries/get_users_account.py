@@ -4,12 +4,16 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.save import Save, SaveType
 from src.models.users.user import User
 from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.get_users_account_es import get_users_account_es
 from src.queries.query_helpers import populate_user_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
 
 def get_users_account(args):
+    # todo try catch with sql fallback
+    return get_users_account_es(args)
+
     db = get_db_read_replica()
     with db.scoped_session() as session:
         # Create initial query
