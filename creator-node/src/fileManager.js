@@ -399,55 +399,15 @@ async function saveFileForMultihashToFS(
           })
         },
         logger,
-        logLabel: 'Saving fetched content to disk'
+        logLabel: 'Saving fetched content to disk',
+        options: {
+          retries: numRetries
+        }
       })
-      // const fileSize = (await fs.stat(expectedStoragePath)).size
-      // decisionTree.recordStage({
-      //   name: 'About to verify the file contents for the CID',
-      //   data: { multihash, fileSize }
-      // })
-
-      // const fileIsEmpty = fileSize === 0
-      // // there is one case where an empty file could be valid, check for that CID explicitly
-      // if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
-      //   throw new Error(
-      //     `File has no content, content length is 0: ${multihash}`
-      //   )
-      // }
-
-      // const expectedCid = await LibsUtils.fileHasher.generateNonImageCid(
-      //   expectedStoragePath
-      // )
-      // if (multihash !== expectedCid) {
-      //   decisionTree.recordStage({
-      //     name: `File contents don't match their expected CID`,
-      //     data: { expectedCid }
-      //   })
-      //   throw new Error(
-      //     `File contents don't match their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
-      //   )
-      // }
-      // decisionTree.recordStage({
-      //   name: 'Successfully verified the file contents for the CID',
-      //   data: { multihash }
-      // })
     } catch (e) {
       // On error, delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
       await removeFile(expectedStoragePath)
 
-      // // TODO: remove this
-      // if (numRetries > 0) {
-      //   return saveFileForMultihashToFS(
-      //     libs,
-      //     logger,
-      //     multihash,
-      //     expectedStoragePath,
-      //     targetGateways,
-      //     fileNameForImage,
-      //     trackId,
-      //     numRetries - 1
-      //   )
-      // }
       decisionTree.recordStage({
         name: `Error during content verification for multihash`
       })

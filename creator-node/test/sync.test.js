@@ -13,7 +13,7 @@ const config = require('../src/config')
 const models = require('../src/models')
 const { getApp, getServiceRegistryMock } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const libsMock = getLibsMock()
+
 const {
   createStarterCNodeUser,
   testEthereumConstants,
@@ -47,7 +47,9 @@ const sampleExportDummyCIDFromClock2Path = path.resolve(
   'syncAssets/sampleExportDummyCIDFromClock2.json'
 )
 
-describe.only('Test secondarySyncFromPrimary()', async function () {
+const libsMock = getLibsMock()
+
+describe('Test secondarySyncFromPrimary()', async function () {
   let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get(
@@ -1351,6 +1353,15 @@ describe.only('Test secondarySyncFromPrimary()', async function () {
 
       setupMocks(sampleExport, false)
 
+      nock(MOCK_CN3)
+        .persist()
+        .get(
+          (uri) =>
+            uri.includes('/file_lookup') &&
+            uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(404)
+
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
@@ -1421,7 +1432,7 @@ describe.only('Test secondarySyncFromPrimary()', async function () {
   })
 })
 
-describe.only('Test primarySyncFromSecondary() with mocked export', async () => {
+describe('Test primarySyncFromSecondary() with mocked export', async () => {
   let server,
     app,
     serviceRegistryMock,
