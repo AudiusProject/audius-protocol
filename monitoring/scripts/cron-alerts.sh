@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # crontab
-# */10 * * * * cd ~/audius-protocol/monitoring && scripts/cron-alerts.sh > /tmp/cron-alerts.log
+# */10 * * * * cd ~/audius-protocol/monitoring && scripts/cron-alerts.sh >> /tmp/logs/cron-alerts.log
 
 set -ex
 
@@ -16,7 +16,7 @@ cat ${old_uids} | sort | sponge ${old_uids}
 rm grafana/alerts/*
 
 # generate and upload new alerts
-./grafana/bin/extract-alerts.sh
+echo y | ./grafana/bin/extract-alerts.sh
 ./grafana/bin/upload-alerts.sh
 
 # grab a list of new Alert UIDs
