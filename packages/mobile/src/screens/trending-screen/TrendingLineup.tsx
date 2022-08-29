@@ -9,11 +9,11 @@ import {
   trendingPageSelectors
 } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
+import { useSelector } from 'audius-client/src/utils/reducer'
+import { useDispatch } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'
 import type { LineupProps } from 'app/components/lineup/types'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
 const {
   getDiscoverTrendingAllTimeLineup,
@@ -57,20 +57,20 @@ type TrendingLineupProps = BaseLineupProps & {
 
 export const TrendingLineup = (props: TrendingLineupProps) => {
   const { timeRange, ...other } = props
-  const trendingLineup = useSelectorWeb(selectorsMap[timeRange], isEqual)
+  const trendingLineup = useSelector(selectorsMap[timeRange])
   const [isRefreshing, setIsRefreshing] = useState(false)
   const navigation = useNavigation()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const trendingActions = actionsMap[timeRange]
 
   useEffect(() => {
     // @ts-ignore tabPress is not a valid event, and wasn't able to figure out a fix
     const tabPressListener = navigation.addListener('tabPress', () => {
-      dispatchWeb(setTrendingTimeRange(timeRange))
+      dispatch(setTrendingTimeRange(timeRange))
     })
 
     return tabPressListener
-  }, [navigation, dispatchWeb, timeRange])
+  }, [navigation, dispatch, timeRange])
 
   useEffect(() => {
     if (!trendingLineup.isMetadataLoading) {
@@ -80,17 +80,15 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
-    dispatchWeb(trendingActions.refreshInView(true))
-  }, [dispatchWeb, trendingActions])
+    dispatch(trendingActions.refreshInView(true))
+  }, [dispatch, trendingActions])
 
   const handleLoadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
-      dispatchWeb(
-        trendingActions.fetchLineupMetadatas(offset, limit, overwrite)
-      )
+      dispatch(trendingActions.fetchLineupMetadatas(offset, limit, overwrite))
       track(make({ eventName: Name.FEED_PAGINATE, offset, limit }))
     },
-    [dispatchWeb, trendingActions]
+    [dispatch, trendingActions]
   )
 
   return (

@@ -1,4 +1,5 @@
 import { TimeRange, trendingPageSelectors } from '@audius/common'
+import { useSelector } from 'audius-client/src/utils/reducer'
 
 import IconAllTime from 'app/assets/images/iconAllTime.svg'
 import IconDay from 'app/assets/images/iconDay.svg'
@@ -8,14 +9,13 @@ import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { TrendingFilterButton } from './TrendingFilterButton'
 import { TrendingLineup } from './TrendingLineup'
 const { getTrendingGenre } = trendingPageSelectors
 
 const ThisWeekTab = () => {
-  const trendingGenre = useSelectorWeb(getTrendingGenre)
+  const trendingGenre = useSelector(getTrendingGenre)
   return (
     <TrendingLineup
       header={trendingGenre ? null : <RewardsBanner type='tracks' />}
