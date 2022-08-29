@@ -498,97 +498,7 @@ async function saveEntriesToDB({
  * @param {Object[]} param.fetchedEntries array of entry objects to filter out
  * @param {*} param.transaction Sequelize transaction
  * @param {string[]} comparisonFields fields to use for equality comparison
- * @returns {Object[]} filteredEntries filtered version of fetchedEntries
- */
-async function filterOutAlreadyPresentDBEntriesOld({
-  cnodeUserUUID,
-  tableInstance,
-  fetchedEntries,
-  transaction,
-  comparisonFields,
-  decisionTree
-}) {
-  const alreadyPresentEntries = []
-  const limit = DB_QUERY_LIMIT
-  let offset = 0
-  let complete = false
-  while (!complete) {
-    decisionTree.recordStage({
-      name: 'filterOutAlreadyPresentDBEntries() Begin',
-      data: { offset, numFetchedEntries: fetchedEntries.length },
-      log: true
-    })
-
-    const localEntries = await tableInstance.findAll({
-      where: { cnodeUserUUID },
-      limit,
-      offset,
-      order: [['clock', 'ASC']],
-      transaction
-    })
-    decisionTree.recordStage({
-      name: 'filterOutAlreadyPresentDBEntries() Retrieved local entries',
-      data: { numLocalEntries: localEntries.length },
-      log: true
-    })
-
-    // Find all entries from `fetchedEntries` are already present in `localEntries` batch
-    for (const fetchedEntry of fetchedEntries) {
-      // Determine if fetchedEntry exists in localEntries
-      let alreadyPresent = false
-      for (const localEntry of localEntries) {
-        const obj1 = _.pick(fetchedEntry, comparisonFields)
-        const obj2 = _.pick(localEntry, comparisonFields)
-        const isEqual = _.isEqual(obj1, obj2)
-        if (isEqual) {
-          alreadyPresent = true
-        }
-      }
-
-      if (alreadyPresent) {
-        alreadyPresentEntries.push(fetchedEntry)
-      }
-    }
-    decisionTree.recordStage({
-      name: 'filterOutAlreadyPresentDBEntries() Filtered entries',
-      log: true
-    })
-
-    offset += limit
-
-    if (localEntries.length < limit) {
-      complete = true
-    }
-  }
-
-  // Remove everything in `alreadyPresentEntries` from `fetchedEntries`
-  const filteredEntries = []
-  for (const fetchedEntry of fetchedEntries) {
-    if (!alreadyPresentEntries.includes(fetchedEntry)) {
-      filteredEntries.push(fetchedEntry)
-    }
-  }
-
-  decisionTree.recordStage({
-    name: 'filterOutAlreadyPresentDBEntries() Complete',
-    data: { numFilteredEntries: filteredEntries.length }
-  })
-
-  return filteredEntries
-}
-
-/**
- * Given fetchedEntries, filters out entries already present in local DB
- *
- * @notice This function could potentially take a long time as it fetches every single row in `tableInstance` for `cnodeUserUUID`
- *    Memory consumption is minimized by batching this call, but it can still take a long time for users with lots of data
- *
- * @param {Object} param
- * @param {string} param.cnodeUserUUID
- * @param {*} param.tableInstance Sequelize model instance to query
- * @param {Object[]} param.fetchedEntries array of entry objects to filter out
- * @param {*} param.transaction Sequelize transaction
- * @param {string[]} comparisonFields fields to use for equality comparison
+ * @param {DecisionTree} decisionTree
  * @returns {Object[]} filteredEntries filtered version of fetchedEntries
  */
 async function filterOutAlreadyPresentDBEntries({
@@ -642,46 +552,56 @@ async function filterOutAlreadyPresentDBEntries({
   })
 
   /** Store all local DB entries into redis set */
+
   const limit = DB_QUERY_LIMIT
-  let offset = 0
+  let lastSeenClock = null
   let complete = false
   let numLocalEntriesAdded = 0
   while (!complete) {
-    let localEntries = await tableInstance.findAll({
-      where: { cnodeUserUUID },
+    const whereCondition = { cnodeUserUUID }
+    if (lastSeenClock !== null) {
+      whereCondition.clock = {
+        [models.Sequelize.Op.gt]: lastSeenClock
+      }
+    }
+    const localEntries = await tableInstance.findAll({
+      where: whereCondition,
       limit,
-      offset,
       order: [['clock', 'ASC']],
       transaction
     })
     decisionTree.recordStage({
       name: 'filterOutAlreadyPresentDBEntries() Retrieved local entries',
-      data: { numLocalEntries: localEntries.length, limit, offset },
+      data: { numLocalEntries: localEntries.length, limit, lastSeenClock },
       log: true
     })
 
-    localEntries = localEntries.map((entry) =>
+    // Terminate while loop when no entries returned
+    if (localEntries.length === 0) {
+      complete = true
+      continue
+    }
+
+    // Write localEntries to redis, modified to only include comparison fields so set operations work in redis
+    const localEntriesComparable = localEntries.map((entry) =>
       JSON.stringify(_.pick(entry, comparisonFields))
     )
-    if (localEntries.length > 0) {
-      const numLocalEntriesAddedBatch = await redis.sadd(
-        LOCAL_DB_ENTRIES_SET_KEY,
-        localEntries
+    const numLocalEntriesAddedBatch = await redis.sadd(
+      LOCAL_DB_ENTRIES_SET_KEY,
+      localEntriesComparable
+    )
+    // Fail-safe in case for some reason not all entries were written to redis
+    if (numLocalEntriesAddedBatch !== localEntries.length) {
+      throw new Error(
+        `Failed to add all entries to redis set for ${LOCAL_DB_ENTRIES_SET_KEY}`
       )
-      if (numLocalEntriesAddedBatch !== localEntries.length) {
-        throw new Error(
-          `Failed to add all entries to redis set for ${LOCAL_DB_ENTRIES_SET_KEY}`
-        )
-      }
-      numLocalEntriesAdded += numLocalEntriesAddedBatch
     }
+    numLocalEntriesAdded += numLocalEntriesAddedBatch
 
-    offset += limit
-
-    if (localEntries.length < limit) {
-      complete = true
-    }
+    // Move pagination cursor
+    lastSeenClock = localEntries[localEntries.length - 1].clock
   }
+
   decisionTree.recordStage({
     name: 'filterOutAlreadyPresentDBEntries() Set LOCAL_DB_ENTRIES_SET_KEY',
     data: { numLocalEntriesAdded },
