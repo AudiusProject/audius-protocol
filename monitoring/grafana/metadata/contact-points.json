@@ -103,7 +103,7 @@
   },
   {
     "uid": "vsXbv8ZVk",
-    "name": "PagerDuty | Infrastructure (P1)",
+    "name": "PagerDuty | Infra (P1)",
     "type": "pagerduty",
     "settings": {
       "integrationKey": "[REDACTED]",
@@ -114,7 +114,7 @@
   },
   {
     "uid": "hykfDUW4k",
-    "name": "PagerDuty | Infrastructure (P2)",
+    "name": "PagerDuty | Infra (P2)",
     "type": "pagerduty",
     "settings": {
       "integrationKey": "[REDACTED]",
@@ -125,7 +125,7 @@
   },
   {
     "uid": "lhLfDUZ4z",
-    "name": "PagerDuty | Infrastructure (P3)",
+    "name": "PagerDuty | Infra (P3)",
     "type": "pagerduty",
     "settings": {
       "integrationKey": "[REDACTED]",
@@ -136,7 +136,7 @@
   },
   {
     "uid": "zWhevUWVz",
-    "name": "PagerDuty | Monetization (P1)",
+    "name": "PagerDuty | Money (P1)",
     "type": "pagerduty",
     "settings": {
       "integrationKey": "[REDACTED]",
@@ -147,7 +147,7 @@
   },
   {
     "uid": "KemRO8WVz",
-    "name": "PagerDuty | Monetization (P2)",
+    "name": "PagerDuty | Money (P2)",
     "type": "pagerduty",
     "settings": {
       "integrationKey": "[REDACTED]",
@@ -158,7 +158,7 @@
   },
   {
     "uid": "gEyROUW4z",
-    "name": "PagerDuty | Monetization (P3)",
+    "name": "PagerDuty | Money (P3)",
     "type": "pagerduty",
     "settings": {
       "integrationKey": "[REDACTED]",

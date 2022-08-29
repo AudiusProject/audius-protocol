@@ -47,7 +47,7 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Infrastructure (P3)",
+          "receiver": "PagerDuty | Infra (P3)",
           "object_matchers": [
             [
               "team",
@@ -57,12 +57,12 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Monetization (P3)",
+          "receiver": "PagerDuty | Money (P3)",
           "object_matchers": [
             [
               "team",
               "=",
-              "monetization"
+              "money"
             ]
           ]
         }
@@ -116,7 +116,7 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Infrastructure (P3)",
+          "receiver": "PagerDuty | Infra (P3)",
           "object_matchers": [
             [
               "team",
@@ -126,12 +126,12 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Monetization (P3)",
+          "receiver": "PagerDuty | Money (P3)",
           "object_matchers": [
             [
               "team",
               "=",
-              "monetization"
+              "money"
             ]
           ]
         }
@@ -185,7 +185,7 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Infrastructure (P3)",
+          "receiver": "PagerDuty | Infra (P3)",
           "object_matchers": [
             [
               "team",
@@ -195,12 +195,12 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Monetization (P3)",
+          "receiver": "PagerDuty | Money (P3)",
           "object_matchers": [
             [
               "team",
               "=",
-              "monetization"
+              "money"
             ]
           ]
         }

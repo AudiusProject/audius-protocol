@@ -357,7 +357,7 @@ Currently supported Value Mapping keys are `team` and `mentions`. Below are some
 | --------- | ----------------- |
 | team      | platform          |
 | team      | content           |
-| team      | monetization      |
+| team      | money             |
 | team      | infra             |
 | mentions  | @joaquin @dheeraj |
 
