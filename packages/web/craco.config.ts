@@ -8,6 +8,7 @@ import {
 } from 'webpack'
 
 const isNative = process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
+const isProd = process.env.NODE_ENV === 'production'
 
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
@@ -61,10 +62,14 @@ export default {
             process: 'process/browser',
             Buffer: ['buffer', 'Buffer']
           }),
-          new SourceMapDevToolPlugin({
-            publicPath: SOURCEMAP_URL,
-            filename: '[file].map'
-          })
+          ...(isProd
+            ? [
+                new SourceMapDevToolPlugin({
+                  publicPath: SOURCEMAP_URL,
+                  filename: '[file].map'
+                })
+              ]
+            : [])
         ],
         experiments: {
           ...config.experiments,
