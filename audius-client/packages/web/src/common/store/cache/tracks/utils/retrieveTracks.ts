@@ -53,7 +53,7 @@ export function* retrieveTrackByHandleAndSlug({
   withRemixParents
 }: RetrieveTrackByHandleAndSlugArgs) {
   const permalink = `/${handle}/${slug}`
-  const tracks: { entries: { [permalink: string]: Track } } = yield* call(
+  const tracks = (yield* call(
     // @ts-ignore retrieve should be refactored to ts first
     retrieve,
     {
@@ -111,7 +111,8 @@ export function* retrieveTrackByHandleAndSlug({
         return tracks.map((track) => reformat(track, audiusBackendInstance))
       }
     }
-  )
+  )) as { entries: { [permalink: string]: Track } }
+
   const track = tracks.entries[permalink]
   if (!track || !track.track_id) return null
   const trackId = track.track_id
