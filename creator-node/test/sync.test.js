@@ -370,6 +370,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
        */
       afterEach(async function () {
         delete process.env.maxExportClockValueRange
+        maxExportClockValueRange = originalMaxExportClockValueRange
       })
 
       it('Export from clock = 0', async function () {
