@@ -14,7 +14,8 @@ import { StateMonitoringUser } from '../stateMonitoring/types'
 import {
   ORPHANED_DATA_NUM_USERS_PER_QUERY,
   ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH,
-  ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS
+  ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS,
+  MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS
 } from '../stateMachineConstants'
 
 const { QUEUE_NAMES } = require('../stateMachineConstants')
@@ -226,6 +227,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
   discoveryNodeEndpoint: string,
   logger: Logger
 ): Promise<number> => {
+  const start = Date.now()
   let requestsIssued = 0
   for (
     let i = 0;
@@ -265,9 +267,16 @@ const _batchIssueReqsToRecoverOrphanedData = async (
       }
     }
 
+    const elapsedMs = Date.now() - start
     logger.info(
-      `Issued /merge_primary_and_secondary requests for ${i}/${numWalletsWithOrphanedData} wallets`
+      `Issued /merge_primary_and_secondary requests for ${i}/${numWalletsWithOrphanedData} wallets. 
+      Time elapsed: ${elapsedMs}/${MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS}`
     )
+    if (elapsedMs >= MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS) {
+      logger.info(`Gracefully ending job after ${elapsedMs}ms`)
+      break
+    }
+
     // Delay processing the next batch to avoid spamming requests
     await Utils.timeout(ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS, false)
   }
