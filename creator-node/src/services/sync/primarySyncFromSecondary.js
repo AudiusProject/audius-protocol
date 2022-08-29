@@ -1,4 +1,3 @@
-const axios = require('axios')
 const _ = require('lodash')
 
 const config = require('../../config')
@@ -11,11 +10,10 @@ const { getUserReplicaSetEndpointsFromDiscovery } = require('../../middlewares')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
-const asyncRetry = require('../../utils/asyncRetry')
 const DecisionTree = require('../../utils/decisionTree')
+const UserSyncFailureCountService = require('./UserSyncFailureCountService')
+const { fetchExportFromNode } = require('./syncUtil')
 
-const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
-const EXPORT_REQ_MAX_RETRIES = 3
 const DEFAULT_LOG_CONTEXT = {}
 const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
 /**
@@ -27,10 +25,17 @@ async function primarySyncFromSecondary({
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
-  const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
-  const logger = genericLogger.child(logContext)
+  const logger = genericLogger.child({
+    ...logContext,
+    wallet,
+    sync: 'primarySyncFromSecondary',
+    secondary
+  })
 
-  const decisionTree = new DecisionTree({ name: logPrefix, logger })
+  const decisionTree = new DecisionTree({
+    name: `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`,
+    logger
+  })
   decisionTree.recordStage({ name: 'Begin', log: true })
 
   try {
@@ -43,7 +48,7 @@ async function primarySyncFromSecondary({
 
     let libs
     try {
-      libs = await initAudiusLibs({})
+      libs = await initAudiusLibs({ logger })
       decisionTree.recordStage({ name: 'initAudiusLibs() success', log: true })
     } catch (e) {
       decisionTree.recordStage({
@@ -59,16 +64,17 @@ async function primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    let userReplicaSet = await getUserReplicaSet({
-      wallet,
-      selfEndpoint,
+    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+      libs,
       logger,
-      libs
+      wallet,
+      blockNumber: null,
+      ensurePrimary: false
     })
     decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
     // Error if this node is not primary for user
-    if (userReplicaSet[0] !== selfEndpoint) {
+    if (userReplicaSet.primary !== selfEndpoint) {
       decisionTree.recordStage({
         name: 'Error - Node is not primary for user',
         data: { userReplicaSet }
@@ -76,8 +82,11 @@ async function primarySyncFromSecondary({
       throw new Error(`Node is not primary for user`)
     }
 
-    // filter out current node from user's replica set
-    userReplicaSet = userReplicaSet.filter((url) => url !== selfEndpoint)
+    // Use the user's non-empty secondaries as gateways to try
+    const gatewaysToTry = [
+      userReplicaSet.secondary1,
+      userReplicaSet.secondary2
+    ].filter(Boolean)
 
     // Keep importing data from secondary until full clock range has been retrieved
     let completed = false
@@ -85,37 +94,36 @@ async function primarySyncFromSecondary({
     while (!completed) {
       const decisionTreeData = { exportClockRangeMin }
 
-      let fetchedCNodeUser
-      try {
-        fetchedCNodeUser = await fetchExportFromSecondary({
-          secondary,
-          wallet,
-          exportClockRangeMin,
-          selfEndpoint
-        })
-        decisionTree.recordStage({
-          name: 'fetchExportFromSecondary() Success',
-          data: decisionTreeData,
-          log: true
-        })
-      } catch (e) {
+      const { fetchedCNodeUser, error } = await fetchExportFromNode({
+        nodeEndpointToFetchFrom: secondary,
+        wallet,
+        clockRangeMin: exportClockRangeMin,
+        selfEndpoint,
+        logger,
+        forceExport: true
+      })
+      if (!_.isEmpty(error)) {
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Error',
-          data: { ...decisionTreeData, errorMsg: e.message }
+          data: { ...decisionTreeData, errorMsg: error.message }
         })
-        throw e
+        throw new Error(error.message)
       }
+      decisionTree.recordStage({
+        name: 'fetchExportFromSecondary() Success',
+        data: decisionTreeData,
+        log: true
+      })
 
       // Save all files to disk separately from DB writes to minimize DB transaction duration
       let CIDsThatFailedSaveFileOp
       try {
         CIDsThatFailedSaveFileOp = await saveFilesToDisk({
           files: fetchedCNodeUser.files,
-          userReplicaSet,
+          gatewaysToTry,
           wallet,
           libs,
-          logger,
-          logPrefix
+          logger
         })
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Success',
@@ -172,75 +180,12 @@ async function primarySyncFromSecondary({
 }
 
 /**
- * Fetch export for wallet from secondary for max clock range, starting at clockRangeMin
- */
-async function fetchExportFromSecondary({
-  wallet,
-  secondary,
-  clockRangeMin,
-  selfEndpoint
-}) {
-  // Makes request with default `maxExportClockValueRange`
-  const exportQueryParams = {
-    wallet_public_key: [wallet], // export requires a wallet array
-    clock_range_min: clockRangeMin,
-    source_endpoint: selfEndpoint,
-    force_export: true
-  }
-
-  const exportResp = await asyncRetry({
-    // Throws on any non-200 response code
-    asyncFn: () =>
-      axios({
-        method: 'get',
-        baseURL: secondary,
-        url: '/export',
-        responseType: 'json',
-        params: exportQueryParams,
-        timeout: EXPORT_REQ_TIMEOUT_MS
-      }),
-    retries: EXPORT_REQ_MAX_RETRIES,
-    log: false
-  })
-
-  // Validate export response
-  if (
-    !_.has(exportResp, 'data.data') ||
-    !_.has(exportResp.data.data, 'cnodeUsers')
-  ) {
-    throw new Error('Malformatted export response data')
-  }
-
-  const { cnodeUsers } = exportResp.data.data
-
-  if (!cnodeUsers.length === 0) {
-    throw new Error('No cnodeUser returned from export')
-  } else if (cnodeUsers.length > 1) {
-    throw new Error('Multiple cnodeUsers returned from export')
-  }
-
-  const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
-  if (fetchedCNodeUser.walletPublicKey !== wallet) {
-    throw new Error('Wallet mismatch')
-  }
-
-  return fetchedCNodeUser
-}
-
-/**
  * Fetch data for all files & save to disk
  *
  * - `saveFileForMultihashToFS` will exit early if files already exist on disk
  * - Performed in batches to limit concurrent load
  */
-async function saveFilesToDisk({
-  files,
-  userReplicaSet,
-  wallet,
-  libs,
-  logger,
-  logPrefix
-}) {
+async function saveFilesToDisk({ files, gatewaysToTry, wallet, libs, logger }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
   const trackFiles = files.filter((file) =>
@@ -271,7 +216,7 @@ async function saveFilesToDisk({
           logger,
           trackFile.multihash,
           trackFile.storagePath,
-          userReplicaSet,
+          gatewaysToTry,
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
@@ -312,7 +257,7 @@ async function saveFilesToDisk({
             logger,
             multihash,
             nonTrackFile.storagePath,
-            userReplicaSet,
+            gatewaysToTry,
             nonTrackFile.fileName
           )
         } else {
@@ -321,7 +266,7 @@ async function saveFilesToDisk({
             logger,
             multihash,
             nonTrackFile.storagePath,
-            userReplicaSet
+            gatewaysToTry
           )
         }
 
@@ -514,25 +459,3 @@ async function filterOutAlreadyPresentDBEntries({
 
   return filteredEntries
 }
-
-async function getUserReplicaSet({ wallet, libs, logger }) {
-  try {
-    let userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
-      wallet,
-      blockNumber: null,
-      ensurePrimary: false,
-      myCnodeEndpoint: null
-    })
-
-    // Spread + set uniq's the array
-    userReplicaSet = [...new Set(userReplicaSet)]
-
-    return userReplicaSet
-  } catch (e) {
-    throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
-  }
-}
-
-module.exports = primarySyncFromSecondary

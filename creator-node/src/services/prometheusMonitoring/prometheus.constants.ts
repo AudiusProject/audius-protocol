@@ -1,11 +1,12 @@
-import { Gauge, Histogram, Summary } from 'prom-client'
+import { Gauge, Histogram } from 'prom-client'
 import { snakeCase, mapValues } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
 import { exponentialBucketsRange } from './prometheusUtils'
 import {
   QUEUE_NAMES as STATE_MACHINE_JOB_NAMES,
   SyncType,
-  SYNC_MODES
+  SYNC_MODES,
+  UpdateReplicaSetJobResult
   // eslint-disable-next-line import/no-unresolved
 } from '../stateMachineManager/stateMachineConstants'
 import * as config from '../../config'
@@ -35,6 +36,7 @@ export const METRIC_TYPES = Object.freeze({
  */
 export const METRIC_RECORD_TYPE = Object.freeze({
   GAUGE_INC: 'GAUGE_INC',
+  GAUGE_SET: 'GAUGE_SET',
   HISTOGRAM_OBSERVE: 'HISTOGRAM_OBSERVE'
 })
 
@@ -53,7 +55,11 @@ const metricNames: Record<string, string> = {
   JOBS_DELAYED_TOTAL_GAUGE: 'jobs_delayed_total',
   JOBS_DURATION_SECONDS_HISTOGRAM: 'jobs_duration_seconds',
   JOBS_WAITING_DURATION_SECONDS_HISTOGRAM: 'jobs_waiting_duration_seconds',
-  JOBS_ATTEMPTS_HISTOGRAM: 'jobs_attempts'
+  JOBS_ATTEMPTS_HISTOGRAM: 'jobs_attempts',
+  RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE:
+    'recover_orphaned_data_wallet_counts',
+  RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE: 'recover_orphaned_data_sync_counts',
+  STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -70,7 +76,7 @@ export const METRIC_NAMES = Object.freeze(
 
 export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
-    mode: ['force_resync', 'default'],
+    mode: ['force_resync', 'default', 'force_wipe'],
     result: [
       'success',
       'success_clocks_already_match',
@@ -99,6 +105,9 @@ export const METRIC_LABELS = Object.freeze({
       'success_mode_disabled',
       'success_secondary_caught_up',
       'success_secondary_partially_caught_up',
+      'success_orphan_wiped',
+      'failure_orphan_not_wiped',
+      'failure_sync_correctness',
       'failure_missing_wallet',
       'failure_secondary_failure_count_threshold_met',
       'failure_primary_sync_from_secondary',
@@ -118,7 +127,11 @@ export const METRIC_LABELS = Object.freeze({
       'multiple_secondaries', // Both secondaries were replaced in the user's replica set
       'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
-    ]
+    ],
+    // https://stackoverflow.com/questions/18111657/how-to-get-names-of-enum-entries
+    result: Object.values(UpdateReplicaSetJobResult).filter(
+      (value) => typeof value === 'string'
+    ) as string[]
   },
 
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
@@ -185,6 +198,22 @@ type Metric = {
 }
 
 export const METRICS: Record<string, Metric> = Object.freeze({
+  [METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE,
+      help: 'Number of wallets found with data orphaned on this node',
+      labelNames: []
+    }
+  },
+  [METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE,
+      help: 'Number of syncs enqueued to recover data orphaned on this node',
+      labelNames: []
+    }
+  },
   [METRIC_NAMES.JOBS_COMPLETED_TOTAL_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
@@ -344,6 +373,14 @@ export const METRICS: Record<string, Metric> = Object.freeze({
           1000,
         5
       )
+    }
+  },
+  [METRIC_NAMES.STORAGE_PATH_SIZE_BYTES]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.STORAGE_PATH_SIZE_BYTES,
+      help: 'Disk storage size',
+      labelNames: ['type']
     }
   }
 })

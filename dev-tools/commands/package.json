@@ -1,0 +1,19 @@
+{
+  "name": "@audius/commands",
+  "version": "1.0.0",
+  "description": "Collection of command useful for debugging audius-protocol",
+  "main": "src/index.mjs",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "author": "Audius",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@audius/sdk": "file:../../libs",
+    "@solana/spl-token": "^0.2.0",
+    "@solana/web3.js": "^1.50.1",
+    "axios": "^0.27.2",
+    "chalk": "^5.0.1",
+    "commander": "^9.4.0"
+  }
+}

@@ -214,6 +214,7 @@ describe('Test Health Check', function () {
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
       snapbackUsersPerJob: 2,
+      syncForceWipeEnabled: true,
       stateMonitoringQueueRateLimitInterval: 20_000,
       stateMonitoringQueueRateLimitJobsPerInterval: 2,
       recoverOrphanedDataQueueRateLimitInterval: 50_000,
@@ -331,6 +332,7 @@ describe('Test Health Check', function () {
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
       snapbackUsersPerJob: 2,
+      syncForceWipeEnabled: true,
       stateMonitoringQueueRateLimitInterval: 20_000,
       stateMonitoringQueueRateLimitJobsPerInterval: 2,
       recoverOrphanedDataQueueRateLimitInterval: 50_000,
@@ -435,6 +437,7 @@ describe('Test Health Check', function () {
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
       snapbackUsersPerJob: 2,
+      syncForceWipeEnabled: true,
       stateMonitoringQueueRateLimitInterval: 20_000,
       stateMonitoringQueueRateLimitJobsPerInterval: 2,
       recoverOrphanedDataQueueRateLimitInterval: 50_000,
@@ -582,6 +585,7 @@ describe('Test Health Check Verbose', function () {
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
       snapbackUsersPerJob: 2,
+      syncForceWipeEnabled: true,
       stateMonitoringQueueRateLimitInterval: 20_000,
       stateMonitoringQueueRateLimitJobsPerInterval: 2,
       recoverOrphanedDataQueueRateLimitInterval: 50_000,
@@ -676,5 +680,27 @@ describe('Test Health Check Verbose', function () {
     )
 
     assert.deepStrictEqual(verboseRes, defaultRes)
+  })
+
+  it('Should check that considerNodeUnhealthy env var returns healthy false', async function () {
+    config.set('considerNodeUnhealthy', true)
+
+    const defaultRes = await healthCheck(
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
+        trustedNotifierManager: trustedNotifierManagerMock
+      },
+      mockLogger,
+      sequelizeMock,
+      getMonitorsMock,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
+      2
+    )
+
+    assert.deepStrictEqual(defaultRes.healthy, false)
   })
 })

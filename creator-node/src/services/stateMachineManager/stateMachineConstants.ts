@@ -56,7 +56,7 @@ export const QUEUE_HISTORY = Object.freeze({
   // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
   UPDATE_REPLICA_SET: 100_000,
   // Max number of completed/failed jobs to keep in redis for the recover-orphaned-data queue
-  RECOVER_ORPHANED_DATA: 10_000
+  RECOVER_ORPHANED_DATA: 100_000
 })
 
 export const QUEUE_NAMES = {
@@ -67,7 +67,7 @@ export const QUEUE_NAMES = {
   // Queue to find replica set updates
   FIND_REPLICA_SET_UPDATES: 'find-replica-set-updates-queue',
   // Queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
-  FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-to-endpoint-sp-id-map-queue',
+  FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-endpoint-to-sp-id-map-queue',
   // Queue to issue a manual sync
   MANUAL_SYNC: 'manual-sync-queue',
   // Queue to issue a recurring sync
@@ -98,7 +98,7 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   // Max millis to run an update-replica-set job for before marking it as stalled
   UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000,
   // Max millis to run a recover-orphaned-data job for before marking it as stalled
-  RECOVER_ORPHANED_DATA: 60 /* min */ * 60 * 1000
+  RECOVER_ORPHANED_DATA: 3 /* hours */ * 60 /* min */ * 60 * 1000
 })
 
 /**
@@ -151,10 +151,40 @@ export const SYNC_MODES = Object.freeze({
   SyncSecondaryFromPrimary: 'SYNC_SECONDARY_FROM_PRIMARY',
 
   // Edge case - secondary has state that primary needs: primary should merge its local state with secondary's state, and have secondary re-sync its entire local state
-  MergePrimaryAndSecondary: 'MERGE_PRIMARY_AND_SECONDARY'
+  MergePrimaryAndSecondary: 'MERGE_PRIMARY_AND_SECONDARY',
+
+  // Edge case - same as MergePrimaryAndSecondary but wipes secondary's state instead of re-syncing from primary
+  MergePrimaryThenWipeSecondary: 'MERGE_PRIMARY_THEN_WIPE_SECONDARY'
 })
 
 export const FETCH_FILES_HASH_NUM_RETRIES = 3
 
 // Seconds to hold the cache of healthy content nodes for update-replica-set jobs
 export const HEALTHY_SERVICES_TTL_SEC = 60 /* 1 min */
+
+export enum UpdateReplicaSetJobResult {
+  Success = 'success',
+  SuccessIssueReconfigDisabled = 'success_issue_reconfig_disabled',
+  FailureFindHealthyNodes = 'failure_find_healthy_nodes',
+  SkipUpdateReplicaSet = 'skip_update_replica_set',
+  FailureNoHealthyNodes = 'failure_no_healthy_nodes',
+  FailureNoValidSP = 'failure_no_valid_sp',
+  FailureToUpdateReplicaSet = 'failure_to_update_replica_set',
+  FailureIssueUpdateReplicaSet = 'failure_issue_update_replica_set',
+  FailureDetermineNewReplicaSet = 'failure_determine_new_replica_set',
+  FailureGetCurrentReplicaSet = 'failure_get_current_replica_set',
+  FailureInitAudiusLibs = 'failure_init_audius_libs'
+}
+
+// Number of users to query in each orphaned data recovery query to Discovery and to its own db
+export const ORPHANED_DATA_NUM_USERS_PER_QUERY = 2000
+
+// Number of users to fetch from redis and issue requests for (sequentially) in each batch
+export const ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH = 50
+
+// Milliseconds to wait between processing every ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH users
+export const ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS = 1000
+
+// Milliseconds after which to gracefully end a recover-orphaned-data job early
+export const MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS =
+  2 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000

@@ -344,19 +344,13 @@ export class Track extends Base {
    * @param metadata json of the track metadata with all fields, missing fields will error
    * @param onProgress callback fired with (loaded, total) on byte upload progress
    */
-  async uploadTrack({
-    trackFile,
-    coverArtFile,
-    metadata,
-    useEntityManager,
-    onProgress
-  }: {
-    trackFile: File
-    coverArtFile: File
-    metadata: TrackMetadata
+  async uploadTrack(
+    trackFile: File,
+    coverArtFile: File,
+    metadata: TrackMetadata,
+    onProgress: () => void,
     useEntityManager: boolean
-    onProgress: () => void
-  }) {
+  ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
 

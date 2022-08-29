@@ -101,9 +101,6 @@ const relayWormhole = async (
     logs.push(`Attest and complete transfer from eth to sol succeeded: ${response.transactionSignature}`)
     context.completeTransferSignature = response.transactionSignature
 
-    logs.push(`Attest and complete transfer from eth to sol succeeded: ${response.transactionSignature}`)
-    context.completeTransferSignature = response.transactionSignature
-
     req.logger.info(context, logs.join(','))
 
     return {

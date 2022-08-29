@@ -445,9 +445,21 @@ const config = convict({
     env: 'cidWhitelist',
     default: ''
   },
+  considerNodeUnhealthy: {
+    doc: 'Flag to mark the node as unhealthy (health_check will 200 but healthy: false in response). Wont be selected in replica sets, other nodes will roll this node off replica sets for their users',
+    format: Boolean,
+    env: 'considerNodeUnhealthy',
+    default: false
+  },
 
   /** sync / snapback configs */
 
+  syncForceWipeEnabled: {
+    doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeEnabled',
+    default: true
+  },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',
@@ -470,13 +482,14 @@ const config = convict({
     doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitInterval',
-    default: 60_000 // 1m
+    // default: 86_400_000 // 1day
+    default: 7_200_000 // 2hrs
   },
   recoverOrphanedDataQueueRateLimitJobsPerInterval: {
     doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
-    default: 1
+    default: 0
   },
   debounceTime: {
     doc: 'sync debounce time in ms',

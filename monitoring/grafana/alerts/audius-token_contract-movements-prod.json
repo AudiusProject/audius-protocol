@@ -1,12 +1,12 @@
 [
   {
     "annotations": {
-      "__alertId__": "jPaB_Yk4k_017_Low",
+      "__alertId__": "jPaB_Yk4k_005_P1",
       "__dashboardUid__": "jPaB_Yk4k",
-      "__panelId__": "17",
-      "description": "\n\nIf this number dips, we may have lost a service provider.",
-      "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=17",
-      "summary": "The number of tokens held by the staking contract.\n\n"
+      "__panelId__": "5",
+      "description": "",
+      "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=5",
+      "summary": ""
     },
     "condition": "B",
     "data": [
@@ -17,7 +17,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "audius_exporters_alchemy_balance{address_name=\"Staking\"}",
+          "expr": "audius_exporters_alchemy_balance{} - (audius_exporters_alchemy_balance offset 1m)",
           "hide": false,
           "intervalMs": 1000,
           "maxDataPoints": 43200,
@@ -37,10 +37,10 @@
             {
               "evaluator": {
                 "params": [
-                  355000000,
+                  10,
                   0
                 ],
-                "type": "lt"
+                "type": "gt"
               },
               "operator": {
                 "type": "or"
@@ -77,16 +77,19 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "zpejR_iVz",
+    "folderUID": "ARwYXYzVk",
     "for": "0s",
-    "id": 110173,
+    "id": 200051,
     "labels": {
-      "channel": "low-alert"
+      "alert": "p1",
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Contract Balances (Staking) (Low)",
-    "uid": "jPaB_Yk4k_017_Low"
+    "title": "PROD P1 | Contract Movements",
+    "uid": "jPaB_Yk4k_005_P1"
   }
 ]
