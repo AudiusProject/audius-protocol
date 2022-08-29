@@ -1,7 +1,7 @@
 [
   {
     "annotations": {
-      "__alertId__": "Y4Tx_K3nz_020_P2_stage",
+      "__alertId__": "Y4Tx_K3nz_020_P3_stage",
       "__dashboardUid__": "Y4Tx_K3nz",
       "__panelId__": "20",
       "description": "The number of users skipped because of network monitoring job errors",
@@ -79,9 +79,9 @@
     "execErrState": "Alerting",
     "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 702020,
+    "id": 702030,
     "labels": {
-      "alert": "p2",
+      "alert": "p3",
       "env": "stage",
       "mentions": "",
       "team": ""
@@ -89,12 +89,12 @@
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "STAGE P2 | Total Missed Users by Job",
-    "uid": "Y4Tx_K3nz_020_P2_stage"
+    "title": "STAGE P3 | Total Missed Users by Job",
+    "uid": "Y4Tx_K3nz_020_P3_stage"
   },
   {
     "annotations": {
-      "__alertId__": "Y4Tx_K3nz_020_P1_stage",
+      "__alertId__": "Y4Tx_K3nz_020_P2_stage",
       "__dashboardUid__": "Y4Tx_K3nz",
       "__panelId__": "20",
       "description": "The number of users skipped because of network monitoring job errors",
@@ -133,7 +133,7 @@
                   200000,
                   0
                 ],
-                "type": "lt"
+                "type": "gt"
               },
               "operator": {
                 "type": "or"
@@ -172,9 +172,9 @@
     "execErrState": "Alerting",
     "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 702010,
+    "id": 702020,
     "labels": {
-      "alert": "p1",
+      "alert": "p2",
       "env": "stage",
       "mentions": "",
       "team": ""
@@ -182,7 +182,7 @@
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "STAGE P1 | Total Missed Users by Job",
-    "uid": "Y4Tx_K3nz_020_P1_stage"
+    "title": "STAGE P2 | Total Missed Users by Job",
+    "uid": "Y4Tx_K3nz_020_P2_stage"
   }
 ]
