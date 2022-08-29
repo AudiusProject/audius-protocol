@@ -9,12 +9,12 @@ import {
   trendingPageSelectors,
   trendingPageActions
 } from '@audius/common'
+import { useSelector } from 'audius-client/src/utils/reducer'
 import { FlatList, Keyboard, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { TextInput, Button } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 const { setTrendingGenre } = trendingPageActions
 const { getTrendingGenre } = trendingPageSelectors
@@ -47,9 +47,9 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const TrendingFilterDrawer = () => {
   const styles = useStyles()
   const [searchValue, setSearchValue] = useState('')
-  const trendingGenre = useSelectorWeb(getTrendingGenre) ?? Genre.ALL
+  const trendingGenre = useSelector(getTrendingGenre) ?? Genre.ALL
   const { onClose } = useDrawerState(MODAL_NAME)
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const genres = useMemo(() => {
     const searchValueLower = searchValue.toLowerCase()
@@ -66,17 +66,17 @@ export const TrendingFilterDrawer = () => {
           : (genre.replace(ELECTRONIC_PREFIX, '') as Genre)
 
       const handlePress = () => {
-        dispatchWeb(setTrendingGenre(trimmedGenre))
-        dispatchWeb(trendingWeekActions.reset())
-        dispatchWeb(trendingMonthActions.reset())
-        dispatchWeb(trendingAllTimeActions.reset())
+        dispatch(setTrendingGenre(trimmedGenre))
+        dispatch(trendingWeekActions.reset())
+        dispatch(trendingMonthActions.reset())
+        dispatch(trendingAllTimeActions.reset())
         Keyboard.dismiss()
         onClose()
       }
 
       return handlePress
     },
-    [dispatchWeb, onClose]
+    [dispatch, onClose]
   )
 
   return (
