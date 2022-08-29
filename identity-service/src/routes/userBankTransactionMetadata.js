@@ -8,6 +8,7 @@ const {
 const { logger } = require('../logging')
 const { Op } = require('sequelize')
 const { Validator } = require('jsonschema')
+const authMiddleware = require('../authMiddleware')
 
 const requestSchema = {
   id: '/transaction_metadata_post',
@@ -41,7 +42,9 @@ validator.addSchema(purchaseMetadataSchema)
 module.exports = function (app) {
   app.post(
     '/transaction_metadata',
+    authMiddleware,
     handleResponse(async (req, res, next) => {
+      const userId = req.user.blockChainUserId
       const validationResult = validator.validate(req.body, requestSchema)
       if (!validationResult.valid) {
         logger.error(JSON.stringify(validationResult.errors))
@@ -50,6 +53,7 @@ module.exports = function (app) {
       const { transactionSignature, metadata } = req.body
       try {
         await models.UserBankTransactionMetadata.create({
+          userId,
           transactionSignature,
           metadata
         })
@@ -63,7 +67,9 @@ module.exports = function (app) {
 
   app.get(
     '/transaction_metadata',
+    authMiddleware,
     handleResponse(async (req, res, next) => {
+      const userId = req.user.blockChainUserId
       const { id } = req.query
       if (!id) {
         return errorResponseBadRequest("Missing 'id' query param")
@@ -76,6 +82,7 @@ module.exports = function (app) {
       }
       const metadatas = await models.UserBankTransactionMetadata.findAll({
         where: {
+          userId,
           transactionSignature: {
             [Op.in]: ids
           }
