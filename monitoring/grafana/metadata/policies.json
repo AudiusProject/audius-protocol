@@ -2,16 +2,6 @@
   "receiver": "#eng-alerts-debug",
   "routes": [
     {
-      "receiver": "#eng-token-alerts",
-      "object_matchers": [
-        [
-          "channel",
-          "=",
-          "slack-eng-token-alerts"
-        ]
-      ]
-    },
-    {
       "receiver": "#eng-incidents-prod",
       "object_matchers": [
         [

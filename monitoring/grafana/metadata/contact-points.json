@@ -1,6 +1,6 @@
 [
   {
-    "uid": "vXdmYlm4k",
+    "uid": "rNEdvUZVz",
     "name": "#eng-alerts-debug",
     "type": "slack",
     "settings": {
@@ -12,7 +12,7 @@
     "disableResolveMessage": true
   },
   {
-    "uid": "DAYT7DW4k",
+    "uid": "g73TD8W4k",
     "name": "#eng-incidents-prod",
     "type": "slack",
     "settings": {
@@ -24,7 +24,7 @@
     "disableResolveMessage": true
   },
   {
-    "uid": "VeoxnvZ4k",
+    "uid": "h8iJDUW4k",
     "name": "#eng-incidents-stage",
     "type": "slack",
     "settings": {
@@ -36,17 +36,7 @@
     "disableResolveMessage": true
   },
   {
-    "uid": "qEfFXYkVz",
-    "name": "#eng-token-alerts",
-    "type": "slack",
-    "settings": {
-      "recipient": "C03S95863FV",
-      "token": "[REDACTED]"
-    },
-    "disableResolveMessage": true
-  },
-  {
-    "uid": "pqQCSvW4k",
+    "uid": "KqWCD8ZVk",
     "name": "PagerDuty | Client (P1)",
     "type": "pagerduty",
     "settings": {
@@ -57,7 +47,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "Tj46SvWVz",
+    "uid": "apYCvUZVk",
     "name": "PagerDuty | Client (P2)",
     "type": "pagerduty",
     "settings": {
@@ -68,7 +58,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "VhDgHvZVk",
+    "uid": "9KhqDUZVk",
     "name": "PagerDuty | Client (P3)",
     "type": "pagerduty",
     "settings": {
@@ -79,7 +69,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "Uy3N7vW4k",
+    "uid": "bF1hD8Z4k",
     "name": "PagerDuty | Content (P1)",
     "type": "pagerduty",
     "settings": {
@@ -90,7 +80,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "syTVnvZVk",
+    "uid": "o0jpvUZVk",
     "name": "PagerDuty | Content (P2)",
     "type": "pagerduty",
     "settings": {
@@ -101,7 +91,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "bfE7MDWVk",
+    "uid": "uDB5DUW4z",
     "name": "PagerDuty | Content (P3)",
     "type": "pagerduty",
     "settings": {
@@ -112,7 +102,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "9JvHSvW4k",
+    "uid": "vsXbv8ZVk",
     "name": "PagerDuty | Infrastructure (P1)",
     "type": "pagerduty",
     "settings": {
@@ -123,7 +113,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "hf3DSDWVz",
+    "uid": "hykfDUW4k",
     "name": "PagerDuty | Infrastructure (P2)",
     "type": "pagerduty",
     "settings": {
@@ -134,7 +124,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "A6RKSvZVk",
+    "uid": "lhLfDUZ4z",
     "name": "PagerDuty | Infrastructure (P3)",
     "type": "pagerduty",
     "settings": {
@@ -145,7 +135,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "j3dZNvZ4z",
+    "uid": "zWhevUWVz",
     "name": "PagerDuty | Monetization (P1)",
     "type": "pagerduty",
     "settings": {
@@ -156,7 +146,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "jY4MHvWVk",
+    "uid": "KemRO8WVz",
     "name": "PagerDuty | Monetization (P2)",
     "type": "pagerduty",
     "settings": {
@@ -167,7 +157,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "UKD7HvZVk",
+    "uid": "gEyROUW4z",
     "name": "PagerDuty | Monetization (P3)",
     "type": "pagerduty",
     "settings": {
@@ -178,7 +168,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "F-7TIDZ4z",
+    "uid": "4Uf_DUZ4k",
     "name": "PagerDuty | Platform (P1)",
     "type": "pagerduty",
     "settings": {
@@ -189,7 +179,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "k_aAIvWVk",
+    "uid": "qYFuD8WVz",
     "name": "PagerDuty | Platform (P2)",
     "type": "pagerduty",
     "settings": {
@@ -200,7 +190,7 @@
     "disableResolveMessage": false
   },
   {
-    "uid": "Xd7bIvWVk",
+    "uid": "kgRrvUW4k",
     "name": "PagerDuty | Platform (P3)",
     "type": "pagerduty",
     "settings": {
