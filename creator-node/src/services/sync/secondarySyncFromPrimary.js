@@ -518,8 +518,7 @@ const handleSyncFromPrimary = async ({
 
       await transaction.commit()
 
-      genericLogger.info(
-        logPrefix,
+      logger.info(
         `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
