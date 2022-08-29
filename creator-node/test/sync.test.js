@@ -47,7 +47,7 @@ const sampleExportDummyCIDFromClock2Path = path.resolve(
   'syncAssets/sampleExportDummyCIDFromClock2.json'
 )
 
-describe('Test secondarySyncFromPrimary()', async function () {
+describe.only('Test secondarySyncFromPrimary()', async function () {
   let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get(
@@ -1430,7 +1430,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
   })
 })
 
-describe('Test primarySyncFromSecondary() with mocked export', async () => {
+describe.only('Test primarySyncFromSecondary() with mocked export', async () => {
   let server,
     app,
     serviceRegistryMock,
