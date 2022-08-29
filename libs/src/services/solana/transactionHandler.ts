@@ -4,7 +4,8 @@ import {
   PublicKey,
   Connection,
   Keypair,
-  TransactionInstruction
+  TransactionInstruction,
+  Commitment
 } from '@solana/web3.js'
 import type { IdentityService, RelayTransactionData } from '../identity'
 import type { Logger, Nullable } from '../../utils'
@@ -19,6 +20,7 @@ type HandleTransactionParams = {
   sendBlockhash?: boolean
   signatures?: Nullable<Array<{ publicKey: string; signature: Buffer }>>
   retry?: boolean
+  preflightCommitment?: Commitment
 }
 
 /**
@@ -34,6 +36,7 @@ export class TransactionHandler {
   private readonly retryTimeoutMs: number
   private readonly pollingFrequencyMs: number
   private readonly sendingFrequencyMs: number
+  private readonly preflightCommitment: Commitment
 
   /**
    * Creates an instance of TransactionHandler.
@@ -46,7 +49,8 @@ export class TransactionHandler {
     skipPreflight = true,
     retryTimeoutMs = 60000,
     pollingFrequencyMs = 300,
-    sendingFrequencyMs = 300
+    sendingFrequencyMs = 300,
+    preflightCommitment = 'processed'
   }: {
     connection: Connection
     useRelay: boolean
@@ -56,6 +60,7 @@ export class TransactionHandler {
     retryTimeoutMs?: number
     pollingFrequencyMs?: number
     sendingFrequencyMs?: number
+    preflightCommitment?: Commitment
   }) {
     this.connection = connection
     this.useRelay = useRelay
@@ -65,6 +70,7 @@ export class TransactionHandler {
     this.retryTimeoutMs = retryTimeoutMs
     this.pollingFrequencyMs = pollingFrequencyMs
     this.sendingFrequencyMs = sendingFrequencyMs
+    this.preflightCommitment = preflightCommitment
   }
 
   /**
@@ -79,7 +85,8 @@ export class TransactionHandler {
     feePayerOverride = null,
     sendBlockhash = true,
     signatures = null,
-    retry = true
+    retry = true,
+    preflightCommitment
   }: HandleTransactionParams) {
     let result: {
       res: string | null
@@ -104,7 +111,8 @@ export class TransactionHandler {
         skipPreflight,
         feePayerOverride,
         signatures,
-        retry
+        retry,
+        preflightCommitment ?? this.preflightCommitment
       )
     }
     if (result.error && result.errorCode !== null && errorMapping) {
@@ -163,7 +171,8 @@ export class TransactionHandler {
     skipPreflight: boolean | null,
     feePayerOverride: Nullable<PublicKey> = null,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
-    retry = true
+    retry = true,
+    preflightCommitment: Commitment
   ) {
     const feePayerKeypairOverride = (() => {
       if (feePayerOverride && this.feePayerKeypairs) {
@@ -215,7 +224,7 @@ export class TransactionHandler {
       return await this.connection.sendRawTransaction(rawTransaction, {
         skipPreflight:
           skipPreflight === null ? this.skipPreflight : skipPreflight,
-        preflightCommitment: 'processed',
+        preflightCommitment,
         maxRetries: retry ? 0 : undefined
       })
     }
