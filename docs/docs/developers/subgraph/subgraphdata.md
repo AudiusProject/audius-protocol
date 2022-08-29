@@ -17,7 +17,7 @@ Subgraph information is serviced by a decentralized group of server operators ca
 
 - [Explorer Page](https://thegraph.com/explorer/subgraph?id=CptFsHp6zar7kdfGYbVAqMeF1wNA1pJs6GaaJvPgeCfu&view=Overview)
 - Graphql Endpoint: https://gateway.thegraph.com/api/[api-key]/subgraphs/id/CptFsHp6zar7kdfGYbVAqMeF1wNA1pJs6GaaJvPgeCfu
-- [Code Repo](https://github.com/AudiusProject/audius-protocol)
+- [Code Repo](https://github.com/AudiusProject/audius-subgraph)
 
 ## Helpful Links
 
