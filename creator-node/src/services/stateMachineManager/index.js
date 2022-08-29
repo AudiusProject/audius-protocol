@@ -2,9 +2,15 @@ const _ = require('lodash')
 
 const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
+const redis = require('../../redis')
+
 const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
-const { RECONFIG_MODES, QUEUE_NAMES } = require('./stateMachineConstants')
+const {
+  RECONFIG_MODES,
+  QUEUE_NAMES,
+  FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
+} = require('./stateMachineConstants')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 const ContentNodeInfoManager = require('./ContentNodeInfoManager')
 
@@ -15,6 +21,8 @@ const ContentNodeInfoManager = require('./ContentNodeInfoManager')
 class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
+
+    await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
 
     // Initialize class immediately since bull jobs are run on cadence even on deploy
     await ContentNodeInfoManager.updateContentNodeChainInfo(
@@ -150,6 +158,18 @@ class StateMachineManager {
     // Update class variables for external access
     this.highestEnabledReconfigMode = highestEnabledReconfigMode
     this.enabledReconfigModesSet = enabledReconfigModesSet
+  }
+
+  /**
+   * Ensure clean redis state for primarySyncFromSecondary():filterOutAlreadyPresentDBEntries() at server restart
+   * 
+   * Throws on internal error
+   */
+  async ensureCleanFilterOutAlreadyPresentDBEntriesRedisState() {
+    const keyPattern = FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS.FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_PREFIX +
+    '*'
+    const numDeleted = await redis.deleteAllKeysMatchingPattern(keyPattern)
+    baseLogger.info({ numDeleted }, `ensureCleanFilterOutAlreadyPresentDBEntriesRedisState: Deleted all redis keys matching pattern ${keyPattern}`)
   }
 }
 

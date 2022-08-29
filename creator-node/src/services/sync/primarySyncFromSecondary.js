@@ -13,12 +13,21 @@ const initAudiusLibs = require('../initAudiusLibs')
 const DecisionTree = require('../../utils/decisionTree')
 const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { fetchExportFromNode } = require('./syncUtil')
+const {
+  FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
+} = require('../stateMachineManager/stateMachineConstants')
 
 const DEFAULT_LOG_CONTEXT = {}
 const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
 const SyncRequestMaxUserFailureCountBeforeSkip = config.get(
   'syncRequestMaxUserFailureCountBeforeSkip'
 )
+
+const {
+  LOCAL_DB_ENTRIES_SET_KEY_PREFIX,
+  FETCHED_ENTRIES_SET_KEY_PREFIX,
+  UNIQUE_FETCHED_ENTRIES_SET_KEY_PREFIX
+} = FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
 
 /**
  * Export data for user from secondary and save locally, until complete
@@ -156,7 +165,8 @@ module.exports = async function primarySyncFromSecondary({
         await saveEntriesToDB({
           fetchedCNodeUser,
           CIDsThatFailedSaveFileOp,
-          decisionTree
+          decisionTree,
+          logger
         })
         decisionTree.recordStage({
           name: 'saveEntriesToDB() Success',
@@ -323,7 +333,8 @@ async function saveFilesToDisk({ files, gatewaysToTry, wallet, libs, logger }) {
 async function saveEntriesToDB({
   fetchedCNodeUser,
   CIDsThatFailedSaveFileOp,
-  decisionTree
+  decisionTree,
+  logger
 }) {
   const transaction = await models.sequelize.transaction()
 
@@ -372,7 +383,8 @@ async function saveEntriesToDB({
         fetchedEntries: fetchedAudiusUsers,
         transaction,
         comparisonFields: audiusUserComparisonFields,
-        decisionTree
+        decisionTree,
+        logger
       })
 
       const trackComparisonFields = [
@@ -387,7 +399,8 @@ async function saveEntriesToDB({
         fetchedEntries: fetchedTracks,
         transaction,
         comparisonFields: trackComparisonFields,
-        decisionTree
+        decisionTree,
+        logger
       })
 
       const fileComparisonFields = ['fileUUID']
@@ -397,7 +410,8 @@ async function saveEntriesToDB({
         fetchedEntries: fetchedFiles,
         transaction,
         comparisonFields: fileComparisonFields,
-        decisionTree
+        decisionTree,
+        logger
       })
 
       decisionTree.recordStage({
@@ -507,8 +521,13 @@ async function filterOutAlreadyPresentDBEntries({
   fetchedEntries,
   transaction,
   comparisonFields,
-  decisionTree
+  decisionTree,
+  logger
 }) {
+  if (!fetchedEntries || !fetchedEntries.length) {
+    return fetchedEntries
+  }
+
   decisionTree.recordStage({
     name: 'filterOutAlreadyPresentDBEntries() Begin',
     data: {
@@ -518,138 +537,180 @@ async function filterOutAlreadyPresentDBEntries({
     log: true
   })
 
-  // Timestamp is attached to prevent race conditions where same user is processed twice
+  /**
+   * Uses redis to perform set operations to identify which entries received from export do not already exist in local DB
+   *
+   * fetchedEntries = entries received from export
+   * localEntries = entries in local DB
+   * set(fetchedUniqueEntries) = set(fetchedEntries) - set(localEntries)
+   * 
+   * For below logic, a redis Set is used for each of 3 above data sets
+   */
+
+  // Generate unique redis keys with timestamp to prevent race conditions where same user is processed twice
   const timestamp = Date.now()
-  const LOCAL_DB_ENTRIES_SET_KEY = `FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_LOCAL_ENTRIES_SET:::${cnodeUserUUID}:::${timestamp}`
-  const FETCHED_ENTRIES_SET_KEY = `FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_FETCHED_ENTRIES_SET:::${cnodeUserUUID}:::${timestamp}`
-  const UNIQUE_FETCHED_ENTRIES_SET_KEY = `FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_UNIQUE_FETCHED_ENTRIES_SET:::${cnodeUserUUID}:::${timestamp}`
-  await redis.del(
-    LOCAL_DB_ENTRIES_SET_KEY,
-    FETCHED_ENTRIES_SET_KEY,
-    UNIQUE_FETCHED_ENTRIES_SET_KEY
-  )
-  decisionTree.recordStage({
-    name: 'filterOutAlreadyPresentDBEntries() Ensure clean starting redis state',
-    log: true
-  })
+  const LOCAL_DB_ENTRIES_SET_KEY = `${LOCAL_DB_ENTRIES_SET_KEY_PREFIX}:::${cnodeUserUUID}:::${timestamp}`
+  const FETCHED_ENTRIES_SET_KEY = `${FETCHED_ENTRIES_SET_KEY_PREFIX}:::${cnodeUserUUID}:::${timestamp}`
+  const UNIQUE_FETCHED_ENTRIES_SET_KEY = `${UNIQUE_FETCHED_ENTRIES_SET_KEY_PREFIX}:::${cnodeUserUUID}:::${timestamp}`
 
-  /** Store all fetched entries into redis set (have to serialize arrays) */
-  const fetchedEntriesComparable = fetchedEntries.map((entry) =>
-    JSON.stringify(_.pick(entry, comparisonFields))
-  )
-  const numFetchedEntriesAdded = await redis.sadd(
-    FETCHED_ENTRIES_SET_KEY,
-    fetchedEntriesComparable
-  )
-  if (numFetchedEntriesAdded !== fetchedEntries.length) {
-    throw new Error(
-      `Failed to add all entries to redis set for ${FETCHED_ENTRIES_SET_KEY}`
+  try {
+    // Deletes all data stored at provided redis keys
+    await redis.del(
+      LOCAL_DB_ENTRIES_SET_KEY,
+      FETCHED_ENTRIES_SET_KEY,
+      UNIQUE_FETCHED_ENTRIES_SET_KEY
     )
-  }
-  decisionTree.recordStage({
-    name: 'filterOutAlreadyPresentDBEntries() Set FETCHED_ENTRIES_SET_KEY',
-    log: true
-  })
-
-  /** Store all local DB entries into redis set */
-
-  const limit = DB_QUERY_LIMIT
-  let lastSeenClock = null
-  let complete = false
-  let numLocalEntriesAdded = 0
-  while (!complete) {
-    const whereCondition = { cnodeUserUUID }
-    if (lastSeenClock !== null) {
-      whereCondition.clock = {
-        [models.Sequelize.Op.gt]: lastSeenClock
-      }
-    }
-    const localEntries = await tableInstance.findAll({
-      where: whereCondition,
-      limit,
-      order: [['clock', 'ASC']],
-      transaction
-    })
     decisionTree.recordStage({
-      name: 'filterOutAlreadyPresentDBEntries() Retrieved local entries',
-      data: { numLocalEntries: localEntries.length, limit, lastSeenClock },
+      name: 'filterOutAlreadyPresentDBEntries() Ensure clean starting redis state',
       log: true
     })
 
-    // Terminate while loop when no entries returned
-    if (localEntries.length === 0) {
-      complete = true
-      continue
-    }
-
-    // Write localEntries to redis, modified to only include comparison fields so set operations work in redis
-    const localEntriesComparable = localEntries.map((entry) =>
+    /**
+     * Store all fetched entries into redis Set
+     *
+     * fetchedEntries is modified to only include comparison fields so Set operations work in redis
+     * Each entry object is serialized to string for redis compatibility
+     */
+    const fetchedEntriesComparable = fetchedEntries.map((entry) =>
       JSON.stringify(_.pick(entry, comparisonFields))
     )
-    const numLocalEntriesAddedBatch = await redis.sadd(
-      LOCAL_DB_ENTRIES_SET_KEY,
-      localEntriesComparable
+    const numFetchedEntriesAdded = await redis.sadd(
+      FETCHED_ENTRIES_SET_KEY,
+      fetchedEntriesComparable
     )
     // Fail-safe in case for some reason not all entries were written to redis
-    if (numLocalEntriesAddedBatch !== localEntries.length) {
+    if (numFetchedEntriesAdded !== fetchedEntries.length) {
       throw new Error(
-        `Failed to add all entries to redis set for ${LOCAL_DB_ENTRIES_SET_KEY}`
+        `Failed to add all entries to redis set for ${FETCHED_ENTRIES_SET_KEY}`
       )
     }
-    numLocalEntriesAdded += numLocalEntriesAddedBatch
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Set FETCHED_ENTRIES_SET_KEY',
+      log: true
+    })
 
-    // Move pagination cursor
-    lastSeenClock = localEntries[localEntries.length - 1].clock
+    /** Store all local DB entries into redis set */
+
+    const limit = DB_QUERY_LIMIT
+    let lastSeenClock = null
+    let complete = false
+    let numLocalEntriesAdded = 0
+    while (!complete) {
+      const whereCondition = { cnodeUserUUID }
+      if (lastSeenClock !== null) {
+        whereCondition.clock = {
+          [models.Sequelize.Op.gt]: lastSeenClock
+        }
+      }
+      const localEntries = await tableInstance.findAll({
+        where: whereCondition,
+        limit,
+        order: [['clock', 'ASC']],
+        transaction
+      })
+      decisionTree.recordStage({
+        name: 'filterOutAlreadyPresentDBEntries() Retrieved local entries',
+        data: { numLocalEntries: localEntries.length, limit, lastSeenClock },
+        log: true
+      })
+
+      // Terminate while loop when no entries returned
+      if (localEntries.length === 0) {
+        complete = true
+        continue
+      }
+
+      /**
+       * Store all local entries into redis Set
+       *
+       * localEntries is modified to only include comparison fields so Set operations work in redis
+       * Each entry object is serialized to string for redis compatibility
+       */
+      const localEntriesComparable = localEntries.map((entry) =>
+        JSON.stringify(_.pick(entry, comparisonFields))
+      )
+      const numLocalEntriesAddedBatch = await redis.sadd(
+        LOCAL_DB_ENTRIES_SET_KEY,
+        localEntriesComparable
+      )
+      // Fail-safe in case for some reason not all entries were written to redis
+      if (numLocalEntriesAddedBatch !== localEntries.length) {
+        throw new Error(
+          `Failed to add all entries to redis set for ${LOCAL_DB_ENTRIES_SET_KEY}`
+        )
+      }
+      numLocalEntriesAdded += numLocalEntriesAddedBatch
+
+      // Move pagination cursor
+      lastSeenClock = localEntries[localEntries.length - 1].clock
+    }
+
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Set LOCAL_DB_ENTRIES_SET_KEY',
+      data: { numLocalEntriesAdded },
+      log: true
+    })
+
+    // set(uniqueFetchedEntries) = set(fetchedEntries) - set(localDBEntries)
+    const numUniqueFetchedEntriesComparable = await redis.sdiffstore(
+      UNIQUE_FETCHED_ENTRIES_SET_KEY, // destination set
+      FETCHED_ENTRIES_SET_KEY, // set A
+      LOCAL_DB_ENTRIES_SET_KEY // set B
+    )
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Computed unique fetched entries in redis',
+      data: { numUniqueFetchedEntries: numUniqueFetchedEntriesComparable },
+      log: true
+    })
+
+    /**
+     * Filter fetchedEntries to the uniqueFetchedEntries set
+     *
+     * Since redis Set uniqueFetchedEntries only contains comparison fields subset, set intersection is performed with a custom comparator
+     */
+    const uniqueFetchedEntriesComparable = await redis.smembers(
+      UNIQUE_FETCHED_ENTRIES_SET_KEY
+    )
+    const uniqueFetchedEntries = _.intersectionWith(
+      fetchedEntries,
+      uniqueFetchedEntriesComparable,
+      // Custom comparator function for 2 params
+      (fetchedEntry, uniqueEntryComparable) => {
+        const fetchedEntryComparable = JSON.stringify(
+          _.pick(fetchedEntry, comparisonFields)
+        )
+        return _.isEqual(fetchedEntryComparable, uniqueEntryComparable)
+      }
+    )
+
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Great Success',
+      data: { numUniqueFetchedEntries: uniqueFetchedEntries.length },
+      log: true
+    })
+
+    return uniqueFetchedEntries
+  } catch (e) {
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Error',
+      data: { errorMsg: e.message },
+      log: true
+    })
+
+    throw e
+  } finally {
+    // Wipe redis state
+    try {
+      await redis.del(
+        LOCAL_DB_ENTRIES_SET_KEY,
+        FETCHED_ENTRIES_SET_KEY,
+        UNIQUE_FETCHED_ENTRIES_SET_KEY
+      )
+    } catch (e) {
+      logger.error(
+        { cnodeUserUUID, errorMsg: e.message },
+        '[filterOutAlreadyPresentDBEntries] - Failure to wipe redis state'
+      )
+    }
   }
-
-  decisionTree.recordStage({
-    name: 'filterOutAlreadyPresentDBEntries() Set LOCAL_DB_ENTRIES_SET_KEY',
-    data: { numLocalEntriesAdded },
-    log: true
-  })
-
-  // uniqueFetchedEntries set = fetchedEntries set - localDBEntries set
-  const numUniqueFetchedEntriesComparable = await redis.sdiffstore(
-    UNIQUE_FETCHED_ENTRIES_SET_KEY,
-    FETCHED_ENTRIES_SET_KEY,
-    LOCAL_DB_ENTRIES_SET_KEY
-  )
-  decisionTree.recordStage({
-    name: 'filterOutAlreadyPresentDBEntries() Computed unique fetched entries in redis',
-    data: { numUniqueFetchedEntries: numUniqueFetchedEntriesComparable },
-    log: true
-  })
-
-  // Filter fetchedEntries to the newFetchedEntriesComparable set from redis
-  const uniqueFetchedEntriesComparable = await redis.smembers(
-    UNIQUE_FETCHED_ENTRIES_SET_KEY
-  )
-  const uniqueFetchedEntries = _.intersectionWith(
-    fetchedEntries,
-    uniqueFetchedEntriesComparable,
-    (fetchedEntry, uniqueEntryComparable) => {
-      const fetchedEntryComparable = JSON.stringify(
-        _.pick(fetchedEntry, comparisonFields)
-      )
-      return _.isEqual(fetchedEntryComparable, uniqueEntryComparable)
-    }
-  )
-
-  await redis.del(
-    LOCAL_DB_ENTRIES_SET_KEY,
-    FETCHED_ENTRIES_SET_KEY,
-    UNIQUE_FETCHED_ENTRIES_SET_KEY
-  )
-  decisionTree.recordStage({
-    name: 'filterOutAlreadyPresentDBEntries() Ensure clean final redis state',
-    log: true
-  })
-
-  decisionTree.recordStage({
-    name: 'filterOutAlreadyPresentDBEntries() Great Success',
-    data: { numUniqueFetchedEntries: uniqueFetchedEntries.length },
-    log: true
-  })
-
-  return uniqueFetchedEntries
 }
