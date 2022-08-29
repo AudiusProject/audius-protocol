@@ -58,6 +58,7 @@ mkdir -p "$HOME/.local/bin"
 
 ln -sf "$PROTOCOL_DIR/dev-tools/audius-compose" "$HOME/.local/bin/audius-compose"
 ln -sf "$PROTOCOL_DIR/dev-tools/audius-cloud" "$HOME/.local/bin/audius-cloud"
+ln -sf "$PROTOCOL_DIR/dev-tools/audius-cmd" "$HOME/.local/bin/audius-cmd"
 
 echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
 echo "export PATH=$HOME/.local/bin:$PATH" >>~/.profile
