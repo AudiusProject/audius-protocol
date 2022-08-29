@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import and_, asc, desc, or_
 from src import exceptions
 from src.models.playlists.playlist import Playlist
@@ -9,11 +11,25 @@ from src.queries.query_helpers import populate_user_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
+logger = logging.getLogger(__name__)
+
 
 def get_users_account(args):
-    # todo try catch with sql fallback
-    return get_users_account_es(args)
+    if "wallet" not in args:
+        raise exceptions.ArgumentError("Missing wallet param")
 
+    wallet = args.get("wallet")
+    if len(wallet) != 42:
+        raise exceptions.ArgumentError("Invalid wallet length")
+
+    try:
+        return get_users_account_es(args)
+    except Exception as e:
+        logger.error(f"elasticsearch get_users_account_es failed: {e}")
+        return get_users_account_sql(args)
+
+
+def get_users_account_sql(args):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         # Create initial query
@@ -23,16 +39,9 @@ def get_users_account(args):
             User.is_current == True, User.wallet != None, User.handle != None
         )
 
-        if "wallet" not in args:
-            raise exceptions.ArgumentError("Missing wallet param")
-
-        wallet = args.get("wallet")
-        wallet = wallet.lower()
-        if len(wallet) == 42:
-            base_query = base_query.filter_by(wallet=wallet)
-            base_query = base_query.order_by(asc(User.created_at))
-        else:
-            raise exceptions.ArgumentError("Invalid wallet length")
+        wallet = args.get("wallet").lower()
+        base_query = base_query.filter_by(wallet=wallet)
+        base_query = base_query.order_by(asc(User.created_at))
 
         # If user cannot be found, exit early and return empty response
         user = base_query.first()

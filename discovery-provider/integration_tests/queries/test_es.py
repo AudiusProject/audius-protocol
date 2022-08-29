@@ -5,6 +5,7 @@ import subprocess
 from elasticsearch import Elasticsearch
 from integration_tests.utils import populate_mock_db
 from src.queries.get_feed_es import get_feed_es
+from src.queries.get_users_account_es import get_users_account_es
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -13,8 +14,16 @@ esclient = Elasticsearch(os.environ["audius_elasticsearch_url"])
 
 basic_entities = {
     "users": [
-        {"user_id": 1, "handle": "user1"},
-        {"user_id": 2, "handle": "user2"},
+        {
+            "user_id": 1,
+            "handle": "user1",
+            # these are lowercased before storing in postgres
+            "wallet": "0xc9e823701f61ec9f7ef8834bc393578ad708e820",
+        },
+        {
+            "user_id": 2,
+            "handle": "user2",
+        },
     ],
     "tracks": [
         {"track_id": 1, "owner_id": 1},
@@ -77,3 +86,15 @@ def test_get_feed_es(app):
 
     assert feed_results[1]["track_id"] == 1
     assert feed_results[0]["save_count"] == 1
+
+    # test get account
+    u1 = get_users_account_es({"wallet": "0xC9E823701f61ec9f7EF8834bC393578ad708e820"})
+    assert u1["handle"] == "user1"
+
+    u1 = get_users_account_es({"wallet": "0xc9e823701f61ec9f7ef8834bc393578ad708e820"})
+    assert u1["handle"] == "user1"
+
+    notfound = get_users_account_es(
+        {"wallet": "0x192f0369be1e0dAdb11C9b2A5E754b6441971B2c"}
+    )
+    assert notfound == None

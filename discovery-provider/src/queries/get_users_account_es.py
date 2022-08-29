@@ -1,5 +1,3 @@
-import json
-
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_USERS,
@@ -15,6 +13,7 @@ def get_users_account_es(args):
     wallets = args.get("wallet")
     if isinstance(wallets, str):
         wallets = [wallets]
+    wallets = [w.lower() for w in wallets]
 
     found = esclient.search(
         index=ES_USERS,
@@ -74,13 +73,3 @@ def get_users_account_es(args):
         user["playlists"] = stripped_playlists
 
     return users[0]
-
-
-if __name__ == "__main__":
-    user = get_users_account_es(
-        {"wallet": "0x7d273271690538cf855e5b3002a0dd8c154bb060"}
-    )
-    print(json.dumps(user, indent=2))
-
-    user = get_users_account_es({"wallet": "0xNotFound"})
-    print(json.dumps(user, indent=2))
