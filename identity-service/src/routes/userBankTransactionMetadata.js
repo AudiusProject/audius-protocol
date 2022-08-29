@@ -17,26 +17,22 @@ const requestSchema = {
     metadata: { $ref: '/PurchaseMetadata' }
   },
   additionalProperties: false,
-  required: ['transactionSignature', 'metadata'],
+  required: ['transactionSignature', 'metadata']
 }
 
 const purchaseMetadataSchema = {
   id: '/PurchaseMetadata',
   type: 'object',
   properties: {
-  discriminator: { type: 'string' },
-  usd: { type: 'string' },
-  sol: { type: 'string' },
-  audio: { type: 'string' },
-  swapTransaction: { type: 'string' },
-  buyTransaction: { type: 'string' }
+    discriminator: { type: 'string' },
+    usd: { type: 'string' },
+    sol: { type: 'string' },
+    audio: { type: 'string' },
+    swapTransaction: { type: 'string' },
+    buyTransaction: { type: 'string' }
   },
   additionalProperties: false,
   required: ['discriminator', 'usd', 'sol', 'audio', 'swapTransaction', 'buyTransaction']
-}
-
-const friendlyErrors = {
-  additionalProperties: ""
 }
 
 const validator = new Validator()
