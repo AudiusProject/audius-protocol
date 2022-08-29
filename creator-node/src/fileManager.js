@@ -122,7 +122,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
     url = contentUrl
 
     decisionTree.recordStage({
-      name: 'Fetching from gateway',
+      name: 'Fetching from target gateways',
       data: { replicaUrl: contentUrl }
     })
 
@@ -172,14 +172,14 @@ async function fetchFileFromNetworkAndWriteToDisk({
       })
 
       decisionTree.recordStage({
-        name: 'Retrieved file from gateway',
+        name: 'Retrieved file from target gateway',
         data: { url: contentUrl }
       })
 
       await Utils.writeStreamToFileSystem(streamData, path)
 
       decisionTree.recordStage({
-        name: 'Wrote file to file system after fetching from gateway',
+        name: 'Wrote file to file system after fetching from target gateway',
         data: { expectedStoragePath: path }
       })
 
@@ -213,19 +213,19 @@ async function fetchFileFromNetworkAndWriteToDisk({
     }
 
     decisionTree.recordStage({
-      name: 'Found file from findCIDInNetwork()'
+      name: 'Found file from network'
     })
 
     return
   } catch (e) {
     decisionTree.recordStage({
-      name: `Failed to find file from findCIDInNetwork()`,
+      name: `Failed to find file from network`,
       data: { errorMsg: e.message }
     })
   }
 
   // error if file was not found on any gateway
-  const errorMsg = `Failed to retrieve file for multihash ${multihash} after trying all creator node gateways`
+  const errorMsg = `Failed to retrieve file for multihash ${multihash} after trying entire network`
   decisionTree.recordStage({
     name: errorMsg
   })

@@ -46,7 +46,7 @@ const sampleExportDummyCIDFromClock2Path = path.resolve(
   'syncAssets/sampleExportDummyCIDFromClock2.json'
 )
 
-describe.only('Test secondarySyncFromPrimary()', async function () {
+describe('Test secondarySyncFromPrimary()', async function () {
   let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get(
@@ -1233,7 +1233,6 @@ describe.only('Test secondarySyncFromPrimary()', async function () {
               fileNameForImage = null,
               trackId = null
             ) {
-              console.log('I AM MOCKED')
               return saveFileForMultihashToFS(
                 libs,
                 logger,
@@ -1242,14 +1241,13 @@ describe.only('Test secondarySyncFromPrimary()', async function () {
                 targetGateways,
                 fileNameForImage,
                 trackId,
-                1 /* numRetries */
+                // Disable retries for testing purposes
+                0 /* numRetries */
               )
             }
           }
         }
       )
-
-      // TODO: need to make numRetries like 2 or 1
 
       // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
@@ -1287,7 +1285,7 @@ describe.only('Test secondarySyncFromPrimary()', async function () {
   })
 })
 
-describe.only('Test primarySyncFromSecondary() with mocked export', async () => {
+describe('Test primarySyncFromSecondary() with mocked export', async () => {
   let server, app, serviceRegistryMock, primarySyncFromSecondaryStub
 
   const NODES = {
@@ -2054,18 +2052,37 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
 
-    // Ensure primarySyncFromSecondary() fails until SyncRequestMaxUserFailureCountBeforeSkip reached
-    for (let i = 1; i < SyncRequestMaxUserFailureCountBeforeSkip; i++) {
-      const error = await primarySyncFromSecondaryStub({
-        secondary: SECONDARY,
-        wallet: USER_1_WALLET,
-        selfEndpoint: SELF
-      })
-      assert.deepStrictEqual(
-        error.message,
-        `[saveFilesToDisk] Failed to save ${numUniqueCIDs} files to disk. Cannot proceed because UserSyncFailureCount = ${i} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    }
+    primarySyncFromSecondaryStub = proxyquire(
+      '../src/services/sync/primarySyncFromSecondary',
+      {
+        '../../serviceRegistry': { serviceRegistry: serviceRegistryMock },
+        '../initAudiusLibs': async () => libsMock,
+        './../../config': config,
+        '../../fileManager': {
+          saveFileForMultihashToFS: async function (
+            libs,
+            logger,
+            multihash,
+            expectedStoragePath,
+            targetGateways,
+            fileNameForImage = null,
+            trackId = null
+          ) {
+            return saveFileForMultihashToFS(
+              libs,
+              logger,
+              multihash,
+              expectedStoragePath,
+              targetGateways,
+              fileNameForImage,
+              trackId,
+              // Disable retries for testing purposes
+              0 /* numRetries */
+            )
+          }
+        }
+      }
+    )
 
     const error = await primarySyncFromSecondaryStub({
       secondary: SECONDARY,
