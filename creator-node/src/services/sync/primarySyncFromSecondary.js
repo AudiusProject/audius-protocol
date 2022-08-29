@@ -11,7 +11,6 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const DecisionTree = require('../../utils/decisionTree')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { fetchExportFromNode } = require('./syncUtil')
 
 const DEFAULT_LOG_CONTEXT = {}
@@ -459,3 +458,5 @@ async function filterOutAlreadyPresentDBEntries({
 
   return filteredEntries
 }
+
+module.exports = primarySyncFromSecondary
