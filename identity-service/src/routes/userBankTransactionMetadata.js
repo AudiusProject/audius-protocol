@@ -7,56 +7,55 @@ const {
 } = require('../apiHelpers')
 const { logger } = require('../logging')
 const { Op } = require('sequelize')
+const { Validator } = require('jsonschema')
 
-const requiredPurchaseKeys = {
+const requestSchema = {
+  id: '/transaction_metadata_post',
+  type: 'object',
+  properties: {
+    transactionSignature: { type: 'string' },
+    metadata: { $ref: '/PurchaseMetadata' }
+  },
+  additionalProperties: false,
+  required: ['transactionSignature', 'metadata'],
+}
+
+const purchaseMetadataSchema = {
+  id: '/PurchaseMetadata',
+  type: 'object',
+  properties: {
   discriminator: { type: 'string' },
   usd: { type: 'string' },
   sol: { type: 'string' },
   audio: { type: 'string' },
   swapTransaction: { type: 'string' },
   buyTransaction: { type: 'string' }
+  },
+  additionalProperties: false,
+  required: ['discriminator', 'usd', 'sol', 'audio', 'swapTransaction', 'buyTransaction']
 }
 
-const validateMetadata = (metadata) => {
-  if (!metadata) {
-    throw new Error('Missing metadata')
-  }
-  if (!('discriminator' in metadata)) {
-    throw new Error(`Missing discriminator`)
-  }
-  if (metadata.discriminator === 'PURCHASE_SOL_AUDIO_SWAP') {
-    const result = {}
-    for (let key of Object.keys(requiredPurchaseKeys)) {
-      if (!(key in metadata)) {
-        throw new Error(`Missing required property '${key}'`)
-      }
-      if (typeof metadata[key] !== requiredPurchaseKeys[key].type) {
-        throw new Error(
-          `Invalid type for property '${key}'. Found '${typeof metadata[key]}', expected '${requiredPurchaseKeys[key].type}'`
-        )
-      }
-      result[key] = metadata[key]
-    }
-    return result
-  }
-  throw new Error('Invalid discriminator')
+const friendlyErrors = {
+  additionalProperties: ""
 }
+
+const validator = new Validator()
+validator.addSchema(purchaseMetadataSchema)
 
 module.exports = function (app) {
   app.post(
     '/transaction_metadata',
     handleResponse(async (req, res, next) => {
-      const { transactionSignature, metadata } = req.body
-      let validationResult
-      try {
-        validationResult = validateMetadata(metadata)
-      } catch (e) {
-        return errorResponseBadRequest(`Invalid metadata: ${e.message}`)
+      const validationResult = validator.validate(req.body, requestSchema)
+      if (!validationResult.valid) {
+        logger.error(JSON.stringify(validationResult.errors))
+        return errorResponseBadRequest()
       }
+      const { transactionSignature, metadata } = req.body
       try {
         await models.UserBankTransactionMetadata.create({
           transactionSignature,
-          metadata: validationResult
+          metadata
         })
         return successResponse()
       } catch (e) {
