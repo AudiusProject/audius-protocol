@@ -1349,21 +1349,11 @@ describe.only('Test secondarySyncFromPrimary()', async function () {
         clockRecords: exportedClockRecords
       } = unpackSampleExportData(sampleExportDummyCIDPath)
 
-      const numUniqueCIDs = new Set(exportedFiles.map((file) => file.multihash))
-        .size
-
       setupMocks(sampleExport, false)
-
-      const SyncRequestMaxUserFailureCountBeforeSkip = 3
-      config.set(
-        'syncRequestMaxUserFailureCountBeforeSkip',
-        SyncRequestMaxUserFailureCountBeforeSkip
-      )
 
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
-          './../../config': config,
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
@@ -1378,6 +1368,7 @@ describe.only('Test secondarySyncFromPrimary()', async function () {
               fileNameForImage = null,
               trackId = null
             ) {
+              console.log('1 surely this is working....')
               return saveFileForMultihashToFS(
                 libs,
                 logger,
