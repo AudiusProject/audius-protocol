@@ -3,9 +3,9 @@ import {
   OverflowSource,
   mobileOverflowMenuUISelectors
 } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import CollectionOverflowMenuDrawer from './CollectionOverflowMenuDrawer'
 import ProfileOverflowMenuDrawer from './ProfileOverflowMenuDrawer'
@@ -34,7 +34,7 @@ const rowMessageMap = {
 }
 
 export const OverflowMenuDrawer = () => {
-  const overflowMenu = useSelectorWeb(getMobileOverflowModal)
+  const overflowMenu = useSelector(getMobileOverflowModal)
 
   if (!overflowMenu?.id) {
     return <></>

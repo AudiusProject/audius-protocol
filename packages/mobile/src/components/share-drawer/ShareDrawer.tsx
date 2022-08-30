@@ -11,6 +11,7 @@ import {
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Linking, StyleSheet, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
@@ -18,9 +19,7 @@ import IconTikTok from 'app/assets/images/iconTikTok.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import type { ThemeColors } from 'app/utils/theme'
 import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
@@ -35,7 +34,7 @@ const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -82,9 +81,9 @@ export const ShareDrawer = () => {
   const { secondary, neutral, staticTwitterBlue } = useThemeColors()
   const themeVariant = useThemeVariant()
   const isLightMode = themeVariant === Theme.DEFAULT
-  const dispatchWeb = useDispatchWeb()
-  const { content, source } = useSelectorWeb(getShareState)
-  const account = useSelectorWeb(getAccountUser)
+  const dispatch = useDispatch()
+  const { content, source } = useSelector(getShareState)
+  const account = useSelector(getAccountUser)
   const { toast } = useContext(ToastContext)
   const isOwner =
     content?.type === 'track' &&
@@ -105,9 +104,9 @@ export const ShareDrawer = () => {
 
   const handleShareToTikTok = useCallback(() => {
     if (content?.type === 'track') {
-      dispatchWeb(requestOpenTikTokModal({ id: content.track.track_id }))
+      dispatch(requestOpenTikTokModal({ id: content.track.track_id }))
     }
-  }, [content, dispatchWeb])
+  }, [content, dispatch])
 
   const handleCopyLink = useCallback(() => {
     if (!content) return
@@ -120,19 +119,19 @@ export const ShareDrawer = () => {
     if (!source || !content) return
     switch (content.type) {
       case 'track':
-        dispatchWeb(shareTrack(content.track.track_id, source))
+        dispatch(shareTrack(content.track.track_id, source))
         break
       case 'profile':
-        dispatchWeb(shareUser(content.profile.user_id, source))
+        dispatch(shareUser(content.profile.user_id, source))
         break
       case 'album':
-        dispatchWeb(shareCollection(content.album.playlist_id, source))
+        dispatch(shareCollection(content.album.playlist_id, source))
         break
       case 'playlist':
-        dispatchWeb(shareCollection(content.playlist.playlist_id, source))
+        dispatch(shareCollection(content.playlist.playlist_id, source))
         break
     }
-  }, [dispatchWeb, content, source])
+  }, [dispatch, content, source])
 
   const shouldIncludeTikTokAction = Boolean(
     isShareToTikTokEnabled &&

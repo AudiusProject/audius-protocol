@@ -16,6 +16,7 @@ import {
 } from '@audius/common'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
+import { useDispatch } from 'react-redux'
 
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -72,6 +73,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const isCasting = useSelectorWeb(getIsCasting)
   const { neutral, primary } = useThemeColors()
   const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   useLayoutEffect(() => {
     if (Platform.OS === 'android' && castMethod === 'airplay') {
@@ -101,7 +103,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
 
   const onPressShare = useCallback(() => {
     if (track) {
-      dispatchWeb(
+      dispatch(
         requestOpenShareModal({
           type: 'track',
           trackId: track.track_id,
@@ -109,7 +111,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         })
       )
     }
-  }, [dispatchWeb, track])
+  }, [dispatch, track])
 
   const onPressOverflow = useCallback(() => {
     if (track) {
@@ -131,7 +133,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         OverflowAction.VIEW_ARTIST_PAGE
       ].filter(Boolean) as OverflowAction[]
 
-      dispatchWeb(
+      dispatch(
         openOverflowMenu({
           source: OverflowSource.TRACKS,
           id: track.track_id,
@@ -139,7 +141,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         })
       )
     }
-  }, [track, currentUserId, dispatchWeb])
+  }, [track, currentUserId, dispatch])
 
   const { openAirplayDialog } = useAirplay()
 

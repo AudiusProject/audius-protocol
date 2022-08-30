@@ -29,7 +29,7 @@ import {
   REPOSTING_USERS_ROUTE
 } from 'audius-client/src/utils/route'
 import { Image, View } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import { Tag, Text } from 'app/components/core'
@@ -129,6 +129,7 @@ export const TrackScreenDetailsTile = ({
 
   const currentUserId = useSelectorWeb(getUserId)
   const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const playingUid = useSelector(getUid)
   const isPlaying = useSelector(getPlaying)
   const isPlayingUid = playingUid === uid
@@ -267,7 +268,7 @@ export const TrackScreenDetailsTile = ({
   }
 
   const handlePressShare = () => {
-    dispatchWeb(
+    dispatch(
       requestOpenShareModal({
         type: 'track',
         trackId: track_id,
@@ -275,6 +276,7 @@ export const TrackScreenDetailsTile = ({
       })
     )
   }
+
   const handlePressOverflow = () => {
     const overflowActions = [
       isOwner || is_unlisted
@@ -294,7 +296,7 @@ export const TrackScreenDetailsTile = ({
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
-    dispatchWeb(
+    dispatch(
       openOverflowMenu({
         source: OverflowSource.TRACKS,
         id: track_id,
