@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # crontab
-# */10 * * * * cd ~/audius-protocol/monitoring && scripts/cron-alerts.sh >> /tmp/logs/cron-alerts.log
+# */10 * * * * sudo su ubuntu -c "cd ~/audius-protocol/monitoring && scripts/cron-alerts.sh" >> /tmp/logs/cron-alerts.log 2>&1
 
 set -ex
 
@@ -14,6 +14,11 @@ cat ${old_uids} | sort | sponge ${old_uids}
 
 # remove all stale alerts
 rm grafana/alerts/*
+
+# set GRAFANA_PASS
+set -a
+source /home/ubuntu/.profile
+set +a
 
 # generate and upload new alerts
 echo y | ./grafana/bin/extract-alerts.sh
@@ -34,3 +39,5 @@ done
 # remove temp files
 rm ${old_uids}
 rm ${new_uids}
+
+echo ==================================
