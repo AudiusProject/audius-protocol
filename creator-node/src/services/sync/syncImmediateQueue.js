@@ -49,12 +49,18 @@ class SyncImmediateQueue {
       'syncQueueMaxConcurrency'
     )
     this.queue.process(jobProcessorConcurrency, async (job) => {
+      // Get the `parentSpanContext` from the job data
+      // so the job can reference what span enqueued it
       const { parentSpanContext } = job.data
+
       const untracedProcessTask = this.processTask
       const processTask = instrumentTracing({
         name: 'syncImmediateQueue.process',
         fn: untracedProcessTask,
         options: {
+          // if a parentSpanContext is provided
+          // reference it so the async queue job can remember
+          // who enqueued it
           links: parentSpanContext
             ? [
                 {

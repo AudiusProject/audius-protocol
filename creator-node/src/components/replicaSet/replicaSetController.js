@@ -129,6 +129,10 @@ const _syncRouteController = async (req, res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
+
+        // `parentSpanContext` provides a serializable version of the span
+        // which the bull queue can save on redis so that
+        // the bull job can later deserialize and reference.
         parentSpanContext: tracing.currentSpanContext()
       })
     } catch (e) {
