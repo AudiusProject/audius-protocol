@@ -3,7 +3,9 @@ from typing import Optional, TypedDict
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track_trending_score import TrackTrendingScore
-from src.premium_content.constants import SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
+from src.premium_content.premium_content_constants import (
+    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+)
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.tasks.generate_trending import generate_trending

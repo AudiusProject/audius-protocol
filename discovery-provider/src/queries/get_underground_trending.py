@@ -13,7 +13,9 @@ from src.models.social.save import SaveType
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
-from src.premium_content.constants import SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
+from src.premium_content.premium_content_constants import (
+    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+)
 from src.queries.get_trending_tracks import (
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,

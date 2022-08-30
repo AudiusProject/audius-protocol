@@ -1,7 +1,9 @@
 import logging
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
-from src.premium_content.constants import SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
+from src.premium_content.premium_content_constants import (
+    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+)
 from src.queries.get_trending_tracks import (
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
