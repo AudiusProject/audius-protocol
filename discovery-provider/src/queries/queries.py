@@ -386,7 +386,8 @@ def get_saves_route(save_type):
 def get_users_account_route():
     try:
         user = get_users_account(to_dict(request.args))
-        return api_helpers.success_response(user)
+        use_orjson = request.args.get("orjson") == "1"
+        return api_helpers.success_response(user, use_orjson=use_orjson)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 

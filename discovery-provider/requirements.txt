@@ -50,6 +50,7 @@ opentelemetry-instrumentation-logging==0.33b0
 opentelemetry-sdk==1.12.0
 opentelemetry-semantic-conventions==0.33b0
 opentelemetry-util-http==0.33b0
+orjson
 
 # Solana support
 base58==2.1.0

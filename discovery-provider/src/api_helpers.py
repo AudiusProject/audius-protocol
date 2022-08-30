@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 
+import orjson
 import redis
 
 # pylint: disable=no-name-in-module
@@ -40,13 +41,18 @@ def error_response(error, error_code=500):
 
 # Create a response dict with metadata, data, signature, and timestamp
 def success_response(
-    response_entity=None, status=200, to_json=True, sign_response=True
+    response_entity=None, status=200, to_json=True, sign_response=True, use_orjson=False
 ):
     starting_response_dictionary = {"data": response_entity}
     response_dictionary = response_dict_with_metadata(
         starting_response_dictionary, sign_response
     )
-    response = jsonify(response_dictionary) if to_json else response_dictionary
+    if use_orjson:
+        response = orjson.dumps(response_dictionary)
+    elif to_json:
+        response = jsonify(response_dictionary)
+    else:
+        response = response_dictionary
     return response, status
 
 
