@@ -8,8 +8,8 @@ import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
+import * as sagas from 'common/store/social/tracks/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import * as sagas from 'store/social/tracks/sagas'
 import { noopReducer } from 'store/testHelper'
 
 const repostingUser = { repost_count: 0 }
