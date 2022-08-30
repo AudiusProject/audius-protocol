@@ -54,7 +54,6 @@ export default function* rootSaga() {
     ...usersSagas(),
 
     // Playback
-    queueSagas(),
     ...playerSagas(),
     ...queueSagas(),
 
