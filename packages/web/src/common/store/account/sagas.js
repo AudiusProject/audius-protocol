@@ -1,6 +1,5 @@
 import {
   Kind,
-  Status,
   USER_ID_AVAILABLE_EVENT,
   accountSelectors,
   accountActions,
@@ -9,8 +8,7 @@ import {
   profilePageActions,
   solanaSelectors,
   modalsActions,
-  waitForAccount,
-  waitForValue
+  waitForAccount
 } from '@audius/common'
 import {
   call,
@@ -482,13 +480,7 @@ function* associateInstagramAccount(action) {
 
 function* fetchSavedAlbumsAsync() {
   yield call(waitForBackendSetup)
-  const isAccountSet = (store) => store.account.status
-  yield call(
-    waitForValue,
-    isAccountSet,
-    null,
-    (status) => status === Status.SUCCESS
-  )
+  yield waitForAccount()
   const cachedSavedAlbums = yield select(getAccountAlbumIds)
   if (cachedSavedAlbums.length > 0) {
     yield call(retrieveCollections, null, cachedSavedAlbums)
@@ -497,13 +489,7 @@ function* fetchSavedAlbumsAsync() {
 
 function* fetchSavedPlaylistsAsync() {
   yield call(waitForBackendSetup)
-  const isAccountSet = (store) => store.account.status
-  yield call(
-    waitForValue,
-    isAccountSet,
-    null,
-    (status) => status === Status.SUCCESS
-  )
+  yield waitForAccount()
 
   // Fetch other people's playlists you've saved
   yield fork(function* () {

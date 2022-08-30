@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, MouseEvent } from 'react'
 
 import { CastMethod } from '@audius/common'
 import {
@@ -59,7 +59,7 @@ const ActionsBar = ({
           className={cn(styles.icon, styles.iconCast)}
           activeClassName={styles.activeButton}
           icon={isAirplay ? <IconAirplay /> : <IconChromecast />}
-          onClick={(event) => {
+          onClick={(event: MouseEvent) => {
             event.stopPropagation()
             const message = isAirplay
               ? new AirplayMessage()
@@ -99,7 +99,7 @@ const ActionsBar = ({
         aria-label='more actions'
         icon={<IconKebabHorizontal />}
         className={styles.icon}
-        onClick={(event) => {
+        onClick={(event: MouseEvent) => {
           event.stopPropagation()
           onClickOverflow()
         }}
