@@ -3,6 +3,7 @@ const _ = require('lodash')
 const models = require('../../models')
 const { Transaction } = require('sequelize')
 const DBManager = require('../../dbManager')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
@@ -148,6 +149,7 @@ const exportComponentService = async ({
 
     return cnodeUsersDict
   } catch (e) {
+    tracing.recordException(e)
     await transaction.rollback()
 
     for (const cnodeUserUUID in cnodeUsersDict) {
@@ -159,6 +161,7 @@ const exportComponentService = async ({
           `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() executed - numRowsUpdated:${numRowsUpdated}`
         )
       } catch (e) {
+        tracing.recordException(e)
         logger.error(
           `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() error - ${e.message}`
         )
@@ -168,4 +171,11 @@ const exportComponentService = async ({
   }
 }
 
-module.exports = exportComponentService
+module.exports = instrumentTracing({
+  fn: exportComponentService,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})

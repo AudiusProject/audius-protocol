@@ -12,6 +12,7 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const DecisionTree = require('../../utils/decisionTree')
 const UserSyncFailureCountService = require('./UserSyncFailureCountService')
+const { instrumentTracing, tracing } = require('../../tracer')
 const { fetchExportFromNode } = require('./syncUtil')
 const {
   FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
@@ -33,7 +34,7 @@ const {
  * Export data for user from secondary and save locally, until complete
  * Should never error, instead return errorObj, else null
  */
-module.exports = async function primarySyncFromSecondary({
+async function _primarySyncFromSecondary({
   wallet,
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
@@ -61,9 +62,11 @@ module.exports = async function primarySyncFromSecondary({
 
     let libs
     try {
+      tracing.info('init AudiusLibs')
       libs = await initAudiusLibs({ logger })
       decisionTree.recordStage({ name: 'initAudiusLibs() success', log: true })
     } catch (e) {
+      tracing.recordException(e)
       decisionTree.recordStage({
         name: 'initAudiusLibs() Error',
         data: { errorMsg: e.message }
@@ -154,6 +157,7 @@ module.exports = async function primarySyncFromSecondary({
           log: true
         })
       } catch (e) {
+        tracing.recordException(e)
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Error',
           data: { errorMsg: e.message }
@@ -191,6 +195,7 @@ module.exports = async function primarySyncFromSecondary({
 
     decisionTree.recordStage({ name: 'Complete Success' })
   } catch (e) {
+    tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
     return e
   } finally {
@@ -199,6 +204,15 @@ module.exports = async function primarySyncFromSecondary({
     decisionTree.printTree()
   }
 }
+
+const primarySyncFromSecondary = instrumentTracing({
+  fn: _primarySyncFromSecondary,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
 
 /**
  * Fetch data for all files & save to disk
@@ -715,3 +729,5 @@ async function filterOutAlreadyPresentDBEntries({
     }
   }
 }
+
+module.exports = primarySyncFromSecondary
