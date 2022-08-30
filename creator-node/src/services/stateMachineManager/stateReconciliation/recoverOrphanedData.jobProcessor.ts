@@ -326,7 +326,7 @@ const _getPrimaryForWallet = async (
   return replicaSet[0]
 }
 
-export default async function recoverOrphanedData(
+async function recoverOrphanedData(
   params: DecoratedJobParams<RecoverOrphanedDataJobParams>
 ) {
   const { parentSpanContext } = params
@@ -350,4 +350,5 @@ export default async function recoverOrphanedData(
   return await jobProcessor(params)
 }
 
+export default recoverOrphanedData
 module.exports = recoverOrphanedData
