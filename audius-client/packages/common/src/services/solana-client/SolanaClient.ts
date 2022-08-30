@@ -1,24 +1,25 @@
-import { Collectible } from '@audius/common'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Connection, PublicKey } from '@solana/web3.js'
 
-import { CollectibleState } from 'components/collectibles/types'
+import { Collectible, CollectibleState } from '../../models'
 
 import { solanaNFTToCollectible } from './solCollectibleHelpers'
 import { SolanaNFTType } from './types'
 
-const SOLANA_CLUSTER_ENDPOINT = process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT
-const METADATA_PROGRAM_ID = process.env.REACT_APP_METADATA_PROGRAM_ID
-
-const METADATA_PROGRAM_ID_PUBLIC_KEY = new PublicKey(
-  METADATA_PROGRAM_ID || 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-)
-
-class SolanaClient {
+type SolanaClientArgs = {
+  solanaClusterEndpoint: string | undefined
+  metadataProgramId: string | undefined
+}
+export class SolanaClient {
   private connection: Connection | null = null
-  constructor() {
+  private metadataProgramIdPublicKey: PublicKey
+
+  constructor({ solanaClusterEndpoint, metadataProgramId }: SolanaClientArgs) {
+    this.metadataProgramIdPublicKey = new PublicKey(
+      metadataProgramId || 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+    )
     try {
-      this.connection = new Connection(SOLANA_CLUSTER_ENDPOINT!, 'confirmed')
+      this.connection = new Connection(solanaClusterEndpoint!, 'confirmed')
     } catch (e) {
       console.error('Could create Solana RPC connection', e)
       this.connection = null
@@ -50,7 +51,7 @@ class SolanaClient {
       const potentialNFTsByOwnerAddress = tokenAccountsByOwnerAddress
         .map((ta) => ta.value)
         // value is an array of parsed token info
-        .map((value, i) => {
+        .map((value) => {
           const mintAddresses = value
             .map((v) => ({
               mint: v.account.data.parsed.info.mint,
@@ -77,10 +78,10 @@ class SolanaClient {
                   await PublicKey.findProgramAddress(
                     [
                       Buffer.from('metadata'),
-                      METADATA_PROGRAM_ID_PUBLIC_KEY.toBytes(),
+                      this.metadataProgramIdPublicKey.toBytes(),
                       new PublicKey(mintAddress).toBytes()
                     ],
-                    METADATA_PROGRAM_ID_PUBLIC_KEY
+                    this.metadataProgramIdPublicKey
                   )
                 )[0]
             )
@@ -92,7 +93,7 @@ class SolanaClient {
           const nonNullInfos = accountInfos?.filter(Boolean) ?? []
 
           const metadataUrls = nonNullInfos
-            .map((x) => client._utf8ArrayToNFTType(x!.data))
+            .map((x) => this._utf8ArrayToNFTType(x!.data))
             .filter(Boolean) as { type: SolanaNFTType; url: string }[]
 
           const results = await Promise.all(
@@ -152,10 +153,10 @@ class SolanaClient {
     // for the sake of simplicty/readability/understandability, we check the decoded url
     // one by one against metaplex, star atlas, and others
     return (
-      client._metaplex(text) ||
-      client._starAtlas(text) ||
-      client._jsonExtension(text) ||
-      client._ipfs(text)
+      this._metaplex(text) ||
+      this._starAtlas(text) ||
+      this._jsonExtension(text) ||
+      this._ipfs(text)
     )
   }
 
@@ -257,7 +258,3 @@ class SolanaClient {
     }
   }
 }
-
-const client = new SolanaClient()
-
-export default client

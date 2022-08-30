@@ -13,7 +13,12 @@ import {
   reachabilitySelectors,
   tippingActions,
   artistRecommendationsUIActions as artistRecommendationsActions,
-  waitForAccount
+  waitForAccount,
+  dataURLtoFile,
+  MAX_ARTIST_HOVER_TOP_SUPPORTING,
+  MAX_PROFILE_SUPPORTING_TILES,
+  MAX_PROFILE_TOP_SUPPORTERS,
+  OpenSeaClient
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -38,16 +43,6 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
-import { fetchCID } from 'services/audius-backend'
-import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
-import SolanaClient from 'services/solana-client/SolanaClient'
-import { isMobile } from 'utils/clientUtil'
-import {
-  MAX_ARTIST_HOVER_TOP_SUPPORTING,
-  MAX_PROFILE_SUPPORTING_TILES,
-  MAX_PROFILE_TOP_SUPPORTERS
-} from 'utils/constants'
-import { dataURLtoFile } from 'utils/fileUtils'
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =
@@ -67,7 +62,7 @@ function* fetchProfileCustomizedCollectibles(user) {
   const cid = user?.metadata_multihash ?? null
   if (cid) {
     const { is_verified: ignored_is_verified, ...metadata } = yield call(
-      fetchCID,
+      audiusBackendInstance.fetchCID,
       cid,
       gateways,
       /* cache */ false,
@@ -130,8 +125,9 @@ export function* fetchOpenSeaAssets(user) {
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
+  const solanaClient = yield getContext('solanaClient')
   yield call(waitForRemoteConfig)
-  return yield call(SolanaClient.getAllCollectibles, wallets)
+  return yield call(solanaClient.getAllCollectibles, wallets)
 }
 
 export function* fetchSolanaCollectibles(user) {
@@ -194,6 +190,7 @@ function* fetchSupportersAndSupporting(userId) {
 
 function* fetchProfileAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const isNativeMobile = yield getContext('isNativeMobile')
   const { getRemoteVar } = yield getContext('remoteConfigInstance')
 
   try {
@@ -251,8 +248,7 @@ function* fetchProfileAsync(action) {
       profileActions.setNotificationSubscription(user.user_id, isSubscribed)
     )
 
-    const isMobileClient = isMobile()
-    if (!isMobileClient) {
+    if (!isNativeMobile) {
       if (user.track_count > 0) {
         yield fork(fetchMostUsedTags, user.user_id, user.track_count)
       }
@@ -271,7 +267,7 @@ function* fetchProfileAsync(action) {
     // Delay so the page can load before we fetch mutual followers
     yield delay(2000)
 
-    if (!isMobileClient) {
+    if (!isNativeMobile) {
       yield put(profileActions.fetchFollowUsers(FollowType.FOLLOWEE_FOLLOWS))
     }
   } catch (err) {
@@ -381,7 +377,7 @@ export function* updateProfileAsync(action) {
   if (cid) {
     try {
       const metadataFromIPFS = yield call(
-        fetchCID,
+        audiusBackendInstance.fetchCID,
         cid,
         gateways,
         /* cache */ false,

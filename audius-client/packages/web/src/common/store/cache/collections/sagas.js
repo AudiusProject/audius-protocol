@@ -14,7 +14,8 @@ import {
   cacheTracksSelectors,
   cacheUsersSelectors,
   cacheActions,
-  waitForAccount
+  waitForAccount,
+  dataURLtoFile
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import {
@@ -36,7 +37,6 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { dataURLtoFile } from 'utils/fileUtils'
 
 import { reformat } from './utils'
 import {

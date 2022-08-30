@@ -8,7 +8,8 @@ import {
   tippingSelectors,
   tippingActions,
   userListActions,
-  SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG
+  SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG,
+  MAX_ARTIST_HOVER_TOP_SUPPORTING
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
@@ -23,7 +24,6 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
-import { MAX_ARTIST_HOVER_TOP_SUPPORTING } from 'utils/constants'
 
 import styles from './ArtistSupporting.module.css'
 const { loadMore, reset } = userListActions
