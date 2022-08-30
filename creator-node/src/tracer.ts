@@ -133,7 +133,7 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
 
           // TODO add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
-          const result = fn.call(this, ...args)
+          const result = fn.apply(this, args)
 
           // if `fn` is async, await the result
           if (result && result.then) {
@@ -142,6 +142,8 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
              * can still use normal async/await syntax to `await` the result
              * of this wrapper
              * i.e. `const output = await instrumentTracing({ fn: _someFunction })(args)`
+             *
+             * based on this package: https://github.com/klny/function-wrapper/blob/master/src/wrapper.js#L25
              */
             return result.then((val: any) => {
               span.end()
