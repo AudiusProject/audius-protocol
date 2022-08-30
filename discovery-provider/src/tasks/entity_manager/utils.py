@@ -1,9 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, TypedDict
+from typing import Dict, List, Set, Tuple, TypedDict
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
+from src.models.social.save import Save
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -18,6 +20,10 @@ class Action(str, Enum):
     CREATE = "Create"
     UPDATE = "Update"
     DELETE = "Delete"
+    FOLLOW = "Follow"
+    UNFOLLOW = "Unfollow"
+    SAVE = "Save"
+    UNSAVE = "Unsave"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -27,20 +33,34 @@ class EntityType(str, Enum):
     PLAYLIST = "Playlist"
     TRACK = "Track"
     USER = "User"
+    FOLLOW = "Follow"
+    SAVE = "Save"
 
     def __str__(self) -> str:
         return str.__str__(self)
 
 
 class RecordDict(TypedDict):
-    playlists: Dict[int, List[Playlist]]
-    tracks: Dict[int, List[Track]]
+    Playlist: Dict[int, List[Playlist]]
+    Track: Dict[int, List[Track]]
+    Follow: Dict[Tuple, List[Follow]]
+    Save: Dict[Tuple, List[Save]]
 
 
 class ExistingRecordDict(TypedDict):
-    playlists: Dict[int, Playlist]
-    tracks: Dict[int, Track]
-    users: Dict[int, User]
+    Playlist: Dict[int, Playlist]
+    Track: Dict[int, Track]
+    User: Dict[int, User]
+    Follow: Dict[Tuple, Follow]
+    Save: Dict[Tuple, Save]
+
+
+class EntitiesToFetchDict(TypedDict):
+    Playlist: Set[int]
+    Track: Set[int]
+    User: Set[int]
+    Follow: Set[Tuple]
+    Save: Set[Tuple]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -83,9 +103,25 @@ class ManageEntityParameters:
         self.existing_records = existing_records
 
     def add_playlist_record(self, playlist_id: int, playlist: Playlist):
-        self.new_records["playlists"][playlist_id].append(playlist)
-        self.existing_records["playlists"][playlist_id] = playlist
+        self.new_records[EntityType.PLAYLIST.value][playlist_id].append(playlist)
+        self.existing_records[EntityType.PLAYLIST.value][playlist_id] = playlist
 
     def add_track_record(self, track_id: int, track: Track):
-        self.new_records["tracks"][track_id].append(track)
-        self.existing_records["tracks"][track_id] = track
+        self.new_records[EntityType.TRACK.value][track_id].append(track)
+        self.existing_records[EntityType.TRACK.value][track_id] = track
+
+    def add_social_feature_record(
+        self,
+        user_id: int,
+        entity_type: EntityType,
+        entity_id: int,
+        record_type: EntityType,
+        record,
+    ):
+        key = (user_id, entity_type, entity_id)
+        self.new_records[record_type][key].append(record)  # type: ignore
+        self.existing_records[record_type][key] = record  # type: ignore
+
+
+def get_record_key(user_id, entity_type, entity_id):
+    return (user_id, entity_type, entity_id)

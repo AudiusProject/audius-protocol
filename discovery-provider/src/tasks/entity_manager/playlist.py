@@ -19,25 +19,27 @@ logger = logging.getLogger(__name__)
 def validate_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     playlist_id = params.entity_id
-    if user_id not in params.existing_records["users"]:
+    if user_id not in params.existing_records[EntityType.USER.value]:
         raise Exception("User does not exists")
 
-    wallet = params.existing_records["users"][user_id].wallet
+    wallet = params.existing_records[EntityType.USER.value][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
         raise Exception("User does not match signer")
 
-    if params.entity_type != EntityType.PLAYLIST:
+    if params.entity_type != EntityType.PLAYLIST.value:
         raise Exception("Entity type is not a playlist")
 
     if params.action == Action.CREATE:
-        if playlist_id in params.existing_records["playlists"]:
+        if playlist_id in params.existing_records[EntityType.PLAYLIST.value]:
             raise Exception("Cannot create playlist that already exists")
         if playlist_id < PLAYLIST_ID_OFFSET:
             raise Exception("Cannot create playlist below the offset")
     else:
-        if playlist_id not in params.existing_records["playlists"]:
+        if playlist_id not in params.existing_records[EntityType.PLAYLIST.value]:
             raise Exception("Cannot update playlist that does not exist")
-        existing_playlist: Playlist = params.existing_records["playlists"][playlist_id]
+        existing_playlist: Playlist = params.existing_records[
+            EntityType.PLAYLIST.value
+        ][playlist_id]
         if existing_playlist.playlist_owner_id != user_id:
             raise Exception("Cannot update playlist that does not match user")
 
@@ -102,11 +104,13 @@ def update_playlist(params: ManageEntityParameters):
 
     playlist_id = params.entity_id
     metadata = params.ipfs_metadata[params.metadata_cid]
-    existing_playlist = params.existing_records["playlists"][playlist_id]
+    existing_playlist = params.existing_records[EntityType.PLAYLIST.value][playlist_id]
     if (
-        playlist_id in params.new_records["playlists"]
+        playlist_id in params.new_records[EntityType.PLAYLIST.value]
     ):  # override with last updated playlist is in this block
-        existing_playlist = params.new_records["playlists"][playlist_id][-1]
+        existing_playlist = params.new_records[EntityType.PLAYLIST.value][playlist_id][
+            -1
+        ]
 
     updated_playlist = copy_record(
         existing_playlist, params.block_number, params.event_blockhash, params.txhash
@@ -129,17 +133,23 @@ def update_playlist(params: ManageEntityParameters):
 def delete_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
 
-    existing_playlist = params.existing_records["playlists"][params.entity_id]
-    if params.entity_id in params.new_records["playlists"]:
+    existing_playlist = params.existing_records[EntityType.PLAYLIST.value][
+        params.entity_id
+    ]
+    if params.entity_id in params.new_records[EntityType.PLAYLIST.value]:
         # override with last updated playlist is in this block
-        existing_playlist = params.new_records["playlists"][params.entity_id][-1]
+        existing_playlist = params.new_records[EntityType.PLAYLIST.value][
+            params.entity_id
+        ][-1]
 
     deleted_playlist = copy_record(
         existing_playlist, params.block_number, params.event_blockhash, params.txhash
     )
     deleted_playlist.is_delete = True
 
-    params.new_records["playlists"][params.entity_id].append(deleted_playlist)
+    params.new_records[EntityType.PLAYLIST.value][params.entity_id].append(
+        deleted_playlist
+    )
 
 
 def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):

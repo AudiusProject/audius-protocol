@@ -23,30 +23,32 @@ logger = logging.getLogger(__name__)
 def is_valid_track_tx(params: ManageEntityParameters):
     user_id = params.user_id
     track_id = params.entity_id
-    if user_id not in params.existing_records["users"]:
+    if user_id not in params.existing_records[EntityType.USER.value]:
         # user does not exist
         return False
 
-    wallet = params.existing_records["users"][user_id].wallet
+    wallet = params.existing_records[EntityType.USER.value][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
         # user does not match signer
         return False
 
-    if params.entity_type != EntityType.TRACK:
+    if params.entity_type != EntityType.TRACK.value:
         return False
 
-    if params.action == Action.CREATE:
-        if track_id in params.existing_records["tracks"]:
+    if params.action == Action.CREATE.value:
+        if track_id in params.existing_records[EntityType.TRACK.value]:
             # playlist already exists
             return False
         if track_id < TRACK_ID_OFFSET:
             return False
     else:
         # update / delete specific validations
-        if track_id not in params.existing_records["tracks"]:
+        if track_id not in params.existing_records[EntityType.TRACK.value]:
             # playlist does not exist
             return False
-        existing_track: Track = params.existing_records["tracks"][track_id]
+        existing_track: Track = params.existing_records[EntityType.TRACK.value][
+            track_id
+        ]
         if existing_track.owner_id != params.user_id:
             # existing playlist does not match user
             return False
@@ -160,12 +162,12 @@ def update_track(params: ManageEntityParameters):
 
     track_metadata = params.ipfs_metadata[params.metadata_cid]
     track_id = params.entity_id
-    existing_track = params.existing_records["tracks"][track_id]
+    existing_track = params.existing_records[EntityType.TRACK.value][track_id]
     existing_track.is_current = False  # invalidate
     if (
-        track_id in params.new_records["tracks"]
+        track_id in params.new_records[EntityType.TRACK.value]
     ):  # override with last updated playlist is in this block
-        existing_track = params.new_records["tracks"][track_id][-1]
+        existing_track = params.new_records[EntityType.TRACK.value][track_id][-1]
 
     updated_track = copy_track_record(
         existing_track, params.block_number, params.event_blockhash, params.txhash
@@ -185,11 +187,13 @@ def delete_track(params: ManageEntityParameters):
         return
 
     track_id = params.entity_id
-    existing_track = params.existing_records["tracks"][track_id]
+    existing_track = params.existing_records[EntityType.TRACK.value][track_id]
     existing_track.is_current = False  # invalidate old playlist
-    if params.entity_id in params.new_records["tracks"]:
+    if params.entity_id in params.new_records[EntityType.TRACK.value]:
         # override with last updated playlist is in this block
-        existing_track = params.new_records["tracks"][params.entity_id][-1]
+        existing_track = params.new_records[EntityType.TRACK.value][params.entity_id][
+            -1
+        ]
 
     deleted_track = copy_track_record(
         existing_track, params.block_number, params.event_blockhash, params.txhash

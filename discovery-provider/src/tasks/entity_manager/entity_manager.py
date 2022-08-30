@@ -2,10 +2,13 @@ import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
+from sqlalchemy import and_, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
+from src.models.social.save import Save
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -14,21 +17,29 @@ from src.tasks.entity_manager.playlist import (
     delete_playlist,
     update_playlist,
 )
+from src.tasks.entity_manager.social_features import (
+    create_actions,
+    create_social_record,
+    delete_actions,
+    delete_social_records,
+)
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
+    EntitiesToFetchDict,
     EntityType,
     ExistingRecordDict,
     ManageEntityParameters,
     RecordDict,
+    get_record_key,
 )
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 
 # Please toggle below variable to true for development
-ENABLE_DEVELOPMENT_FEATURES = False
+ENABLE_DEVELOPMENT_FEATURES = True
 
 
 def entity_manager_update(
@@ -63,10 +74,7 @@ def entity_manager_update(
         # copy original record since existing_records will be modified
         original_records = copy_original_records(existing_records)
 
-        new_records: RecordDict = {
-            "playlists": defaultdict(list),
-            "tracks": defaultdict(list),
-        }
+        new_records: RecordDict = defaultdict(lambda: defaultdict(list))
 
         pending_track_routes: List[TrackRoute] = []
 
@@ -92,39 +100,47 @@ def entity_manager_update(
                         txhash,
                     )
                     if (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.PLAYLIST
+                        params.action == Action.CREATE.value
+                        and params.entity_type == EntityType.PLAYLIST.value
                     ):
                         create_playlist(params)
                     elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.PLAYLIST
+                        params.action == Action.UPDATE.value
+                        and params.entity_type == EntityType.PLAYLIST.value
                     ):
                         update_playlist(params)
                     elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.PLAYLIST
+                        params.action == Action.DELETE.value
+                        and params.entity_type == EntityType.PLAYLIST.value
                     ):
                         delete_playlist(params)
                     elif (
-                        params.action == Action.CREATE
-                        and params.entity_type == EntityType.TRACK
+                        params.action == Action.CREATE.value
+                        and params.entity_type == EntityType.TRACK.value
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         create_track(params)
                     elif (
-                        params.action == Action.UPDATE
-                        and params.entity_type == EntityType.TRACK
+                        params.action == Action.UPDATE.value
+                        and params.entity_type == EntityType.TRACK.value
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         update_track(params)
 
                     elif (
-                        params.action == Action.DELETE
-                        and params.entity_type == EntityType.TRACK
+                        params.action == Action.DELETE.value
+                        and params.entity_type == EntityType.TRACK.value
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_track(params)
+                    elif (
+                        params.action in create_actions and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        create_social_record(params)
+                    elif (
+                        params.action in delete_actions and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        delete_social_records(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -132,26 +148,71 @@ def entity_manager_update(
                     )
         # compile records_to_save
         records_to_save = []
-        for playlist_records in new_records["playlists"].values():
-            if not playlist_records:
-                continue
-            # invalidate all playlists besides the last one
-            for i in range(len(playlist_records)):
-                playlist_records[i].is_current = False
+        for record_type, record_dict in new_records.items():
+            for entity_id, records in record_dict.items():
+                if not records:
+                    continue
+                for record in records:
+                    record.is_current = False
+                records[-1].is_current = True
+                records_to_save.extend(records)
 
-            # invalidate existing record only if it's being updated
-            playlist_id = playlist_records[0].playlist_id
-            if playlist_id in original_records["playlists"]:
-                original_records["playlists"][playlist_id].is_current = False
+                if entity_id in original_records[record_type]:
+                    original_records[record_type][entity_id].is_current = False
 
-            # flip is_current to true for the last tx in each playlist
-            playlist_records[-1].is_current = True
-            records_to_save.extend(playlist_records)
+                # if original record
+        # records_to_save = []
+        # for playlist_records in new_records["playlists"].values():
+        #     if not playlist_records:
+        #         continue
+        #     # invalidate all playlists besides the last one
+        #     for i in range(len(playlist_records)):
+        #         playlist_records[i].is_current = False
 
-        for track_records in new_records["tracks"].values():
-            # flip is_current to true for the last tx in each playlist
-            track_records[-1].is_current = True
-            records_to_save.extend(track_records)
+        #     # invalidate existing record only if it's being updated
+        #     playlist_id = playlist_records[0].playlist_id
+        #     if playlist_id in original_records["playlists"]:
+        #         original_records["playlists"][playlist_id].is_current = False
+
+        #     # flip is_current to true for the last tx in each playlist
+        #     playlist_records[-1].is_current = True
+        #     records_to_save.extend(playlist_records)
+
+        # for track_records in new_records["tracks"].values():
+        #     # flip is_current to true for the last tx in each playlist
+        #     track_records[-1].is_current = True
+        #     records_to_save.extend(track_records)
+
+        # for follow_records in new_records["follows"].values():
+        #     if not playlist_records:
+        #         continue
+        #     # invalidate all playlists besides the last one
+        #     for i in range(len(playlist_records)):
+        #         playlist_records[i].is_current = False
+
+        #     # invalidate existing record only if it's being updated
+        #     playlist_id = playlist_records[0].playlist_id
+        #     if playlist_id in original_records["playlists"]:
+        #         original_records["playlists"][playlist_id].is_current = False
+
+        #     # flip is_current to true for the last follow tx
+        #     follow_records[-1].is_current = True
+        #     records_to_save.extend(follow_records)
+
+        # for save_records in new_records["saves"].values():
+        #     if not playlist_records:
+        #         continue
+        #     # invalidate all playlists besides the last one
+        #     for i in range(len(playlist_records)):
+        #         playlist_records[i].is_current = False
+
+        #     # invalidate existing record only if it's being updated
+        #     playlist_id = playlist_records[0].playlist_id
+        #     if playlist_id in original_records["playlists"]:
+        #         original_records["playlists"][playlist_id].is_current = False
+        #     # flip is_current to true for the last follow tx
+        #     save_records[-1].is_current = True
+        #     records_to_save.extend(save_records)
 
         # insert/update all tracks, playlist records in this block
         session.bulk_save_objects(records_to_save)
@@ -176,54 +237,103 @@ def collect_entities_to_fetch(
     update_task,
     entity_manager_txs,
 ):
-    entities_to_fetch: Dict[EntityType, Set[int]] = defaultdict(set)
+    entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
+
     for tx_receipt in entity_manager_txs:
         entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
         for event in entity_manager_event_tx:
             entity_id = helpers.get_tx_arg(event, "_entityId")
             entity_type = helpers.get_tx_arg(event, "_entityType")
             user_id = helpers.get_tx_arg(event, "_userId")
-
+            action = helpers.get_tx_arg(event, "_action")
             entities_to_fetch[entity_type].add(entity_id)
-            entities_to_fetch[EntityType.USER].add(user_id)
+            entities_to_fetch[EntityType.USER.value].add(user_id)
+
+            # Query follow operations as needed
+            if action == Action.FOLLOW or action == Action.UNFOLLOW:
+                entities_to_fetch[EntityType.FOLLOW.value].add((user_id, entity_id))
+            if action == Action.SAVE or action == Action.UNSAVE:
+                entities_to_fetch[EntityType.SAVE.value].add(
+                    (user_id, entity_type, entity_id)
+                )
+
     return entities_to_fetch
 
 
-def fetch_existing_entities(
-    session: Session, entities_to_fetch: Dict[EntityType, Set[int]]
-):
+def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetchDict):
     existing_entities: ExistingRecordDict = {}
     playlists: List[Playlist] = (
         session.query(Playlist)
         .filter(
-            Playlist.playlist_id.in_(entities_to_fetch[EntityType.PLAYLIST]),
+            Playlist.playlist_id.in_(entities_to_fetch[EntityType.PLAYLIST.value]),
             Playlist.is_current == True,
         )
         .all()
     )
-    existing_entities["playlists"] = {
+    existing_entities[EntityType.PLAYLIST.value] = {
         playlist.playlist_id: playlist for playlist in playlists
     }
 
     tracks: List[Track] = (
         session.query(Track)
         .filter(
-            Track.track_id.in_(entities_to_fetch[EntityType.TRACK]),
+            Track.track_id.in_(entities_to_fetch[EntityType.TRACK.value]),
             Track.is_current == True,
         )
         .all()
     )
-    existing_entities["tracks"] = {track.track_id: track for track in tracks}
+    existing_entities[EntityType.TRACK.value] = {
+        track.track_id: track for track in tracks
+    }
 
     users: List[User] = (
         session.query(User)
         .filter(
-            User.user_id.in_(entities_to_fetch[EntityType.USER]),
+            User.user_id.in_(entities_to_fetch[EntityType.USER.value]),
             User.is_current == True,
         )
         .all()
     )
-    existing_entities["users"] = {user.user_id: user for user in users}
+    existing_entities[EntityType.USER.value] = {user.user_id: user for user in users}
+
+    follow_ops_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.FOLLOW.value]
+    and_queries = []
+    for follow_to_fetch in follow_ops_to_fetch:
+        follower = follow_to_fetch[0]
+        followee = follow_to_fetch[1]
+        and_queries.append(
+            and_(
+                Follow.followee_user_id == followee,
+                Follow.follower_user_id == follower,
+                Follow.is_current == True,
+            )
+        )
+    follows: List[Follow] = session.query(Follow).filter(or_(*and_queries)).all()
+    existing_entities[EntityType.FOLLOW.value] = {
+        get_record_key(
+            follow.follower_user_id, EntityType.USER.value, follow.followee_user_id
+        ): follow
+        for follow in follows
+    }
+
+    saves_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.SAVE.value]
+    and_queries = []
+    for save_to_fetch in saves_to_fetch:
+        user_id = save_to_fetch[0]
+        entity_type = save_to_fetch[1]
+        entity_id = save_to_fetch[2]
+        and_queries.append(
+            and_(
+                Save.user_id == user_id,
+                Save.save_type == entity_type.lower(),
+                Save.save_item_id == entity_id,
+                Save.is_current == True,
+            )
+        )
+    saves: List[Save] = session.query(Save).filter(or_(*and_queries)).all()
+    existing_entities[EntityType.SAVE.value] = {
+        (save.user_id, save.save_type, save.save_item_id): save for save in saves
+    }
 
     return existing_entities
 

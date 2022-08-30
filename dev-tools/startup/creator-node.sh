@@ -5,7 +5,8 @@ export delegatePrivateKey=$(printenv "CN${replica}_SP_OWNER_PRIVATE_KEY")
 
 export spOwnerWallet=$(printenv "CN${replica}_SP_OWNER_ADDRESS")
 
-export creatorNodeEndpoint="http://$(hostname -i):4000"
+# export creatorNodeEndpoint="http://$(hostname -i):4000"
+export creatorNodeEndpoint="http://audius-protocol-creator-node-${replica}:4000"
 
 cd ../audius-libs
 npm link

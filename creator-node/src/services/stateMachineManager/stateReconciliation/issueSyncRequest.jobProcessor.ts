@@ -238,7 +238,7 @@ async function _handleIssueSyncRequest({
     const userReplicaSet: ReplicaSet =
       await getUserReplicaSetEndpointsFromDiscovery({
         libs: await initAudiusLibs({
-          enableEthContracts: false,
+          enableEthContracts: true,
           enableContracts: false,
           enableDiscovery: true,
           enableIdentity: false,
@@ -465,7 +465,10 @@ const _additionalSyncIsRequired = async (
        * Note - secondaryClockValue can be greater than primaryClockValue if additional
        *    data was written to primary after primaryClockValue was computed
        */
-      if (secondaryClockValue >= primaryClockValue) {
+      if (
+        secondaryClockValue >= primaryClockValue &&
+        syncMode !== SYNC_MODES.MergePrimaryThenWipeSecondary
+      ) {
         secondaryCaughtUpToPrimary = true
         break
       }

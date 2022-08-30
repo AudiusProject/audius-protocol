@@ -47,6 +47,7 @@ const healthCheck = async (
   const snapbackUsersPerJob = config.get('snapbackUsersPerJob')
   const snapbackModuloBase = config.get('snapbackModuloBase')
   const manualSyncsDisabled = config.get('manualSyncsDisabled')
+  const syncForceWipeEnabled = config.get('syncForceWipeEnabled')
 
   // expose audiusInfraStack to see how node is being run
   const audiusContentInfraSetup = config.get('audiusContentInfraSetup')
@@ -130,9 +131,11 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
+  const healthy = !config.get('considerNodeUnhealthy')
+
   const response = {
     ...versionInfo,
-    healthy: true,
+    healthy,
     git: process.env.GIT_SHA,
     selectedDiscoveryProvider: 'none',
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
@@ -168,6 +171,7 @@ const healthCheck = async (
     manualSyncsDisabled,
     snapbackModuloBase,
     snapbackUsersPerJob,
+    syncForceWipeEnabled,
     stateMonitoringQueueRateLimitInterval: config.get(
       'stateMonitoringQueueRateLimitInterval'
     ),
