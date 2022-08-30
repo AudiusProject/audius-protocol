@@ -187,9 +187,9 @@ def model_to_dictionary(model, exclude_keys=None):
 
     for key in relationships:
         if key not in exclude_keys and not key.startswith("_"):
-            attr = getattr(model, key)
             if key in unloaded:
                 continue
+            attr = getattr(model, key)
             if isinstance(attr, list):
                 model_dict[key] = query_result_to_list(attr)
             else:

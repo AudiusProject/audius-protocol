@@ -288,17 +288,23 @@ const _determineNewReplicaSet = async ({
 }: DetermineNewReplicaSetParams) => {
   const currentReplicaSet = [primary, secondary1, secondary2]
   const healthyReplicaSet = new Set(
-    currentReplicaSet.filter((node) => !unhealthyReplicasSet.has(node))
+    currentReplicaSet
+      // Ensure exists
+      .filter((node) => Boolean)
+      // Node is not marked unhealthy
+      .filter((node) => !unhealthyReplicasSet.has(node))
   )
+  const numberOfEmptyReplicas = currentReplicaSet.filter((node) => !node).length
   const newReplicaNodes = await _selectRandomReplicaSetNodes(
     healthyReplicaSet,
     unhealthyReplicasSet,
+    numberOfEmptyReplicas,
     healthyNodes,
     wallet,
     logger
   )
 
-  if (unhealthyReplicasSet.size === 1) {
+  if (unhealthyReplicasSet.size + numberOfEmptyReplicas === 1) {
     return _determineNewReplicaSetWhenOneNodeIsUnhealthy(
       primary,
       secondary1,
@@ -308,7 +314,7 @@ const _determineNewReplicaSet = async ({
       newReplicaNodes[0],
       enabledReconfigModes
     )
-  } else if (unhealthyReplicasSet.size === 2) {
+  } else if (unhealthyReplicasSet.size + numberOfEmptyReplicas === 2) {
     return _determineNewReplicaSetWhenTwoNodesAreUnhealthy(
       primary,
       secondary1,
@@ -350,7 +356,7 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
 ) => {
   // If we already already checked this primary and it failed the health check, select the higher clock
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
-  if (unhealthyReplicasSet.has(primary)) {
+  if (unhealthyReplicasSet.has(primary) || !primary) {
     const secondary1Clock = replicaToUserInfoMap[secondary1]?.clock || -1
     const secondary2Clock = replicaToUserInfoMap[secondary2]?.clock || -1
     const [newPrimary, currentHealthySecondary] =
@@ -370,9 +376,10 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   }
 
   // If one secondary is unhealthy, select a new secondary
-  const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1)
-    ? secondary1
-    : secondary2
+  const currentHealthySecondary =
+    unhealthyReplicasSet.has(secondary1) || !secondary1
+      ? secondary2
+      : secondary1
   return {
     newPrimary: primary,
     newSecondary1: currentHealthySecondary,
@@ -403,7 +410,7 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
   enabledReconfigModes: string[]
 ) => {
   // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
-  if (unhealthyReplicasSet.has(primary)) {
+  if (unhealthyReplicasSet.has(primary) || !primary) {
     return {
       newPrimary: !unhealthyReplicasSet.has(secondary1)
         ? secondary1
@@ -437,6 +444,7 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
  * If an insufficient amount of new replica set nodes are chosen, this method will throw an error.
  * @param {Set<string>} healthyReplicaSet a set of the healthy replica set endpoints
  * @param {Set<string>} unhealthyReplicasSet a set of the unhealthy replica set endpoints
+ * @param {number} numberOfEmptyReplicas the number of the user's replicas that are an empty string (deregistered SP ID)
  * @param {string[]} healthyNodes an array of all the healthy nodes available on the network
  * @param {string} wallet the wallet of the current user
  * @param {Object} logger a logger that can be filtered on jobName and jobId
@@ -445,6 +453,7 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
 const _selectRandomReplicaSetNodes = async (
   healthyReplicaSet: Set<string>,
   unhealthyReplicasSet: Set<string>,
+  numberOfEmptyReplicas: number,
   healthyNodes: string[],
   wallet: string,
   logger: Logger
@@ -452,7 +461,7 @@ const _selectRandomReplicaSetNodes = async (
   const numberOfUnhealthyReplicas = unhealthyReplicasSet.size
   const logStr = `[_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
     ...healthyReplicaSet
-  ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} healthyNodes=${[
+  ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberOfEmptyReplicas=${numberOfEmptyReplicas} healthyNodes=${[
     ...healthyNodes
   ]} ||`
 
@@ -464,7 +473,8 @@ const _selectRandomReplicaSetNodes = async (
 
   let selectNewReplicaSetAttemptCounter = 0
   while (
-    newReplicaNodesSet.size < numberOfUnhealthyReplicas &&
+    newReplicaNodesSet.size <
+      numberOfUnhealthyReplicas + numberOfEmptyReplicas &&
     selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS
   ) {
     const randomHealthyNode = _.sample(viablePotentialReplicas)
@@ -500,7 +510,10 @@ const _selectRandomReplicaSetNodes = async (
     }
   }
 
-  if (newReplicaNodesSet.size < numberOfUnhealthyReplicas) {
+  if (
+    newReplicaNodesSet.size <
+    numberOfUnhealthyReplicas + numberOfEmptyReplicas
+  ) {
     throw new Error(
       `${logStr} Not enough healthy nodes found to issue new replica set after ${MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS} attempts`
     )
@@ -564,6 +577,14 @@ const _issueUpdateReplicaSetOp = async (
         newReplicaSetEndpoints
       )}`
     )
+
+    if (newReplicaSetEndpoints.length !== 3) {
+      const errorMsg = `Tried to reconfig to an incomplete replica set: ${JSON.stringify(
+        newReplicaSetEndpoints
+      )}`
+      logger.error(errorMsg)
+      throw new Error(errorMsg)
+    }
 
     if (!issueReconfig) {
       response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
