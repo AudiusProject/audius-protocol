@@ -217,7 +217,7 @@ const TrackListItem = ({
             aria-label='more actions'
             icon={<IconKebabHorizontal />}
             className={styles.kebabContainer}
-            onClick={(e) => {
+            onClick={(e: MouseEvent) => {
               e.stopPropagation()
               onClickOverflow()
             }}

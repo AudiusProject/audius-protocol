@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { InAppAudioPurchaseMetadata, formatNumberString } from '@audius/common'
 import { IconButton } from '@audius/stems'
 

@@ -13,7 +13,6 @@ import tracksSagas from './lineups/sagas'
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
-    console.log('we callin fetch collection?')
     const collectionId = action.id
 
     const { collections, uids: collectionUids } = yield call(
