@@ -12,6 +12,7 @@ import feedPageSagas from 'common/store/pages/feed/sagas'
 import searchResultsSagas from 'common/store/pages/search-page/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
+import playerSagas from 'common/store/player/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
@@ -40,7 +41,8 @@ export default function* rootSaga() {
     ...usersSagas(),
 
     // Playback
-    queueSagas(),
+    ...playerSagas(),
+    ...queueSagas(),
 
     // Sign in / Sign out
     ...signOnSagas(),

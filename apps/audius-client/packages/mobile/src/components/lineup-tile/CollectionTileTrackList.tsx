@@ -1,12 +1,13 @@
 import type { LineupTrack } from '@audius/common'
+import { playerSelectors } from '@audius/common'
 import { range } from 'lodash'
 import { Pressable, Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import Skeleton from 'app/components/skeleton'
-import { getPlayingUid } from 'app/store/audio/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
+const { getUid } = playerSelectors
 
 // Max number of tracks to display
 const DISPLAY_TRACK_COUNT = 5
@@ -105,7 +106,7 @@ export const CollectionTileTrackList = ({
   tracks
 }: LineupTileTrackListProps) => {
   const styles = useStyles()
-  const playingUid = useSelector(getPlayingUid)
+  const playingUid = useSelector(getUid)
 
   if (!tracks.length && isLoading) {
     return (

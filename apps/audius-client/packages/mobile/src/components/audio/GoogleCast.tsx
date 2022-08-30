@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { castActions } from '@audius/common'
+import { castActions, playerSelectors } from '@audius/common'
 import {
   CastState,
   useCastState,
@@ -10,14 +10,14 @@ import {
 import { useSelector } from 'react-redux'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { getTrack, getPlaying, getSeek } from 'app/store/audio/selectors'
 const { setIsCasting } = castActions
+const { getCurrentTrack, getPlaying, getSeek } = playerSelectors
 
 export const useChromecast = () => {
   const dispatchWeb = useDispatchWeb()
 
   // Data hooks
-  const track = useSelector(getTrack)
+  const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
 

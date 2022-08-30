@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
+  playerSelectors,
   Status,
   Name,
   PlaybackSource,
@@ -22,11 +23,11 @@ import { TrackList } from 'app/components/track-list'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
-import { getPlaying, getPlayingUid, getTrack } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
+const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 
 const messages = {
   album: 'Album',
@@ -112,9 +113,9 @@ export const CollectionScreenDetailsTile = ({
   }, [tracksLoading, numTracks, duration, extraDetails])
 
   const isPlaying = useSelector(getPlaying)
-  const playingUid = useSelector(getPlayingUid)
-  const playingTrack = useSelector(getTrack)
-  const trackId = playingTrack?.trackId
+  const playingUid = useSelector(getUid)
+  const playingTrack = useSelector(getCurrentTrack)
+  const trackId = playingTrack?.track_id
 
   const isQueued = tracksLineup.entries.some(
     (entry) => playingUid === entry.uid
