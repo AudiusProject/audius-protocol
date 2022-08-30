@@ -138,6 +138,8 @@ cid_metadata_client = CIDMetadataClient(
             },
             "track_id": 77955,
             "stem_of": None,
+            "is_premium": False,
+            "premium_conditions": None,
         },
         multihash2: {
             "owner_id": 1,
@@ -185,6 +187,8 @@ cid_metadata_client = CIDMetadataClient(
             },
             "track_id": 77955,
             "stem_of": None,
+            "is_premium": False,
+            "premium_conditions": None,
         },
     }
 )

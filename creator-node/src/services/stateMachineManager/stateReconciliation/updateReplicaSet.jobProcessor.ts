@@ -697,7 +697,7 @@ const _issueUpdateReplicaSetOp = async (
     response.result = UpdateReplicaSetJobResult.FailureToUpdateReplicaSet
 
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
-    logger.error(response.errorMsg)
+    logger.error(`${response.errorMsg}: ${e.stack}`)
   }
 
   return response

@@ -1,6 +1,7 @@
 const _ = require('lodash')
 
 const { logger: genericLogger, createChildLogger } = require('../../logging')
+const config = require('../../config')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const {
@@ -100,6 +101,14 @@ const handleSyncFromPrimary = async ({
             userReplicaSet
           )}`
         )
+      }
+
+      // Short circuit if wiping is disabled via env var
+      if (!config.get('syncForceWipeEnabled')) {
+        logger.warn('Stopping sync early because syncForceWipeEnabled=false')
+        return {
+          result: 'success'
+        }
       }
 
       /**

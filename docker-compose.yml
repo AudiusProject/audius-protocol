@@ -71,8 +71,10 @@ services:
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+    command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
+      - ./dev-tools:/tmp/dev-tools
     ports:
       - "8546:8545"
     logging: *default-logging
@@ -163,6 +165,40 @@ services:
     deploy:
       mode: global
 
+  # audius-cmd
+
+  audius-cmd:
+    build: dev-tools/commands
+    environment:
+      ETH_TOKEN_ADDRESS: "${ETH_TOKEN_ADDRESS}"
+      ETH_REGISTRY_ADDRESS: "${ETH_REGISTRY_ADDRESS}"
+      ETH_PROVIDER_URL: "http://eth-ganache:8545"
+      ETH_OWNER_WALLET: "${ETH_OWNER_WALLET}"
+
+      POA_REGISTRY_ADDRESS: "${POA_REGISTRY_ADDRESS}"
+      POA_PROVIDER_URL: "http://poa-ganache:8545"
+
+      SOLANA_ENDPOINT: "http://solana-test-validator:8899"
+      SOLANA_OWNER_SECRET_KEY: "${SOLANA_OWNER_SECRET_KEY}"
+      SOLANA_TOKEN_MINT_PUBLIC_KEY: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
+      SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
+      SOLANA_FEEPAYER_SECRET_KEY: "${SOLANA_FEEPAYER_SECRET_KEY}"
+
+      IDENTITY_SERVICE_URL: "http://identity-service:7000"
+      FALLBACK_CREATOR_NODE_URL: "http://creator-node:4000" # this should choose a random cn everytime this is run
+    volumes:
+      - audius-libs:/usr/src/app/node_modules/@audius/sdk
+      - ./dev-tools/commands/src:/usr/src/app/src
+    depends_on:
+      build-audius-libs:
+        condition: service_started
+    logging: *default-logging
+    profiles:
+      - audius-cmd
+
   # identity-service
 
   identity-service-db:
@@ -198,15 +234,15 @@ services:
       minimumRelayerBalance: 1
       minimumFunderBalance: 1
 
-      blacklisterPrivateKey: "87e08695a0c368b9fcbf7420183d266514a1b70791fd0b4254b3cbb8373803c7"
-      blacklisterPublicKey: "0xcccc36bE44D106C6aC14199A2Ed6a29fDa25d5Ae"
-      relayerPrivateKey: "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba"
-      relayerPublicKey: "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b"
-      relayerWallets: '[{"publicKey": "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b", "privateKey": "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba"}, {"publicKey": "0xBE718F98a5B5a473186eB6E30888F26E72be0b66", "privateKey": "d3426cd10c4e75207bdc4802c551d21faa89a287546c2c6b3d9a0476f34934d2"}]'
+      relayerPrivateKey: "${POA_RELAYER_WALLET_1_PRIVATE_KEY}"
+      relayerPublicKey: "${POA_RELAYER_WALLET_1_ADDRESS}"
+      relayerWallets: "${POA_RELAYER_WALLETS}"
+
       ethFunderAddress: "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b"
+      ethRelayerWallets: "${ETH_RELAYER_WALLETS}"
+
       userVerifierPrivateKey: "ebba299e6163ff3208de4e82ce7db09cf7e434847b5bdab723af96ae7c763a0e"
       userVerifierPublicKey: "0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0'"
-      ethRelayerWallets: '[{"publicKey": "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b", "privateKey": "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba"}, {"publicKey": "0xBE718F98a5B5a473186eB6E30888F26E72be0b66", "privateKey": "d3426cd10c4e75207bdc4802c551d21faa89a287546c2c6b3d9a0476f34934d2"}, {"publicKey": "0xE75dEe171b6472cE30358ede946CcDFfCA70b562", "privateKey": "8a7c63d4aea87647f480e4771ea279f90f8e912fcfe907525bc931f531e564ce"}, {"publicKey": "0x58908c329D3be43261a3768aA2BBF413b36C935C", "privateKey": "712f210f132d2983e1e2d233f38b80aa12b9d5638ef4eeb78792c61622baf3d5"}, {"publicKey": "0xA0614b332312C5d81BE5b1877169E09041e5769F", "privateKey": "fc0ebb16ccb2fc42afb80336a358f17732cb9a47a96d0af1f474798726f92141"}]'
 
       dbUrl: "postgres://postgres:postgres@identity-service-db:5432/postgres"
 
@@ -319,6 +355,8 @@ services:
       rateLimitingBatchCidsExistLimit: 1
       maxAudioFileSizeBytes: 250000000
       maxMemoryFileSizeBytes: 50000000
+
+      identityService: "http://identity-service:7000"
 
       ethProviderUrl: "http://eth-ganache:8545"
       ethTokenAddress: "${ETH_TOKEN_ADDRESS}"

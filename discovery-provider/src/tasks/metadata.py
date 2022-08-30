@@ -26,6 +26,8 @@ track_metadata_format: Dict[str, Any] = {
     "is_unlisted": False,
     "field_visibility": None,
     "stem_of": None,
+    "is_premium": False,
+    "premium_conditions": None,
 }
 
 # Required format for user metadata retrieved from IPFS
