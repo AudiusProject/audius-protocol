@@ -9,7 +9,7 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { adjustUserField } from 'common/store/cache/users/sagas'
-import * as sagas from 'store/social/users/sagas'
+import * as sagas from 'common/store/social/users/sagas'
 import { noopReducer } from 'store/testHelper'
 
 const followedUser = { follower_count: 5 }
