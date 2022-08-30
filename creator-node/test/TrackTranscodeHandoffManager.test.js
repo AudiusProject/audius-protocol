@@ -90,7 +90,7 @@ describe('test TrackTranscodeHandoffManager', function () {
     }
   })
 
-  it('Selecting random SPs for transcode handoff works as expected', async function () {
+  it('If there are equal or more SPs returned from contract call than the default number of sps to select, return the default number of sps to select', async function () {
     const allSPs = libsMock.ethContracts.getServiceProviderList('content-node')
     const allSPsSet = new Set(allSPs.map((sp) => sp.endpoint))
 
@@ -98,20 +98,30 @@ describe('test TrackTranscodeHandoffManager', function () {
     const randomSPs = await TrackTranscodeHandoffManager.selectRandomSPs(
       libsMock
     )
+    assert.strictEqual(randomSPs.length, 3)
+    randomSPs.forEach((sp) => {
+      assert.ok(allSPsSet.has(sp))
+    })
+    assert.ok(!randomSPs.includes(process.env.creatorNodeEndpoint))
+  })
+
+  it('If there are less than the default SPs returned from contract call, return the number of SPs returned from the contract call', async function () {
+    const allSPs = libsMock.ethContracts.getServiceProviderList('content-node')
+    const allSPsSet = new Set(allSPs.map((sp) => sp.endpoint))
+
+    // Mock libs call to only return 2 sp
+    libsMock.ethContracts.getServiceProviderList = () => {
+      return allSPs.slice(1, 3)
+    }
+
+    const randomSPs = await TrackTranscodeHandoffManager.selectRandomSPs(
+      libsMock
+    )
     assert.strictEqual(randomSPs.length, 2)
     randomSPs.forEach((sp) => {
       assert.ok(allSPsSet.has(sp))
     })
-
-    // Mock libs call to only return 1 sp
-    libsMock.ethContracts.getServiceProviderList = () => {
-      return allSPs.slice(0, 1)
-    }
-
-    // Return 1 SP for libs
-    const oneSP = await TrackTranscodeHandoffManager.selectRandomSPs(libsMock)
-    assert.strictEqual(oneSP.length, 1)
-    assert.ok(allSPsSet.has(oneSP[0]))
+    assert.ok(!randomSPs.includes(process.env.creatorNodeEndpoint))
   })
 
   // sendTrackToSp()

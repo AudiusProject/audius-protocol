@@ -33,6 +33,15 @@ function getLibsMock() {
                 owner: '0x242E1Cd7bB405941063814c241a1f046CCC9810b',
                 spID: 3,
                 type: 'content-node'
+              },
+              {
+                blockNumber: 169,
+                delegateOwnerWallet:
+                  '0x242E1Cd7bB405941063814c241a1f046CCCaaaaa',
+                endpoint: 'http://mock-cn4.audius.co',
+                owner: '0x242E1Cd7bB405941063814c241a1f046CCCaaaaa',
+                spID: 4,
+                type: 'content-node'
               }
             ]
           }
