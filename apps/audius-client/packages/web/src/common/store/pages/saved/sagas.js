@@ -16,9 +16,9 @@ import {
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 
-import tracksSagas from './lineups/tracks/sagas'
+import tracksSagas from './lineups/sagas'
 const { getSaves } = savedPageSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
 
 function* fetchTracksLineup() {
   yield put(tracksActions.fetchLineupMetadatas())

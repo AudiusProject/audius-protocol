@@ -2,7 +2,8 @@ import {
   ComponentPropsWithoutRef,
   ReactNode,
   useCallback,
-  useState
+  useState,
+  MouseEvent
 } from 'react'
 
 import {
@@ -177,7 +178,7 @@ export const PlaylistFolderNavItem = ({
                 [styles.hidden]: !isHovering || dragging
               })}
               icon={<IconKebabHorizontal height={11} width={11} />}
-              onClick={(e) => {
+              onClick={(e: MouseEvent) => {
                 e.preventDefault()
                 e.stopPropagation()
                 onClickEdit(id)
