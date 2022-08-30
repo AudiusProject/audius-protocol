@@ -121,36 +121,36 @@ const WalletWriteLock = {
 
 /**
  * Deletes keys of a pattern: https://stackoverflow.com/a/36006360
- * @param {Object} param
- * @param {string} param.keyPattern the redis key pattern that matches keys to remove
- * @param {Object} param.logger the logger instance
+ * @param keyPattern the redis key pattern that matches keys to remove
+ * @return {Number} numDeleted number of redis keys deleted
  */
-const deleteKeyPatternInRedis = function ({
-  keyPattern,
-  logger = genericLogger
-}) {
+const deleteAllKeysMatchingPattern = async function (keyPattern) {
   // Create a readable stream (object mode)
   const stream = redisClient.scanStream({
     match: keyPattern
   })
-  stream.on('data', function (keys) {
-    // `keys` is an array of strings representing key names
-    if (keys.length) {
-      const pipeline = redisClient.pipeline()
-      keys.forEach(function (key) {
-        pipeline.del(key)
-      })
-      pipeline.exec()
-    }
-  })
-  stream.on('end', function () {
-    logger.info(`Done deleting ${keyPattern} entries`)
-  })
-  stream.on('error', function (e) {
-    logger.error(`Could not delete ${keyPattern} entries: ${e.toString()}`)
+  const deletedKeysSet = new Set()
+  return new Promise((resolve, reject) => {
+    stream.on('data', function (keys) {
+      // `keys` is an array of strings representing key names
+      if (keys.length) {
+        const pipeline = redisClient.pipeline()
+        keys.forEach(function (key) {
+          pipeline.del(key)
+          deletedKeysSet.add(key)
+        })
+        pipeline.exec()
+      }
+    })
+    stream.on('end', function () {
+      resolve(deletedKeysSet.size)
+    })
+    stream.on('error', function (e) {
+      reject(e)
+    })
   })
 }
 
+redisClient.deleteAllKeysMatchingPattern = deleteAllKeysMatchingPattern
 module.exports = redisClient
 module.exports.WalletWriteLock = WalletWriteLock
-module.exports.deleteKeyPatternInRedis = deleteKeyPatternInRedis

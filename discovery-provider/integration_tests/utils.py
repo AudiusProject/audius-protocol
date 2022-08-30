@@ -171,6 +171,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=track_meta.get("created_at", datetime.now()),
                 release_date=track_meta.get("release_date", None),
                 is_unlisted=track_meta.get("is_unlisted", False),
+                is_premium=track_meta.get("is_premium", False),
+                premium_conditions=track_meta.get("premium_conditions", None),
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):

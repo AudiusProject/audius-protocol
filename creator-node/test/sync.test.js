@@ -25,7 +25,6 @@ const sessionManager = require('../src/sessionManager')
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
-const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
 
 const { saveFileForMultihashToFS } = require('../src/fileManager')
 
@@ -104,9 +103,12 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
     const { pubKey } = testEthereumConstants
 
-    const createUserAndTrack = async function () {
+    // createUserAndTrack expected clock value
+    const expectedClockVal = 37
+
+    async function createUserAndTrack() {
       // Create user
-      ;({
+      ; ({
         cnodeUserUUID,
         sessionToken,
         userId,
@@ -156,7 +158,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
         .expect(200)
 
       /** Upload a track */
-
       const trackUploadResponse = await uploadTrack(
         testAudioFilePath,
         cnodeUserUUID,
@@ -358,9 +359,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
     })
 
     describe('Confirm export works for user with data exceeding maxExportClockValueRange', async function () {
-      /**
-       * override maxExportClockValueRange to smaller value for testing
-       */
+      /** Override maxExportClockValueRange to smaller value for testing */
       beforeEach(async function () {
         maxExportClockValueRange = 10
         process.env.maxExportClockValueRange = maxExportClockValueRange
@@ -375,6 +374,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
        */
       afterEach(async function () {
         delete process.env.maxExportClockValueRange
+        maxExportClockValueRange = originalMaxExportClockValueRange
       })
 
       it('Export from clock = 0', async function () {
@@ -470,7 +470,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         const clockInfo = {
           requestedClockRangeMin,
           requestedClockRangeMax,
-          localClockMax: requestedClockRangeMax
+          localClockMax: expectedClockVal
         }
 
         // construct the expected response
@@ -594,7 +594,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         const clockInfo = {
           requestedClockRangeMin,
           requestedClockRangeMax,
-          localClockMax: requestedClockRangeMax
+          localClockMax: expectedClockVal
         }
 
         // construct the expected response
