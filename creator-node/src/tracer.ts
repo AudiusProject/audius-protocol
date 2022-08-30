@@ -113,7 +113,9 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   options?: SpanOptions
 }) => {
   // build a wrapper around `fn` that accepts the same parameters and returns the same return type
-  const wrapper = (...args: Parameters<TFunction>): ReturnType<TFunction> => {
+  const wrapper = function (
+    ...args: Parameters<TFunction>
+  ): ReturnType<TFunction> {
     const spanName = name || fn.name
     const spanOptions = options || {}
     return tracing
