@@ -27,7 +27,7 @@ def search_es_full(args: dict):
     search_type = args.get("kind", "all")
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
-    filter_premium = args.get("filter_premium", False)
+    exclude_premium = args.get("exclude_premium", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -50,7 +50,7 @@ def search_es_full(args: dict):
                     current_user_id=current_user_id,
                     must_saved=False,
                     only_downloadable=only_downloadable,
-                    filter_premium=filter_premium,
+                    exclude_premium=exclude_premium,
                 ),
             ]
         )
@@ -65,7 +65,7 @@ def search_es_full(args: dict):
                         current_user_id=current_user_id,
                         must_saved=True,
                         only_downloadable=only_downloadable,
-                        filter_premium=filter_premium,
+                        exclude_premium=exclude_premium,
                     ),
                 ]
             )
@@ -162,7 +162,7 @@ def search_es_full(args: dict):
 
 
 def search_tags_es(
-    q: str, kind="all", current_user_id=None, limit=0, offset=0, filter_premium=False
+    q: str, kind="all", current_user_id=None, limit=0, offset=0, exclude_premium=False
 ):
     if not esclient:
         raise Exception("esclient is None")
@@ -189,7 +189,7 @@ def search_tags_es(
             dsl = tag_match("tag_list")
             dsl["query"]["bool"]["must"].append(be_saved(current_user_id))
             mdsl.extend([{"index": ES_TRACKS}, dsl])
-        if filter_premium:
+        if exclude_premium:
             mdsl.extend(
                 [{"index": ES_TRACKS}, {"term": {"is_premium": {"value": False}}}]
             )
@@ -374,7 +374,7 @@ def track_dsl(
     current_user_id,
     must_saved=False,
     only_downloadable=False,
-    filter_premium=False,
+    exclude_premium=False,
 ):
     dsl_must = [
         *base_match(search_str),
@@ -382,7 +382,7 @@ def track_dsl(
         {"term": {"is_delete": False}},
     ]
 
-    if filter_premium:
+    if exclude_premium:
         dsl_must.append({"term": {"is_premium": {"value": False}}})
 
     dsl = {

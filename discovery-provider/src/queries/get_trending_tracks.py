@@ -4,7 +4,7 @@ from typing import Optional, TypedDict
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track_trending_score import TrackTrendingScore
-from src.premium_content.constants import SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
+from src.premium_content.constants import SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.tasks.generate_trending import generate_trending
@@ -38,7 +38,7 @@ def generate_unpopulated_trending(
     genre,
     time_range,
     strategy,
-    filter_premium=SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS,
+    exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
     limit=TRENDING_LIMIT,
 ):
     trending_tracks = generate_trending(session, time_range, genre, limit, 0, strategy)
@@ -57,7 +57,7 @@ def generate_unpopulated_trending(
     # tracks we return later may be smaller than the limit.
     # If we don't limit it here, we limit it later after getting the
     # unpopulated tracks.
-    should_apply_limit_early = not filter_premium
+    should_apply_limit_early = not exclude_premium
     if should_apply_limit_early:
         sorted_track_scores = sorted_track_scores[:limit]
 
@@ -78,7 +78,7 @@ def generate_unpopulated_trending_from_mat_views(
     genre,
     time_range,
     strategy,
-    filter_premium=SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS,
+    exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
     limit=TRENDING_LIMIT,
 ):
 
@@ -106,7 +106,7 @@ def generate_unpopulated_trending_from_mat_views(
     # tracks we return later may be smaller than the limit.
     # If we don't limit it here, we limit it later after getting the
     # unpopulated tracks.
-    should_apply_limit_early = not filter_premium
+    should_apply_limit_early = not exclude_premium
     if should_apply_limit_early:
         trending_track_ids = (
             trending_track_ids_query.order_by(
@@ -137,7 +137,7 @@ def make_generate_unpopulated_trending(
     genre: Optional[str],
     time_range: str,
     strategy: str,
-    filter_premium: bool,
+    exclude_premium: bool,
 ):
     """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which
     expects to be passed a function with no arguments."""
@@ -149,14 +149,14 @@ def make_generate_unpopulated_trending(
                 genre=genre,
                 time_range=time_range,
                 strategy=strategy,
-                filter_premium=filter_premium,
+                exclude_premium=exclude_premium,
             )
         return generate_unpopulated_trending(
             session=session,
             genre=genre,
             time_range=time_range,
             strategy=strategy,
-            filter_premium=filter_premium,
+            exclude_premium=exclude_premium,
         )
 
     return wrapped
@@ -166,7 +166,7 @@ class GetTrendingTracksArgs(TypedDict, total=False):
     current_user_id: Optional[int]
     genre: Optional[str]
     time: str
-    filter_premium: bool
+    exclude_premium: bool
 
 
 def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy):
@@ -179,11 +179,11 @@ def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrat
 def _get_trending_tracks_with_session(
     session: Session, args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy
 ):
-    current_user_id, genre, time, filter_premium = (
+    current_user_id, genre, time, exclude_premium = (
         args.get("current_user_id"),
         args.get("genre"),
         args.get("time", "week"),
-        args.get("filter_premium", SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS),
+        args.get("exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS),
     )
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
     key = make_trending_cache_key(time_range, genre, strategy.version)
@@ -198,7 +198,7 @@ def _get_trending_tracks_with_session(
             genre=genre,
             time_range=time_range,
             strategy=strategy,
-            filter_premium=filter_premium,
+            exclude_premium=exclude_premium,
         ),
     )
 

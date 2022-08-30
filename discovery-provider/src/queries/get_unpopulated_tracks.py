@@ -45,7 +45,7 @@ def get_unpopulated_tracks(
     track_ids,
     filter_deleted=False,
     filter_unlisted=True,
-    filter_premium=False,
+    exclude_premium=False,
 ):
     """
     Fetches tracks by checking the redis cache first then
@@ -67,7 +67,7 @@ def get_unpopulated_tracks(
             res = list(filter(lambda track: not track["is_delete"], res))
         if filter_unlisted:
             res = list(filter(lambda track: not track["is_unlisted"], res))
-        if filter_premium:
+        if exclude_premium:
             res = list(filter(lambda track: not track["is_premium"], res))
         return res
 
@@ -93,7 +93,7 @@ def get_unpopulated_tracks(
     if filter_deleted:
         tracks_query = tracks_query.filter(Track.is_delete == False)
 
-    if filter_premium:
+    if exclude_premium:
         tracks_query = tracks_query.filter(Track.is_premium == False)
 
     tracks = tracks_query.all()
@@ -110,7 +110,7 @@ def get_unpopulated_tracks(
                 continue
             if filter_deleted and cached_tracks[track_id]["is_delete"]:
                 continue
-            if filter_premium and cached_tracks[track_id]["is_premium"]:
+            if exclude_premium and cached_tracks[track_id]["is_premium"]:
                 continue
             tracks_response.append(cached_tracks[track_id])
         elif track_id in queried_tracks:

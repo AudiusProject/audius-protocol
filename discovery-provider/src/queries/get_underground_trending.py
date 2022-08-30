@@ -13,7 +13,7 @@ from src.models.social.save import SaveType
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
-from src.premium_content.constants import SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
+from src.premium_content.constants import SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
 from src.queries.get_trending_tracks import (
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
@@ -200,14 +200,16 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         # tracks we return later may be smaller than the limit.
         # If we don't limit it here, we limit it later after getting the
         # unpopulated tracks.
-        should_apply_limit_early = not SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
+        should_apply_limit_early = not SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
         if should_apply_limit_early:
             sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
 
         # Get unpopulated metadata
         track_ids = [track["track_id"] for track in sorted_tracks]
         tracks = get_unpopulated_tracks(
-            session, track_ids, filter_premium=SHOULD_TRENDING_FILTER_OUT_PREMIUM_TRACKS
+            session,
+            track_ids,
+            exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
         )
 
         # Make sure to apply the limit if not previously applied

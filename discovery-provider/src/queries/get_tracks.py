@@ -45,7 +45,7 @@ class GetTrackArgs(TypedDict):
 
     query: Optional[str]
     filter_deleted: bool
-    filter_premium: bool
+    exclude_premium: bool
     routes: List[RouteArgs]
 
     # Optional sort method for the returned results
@@ -113,9 +113,9 @@ def _get_tracks(session, args):
             base_query = base_query.filter(TrackWithAggregates.is_delete == False)
 
     # Allow filtering of premium tracks
-    if "filter_premium" in args and args.get("filter_premium") is not None:
-        filter_premium = args.get("filter_premium")
-        if filter_premium:
+    if "exclude_premium" in args and args.get("exclude_premium") is not None:
+        exclude_premium = args.get("exclude_premium")
+        if exclude_premium:
             base_query = base_query.filter(TrackWithAggregates.is_premium == False)
 
     if "min_block_number" in args and args.get("min_block_number") is not None:

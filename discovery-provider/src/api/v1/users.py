@@ -235,7 +235,7 @@ class TrackList(Resource):
             authed_user_id=authed_user_id,
             current_user_id=current_user_id,
             filter_deleted=True,
-            filter_premium=True,
+            exclude_premium=True,
             sort=sort,
             limit=limit,
             offset=offset,
@@ -294,7 +294,7 @@ class FullTrackList(Resource):
             authed_user_id=authed_user_id,
             current_user_id=current_user_id,
             filter_deleted=True,
-            filter_premium=False,
+            exclude_premium=False,
             sort=sort,
             limit=limit,
             offset=offset,
@@ -712,7 +712,7 @@ class UserSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
-            "filter_premium": True,
+            "exclude_premium": True,
         }
         response = search(search_args)
         return success_response(response["users"])

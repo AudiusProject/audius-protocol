@@ -55,7 +55,7 @@ def search_tags():
         current_user_id=current_user_id,
         limit=limit,
         offset=offset,
-        filter_premium=True,
+        exclude_premium=True,
     )
     return api_helpers.success_response(hits)
 
