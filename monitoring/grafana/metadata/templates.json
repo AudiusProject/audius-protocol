@@ -1,9 +1,5 @@
 [
   {
-    "name": "value",
-    "template": "{{ define \"value\" }}\n  {{- or (.ValueString | reReplaceAll `.* value=` \"\" | reReplaceAll ` \\]` \"\") \"MISSING\" -}} \n{{- end -}}"
-  },
-  {
     "name": "myalert",
     "template": "{{ define \"myalert\" }}\n{{ reReplaceAll \"localhost:3000\" \"grafana.audius.co\" .GeneratorURL }}\n{{ .Labels.alertname }}: {{ template \"value\" . }}\nTeam: {{ or (.Labels.team) \"MISSING\" }}\n{{- if gt (len .Labels.mentions) 0 }} ({{ .Labels.mentions }}) {{ end }}\n{{ .Annotations.summary }}\n{{ end }}\n{{- /* • Runbook: {{ .Annotations.runbook_url }} */ -}}\n{{- /* • Silence alert: {{ reReplaceAll \"localhost:3000\" \"grafana.audius.co\" .SilenceURL }} */ -}}"
   },
@@ -18,5 +14,9 @@
   {
     "name": "slack-title",
     "template": "{{ define \"slack-title\" }}\n  {{ $threshold := \"Threshold\" }}\n  {{ if gt (len .Alerts.Firing) 1 }} {{ $threshold = \"Thresholds\" }} {{ end }}\n  {{ len .Alerts.Firing }} {{ $threshold }} Breached\n{{ end }}"
+  },
+  {
+    "name": "value",
+    "template": "{{ define \"value\" }}\n  {{- or (.ValueString | reReplaceAll `.* value=` \"\" | reReplaceAll ` \\]` \"\") \"MISSING\" -}} \n{{- end -}}"
   }
 ]

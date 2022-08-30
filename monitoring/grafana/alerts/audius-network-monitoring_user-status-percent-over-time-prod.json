@@ -83,8 +83,8 @@
     "labels": {
       "alert": "p3",
       "env": "prod",
-      "mentions": "",
-      "team": ""
+      "mentions": "@johannes",
+      "team": "content"
     },
     "noDataState": "OK",
     "orgID": 1,

@@ -82,9 +82,7 @@
     "id": 2901731,
     "labels": {
       "alert": "p3",
-      "env": "prod",
-      "mentions": "",
-      "team": ""
+      "env": "prod"
     },
     "noDataState": "OK",
     "orgID": 1,

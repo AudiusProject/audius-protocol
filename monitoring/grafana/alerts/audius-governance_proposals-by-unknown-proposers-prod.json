@@ -82,9 +82,7 @@
     "id": 3001711,
     "labels": {
       "alert": "p1",
-      "env": "prod",
-      "mentions": "",
-      "team": ""
+      "env": "prod"
     },
     "noDataState": "OK",
     "orgID": 1,

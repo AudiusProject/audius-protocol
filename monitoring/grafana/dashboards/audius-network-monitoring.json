@@ -54,7 +54,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "semi-dark-purple"
+                  "color": "semi-dark-purple",
+                  "value": null
                 }
               ]
             },
@@ -109,7 +110,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "semi-dark-purple"
+                  "color": "semi-dark-purple",
+                  "value": null
                 }
               ]
             },
@@ -200,7 +202,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -289,7 +292,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -532,7 +536,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -627,7 +632,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -739,6 +745,14 @@
                   "alert_on": {
                     "index": 0,
                     "text": "Fully Synced %"
+                  },
+                  "mentions": {
+                    "index": 2,
+                    "text": "@johannes"
+                  },
+                  "team": {
+                    "index": 1,
+                    "text": "content"
                   }
                 },
                 "type": "value"
@@ -854,7 +868,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "purple",
@@ -958,7 +973,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "blue"
+                  "color": "blue",
+                  "value": null
                 },
                 {
                   "color": "blue",
@@ -1095,7 +1111,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -1222,7 +1239,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -1749,7 +1767,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "orange",
@@ -1853,12 +1872,27 @@
                 "mode": "line"
               }
             },
-            "mappings": [],
+            "mappings": [
+              {
+                "options": {
+                  "mentions": {
+                    "index": 1,
+                    "text": "@johannes"
+                  },
+                  "team": {
+                    "index": 0,
+                    "text": "content"
+                  }
+                },
+                "type": "value"
+              }
+            ],
             "thresholds": {
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "yellow",
@@ -1953,7 +1987,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -2091,7 +2126,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -2224,7 +2260,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
