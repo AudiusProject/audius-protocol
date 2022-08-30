@@ -5,6 +5,8 @@
 
 set -ex
 
+date
+
 # grab a list of current alert UIDs
 old_uids=$(mktemp)
 for file in grafana/alerts/*.json; do
@@ -36,8 +38,6 @@ for uid in $(comm -23 ${old_uids} ${new_uids}); do
     bash ./grafana/bin/delete-alert.sh ${uid}
 done
 
-# remove temp files
-rm ${old_uids}
-rm ${new_uids}
+date
 
 echo ==================================

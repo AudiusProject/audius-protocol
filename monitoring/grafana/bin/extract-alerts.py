@@ -159,6 +159,10 @@ def extract_alerts(template, dashboard, env):
                         }
                     )
 
+                # don't create alerts without alert conditions
+                if not data:
+                    continue
+
                 alert_conditions = []
                 for ref_id in ref_ids:
                     alert_condition = {
@@ -213,6 +217,15 @@ def extract_alerts(template, dashboard, env):
                 title_env = env.upper()
                 title = f"{title_env} {title_level} | {title}"
 
+                labels = {
+                    "alert": level,
+                    "env": env,
+                }
+                if mentions:
+                    labels["mentions"] = mentions
+                if team:
+                    labels["team"] = team
+
                 formatted_text = template.format(
                     alert_id=alert_id,
                     alert_uid=alert_uid,
@@ -223,10 +236,7 @@ def extract_alerts(template, dashboard, env):
                     runbook_url=runbook_url,
                     description=sanatize_text(description),
                     summary=sanatize_text(summary),
-                    env=env,
-                    level=level,
-                    mentions=mentions,
-                    team=team,
+                    labels=json.dumps(labels),
                     condition_ref=ref_ids[-1],
                     data=json.dumps(data),
                 )

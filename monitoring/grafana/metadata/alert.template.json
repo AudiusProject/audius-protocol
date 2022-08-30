@@ -18,10 +18,5 @@
     "runbook_url": "{runbook_url}",
     "summary": "{summary}"
   }},
-  "labels": {{
-    "alert": "{level}",
-    "env": "{env}",
-    "mentions": "{mentions}",
-    "team": "{team}"
-  }}
+  "labels": {labels}
 }}
