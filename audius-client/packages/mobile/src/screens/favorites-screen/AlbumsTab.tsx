@@ -1,16 +1,19 @@
 import { useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountActions, accountSelectors } from '@audius/common'
 import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
 import type { ExtendedCollection } from './types'
-const getAccountWithAlbums = accountSelectors.getAccountWithAlbums
+
+const { getAccountWithAlbums } = accountSelectors
+const { fetchSavedAlbums } = accountActions
 
 const messages = {
   emptyTabText: "You haven't favorited any albums yet.",
@@ -18,8 +21,14 @@ const messages = {
 }
 
 export const AlbumsTab = () => {
+  const dispatch = useDispatch()
+
+  useEffectOnce(() => {
+    dispatch(fetchSavedAlbums())
+  })
+
   const [filterValue, setFilterValue] = useState('')
-  const user = useSelectorWeb(getAccountWithAlbums)
+  const user = useSelector(getAccountWithAlbums)
 
   const matchesFilter = (playlist: ExtendedCollection) => {
     const matchValue = filterValue.toLowerCase()
