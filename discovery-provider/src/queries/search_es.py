@@ -27,6 +27,7 @@ def search_es_full(args: dict):
     search_type = args.get("kind", "all")
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
+    filter_premium = args.get("filter_premium", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -45,10 +46,11 @@ def search_es_full(args: dict):
             [
                 {"index": ES_TRACKS},
                 track_dsl(
-                    search_str,
-                    current_user_id,
+                    search_str=search_str,
+                    current_user_id=current_user_id,
                     must_saved=False,
                     only_downloadable=only_downloadable,
+                    filter_premium=filter_premium,
                 ),
             ]
         )
@@ -59,10 +61,11 @@ def search_es_full(args: dict):
                 [
                     {"index": ES_TRACKS},
                     track_dsl(
-                        search_str,
-                        current_user_id,
+                        search_str=search_str,
+                        current_user_id=current_user_id,
                         must_saved=True,
                         only_downloadable=only_downloadable,
+                        filter_premium=filter_premium,
                     ),
                 ]
             )
@@ -158,7 +161,9 @@ def search_es_full(args: dict):
     return response
 
 
-def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
+def search_tags_es(
+    q: str, kind="all", current_user_id=None, limit=0, offset=0, filter_premium=False
+):
     if not esclient:
         raise Exception("esclient is None")
 
@@ -184,6 +189,10 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
             dsl = tag_match("tag_list")
             dsl["query"]["bool"]["must"].append(be_saved(current_user_id))
             mdsl.extend([{"index": ES_TRACKS}, dsl])
+        if filter_premium:
+            mdsl.extend(
+                [{"index": ES_TRACKS}, {"term": {"is_premium": {"value": False}}}]
+            )
 
     if do_users:
         mdsl.extend([{"index": ES_USERS}, tag_match("tracks.tags")])
@@ -372,8 +381,10 @@ def track_dsl(
         {"term": {"is_unlisted": {"value": False}}},
         {"term": {"is_delete": False}},
     ]
+
     if filter_premium:
         dsl_must.append({"term": {"is_premium": {"value": False}}})
+
     dsl = {
         "must": dsl_must,
         "must_not": [

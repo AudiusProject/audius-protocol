@@ -1,4 +1,7 @@
-from src.queries.query_helpers import get_users_ids
+from collections import defaultdict
+
+from src.queries.query_helpers import _populate_premium_track_metadata, get_users_ids
+from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_REPOSTS,
@@ -219,6 +222,10 @@ def get_feed_es(args, limit=10):
         current_user_id, item_keys
     )
 
+    # store items which are tracks to later batch populate their
+    # premium track metadata (playlists are not yet supported)
+    track_items = []
+
     for item in sorted_feed:
         item["followee_reposts"] = follow_reposts[item["item_key"]]
         item["followee_saves"] = follow_saves[item["item_key"]]
@@ -228,11 +235,20 @@ def get_feed_es(args, limit=10):
         if "favorite_count" in item:
             item["save_count"] = item["favorite_count"]
 
+        # add to track items if item is a track
+        if "track_id" in item:
+            track_items.append(item)
+
     # populate metadata + remove extra fields from items
     sorted_feed = [
         populate_track_or_playlist_metadata_es(item, current_user)
         for item in sorted_feed
     ]
+
+    # populate premium track metadata
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        _populate_premium_track_metadata(session, track_items, current_user["user_id"])
 
     return sorted_feed[0:limit]
 
@@ -291,17 +307,15 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys):
     ]
 
     founds = esclient.msearch(searches=mdsl)
-    collapsed_reposts = founds["responses"][0]["hits"]["hits"]
-    collapsed_saves = founds["responses"][1]["hits"]["hits"]
+    (reposts, saves) = [pluck_hits(r) for r in founds["responses"]]
 
-    for group in collapsed_reposts:
-        reposts = pluck_hits(group["inner_hits"]["most_recent"])
-        item_key = reposts[0]["item_key"]
-        follow_reposts[item_key] = reposts
-    for group in collapsed_saves:
-        saves = pluck_hits(group["inner_hits"]["most_recent"])
-        item_key = saves[0]["item_key"]
-        follow_saves[item_key] = saves
+    follow_reposts = defaultdict(list)
+    follow_saves = defaultdict(list)
+
+    for r in reposts:
+        follow_reposts[r["item_key"]].append(r)
+    for s in saves:
+        follow_saves[s["item_key"]].append(s)
 
     return (follow_saves, follow_reposts)
 
