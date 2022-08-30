@@ -98,7 +98,7 @@ describe('test TrackTranscodeHandoffManager', function () {
     const randomSPs = await TrackTranscodeHandoffManager.selectRandomSPs(
       libsMock
     )
-    assert.strictEqual(randomSPs.length, 3)
+    assert.strictEqual(randomSPs.length, 2)
     randomSPs.forEach((sp) => {
       assert.ok(allSPsSet.has(sp))
     })
