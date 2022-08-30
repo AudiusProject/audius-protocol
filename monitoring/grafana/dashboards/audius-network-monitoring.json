@@ -742,7 +742,7 @@
             "mappings": [
               {
                 "options": {
-                  "alert_series": {
+                  "alert_on": {
                     "index": 0,
                     "text": "Fully Synced %"
                   }

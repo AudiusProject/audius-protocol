@@ -351,20 +351,20 @@ The `Color Scheme` should remain set to `Classic Palette` to help standardize ou
 
 #### Value Mappings
 
-Currently supported Value Mapping keys are `team`, `mentions`, and `alert_series`. Below are some supported examples:
+Currently supported Value Mapping keys are `team`, `mentions`, and `alert_on`. Below are some supported examples:
 
-| Condition    | Display text      |
-| ------------ | ----------------- |
-| team         | platform          |
-| team         | content           |
-| team         | money             |
-| team         | infra             |
-| mentions     | @joaquin @dheeraj |
-| alert_series | A,B,D             |
+| Condition     | Display text      |
+| ------------- | ----------------- |
+| team          | platform          |
+| team          | content           |
+| team          | money             |
+| team          | infra             |
+| mentions      | @joaquin @dheeraj |
+| alert_on      | A,B,D             |
 
 The `team` value will be applied as an Alert label and thus affects which Alert Notification Policy is triggered.
 
-The `alert_series` value will be split by commas and only targets with matching `refIds`, or Query Names, will be extracted.
+When present, the `alert_on` value is a comma-delimited list that only creates alerts for Panel Queries of the same name.
 
 #### Thresholds
 

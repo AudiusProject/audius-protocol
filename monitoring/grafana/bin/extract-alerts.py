@@ -49,7 +49,7 @@ def extract_alerts(template, dashboard, env):
 
             mentions = ""
             team = ""
-            alert_series = []
+            alert_on = []
             if "mappings" in panel["fieldConfig"]["defaults"]:
                 for mapping in panel["fieldConfig"]["defaults"]["mappings"]:
                     for key, mapping in mapping["options"].items():
@@ -57,9 +57,9 @@ def extract_alerts(template, dashboard, env):
                             mentions = mapping["text"]
                         elif key == "team":
                             team = mapping["text"]
-                        elif key == "alert_series":
+                        elif key == "alert_on":
                             for ref_id in mapping["text"].split(","):
-                                alert_series.append(ref_id.strip())
+                                alert_on.append(ref_id.strip())
 
             if "links" in panel["fieldConfig"]["defaults"]:
                 links = []
@@ -122,9 +122,9 @@ def extract_alerts(template, dashboard, env):
                     if "hide" in target and target["hide"]:
                         continue
 
-                    # when the alert_series key appears within Value Mappings,
+                    # when the alert_on key appears within Value Mappings,
                     # only create alerts for the listed refIds
-                    if alert_series and target["refId"] not in alert_series:
+                    if alert_on and target["refId"] not in alert_on:
                         continue
 
                     # assume all metrics missing $env are Prod-only metrics
