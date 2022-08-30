@@ -129,9 +129,17 @@ async function _primarySyncFromSecondary({
         })
         throw new Error(error.message)
       }
+
+      const { localClockMax: fetchedLocalClockMax, requestedClockRangeMax } =
+        fetchedCNodeUser.clockInfo
+
       decisionTree.recordStage({
         name: 'fetchExportFromSecondary() Success',
-        data: { localClockMax: fetchedCNodeUser?.clockInfo?.localClockMax },
+        data: {
+          fetchedLocalClockMax,
+          requestedClockRangeMin: exportClockRangeMin,
+          requestedClockRangeMax
+        },
         log: true
       })
 
@@ -185,11 +193,19 @@ async function _primarySyncFromSecondary({
         throw e
       }
 
-      const clockInfo = fetchedCNodeUser.clockInfo
-      if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
+      /**
+       * TODO update this once all nodes are running 0.3.66
+       * If localClockMax < requestedClockRangeMax, we know there is no more data to fetch
+       * If localClockMax > requestedClockRangeMax, we know there is more data to fetch
+       * If localClockMax = requestedClockRangeMax, there are 2 possibilities:
+       *  1. either the node is running behind version 0.3.66, has more data, and is incorrectly reporting it
+       *  2. or the 2 happen to be exactly equal (extremely unlikely)
+       *  In either scenario, we can just request the next data set from export
+       */
+      if (fetchedLocalClockMax < requestedClockRangeMax) {
         completed = true
       } else {
-        exportClockRangeMin = clockInfo.requestedClockRangeMax + 1
+        exportClockRangeMin = requestedClockRangeMax + 1
       }
     }
 
