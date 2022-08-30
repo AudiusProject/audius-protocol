@@ -19,7 +19,11 @@ import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
 
+import config from './config'
+
 const SERVICE_NAME = 'content-node'
+const SPID = config.get('spID')
+const ENDPOINT = config.get('creatorNodeEndpoint')
 
 /**
  * Initializes a tracer for content node as well as registers instrumentions
@@ -73,9 +77,10 @@ export const setupTracing = () => {
         // Adds a hook to logs that injects more span info
         // and the service name into logs
         logHook: (span, record) => {
-          record['resource.span'] = span
           record['resource.service.name'] =
             provider.resource.attributes['service.name']
+          record['resource.service.spid'] = SPID
+          record['resource.service.endpoint'] = ENDPOINT
         }
       })
     ]
@@ -123,6 +128,8 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
       .startActiveSpan(spanName, spanOptions, (span: Span) => {
         try {
           tracing.setSpanAttribute(tracing.CODE_FUNCTION, fn.name)
+          tracing.setSpanAttribute('spid', SPID)
+          tracing.setSpanAttribute('endpoint', ENDPOINT)
 
           // TODO add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
