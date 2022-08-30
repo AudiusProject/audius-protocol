@@ -4,7 +4,8 @@
     "description": "",
     "main": "main.js",
     "scripts": {
-      "exporter": "nodemon --watch . main.js",
+      "exporter": "node main.js",
+      "dev": "nodemon --watch . main.js",
       "lint": "eslint main.js --fix"
     },
     "keywords": [],

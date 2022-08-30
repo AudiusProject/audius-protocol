@@ -1,0 +1,152 @@
+[
+  {
+    "annotations": {
+      "__alertId__": "jPaB_Yk4k_004_P3",
+      "__dashboardUid__": "jPaB_Yk4k",
+      "__panelId__": "4",
+      "description": "If this number dips, we may have lost a service provider.",
+      "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=4",
+      "summary": "The number of tokens held by the staking contract."
+    },
+    "condition": "A",
+    "data": [
+      {
+        "datasourceUid": "-100",
+        "model": {
+          "conditions": [],
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "hide": false,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A",
+          "type": "classic_conditions"
+        },
+        "queryType": "",
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        }
+      }
+    ],
+    "execErrState": "Alerting",
+    "folderUID": "ARwYXYzVk",
+    "for": "0s",
+    "id": 200043,
+    "labels": {
+      "alert": "p3",
+      "env": "stage",
+      "mentions": "@joaquin",
+      "team": "platform"
+    },
+    "noDataState": "OK",
+    "orgID": 1,
+    "ruleGroup": "group",
+    "title": "stage P3 | Contract Balances",
+    "uid": "jPaB_Yk4k_004_P3"
+  },
+  {
+    "annotations": {
+      "__alertId__": "jPaB_Yk4k_004_P1",
+      "__dashboardUid__": "jPaB_Yk4k",
+      "__panelId__": "4",
+      "description": "If this number dips, we may have lost a service provider.",
+      "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=4",
+      "summary": "The number of tokens held by the staking contract."
+    },
+    "condition": "A",
+    "data": [
+      {
+        "datasourceUid": "-100",
+        "model": {
+          "conditions": [],
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "hide": false,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A",
+          "type": "classic_conditions"
+        },
+        "queryType": "",
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        }
+      }
+    ],
+    "execErrState": "Alerting",
+    "folderUID": "ARwYXYzVk",
+    "for": "0s",
+    "id": 200041,
+    "labels": {
+      "alert": "p1",
+      "env": "stage",
+      "mentions": "@joaquin",
+      "team": "platform"
+    },
+    "noDataState": "OK",
+    "orgID": 1,
+    "ruleGroup": "group",
+    "title": "stage P1 | Contract Balances",
+    "uid": "jPaB_Yk4k_004_P1"
+  },
+  {
+    "annotations": {
+      "__alertId__": "jPaB_Yk4k_004_P2",
+      "__dashboardUid__": "jPaB_Yk4k",
+      "__panelId__": "4",
+      "description": "If this number dips, we may have lost a service provider.",
+      "runbook_url": "http://grafana.audius.co/d/jPaB_Yk4k?viewPanel=4",
+      "summary": "The number of tokens held by the staking contract."
+    },
+    "condition": "A",
+    "data": [
+      {
+        "datasourceUid": "-100",
+        "model": {
+          "conditions": [],
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "hide": false,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "A",
+          "type": "classic_conditions"
+        },
+        "queryType": "",
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 0,
+          "to": 0
+        }
+      }
+    ],
+    "execErrState": "Alerting",
+    "folderUID": "ARwYXYzVk",
+    "for": "0s",
+    "id": 200042,
+    "labels": {
+      "alert": "p2",
+      "env": "stage",
+      "mentions": "@joaquin",
+      "team": "platform"
+    },
+    "noDataState": "OK",
+    "orgID": 1,
+    "ruleGroup": "group",
+    "title": "stage P2 | Contract Balances",
+    "uid": "jPaB_Yk4k_004_P2"
+  }
+]

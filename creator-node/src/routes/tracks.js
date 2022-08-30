@@ -37,6 +37,7 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
+const { tracing } = require('../tracer')
 
 const readFile = promisify(fs.readFile)
 
@@ -53,6 +54,7 @@ router.post(
   ensureStorageMiddleware,
   handleTrackContentUpload,
   handleResponse(async (req, res) => {
+    tracing.setSpanAttribute('requestID', req.logContext.requestID)
     if (req.fileSizeError || req.fileFilterError) {
       removeTrackFolder({ logContext: req.logContext }, req.fileDir)
       return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
@@ -67,6 +69,7 @@ router.post(
     })
 
     if (selfTranscode) {
+      tracing.info('adding upload track task')
       await AsyncProcessingQueue.addTrackContentUploadTask({
         logContext: req.logContext,
         req: {
@@ -77,6 +80,7 @@ router.post(
         }
       })
     } else {
+      tracing.info('adding transcode handoff task')
       await AsyncProcessingQueue.addTranscodeHandOffTask({
         logContext: req.logContext,
         req: {

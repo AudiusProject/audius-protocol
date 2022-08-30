@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+if [[ "$PROTOCOL_DIR" != "" ]]; then
+	cd $PROTOCOL_DIR
+fi
+
+docker compose run --rm audius-cmd node src/index.mjs "$@"

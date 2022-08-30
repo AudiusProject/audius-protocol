@@ -1,9 +1,8 @@
 from datetime import datetime
-from typing import Literal, TypedDict, cast
+from typing import TypedDict, cast
 
 from src.api_helpers import generate_signature
-
-PremiumContentType = Literal["track"]
+from src.premium_content.types import PremiumContentType
 
 
 class PremiumContentSignatureData(TypedDict):

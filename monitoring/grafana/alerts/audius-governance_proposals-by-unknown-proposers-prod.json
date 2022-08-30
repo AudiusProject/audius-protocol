@@ -1,12 +1,12 @@
 [
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_017_High",
+      "__alertId__": "YCgu57m4z_017_P1",
       "__dashboardUid__": "YCgu57m4z",
       "__panelId__": "17",
-      "description": "\n\nWe ignore any previous one-off proposers to keep this metric at 0. Anything greater than 0 should be considered to be created by an attacker.",
+      "description": "We ignore any previous one-off proposers to keep this metric at 0. Anything greater than 0 should be considered to be created by an attacker.",
       "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=17",
-      "summary": "The number of proposals opened by unknown proposers.\n\n"
+      "summary": "The number of proposals opened by unknown proposers."
     },
     "condition": "B",
     "data": [
@@ -77,16 +77,19 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "zpejR_iVz",
+    "folderUID": "ARwYXYzVk",
     "for": "0s",
-    "id": 180171,
+    "id": 220171,
     "labels": {
-      "channel": "high-alert"
+      "alert": "p1",
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "Proposals by Unknown Proposers (High)",
-    "uid": "YCgu57m4z_017_High"
+    "title": "PROD P1 | Proposals by Unknown Proposers",
+    "uid": "YCgu57m4z_017_P1"
   }
 ]
