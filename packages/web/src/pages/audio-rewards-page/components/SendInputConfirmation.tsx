@@ -24,7 +24,7 @@ const messages = {
   title: "YOU'RE ABOUT TO SEND",
   sendButton: 'SEND $AUDIO',
   errorMessage:
-    'This account does not contain enough SOL to create an $AUDIO wallet.'
+    'The destination Solana address does not contain enough SOL to create an $AUDIO wallet.'
 }
 
 const LOADING_DURATION = 1000
