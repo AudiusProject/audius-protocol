@@ -51,8 +51,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -109,6 +108,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "Proposals",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -137,13 +138,12 @@
               }
             },
             "mappings": [],
-            "max": 2,
+            "max": 3,
             "thresholds": {
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "yellow",
@@ -151,7 +151,7 @@
                 },
                 {
                   "color": "red",
-                  "value": 2
+                  "value": 3
                 }
               ]
             },
@@ -172,7 +172,8 @@
               "lastNotNull"
             ],
             "displayMode": "table",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "single",
@@ -205,8 +206,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 }
               ]
             }
@@ -255,6 +255,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "New Proposals (within 24h window)",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -293,7 +295,7 @@
                 },
                 {
                   "color": "red",
-                  "value": 2
+                  "value": 3
                 }
               ]
             },
@@ -314,7 +316,8 @@
               "lastNotNull"
             ],
             "displayMode": "table",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "single",
@@ -327,7 +330,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "sum(audius_exporters_sdk_proposals) - sum(audius_exporters_sdk_proposals offset 1d OR on() vector(87))",
+            "expr": "sum(audius_exporters_sdk_proposals) - sum(audius_exporters_sdk_proposals offset 1d OR on() vector(89))",
             "legendFormat": "New Proposals",
             "range": true,
             "refId": "A"
@@ -347,8 +350,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -437,8 +439,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -462,7 +463,8 @@
               "lastNotNull"
             ],
             "displayMode": "table",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "single",
@@ -537,8 +539,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -561,7 +562,8 @@
           "legend": {
             "calcs": [],
             "displayMode": "list",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "single",
@@ -585,7 +587,7 @@
       }
     ],
     "refresh": "30m",
-    "schemaVersion": 36,
+    "schemaVersion": 37,
     "style": "dark",
     "tags": [],
     "templating": {

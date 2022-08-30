@@ -17,7 +17,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "sum(audius_exporters_sdk_proposals) - sum(audius_exporters_sdk_proposals offset 1d OR on() vector(87))",
+          "expr": "sum(audius_exporters_sdk_proposals) - sum(audius_exporters_sdk_proposals offset 1d OR on() vector(89))",
           "hide": false,
           "intervalMs": 1000,
           "maxDataPoints": 43200,
@@ -37,7 +37,7 @@
             {
               "evaluator": {
                 "params": [
-                  2,
+                  3,
                   0
                 ],
                 "type": "gt"

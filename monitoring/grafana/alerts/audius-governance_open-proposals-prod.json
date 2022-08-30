@@ -130,7 +130,7 @@
             {
               "evaluator": {
                 "params": [
-                  2,
+                  3,
                   0
                 ],
                 "type": "gt"

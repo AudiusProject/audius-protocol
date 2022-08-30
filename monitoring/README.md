@@ -364,7 +364,7 @@ Currently supported Value Mapping keys are `team`, `mentions`, and `alert_on`. B
 
 The `team` value will be applied as an Alert label and thus affects which Alert Notification Policy is triggered.
 
-When present, the `alert_on` value is a comma-delimited list that only creates alerts for Panel Queries of the same name.
+When present, the `alert_on` value is a comma-delimited list that restricts auto-generating alerts to only Panel Queries with Query Names found in the `alert_on` list.
 
 #### Thresholds
 
@@ -555,7 +555,7 @@ Contact Points are not created using Grafana's Alert Provisioning API and must b
 
 The [default alert template](https://github.com/grafana/grafana/blob/main/pkg/services/ngalert/notifier/channels/default_template.go) is a good place to learn what options are available. Some [additional high-level information](https://grafana.com/docs/grafana/latest/alerting/contact-points/message-templating/template-data) can be found in the Grafana docs as well as an [example template](https://grafana.com/docs/grafana/latest/alerting/contact-points/message-templating/example-template/).
 
-We use the Grafana's Alert Provisioning API to save snapshots of all Message Templates. To recreate Message Templates in bulk, modify the related sections within the Configuration JSON under the [Admin tab within Grafana Alerting](http://grafana.audius.co/alerting/admin).
+We use Grafana's Alert Provisioning API to save snapshots of all Message Templates. To recreate Message Templates in bulk, modify the related sections within the Configuration JSON under the [Admin tab within Grafana Alerting](http://grafana.audius.co/alerting/admin).
 
 ### Notification Policies
 
@@ -565,7 +565,7 @@ Each Notification Policy can also handle Nested Policies allowing for an alert w
 
 In addition to Nested Policies, multiple Notification Policies may be triggered if a matching Notification Policy has `Continue matching subsequent sibling nodes` enabled. If enabled, the order in which the Notification Policies are defined is highly important for accurately routing Alerts to all intended Contact Points.
 
-We use the Grafana's Alert Provisioning API to save snapshots of all Notification Policies. To recreate Notification Policies in bulk, modify the related section within the Configuration JSON under the [Admin tab within Grafana Alerting](http://grafana.audius.co/alerting/admin) using Contact Points that have already been created.
+We use Grafana's Alert Provisioning API to save snapshots of all Notification Policies. To recreate Notification Policies in bulk, modify the related section within the Configuration JSON under the [Admin tab within Grafana Alerting](http://grafana.audius.co/alerting/admin) using Contact Points that have already been created.
 
 [Alert Groups](https://grafana.com/docs/grafana/latest/alerting/alert-groups) are designed to batch similar Alerts together within specified time windows to avoid multiple downstream Alerts from being triggered by the same incident. We currently group all firing Alerts into 10 second batches per Notification Policy.
 

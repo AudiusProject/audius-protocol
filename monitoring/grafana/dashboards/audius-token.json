@@ -102,8 +102,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "green",
@@ -130,6 +129,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -193,8 +193,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -221,6 +220,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -306,8 +306,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -334,6 +333,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -376,6 +376,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -413,7 +415,7 @@
                 },
                 {
                   "color": "semi-dark-yellow",
-                  "value": 355000000
+                  "value": 353000000
                 }
               ]
             },
@@ -435,6 +437,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last",
             "sortDesc": true
           },
@@ -497,8 +500,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -524,6 +526,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -587,8 +590,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -614,6 +616,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -690,8 +693,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -714,7 +716,8 @@
           "legend": {
             "calcs": [],
             "displayMode": "list",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "single",
@@ -738,7 +741,7 @@
       }
     ],
     "refresh": "30m",
-    "schemaVersion": 36,
+    "schemaVersion": 37,
     "style": "dark",
     "tags": [],
     "templating": {

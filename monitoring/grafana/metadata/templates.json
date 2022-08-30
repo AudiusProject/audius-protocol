@@ -1,13 +1,5 @@
 [
   {
-    "name": "pagerduty-title",
-    "template": "{{ define \"pagerduty-title\" }}{{ range $index, $firing := .Alerts.Firing }}\n• {{ $firing.Labels.alertname }}: {{ template \"value\" . }}{{ end }}\n{{ end }}"
-  },
-  {
-    "name": "slack-title",
-    "template": "{{ define \"slack-title\" }}\n  {{ $threshold := \"Threshold\" }}\n  {{ if gt (len .Alerts.Firing) 1 }} {{ $threshold = \"Thresholds\" }} {{ end }}\n  {{ len .Alerts.Firing }} {{ $threshold }} Breached\n{{ end }}"
-  },
-  {
     "name": "value",
     "template": "{{ define \"value\" }}\n  {{- or (.ValueString | reReplaceAll `.* value=` \"\" | reReplaceAll ` \\]` \"\") \"MISSING\" -}} \n{{- end -}}"
   },
@@ -18,5 +10,13 @@
   {
     "name": "mymessage",
     "template": "{{ define \"mymessage\" }}{{ range $index, $firing := .Alerts.Firing }}\n• {{ $firing.Labels.alertname }}: {{ template \"value\" . }}{{ end }}\n  {{ if gt (len .Alerts.Firing) 0 -}}\n    {{- range $index, $firing := .Alerts.Firing }}\n————————————————————————\n        {{ template \"myalert\" . }}\n    {{ end -}}\n  {{ end }}\n  {{- if gt (len .Alerts.Resolved) 0 -}}\n    {{- len .Alerts.Resolved }} resolved:\n    {{- range $index, $resolved := .Alerts.Resolved }}\n------------------------------------------------\n————————————————————————————————————————————————\n        {{ template \"myalert\" .}}\n      {{ end }}\n  {{ end }}\n{{ end }}"
+  },
+  {
+    "name": "pagerduty-title",
+    "template": "{{ define \"pagerduty-title\" }}{{ range $index, $firing := .Alerts.Firing }}\n• {{ $firing.Labels.alertname }}: {{ template \"value\" . }}{{ end }}\n{{ end }}"
+  },
+  {
+    "name": "slack-title",
+    "template": "{{ define \"slack-title\" }}\n  {{ $threshold := \"Threshold\" }}\n  {{ if gt (len .Alerts.Firing) 1 }} {{ $threshold = \"Thresholds\" }} {{ end }}\n  {{ len .Alerts.Firing }} {{ $threshold }} Breached\n{{ end }}"
   }
 ]
