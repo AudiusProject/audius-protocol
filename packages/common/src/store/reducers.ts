@@ -45,7 +45,7 @@ import { ReachabilityState } from './reachability/types'
 import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
-import { ToastState } from './ui'
+import { ToastState, TransactionDetailsState } from './ui'
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from './ui/add-to-playlist/reducer'
@@ -73,6 +73,7 @@ import { ShareSoundToTikTokModalState } from './ui/share-sound-to-tiktok-modal/t
 import theme from './ui/theme/reducer'
 import { ThemeState } from './ui/theme/types'
 import toastReducer from './ui/toast/slice'
+import transactionDetailsReducer from './ui/transaction-details/slice'
 import favoritesUserListReducer from './user-list/favorites/reducers'
 import followersUserListReducer from './user-list/followers/reducers'
 import followingUserListReducer from './user-list/following/reducers'
@@ -137,6 +138,7 @@ export const reducers = () => ({
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
     toast: toastReducer,
+    transactionDetails: transactionDetailsReducer,
     userList: combineReducers({
       followers: followersUserListReducer,
       following: followingUserListReducer,
@@ -226,6 +228,7 @@ export type CommonState = {
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
     shareModal: ShareModalState
     toast: ToastState
+    transactionDetails: TransactionDetailsState
     userList: {
       mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>

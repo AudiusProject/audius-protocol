@@ -87,3 +87,10 @@ export {
 export * from './buy-audio/types'
 export * from './buy-audio/constants'
 export * as buyAudioSelectors from './buy-audio/selectors'
+
+export {
+  default as transactionDetailsReducer,
+  actions as transactionDetailsActions
+} from './transaction-details/slice'
+export * as transactionDetailsSelectors from './transaction-details/selectors'
+export * from './transaction-details/types'
