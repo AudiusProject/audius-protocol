@@ -1,5 +1,5 @@
-import { ID, explorePageActions } from '@audius/common'
-import { call, put, takeEvery } from 'redux-saga/effects'
+import { ID, explorePageActions, getContext } from '@audius/common'
+import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
@@ -11,30 +11,39 @@ const { fetchExplore, fetchExploreSucceeded, fetchExploreFailed } =
 const EXPLORE_CONTENT_URL =
   process.env.REACT_APP_EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
 
-export const fetchExploreContent = async () => {
-  return fetch(EXPLORE_CONTENT_URL).then((resp) => resp.json())
+type ExploreContent = {
+  featuredPlaylists: ID[]
+  featuredProfiles: ID[]
+}
+
+export const fetchExploreContent = async (
+  exploreContentUrl = EXPLORE_CONTENT_URL
+): Promise<ExploreContent> => {
+  const response = await fetch(exploreContentUrl)
+  return await response.json()
 }
 
 function* watchFetchExplore() {
-  yield takeEvery(fetchExplore.type, function* (action) {
-    yield call(waitForBackendSetup)
+  yield* takeEvery(fetchExplore.type, function* () {
+    yield* call(waitForBackendSetup)
+    const { EXPLORE_CONTENT_URL } = yield* getContext('env')
     try {
-      const exploreContent: {
-        featuredPlaylists: ID[]
-        featuredProfiles: ID[]
-      } = yield call(fetchExploreContent)
-      yield call(
+      const exploreContent = yield* call(
+        fetchExploreContent,
+        EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL
+      )
+      yield* call(
         retrieveCollections,
         null,
         exploreContent.featuredPlaylists,
         false
       )
-      yield call(fetchUsers, exploreContent.featuredProfiles)
+      yield* call(fetchUsers, exploreContent.featuredProfiles)
 
-      yield put(fetchExploreSucceeded({ exploreContent }))
+      yield* put(fetchExploreSucceeded({ exploreContent }))
     } catch (e) {
       console.error(e)
-      yield put(fetchExploreFailed())
+      yield* put(fetchExploreFailed())
     }
   })
 }

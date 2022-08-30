@@ -24,8 +24,10 @@ import {
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
-import tracksSagas from 'pages/track-page/store/lineups/tracks/sagas'
-import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
+
+import { NOT_FOUND_PAGE, trackRemixesPage } from '../../../../utils/route'
+
+import tracksSagas from './lineups/sagas'
 const { getIsReachable } = reachabilitySelectors
 const { tracksActions } = trackPageLineupActions
 const { getSourceSelector, getTrack, getTrendingTrackRanks, getUser } =
@@ -38,6 +40,9 @@ export const TRENDING_BADGE_LIMIT = 10
 function* watchTrackBadge() {
   const apiClient = yield getContext('apiClient')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const web3 = yield call(audiusBackendInstance.getWeb3)
+
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
     try {
       yield call(waitForBackendSetup)
@@ -52,15 +57,15 @@ function* watchTrackBadge() {
         })
         if (TF.size > 0) {
           trendingRanks.week = trendingRanks.week.filter((i) => {
-            const shaId = window.Web3.utils.sha3(i.toString())
+            const shaId = web3.utils.sha3(i.toString())
             return !TF.has(shaId)
           })
           trendingRanks.month = trendingRanks.month.filter((i) => {
-            const shaId = window.Web3.utils.sha3(i.toString())
+            const shaId = web3.utils.sha3(i.toString())
             return !TF.has(shaId)
           })
           trendingRanks.year = trendingRanks.year.filter((i) => {
-            const shaId = window.Web3.utils.sha3(i.toString())
+            const shaId = web3.utils.sha3(i.toString())
             return !TF.has(shaId)
           })
         }

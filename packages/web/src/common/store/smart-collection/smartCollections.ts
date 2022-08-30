@@ -10,6 +10,7 @@ import { ReactComponent as IconExploreNewReleases } from 'assets/img/iconExplore
 import { ReactComponent as IconExploreRemixables } from 'assets/img/iconExploreRemixables.svg'
 import { ReactComponent as IconExploreRotation } from 'assets/img/iconExploreRotation.svg'
 import { ReactComponent as IconExploreUnderRadar } from 'assets/img/iconExploreUnderRadar.svg'
+
 import {
   EXPLORE_HEAVY_ROTATION_PAGE,
   EXPLORE_BEST_NEW_RELEASES_PAGE,
@@ -18,7 +19,7 @@ import {
   EXPLORE_FEELING_LUCKY_PAGE,
   EXPLORE_REMIXABLES_PAGE,
   AUDIO_NFT_PLAYLIST_PAGE
-} from 'utils/route'
+} from '../../../utils/route'
 
 export const HEAVY_ROTATION: SmartCollection = {
   variant: Variant.SMART,

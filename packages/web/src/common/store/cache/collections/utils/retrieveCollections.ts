@@ -101,17 +101,17 @@ export function* retrieveCollection(playlistId: ID) {
 
 /**
  * Retrieves collections from the cache or from source
- * @param userId optional owner of collections to fetch (TODO: to be removed)
- * @param collectionIds ids to retrieve
- * @param fetchTracks whether or not to fetch the tracks inside the playlist
- * @param requiresAllTracks whether or not fetching this collection requires it to have all its tracks.
- * In the case where a collection is already cached with partial tracks, use this flag to refetch from source.
- * @returns
  */
 export function* retrieveCollections(
+  // optional owner of collections to fetch (TODO: to be removed)
   userId: ID | null,
+  // ids to retrieve
   collectionIds: ID[],
+  // whether or not to fetch the tracks inside the playlist
   fetchTracks = false,
+  /**  whether or not fetching this collection requires it to have all its tracks.
+   * In the case where a collection is already cached with partial tracks, use this flag to refetch from source.
+   */
   requiresAllTracks = false
 ) {
   // @ts-ignore retrieve should be refactored to ts first

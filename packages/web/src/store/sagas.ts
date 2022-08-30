@@ -20,6 +20,9 @@ import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreColle
 import explorePageSagas from 'common/store/pages/explore/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import signOnSaga from 'common/store/pages/signon/sagas'
+import trackPageSagas from 'common/store/pages/track/sagas'
+import trendingPlaylistSagas from 'common/store/pages/trending-playlists/sagas'
+import trendingUndergroundSagas from 'common/store/pages/trending-underground/sagas'
 import trendingPageSagas from 'common/store/pages/trending/sagas'
 import playerSagas from 'common/store/player/sagas'
 import mobileQueueSagas from 'common/store/queue/mobileSagas'
@@ -28,6 +31,7 @@ import reachabilitySagas from 'common/store/reachability/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import serviceSelectionSagas from 'common/store/service-selection/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
+import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import artistRecommendationsSagas from 'common/store/ui/artist-recommendations/sagas'
 import reactionSagas from 'common/store/ui/reactions/sagas'
 import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
@@ -55,12 +59,8 @@ import repostPageSagas from 'pages/reposts-page/sagas'
 import savedSagas from 'pages/saved-page/store/sagas'
 import searchPageSagas from 'pages/search-page/store/sagas'
 import settingsSagas from 'pages/settings-page/store/sagas'
-import smartCollectionPageSagas from 'pages/smart-collection/store/sagas'
 import supportingPageSagas from 'pages/supporting-page/sagas'
 import topSupportersPageSagas from 'pages/top-supporters-page/sagas'
-import trackSagas from 'pages/track-page/store/sagas'
-import trendingPlaylistSagas from 'pages/trending-playlists/store/sagas'
-import trendingUndergroundSagas from 'pages/trending-underground/store/sagas'
 import uploadSagas from 'pages/upload-page/store/sagas'
 import { initInterface } from 'services/native-mobile-interface/helpers'
 import webAnalyticsSagas from 'store/analytics/sagas'
@@ -119,7 +119,7 @@ export default function* rootSaga() {
     settingsSagas(),
     signOnSaga(),
     socialSagas(),
-    trackSagas(),
+    trackPageSagas(),
     trendingPageSagas(),
     trendingPlaylistSagas(),
     trendingUndergroundSagas(),

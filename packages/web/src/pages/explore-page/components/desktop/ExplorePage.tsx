@@ -10,6 +10,14 @@ import {
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import {
+  HEAVY_ROTATION,
+  BEST_NEW_RELEASES,
+  UNDER_THE_RADAR,
+  MOST_LOVED,
+  REMIXABLES,
+  FEELING_LUCKY
+} from 'common/store/smart-collection/smartCollections'
 import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
 import UserArtCard from 'components/card/desktop/UserArtCard'
 import Header from 'components/header/desktop/Header'
@@ -30,14 +38,6 @@ import {
   PROVOKING_PLAYLISTS,
   INTIMATE_PLAYLISTS
 } from 'pages/explore-page/collections'
-import {
-  HEAVY_ROTATION,
-  BEST_NEW_RELEASES,
-  UNDER_THE_RADAR,
-  MOST_LOVED,
-  REMIXABLES,
-  FEELING_LUCKY
-} from 'pages/smart-collection/smartCollections'
 import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
 import styles from './ExplorePage.module.css'

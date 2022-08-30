@@ -25,13 +25,13 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
-import Droppable from 'components/dragndrop/Droppable'
-import { ToastContext } from 'components/toast/ToastContext'
-import { useFlag } from 'hooks/useRemoteConfig'
 import {
   AUDIO_NFT_PLAYLIST,
   SMART_COLLECTION_MAP
-} from 'pages/smart-collection/smartCollections'
+} from 'common/store/smart-collection/smartCollections'
+import Droppable from 'components/dragndrop/Droppable'
+import { ToastContext } from 'components/toast/ToastContext'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
