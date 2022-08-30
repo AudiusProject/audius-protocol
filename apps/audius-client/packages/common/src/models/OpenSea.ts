@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from '../utils/typeUtils'
 
 type AssetContract = {
   address: Nullable<string>

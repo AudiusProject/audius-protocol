@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from '../../utils/typeUtils'
 
 export enum SolanaNFTType {
   METAPLEX = 'METAPLEX',

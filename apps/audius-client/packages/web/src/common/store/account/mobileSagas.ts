@@ -2,7 +2,7 @@ import { Nullable, User, accountActions, getContext } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { takeEvery, put, call } from 'redux-saga/effects'
 
-import { updateProfileAsync } from 'pages/profile-page/sagas'
+import { updateProfileAsync } from 'common/store/profile/sagas'
 import { FetchAccountFailed } from 'services/native-mobile-interface/lifecycle'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { MessageType } from 'services/native-mobile-interface/types'

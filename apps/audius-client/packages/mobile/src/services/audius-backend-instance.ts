@@ -90,7 +90,6 @@ export const audiusBackendInstance = audiusBackend({
   ethProviderUrls: (Config.ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: Config.ETH_REGISTRY_ADDRESS,
   ethTokenAddress: Config.ETH_TOKEN_ADDRESS,
-  fetchCID: async () => ({}),
   getFeatureEnabled,
   getHostUrl: () => {
     return `${Config.PUBLIC_PROTOCOL}//${Config.PUBLIC_HOSTNAME}`

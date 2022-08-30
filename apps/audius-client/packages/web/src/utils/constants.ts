@@ -9,9 +9,6 @@ export const STATIC_EXPLORE_CONTENT_URL =
   'https://download.audius.co/static-resources/explore-content.json'
 
 export const TIPPING_TOP_RANK_THRESHOLD = 5
-export const MAX_PROFILE_TOP_SUPPORTERS = 5
-export const MAX_PROFILE_SUPPORTING_TILES = 3
-export const MAX_ARTIST_HOVER_TOP_SUPPORTING = 7
 export const NUM_FEED_TIPPERS_DISPLAYED = 2
 export const RECENT_TIPS_KEY = 'recent-tips'
 export const FEED_TIP_DISMISSAL_TIME_LIMIT = 30 * 24 * 60 * 60 * 1000 // 30 days

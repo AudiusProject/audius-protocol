@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import {
   stringWeiToBN,
   cacheUsersSelectors,
-  tippingSelectors
+  tippingSelectors,
+  MAX_PROFILE_SUPPORTING_TILES
 } from '@audius/common'
 import type { ID, SupportingMapForUser } from '@audius/common'
-import { MAX_PROFILE_SUPPORTING_TILES } from 'audius-client/src/utils/constants'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Tile, TextButton } from 'app/components/core'

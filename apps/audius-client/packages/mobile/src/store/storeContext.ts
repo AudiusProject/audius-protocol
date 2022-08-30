@@ -1,5 +1,7 @@
 import type { CommonStoreContext } from '@audius/common'
+import { SolanaClient } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import Config from 'react-native-config'
 
 import * as analytics from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
@@ -29,5 +31,9 @@ export const storeContext: CommonStoreContext = {
   env,
   explore,
   // Shim in main, but defined in native-reloaded branch
-  audioPlayer: {} as any
+  audioPlayer: {} as any,
+  solanaClient: new SolanaClient({
+    solanaClusterEndpoint: Config.SOLANA_CLUSTER_ENDPOINT,
+    metadataProgramId: Config.METADATA_PROGRAM_ID
+  })
 }

@@ -1,4 +1,4 @@
-import { CommonStoreContext } from '@audius/common'
+import { SolanaClient, CommonStoreContext } from '@audius/common'
 
 import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
@@ -30,5 +30,9 @@ export const storeContext: CommonStoreContext = {
   env,
   explore,
   getLineupSelectorForRoute,
-  audioPlayer
+  audioPlayer,
+  solanaClient: new SolanaClient({
+    solanaClusterEndpoint: process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT,
+    metadataProgramId: process.env.REACT_APP_METADATA_PROGRAM_ID
+  })
 }

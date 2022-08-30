@@ -13,8 +13,6 @@ import { monitoringCallbacks } from 'services/serviceMonitoring'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron, isMobile } from 'utils/clientUtil'
 
-import { fetchCID } from './fetchCID'
-
 declare global {
   interface Window {
     audiusLibs: any
@@ -31,7 +29,6 @@ export const audiusBackendInstance = audiusBackend({
   ethProviderUrls: (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: process.env.REACT_APP_ETH_REGISTRY_ADDRESS,
   ethTokenAddress: process.env.REACT_APP_ETH_TOKEN_ADDRESS,
-  fetchCID,
   getFeatureEnabled,
   getHostUrl: () => {
     const nativeMobile = process.env.REACT_APP_NATIVE_MOBILE === 'true'
