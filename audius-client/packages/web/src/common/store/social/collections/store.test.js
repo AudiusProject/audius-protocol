@@ -8,7 +8,7 @@ import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import * as sagas from 'store/social/collections/sagas'
+import * as sagas from 'common/store/social/collections/sagas'
 import { noopReducer } from 'store/testHelper'
 
 const repostingUser = { repost_count: 0 }
