@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { playerActions } from '@audius/common'
 import moment from 'moment'
 import { StyleSheet, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { SEEK, seek } from 'app/store/audio/actions'
 import type { ThemeColors } from 'app/utils/theme'
 
 import { Slider } from './Slider'
+
+const { seek } = playerActions
 
 const SEEK_INTERVAL = 200
 
@@ -99,7 +101,7 @@ export const Scrubber = ({
       if (global.progress) {
         if (duration) {
           setTimestampStart(formatSeconds(percentComplete * duration))
-          dispatch(seek({ type: SEEK, seconds: percentComplete * duration }))
+          dispatch(seek({ seconds: percentComplete * duration }))
         }
       }
       onPressOut()

@@ -4,9 +4,11 @@ import type {
   Collection,
   Track,
   User,
-  EnhancedCollectionTrack
+  EnhancedCollectionTrack,
+  CommonState
 } from '@audius/common'
 import {
+  playerSelectors,
   FavoriteSource,
   PlaybackSource,
   RepostSource,
@@ -29,12 +31,11 @@ import { useSelector } from 'react-redux'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import type { AppState } from 'app/store'
-import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
 import type { LineupItemProps } from './types'
+const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const {
@@ -93,12 +94,12 @@ const CollectionTileComponent = ({
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const currentUserId = useSelector(getUserId)
-  const currentTrack = useSelector((state: AppState) => {
-    const uid = getPlayingUid(state)
+  const currentTrack = useSelector((state: CommonState) => {
+    const uid = getUid(state)
     return tracks.find((track) => track.uid === uid) ?? null
   })
-  const isPlayingUid = useSelector((state: AppState) => {
-    const uid = getPlayingUid(state)
+  const isPlayingUid = useSelector((state: CommonState) => {
+    const uid = getUid(state)
     return tracks.some((track) => track.uid === uid)
   })
 

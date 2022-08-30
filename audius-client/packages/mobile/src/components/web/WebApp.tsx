@@ -22,12 +22,7 @@ import useKeyboardListeners from 'app/hooks/useKeyboardListeners'
 import type { Message } from 'app/message'
 import { MessageType, handleMessage } from 'app/message'
 import type { AppState } from 'app/store'
-import { getTrack, getIndex } from 'app/store/audio/selectors'
-import {
-  getDappLoaded,
-  getIsOnFirstPage,
-  getIsSignedIn
-} from 'app/store/lifecycle/selectors'
+import { getIsSignedIn } from 'app/store/lifecycle/selectors'
 import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import {
   postMessage,
@@ -145,15 +140,7 @@ type Props = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const WebApp = ({
-  onMessage,
-  webRef,
-  trackInfo,
-  trackIndex,
-  isOnFirstPage,
-  isSignedIn,
-  dappLoaded
-}: Props) => {
+const WebApp = ({ onMessage, webRef, isSignedIn }: Props) => {
   // Start the local static asset server
   const [url, setUrl] = useState<string>('')
   const [hasLoaded, setHasLoaded] = useState(false)
@@ -362,12 +349,6 @@ const WebApp = ({
   const onEnterAppForeground = useCallback(() => {
     if (webRef.current) {
       postMessage(webRef.current, {
-        type: MessageType.SYNC_QUEUE,
-        info: trackInfo,
-        index: trackIndex,
-        isAction: true
-      })
-      postMessage(webRef.current, {
         type: MessageType.ENTER_FOREGROUND,
         isAction: true
       })
@@ -375,13 +356,7 @@ const WebApp = ({
     resetServerInterval()
     // Set immediate to give JS context time to be ready
     setImmediate(checkAndRestartServer)
-  }, [
-    webRef,
-    trackInfo,
-    trackIndex,
-    checkAndRestartServer,
-    resetServerInterval
-  ])
+  }, [webRef, checkAndRestartServer, resetServerInterval])
   useAppState(onEnterAppForeground, () => {})
 
   const { setTheme } = useContext(ThemeContext)
@@ -511,10 +486,6 @@ const WebApp = ({
 }
 
 const mapStateToProps = (state: AppState) => ({
-  dappLoaded: getDappLoaded(state),
-  trackInfo: getTrack(state),
-  trackIndex: getIndex(state),
-  isOnFirstPage: getIsOnFirstPage(state),
   isSignedIn: getIsSignedIn(state)
 })
 const mapDispatchToProps = (dispatch: Dispatch) => ({

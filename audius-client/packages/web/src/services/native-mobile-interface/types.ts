@@ -1,13 +1,5 @@
 export enum MessageType {
   LOADED = 'loaded',
-  PLAY_TRACK = 'play-track',
-  PAUSE_TRACK = 'pause-track',
-  GET_POSITION = 'get-position',
-  SEEK_TRACK = 'seek-track',
-  SET_INFO = 'set-info',
-  PERSIST_QUEUE = 'persist-queue',
-  SET_REPEAT_MODE = 'set-repeat-mode',
-  SHUFFLE = 'shuffle',
 
   // Linking
   OPEN_LINK = 'open-link',
@@ -66,9 +58,6 @@ export enum MessageType {
   HAPTIC_FEEDBACK = 'haptic-feedback',
 
   // Action dispatchers
-  SYNC_QUEUE = 'action/sync-queue',
-  SYNC_PLAYER = 'action/sync-player',
-  REQUEST_QUEUE_AUTOPLAY = 'action/request-queue-autoplay',
   PUSH_ROUTE = 'action/push-route',
   POP_ROUTE = 'action/pop-route',
   SCROLL_TO_TOP = 'action/scroll-to-top',

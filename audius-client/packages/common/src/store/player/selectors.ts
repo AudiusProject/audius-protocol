@@ -18,6 +18,7 @@ export const getSeek = (state: CommonState) => state.player.seek
 
 export const getCurrentTrack = (state: CommonState) =>
   getTrack(state, { id: getTrackId(state) })
+
 const getCurrentUser = (state: CommonState) => {
   const track = getCurrentTrack(state)
   if (track) {

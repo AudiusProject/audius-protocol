@@ -45,17 +45,8 @@ const {
 
 const { getTrackId: getPlayerTrackId, getUid: getPlayerUid } = playerSelectors
 
-const {
-  add,
-  clear,
-  next,
-  pause,
-  play,
-  queueAutoplay,
-  persist,
-  previous,
-  remove
-} = queueActions
+const { add, clear, next, pause, play, queueAutoplay, previous, remove } =
+  queueActions
 const { getId } = cacheSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
@@ -156,8 +147,6 @@ function* handleQueueAutoplay({
  */
 export function* watchPlay() {
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    // persist queue in mobile layer
-    yield* put(persist({}))
     const { uid, trackId, collectible } = action.payload
 
     // Play a specific uid
@@ -427,8 +416,6 @@ export function* watchAdd() {
       id: entry.id
     }))
     yield* put(cacheActions.subscribe(Kind.TRACKS, subscribers))
-    // persist queue in mobile layer
-    yield* put(persist({}))
   })
 }
 

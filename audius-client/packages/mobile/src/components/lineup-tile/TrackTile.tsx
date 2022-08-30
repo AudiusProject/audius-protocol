@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { Track, User } from '@audius/common'
 import {
+  playerSelectors,
   PlaybackSource,
   FavoriteSource,
   RepostSource,
@@ -24,10 +25,9 @@ import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
-import type { AppState } from 'app/store'
-import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { LineupTile } from './LineupTile'
+const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
@@ -69,9 +69,8 @@ const TrackTileComponent = ({
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const currentUserId = useSelector(getUserId)
-  const isPlayingUid = useSelector(
-    (state: AppState) => getPlayingUid(state) === lineupTileProps.uid
-  )
+  const playingUid = useSelector(getUid)
+  const isPlayingUid = playingUid === lineupTileProps.uid
 
   const {
     _cover_art_sizes,

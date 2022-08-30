@@ -1,34 +1,40 @@
 import type { RefObject } from 'react'
 import { useState, useRef, useEffect, useCallback } from 'react'
 
-import { Genre } from '@audius/common'
+import type { CommonState } from '@audius/common'
+import {
+  accountSelectors,
+  cacheUsersSelectors,
+  hlsUtils,
+  Genre,
+  playerSelectors,
+  playerActions,
+  queueActions,
+  queueSelectors,
+  RepeatMode
+} from '@audius/common'
 import { Platform, StyleSheet, View } from 'react-native'
 import MusicControl from 'react-native-music-control'
 import { Command } from 'react-native-music-control/lib/types'
 import type { OnProgressData } from 'react-native-video'
 import Video from 'react-native-video'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import type { Dispatch } from 'redux'
 
-import { MessageType } from 'app/message'
-import type { AppState } from 'app/store'
-import * as audioActions from 'app/store/audio/actions'
-import { RepeatMode } from 'app/store/audio/reducer'
-import {
-  getPlaying,
-  getSeek,
-  getQueueLength,
-  getRepeatMode,
-  getIsShuffleOn,
-  getShuffleIndex,
-  getQueueAutoplay,
-  getTrackAndIndex
-} from 'app/store/audio/selectors'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
-import { postMessage } from 'app/utils/postMessage'
+
+import { gateways as imageGateways } from '../image/utils'
 
 import { useChromecast } from './GoogleCast'
 import { logListen } from './listens'
+
+const { getUser } = cacheUsersSelectors
+const { getPlaying, getSeek, makeGetCurrent } = playerSelectors
+const { getIndex, getLength, getRepeat, getShuffle, getShuffleIndex } =
+  queueSelectors
+
+const { getUserId } = accountSelectors
 
 declare global {
   // eslint-disable-next-line no-var
@@ -40,6 +46,14 @@ declare global {
 }
 
 const SKIP_DURATION_SEC = 15
+
+const DEFAULT_IMAGE_URL =
+  'https://download.audius.co/static-resources/preview-image.jpg'
+
+const getImageUrl = (cid: string, gateway: string | null): string => {
+  if (!cid) return DEFAULT_IMAGE_URL
+  return `${gateway}${cid}`
+}
 
 const RECORD_LISTEN_SECONDS = 1
 
@@ -58,13 +72,14 @@ type OwnProps = {
   webRef: RefObject<MessagePostingWebView>
 }
 
-type Props = OwnProps &
+type AudioProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const Audio = ({
   webRef,
-  trackAndIndex: { track, index },
+  track,
+  index,
   queueLength,
   playing,
   seek,
@@ -75,9 +90,12 @@ const Audio = ({
   reset,
   repeatMode,
   isShuffleOn,
-  shuffleIndex,
-  queueAutoplay
-}: Props) => {
+  shuffleIndex
+}: AudioProps) => {
+  const trackOwner = useSelector((state) =>
+    getUser(state, { id: track?.owner_id })
+  )
+  const currentUserId = useSelector(getUserId)
   const videoRef = useRef<Video>(null)
   // Keep track of whether we have ever started playback.
   // Only then is it safe to set OS music control stuff.
@@ -111,16 +129,6 @@ const Audio = ({
       reset()
     }
   }, [reset])
-
-  useEffect(() => {
-    if (!webRef.current) return
-    postMessage(webRef.current, {
-      type: MessageType.SYNC_QUEUE,
-      info: track,
-      index,
-      isAction: true
-    })
-  }, [webRef, track, index])
 
   useEffect(() => {
     isPlaying.current = playing
@@ -172,25 +180,9 @@ const Audio = ({
       }
     })
     MusicControl.on(Command.play, () => {
-      if (webRef.current) {
-        postMessage(webRef.current, {
-          type: MessageType.SYNC_PLAYER,
-          isPlaying: true,
-          incrementCounter: false,
-          isAction: true
-        })
-      }
       play()
     })
     MusicControl.on(Command.pause, () => {
-      if (webRef.current) {
-        postMessage(webRef.current, {
-          type: MessageType.SYNC_PLAYER,
-          isPlaying: false,
-          incrementCounter: false,
-          isAction: true
-        })
-      }
       pause()
     })
   }, [webRef, videoRef, seek, next, previous, play, pause])
@@ -207,43 +199,34 @@ const Audio = ({
 
   // Track Info handler
   useEffect(() => {
-    if (track && !track.isDelete && duration !== null) {
+    if (track && !track.is_delete && duration !== null) {
+      const imageHash = track.cover_art_sizes
+        ? `${track.cover_art_sizes}/150x150.jpg`
+        : track.cover_art
+      const largeImageHash = track.cover_art_sizes
+        ? `${track.cover_art_sizes}/1000x1000.jpg`
+        : track.cover_art
       // Set the background mode when a song starts
       // playing to ensure audio outside app
       // continues when music isn't being played.
       MusicControl.enableBackgroundMode(true)
       MusicControl.setNowPlaying({
         title: track.title,
-        artwork: Platform.OS === 'ios' ? track.artwork : track.largeArtwork,
-        artist: track.artist,
+        artwork: getImageUrl(
+          Platform.OS === 'ios' ? imageHash! : largeImageHash!,
+          imageGateways[0]
+        ),
+        artist: trackOwner?.name,
         duration
       })
-      if (webRef.current) {
-        // Sync w/ isPlaying true in case it was previously false from a deleted track.
-        postMessage(webRef.current, {
-          type: MessageType.SYNC_PLAYER,
-          isPlaying: true,
-          incrementCounter: false,
-          isAction: true
-        })
-      }
-    } else if (track && track.isDelete) {
-      if (webRef.current) {
-        // Sync w/ isPlaying false to set player state in dapp and hide drawer
-        postMessage(webRef.current, {
-          type: MessageType.SYNC_PLAYER,
-          isPlaying: false,
-          incrementCounter: false,
-          isAction: true
-        })
-      }
+    } else if (track && track.is_delete) {
       MusicControl.resetNowPlaying()
     } else {
       if (Platform.OS === 'ios') {
         MusicControl.handleAudioInterruptions(false)
       }
     }
-  }, [webRef, track, index, duration])
+  }, [webRef, track, index, duration, trackOwner])
 
   // Next and Previous handler
   useEffect(() => {
@@ -325,88 +308,66 @@ const Audio = ({
     }
   }, [elapsedTime, isPlaying])
 
-  // handle triggering of autoplay when current track ends
-  // (this is the flow when the next button is NOT clicked by the user)
-  // (if the next button is clicked by the user, the dapp client will handle autoplay logic)
   const onNext = useCallback(() => {
-    // if autoplay is enabled and current song is close to end of queue,
-    // then trigger queueing of recommended tracks for autoplay
-    const isCloseToEndOfQueue = index + 2 >= queueLength
-    const isNotRepeating = repeatMode === RepeatMode.OFF
-    if (
-      webRef.current &&
-      queueAutoplay &&
-      !isShuffleOn &&
-      isNotRepeating &&
-      isCloseToEndOfQueue
-    ) {
-      postMessage(webRef.current, {
-        type: MessageType.REQUEST_QUEUE_AUTOPLAY,
-        genre: (track && track.genre) || undefined,
-        trackId: (track && track.trackId) || undefined,
-        isAction: true
-      })
-    }
-
     const isSingleRepeating = repeatMode === RepeatMode.SINGLE
     if (webRef.current && isSingleRepeating) {
       global.progress.currentTime = 0
-      // Sync w/ incrementCounter true to update mediaKey in client NowPlaying
-      // which will eventually restart the scrubber location
-      postMessage(webRef.current, {
-        type: MessageType.SYNC_PLAYER,
-        isPlaying: true,
-        incrementCounter: true,
-        isAction: true
-      })
     }
 
     next()
-  }, [
-    next,
-    webRef,
-    queueAutoplay,
-    index,
-    queueLength,
-    isShuffleOn,
-    repeatMode,
-    track
-  ])
+  }, [next, repeatMode, webRef])
 
   const onProgress = useCallback(
     (progress: OnProgressData) => {
-      if (!track) return
+      if (!track || !currentUserId) return
       if (progressInvalidator.current) {
         progressInvalidator.current = false
         return
       }
       elapsedTime.current = progress.currentTime
-
       // Replicates logic in dapp.
       // TODO: REMOVE THIS ONCE BACKEND SUPPORTS THIS FEATURE
       if (
         progress.currentTime > RECORD_LISTEN_SECONDS &&
-        (track.ownerId !== track.currentUserId ||
-          track.currentListenCount < 10) &&
+        (track.owner_id !== currentUserId || track.play_count < 10) &&
         !listenLoggedForTrack
       ) {
         // Debounce logging a listen, update the state variable appropriately onSuccess and onFailure
         setListenLoggedForTrack(true)
-        logListen(track.trackId, track.currentUserId, () =>
+        logListen(track.track_id, currentUserId, () =>
           setListenLoggedForTrack(false)
         )
       }
       global.progress = progress
     },
-    [track, listenLoggedForTrack, setListenLoggedForTrack, progressInvalidator]
+    [
+      track,
+      currentUserId,
+      listenLoggedForTrack,
+      setListenLoggedForTrack,
+      progressInvalidator
+    ]
   )
+
+  if (!track || track.is_delete) return null
+
+  const gateways = trackOwner
+    ? audiusBackendInstance.getCreatorNodeIPFSGateways(
+        trackOwner.creator_node_endpoint
+      )
+    : []
+
+  const m3u8 = hlsUtils.generateM3U8Variants({
+    segments: track.track_segments,
+    gateways
+  })
 
   return (
     <View style={styles.backgroundVideo}>
-      {track && !track.isDelete && track.uri && (
+      {m3u8 && (
         <Video
           source={{
-            uri: track.uri,
+            uri: m3u8,
             // @ts-ignore: this is actually a valid prop override
             type: 'm3u8'
           }}
@@ -437,23 +398,29 @@ const Audio = ({
   )
 }
 
-const mapStateToProps = (state: AppState) => ({
-  trackAndIndex: getTrackAndIndex(state),
-  queueLength: getQueueLength(state),
-  playing: getPlaying(state),
-  seek: getSeek(state),
-  repeatMode: getRepeatMode(state),
-  isShuffleOn: getIsShuffleOn(state),
-  shuffleIndex: getShuffleIndex(state),
-  queueAutoplay: getQueueAutoplay(state)
-})
+const getCurrent = makeGetCurrent()
+
+const mapStateToProps = (state: CommonState) => {
+  const { track, user } = getCurrent(state)
+  return {
+    track,
+    user,
+    index: getIndex(state),
+    queueLength: getLength(state),
+    playing: getPlaying(state),
+    seek: getSeek(state),
+    repeatMode: getRepeat(state),
+    isShuffleOn: getShuffle(state),
+    shuffleIndex: getShuffleIndex(state)
+  }
+}
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  play: () => dispatch(audioActions.play()),
-  pause: () => dispatch(audioActions.pause()),
-  next: () => dispatch(audioActions.next()),
-  previous: () => dispatch(audioActions.previous()),
-  reset: () => dispatch(audioActions.reset())
+  play: () => dispatch(playerActions.play()),
+  pause: () => dispatch(playerActions.pause()),
+  next: () => dispatch(queueActions.next()),
+  previous: () => dispatch(queueActions.previous()),
+  reset: () => dispatch(playerActions.reset({ shouldAutoplay: false }))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Audio)
