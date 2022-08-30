@@ -30,17 +30,39 @@ def generate_env(protocol_dir, creator_node_replicas):
         env[f"{name}_SECRET_KEY"] = json.dumps(list(keypair.secret_key))
         env[f"{name}_PUBLIC_KEY"] = keypair.public_key.to_base58().decode()
 
+    eth_relayer_wallets = []
+    poa_relayer_wallets = []
+
     for name, private_key in config.get("eth-accounts", {}).items():
         account = eth_account.Account.from_key(private_key)
         env[f"{name}_PRIVATE_KEY"] = account.key.hex()
         env[f"{name}_ADDRESS"] = account.address
 
+        if name.startswith("ETH_RELAYER_WALLET"):
+            eth_relayer_wallets.append(
+                {
+                    "publicKey": account.address,
+                    "privateKey": account.key.hex()[2:],
+                }
+            )
+
+        if name.startswith("POA_RELAYER_WALLET"):
+            poa_relayer_wallets.append(
+                {
+                    "publicKey": account.address,
+                    "privateKey": account.key.hex()[2:],
+                }
+            )
+
+    env["ETH_RELAYER_WALLETS"] = json.dumps(eth_relayer_wallets)
+    env["POA_RELAYER_WALLETS"] = json.dumps(poa_relayer_wallets)
+
     bootstrap_sp_ids = []
     bootstrap_sp_owner_wallets = []
     for replica in range(creator_node_replicas):
-        if f"CN{replica}_SP_OWNER_ADDRESS" in env:
+        if f"CN{replica + 1}_SP_OWNER_ADDRESS" in env:
             bootstrap_sp_ids.append(str(replica + 1))
-            bootstrap_sp_owner_wallets.append(env[f"CN{replica}_SP_OWNER_ADDRESS"])
+            bootstrap_sp_owner_wallets.append(env[f"CN{replica + 1}_SP_OWNER_ADDRESS"])
     env["BOOTSTRAP_SP_IDS"] = ",".join(bootstrap_sp_ids)
     env["BOOTSTRAP_SP_OWNER_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
     env["BOOTSTRAP_SP_DELEGATE_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
@@ -157,6 +179,10 @@ def exec(protocol_dir, service, command, args):
             "--index",
             str(index),
             service,
+            "sh",
+            "-c",
+            'while IFS= read -rd "" var; do export "$var"; done </proc/1/environ; exec "$@"',
+            "-",
             command,
             *args,
         ],

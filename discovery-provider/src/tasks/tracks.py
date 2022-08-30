@@ -530,6 +530,7 @@ def parse_track_event(
         track_record.is_delete = True
         track_record.stem_of = null()
         track_record.remix_of = null()
+        track_record.premium_conditions = null()
         logger.info(f"index.py | tracks.py | Removing track : {track_record.track_id}")
 
     track_record.updated_at = block_datetime
@@ -576,6 +577,13 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_segments = track_metadata["track_segments"]
     track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
+
+    track_record.is_premium = track_metadata["is_premium"]
+    if is_valid_json_field(track_metadata, "premium_conditions"):
+        track_record.premium_conditions = track_metadata["premium_conditions"]
+    else:
+        track_record.premium_conditions = null()
+
     if is_valid_json_field(track_metadata, "stem_of"):
         track_record.stem_of = track_metadata["stem_of"]
     else:

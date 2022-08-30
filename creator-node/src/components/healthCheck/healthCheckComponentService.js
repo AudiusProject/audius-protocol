@@ -47,6 +47,7 @@ const healthCheck = async (
   const snapbackUsersPerJob = config.get('snapbackUsersPerJob')
   const snapbackModuloBase = config.get('snapbackModuloBase')
   const manualSyncsDisabled = config.get('manualSyncsDisabled')
+  const syncForceWipeEnabled = config.get('syncForceWipeEnabled')
 
   // expose audiusInfraStack to see how node is being run
   const audiusContentInfraSetup = config.get('audiusContentInfraSetup')
@@ -170,6 +171,7 @@ const healthCheck = async (
     manualSyncsDisabled,
     snapbackModuloBase,
     snapbackUsersPerJob,
+    syncForceWipeEnabled,
     stateMonitoringQueueRateLimitInterval: config.get(
       'stateMonitoringQueueRateLimitInterval'
     ),

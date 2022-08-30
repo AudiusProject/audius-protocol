@@ -77,6 +77,11 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       network_id: '*',
+      verify: {
+        apiUrl: 'http://eth-blockscout:4000/api',
+        apiKey: 'NONE',
+        explorerUrl: 'http://eth-blockscout:4000/address',
+      },
     },
     test_local: {
       host: '127.0.0.1',
