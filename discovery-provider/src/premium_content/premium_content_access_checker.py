@@ -96,6 +96,13 @@ class PremiumContentAccessChecker:
                     "does_user_have_access": True,
                 }
 
+            # track owner has access to own premium track
+            elif content_owner_id == user_id:
+                track_access_result[user_id][track_id] = {
+                    "is_premium": True,
+                    "does_user_have_access": True,
+                }
+
             else:
                 track_access_result[user_id][track_id] = {
                     "is_premium": True,
