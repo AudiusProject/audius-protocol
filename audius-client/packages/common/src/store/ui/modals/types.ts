@@ -26,5 +26,6 @@ export type Modals =
   | 'DeletePlaylistConfirmation'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
+  | 'TransactionDetails'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }

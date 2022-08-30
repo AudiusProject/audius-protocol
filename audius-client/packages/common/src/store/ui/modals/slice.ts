@@ -29,7 +29,8 @@ const initialState: ModalsState = {
   AddToPlaylist: false,
   DeletePlaylistConfirmation: false,
   FeatureFlagOverride: false,
-  BuyAudio: false
+  BuyAudio: false,
+  TransactionDetails: false
 }
 
 const slice = createSlice({
