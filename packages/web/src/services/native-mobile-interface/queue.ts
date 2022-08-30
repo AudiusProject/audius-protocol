@@ -16,26 +16,6 @@ type TrackInfo = {
 }
 export type Tracks = TrackInfo[]
 
-export class PersistQueueMessage extends NativeMobileMessage {
-  constructor(
-    tracks: Tracks,
-    index: number,
-    shuffle: boolean,
-    shuffleIndex: number,
-    shuffleOrder: number[],
-    queueAutoplay: boolean
-  ) {
-    super(MessageType.PERSIST_QUEUE, {
-      tracks,
-      index,
-      shuffle,
-      shuffleIndex,
-      shuffleOrder,
-      queueAutoplay
-    })
-  }
-}
-
 export class RepeatModeMessage extends NativeMobileMessage {
   constructor(repeatMode: RepeatMode) {
     super(MessageType.SET_REPEAT_MODE, { repeatMode })

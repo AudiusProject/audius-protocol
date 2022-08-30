@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { UID, Track, User } from '@audius/common'
 import {
+  playerSelectors,
   FavoriteSource,
   RepostSource,
   ShareSource,
@@ -39,7 +40,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { make, track as record } from 'app/services/analytics'
-import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import type { SearchTrack, SearchUser } from 'app/store/search/types'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
@@ -47,6 +47,7 @@ import { getTagSearchRoute } from 'app/utils/routes'
 import { useThemeColors } from 'app/utils/theme'
 
 import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
+const { getPlaying, getUid } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -128,7 +129,7 @@ export const TrackScreenDetailsTile = ({
 
   const currentUserId = useSelectorWeb(getUserId)
   const dispatchWeb = useDispatchWeb()
-  const playingUid = useSelector(getPlayingUid)
+  const playingUid = useSelector(getUid)
   const isPlaying = useSelector(getPlaying)
   const isPlayingUid = playingUid === uid
 

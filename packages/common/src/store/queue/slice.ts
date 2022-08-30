@@ -60,8 +60,6 @@ type QueueAutoplayPayload = {
   currentUserId: Nullable<ID>
 }
 
-type PersistPayload = {}
-
 type PausePayload = {}
 
 type NextPayload = Maybe<{
@@ -119,7 +117,6 @@ const slice = createSlice({
       state.undershot = false
     },
     queueAutoplay: (_state, _action: PayloadAction<QueueAutoplayPayload>) => {},
-    persist: (_state, _action: PayloadAction<PersistPayload>) => {},
     // Pauses the queue
     pause: (_state, _action: PayloadAction<PausePayload>) => {},
     // Skips the next track in the queue
@@ -289,7 +286,6 @@ const slice = createSlice({
 export const {
   play,
   queueAutoplay,
-  persist,
   pause,
   next,
   previous,

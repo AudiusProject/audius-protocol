@@ -6,7 +6,6 @@ import type { AnalyticsMessage } from '../types/analytics'
 
 import { messageHandlers as analytics } from './handlers/analytics'
 import { messageHandlers as android } from './handlers/android'
-import { messageHandlers as audio } from './handlers/audio'
 import { messageHandlers as commonState } from './handlers/commonState'
 import { messageHandlers as download } from './handlers/download'
 import { messageHandlers as haptics } from './handlers/haptics'
@@ -26,7 +25,6 @@ const isIos = Platform.OS === 'ios'
 const messageHandlers: Partial<MessageHandlers> = {
   ...analytics,
   ...(isIos ? {} : android),
-  ...audio,
   ...commonState,
   ...download,
   ...haptics,
