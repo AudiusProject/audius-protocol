@@ -218,7 +218,7 @@ def get_feed_es(args, limit=10):
     item_keys = [i["item_key"] for i in sorted_feed]
 
     (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-        current_user_id, item_keys, limit * 20
+        current_user_id, item_keys, limit
     )
 
     for item in sorted_feed:
@@ -266,7 +266,7 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys, limit):
                 ]
             }
         },
-        "size": limit * 20,  # how much to overfetch?
+        "size": limit * 10,  # how much to overfetch?
         "sort": {"created_at": "desc"},
     }
     mdsl = [

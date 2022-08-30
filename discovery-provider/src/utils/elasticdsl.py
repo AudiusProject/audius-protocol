@@ -26,27 +26,15 @@ def listify(things):
 
 
 def pluck_hits(found):
+    if "error" in found:
+        raise Exception(found["error"])
+
     res = [h["_source"] for h in found["hits"]["hits"]]
 
     # add score for search_quality.py script
     for i in range(len(found["hits"]["hits"])):
         res[i]["_score"] = found["hits"]["hits"][i]["_score"]
     return res
-
-
-def docs_and_ids(found, id_set=False):
-    docs = []
-    ids = []
-    for hit in found["hits"]["hits"]:
-        docs.append(hit["_source"])
-        ids.append(hit["_id"])
-    if id_set:
-        ids = set(ids)
-    return docs, ids
-
-
-def hits_by_id(found):
-    return {h["_id"]: h["_source"] for h in found["hits"]["hits"]}
 
 
 def populate_user_metadata_es(user, current_user):
