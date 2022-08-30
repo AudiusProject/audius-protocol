@@ -1,20 +1,17 @@
 import {
   Collection,
-  Status,
-  accountSelectors,
   explorePageCollectionsActions,
   ExploreCollectionsVariant,
-  waitForValue,
-  getContext
+  getContext,
+  waitForAccount
 } from '@audius/common'
 import { takeEvery, call, put } from 'typed-redux-saga'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
-import { requiresAccount } from 'utils/requiresAccount'
+import { requiresAccount } from 'common/utils/requiresAccount'
 import { EXPLORE_PAGE } from 'utils/route'
 const { fetch, fetchSucceeded } = explorePageCollectionsActions
-const getAccountStatus = accountSelectors.getAccountStatus
 
 function* fetchLetThemDJ() {
   const explore = yield* getContext('explore')
@@ -54,12 +51,7 @@ const fetchMap = {
 function* watchFetch() {
   yield* takeEvery(fetch.type, function* (action: ReturnType<typeof fetch>) {
     yield* call(waitForBackendSetup)
-    yield* call(
-      waitForValue,
-      getAccountStatus,
-      {},
-      (status) => status !== Status.LOADING
-    )
+    yield* waitForAccount()
 
     const { variant, moods } = action.payload
 

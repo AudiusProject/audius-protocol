@@ -39,8 +39,7 @@ export function* retrieveTrending({
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const audiusLibs = yield call(audiusBackendInstance.getAudiusLibs)
-  const web3 = audiusLibs.web3Manager.getWeb3()
+  const web3 = yield call(audiusBackendInstance.getWeb3)
 
   yield call(remoteConfigInstance.waitForRemoteConfig)
   const TF = new Set(

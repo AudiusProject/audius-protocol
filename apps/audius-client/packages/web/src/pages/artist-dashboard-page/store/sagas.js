@@ -11,7 +11,7 @@ import { all, call, put, take, takeEvery, getContext } from 'redux-saga/effects'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
-import { requiresAccount } from 'utils/requiresAccount'
+import { requiresAccount } from 'common/utils/requiresAccount'
 import { DASHBOARD_PAGE } from 'utils/route'
 
 import * as dashboardActions from './actions'

@@ -3133,6 +3133,11 @@ export const audiusBackend = ({
     return audiusLibs
   }
 
+  async function getWeb3() {
+    const audiusLibs = await getAudiusLibs()
+    return audiusLibs.web3Manager.getWeb3()
+  }
+
   return {
     addDiscoveryProviderSelectionListener,
     addPlaylistTrack,
@@ -3202,6 +3207,7 @@ export const audiusBackend = ({
     getUserSubscribed,
     getUserSubscriptions,
     getWAudioBalance,
+    getWeb3,
     handleInUse,
     identityServiceUrl,
     isCreatorNodeSyncing,
