@@ -19,7 +19,7 @@ import {
   shareModalUIActions,
   RepostType
 } from '@audius/common'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -66,6 +66,7 @@ const TrackTileComponent = ({
   user,
   ...lineupTileProps
 }: TrackTileProps) => {
+  const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const currentUserId = useSelector(getUserId)
@@ -140,7 +141,7 @@ const TrackTileComponent = ({
       isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
-    dispatchWeb(
+    dispatch(
       openOverflowMenu({
         source: OverflowSource.TRACKS,
         id: track_id,
@@ -149,7 +150,7 @@ const TrackTileComponent = ({
     )
   }, [
     track_id,
-    dispatchWeb,
+    dispatch,
     has_current_user_reposted,
     has_current_user_saved,
     isOwner,
@@ -160,14 +161,14 @@ const TrackTileComponent = ({
     if (track_id === undefined) {
       return
     }
-    dispatchWeb(
+    dispatch(
       requestOpenShareModal({
         type: 'track',
         trackId: track_id,
         source: ShareSource.TILE
       })
     )
-  }, [dispatchWeb, track_id])
+  }, [dispatch, track_id])
 
   const handlePressSave = useCallback(() => {
     if (track_id === undefined) {
