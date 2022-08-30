@@ -1,0 +1,25 @@
+.root {
+  min-width: 470px;
+}
+.content {
+  padding-top: 16px;
+  padding-bottom: 0;
+}
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 24px;
+}
+
+.spinner {
+  width: 64px;
+  margin: 0 auto;
+}
+
+.error {
+  line-height: 150%;
+  text-align: center;
+  font-weight: var(--font-demi-bold);
+  color: var(--accent-red);
+}

@@ -21,6 +21,7 @@ import { ShareModal } from 'components/share-modal/ShareModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
+import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
@@ -91,6 +92,7 @@ const Modals = () => {
 
       {!NATIVE_MOBILE && <TipAudioModal />}
       {!NATIVE_MOBILE ? <BuyAudioModal /> : null}
+      {!NATIVE_MOBILE ? <TransactionDetailsModal /> : null}
     </>
   )
 }

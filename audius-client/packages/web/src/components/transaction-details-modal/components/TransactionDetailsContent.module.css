@@ -1,0 +1,42 @@
+.transactionIcon {
+  display: flex;
+  position: relative;
+  padding: 12px;
+}
+.transactionIconMini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  box-sizing: content-box;
+  border: 2px solid var(--white);
+  border-radius: 100%;
+}
+.transactionIconMini.stripe {
+  background: #635bff;
+}
+.transactionIconMini.coinbase {
+  background-color: #0052ff;
+}
+
+.method {
+  gap: 8px;
+}
+
+.flexHorizontal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.change {
+  color: var(--accent-green);
+}
+.change.negative {
+  color: var(--accent-red);
+}

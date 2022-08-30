@@ -1,0 +1,10 @@
+.iconButton {
+  display: flex;
+}
+.iconButton svg {
+  width: 16px;
+  height: 16px;
+}
+.iconButton path {
+  fill: var(--neutral-light-4);
+}
