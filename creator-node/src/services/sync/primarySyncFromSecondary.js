@@ -128,7 +128,7 @@ module.exports = async function primarySyncFromSecondary({
       }
       decisionTree.recordStage({
         name: 'fetchExportFromSecondary() Success',
-        data: { localClockMax: fetchedCNodeUser.clockInfo.localClockMax },
+        data: { localClockMax: fetchedCNodeUser?.clockInfo?.localClockMax },
         log: true
       })
 
