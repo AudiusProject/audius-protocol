@@ -10,7 +10,7 @@ import {
   // eslint-disable-next-line import/no-unresolved
 } from '../stateMachineManager/stateMachineConstants'
 import * as config from '../../config'
-import { MONITORS } from '../../monitors/monitors'
+import { PROMETHEUS_MONITORS } from '../../monitors/monitors'
 
 /**
  * For explanation of METRICS, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
@@ -71,7 +71,7 @@ for (const jobName of Object.values(
   ] = `state_machine_${snakeCase(jobName)}_job_duration_seconds`
 }
 // Add gauge for each monitor
-for (const monitor of Object.keys(MONITORS)) {
+for (const monitor of Object.keys(PROMETHEUS_MONITORS)) {
   metricNames[`MONITOR_${monitor}`] = `monitor_${snakeCase(monitor)}`
 }
 
@@ -355,7 +355,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
   ),
   // Add gauge for each monitor
   ...Object.fromEntries(
-    Object.keys(MONITORS).map((monitor) => {
+    Object.keys(PROMETHEUS_MONITORS).map((monitor) => {
       return [
         METRIC_NAMES[`MONITOR_${monitor}`],
         {
