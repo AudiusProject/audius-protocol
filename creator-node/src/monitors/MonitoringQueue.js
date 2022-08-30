@@ -87,7 +87,6 @@ class MonitoringQueue {
    * @param {*} monitorKey name of the monitor eg `THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT`
    */
   async refresh(monitorVal, monitorKey) {
-    console.log('val, key', monitorVal, monitorKey)
     const key = getMonitorRedisKey(monitorVal)
     const ttlKey = `${key}:ttl`
 
