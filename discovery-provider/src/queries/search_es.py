@@ -376,17 +376,12 @@ def track_dsl(
     only_downloadable=False,
     exclude_premium=False,
 ):
-    dsl_must = [
-        *base_match(search_str),
-        {"term": {"is_unlisted": {"value": False}}},
-        {"term": {"is_delete": False}},
-    ]
-
-    if exclude_premium:
-        dsl_must.append({"term": {"is_premium": {"value": False}}})
-
     dsl = {
-        "must": dsl_must,
+        "must": [
+            *base_match(search_str),
+            {"term": {"is_unlisted": {"value": False}}},
+            {"term": {"is_delete": False}},
+        ],
         "must_not": [
             {"exists": {"field": "stem_of"}},
         ],
@@ -397,6 +392,9 @@ def track_dsl(
 
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
+
+    if exclude_premium:
+        dsl["must"].append({"term": {"is_premium": {"value": False}}})
 
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")
