@@ -1,4 +1,3 @@
-from operator import ge
 from typing import Optional, TypedDict
 
 from sqlalchemy import desc

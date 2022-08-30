@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
-from typing import Any, List, Optional, TypedDict
+from typing import Any, Optional, TypedDict
 
 import redis
 from sqlalchemy import func
