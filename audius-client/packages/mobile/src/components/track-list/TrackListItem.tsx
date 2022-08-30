@@ -9,6 +9,7 @@ import {
 } from '@audius/common'
 import type { NativeSyntheticEvent, NativeTouchEvent } from 'react-native'
 import { Text, TouchableOpacity, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import IconDrag from 'app/assets/images/iconDrag.svg'
 import IconHeart from 'app/assets/images/iconHeart.svg'
@@ -16,7 +17,6 @@ import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
 import { IconButton } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { font, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -130,7 +130,7 @@ export const TrackListItem = ({
 
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const themeColors = useThemeColors()
   const currentUserId = useSelectorWeb(getUserId)
   const [titleWidth, setTitleWidth] = useState(0)
@@ -165,7 +165,7 @@ export const TrackListItem = ({
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
-    dispatchWeb(
+    dispatch(
       openOverflowMenu({
         source: OverflowSource.TRACKS,
         id: track_id,
@@ -177,7 +177,7 @@ export const TrackListItem = ({
     user_id,
     has_current_user_reposted,
     has_current_user_saved,
-    dispatchWeb,
+    dispatch,
     track_id
   ])
 
