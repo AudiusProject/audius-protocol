@@ -241,7 +241,7 @@ describe('test issueSyncRequest job processor', function () {
     const initialSecondaryClockValue = 2
     const finalSecondaryClockValue = 3
 
-    config.set('maxSyncMonitoringDurationInMs', 100)
+    config.set('maxManualSyncMonitoringDurationInMs', 100)
 
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
@@ -325,7 +325,7 @@ describe('test issueSyncRequest job processor', function () {
     const primaryClockValue = 5
     const finalSecondaryClockValue = 3
 
-    config.set('maxSyncMonitoringDurationInMs', 100)
+    config.set('maxManualSyncMonitoringDurationInMs', 100)
 
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
