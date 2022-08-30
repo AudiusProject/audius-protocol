@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
+  playerSelectors,
   Status,
   Name,
   PlaybackSource,
@@ -17,8 +18,8 @@ import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
-import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
+const { getPlaying, getUid } = playerSelectors
 const { getHistoryTracksLineup } = historyPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
 
@@ -44,7 +45,7 @@ export const ListeningHistoryScreen = () => {
   const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
   const isPlaying = useSelector(getPlaying)
-  const playingUid = useSelector(getPlayingUid)
+  const playingUid = useSelector(getUid)
   const historyTracks = useSelectorWeb(getTracks)
 
   const status = historyTracks.status

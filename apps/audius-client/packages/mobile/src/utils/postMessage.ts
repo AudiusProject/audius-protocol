@@ -8,7 +8,6 @@ export type MessageSender = {
 }
 
 const IGNORE_MESSAGES = new Set<string>([
-  MessageType.GET_POSITION,
   MessageType.SUBMIT_SIGNIN,
   MessageType.SUBMIT_SIGNUP,
   MessageType.SIGN_UP_VALIDATE_AND_CHECK_EMAIL,

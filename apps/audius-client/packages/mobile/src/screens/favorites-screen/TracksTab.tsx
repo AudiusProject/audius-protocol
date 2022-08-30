@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
+  playerSelectors,
   Status,
   FavoriteSource,
   Name,
@@ -20,11 +21,11 @@ import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
-import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
+const { getPlaying, getUid } = playerSelectors
 const { saveTrack, unsaveTrack } = tracksSocialActions
 const { getSavedTracksLineup, getSavedTracksStatus } = savedPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
@@ -59,7 +60,7 @@ export const TracksTab = () => {
   const styles = useStyles()
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)
-  const playingUid = useSelector(getPlayingUid)
+  const playingUid = useSelector(getUid)
   const savedTracksStatus = useSelectorWeb(getSavedTracksStatus)
   const savedTracks = useSelectorWeb(getTracks, shallowEqual)
 

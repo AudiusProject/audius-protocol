@@ -36,6 +36,14 @@ import type {
 import { LineupVariant } from './types'
 const { getShowTip } = tippingSelectors
 
+type TogglePlayConfig = {
+  uid: UID
+  id: ID
+  source: PlaybackSource
+  isPlayingUid: boolean
+  isPlaying: boolean
+}
+
 // The max number of tiles to load
 const MAX_TILES_COUNT = 1000
 
@@ -229,43 +237,26 @@ export const Lineup = ({
   }, [handleLoadMore, selfLoad, lineup])
 
   const togglePlay = useCallback(
-    ({
-      uid,
-      id,
-      source,
-      isPlayingUid,
-      isPlaying
-    }: {
-      uid: UID
-      id: ID
-      source: PlaybackSource
-      isPlayingUid: boolean
-      isPlaying: boolean
-    }) => {
-      // setImmediate prevents this cpu-intensive callback from firing until
-      // the lineup-tile press animation finishes. This may not be needed when
-      // we remove the web-view.
-      setImmediate(() => {
-        if (!isPlayingUid || !isPlaying) {
-          dispatch(actions.play(uid))
-          track(
-            make({
-              eventName: Name.PLAYBACK_PLAY,
-              id: `${id}`,
-              source: source || PlaybackSource.TRACK_TILE
-            })
-          )
-        } else {
-          dispatch(actions.pause())
-          track(
-            make({
-              eventName: Name.PLAYBACK_PAUSE,
-              id: `${id}`,
-              source: source || PlaybackSource.TRACK_TILE
-            })
-          )
-        }
-      })
+    ({ uid, id, source, isPlayingUid, isPlaying }: TogglePlayConfig) => {
+      if (!isPlayingUid || !isPlaying) {
+        dispatch(actions.play(uid))
+        track(
+          make({
+            eventName: Name.PLAYBACK_PLAY,
+            id: `${id}`,
+            source: source || PlaybackSource.TRACK_TILE
+          })
+        )
+      } else {
+        dispatch(actions.pause())
+        track(
+          make({
+            eventName: Name.PLAYBACK_PAUSE,
+            id: `${id}`,
+            source: source || PlaybackSource.TRACK_TILE
+          })
+        )
+      }
     },
     [actions, dispatch]
   )

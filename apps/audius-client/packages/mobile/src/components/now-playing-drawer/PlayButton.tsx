@@ -1,15 +1,16 @@
 import { useCallback, useMemo } from 'react'
 
+import { playerActions, playerSelectors } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/animations/iconPause.json'
 import IconPlay from 'app/assets/animations/iconPlay.json'
 import type { AnimatedButtonProps } from 'app/components/core'
 import { AnimatedButton } from 'app/components/core'
-import { pause, play } from 'app/store/audio/actions'
-import { getPlaying } from 'app/store/audio/selectors'
 import { colorize } from 'app/utils/colorizeLottie'
 import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
+const { pause, play } = playerActions
+const { getPlaying } = playerSelectors
 
 type PlayButtonProps = Omit<AnimatedButtonProps, 'iconJSON' | 'iconIndex'>
 
