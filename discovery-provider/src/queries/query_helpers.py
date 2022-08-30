@@ -500,37 +500,57 @@ def populate_track_metadata(
 
 
 def _populate_premium_track_metadata(session, tracks, current_user_id):
-    for track in tracks:
-        if not track["is_premium"]:
-            continue
+    premium_tracks = map(lambda track: track["is_premium"], tracks)
+    if not premium_tracks:
+        return
 
-        has_current_user_unlocked_track = premium_content_access_checker.check_access(
-            current_user_id, track["track_id"], "track"
+    current_user_wallet = (
+        session.query(User.wallet)
+        .filter(
+            User.user_id == current_user_id,
+            User.is_current == True,
+        )
+        .one_or_none()
+    )
+    if not current_user_wallet:
+        logger.warn(
+            f"query_helpers.py | _populate_premium_track_metadata | no wallet for current_user_id {current_user_id}"
+        )
+        return
+
+    premium_content_access_args = []
+    for track in premium_tracks:
+        premium_content_access_args.append(
+            {
+                "user_id": current_user_id,
+                "premium_content_id": track["track_id"],
+                "premium_content_type": "track",
+            }
+        )
+
+    premium_content_access = premium_content_access_checker.check_access_for_batch(
+        premium_content_access_args
+    )
+
+    for track in premium_tracks:
+        track_id = track["track_id"]
+        has_current_user_unlocked_track = (
+            current_user_id in premium_content_access["track"]
+            and track_id in premium_content_access["track"][current_user_id]
+            and premium_content_access["track"][current_user_id][track_id][
+                "does_user_have_access"
+            ]
         )
         track[
             response_name_constants.has_current_user_unlocked
         ] = has_current_user_unlocked_track
 
         if has_current_user_unlocked_track:
-            current_user_wallet = (
-                session.query(User.wallet)
-                .filter(
-                    User.user_id == current_user_id,
-                    User.is_current == True,
-                )
-                .one_or_none()
-            )
-            if not current_user_wallet:
-                logger.warn(
-                    f"query_helpers.py | populate_track_metadata | no wallet for current_user_id {current_user_id}"
-                )
-                continue
-
             track[
                 response_name_constants.premium_content_signature
             ] = get_premium_content_signature(
                 {
-                    "id": track["track_id"],
+                    "id": track_id,
                     "type": "track",
                     "user_wallet": current_user_wallet,
                 }
