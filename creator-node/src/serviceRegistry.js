@@ -40,7 +40,7 @@ class ServiceRegistry {
     // Some services are initialized to `null` and will be initialized in helper functions
 
     this.redis = redisClient // Redis Client
-    this.prometheusRegistry = PrometheusRegistry // Service that tracks metrics
+    this.prometheusRegistry = new PrometheusRegistry() // Service that tracks metrics
     this.libs = null // instance of Audius Libs
     this.blacklistManager = BlacklistManager // Service that handles blacklisted content
     this.stateMachineManager = null // Service that manages user states
@@ -49,7 +49,7 @@ class ServiceRegistry {
     this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
 
     // Queues
-    this.monitoringQueue = new MonitoringQueue() // Recurring job to monitor node state & performance metrics
+    this.monitoringQueue = new MonitoringQueue(this.prometheusRegistry) // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
     this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks

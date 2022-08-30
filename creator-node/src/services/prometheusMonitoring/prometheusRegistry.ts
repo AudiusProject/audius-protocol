@@ -176,4 +176,4 @@ export class PrometheusRegistry {
   }
 }
 
-module.exports = new PrometheusRegistry()
+module.exports = PrometheusRegistry

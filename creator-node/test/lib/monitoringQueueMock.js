@@ -3,7 +3,8 @@ const redisClient = require('../../src/redis')
 
 // Mock monitoring queue that sets monitor values on construction
 class MonitoringQueueMock {
-  constructor () {
+  constructor (prometheusRegistry) {
+    this.prometheusRegistry = prometheusRegistry
     redisClient.set(
       getMonitorRedisKey(MONITORS.DATABASE_LIVENESS),
       'true'

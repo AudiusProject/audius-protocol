@@ -1,9 +1,12 @@
 const Bull = require('bull')
 const redis = require('../redis')
 const config = require('../config')
-const { MONITORS, getMonitorRedisKey } = require('./monitors')
+const {
+  MONITORS,
+  PROMETHEUS_MONITORS,
+  getMonitorRedisKey
+} = require('./monitors')
 const { logger } = require('../logging')
-const prometheusRegistry = require('../services/prometheusMonitoring/prometheusRegistry')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -23,7 +26,7 @@ const MONITORING_QUEUE_HISTORY = 500
  *  2. Refreshes the value and stores the update in redis
  */
 class MonitoringQueue {
-  constructor() {
+  constructor(prometheusRegistry) {
     this.queue = new Bull('monitoring-queue', {
       redis: {
         port: config.get('redisPort'),
@@ -34,6 +37,8 @@ class MonitoringQueue {
         removeOnFail: MONITORING_QUEUE_HISTORY
       }
     })
+
+    this.prometheusRegistry = prometheusRegistry
 
     // Clean up anything that might be still stuck in the queue on restart
     this.queue.empty()
@@ -76,7 +81,13 @@ class MonitoringQueue {
     await this.refresh(MONITORS.STORAGE_PATH_USED, 'STORAGE_PATH_USED')
   }
 
+  /**
+   * Refresh monitor in redis and prometheus (if integer)
+   * @param {Object} monitorVal Object containing the monitor props like { func, ttl, type, name }
+   * @param {*} monitorKey name of the monitor eg `THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT`
+   */
   async refresh(monitorVal, monitorKey) {
+    console.log('val, key', monitorVal, monitorKey)
     const key = getMonitorRedisKey(monitorVal)
     const ttlKey = `${key}:ttl`
 
@@ -87,10 +98,19 @@ class MonitoringQueue {
     const value = await monitorVal.func()
     this.logStatus(`Computed value for ${monitorVal.name} ${value}`)
 
-    const metric = prometheusRegistry.getMetric(
-      prometheusRegistry.metricNames[`MONITOR_${monitorKey}`]
-    )
-    metric.set({}, value)
+    // store integer monitors in prometheus
+    try {
+      if (PROMETHEUS_MONITORS.hasOwnProperty(monitorKey)) {
+        const metric = this.prometheusRegistry.getMetric(
+          this.prometheusRegistry.metricNames[`MONITOR_${monitorKey}`]
+        )
+        metric.set({}, value)
+      }
+    } catch (e) {
+      logger.debug(
+        `Couldn't store value: ${value} in prometheus for metric: ${monitorKey}`
+      )
+    }
 
     // Set the value
     redis.set(key, value)
