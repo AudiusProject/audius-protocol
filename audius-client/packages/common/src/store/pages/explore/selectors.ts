@@ -5,8 +5,31 @@ import { getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 
 import { UserCollection, Status, User } from '../../../models'
+import { removeNullable } from '../../../utils'
 
 const getExplore = (state: CommonState) => state.pages.explore
+
+export const getExplorePlaylists = createSelector(
+  (state: CommonState) => state.pages.explore.playlists,
+  getCollections,
+  getUsers,
+  (playlists, collections, users) => {
+    const explorePlaylists = playlists
+      .map((id) => collections[id])
+      .filter(Boolean)
+      .map((collection) => ({
+        ...collection,
+        user: users[collection.playlist_owner_id] || {}
+      }))
+    return explorePlaylists
+  }
+)
+
+export const getExploreArtists = createSelector(
+  (state: CommonState) => state.pages.explore.profiles,
+  getUsers,
+  (artists, users) => artists.map((id) => users[id]).filter(removeNullable)
+)
 
 export type GetExplore = {
   playlists: UserCollection[]

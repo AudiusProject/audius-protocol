@@ -1,6 +1,5 @@
 import {
   SmartCollectionVariant,
-  Status,
   Track,
   UserTrack,
   UserTrackMetadata,
@@ -8,8 +7,7 @@ import {
   smartCollectionPageActions,
   collectionPageActions,
   getContext,
-  waitForAccount,
-  waitForValue
+  waitForAccount
 } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
@@ -17,8 +15,9 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { getLuckyTracks } from 'common/store/recommendation/sagas'
-import { requiresAccount } from 'utils/requiresAccount'
-import { EXPLORE_PAGE } from 'utils/route'
+import { requiresAccount } from 'common/utils/requiresAccount'
+
+import { EXPLORE_PAGE } from '../../../utils/route'
 
 import {
   HEAVY_ROTATION,
@@ -27,12 +26,12 @@ import {
   FEELING_LUCKY,
   UNDER_THE_RADAR,
   REMIXABLES
-} from '../smartCollections'
+} from './smartCollections'
 const { setSmartCollection } = collectionPageActions
 const { fetchSmartCollection, fetchSmartCollectionSucceeded } =
   smartCollectionPageActions
 
-const { getAccountStatus, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 
 const COLLECTIONS_LIMIT = 25
 
@@ -231,13 +230,8 @@ function* watchFetch() {
   yield takeEvery(
     fetchSmartCollection.type,
     function* (action: ReturnType<typeof fetchSmartCollection>) {
-      yield call(waitForBackendSetup)
-      yield call(
-        waitForValue,
-        getAccountStatus,
-        {},
-        (status) => status !== Status.LOADING
-      )
+      yield* call(waitForBackendSetup)
+      yield* waitForAccount()
 
       const { variant } = action.payload
 

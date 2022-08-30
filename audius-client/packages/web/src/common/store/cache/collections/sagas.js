@@ -418,6 +418,8 @@ function* addTrackToPlaylistAsync(action) {
     yield put(signOnActions.openSignOn(false))
     return
   }
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const web3 = yield call(audiusBackendInstance.getWeb3)
 
   // Retrieve tracks with the the collection so we confirm with the
   // most up-to-date information.
@@ -434,7 +436,6 @@ function* addTrackToPlaylistAsync(action) {
     action.trackId,
     `collection:${action.playlistId}`
   )
-  const web3 = yield window.audiusLibs.web3Manager.getWeb3()
   const currentBlockNumber = yield web3.eth.getBlockNumber()
   const currentBlock = yield web3.eth.getBlock(currentBlockNumber)
 
