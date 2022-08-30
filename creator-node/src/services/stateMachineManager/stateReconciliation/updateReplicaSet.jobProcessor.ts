@@ -288,7 +288,11 @@ const _determineNewReplicaSet = async ({
 }: DetermineNewReplicaSetParams) => {
   const currentReplicaSet = [primary, secondary1, secondary2]
   const healthyReplicaSet = new Set(
-    currentReplicaSet.filter((node) => node && !unhealthyReplicasSet.has(node))
+    currentReplicaSet
+      // Ensure exists
+      .filter((node) => Boolean)
+      // Node is not marked unhealthy
+      .filter((node) => !unhealthyReplicasSet.has(node))
   )
   const numberOfEmptyReplicas = currentReplicaSet.filter((node) => !node).length
   const newReplicaNodes = await _selectRandomReplicaSetNodes(
