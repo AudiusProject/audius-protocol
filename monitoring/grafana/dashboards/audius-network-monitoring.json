@@ -54,8 +54,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "semi-dark-purple",
-                  "value": null
+                  "color": "semi-dark-purple"
                 }
               ]
             },
@@ -110,8 +109,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "semi-dark-purple",
-                  "value": null
+                  "color": "semi-dark-purple"
                 }
               ]
             },
@@ -202,8 +200,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -292,8 +289,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -536,8 +532,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -632,8 +627,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -860,8 +854,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple",
-                  "value": null
+                  "color": "purple"
                 },
                 {
                   "color": "purple",
@@ -965,8 +958,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "blue",
-                  "value": null
+                  "color": "blue"
                 },
                 {
                   "color": "blue",
@@ -1103,8 +1095,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1231,8 +1222,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1759,8 +1749,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "orange",
@@ -1869,8 +1858,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "yellow",
@@ -1965,8 +1953,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple",
-                  "value": null
+                  "color": "purple"
                 },
                 {
                   "color": "red",
@@ -2104,8 +2091,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple",
-                  "value": null
+                  "color": "purple"
                 },
                 {
                   "color": "red",
@@ -2238,8 +2224,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
