@@ -23,20 +23,23 @@ def get_users_account_es(args):
     # kind of strange to populate_user_metadata_es for user with user
     # but this does match what upstream code does
     users = [populate_user_metadata_es(u, u) for u in pluck_hits(found)]
-    user_ids = [u["user_id"] for u in users]
     if not users:
         return
+
+    user = users[0]
+    user_id = user["user_id"]
 
     # saved playlists
     playlists = pluck_hits(
         esclient.search(
             index=ES_PLAYLISTS,
             size=5000,
+            source=["playlist_id", "playlist_name", "is_album", "playlist_owner_id"],
             query={
                 "bool": {
                     "should": [
-                        {"terms": {"saved_by": user_ids}},
-                        {"terms": {"playlist_owner_id": user_ids}},
+                        {"term": {"saved_by": user_id}},
+                        {"term": {"playlist_owner_id": user_id}},
                     ]
                 }
             },
@@ -46,30 +49,29 @@ def get_users_account_es(args):
     playlist_owner_ids = list({p["playlist_owner_id"] for p in playlists})
     user_map = {}
     if playlist_owner_ids:
-        user_map = hits_by_id(esclient.mget(index=ES_USERS, ids=playlist_owner_ids))
+        user_map = hits_by_id(
+            esclient.mget(
+                index=ES_USERS,
+                ids=playlist_owner_ids,
+                source=["user_id", "handle", "is_deactivated"],
+            )
+        )
 
-    for user in users:
-        user_id = user["user_id"]
-        stripped_playlists = []
-        my_playlists = [
-            p
-            for p in playlists
-            if p["playlist_owner_id"] == user_id or user_id in p["saved_by"]
-        ]
-        for playlist in my_playlists:
-            playlist_owner = user_map[str(playlist["playlist_owner_id"])]
-            stripped_playlist = {
-                "id": playlist["playlist_id"],
-                "name": playlist["playlist_name"],
-                "is_album": playlist["is_album"],
-                "user": {
-                    "id": playlist_owner["user_id"],
-                    "handle": playlist_owner["handle"],
-                },
-            }
-            if playlist_owner["is_deactivated"]:
-                stripped_playlist["user"]["is_deactivated"] = True
-            stripped_playlists.append(stripped_playlist)
-        user["playlists"] = stripped_playlists
+    stripped_playlists = []
+    for playlist in playlists:
+        playlist_owner = user_map[str(playlist["playlist_owner_id"])]
+        stripped_playlist = {
+            "id": playlist["playlist_id"],
+            "name": playlist["playlist_name"],
+            "is_album": playlist["is_album"],
+            "user": {
+                "id": playlist_owner["user_id"],
+                "handle": playlist_owner["handle"],
+            },
+        }
+        if playlist_owner["is_deactivated"]:
+            stripped_playlist["user"]["is_deactivated"] = True
+        stripped_playlists.append(stripped_playlist)
+    user["playlists"] = stripped_playlists
 
-    return users[0]
+    return user

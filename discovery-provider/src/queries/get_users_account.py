@@ -22,6 +22,13 @@ def get_users_account(args):
     if len(wallet) != 42:
         raise exceptions.ArgumentError("Invalid wallet length")
 
+    # ------- test test
+    if args.get("es") == "1":
+        return get_users_account_es(args)
+    else:
+        return get_users_account_sql(args)
+    # -------
+
     try:
         return get_users_account_es(args)
     except Exception as e:
