@@ -1,4 +1,8 @@
-import { remoteConfigSagas as remoteConfig } from '@audius/common'
+import {
+  remoteConfigSagas as remoteConfig,
+  mobileOverflowMenuUISagas as overflowMenuSagas,
+  shareModalUISagas as shareModalSagas
+} from '@audius/common'
 import analyticsSagas from 'audius-client/src/common/store/analytics/sagas'
 import accountSagas from 'common/store/account/sagas'
 import backendSagas, { setupBackend } from 'common/store/backend/sagas'
@@ -80,6 +84,8 @@ export default function* rootSaga() {
 
     // Application
     ...smartCollectionPageSagas(),
+    ...overflowMenuSagas(),
+    ...shareModalSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),

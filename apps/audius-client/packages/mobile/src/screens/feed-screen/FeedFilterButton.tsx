@@ -1,7 +1,13 @@
-import { FeedFilter } from '@audius/common'
+import { useCallback } from 'react'
+
+import { FeedFilter, feedPageSelectors, modalsActions } from '@audius/common'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { messages } from 'app/components/feed-filter-drawer'
 import { HeaderButton } from 'app/components/header'
+
+const { getFeedFilter } = feedPageSelectors
+const { setVisibility } = modalsActions
 
 const messageMap = {
   [FeedFilter.ALL]: messages.filterAll,
@@ -9,15 +15,13 @@ const messageMap = {
   [FeedFilter.REPOST]: messages.filterReposts
 }
 
-// HeaderButton for filtering feed by All/Original/Repost
-type FeedFilterButtonProps = {
-  currentFilter: FeedFilter
-  onPress: () => void
-}
+export const FeedFilterButton = () => {
+  const feedFilter = useSelector(getFeedFilter)
+  const dispatch = useDispatch()
 
-export const FeedFilterButton = ({
-  currentFilter,
-  onPress
-}: FeedFilterButtonProps) => {
-  return <HeaderButton onPress={onPress} title={messageMap[currentFilter]} />
+  const handlePress = useCallback(() => {
+    dispatch(setVisibility({ modal: 'FeedFilter', visible: true }))
+  }, [dispatch])
+
+  return <HeaderButton onPress={handlePress} title={messageMap[feedFilter]} />
 }

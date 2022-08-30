@@ -26,7 +26,7 @@ import {
   RepostType
 } from '@audius/common'
 import { albumPage, playlistPage } from 'audius-client/src/utils/route'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -91,6 +91,7 @@ const CollectionTileComponent = ({
   user,
   ...lineupTileProps
 }: CollectionTileProps) => {
+  const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const currentUserId = useSelector(getUserId)
@@ -179,7 +180,7 @@ const CollectionTileComponent = ({
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
-    dispatchWeb(
+    dispatch(
       openOverflowMenu({
         source: OverflowSource.COLLECTIONS,
         id: playlist_id,
@@ -188,7 +189,7 @@ const CollectionTileComponent = ({
     )
   }, [
     playlist_id,
-    dispatchWeb,
+    dispatch,
     isOwner,
     has_current_user_reposted,
     has_current_user_saved,
@@ -199,14 +200,14 @@ const CollectionTileComponent = ({
     if (playlist_id === undefined) {
       return
     }
-    dispatchWeb(
+    dispatch(
       requestOpenShareModal({
         type: 'collection',
         collectionId: playlist_id,
         source: ShareSource.TILE
       })
     )
-  }, [dispatchWeb, playlist_id])
+  }, [dispatch, playlist_id])
 
   const handlePressSave = useCallback(() => {
     if (playlist_id === undefined) {
