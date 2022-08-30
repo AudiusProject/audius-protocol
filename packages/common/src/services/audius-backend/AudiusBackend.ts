@@ -201,14 +201,6 @@ type WithEagerOption = (
 
 type WaitForLibsInit = () => Promise<unknown>
 
-type FetchCID = (
-  cid: CID,
-  creatorNodeGateways: string[],
-  cache?: boolean,
-  asUrl?: boolean,
-  trackId?: Nullable<ID>
-) => Promise<any>
-
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
   disableImagePreload?: boolean
@@ -228,7 +220,6 @@ type AudiusBackendParams = {
     web3ProviderUrls: Maybe<string[]>,
     web3NetworkId: Maybe<string>
   ) => Promise<any>
-  fetchCID: FetchCID
   // Not required on web
   hedgehogConfig?: {
     createKey: HedgehogConfig['createKey']
@@ -274,7 +265,6 @@ export const audiusBackend = ({
   getHostUrl,
   getLibs,
   getWeb3Config,
-  fetchCID,
   hedgehogConfig,
   identityServiceUrl,
   isElectron,
@@ -416,6 +406,40 @@ export const audiusBackend = ({
       }
       image.src = url
     })
+  }
+
+  async function fetchCID(
+    cid: CID,
+    creatorNodeGateways = [] as string[],
+    cache = true,
+    asUrl = true,
+    trackId: Nullable<ID> = null
+  ) {
+    await waitForLibsInit()
+    try {
+      const res = await audiusLibs.File.fetchCID(
+        cid,
+        creatorNodeGateways,
+        () => {},
+        // If requesting a url (we mean a blob url for the file),
+        // otherwise, default to JSON
+        asUrl ? 'blob' : 'json',
+        trackId
+      )
+      if (asUrl) {
+        const url = URL.createObjectURL(res.data)
+        if (cache) CIDCache.add(cid, url)
+        return url
+      }
+      return res?.data ?? null
+    } catch (e) {
+      const message = getErrorMessage(e)
+      if (message === 'Unauthorized') {
+        return message
+      }
+      console.error(e)
+      return asUrl ? '' : null
+    }
   }
 
   async function fetchImageCID(
@@ -3161,6 +3185,7 @@ export const audiusBackend = ({
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
     emailInUse,
+    fetchCID,
     fetchImageCID,
     fetchUserAssociatedEthWallets,
     fetchUserAssociatedSolWallets,

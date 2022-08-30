@@ -25,7 +25,9 @@ import {
   walletActions,
   getContext,
   waitForAccount,
-  waitForValue
+  waitForValue,
+  MAX_ARTIST_HOVER_TOP_SUPPORTING,
+  MAX_PROFILE_TOP_SUPPORTERS
 } from '@audius/common'
 import BN from 'bn.js'
 import {
@@ -49,11 +51,7 @@ import {
 } from 'services/audius-backend/Tipping'
 import { UpdateTipsStorageMessage } from 'services/native-mobile-interface/tipping'
 import mobileSagas from 'store/tipping/mobileSagas'
-import {
-  FEED_TIP_DISMISSAL_TIME_LIMIT,
-  MAX_ARTIST_HOVER_TOP_SUPPORTING,
-  MAX_PROFILE_TOP_SUPPORTERS
-} from 'utils/constants'
+import { FEED_TIP_DISMISSAL_TIME_LIMIT } from 'utils/constants'
 
 import { updateTipsStorage } from './storageUtils'
 const { decreaseBalance } = walletActions

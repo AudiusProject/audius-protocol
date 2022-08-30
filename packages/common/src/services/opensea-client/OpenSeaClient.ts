@@ -1,13 +1,13 @@
-import { Collectible } from '@audius/common'
 import * as allPromisesSettled from 'promise.allsettled'
 
-import { CollectibleState } from 'components/collectibles/types'
 import {
+  Collectible,
+  CollectibleState,
   OpenSeaAsset,
   OpenSeaAssetExtended,
   OpenSeaEvent,
   OpenSeaEventExtended
-} from 'services/opensea-client/types'
+} from '../../models'
 
 import {
   isAssetValid,

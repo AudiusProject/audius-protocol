@@ -1,4 +1,4 @@
-import { User, accountActions } from '@audius/common'
+import { User, accountActions, dataURLtoFile } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { all, call, put, select, take, takeEvery } from 'redux-saga/effects'
 
@@ -15,7 +15,6 @@ import {
   FetchAllFollowArtistsFailureMessage
 } from 'services/native-mobile-interface/signon'
 import { MessageType } from 'services/native-mobile-interface/types'
-import { dataURLtoFile } from 'utils/fileUtils'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { FEED_PAGE } from 'utils/route'
 

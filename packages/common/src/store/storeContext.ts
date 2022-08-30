@@ -1,3 +1,5 @@
+import { SolanaClient } from 'services/solana-client'
+
 import { AnalyticsEvent, LineupState, Track } from '../models'
 import { AudioPlayer } from '../services/audio-player'
 import { AudiusAPIClient } from '../services/audius-api-client'
@@ -40,4 +42,5 @@ export type CommonStoreContext = {
   // route or screen.
   getLineupSelectorForRoute?: () => (state: CommonState) => LineupState<Track>
   audioPlayer: AudioPlayer
+  solanaClient: SolanaClient
 }

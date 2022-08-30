@@ -5,7 +5,8 @@ import {
   User,
   cacheUsersSelectors,
   profilePageSelectors,
-  tippingSelectors
+  tippingSelectors,
+  MAX_PROFILE_TOP_SUPPORTERS
 } from '@audius/common'
 import { IconTrophy } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,7 +22,6 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
-import { MAX_PROFILE_TOP_SUPPORTERS } from 'utils/constants'
 
 import styles from './TopSupporters.module.css'
 const { getOptimisticSupporters } = tippingSelectors

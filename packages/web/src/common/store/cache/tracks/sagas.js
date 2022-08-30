@@ -33,7 +33,6 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { fetchCID } from 'services/audius-backend'
 import TrackDownload from 'services/audius-backend/TrackDownload'
 import { dominantColor } from 'utils/imageProcessingUtil'
 const { getUser } = cacheUsersSelectors
@@ -66,7 +65,12 @@ function* fetchSegment(metadata) {
   )
   if (!metadata.track_segments[0]) return
   const cid = metadata.track_segments[0].multihash
-  return yield call(fetchCID, cid, gateways, /* cache */ false)
+  return yield call(
+    audiusBackendInstance.fetchCID,
+    cid,
+    gateways,
+    /* cache */ false
+  )
 }
 
 // TODO(AUD-1837) -- we should not rely on this logic anymore of fetching first

@@ -4,7 +4,8 @@ import {
   ID,
   stringWeiToBN,
   profilePageSelectors,
-  tippingSelectors
+  tippingSelectors,
+  MAX_PROFILE_SUPPORTING_TILES
 } from '@audius/common'
 import { IconArrow } from '@audius/stems'
 import { useDispatch } from 'react-redux'
@@ -20,7 +21,6 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
-import { MAX_PROFILE_SUPPORTING_TILES } from 'utils/constants'
 
 import styles from './SupportingList.module.css'
 import { SupportingTile } from './SupportingTile'

@@ -35,11 +35,11 @@ import { WalletLinkProvider } from 'walletlink'
 import { upgradeToCreator } from 'common/store/cache/users/sagas'
 import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import { fetchServices } from 'common/store/service-selection/slice'
 import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
-} from 'pages/profile-page/sagas'
+} from 'common/store/profile/sagas'
+import { fetchServices } from 'common/store/service-selection/slice'
 import {
   loadWalletLink,
   loadBitski,

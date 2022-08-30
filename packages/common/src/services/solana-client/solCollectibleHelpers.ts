@@ -1,9 +1,5 @@
-import {
-  Chain,
-  Collectible,
-  CollectibleMediaType,
-  Nullable
-} from '@audius/common'
+import { Chain, Collectible, CollectibleMediaType } from '../../models'
+import { Nullable } from '../../utils/typeUtils'
 
 import {
   MetaplexNFT,
@@ -11,7 +7,7 @@ import {
   SolanaNFT,
   SolanaNFTType,
   StarAtlasNFT
-} from 'services/solana-client/types'
+} from './types'
 
 type SolanaNFTMedia = {
   collectibleMediaType: CollectibleMediaType
@@ -41,7 +37,7 @@ const fetchWithTimeout = async (
  */
 const nftGif = async (nft: MetaplexNFT): Promise<Nullable<SolanaNFTMedia>> => {
   const gifFile = (nft.properties?.files ?? []).find(
-    (file) => typeof file === 'object' && file.type === 'image/gif'
+    (file: any) => typeof file === 'object' && file.type === 'image/gif'
   )
   if (gifFile) {
     const url = (gifFile as MetaplexNFTPropertiesFile).uri
@@ -86,7 +82,7 @@ const nftThreeDWithFrame = async (
       frameUrl = nft.image
     } else {
       const imageFile = files?.find(
-        (file) => typeof file === 'object' && file.type.includes('image')
+        (file: any) => typeof file === 'object' && file.type.includes('image')
       ) as MetaplexNFTPropertiesFile
       if (imageFile) {
         frameUrl = imageFile.uri
@@ -130,13 +126,13 @@ const nftVideo = async (
   // In case we want to restrict to specific file extensions, see below link
   // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/views/artCreate/index.tsx#L318
   const videoFile = files.find(
-    (file) =>
+    (file: any) =>
       typeof file === 'object' &&
       file.type.includes('video') &&
       !file.type.endsWith('glb')
   ) as MetaplexNFTPropertiesFile
   const videoUrl = files.find(
-    (file) =>
+    (file: any) =>
       typeof file === 'string' &&
       // https://github.com/metaplex-foundation/metaplex/blob/397ceff70b3524aa0543540584c7200c79b198a0/js/packages/web/src/components/ArtContent/index.tsx#L107
       file.startsWith('https://watch.videodelivery.net/')
@@ -188,7 +184,7 @@ const nftImage = async (
   // In case we want to restrict to specific file extensions, see below link
   // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/views/artCreate/index.tsx#L316
   const imageFile = files.find(
-    (file) => typeof file === 'object' && file.type.includes('image')
+    (file: any) => typeof file === 'object' && file.type.includes('image')
   ) as MetaplexNFTPropertiesFile
   const isImage =
     nft.properties?.category === 'image' || nft.image.length || imageFile
@@ -281,7 +277,7 @@ const metaplexNFTToCollectible = async (
 
   if (
     (nft.properties?.creators ?? []).some(
-      (creator) => creator.address === address
+      (creator: any) => creator.address === address
     )
   ) {
     collectible.isOwned = false
@@ -308,8 +304,7 @@ const metaplexNFTToCollectible = async (
 }
 
 const starAtlasNFTToCollectible = async (
-  nft: StarAtlasNFT,
-  address: string
+  nft: StarAtlasNFT
 ): Promise<Collectible> => {
   const identifier = [nft._id, nft.symbol, nft.name, nft.image]
     .filter(Boolean)
@@ -368,7 +363,7 @@ export const solanaNFTToCollectible = async (
     case SolanaNFTType.METAPLEX:
       return metaplexNFTToCollectible(nft as MetaplexNFT, address)
     case SolanaNFTType.STAR_ATLAS:
-      return starAtlasNFTToCollectible(nft as StarAtlasNFT, address)
+      return starAtlasNFTToCollectible(nft as StarAtlasNFT)
     default:
       return null
   }

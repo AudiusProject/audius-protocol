@@ -1,7 +1,8 @@
 import { TrackSegment, decodeHashId, hlsUtils } from '@audius/common'
 import Hls from 'hls.js'
 
-import { fetchCID } from 'services/audius-backend'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+
 const { generateM3U8, generateM3U8Variants } = hlsUtils
 
 declare global {
@@ -50,16 +51,18 @@ class fLoader extends Hls.DefaultConfig.loader {
       // @ts-ignore: relurl is indeed on Fragment
       const segmentUrl = context.frag.relurl
       if (!segmentUrl.startsWith('blob')) {
-        fetchCID(
-          segmentUrl,
-          this.getFallbacks(),
-          /* cache */ false,
-          /* asUrl */ true,
-          decodeHashId(this.getTrackId()) ?? undefined
-        ).then((resolved) => {
-          const updatedContext = { ...context, url: resolved }
-          load(updatedContext, config, callbacks)
-        })
+        audiusBackendInstance
+          .fetchCID(
+            segmentUrl,
+            this.getFallbacks(),
+            /* cache */ false,
+            /* asUrl */ true,
+            decodeHashId(this.getTrackId()) ?? undefined
+          )
+          .then((resolved) => {
+            const updatedContext = { ...context, url: resolved }
+            load(updatedContext, config, callbacks)
+          })
       } else {
         load(context, config, callbacks)
       }

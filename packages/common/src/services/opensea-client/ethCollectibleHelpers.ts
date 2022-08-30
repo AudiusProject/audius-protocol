@@ -1,10 +1,11 @@
-import { Chain, Collectible, CollectibleMediaType } from '@audius/common'
-
 import {
+  Chain,
+  Collectible,
+  CollectibleMediaType,
   OpenSeaAssetExtended,
   OpenSeaEvent,
   OpenSeaEventExtended
-} from 'services/opensea-client/types'
+} from '../../models'
 
 const fetchWithTimeout = async (
   resource: RequestInfo,

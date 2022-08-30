@@ -29,7 +29,7 @@ import {
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { getResult } from 'common/store/confirmer/selectors'
-import { updateProfileAsync } from 'pages/profile-page/sagas'
+import { updateProfileAsync } from 'common/store/profile/sagas'
 
 import { update } from './slice'
 
