@@ -14,6 +14,7 @@ export const initializeAudiusLibs = async () => {
     ),
     solanaWeb3Config: AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: process.env.SOLANA_ENDPOINT,
+      solanaTokenAddress: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
       mintAddress: process.env.SOLANA_TOKEN_MINT_PUBLIC_KEY,
       claimableTokenProgramAddress: process.env.SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY,
       rewardsManagerProgramId: process.env.SOLANA_REWARD_MANAGER_PUBLIC_KEY,
