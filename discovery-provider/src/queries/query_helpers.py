@@ -499,7 +499,7 @@ def populate_track_metadata(
 
 
 def _populate_premium_track_metadata(session, tracks, current_user_id):
-    premium_tracks = map(lambda track: track["is_premium"], tracks)
+    premium_tracks = filter(lambda track: track["is_premium"], tracks)
     if not premium_tracks:
         return
 
