@@ -205,6 +205,15 @@ async function _primarySyncFromSecondary({
       if (fetchedLocalClockMax < requestedClockRangeMax) {
         completed = true
       } else {
+        decisionTree.recordStage({
+          name: 'About to process next page of multi-page export',
+          data: {
+            fetchedLocalClockMax,
+            requestedClockRangeMin: exportClockRangeMin,
+            requestedClockRangeMax
+          },
+          log: true
+        })
         exportClockRangeMin = requestedClockRangeMax + 1
       }
     }
