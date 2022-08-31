@@ -254,6 +254,16 @@ export const tracing = {
   /**
    * records errors on the current trace and sets the span status to `ERROR`
    * @param {Error} error the error to record on the span
+   *
+   * Usage
+   * ```
+   * try {
+   *     someSketchyCode()
+   * } catch (e: any) {
+   *     tracing.recordException(e)
+   *     throw e
+   * }
+   * ```
    */
   recordException: (error: Error) => {
     const span = tracing.getActiveSpan()
