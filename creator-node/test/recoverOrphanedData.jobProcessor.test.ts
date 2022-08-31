@@ -142,9 +142,13 @@ describe('test recoverOrphanedData job processor', function () {
               ORPHANED_DATA_NUM_USERS_PER_QUERY:
                 pagination.ORPHANED_DATA_NUM_USERS_PER_QUERY,
               ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH:
-                pagination.ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
+                pagination.ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH,
+              ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS: 1
             }
-          : stateMachineConstants
+          : {
+              ...stateMachineConstants,
+              ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS: 1
+            }
       }
     ).default
   }
@@ -294,7 +298,7 @@ describe('test recoverOrphanedData job processor', function () {
     })
   })
 
-  it('Does not think data is orphaned with wallet is in RS but no data is on node', async function () {
+  it('Does not think data is orphaned when wallet is in RS but no data is on node', async function () {
     // Process a job where users have this node in their RS BUT no data on this node (they shouldn't be considered orphaned in this case)
     await processAndTestJob({
       usersOnNode: [],
