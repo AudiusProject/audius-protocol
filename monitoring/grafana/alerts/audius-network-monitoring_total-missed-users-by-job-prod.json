@@ -4,9 +4,9 @@
       "__alertId__": "Y4Tx_K3nz_020_P3_prod",
       "__dashboardUid__": "Y4Tx_K3nz",
       "__panelId__": "20",
-      "description": "The number of users skipped because of network monitoring job errors",
+      "description": "missed users can rise above the threshold if a content node goes down or there's a bug in indexing the content nodes",
       "runbook_url": "http://grafana.audius.co/d/Y4Tx_K3nz?viewPanel=20",
-      "summary": ""
+      "summary": "The number of users skipped because of network monitoring job errors"
     },
     "condition": "B",
     "data": [
@@ -97,9 +97,9 @@
       "__alertId__": "Y4Tx_K3nz_020_P2_prod",
       "__dashboardUid__": "Y4Tx_K3nz",
       "__panelId__": "20",
-      "description": "The number of users skipped because of network monitoring job errors",
+      "description": "missed users can rise above the threshold if a content node goes down or there's a bug in indexing the content nodes",
       "runbook_url": "http://grafana.audius.co/d/Y4Tx_K3nz?viewPanel=20",
-      "summary": ""
+      "summary": "The number of users skipped because of network monitoring job errors"
     },
     "condition": "B",
     "data": [
