@@ -53,13 +53,13 @@ def entity_manager_update(
             return num_total_changes, changed_entity_ids
 
         metric_latency = PrometheusMetric(
-            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS
         )
         metric_num_changed = PrometheusMetric(
-            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST
         )
         metric_num_errors = PrometheusMetric(
-            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_ERRORS
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS
         )
 
         # collect events by entity type and action
@@ -105,6 +105,7 @@ def entity_manager_update(
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.PLAYLIST
                     ):
+                        raise Exception("failll")
                         create_playlist(params)
                     elif (
                         params.action == Action.UPDATE
@@ -176,7 +177,7 @@ def entity_manager_update(
         metric_num_changed.save(
             len(new_records["tracks"]), {"entity_type": EntityType.TRACK.value}
         )
-        metric_num_changed.save(num_total_changes, {"entity_type": "all"})
+        metric_num_changed.save(num_total_changes, {"entity_type": "All"})
 
         logger.info(
             f"entity_manager.py | Completed with {num_total_changes} total changes"

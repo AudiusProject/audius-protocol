@@ -38,7 +38,7 @@
             "custom": {
               "axisCenteredZero": false,
               "axisColorMode": "text",
-              "axisLabel": "",
+              "axisLabel": "Number of Errors",
               "axisPlacement": "auto",
               "barAlignment": 0,
               "drawStyle": "line",
@@ -78,7 +78,8 @@
                   "value": 80
                 }
               ]
-            }
+            },
+            "unit": "none"
           },
           "overrides": []
         },
@@ -107,7 +108,7 @@
               "type": "prometheus"
             },
             "editorMode": "builder",
-            "expr": "audius_dn_entity_manager_update_num_errors_sum",
+            "expr": "audius_dn_entity_manager_update_errors",
             "legendFormat": "{{entity_type}}",
             "range": true,
             "refId": "A"
@@ -125,7 +126,7 @@
             "custom": {
               "axisCenteredZero": false,
               "axisColorMode": "text",
-              "axisLabel": "",
+              "axisLabel": "Number of Updates",
               "axisPlacement": "auto",
               "barAlignment": 0,
               "drawStyle": "line",
@@ -165,7 +166,8 @@
                   "value": 80
                 }
               ]
-            }
+            },
+            "unit": "none"
           },
           "overrides": []
         },
@@ -194,7 +196,7 @@
               "type": "prometheus"
             },
             "editorMode": "builder",
-            "expr": "audius_dn_entity_manager_update_num_changed_sum",
+            "expr": "audius_dn_entity_manager_update_changed_latest_sum",
             "legendFormat": "{{entity_type}}",
             "range": true,
             "refId": "A"
@@ -212,7 +214,7 @@
             "custom": {
               "axisCenteredZero": false,
               "axisColorMode": "text",
-              "axisLabel": "",
+              "axisLabel": "Duration",
               "axisPlacement": "auto",
               "barAlignment": 0,
               "drawStyle": "line",
@@ -252,7 +254,8 @@
                   "value": 80
                 }
               ]
-            }
+            },
+            "unit": "s"
           },
           "overrides": []
         },
@@ -281,13 +284,13 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_dn_entity_manager_update_latency_sum / audius_dn_entity_manager_update_latency_count",
+            "expr": "audius_dn_entity_manager_update_duration_seconds_sum / audius_dn_entity_manager_update_duration_seconds_count",
             "legendFormat": "Latency (seconds)",
             "range": true,
             "refId": "A"
           }
         ],
-        "title": "Update Latency (in seconds)",
+        "title": "Update Duration",
         "type": "timeseries"
       }
     ],

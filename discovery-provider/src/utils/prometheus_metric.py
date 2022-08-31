@@ -111,9 +111,9 @@ class PrometheusMetricNames:
     )
     UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
     USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
-    ENTITY_MANAGER_UPDATE_NUM_CHANGED = "entity_manager_update_num_changed"
-    ENTITY_MANAGER_UPDATE_LATENCY = "entity_manager_update_latency"
-    ENTITY_MANAGER_UPDATE_NUM_ERRORS = "entity_manager_update_num_errors"
+    ENTITY_MANAGER_UPDATE_CHANGED_LATEST = "entity_manager_update_changed_latest"
+    ENTITY_MANAGER_UPDATE_DURATION_SECONDS = "entity_manager_update_duration_seconds"
+    ENTITY_MANAGER_UPDATE_ERRORS = "entity_manager_update_errors"
 
 
 """
@@ -224,19 +224,19 @@ PrometheusRegistry = {
         "Runtimes for src.task.users:user_state_update()",
         ("scope",),
     ),
-    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_CHANGED}",
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST}",
         "Number of entities changed by entity type",
         ("entity_type",),
     ),
-    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_ERRORS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_NUM_ERRORS}",
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS}",
         "Number of errors by entity type",
         ("entity_type",),
     ),
-    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_LATENCY}",
-        "Latency for entity",
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS}",
+        "Duration for entity manager updates",
     ),
 }
 
