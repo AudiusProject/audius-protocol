@@ -101,7 +101,8 @@ async function fetchExportFromNode({
   if (
     !_.has(fetchedCNodeUser, 'walletPublicKey') ||
     !_.has(fetchedCNodeUser, 'clock') ||
-    !_.has(fetchedCNodeUser, 'clockInfo')
+    !_.has(fetchedCNodeUser, ['clockInfo', 'localClockMax']) ||
+    !_.has(fetchedCNodeUser, ['clockInfo', 'requestedClockRangeMax'])
   ) {
     return {
       error: {
