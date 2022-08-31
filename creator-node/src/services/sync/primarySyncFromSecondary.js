@@ -124,9 +124,19 @@ async function _primarySyncFromSecondary({
         })
         throw new Error(error.message)
       }
+
+      const { localClockMax: fetchedLocalClockMax, requestedClockRangeMax } =
+        fetchedCNodeUser.clockInfo
+      const fetchedCNodeUserClockVal = fetchedCNodeUser.clock
+
       decisionTree.recordStage({
         name: 'fetchExportFromSecondary() Success',
-        data: { localClockMax: fetchedCNodeUser?.clockInfo?.localClockMax },
+        data: {
+          fetchedLocalClockMax,
+          requestedClockRangeMin: exportClockRangeMin,
+          requestedClockRangeMax,
+          fetchedCNodeUserClockVal
+        },
         log: true
       })
 
@@ -180,11 +190,34 @@ async function _primarySyncFromSecondary({
         throw e
       }
 
-      const clockInfo = fetchedCNodeUser.clockInfo
-      if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
+      /**
+       * TODO update this once all nodes are running 0.3.66
+       *
+       * cnodeUser.clock field is used for comparison since it is max(requestedClockRangeMax, actual clockMax)
+       * This means:
+       *    cnodeUser.clock < requestedClockRangeMax
+       *      - no more data to fetch
+       *      - completed = true
+       *    cnodeUser.clock = requestedClockRangeMax
+       *      - may or may not be more data to fetch
+       *      - completed = false
+       *    cnodeUser.clock > requestedClockRangeMax
+       *      - this never happens
+       */
+      if (fetchedCNodeUserClockVal < requestedClockRangeMax) {
         completed = true
       } else {
-        exportClockRangeMin = clockInfo.requestedClockRangeMax + 1
+        decisionTree.recordStage({
+          name: 'About to process next page of multi-page export',
+          data: {
+            fetchedLocalClockMax,
+            requestedClockRangeMin: exportClockRangeMin,
+            requestedClockRangeMax,
+            fetchedCNodeUserClockVal
+          },
+          log: true
+        })
+        exportClockRangeMin = requestedClockRangeMax + 1
       }
     }
 

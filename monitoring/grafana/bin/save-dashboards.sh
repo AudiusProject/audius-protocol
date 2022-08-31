@@ -121,7 +121,7 @@ do
     mkdir -p "${path}"
     path=${path}/${slug}.json
 
-    echo ${response} \
+    echo "${response}" \
         | jq "${CLEAR_METADATA}" \
         | jq "${CLEAR_ITERATION}" \
         | jq "${CLEAR_VERSION}" \

@@ -9,6 +9,8 @@ PROM_ENV="${1:-local}"
 
 docker-compose build --build-arg PROM_ENV=${PROM_ENV}
 
-docker-compose down
-docker network create audius_dev || true
+if [[ "${PROM_ENV}" != "prod" ]]; then
+    docker-compose down
+    docker network create audius_dev || true
+fi
 docker-compose up -d
