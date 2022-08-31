@@ -19,7 +19,7 @@ async function main() {
       config.get("ethTokenAddress"),
       config.get("ethRegistryAddress"),
       ethWeb3,
-      config.get("ethOwnerWallet"),
+      config.get("delegateOwnerWallet"),
     ),
     isDebug: true,
   });

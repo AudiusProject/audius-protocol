@@ -112,7 +112,7 @@ const _saveWalletsOnThisNodeToRedis = async (logger: Logger) => {
       order: [['cnodeUserUUID', 'ASC']],
       where: {
         cnodeUserUUID: {
-          [models.Sequelize.Op.gte]: prevCnodeUserUUID
+          [models.Sequelize.Op.gt]: prevCnodeUserUUID
         }
       },
       limit: ORPHANED_DATA_NUM_USERS_PER_QUERY

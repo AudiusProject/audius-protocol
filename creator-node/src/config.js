@@ -419,7 +419,7 @@ const config = convict({
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
     env: 'snapbackHighestReconfigMode',
-    default: 'RECONFIG_DISABLED'
+    default: 'ONE_SECONDARY'
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
@@ -454,6 +454,12 @@ const config = convict({
 
   /** sync / snapback configs */
 
+  syncForceWipeEnabled: {
+    doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeEnabled',
+    default: true
+  },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',
