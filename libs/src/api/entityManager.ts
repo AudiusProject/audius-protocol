@@ -1,27 +1,18 @@
 import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
-import type { Nullable, Utils } from '../utils'
+import { Nullable, Utils } from '../utils'
+import {
+  EntityType,
+  Action
+} from '../services/dataContracts/EntityManagerClient'
 
-export enum Action {
-  CREATE = 'Create',
-  UPDATE = 'Update',
-  DELETE = 'Delete',
-  FOLLOW = 'Follow',
-  UNFOLLOW = 'Unfollow'
-}
-
-export enum EntityType {
-  PLAYLIST = 'Playlist',
-  USER = 'User'
-}
-
-export interface EntityManagerOperationResponse {
+export interface PlaylistOperationResponse {
   /**
-   * Blockhash of entityManager transaction
+   * Blockhash of playlist transaction
    */
   blockHash: Nullable<string>
   /**
-   * Block number of entityManager transaction
+   * Block number of playlist transaction
    */
   blockNumber: Nullable<number>
   /**
@@ -65,7 +56,7 @@ export class EntityManager extends Base {
   /**
    * Playlist default response values
    */
-  getDefaultEntityManagerResponseValues(): EntityManagerOperationResponse {
+  getDefaultPlaylistReponseValues(): PlaylistOperationResponse {
     return {
       blockHash: null,
       blockNumber: null,
@@ -78,9 +69,9 @@ export class EntityManager extends Base {
    */
   async createPlaylist(
     playlist: PlaylistParam
-  ): Promise<EntityManagerOperationResponse> {
-    const responseValues: EntityManagerOperationResponse =
-      this.getDefaultEntityManagerResponseValues()
+  ): Promise<PlaylistOperationResponse> {
+    const responseValues: PlaylistOperationResponse =
+      this.getDefaultPlaylistReponseValues()
     try {
       const userId: number | null = this.userStateManager.getCurrentUserId()
       if (!userId) {
@@ -133,11 +124,9 @@ export class EntityManager extends Base {
   /**
    * Delete a playlist using updated data contracts flow
    */
-  async deletePlaylist(
-    playlistId: number
-  ): Promise<EntityManagerOperationResponse> {
-    const responseValues: EntityManagerOperationResponse =
-      this.getDefaultEntityManagerResponseValues()
+  async deletePlaylist(playlistId: number): Promise<PlaylistOperationResponse> {
+    const responseValues: PlaylistOperationResponse =
+      this.getDefaultPlaylistReponseValues()
     const userId: number | null = this.userStateManager.getCurrentUserId()
     if (!userId) {
       responseValues.error = 'Missing current user ID'
@@ -162,48 +151,14 @@ export class EntityManager extends Base {
     }
   }
 
-  /*
-   * Create or delete a follow operation
-   */
-  async followUser(
-    followeeUserId: number,
-    isUnfollow: boolean
-  ): Promise<EntityManagerOperationResponse> {
-    const responseValues: EntityManagerOperationResponse =
-      this.getDefaultEntityManagerResponseValues()
-    try {
-      // TODO: Can we consolidate this initial flow somehow since it is repeated
-      const userId: number | null = this.userStateManager.getCurrentUserId()
-      if (!userId) {
-        responseValues.error = 'Missing current user ID'
-        return responseValues
-      }
-      const resp = await this.manageEntity({
-        userId,
-        entityType: EntityType.USER,
-        entityId: followeeUserId,
-        action: isUnfollow ? Action.UNFOLLOW : Action.FOLLOW,
-        metadataMultihash: ''
-      })
-      const txReceipt = resp.txReceipt
-      responseValues.blockHash = txReceipt.blockHash
-      responseValues.blockNumber = txReceipt.blockNumber
-      return responseValues
-    } catch (e) {
-      const error = (e as Error).message
-      responseValues.error = error
-      return responseValues
-    }
-  }
-
   /**
    * Update a playlist using updated data contracts flow
    */
   async updatePlaylist(
     playlist: PlaylistParam
-  ): Promise<EntityManagerOperationResponse> {
-    const responseValues: EntityManagerOperationResponse =
-      this.getDefaultEntityManagerResponseValues()
+  ): Promise<PlaylistOperationResponse> {
+    const responseValues: PlaylistOperationResponse =
+      this.getDefaultPlaylistReponseValues()
 
     try {
       const userId: number | null = this.userStateManager.getCurrentUserId()

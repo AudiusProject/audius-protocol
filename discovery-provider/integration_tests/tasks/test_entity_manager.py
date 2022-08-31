@@ -207,7 +207,6 @@ def test_index_valid_playlists(app, mocker):
         assert playlist_3.playlist_name == "playlist 3 updated"
         assert playlist_3.is_delete == False
         assert playlist_3.is_current == True
-    pass
 
 
 def test_index_invalid_playlists(app, mocker):

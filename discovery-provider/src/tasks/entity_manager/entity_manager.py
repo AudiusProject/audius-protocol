@@ -8,6 +8,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
+from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
@@ -18,6 +19,7 @@ from src.tasks.entity_manager.playlist import (
     update_playlist,
 )
 from src.tasks.entity_manager.social_features import (
+    action_to_record_type,
     create_actions,
     create_social_record,
     delete_actions,
@@ -152,67 +154,16 @@ def entity_manager_update(
             for entity_id, records in record_dict.items():
                 if not records:
                     continue
+
+                # invalidate all new records except the last
                 for record in records:
                     record.is_current = False
                 records[-1].is_current = True
                 records_to_save.extend(records)
 
+                # invalidate original record if it already existed in the DB
                 if entity_id in original_records[record_type]:
                     original_records[record_type][entity_id].is_current = False
-
-                # if original record
-        # records_to_save = []
-        # for playlist_records in new_records["playlists"].values():
-        #     if not playlist_records:
-        #         continue
-        #     # invalidate all playlists besides the last one
-        #     for i in range(len(playlist_records)):
-        #         playlist_records[i].is_current = False
-
-        #     # invalidate existing record only if it's being updated
-        #     playlist_id = playlist_records[0].playlist_id
-        #     if playlist_id in original_records["playlists"]:
-        #         original_records["playlists"][playlist_id].is_current = False
-
-        #     # flip is_current to true for the last tx in each playlist
-        #     playlist_records[-1].is_current = True
-        #     records_to_save.extend(playlist_records)
-
-        # for track_records in new_records["tracks"].values():
-        #     # flip is_current to true for the last tx in each playlist
-        #     track_records[-1].is_current = True
-        #     records_to_save.extend(track_records)
-
-        # for follow_records in new_records["follows"].values():
-        #     if not playlist_records:
-        #         continue
-        #     # invalidate all playlists besides the last one
-        #     for i in range(len(playlist_records)):
-        #         playlist_records[i].is_current = False
-
-        #     # invalidate existing record only if it's being updated
-        #     playlist_id = playlist_records[0].playlist_id
-        #     if playlist_id in original_records["playlists"]:
-        #         original_records["playlists"][playlist_id].is_current = False
-
-        #     # flip is_current to true for the last follow tx
-        #     follow_records[-1].is_current = True
-        #     records_to_save.extend(follow_records)
-
-        # for save_records in new_records["saves"].values():
-        #     if not playlist_records:
-        #         continue
-        #     # invalidate all playlists besides the last one
-        #     for i in range(len(playlist_records)):
-        #         playlist_records[i].is_current = False
-
-        #     # invalidate existing record only if it's being updated
-        #     playlist_id = playlist_records[0].playlist_id
-        #     if playlist_id in original_records["playlists"]:
-        #         original_records["playlists"][playlist_id].is_current = False
-        #     # flip is_current to true for the last follow tx
-        #     save_records[-1].is_current = True
-        #     records_to_save.extend(save_records)
 
         # insert/update all tracks, playlist records in this block
         session.bulk_save_objects(records_to_save)
@@ -250,18 +201,17 @@ def collect_entities_to_fetch(
             entities_to_fetch[EntityType.USER.value].add(user_id)
 
             # Query follow operations as needed
-            if action == Action.FOLLOW or action == Action.UNFOLLOW:
-                entities_to_fetch[EntityType.FOLLOW.value].add((user_id, entity_id))
-            if action == Action.SAVE or action == Action.UNSAVE:
-                entities_to_fetch[EntityType.SAVE.value].add(
-                    (user_id, entity_type, entity_id)
-                )
+            if action in action_to_record_type.keys():
+                record_type = action_to_record_type[action]
+                entities_to_fetch[record_type].add((user_id, entity_type, entity_id))
 
     return entities_to_fetch
 
 
 def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetchDict):
     existing_entities: ExistingRecordDict = {}
+
+    # PLAYLISTS
     playlists: List[Playlist] = (
         session.query(Playlist)
         .filter(
@@ -274,6 +224,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         playlist.playlist_id: playlist for playlist in playlists
     }
 
+    # TRACKS
     tracks: List[Track] = (
         session.query(Track)
         .filter(
@@ -286,6 +237,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         track.track_id: track for track in tracks
     }
 
+    # USERS
     users: List[User] = (
         session.query(User)
         .filter(
@@ -296,11 +248,13 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
     )
     existing_entities[EntityType.USER.value] = {user.user_id: user for user in users}
 
+    # FOLLOWS
     follow_ops_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.FOLLOW.value]
     and_queries = []
     for follow_to_fetch in follow_ops_to_fetch:
         follower = follow_to_fetch[0]
-        followee = follow_to_fetch[1]
+        # follows does not need entity type in follow_to_fetch[1]
+        followee = follow_to_fetch[2]
         and_queries.append(
             and_(
                 Follow.followee_user_id == followee,
@@ -316,6 +270,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         for follow in follows
     }
 
+    # SAVES
     saves_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.SAVE.value]
     and_queries = []
     for save_to_fetch in saves_to_fetch:
@@ -333,6 +288,27 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
     saves: List[Save] = session.query(Save).filter(or_(*and_queries)).all()
     existing_entities[EntityType.SAVE.value] = {
         (save.user_id, save.save_type, save.save_item_id): save for save in saves
+    }
+
+    # REPOSTS
+    reposts_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.REPOST.value]
+    and_queries = []
+    for repost_to_fetch in reposts_to_fetch:
+        user_id = repost_to_fetch[0]
+        entity_type = repost_to_fetch[1]
+        entity_id = repost_to_fetch[2]
+        and_queries.append(
+            and_(
+                Repost.user_id == user_id,
+                Repost.repost_type == entity_type.lower(),
+                Repost.repost_item_id == entity_id,
+                Repost.is_current == True,
+            )
+        )
+    reposts: List[Repost] = session.query(Repost).filter(or_(*and_queries)).all()
+    existing_entities[EntityType.REPOST.value] = {
+        (repost.user_id, repost.repost_type, repost.repost_item_id): repost
+        for repost in reposts
     }
 
     return existing_entities
