@@ -2195,9 +2195,6 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       clockRecords: exportedClockRecords
     } = unpackExportDataFromFile(exportFilePath)
 
-    const numUniqueCIDs = new Set(exportedFiles.map((file) => file.multihash))
-      .size
-
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks(false)
 
