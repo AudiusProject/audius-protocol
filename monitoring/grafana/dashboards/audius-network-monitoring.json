@@ -1821,7 +1821,7 @@
         "type": "barchart"
       },
       {
-        "description": "The number of users skipped because of network monitoring job errors --- missed users can rise above the threshold if a content node goes down or there's a bug in indexing the content nodes",
+        "description": "The number of users skipped because of network monitoring job errors.\n\n--- \n\nMissed users can rise above the threshold if:\n\n* A Content Node goes down.\n* There's a bug indexing the content nodes.\n\nPlease check:\n\n* Content Node health status to confirm all nodes are online.\n* Content Node logs for `ERROR` messages.",
         "fieldConfig": {
           "defaults": {
             "color": {
