@@ -82,7 +82,8 @@
     "id": 2901731,
     "labels": {
       "alert": "p3",
-      "env": "prod"
+      "env": "prod",
+      "team": "infra"
     },
     "noDataState": "OK",
     "orgID": 1,

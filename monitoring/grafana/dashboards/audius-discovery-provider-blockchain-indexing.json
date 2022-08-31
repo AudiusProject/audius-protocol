@@ -63,7 +63,7 @@
           "name": "Blockdiff",
           "type": "timeseries",
           "uid": "hhRZ9K67k",
-          "version": 7
+          "version": 8
         },
         "id": 19,
         "gridPos": {

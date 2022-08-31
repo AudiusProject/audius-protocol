@@ -54,8 +54,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "semi-dark-purple",
-                  "value": null
+                  "color": "semi-dark-purple"
                 }
               ]
             },
@@ -110,8 +109,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "semi-dark-purple",
-                  "value": null
+                  "color": "semi-dark-purple"
                 }
               ]
             },
@@ -202,8 +200,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -292,8 +289,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -536,8 +532,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -632,8 +627,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -762,8 +756,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "orange",
-                  "value": null
+                  "color": "orange"
                 },
                 {
                   "color": "semi-dark-yellow",
@@ -868,8 +861,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple",
-                  "value": null
+                  "color": "purple"
                 },
                 {
                   "color": "purple",
@@ -973,8 +965,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "blue",
-                  "value": null
+                  "color": "blue"
                 },
                 {
                   "color": "blue",
@@ -1111,8 +1102,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1239,8 +1229,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1767,8 +1756,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "orange",
@@ -1833,7 +1821,7 @@
         "type": "barchart"
       },
       {
-        "description": "The number of users skipped because of network monitoring job errors",
+        "description": "The number of users skipped because of network monitoring job errors --- missed users can rise above the threshold if a content node goes down or there's a bug in indexing the content nodes",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -1987,8 +1975,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple",
-                  "value": null
+                  "color": "purple"
                 },
                 {
                   "color": "red",
@@ -2126,8 +2113,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple",
-                  "value": null
+                  "color": "purple"
                 },
                 {
                   "color": "red",
@@ -2260,8 +2246,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",

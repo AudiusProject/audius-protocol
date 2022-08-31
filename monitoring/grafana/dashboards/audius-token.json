@@ -48,6 +48,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -161,6 +163,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -274,6 +278,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -405,13 +411,22 @@
                 "mode": "line"
               }
             },
-            "mappings": [],
+            "mappings": [
+              {
+                "options": {
+                  "team": {
+                    "index": 0,
+                    "text": "infra"
+                  }
+                },
+                "type": "value"
+              }
+            ],
             "thresholds": {
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "semi-dark-yellow",
@@ -468,6 +483,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -500,7 +517,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -541,7 +559,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_exporters_alchemy_balance{address_name=\"NotStaking\"}",
+            "expr": "audius_exporters_alchemy_balance{address_name!=\"Staking\"}",
             "legendFormat": "{{address_name}}",
             "range": true,
             "refId": "A"
@@ -594,7 +612,17 @@
                 "url": "https://etherscan.io/address/0x18aaa7115705e8be94bffebde57af9bfc265b998/advanced#internaltx"
               }
             ],
-            "mappings": [],
+            "mappings": [
+              {
+                "options": {
+                  "team": {
+                    "index": 0,
+                    "text": "infra"
+                  }
+                },
+                "type": "value"
+              }
+            ],
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -669,6 +697,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "Failed Requests",
               "axisPlacement": "auto",
               "barAlignment": 0,
