@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
 # crontab
-# */10 * * * * cd ~/audius-protocol/monitoring && scripts/cron-alerts.sh > /tmp/cron-alerts.log
+# */10 * * * * sudo su ubuntu -c "cd ~/audius-protocol/monitoring && scripts/cron-alerts.sh" >> /tmp/logs/cron-alerts.log 2>&1
 
 set -ex
+
+date
 
 # grab a list of current alert UIDs
 old_uids=$(mktemp)
@@ -15,8 +17,13 @@ cat ${old_uids} | sort | sponge ${old_uids}
 # remove all stale alerts
 rm grafana/alerts/*
 
+# set GRAFANA_PASS
+set -a
+source /home/ubuntu/.profile
+set +a
+
 # generate and upload new alerts
-./grafana/bin/extract-alerts.sh
+echo y | ./grafana/bin/extract-alerts.sh
 ./grafana/bin/upload-alerts.sh
 
 # grab a list of new Alert UIDs
@@ -28,9 +35,9 @@ cat ${new_uids} | sort | sponge ${new_uids}
 
 # delete all UIDs that no longer exist
 for uid in $(comm -23 ${old_uids} ${new_uids}); do
-    ./grafana/bin/delete-alert.sh ${uid}
+    bash ./grafana/bin/delete-alert.sh ${uid}
 done
 
-# remove temp files
-rm ${old_uids}
-rm ${new_uids}
+date
+
+echo ==================================

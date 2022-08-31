@@ -2,7 +2,7 @@
   "id": {alert_id},
   "uid": "{alert_uid}",
   "orgID": 1,
-  "folderUID": "ARwYXYzVk",
+  "folderUID": "gtl7D0W4z",
   "ruleGroup": "group",
   "title": "{title}",
   "condition": "{condition_ref}",
@@ -18,10 +18,5 @@
     "runbook_url": "{runbook_url}",
     "summary": "{summary}"
   }},
-  "labels": {{
-    "alert": "{level}",
-    "env": "{env}",
-    "mentions": "{mentions}",
-    "team": "{team}"
-  }}
+  "labels": {labels}
 }}
