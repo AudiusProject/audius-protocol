@@ -21,7 +21,7 @@ const { getTracks } = cacheTracksSelectors
 const { getCollections } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
-function* getReposts({ offset, limit, payload }) {
+function* getReposts({ offset, limit }) {
   const handle = yield select(getProfileUserHandle)
   const profileId = yield select(getProfileUserId)
 

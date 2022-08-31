@@ -1,9 +1,9 @@
 import { accountSelectors } from '@audius/common'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Divider, Text } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -63,7 +63,7 @@ export const ExpandedSection = () => {
       'user_id',
       'current_user_followee_follow_count'
     ])
-  const accountId = useSelectorWeb(getUserId)
+  const accountId = useSelector(getUserId)
   const isOwner = user_id === accountId
 
   return (

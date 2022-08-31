@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   profilePageSelectors,
@@ -6,10 +6,9 @@ import {
 } from '@audius/common'
 import type { RouteProp } from '@react-navigation/core'
 import { useRoute } from '@react-navigation/core'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
 import { getIsOwner, useSelectProfile } from './selectors'
@@ -18,11 +17,11 @@ const { getProfileTracksLineup, getProfileUserHandle } = profilePageSelectors
 export const TracksTab = () => {
   const { params } =
     useRoute<RouteProp<{ Tracks: { handle: string } }, 'Tracks'>>()
-  const lineup = useSelectorWeb(getProfileTracksLineup, isEqual)
-  const dispatchWeb = useDispatchWeb()
+  const lineup = useSelector(getProfileTracksLineup)
+  const dispatch = useDispatch()
 
-  const profileHandle = useSelectorWeb(getProfileUserHandle)
-  const isOwner = useSelectorWeb(getIsOwner)
+  const profileHandle = useSelector(getProfileUserHandle)
+  const isOwner = useSelector(getIsOwner)
 
   const isProfileLoaded =
     profileHandle === params?.handle ||
@@ -34,16 +33,22 @@ export const TracksTab = () => {
     '_artist_pick'
   ])
 
+  useEffect(() => {
+    if (isProfileLoaded) {
+      dispatch(tracksActions.fetchLineupMetadatas())
+    }
+  }, [dispatch, isProfileLoaded])
+
   // TODO: use fetchPayload (or change Remixes page)
   const loadMore = useCallback(
     (offset: number, limit: number) => {
-      dispatchWeb(
+      dispatch(
         tracksActions.fetchLineupMetadatas(offset, limit, false, {
           userId: user_id
         })
       )
     },
-    [dispatchWeb, user_id]
+    [dispatch, user_id]
   )
 
   /**
