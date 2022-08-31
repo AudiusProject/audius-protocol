@@ -13,7 +13,7 @@ action_to_record_type = {
 }
 
 create_actions = {Action.FOLLOW.value, Action.SAVE.value}
-delete_actions = {Action.UNFOLLOW, Action.UNSAVE}
+delete_actions = {Action.UNFOLLOW.value, Action.UNSAVE.value}
 
 
 def create_social_record(params: ManageEntityParameters):

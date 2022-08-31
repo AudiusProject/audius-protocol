@@ -18,6 +18,7 @@ from src.tasks.entity_manager.playlist import (
     update_playlist,
 )
 from src.tasks.entity_manager.social_features import (
+    action_to_record_type,
     create_actions,
     create_social_record,
     delete_actions,
@@ -39,7 +40,7 @@ from src.utils import helpers
 logger = logging.getLogger(__name__)
 
 # Please toggle below variable to true for development
-ENABLE_DEVELOPMENT_FEATURES = True
+ENABLE_DEVELOPMENT_FEATURES = False
 
 
 def entity_manager_update(
@@ -196,12 +197,10 @@ def collect_entities_to_fetch(
             entities_to_fetch[EntityType.USER.value].add(user_id)
 
             # Query follow operations as needed
-            if action == Action.FOLLOW or action == Action.UNFOLLOW:
-                entities_to_fetch[EntityType.FOLLOW.value].add((user_id, entity_id))
-            if action == Action.SAVE or action == Action.UNSAVE:
-                entities_to_fetch[EntityType.SAVE.value].add(
-                    (user_id, entity_type, entity_id)
-                )
+            if action in create_actions or action in delete_actions:
+                record_type = action_to_record_type[action]
+                record_key = get_record_key(user_id, entity_type, entity_id)
+                entities_to_fetch[record_type].add(record_key)
 
     return entities_to_fetch
 
