@@ -13,7 +13,7 @@ import {
 import { put, select } from 'typed-redux-saga'
 
 import { watchRepostsError } from 'common/store/user-list/reposts/errorSagas'
-import { createUserListProvider } from 'components/user-list/utils'
+import { createUserListProvider } from 'common/store/user-list/utils'
 const { getId, getRepostsType, getUserList, getUserIds } =
   repostsUserListSelectors
 const { trackRepostError, playlistRepostError } = repostsUserListActions
