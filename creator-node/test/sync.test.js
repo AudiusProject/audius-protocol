@@ -1453,7 +1453,6 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   const SP_ID_1 = 1
   const USER_1_WALLET = DUMMY_WALLET
   const USER_1_BLOCKNUMBER = DUMMY_CNODEUSER_BLOCKNUMBER
-  const SyncRequestMaxUserFailureCountBeforeSkip = 3
 
   const assetsDirPath = path.resolve(__dirname, 'sync/assets')
   const exportFilePath = path.resolve(assetsDirPath, 'realExport.json')
@@ -1729,10 +1728,6 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     server = appInfo.server
     app = appInfo.app
 
-    config.set(
-      'syncRequestMaxUserFailureCountBeforeSkip',
-      SyncRequestMaxUserFailureCountBeforeSkip
-    )
     originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
     config.set('creatorNodeEndpoint', NODES.CN1)
 
