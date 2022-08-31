@@ -181,7 +181,6 @@ def entity_manager_update(
         metric_num_changed.save(
             len(new_records["tracks"]), {"entity_type": EntityType.TRACK.value}
         )
-        metric_num_changed.save(num_total_changes, {"entity_type": "All"})
 
         logger.info(
             f"entity_manager.py | Completed with {num_total_changes} total changes"
