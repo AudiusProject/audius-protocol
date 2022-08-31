@@ -2,7 +2,7 @@ import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 
 const DEBUG = false
 
-addEventListener('fetch', event => {
+addEventListener('fetch', (event) => {
   try {
     event.respondWith(handleEvent(event))
   } catch (e) {
@@ -27,13 +27,6 @@ async function handleEvent(event) {
   }
 
   const options = {}
-  // Always map requests to `/`
-  options.mapRequestToAsset = request => {
-    const url = new URL(request.url)
-    url.pathname = `/`
-    return mapRequestToAsset(new Request(url, request))
-  }
-
   try {
     if (DEBUG) {
       // customize caching
