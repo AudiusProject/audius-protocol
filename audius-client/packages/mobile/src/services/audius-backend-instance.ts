@@ -119,7 +119,7 @@ export const audiusBackendInstance = audiusBackend({
   legacyUserNodeUrl: Config.LEGACY_USER_NODE,
   localStorage: AsyncStorage,
   monitoringCallbacks,
-  nativeMobile: Config.NATIVE_MOBILE === 'true',
+  nativeMobile: true,
   onLibsInit: (libs) => {
     audiusLibs = libs
     libsInitEventEmitter.emit(LIBS_INITTED_EVENT)

@@ -7,7 +7,7 @@ import {
   artistRecommendationsUIActions
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import IconFollow from 'app/assets/images/iconFollow.svg'
@@ -15,9 +15,7 @@ import IconFollowing from 'app/assets/images/iconFollowing.svg'
 import IconClose from 'app/assets/images/iconRemove.svg'
 import { Button, IconButton, Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { track, make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -91,10 +89,9 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const { user_id, name } = useSelectProfile(['user_id', 'name'])
 
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
 
   useEffectOnce(() => {
-    dispatchWeb(fetchRelatedArtists({ userId: user_id }))
+    dispatch(fetchRelatedArtists({ userId: user_id }))
 
     track(
       make({
@@ -104,7 +101,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
     )
   })
 
-  const suggestedArtists = useSelectorWeb(
+  const suggestedArtists = useSelector(
     (state) => getRelatedArtistIds(state, { id: user_id }),
     (a, b) => a.length === b.length
   )
