@@ -1,6 +1,7 @@
 import logging
 from typing import Dict
 
+from sqlalchemy.sql import null
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
@@ -195,5 +196,8 @@ def delete_track(params: ManageEntityParameters):
         existing_track, params.block_number, params.event_blockhash, params.txhash
     )
     deleted_track.is_delete = True
+    deleted_track.stem_of = null()
+    deleted_track.remix_of = null()
+    deleted_track.premium_conditions = null()
 
     params.add_track_record(track_id, deleted_track)

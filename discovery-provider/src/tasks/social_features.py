@@ -204,6 +204,7 @@ def add_track_repost(
             tx_receipt
         )
     )
+
     for event in new_track_repost_events:
         event_args = event["args"]
         repost_user_id = event_args._userId
@@ -249,6 +250,7 @@ def delete_track_repost(
             tx_receipt
         )
     )
+
     for event in new_repost_events:
         event_args = event["args"]
         repost_user_id = event_args._userId

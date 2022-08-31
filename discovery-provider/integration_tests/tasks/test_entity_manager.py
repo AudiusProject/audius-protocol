@@ -91,6 +91,20 @@ def test_index_valid_playlists(app, mocker):
                 )
             },
         ],
+        "CreateAlbumTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 3,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "QmCreateAlbum4",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -131,6 +145,13 @@ def test_index_valid_playlists(app, mocker):
             "playlist_image_sizes_multihash": "",
             "playlist_name": "playlist 3 updated",
         },
+        "QmCreateAlbum4": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "album",
+            "is_album": True,
+        },
     }
 
     entities = {
@@ -162,7 +183,7 @@ def test_index_valid_playlists(app, mocker):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 6
+        assert len(all_playlists) == 7
 
         playlists_1: List[Playlist] = (
             session.query(Playlist)
@@ -207,6 +228,18 @@ def test_index_valid_playlists(app, mocker):
         assert playlist_3.playlist_name == "playlist 3 updated"
         assert playlist_3.is_delete == False
         assert playlist_3.is_current == True
+
+        albums: List[Playlist] = (
+            session.query(Playlist)
+            .filter(Playlist.is_current == True, Playlist.is_album == True)
+            .all()
+        )
+        assert len(albums) == 1
+        album = albums[0]
+        assert datetime.timestamp(album.last_added_to) == 1585336422
+        assert album.playlist_name == "album"
+        assert album.is_delete == False
+        assert album.is_current == True
 
 
 def test_index_invalid_playlists(app, mocker):

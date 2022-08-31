@@ -19,7 +19,11 @@ import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
 
+import config from './config'
+
 const SERVICE_NAME = 'content-node'
+const SPID = config.get('spID')
+const ENDPOINT = config.get('creatorNodeEndpoint')
 
 /**
  * Initializes a tracer for content node as well as registers instrumentions
@@ -73,9 +77,10 @@ export const setupTracing = () => {
         // Adds a hook to logs that injects more span info
         // and the service name into logs
         logHook: (span, record) => {
-          record['resource.span'] = span
           record['resource.service.name'] =
             provider.resource.attributes['service.name']
+          record['resource.service.spid'] = SPID
+          record['resource.service.endpoint'] = ENDPOINT
         }
       })
     ]
@@ -113,7 +118,9 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   options?: SpanOptions
 }) => {
   // build a wrapper around `fn` that accepts the same parameters and returns the same return type
-  const wrapper = (...args: Parameters<TFunction>): ReturnType<TFunction> => {
+  const wrapper = function (
+    ...args: Parameters<TFunction>
+  ): ReturnType<TFunction> {
     const spanName = name || fn.name
     const spanOptions = options || {}
     return tracing
@@ -121,10 +128,12 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
       .startActiveSpan(spanName, spanOptions, (span: Span) => {
         try {
           tracing.setSpanAttribute(tracing.CODE_FUNCTION, fn.name)
+          tracing.setSpanAttribute('spid', SPID)
+          tracing.setSpanAttribute('endpoint', ENDPOINT)
 
           // TODO add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
-          const result = fn.call(this, ...args)
+          const result = fn.apply(this, args)
 
           // if `fn` is async, await the result
           if (result && result.then) {
@@ -133,6 +142,8 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
              * can still use normal async/await syntax to `await` the result
              * of this wrapper
              * i.e. `const output = await instrumentTracing({ fn: _someFunction })(args)`
+             *
+             * based on this package: https://github.com/klny/function-wrapper/blob/master/src/wrapper.js#L25
              */
             return result.then((val: any) => {
               span.end()
@@ -243,6 +254,7 @@ export const tracing = {
   /**
    * records errors on the current trace and sets the span status to `ERROR`
    * @param {Error} error the error to record on the span
+<<<<<<< HEAD
    *
    * Usage
    * ```
@@ -253,6 +265,8 @@ export const tracing = {
    *     throw e
    * }
    * ```
+=======
+>>>>>>> master
    */
   recordException: (error: Error) => {
     const span = tracing.getActiveSpan()

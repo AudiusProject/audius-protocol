@@ -567,7 +567,9 @@ export class IdentityService {
     if (this.web3Manager) {
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       const message = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager?.sign(message)
+      const signature = await this.web3Manager?.sign(
+        Buffer.from(message, 'utf-8')
+      )
       return {
         [AuthHeaders.MESSAGE]: message,
         [AuthHeaders.SIGNATURE]: signature
