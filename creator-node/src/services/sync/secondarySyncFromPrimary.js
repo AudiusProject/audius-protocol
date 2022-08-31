@@ -43,53 +43,54 @@ const handleSyncFromPrimary = async ({
   logger.info('begin nodesync', 'time', start)
 
   try {
-    await redis.WalletWriteLock.acquire(
+    try {
+      await redis.WalletWriteLock.acquire(
+        wallet,
+        redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
+      )
+    } catch (e) {
+      tracing.recordException(e)
+      return {
+        error: new Error(
+          `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
+        ),
+        result: 'failure_sync_in_progress'
+      }
+    }
+
+    // Ensure this node is syncing from the user's primary
+    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+      libs,
+      logger,
       wallet,
-      redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
-    )
-  } catch (e) {
-    tracing.recordException(e)
-    return {
-      error: new Error(
-        `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
-      ),
-      result: 'failure_sync_in_progress'
+      blockNumber: null,
+      ensurePrimary: false
+    })
+    if (userReplicaSet.primary !== creatorNodeEndpoint) {
+      throw new Error(
+        `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`
+      )
     }
-  }
 
-  // Ensure this node is syncing from the user's primary
-  const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-    libs,
-    logger,
-    wallet,
-    blockNumber: null,
-    ensurePrimary: false
-  })
-  if (userReplicaSet.primary !== creatorNodeEndpoint) {
-    throw new Error(
-      `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`
+    /**
+     * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
+     */
+    const forceResync = await shouldForceResync(
+      { libs, logContext },
+      forceResyncConfig
     )
-  }
-
-  /**
-   * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
-   */
-  const forceResync = await shouldForceResync(
-    { libs, logContext },
-    forceResyncConfig
-  )
-  const forceResyncQueryParam = forceResyncConfig?.forceResync
-  if (forceResyncQueryParam && !forceResync) {
-    return {
-      error: new Error(
-        `Cannot issue sync for wallet ${wallet} due to shouldForceResync() rejection`
-      ),
-      result: 'failure_force_resync_check'
+    const forceResyncQueryParam = forceResyncConfig?.forceResync
+    if (forceResyncQueryParam && !forceResync) {
+      return {
+        error: new Error(
+          `Cannot issue sync for wallet ${wallet} due to shouldForceResync() rejection`
+        ),
+        result: 'failure_force_resync_check'
+      }
     }
-  }
 
-  let returnValue = {}
-  try {
+    let returnValue = {}
+
     let localMaxClockVal
     if (forceResync || forceWipe) {
       logger.warn(`Forcing ${forceResync ? 'resync' : 'wipe'}..`)
