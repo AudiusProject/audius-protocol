@@ -254,7 +254,6 @@ export const tracing = {
   /**
    * records errors on the current trace and sets the span status to `ERROR`
    * @param {Error} error the error to record on the span
-<<<<<<< HEAD
    *
    * Usage
    * ```
@@ -265,8 +264,6 @@ export const tracing = {
    *     throw e
    * }
    * ```
-=======
->>>>>>> master
    */
   recordException: (error: Error) => {
     const span = tracing.getActiveSpan()
