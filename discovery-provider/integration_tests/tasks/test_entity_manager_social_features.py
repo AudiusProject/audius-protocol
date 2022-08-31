@@ -86,6 +86,20 @@ def test_index_valid_social_features(app, mocker):
                 )
             },
         ],
+        "RepostPlaylistTx3": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -111,6 +125,7 @@ def test_index_valid_social_features(app, mocker):
         ],
         "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
         "tracks": [{"track_id": 1}],
+        "playlists": [{"playlist_id": 1}],
     }
     populate_mock_db(db, entities)
 
@@ -159,4 +174,3 @@ def test_index_valid_social_features(app, mocker):
         assert len(current_saves) == 1
         current_save = current_saves[0]
         assert current_save.is_delete == True
-    pass

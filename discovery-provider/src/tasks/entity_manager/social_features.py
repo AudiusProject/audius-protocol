@@ -1,3 +1,5 @@
+from typing import Union
+
 from src.models.social.follow import Follow
 from src.models.social.save import Save
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
@@ -18,7 +20,7 @@ def create_social_record(params: ManageEntityParameters):
 
     validate_social_feature(params)
 
-    create_record = None
+    create_record: Union[Save, Follow, None] = None
     if params.action == Action.FOLLOW.value:
         create_record = Follow(
             blockhash=params.event_blockhash,
@@ -43,13 +45,14 @@ def create_social_record(params: ManageEntityParameters):
             is_delete=False,
         )
 
-    params.add_social_feature_record(
-        params.user_id,
-        params.entity_type,
-        params.entity_id,
-        action_to_record_type[params.action],
-        create_record,
-    )
+    if create_record:
+        params.add_social_feature_record(
+            params.user_id,
+            params.entity_type,
+            params.entity_id,
+            action_to_record_type[params.action],
+            create_record,
+        )
 
 
 def delete_social_records(params):

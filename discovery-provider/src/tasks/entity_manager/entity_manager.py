@@ -160,60 +160,6 @@ def entity_manager_update(
                 if entity_id in original_records[record_type]:
                     original_records[record_type][entity_id].is_current = False
 
-                # if original record
-        # records_to_save = []
-        # for playlist_records in new_records["playlists"].values():
-        #     if not playlist_records:
-        #         continue
-        #     # invalidate all playlists besides the last one
-        #     for i in range(len(playlist_records)):
-        #         playlist_records[i].is_current = False
-
-        #     # invalidate existing record only if it's being updated
-        #     playlist_id = playlist_records[0].playlist_id
-        #     if playlist_id in original_records["playlists"]:
-        #         original_records["playlists"][playlist_id].is_current = False
-
-        #     # flip is_current to true for the last tx in each playlist
-        #     playlist_records[-1].is_current = True
-        #     records_to_save.extend(playlist_records)
-
-        # for track_records in new_records["tracks"].values():
-        #     # flip is_current to true for the last tx in each playlist
-        #     track_records[-1].is_current = True
-        #     records_to_save.extend(track_records)
-
-        # for follow_records in new_records["follows"].values():
-        #     if not playlist_records:
-        #         continue
-        #     # invalidate all playlists besides the last one
-        #     for i in range(len(playlist_records)):
-        #         playlist_records[i].is_current = False
-
-        #     # invalidate existing record only if it's being updated
-        #     playlist_id = playlist_records[0].playlist_id
-        #     if playlist_id in original_records["playlists"]:
-        #         original_records["playlists"][playlist_id].is_current = False
-
-        #     # flip is_current to true for the last follow tx
-        #     follow_records[-1].is_current = True
-        #     records_to_save.extend(follow_records)
-
-        # for save_records in new_records["saves"].values():
-        #     if not playlist_records:
-        #         continue
-        #     # invalidate all playlists besides the last one
-        #     for i in range(len(playlist_records)):
-        #         playlist_records[i].is_current = False
-
-        #     # invalidate existing record only if it's being updated
-        #     playlist_id = playlist_records[0].playlist_id
-        #     if playlist_id in original_records["playlists"]:
-        #         original_records["playlists"][playlist_id].is_current = False
-        #     # flip is_current to true for the last follow tx
-        #     save_records[-1].is_current = True
-        #     records_to_save.extend(save_records)
-
         # insert/update all tracks, playlist records in this block
         session.bulk_save_objects(records_to_save)
         num_total_changes += len(records_to_save)
