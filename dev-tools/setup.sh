@@ -54,6 +54,8 @@ fi
 
 python3 -m pip install -r "$PROTOCOL_DIR/dev-tools/requirements.txt"
 
+$PROTOCOL_DIR/logging/bin/install-elastic-agent.sh
+
 mkdir -p "$HOME/.local/bin"
 
 ln -sf "$PROTOCOL_DIR/dev-tools/audius-compose" "$HOME/.local/bin/audius-compose"
