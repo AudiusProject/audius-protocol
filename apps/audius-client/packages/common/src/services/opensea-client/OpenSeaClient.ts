@@ -1,4 +1,4 @@
-import * as allPromisesSettled from 'promise.allsettled'
+import allPromisesSettled from 'promise.allsettled'
 
 import {
   Collectible,

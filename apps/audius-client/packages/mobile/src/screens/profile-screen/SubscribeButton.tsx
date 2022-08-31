@@ -2,11 +2,10 @@ import { useCallback } from 'react'
 
 import type { User } from '@audius/common'
 import { profilePageActions } from '@audius/common'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconNotification from 'app/assets/images/iconNotification.svg'
 import { Button } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { getIsSubscribed } from './selectors'
@@ -34,12 +33,12 @@ export const SubscribeButton = (props: SubscribeButtonProps) => {
   const styles = useStyles()
   const { profile } = props
   const { user_id } = profile
-  const isSubscribed = useSelectorWeb(getIsSubscribed)
-  const dispatchWeb = useDispatchWeb()
+  const isSubscribed = useSelector(getIsSubscribed)
+  const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    dispatchWeb(setNotificationSubscription(user_id, !isSubscribed, true))
-  }, [dispatchWeb, user_id, isSubscribed])
+    dispatch(setNotificationSubscription(user_id, !isSubscribed, true))
+  }, [dispatch, user_id, isSubscribed])
 
   return (
     <Button

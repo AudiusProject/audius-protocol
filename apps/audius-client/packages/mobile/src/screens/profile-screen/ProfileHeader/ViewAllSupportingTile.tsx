@@ -6,12 +6,12 @@ import {
   tippingSelectors,
   MAX_PROFILE_SUPPORTING_TILES
 } from '@audius/common'
-import type { ID, SupportingMapForUser } from '@audius/common'
+import type { ID, SupportingMapForUser, CommonState } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Tile, TextButton } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ProfilePictureList } from 'app/screens/notifications-screen/Notification'
 import { makeStyles } from 'app/styles'
 
@@ -52,8 +52,9 @@ export const ViewAllSupportingTile = () => {
     'supporting_count'
   ])
   const supportingForProfile: SupportingMapForUser =
-    useSelectorWeb((state) => getOptimisticSupportingForUser(state, user_id)) ||
-    {}
+    useSelector((state: CommonState) =>
+      getOptimisticSupportingForUser(state, user_id)
+    ) || {}
   const rankedSupportingIds = Object.keys(supportingForProfile)
     .sort((k1, k2) => {
       const amount1BN = stringWeiToBN(
@@ -66,7 +67,7 @@ export const ViewAllSupportingTile = () => {
     })
     .map((k) => supportingForProfile[k as unknown as ID])
     .map((s) => s.receiver_id)
-  const rankedSupporting = useSelectorWeb((state) => {
+  const rankedSupporting = useSelector((state) => {
     const usersMap = getUsers(state, { ids: rankedSupportingIds })
     return rankedSupportingIds.map((id) => usersMap[id]).filter(Boolean)
   })
