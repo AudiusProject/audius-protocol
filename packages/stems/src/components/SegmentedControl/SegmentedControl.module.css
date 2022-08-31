@@ -17,7 +17,6 @@
   cursor: pointer;
   user-select: none;
   transition: all 0.07s ease-in-out;
-  color: var(--neutral-dark-3);
   font-family: var(--font-family);
   font-size: 15px;
   font-weight: var(--font-demi-bold);
