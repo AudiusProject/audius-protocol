@@ -10,12 +10,16 @@ import eth_account
 import solana.keypair
 
 
-def generate_env(protocol_dir, creator_node_replicas):
+def generate_env(protocol_dir, creator_node_replicas, discovery_provider_replicas):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
         config = json.load((protocol_dir / "dev-tools/config.json").open())
 
     env = {}
+
+    env["CREATOR_NODE_REPLICAS"] = str(creator_node_replicas)
+
+    env["DISCOVERY_PROVIDER_REPLICAS"] = str(discovery_provider_replicas)
 
     env["CONTENT_NODE_VERSION"] = json.loads(
         (protocol_dir / "creator-node/.version.json").read_text(),
@@ -104,9 +108,10 @@ def cli(ctx, protocol_dir):
 
 @cli.command()
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
+@click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.pass_obj
-def build(protocol_dir, creator_node_replicas):
-    generate_env(protocol_dir, creator_node_replicas)
+def build(protocol_dir, creator_node_replicas, discovery_provider_replicas):
+    generate_env(protocol_dir, creator_node_replicas, discovery_provider_replicas)
 
     subprocess.run(
         [
@@ -124,7 +129,7 @@ def build(protocol_dir, creator_node_replicas):
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.pass_obj
 def up(protocol_dir, creator_node_replicas, discovery_provider_replicas):
-    generate_env(protocol_dir, creator_node_replicas)
+    generate_env(protocol_dir, creator_node_replicas, discovery_provider_replicas)
 
     subprocess.run(
         [
@@ -134,10 +139,6 @@ def up(protocol_dir, creator_node_replicas, discovery_provider_replicas):
             protocol_dir,
             "up",
             "--build",
-            "--scale",
-            f"creator-node={creator_node_replicas}",
-            "--scale",
-            f"discovery-provider={discovery_provider_replicas}",
             "-d",
         ],
     )
