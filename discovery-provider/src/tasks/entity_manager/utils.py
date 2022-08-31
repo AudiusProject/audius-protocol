@@ -108,12 +108,12 @@ class ManageEntityParameters:
         self.existing_records = existing_records
 
     def add_playlist_record(self, playlist_id: int, playlist: Playlist):
-        self.new_records[EntityType.PLAYLIST.value][playlist_id].append(playlist)  # type: ignore
-        self.existing_records[EntityType.PLAYLIST.value][playlist_id] = playlist  # type: ignore
+        self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
+        self.existing_records[EntityType.PLAYLIST][playlist_id] = playlist  # type: ignore
 
     def add_track_record(self, track_id: int, track: Track):
-        self.new_records[EntityType.TRACK.value][track_id].append(track)  # type: ignore
-        self.existing_records[EntityType.TRACK.value][track_id] = track  # type: ignore
+        self.new_records[EntityType.TRACK][track_id].append(track)  # type: ignore
+        self.existing_records[EntityType.TRACK][track_id] = track  # type: ignore
 
     def add_social_feature_record(
         self,

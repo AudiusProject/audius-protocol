@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from integration_tests.challenges.index_helpers import UpdateTask
@@ -5,15 +6,23 @@ from integration_tests.utils import populate_mock_db
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
-from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.tasks.entity_manager.entity_manager import (
+    ENABLE_DEVELOPMENT_FEATURES,
+    entity_manager_update,
+)
 from src.tasks.entity_manager.utils import EntityType
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
+logger = logging.getLogger(__name__)
+
 
 def test_index_valid_social_features(app, mocker):
     "Tests valid batch of social create/update/delete actions"
+    if not ENABLE_DEVELOPMENT_FEATURES:
+        logger.info("Skipping entity manager track testing")
+        return
 
     # setup db and mocked txs
     with app.app_context():
@@ -208,7 +217,7 @@ def test_index_valid_social_features(app, mocker):
         assert current_repost.repost_item_id == 1
 
 
-def test_index_valid_social_features(app, mocker):
+def test_index_invalid_social_features(app, mocker):
     "Tests valid batch of social create/update/delete actions"
 
     # setup db and mocked txs

@@ -6,16 +6,16 @@ from src.models.social.save import Save
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 
 action_to_record_type = {
-    Action.FOLLOW.value: EntityType.FOLLOW.value,
-    Action.UNFOLLOW.value: EntityType.FOLLOW.value,
-    Action.SAVE.value: EntityType.SAVE.value,
-    Action.UNSAVE.value: EntityType.SAVE.value,
-    Action.REPOST.value: EntityType.REPOST.value,
-    Action.UNREPOST.value: EntityType.REPOST.value,
+    Action.FOLLOW: EntityType.FOLLOW,
+    Action.UNFOLLOW: EntityType.FOLLOW,
+    Action.SAVE: EntityType.SAVE,
+    Action.UNSAVE: EntityType.SAVE,
+    Action.REPOST: EntityType.REPOST,
+    Action.UNREPOST: EntityType.REPOST,
 }
 
-create_actions = {Action.FOLLOW.value, Action.SAVE.value, Action.REPOST.value}
-delete_actions = {Action.UNFOLLOW.value, Action.UNSAVE.value, Action.UNREPOST.value}
+create_actions = {Action.FOLLOW, Action.SAVE, Action.REPOST}
+delete_actions = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
 
 
 def create_social_record(params: ManageEntityParameters):
@@ -23,7 +23,7 @@ def create_social_record(params: ManageEntityParameters):
     validate_social_feature(params)
 
     create_record: Union[Save, Follow, Repost, None] = None
-    if params.action == Action.FOLLOW.value:
+    if params.action == Action.FOLLOW:
         create_record = Follow(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
@@ -34,7 +34,7 @@ def create_social_record(params: ManageEntityParameters):
             is_current=True,
             is_delete=False,
         )
-    if params.action == Action.SAVE.value:
+    if params.action == Action.SAVE:
         create_record = Save(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
@@ -46,7 +46,7 @@ def create_social_record(params: ManageEntityParameters):
             is_current=True,
             is_delete=False,
         )
-    if params.action == Action.REPOST.value:
+    if params.action == Action.REPOST:
         create_record = Repost(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
@@ -82,7 +82,7 @@ def delete_social_records(params):
         existing_entity = params.new_records[params.entity_type][entity_key][-1]
 
     deleted_record = None
-    if params.action == Action.UNFOLLOW.value:
+    if params.action == Action.UNFOLLOW:
         deleted_record = Follow(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
@@ -93,7 +93,7 @@ def delete_social_records(params):
             created_at=existing_entity.created_at,
             txhash=params.txhash,
         )
-    elif params.action == Action.UNSAVE.value:
+    elif params.action == Action.UNSAVE:
         deleted_record = Save(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
@@ -105,7 +105,7 @@ def delete_social_records(params):
             created_at=existing_entity.created_at,
             txhash=params.txhash,
         )
-    elif params.action == Action.UNREPOST.value:
+    elif params.action == Action.UNREPOST:
         deleted_record = Repost(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
@@ -131,10 +131,10 @@ def delete_social_records(params):
 
 
 def validate_social_feature(params: ManageEntityParameters):
-    if params.user_id not in params.existing_records[EntityType.USER.value]:
+    if params.user_id not in params.existing_records[EntityType.USER]:
         raise Exception("User does not exists")
 
-    wallet = params.existing_records[EntityType.USER.value][params.user_id].wallet
+    wallet = params.existing_records[EntityType.USER][params.user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
         raise Exception("User does not match signer")
 

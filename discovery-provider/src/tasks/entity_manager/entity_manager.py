@@ -41,7 +41,7 @@ from src.utils import helpers
 logger = logging.getLogger(__name__)
 
 # Please toggle below variable to true for development
-ENABLE_DEVELOPMENT_FEATURES = True
+ENABLE_DEVELOPMENT_FEATURES = False
 
 
 def entity_manager_update(
@@ -102,36 +102,36 @@ def entity_manager_update(
                         txhash,
                     )
                     if (
-                        params.action == Action.CREATE.value
-                        and params.entity_type == EntityType.PLAYLIST.value
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.PLAYLIST
                     ):
                         create_playlist(params)
                     elif (
-                        params.action == Action.UPDATE.value
-                        and params.entity_type == EntityType.PLAYLIST.value
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.PLAYLIST
                     ):
                         update_playlist(params)
                     elif (
-                        params.action == Action.DELETE.value
-                        and params.entity_type == EntityType.PLAYLIST.value
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.PLAYLIST
                     ):
                         delete_playlist(params)
                     elif (
-                        params.action == Action.CREATE.value
-                        and params.entity_type == EntityType.TRACK.value
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.TRACK
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         create_track(params)
                     elif (
-                        params.action == Action.UPDATE.value
-                        and params.entity_type == EntityType.TRACK.value
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.TRACK
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         update_track(params)
 
                     elif (
-                        params.action == Action.DELETE.value
-                        and params.entity_type == EntityType.TRACK.value
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.TRACK
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_track(params)
@@ -198,7 +198,7 @@ def collect_entities_to_fetch(
             user_id = helpers.get_tx_arg(event, "_userId")
             action = helpers.get_tx_arg(event, "_action")
             entities_to_fetch[entity_type].add(entity_id)
-            entities_to_fetch[EntityType.USER.value].add(user_id)
+            entities_to_fetch[EntityType.USER].add(user_id)
 
             # Query follow operations as needed
             if action in action_to_record_type.keys():
@@ -215,12 +215,12 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
     playlists: List[Playlist] = (
         session.query(Playlist)
         .filter(
-            Playlist.playlist_id.in_(entities_to_fetch[EntityType.PLAYLIST.value]),
+            Playlist.playlist_id.in_(entities_to_fetch[EntityType.PLAYLIST]),
             Playlist.is_current == True,
         )
         .all()
     )
-    existing_entities[EntityType.PLAYLIST.value] = {
+    existing_entities[EntityType.PLAYLIST] = {
         playlist.playlist_id: playlist for playlist in playlists
     }
 
@@ -228,28 +228,26 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
     tracks: List[Track] = (
         session.query(Track)
         .filter(
-            Track.track_id.in_(entities_to_fetch[EntityType.TRACK.value]),
+            Track.track_id.in_(entities_to_fetch[EntityType.TRACK]),
             Track.is_current == True,
         )
         .all()
     )
-    existing_entities[EntityType.TRACK.value] = {
-        track.track_id: track for track in tracks
-    }
+    existing_entities[EntityType.TRACK] = {track.track_id: track for track in tracks}
 
     # USERS
     users: List[User] = (
         session.query(User)
         .filter(
-            User.user_id.in_(entities_to_fetch[EntityType.USER.value]),
+            User.user_id.in_(entities_to_fetch[EntityType.USER]),
             User.is_current == True,
         )
         .all()
     )
-    existing_entities[EntityType.USER.value] = {user.user_id: user for user in users}
+    existing_entities[EntityType.USER] = {user.user_id: user for user in users}
 
     # FOLLOWS
-    follow_ops_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.FOLLOW.value]
+    follow_ops_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.FOLLOW]
     and_queries = []
     for follow_to_fetch in follow_ops_to_fetch:
         follower = follow_to_fetch[0]
@@ -263,15 +261,15 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
         )
     follows: List[Follow] = session.query(Follow).filter(or_(*and_queries)).all()
-    existing_entities[EntityType.FOLLOW.value] = {
+    existing_entities[EntityType.FOLLOW] = {
         get_record_key(
-            follow.follower_user_id, EntityType.USER.value, follow.followee_user_id
+            follow.follower_user_id, EntityType.USER, follow.followee_user_id
         ): follow
         for follow in follows
     }
 
     # SAVES
-    saves_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.SAVE.value]
+    saves_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.SAVE]
     and_queries = []
     for save_to_fetch in saves_to_fetch:
         user_id = save_to_fetch[0]
@@ -286,12 +284,12 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
         )
     saves: List[Save] = session.query(Save).filter(or_(*and_queries)).all()
-    existing_entities[EntityType.SAVE.value] = {
+    existing_entities[EntityType.SAVE] = {
         (save.user_id, save.save_type, save.save_item_id): save for save in saves
     }
 
     # REPOSTS
-    reposts_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.REPOST.value]
+    reposts_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.REPOST]
     and_queries = []
     for repost_to_fetch in reposts_to_fetch:
         user_id = repost_to_fetch[0]
@@ -306,7 +304,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
         )
     reposts: List[Repost] = session.query(Repost).filter(or_(*and_queries)).all()
-    existing_entities[EntityType.REPOST.value] = {
+    existing_entities[EntityType.REPOST] = {
         (repost.user_id, repost.repost_type, repost.repost_item_id): repost
         for repost in reposts
     }
