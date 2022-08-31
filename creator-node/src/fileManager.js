@@ -363,41 +363,9 @@ async function saveFileForMultihashToFS(
       decisionTree
     })
 
-    // verify that the contents of the file match the file's cid
     try {
       await asyncRetry({
-        asyncFn: async () => {
-          const fileSize = (await fs.stat(expectedStoragePath)).size
-          decisionTree.recordStage({
-            name: 'About to verify the file contents for the CID',
-            data: { multihash, fileSize }
-          })
-
-          const fileIsEmpty = fileSize === 0
-          // there is one case where an empty file could be valid, check for that CID explicitly
-          if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
-            throw new Error(
-              `File has no content, content length is 0: ${multihash}`
-            )
-          }
-
-          const expectedCid = await LibsUtils.fileHasher.generateNonImageCid(
-            expectedStoragePath
-          )
-          if (multihash !== expectedCid) {
-            decisionTree.recordStage({
-              name: "File contents don't match their expected CID",
-              data: { expectedCid }
-            })
-            throw new Error(
-              `File contents don't match their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
-            )
-          }
-          decisionTree.recordStage({
-            name: 'Successfully verified the file contents for the CID',
-            data: { multihash }
-          })
-        },
+        asyncFn: verifyFile({ expectedStoragePath, decisionTree, multihash }),
         logger,
         logLabel: 'Saving fetched content to disk',
         options: {
@@ -427,6 +395,40 @@ async function saveFileForMultihashToFS(
   }
 
   // If no error, return nothing
+}
+
+// Verify that the contents of the file match the file's cid
+function verifyFile({ expectedStoragePath, decisionTree, multihash }) {
+  return async () => {
+    const fileSize = (await fs.stat(expectedStoragePath)).size
+    decisionTree.recordStage({
+      name: 'About to verify the file contents for the CID',
+      data: { multihash, fileSize }
+    })
+
+    const fileIsEmpty = fileSize === 0
+    // there is one case where an empty file could be valid, check for that CID explicitly
+    if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
+      throw new Error(`File has no content, content length is 0: ${multihash}`)
+    }
+
+    const expectedCid = await LibsUtils.fileHasher.generateNonImageCid(
+      expectedStoragePath
+    )
+    if (multihash !== expectedCid) {
+      decisionTree.recordStage({
+        name: "File contents don't match their expected CID",
+        data: { expectedCid }
+      })
+      throw new Error(
+        `File contents don't match their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
+      )
+    }
+    decisionTree.recordStage({
+      name: 'Successfully verified the file contents for the CID',
+      data: { multihash }
+    })
+  }
 }
 
 /**

@@ -234,6 +234,22 @@ describe('test fileManager', () => {
       assert.deepStrictEqual(metadataFileData, metadata)
     })
   })
+
+  // TODO: tests
+  it('If fetching content from target gateways succeeds with 200, do not retry', async function () {})
+  it('If fetching content from target gateways fails with 400 (bad req), do not retry', async function () {})
+  it('If fetching content from target gateways fails with 401 (unauth), do not retry', async function () {})
+  it('If fetching content from target gateways fails with 403 (forbidden), do not retry', async function () {})
+  it('If fetching content from target gateways fails with 404, retry 1 time', async function () {})
+  it('If fetching content from target gateways fails with 500, retry 1 time', async function () {})
+  it('If fetching content from network succeeds with 200, do not retry', async function () {})
+  it('If fetching content from network fails with 400 (bad req), do not retry', async function () {})
+  it('If fetching content from network fails with 401 (unauth), do not retry', async function () {})
+  it('If fetching content from network fails with 403 (forbidden), do not retry', async function () {})
+  it('If fetching content from network fails with 404, do not retry', async function () {})
+  it('If fetching content from network fails with 500, retry 1 time', async function () {})
+  it('If verifying file contents succeeds, do not retry', async function () {})
+  it('If verifying file contents fails, retry 1 time', async function () {})
 })
 
 describe('test removeTrackFolder()', async function () {
