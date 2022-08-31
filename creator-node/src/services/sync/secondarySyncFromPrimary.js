@@ -42,6 +42,7 @@ const handleSyncFromPrimary = async ({
   })
   logger.info('begin nodesync', 'time', start)
 
+  let returnValue = {}
   try {
     try {
       await redis.WalletWriteLock.acquire(
@@ -88,8 +89,6 @@ const handleSyncFromPrimary = async ({
         result: 'failure_force_resync_check'
       }
     }
-
-    let returnValue = {}
 
     let localMaxClockVal
     if (forceResync || forceWipe) {
