@@ -132,13 +132,15 @@ async function _primarySyncFromSecondary({
 
       const { localClockMax: fetchedLocalClockMax, requestedClockRangeMax } =
         fetchedCNodeUser.clockInfo
+      const fetchedCNodeUserClockVal = fetchedCNodeUser.clock
 
       decisionTree.recordStage({
         name: 'fetchExportFromSecondary() Success',
         data: {
           fetchedLocalClockMax,
           requestedClockRangeMin: exportClockRangeMin,
-          requestedClockRangeMax
+          requestedClockRangeMax,
+          fetchedCNodeUserClockVal
         },
         log: true
       })
@@ -195,14 +197,19 @@ async function _primarySyncFromSecondary({
 
       /**
        * TODO update this once all nodes are running 0.3.66
-       * If localClockMax < requestedClockRangeMax, we know there is no more data to fetch
-       * If localClockMax > requestedClockRangeMax, we know there is more data to fetch
-       * If localClockMax = requestedClockRangeMax, there are 2 possibilities:
-       *  1. either the node is running behind version 0.3.66, has more data, and is incorrectly reporting it
-       *  2. or the 2 happen to be exactly equal (extremely unlikely)
-       *  In either scenario, we can just request the next data set from export
+       *
+       * cnodeUser.clock field is used for comparison since it is max(requestedClockRangeMax, actual clockMax)
+       * This means:
+       *    cnodeUser.clock < requestedClockRangeMax
+       *      - no more data to fetch
+       *      - completed = true
+       *    cnodeUser.clock = requestedClockRangeMax
+       *      - may or may not be more data to fetch
+       *      - completed = false
+       *    cnodeUser.clock > requestedClockRangeMax
+       *      - this never happens
        */
-      if (fetchedLocalClockMax < requestedClockRangeMax) {
+      if (fetchedCNodeUserClockVal < requestedClockRangeMax) {
         completed = true
       } else {
         decisionTree.recordStage({
@@ -210,7 +217,8 @@ async function _primarySyncFromSecondary({
           data: {
             fetchedLocalClockMax,
             requestedClockRangeMin: exportClockRangeMin,
-            requestedClockRangeMax
+            requestedClockRangeMax,
+            fetchedCNodeUserClockVal
           },
           log: true
         })
