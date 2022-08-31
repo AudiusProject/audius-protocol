@@ -58,14 +58,11 @@ class AsyncProcessingQueue {
       const { logContext } = job.data
       const processTask = instrumentTracing({
         name: 'AsyncProcessingQueue.process',
-        context: this,
         fn: this.processTask,
         options: {
           attributes: {
-            options: {
-              requestID: logContext.requestID,
-              [tracing.CODE_FILEPATH]: __filename
-            }
+            requestID: logContext.requestID,
+            [tracing.CODE_FILEPATH]: __filename
           }
         }
       })

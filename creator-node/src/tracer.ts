@@ -111,7 +111,6 @@ export const setupTracing = () => {
  */
 export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   name,
-  context,
   fn,
   options
 }: {
@@ -120,8 +119,6 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   fn: TFunction
   options?: SpanOptions
 }) => {
-  const objectContext = context || this
-
   // build a wrapper around `fn` that accepts the same parameters and returns the same return type
   const wrapper = function (
     ...args: Parameters<TFunction>
