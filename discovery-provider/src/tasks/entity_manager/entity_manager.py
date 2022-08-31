@@ -1,4 +1,5 @@
 import logging
+import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
@@ -24,6 +25,7 @@ from src.tasks.entity_manager.utils import (
     RecordDict,
 )
 from src.utils import helpers
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +50,18 @@ def entity_manager_update(
         event_blockhash = update_task.web3.toHex(block_hash)
 
         changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
-
         if not entity_manager_txs:
             return num_total_changes, changed_entity_ids
+
+        metric_latency = PrometheusMetric(
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS
+        )
+        metric_num_changed = PrometheusMetric(
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST
+        )
+        metric_num_errors = PrometheusMetric(
+            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS
+        )
 
         # collect events by entity type and action
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
@@ -78,6 +89,7 @@ def entity_manager_update(
             )
             for event in entity_manager_event_tx:
                 try:
+                    start_time_tx = time.time()
                     params = ManageEntityParameters(
                         session,
                         challenge_bus,
@@ -130,6 +142,9 @@ def entity_manager_update(
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
+                    metric_num_errors.save_time(
+                        {"entity_type": params.entity_type}, start_time=start_time_tx
+                    )
         # compile records_to_save
         records_to_save = []
         for playlist_records in new_records["playlists"].values():
@@ -157,6 +172,18 @@ def entity_manager_update(
         session.bulk_save_objects(records_to_save)
         num_total_changes += len(records_to_save)
 
+        # update metrics
+        metric_latency.save_time()
+        metric_num_changed.save(
+            len(new_records["playlists"]), {"entity_type": EntityType.PLAYLIST.value}
+        )
+        metric_num_changed.save(
+            len(new_records["tracks"]), {"entity_type": EntityType.TRACK.value}
+        )
+
+        logger.info(
+            f"entity_manager.py | Completed with {num_total_changes} total changes"
+        )
     except Exception as e:
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
