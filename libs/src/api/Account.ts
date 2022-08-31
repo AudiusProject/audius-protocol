@@ -241,7 +241,7 @@ export class Account extends Base {
 
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       const data = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager.sign(data)
+      const signature = await this.web3Manager.sign(Buffer.from(data, 'utf-8'))
 
       const recoveryData = {
         login: recoveryInfo.login,
@@ -709,7 +709,9 @@ export class Account extends Base {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = await this.ethWeb3Manager.sign(message)
+    const signature = await this.ethWeb3Manager.sign(
+      Buffer.from(message, 'utf-8')
+    )
     const wallet = this.ethWeb3Manager.getWalletAddress()
     return await this.identityService.updateMinimumDelegationAmount(
       wallet,
