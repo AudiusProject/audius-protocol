@@ -18,7 +18,7 @@ import {
 import { put, select } from 'typed-redux-saga'
 
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'
-import { createUserListProvider } from 'components/user-list/utils'
+import { createUserListProvider } from 'common/store/user-list/utils'
 import { fetchSupporting } from 'services/audius-backend/Tipping'
 const { getId, getUserList, getUserIds } = supportingUserListSelectors
 const { getSupportingError } = supportingUserListActions

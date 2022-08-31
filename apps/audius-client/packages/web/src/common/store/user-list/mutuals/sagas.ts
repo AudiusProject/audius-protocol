@@ -11,7 +11,7 @@ import {
 import { put, select } from 'typed-redux-saga'
 
 import { watchMutualsError } from 'common/store/user-list/mutuals/errorSagas'
-import { createUserListProvider } from 'components/user-list/utils'
+import { createUserListProvider } from 'common/store/user-list/utils'
 const { getMutualsError } = mutualsUserListActions
 const { getId, getUserList, getUserIds } = mutualsUserListSelectors
 const { getUser } = cacheUsersSelectors

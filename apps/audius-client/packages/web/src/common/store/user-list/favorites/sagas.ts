@@ -13,7 +13,7 @@ import {
 import { select, put } from 'typed-redux-saga'
 
 import { watchFavoriteError } from 'common/store/user-list/favorites/errorSagas'
-import { createUserListProvider } from 'components/user-list/utils'
+import { createUserListProvider } from 'common/store/user-list/utils'
 
 const { getId, getUserList, getUserIds, getFavoriteType } =
   favoritesUserListSelectors
