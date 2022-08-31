@@ -44,7 +44,7 @@ module.exports = function (app) {
     '/transaction_metadata',
     authMiddleware,
     handleResponse(async (req, res, next) => {
-      const userId = req.user.blockChainUserId
+      const userId = req.user.blockchainUserId
       const validationResult = validator.validate(req.body, requestSchema)
       if (!validationResult.valid) {
         logger.error(JSON.stringify(validationResult.errors))
@@ -69,7 +69,7 @@ module.exports = function (app) {
     '/transaction_metadata',
     authMiddleware,
     handleResponse(async (req, res, next) => {
-      const userId = req.user.blockChainUserId
+      const userId = req.user.blockchainUserId
       const { id } = req.query
       if (!id) {
         return errorResponseBadRequest("Missing 'id' query param")
