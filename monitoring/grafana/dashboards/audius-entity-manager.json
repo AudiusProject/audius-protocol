@@ -108,7 +108,7 @@
               "type": "prometheus"
             },
             "editorMode": "builder",
-            "expr": "audius_dn_entity_manager_update_errors",
+            "expr": "audius_dn_entity_manager_update_errors_count",
             "legendFormat": "{{entity_type}}",
             "range": true,
             "refId": "A"
@@ -285,7 +285,7 @@
             },
             "editorMode": "code",
             "expr": "audius_dn_entity_manager_update_duration_seconds_sum / audius_dn_entity_manager_update_duration_seconds_count",
-            "legendFormat": "Latency (seconds)",
+            "legendFormat": "Latency",
             "range": true,
             "refId": "A"
           }

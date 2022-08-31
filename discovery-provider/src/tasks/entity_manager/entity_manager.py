@@ -1,4 +1,5 @@
 import logging
+import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
@@ -88,6 +89,7 @@ def entity_manager_update(
             )
             for event in entity_manager_event_tx:
                 try:
+                    start_time_tx = time.time()
                     params = ManageEntityParameters(
                         session,
                         challenge_bus,
@@ -141,7 +143,9 @@ def entity_manager_update(
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
-                    metric_num_errors.save(1, {"entity_type": params.entity_type})
+                    metric_num_errors.save_time(
+                        {"entity_type": params.entity_type}, start_time=start_time_tx
+                    )
         # compile records_to_save
         records_to_save = []
         for playlist_records in new_records["playlists"].values():

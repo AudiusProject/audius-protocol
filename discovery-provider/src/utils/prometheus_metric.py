@@ -229,7 +229,8 @@ PrometheusRegistry = {
         "Number of entities changed by entity type",
         ("entity_type",),
     ),
-    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS: Gauge(
+    # Don't use this metric as an example
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS}",
         "Number of errors by entity type",
         ("entity_type",),
