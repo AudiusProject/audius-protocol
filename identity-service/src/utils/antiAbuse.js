@@ -1,8 +1,38 @@
 const axios = require('axios')
 const config = require('../config.js')
 const { logger } = require('../logging')
+const models = require('../models')
 
 const aaoEndpoint = config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
+
+/**
+ * Gets IP of a user by using the leftmost forwarded-for entry
+ * or defaulting to req.ip
+ */
+const getIP = (req) => {
+  const forwardedFor = req.get('X-Forwarded-For')
+  if (forwardedFor) {
+    const ip = forwardedFor.split(',')[0].trim()
+    return ip
+  }
+  return req.ip
+}
+
+/**
+ * Records or updates the last seen IP for `handle`
+ */
+const recordIP = async (userIP, handle) => {
+  const record = await models.UserIPs.findOne({ where: { handle } })
+  if (!record) {
+    await models.UserIPs.create({
+      handle,
+      userIP
+    })
+  } else {
+    // update even if IP has not changed so that we can later use updatedAt value if necessary
+    await record.update({ userIP, updatedAt: Date.now() })
+  }
+}
 
 const getAbuseAttestation = async (challengeId, handle, reqIP) => {
   const res = await axios.post(`${aaoEndpoint}/attestation/${handle}`, {
@@ -30,6 +60,9 @@ const detectAbuse = async (user, challengeId, reqIP) => {
     isAbusive = true
   } else {
     try {
+      // Write out the latest user IP to Identity DB - AAO will request it back
+      await recordIP(reqIP, user.handle)
+
       const { result, errorCode } = await getAbuseAttestation(challengeId, user.handle, reqIP)
       if (!result) {
         // The anti abuse system deems them abusive. Flag them as such.
@@ -49,5 +82,7 @@ const detectAbuse = async (user, challengeId, reqIP) => {
 
 module.exports = {
   getAbuseAttestation,
-  detectAbuse
+  detectAbuse,
+  getIP,
+  recordIP
 }
