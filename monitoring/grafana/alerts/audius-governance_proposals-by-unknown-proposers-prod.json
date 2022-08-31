@@ -1,7 +1,7 @@
 [
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_017_P1",
+      "__alertId__": "YCgu57m4z_017_P1_prod",
       "__dashboardUid__": "YCgu57m4z",
       "__panelId__": "17",
       "description": "We ignore any previous one-off proposers to keep this metric at 0. Anything greater than 0 should be considered to be created by an attacker.",
@@ -77,19 +77,17 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "ARwYXYzVk",
+    "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 220171,
+    "id": 3001711,
     "labels": {
       "alert": "p1",
-      "env": "prod",
-      "mentions": "",
-      "team": ""
+      "env": "prod"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
     "title": "PROD P1 | Proposals by Unknown Proposers",
-    "uid": "YCgu57m4z_017_P1"
+    "uid": "YCgu57m4z_017_P1_prod"
   }
 ]

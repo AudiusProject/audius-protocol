@@ -107,7 +107,6 @@ def entity_manager_update(
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.PLAYLIST
                     ):
-                        raise Exception("failll")
                         create_playlist(params)
                     elif (
                         params.action == Action.UPDATE

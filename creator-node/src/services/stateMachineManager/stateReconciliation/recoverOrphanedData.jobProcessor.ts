@@ -110,7 +110,7 @@ const _saveWalletsOnThisNodeToRedis = async (logger: Logger) => {
       order: [['cnodeUserUUID', 'ASC']],
       where: {
         cnodeUserUUID: {
-          [models.Sequelize.Op.gte]: prevCnodeUserUUID
+          [models.Sequelize.Op.gt]: prevCnodeUserUUID
         }
       },
       limit: ORPHANED_DATA_NUM_USERS_PER_QUERY
@@ -269,7 +269,9 @@ const _batchIssueReqsToRecoverOrphanedData = async (
 
     const elapsedMs = Date.now() - start
     logger.info(
-      `Issued /merge_primary_and_secondary requests for ${i}/${numWalletsWithOrphanedData} wallets. 
+      `Issued /merge_primary_and_secondary requests for ${
+        i + numWalletsWithOrphanedData
+      }/${numWalletsWithOrphanedData} wallets. 
       Time elapsed: ${elapsedMs}/${MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS}`
     )
     if (elapsedMs >= MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS) {

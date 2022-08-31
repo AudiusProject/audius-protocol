@@ -12,6 +12,7 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
+const { instrumentTracing, tracing } = require('../../tracer')
 const { fetchExportFromNode } = require('./syncUtil')
 
 const handleSyncFromPrimary = async ({
@@ -47,6 +48,7 @@ const handleSyncFromPrimary = async ({
       redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
     )
   } catch (e) {
+    tracing.recordException(e)
     return {
       error: new Error(
         `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
@@ -211,6 +213,7 @@ const handleSyncFromPrimary = async ({
         userReplicaSet.secondary2
       ].filter((url) => url !== myCnodeEndpoint)
     } catch (e) {
+      tracing.recordException(e)
       logger.error(
         `Couldn't filter out own endpoint from user's replica set to use use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
       )
@@ -604,6 +607,7 @@ const handleSyncFromPrimary = async ({
         : returnValue
     }
   } catch (e) {
+    tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
     logger.error(
       `Sync complete for wallet: ${wallet}. Status: Error, message: ${
@@ -623,6 +627,7 @@ const handleSyncFromPrimary = async ({
     try {
       await redis.WalletWriteLock.release(wallet)
     } catch (e) {
+      tracing.recordException(e)
       logger.warn(
         `Failure to release write lock for ${wallet} with error ${e.message}`
       )
@@ -642,7 +647,7 @@ const handleSyncFromPrimary = async ({
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function secondarySyncFromPrimary({
+async function _secondarySyncFromPrimary({
   serviceRegistry,
   wallet,
   creatorNodeEndpoint,
@@ -674,6 +679,8 @@ async function secondarySyncFromPrimary({
     logContext
   })
   metricEndTimerFn({ result, mode })
+  tracing.setSpanAttribute('result', result)
+  tracing.setSpanAttribute('mode', mode)
 
   if (error) {
     throw new Error(error)
@@ -681,5 +688,14 @@ async function secondarySyncFromPrimary({
 
   return { result }
 }
+
+const secondarySyncFromPrimary = instrumentTracing({
+  fn: _secondarySyncFromPrimary,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
 
 module.exports = secondarySyncFromPrimary

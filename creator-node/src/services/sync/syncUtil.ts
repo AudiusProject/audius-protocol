@@ -96,17 +96,24 @@ async function fetchExportFromNode({
     }
   }
 
-  // Validate wallet from cnodeUsers array matches the wallet we requested in the /export request
+  // Ensure all required properties are present
   const fetchedCNodeUser: any = Object.values(cnodeUsers)[0]
-  if (!_.has(fetchedCNodeUser, 'walletPublicKey')) {
+  if (
+    !_.has(fetchedCNodeUser, 'walletPublicKey') ||
+    !_.has(fetchedCNodeUser, 'clock') ||
+    !_.has(fetchedCNodeUser, ['clockInfo', 'localClockMax']) ||
+    !_.has(fetchedCNodeUser, ['clockInfo', 'requestedClockRangeMax'])
+  ) {
     return {
       error: {
         message:
-          '"walletPublicKey" property not found on CNodeUser in response object',
+          'Required properties not found on CNodeUser in response object',
         code: 'failure_malformed_export'
       }
     }
   }
+
+  // Validate wallet from cnodeUsers array matches the wallet we requested in the /export request
   if (wallet !== fetchedCNodeUser.walletPublicKey) {
     return {
       error: {

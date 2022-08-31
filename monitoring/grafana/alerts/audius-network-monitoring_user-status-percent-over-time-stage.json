@@ -1,11 +1,11 @@
 [
   {
     "annotations": {
-      "__alertId__": "ZUjg533nk_008_P1",
-      "__dashboardUid__": "ZUjg533nk",
-      "__panelId__": "8",
+      "__alertId__": "Y4Tx_K3nz_056_P3_stage",
+      "__dashboardUid__": "Y4Tx_K3nz",
+      "__panelId__": "56",
       "description": "",
-      "runbook_url": "http://grafana.audius.co/d/ZUjg533nk?viewPanel=8",
+      "runbook_url": "http://grafana.audius.co/d/Y4Tx_K3nz?viewPanel=56",
       "summary": ""
     },
     "condition": "B",
@@ -17,7 +17,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"stage\", host=~\".*\", success=\"True\"}",
+          "expr": "(sum without (run_id,instance) (audius_nm_fully_synced_user_count{environment=~\"stage\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"stage\"})) * 100",
           "hide": false,
           "intervalMs": 1000,
           "maxDataPoints": 43200,
@@ -37,10 +37,10 @@
             {
               "evaluator": {
                 "params": [
-                  90,
+                  80,
                   0
                 ],
-                "type": "gt"
+                "type": "lt"
               },
               "operator": {
                 "type": "or"
@@ -77,19 +77,19 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "ARwYXYzVk",
+    "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 150081,
+    "id": 705630,
     "labels": {
-      "alert": "p1",
+      "alert": "p3",
       "env": "stage",
-      "mentions": "",
-      "team": ""
+      "mentions": "@johannes",
+      "team": "content"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "stage P1 | Last Successful Celery Task Duration",
-    "uid": "ZUjg533nk_008_P1"
+    "title": "STAGE P3 | User Status Percent (over time)",
+    "uid": "Y4Tx_K3nz_056_P3_stage"
   }
 ]

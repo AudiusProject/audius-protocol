@@ -48,6 +48,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -102,8 +104,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "green",
@@ -130,6 +131,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -161,6 +163,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -193,8 +197,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -221,6 +224,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -274,6 +278,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -306,8 +312,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -334,6 +339,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -376,6 +382,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -403,17 +411,26 @@
                 "mode": "line"
               }
             },
-            "mappings": [],
+            "mappings": [
+              {
+                "options": {
+                  "team": {
+                    "index": 0,
+                    "text": "infra"
+                  }
+                },
+                "type": "value"
+              }
+            ],
             "thresholds": {
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "semi-dark-yellow",
-                  "value": 355000000
+                  "value": 274000000
                 }
               ]
             },
@@ -435,6 +452,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last",
             "sortDesc": true
           },
@@ -465,6 +483,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -524,6 +544,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -538,7 +559,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_exporters_alchemy_balance{address_name=\"NotStaking\"}",
+            "expr": "audius_exporters_alchemy_balance{address_name!=\"Staking\"}",
             "legendFormat": "{{address_name}}",
             "range": true,
             "refId": "A"
@@ -548,12 +569,15 @@
         "type": "timeseries"
       },
       {
+        "description": "The number of tokens entering the staking contract within the last 1 minute.\n\n---\n\nA negative metric denotes the number of $AUDIO leaving the contract within the last 1 minute.\n\nA positive metric denotes the amount of $AUDIO entering the staking contract within the last 1 minute.\n\nThis alert should never fire unless a whale or attacker are moving large amounts of $AUDIO. A large number of $AUDIO move across smaller accounts may also trigger this alert if the transfers happen within a 1 minute rolling window.",
         "fieldConfig": {
           "defaults": {
             "color": {
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "$AUDIO",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -581,18 +605,33 @@
                 "mode": "line"
               }
             },
-            "mappings": [],
-            "max": 1,
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "etherscan.io",
+                "url": "https://etherscan.io/address/0x18aaa7115705e8be94bffebde57af9bfc265b998/advanced#internaltx"
+              }
+            ],
+            "mappings": [
+              {
+                "options": {
+                  "team": {
+                    "index": 0,
+                    "text": "infra"
+                  }
+                },
+                "type": "value"
+              }
+            ],
             "thresholds": {
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
-                  "color": "red",
-                  "value": 10
+                  "color": "semi-dark-yellow",
+                  "value": -3000
                 }
               ]
             },
@@ -614,6 +653,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Last *",
             "sortDesc": true
           },
@@ -657,6 +697,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "Failed Requests",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -690,8 +732,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -714,7 +755,8 @@
           "legend": {
             "calcs": [],
             "displayMode": "list",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "single",
@@ -738,7 +780,7 @@
       }
     ],
     "refresh": "30m",
-    "schemaVersion": 36,
+    "schemaVersion": 37,
     "style": "dark",
     "tags": [],
     "templating": {

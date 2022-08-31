@@ -3,6 +3,7 @@ const _ = require('lodash')
 const models = require('../../models')
 const { Transaction } = require('sequelize')
 const DBManager = require('../../dbManager')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
@@ -89,22 +90,20 @@ const exportComponentService = async ({
 
     /** Bundle all data into cnodeUser objects to maximize import speed. */
     for (const cnodeUser of cnodeUsers) {
+      const cnodeUserResp = _.cloneDeep(cnodeUser)
       // Add cnodeUserUUID data fields
-      cnodeUser.audiusUsers = []
-      cnodeUser.tracks = []
-      cnodeUser.files = []
-      cnodeUser.clockRecords = []
+      cnodeUserResp.audiusUsers = []
+      cnodeUserResp.tracks = []
+      cnodeUserResp.files = []
+      cnodeUserResp.clockRecords = []
 
-      cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
-      const curCnodeUserClockVal = cnodeUser.clock
+      const curCnodeUserClockVal = cnodeUserResp.clock
 
       // Resets cnodeUser clock value to requestedClockRangeMax to ensure consistency with clockRecords data
-      // Also ensures secondary knows there is more data to sync
-      if (cnodeUser.clock > requestedClockRangeMax) {
-        // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
-        cnodeUser.clock = requestedClockRangeMax
+      if (cnodeUserResp.clock > requestedClockRangeMax) {
+        cnodeUserResp.clock = requestedClockRangeMax
         logger.info(
-          `exportComponentService() - cnodeUserUUID:${cnodeUser.cnodeUserUUID} - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`
+          `exportComponentService() - cnodeUserUUID:${cnodeUserResp.cnodeUserUUID} - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`
         )
       }
 
@@ -112,10 +111,10 @@ const exportComponentService = async ({
       const maxClockRecord = Math.max(
         ...clockRecords.map((record) => record.clock)
       )
-      if (!_.isEmpty(clockRecords) && cnodeUser.clock !== maxClockRecord) {
-        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUser.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
+      if (!_.isEmpty(clockRecords) && cnodeUserResp.clock !== maxClockRecord) {
+        const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUserResp.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
         logger.error(
-          `exportComponentService() - cnodeUserUUID:${cnodeUser.cnodeUserUUID} - ${errorMsg}`
+          `exportComponentService() - cnodeUserUUID:${cnodeUserResp.cnodeUserUUID} - ${errorMsg}`
         )
 
         if (!forceExport) {
@@ -123,11 +122,14 @@ const exportComponentService = async ({
         }
       }
 
-      cnodeUser.clockInfo = {
+      // Ensure localClockMax represents actual CNodeUser clock value from full data, so secondary knows there is more data to sync
+      cnodeUserResp.clockInfo = {
         requestedClockRangeMin,
         requestedClockRangeMax,
-        localClockMax: cnodeUser.clock
+        localClockMax: curCnodeUserClockVal
       }
+
+      cnodeUsersDict[cnodeUserResp.cnodeUserUUID] = cnodeUserResp
     }
 
     audiusUsers.forEach((audiusUser) => {
@@ -147,6 +149,7 @@ const exportComponentService = async ({
 
     return cnodeUsersDict
   } catch (e) {
+    tracing.recordException(e)
     await transaction.rollback()
 
     for (const cnodeUserUUID in cnodeUsersDict) {
@@ -158,6 +161,7 @@ const exportComponentService = async ({
           `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() executed - numRowsUpdated:${numRowsUpdated}`
         )
       } catch (e) {
+        tracing.recordException(e)
         logger.error(
           `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() error - ${e.message}`
         )
@@ -167,4 +171,11 @@ const exportComponentService = async ({
   }
 }
 
-module.exports = exportComponentService
+module.exports = instrumentTracing({
+  fn: exportComponentService,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
