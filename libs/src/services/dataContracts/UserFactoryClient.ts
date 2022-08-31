@@ -2,7 +2,7 @@ import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../data-contracts/signatureSchemas'
 import type { UserUpdateRequestFn } from '../../data-contracts/signatureSchemas'
 import { Nullable, Utils } from '../../utils'
-import sigUtil from 'eth-sig-util'
+import sigUtil, { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { Buffer as SafeBuffer } from 'safe-buffer'
 import type { Web3Manager } from '../web3Manager'
 
@@ -311,12 +311,11 @@ export class UserFactoryClient extends ContractClient {
     )
     let sig
     if (privateKey) {
-      sig = sigUtil.signTypedData(
-        SafeBuffer.from(privateKey, 'hex') as unknown as Buffer,
-        {
-          data: signatureData
-        }
-      )
+      sig = sigUtil.signTypedData({
+        privateKey: SafeBuffer.from(privateKey, 'hex') as unknown as Buffer,
+        data: signatureData,
+        version: SignTypedDataVersion.V3
+      })
     } else {
       sig = await this.web3Manager.signTypedData(signatureData)
     }

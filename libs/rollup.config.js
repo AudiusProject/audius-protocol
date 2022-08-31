@@ -37,7 +37,7 @@ const commonConfig = {
 // * contain deps that need to be polyfilled via `nodePolyfills`
 // * are ignored via `ignore`
 const browserInternal = [
-  'eth-sig-util',
+  '@metamask/eth-sig-util',
   'ethereumjs-tx',
   'ethereumjs-util',
   'ethereumjs-wallet',

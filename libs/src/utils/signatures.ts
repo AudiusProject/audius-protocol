@@ -123,6 +123,7 @@ function getDomainSeparator(
   contractAddress: string,
   chainId: number
 ) {
+  console.log('get domain separator')
   const encoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
     [
@@ -135,5 +136,6 @@ function getDomainSeparator(
       contractAddress
     ]
   )
+  console.log('done domain separator')
   return Utils.keccak256(encoded)
 }

@@ -7,6 +7,7 @@ export class UserLibraryFactoryClient extends ContractClient {
   /* ------- SETTERS ------- */
 
   async addTrackSave(userId: number, trackId: number) {
+    console.log('add track save')
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
@@ -17,7 +18,9 @@ export class UserLibraryFactoryClient extends ContractClient {
       trackId,
       nonce
     )
+    console.log({ signatureData })
     const sig = await this.web3Manager.signTypedData(signatureData)
+    console.log({ sig })
     const contractMethod = await this.getMethod(
       'addTrackSave',
       userId,
@@ -25,6 +28,7 @@ export class UserLibraryFactoryClient extends ContractClient {
       nonce,
       sig
     )
+    console.log({ contractAddress, contractMethod })
     return await this.web3Manager.sendTransaction(
       contractMethod,
       this.contractRegistryKey,

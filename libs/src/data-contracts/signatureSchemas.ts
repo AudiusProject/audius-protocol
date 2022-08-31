@@ -8,21 +8,22 @@
  */
 
 import type {
-  EIP712Domain,
-  EIP712Message,
-  EIP712TypedData,
-  EIP712TypeProperty,
-  EIP712Types
-} from 'eth-sig-util'
+  MessageTypeProperty,
+  MessageTypes,
+  TypedMessage
+} from '@metamask/eth-sig-util'
 
-type DomainFn = (chainId: number, contactAddress: string) => EIP712Domain
+type DomainFn = (
+  chainId: number,
+  contactAddress: string
+) => TypedMessage<MessageTypes>['domain']
 
 function getDomainData(
   contractName: string,
   signatureVersion: string,
   chainId: number,
   contractAddress: string
-): EIP712Domain {
+): TypedMessage<MessageTypes>['domain'] {
   return {
     name: contractName,
     version: signatureVersion,
@@ -307,7 +308,7 @@ export const schemas = {
   manageEntity
 }
 
-type MessageSchema = readonly EIP712TypeProperty[]
+type MessageSchema = MessageTypeProperty[]
 
 function getRequestData(
   domainDataFn: DomainFn,
@@ -315,10 +316,10 @@ function getRequestData(
   contractAddress: string,
   messageTypeName: string,
   messageSchema: MessageSchema,
-  message: EIP712Message
-): EIP712TypedData {
+  message: TypedMessage<MessageTypes>['message']
+): TypedMessage<MessageTypes> {
   const domainData = domainDataFn(chainId, contractAddress)
-  const types: EIP712Types = {
+  const types: MessageTypes = {
     EIP712Domain: schemas.domain
   }
   types[messageTypeName] = messageSchema
@@ -381,7 +382,7 @@ export type UserUpdateRequestFn = (
   userId: number,
   newValue: unknown,
   nonce: string
-) => EIP712TypedData
+) => TypedMessage<MessageTypes>
 
 const getUpdateUserMultihashRequestData: UserUpdateRequestFn = (
   chainId,
