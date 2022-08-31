@@ -280,10 +280,9 @@ def finalize_response(
             users_by_id[id] = populate_user_metadata_es(user, current_user)
 
     # fetch followed saves + reposts
-    # TODO: instead of limit param (20) should do an agg to get 3 saves / reposts per item_key
     if not is_auto_complete:
         (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-            current_user_id, item_keys, 20
+            current_user_id, item_keys
         )
 
     # tracks: finalize
