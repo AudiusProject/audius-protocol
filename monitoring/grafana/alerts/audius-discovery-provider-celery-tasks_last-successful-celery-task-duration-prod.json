@@ -1,12 +1,12 @@
 [
   {
     "annotations": {
-      "__alertId__": "YCgu57m4z_015_High",
-      "__dashboardUid__": "YCgu57m4z",
-      "__panelId__": "15",
-      "description": "\n\nAny more than 2 should trigger multiple alarms (including this one) since an attacker may be self-signing multiple proposals.",
-      "runbook_url": "http://grafana.audius.co/d/YCgu57m4z?viewPanel=15",
-      "summary": "The number of new proposals within the last 24 hours.\n\n"
+      "__alertId__": "ZUjg533nk_008_P1",
+      "__dashboardUid__": "ZUjg533nk",
+      "__panelId__": "8",
+      "description": "",
+      "runbook_url": "http://grafana.audius.co/d/ZUjg533nk?viewPanel=8",
+      "summary": ""
     },
     "condition": "B",
     "data": [
@@ -17,7 +17,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "sum(audius_exporters_sdk_proposals) - sum(audius_exporters_sdk_proposals offset 1d OR on() vector(87))",
+          "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"prod\", host=~\".*\", success=\"True\"}",
           "hide": false,
           "intervalMs": 1000,
           "maxDataPoints": 43200,
@@ -37,7 +37,7 @@
             {
               "evaluator": {
                 "params": [
-                  2,
+                  90,
                   0
                 ],
                 "type": "gt"
@@ -77,16 +77,19 @@
       }
     ],
     "execErrState": "Alerting",
-    "folderUID": "zpejR_iVz",
+    "folderUID": "ARwYXYzVk",
     "for": "0s",
-    "id": 180151,
+    "id": 150081,
     "labels": {
-      "channel": "high-alert"
+      "alert": "p1",
+      "env": "prod",
+      "mentions": "",
+      "team": ""
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "New Proposals (High)",
-    "uid": "YCgu57m4z_015_High"
+    "title": "PROD P1 | Last Successful Celery Task Duration",
+    "uid": "ZUjg533nk_008_P1"
   }
 ]

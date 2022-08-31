@@ -75,7 +75,28 @@
                 "mode": "line"
               }
             },
-            "mappings": [],
+            "links": [
+              {
+                "targetBlank": true,
+                "title": "etherscan",
+                "url": "https://etherscan.io/address/0x18aaa7115705e8be94bffebde57af9bfc265b998/advanced"
+              }
+            ],
+            "mappings": [
+              {
+                "options": {
+                  "mentions": {
+                    "index": 2,
+                    "text": "@joaquin"
+                  },
+                  "team": {
+                    "index": 0,
+                    "text": "platform"
+                  }
+                },
+                "type": "value"
+              }
+            ],
             "max": 250000,
             "thresholds": {
               "mode": "absolute",

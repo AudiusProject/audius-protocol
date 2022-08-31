@@ -13,7 +13,9 @@ import { StateMonitoringUser } from '../stateMonitoring/types'
 
 import {
   ORPHANED_DATA_NUM_USERS_PER_QUERY,
-  ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
+  ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH,
+  ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS,
+  MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS
 } from '../stateMachineConstants'
 
 const { QUEUE_NAMES } = require('../stateMachineConstants')
@@ -22,6 +24,7 @@ const config = require('../../../config')
 const redisClient: Redis = require('../../../redis')
 const models = require('../../../models')
 const asyncRetry = require('../../../utils/asyncRetry')
+const Utils = require('../../../utils')
 
 const WALLETS_ON_NODE_KEY = 'orphanedDataWalletsWithStateOnNode'
 const WALLETS_WITH_NODE_IN_REPLICA_SET_KEY =
@@ -45,13 +48,15 @@ export default async function ({
 }: DecoratedJobParams<RecoverOrphanedDataJobParams>): Promise<
   DecoratedJobReturnValue<RecoverOrphanedDataJobReturnValue>
 > {
-  const numWalletsOnNode = await _saveWalletsOnThisNodeToRedis()
+  const numWalletsOnNode = await _saveWalletsOnThisNodeToRedis(logger)
   const numWalletsWithNodeInReplicaSet =
     await _saveWalletsWithThisNodeInReplicaToRedis(
       discoveryNodeEndpoint,
       logger
     )
-  const numWalletsWithOrphanedData = await _saveWalletsWithOrphanedDataToRedis()
+  const numWalletsWithOrphanedData = await _saveWalletsWithOrphanedDataToRedis(
+    logger
+  )
   const requestsIssued = await _batchIssueReqsToRecoverOrphanedData(
     numWalletsWithOrphanedData,
     discoveryNodeEndpoint,
@@ -86,7 +91,7 @@ export default async function ({
 /**
  * Queries this node's db to find all users who have data on it and adds them to a redis set.
  */
-const _saveWalletsOnThisNodeToRedis = async () => {
+const _saveWalletsOnThisNodeToRedis = async (logger: Logger) => {
   await redisClient.del(WALLETS_ON_NODE_KEY)
 
   type WalletSqlRow = {
@@ -125,6 +130,7 @@ const _saveWalletsOnThisNodeToRedis = async () => {
   }
 
   const numWalletsOnNode = await redisClient.scard(WALLETS_ON_NODE_KEY)
+  logger.info(`Found ${numWalletsOnNode} wallets with data on this node`)
   return numWalletsOnNode
 }
 
@@ -182,6 +188,9 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
   const numWalletsWithNodeInReplicaSet = await redisClient.scard(
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
   )
+  logger.info(
+    `Found ${numWalletsWithNodeInReplicaSet} wallets with this node in their replica set`
+  )
   return numWalletsWithNodeInReplicaSet
 }
 
@@ -190,11 +199,14 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
  * (Set of orphaned wallets) = (set of wallets on this node) - (set of wallets with this node in their replica set)
  * @returns number of wallets that have data orphaned on this node
  */
-const _saveWalletsWithOrphanedDataToRedis = async () => {
+const _saveWalletsWithOrphanedDataToRedis = async (logger: Logger) => {
   const numWalletsOrphaned: number = await redisClient.sdiffstore(
     WALLETS_ORPHANED_KEY,
     WALLETS_ON_NODE_KEY,
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
+  )
+  logger.info(
+    `Found ${numWalletsOrphaned} wallets with data orphaned on this node`
   )
   return numWalletsOrphaned
 }
@@ -215,6 +227,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
   discoveryNodeEndpoint: string,
   logger: Logger
 ): Promise<number> => {
+  const start = Date.now()
   let requestsIssued = 0
   for (
     let i = 0;
@@ -253,6 +266,19 @@ const _batchIssueReqsToRecoverOrphanedData = async (
         )
       }
     }
+
+    const elapsedMs = Date.now() - start
+    logger.info(
+      `Issued /merge_primary_and_secondary requests for ${i}/${numWalletsWithOrphanedData} wallets. 
+      Time elapsed: ${elapsedMs}/${MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS}`
+    )
+    if (elapsedMs >= MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS) {
+      logger.info(`Gracefully ending job after ${elapsedMs}ms`)
+      break
+    }
+
+    // Delay processing the next batch to avoid spamming requests
+    await Utils.timeout(ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS, false)
   }
   return requestsIssued
 }

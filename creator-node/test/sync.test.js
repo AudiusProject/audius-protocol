@@ -1219,7 +1219,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
     })
 
-    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true', async () => {
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeEnabled` = true', async () => {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
@@ -1247,7 +1247,61 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
       assert.strictEqual(localCNodeUserCount, 1)
 
-      // Call secondarySyncFromPrimary with `forceResync` = true
+      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = true
+      config.set('syncForceWipeEnabled', true)
+      const secondarySyncFromPrimaryMock = proxyquire(
+        '../src/services/sync/secondarySyncFromPrimary',
+        {
+          './secondarySyncFromPrimaryUtils': {
+            shouldForceResync: async () => {
+              return true
+            }
+          },
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares,
+            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          }
+        }
+      )
+
+      const result = await secondarySyncFromPrimaryMock({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY,
+        blockNumber: null
+      })
+    })
+
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeEnabled` = false', async () => {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
+      const { sampleExport } = unpackSampleExportData(sampleExportDummyCIDPath)
+
+      setupMocks(sampleExport)
+
+      // Confirm local user state is empty before sync
+      const initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
+
+      // seed local user state with different cnodeUserUUID
+      const cnodeUserUUID = await createUser()
+
+      // Confirm local user state exists before sync
+      const localCNodeUserCount = await models.CNodeUser.count({
+        where: { cnodeUserUUID }
+      })
+      assert.strictEqual(localCNodeUserCount, 1)
+
+      // Get local user for future comparison
+      const localCNodeUser = await models.CNodeUser.findOne({
+        where: { cnodeUserUUID },
+        raw: true
+      })
+
+      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = false
+      config.set('syncForceWipeEnabled', false)
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
@@ -1276,16 +1330,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
-        exportedCnodeUser
+        stringifiedDateFields(localCNodeUser) // NOT exportedCnodeUser
       )
-
-      await verifyLocalStateForUser({
-        cnodeUserUUID: newCNodeUserUUID,
-        exportedAudiusUsers,
-        exportedClockRecords,
-        exportedFiles,
-        exportedTracks
-      })
     })
 
     it('Syncs correctly from clean user state, even when content is unavailable, by skipping files', async function () {
@@ -1301,12 +1347,16 @@ describe('Test secondarySyncFromPrimary()', async function () {
         clockRecords: exportedClockRecords
       } = unpackSampleExportData(sampleExportDummyCIDPath)
 
-      const numUniqueCIDs = (new Set(exportedFiles.map(file => file.multihash))).size
+      const numUniqueCIDs = new Set(exportedFiles.map((file) => file.multihash))
+        .size
 
       setupMocks(sampleExport, false)
 
       const SyncRequestMaxUserFailureCountBeforeSkip = 3
-      config.set('syncRequestMaxUserFailureCountBeforeSkip', SyncRequestMaxUserFailureCountBeforeSkip)
+      config.set(
+        'syncRequestMaxUserFailureCountBeforeSkip',
+        SyncRequestMaxUserFailureCountBeforeSkip
+      )
 
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
@@ -2134,7 +2184,8 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       clockRecords: exportedClockRecords
     } = unpackExportDataFromFile(exportFilePath)
 
-    const numUniqueCIDs = (new Set(exportedFiles.map(file => file.multihash))).size
+    const numUniqueCIDs = new Set(exportedFiles.map((file) => file.multihash))
+      .size
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks(false)
@@ -2152,7 +2203,10 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
         wallet: USER_1_WALLET,
         selfEndpoint: SELF
       })
-      assert.deepStrictEqual(error.message, `[saveFilesToDisk] Failed to save ${numUniqueCIDs} files to disk. Cannot proceed because UserSyncFailureCount = ${i} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`)
+      assert.deepStrictEqual(
+        error.message,
+        `[saveFilesToDisk] Failed to save ${numUniqueCIDs} files to disk. Cannot proceed because UserSyncFailureCount = ${i} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
+      )
     }
 
     const error = await primarySyncFromSecondaryStub({
@@ -2165,7 +2219,10 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Verify DB state after sync
      */
-    const skippedExportedFiles = exportedFiles.map(file => ({ ...file, skipped: true }))
+    const skippedExportedFiles = exportedFiles.map((file) => ({
+      ...file,
+      skipped: true
+    }))
     const exportedUserData = {
       exportedCnodeUser,
       exportedAudiusUsers,

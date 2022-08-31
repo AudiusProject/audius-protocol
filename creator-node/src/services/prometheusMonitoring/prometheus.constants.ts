@@ -58,7 +58,8 @@ const metricNames: Record<string, string> = {
   JOBS_ATTEMPTS_HISTOGRAM: 'jobs_attempts',
   RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE:
     'recover_orphaned_data_wallet_counts',
-  RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE: 'recover_orphaned_data_sync_counts'
+  RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE: 'recover_orphaned_data_sync_counts',
+  STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -104,6 +105,8 @@ export const METRIC_LABELS = Object.freeze({
       'success_mode_disabled',
       'success_secondary_caught_up',
       'success_secondary_partially_caught_up',
+      'success_orphan_wiped',
+      'failure_orphan_not_wiped',
       'failure_sync_correctness',
       'failure_missing_wallet',
       'failure_secondary_failure_count_threshold_met',
@@ -370,6 +373,14 @@ export const METRICS: Record<string, Metric> = Object.freeze({
           1000,
         5
       )
+    }
+  },
+  [METRIC_NAMES.STORAGE_PATH_SIZE_BYTES]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.STORAGE_PATH_SIZE_BYTES,
+      help: 'Disk storage size',
+      labelNames: ['type']
     }
   }
 })
