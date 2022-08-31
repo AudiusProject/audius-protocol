@@ -410,11 +410,12 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "semi-dark-yellow",
-                  "value": 353000000
+                  "value": 274000000
                 }
               ]
             },
@@ -550,7 +551,7 @@
         "type": "timeseries"
       },
       {
-        "description": "The number of tokens on the move within the last 1 minutes.\n\n---\n\nA negative metric denotes the number of $AUDIO leaving the contract within the last 1 minute.\n\nA positive metric denotes the amount of $AUDIO entering the staking contract within the last 1 minute.\n\nThis alert should never fire unless a whale or attacker are moving large amounts of $AUDIO. A large number of $AUDIO move across smaller accounts may also trigger this alert if the transfers happen within a 1 minute rolling window.",
+        "description": "The number of tokens entering the staking contract within the last 1 minute.\n\n---\n\nA negative metric denotes the number of $AUDIO leaving the contract within the last 1 minute.\n\nA positive metric denotes the amount of $AUDIO entering the staking contract within the last 1 minute.\n\nThis alert should never fire unless a whale or attacker are moving large amounts of $AUDIO. A large number of $AUDIO move across smaller accounts may also trigger this alert if the transfers happen within a 1 minute rolling window.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -598,8 +599,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "semi-dark-yellow",
