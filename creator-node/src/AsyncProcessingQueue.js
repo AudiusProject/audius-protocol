@@ -54,12 +54,24 @@ class AsyncProcessingQueue {
 
     this.libs = libs
 
+    const untracedProcessTask = this.processTask
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
-      const { logContext } = job.data
+      const { logContext, parentSpanContext, task } = job.data
       const processTask = instrumentTracing({
-        name: 'AsyncProcessingQueue.process',
-        fn: this.processTask,
+        name: `AsyncProcessingQueue.process ${task}`,
+        fn: untracedProcessTask,
+        context: this,
         options: {
+          // if a parentSpanContext is provided
+          // reference it so the async queue job can remember
+          // who enqueued it
+          links: parentSpanContext
+            ? [
+                {
+                  context: parentSpanContext
+                }
+              ]
+            : [],
           attributes: {
             requestID: logContext.requestID,
             [tracing.CODE_FILEPATH]: __filename
@@ -101,6 +113,7 @@ class AsyncProcessingQueue {
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
         )
         await this.addProcessTranscodeAndSegmentTask({
+          parentSpanContext: tracing.currentSpanContext(),
           logContext,
           req: { ...job.data.req, transcodeFilePath, segmentFileNames }
         })
