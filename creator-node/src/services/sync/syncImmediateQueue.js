@@ -73,7 +73,7 @@ class SyncImmediateQueue {
           }
         }
       })
-      
+
       // `processTask()` on longer has access to `this` after going through the tracing wrapper
       // so to mitigate that, we're manually adding `this.serviceRegistry` to the job data
       job.data = { ...job.data, serviceRegistry: this.serviceRegistry }
