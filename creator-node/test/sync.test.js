@@ -32,10 +32,16 @@ chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
 
+const MOCK_CN1 = 'http://mock-cn1.audius.co'
+const MOCK_CN2 = 'http://mock-cn2.audius.co'
+const MOCK_CN3 = 'http://mock-cn3.audius.co'
+const MOCK_CN4 = 'http://mock-cn4.audius.co'
+
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 const DUMMY_WALLET = testEthereumConstants.pubKey.toLowerCase()
 const DUMMY_CNODEUSER_BLOCKNUMBER = 10
+
 // Below files generated using above dummy data
 const sampleExportDummyCIDPath = path.resolve(
   __dirname,
@@ -108,7 +114,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
     async function createUserAndTrack() {
       // Create user
-      ; ({
+      ;({
         cnodeUserUUID,
         sessionToken,
         userId,
@@ -801,9 +807,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
   describe('Test secondarySyncFromPrimary function', async function () {
     let serviceRegistryMock, originalContentNodeEndpoint
 
-    const MOCK_CN1 = 'http://mock-cn1.audius.co'
-    const MOCK_CN2 = 'http://mock-cn2.audius.co'
-    const MOCK_CN3 = 'http://mock-cn3.audius.co'
     const TEST_ENDPOINT_PRIMARY = MOCK_CN1
     const USER_REPLICA_SET = `${MOCK_CN1},${MOCK_CN2},${MOCK_CN3}`
     const { pubKey } = testEthereumConstants
@@ -1379,7 +1382,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
               fileNameForImage = null,
               trackId = null
             ) {
-              console.log('1 surely this is working....')
               return saveFileForMultihashToFS(
                 libs,
                 logger,
@@ -2183,7 +2185,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     assertTableEquality(localFinalClockRecords, localInitialClockRecords, [])
   })
 
-  it('Primary correctly syncs from secondary when nodes have divergent state and content is unavailable in network', async function () {
+  it.only('Primary correctly syncs from secondary when nodes have divergent state and content is unavailable in network', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -2204,6 +2206,15 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       USER_1_WALLET
     )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
+
+    // Mock that fetching any content via /file_lookup is unavailable
+    nock(MOCK_CN4)
+      .persist()
+      .get('/file_lookup')
+      .query(() => {
+        return true
+      })
+      .reply(404)
 
     primarySyncFromSecondaryStub = proxyquire(
       '../src/services/sync/primarySyncFromSecondary',
