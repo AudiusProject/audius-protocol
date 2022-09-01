@@ -2,6 +2,7 @@ import { RemoteConfigInstance, StringKeys, getContext } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import { takeEvery } from 'redux-saga/effects'
 
+import * as oauthActions from 'common/store/oauth/actions'
 import {
   formatInstagramProfile,
   formatTwitterProfile
@@ -14,7 +15,6 @@ import {
   RequestTwitterAuthMessage,
   RequestTwitterAuthSuccessMessage
 } from 'services/native-mobile-interface/oauth'
-import * as oauthActions from 'store/oauth/actions'
 
 import mobileSagas from './mobileSagas'
 
