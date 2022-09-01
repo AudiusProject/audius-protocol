@@ -3,7 +3,12 @@ from typing import Union
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
-from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
+from src.tasks.entity_manager.utils import (
+    Action,
+    EntityType,
+    ManageEntityParameters,
+    get_record_key,
+)
 
 action_to_record_type = {
     Action.FOLLOW: EntityType.FOLLOW,
@@ -69,16 +74,17 @@ def create_social_record(params: ManageEntityParameters):
         )
 
 
-def delete_social_records(params):
+def delete_social_record(params):
 
     validate_social_feature(params)
 
-    entity_key = (params.user_id, params.entity_type, params.entity_id)
+    entity_key = get_record_key(params.user_id, params.entity_type, params.entity_id)
     record_type = action_to_record_type[params.action]
-    existing_entity = params.existing_records[record_type][entity_key]
+
+    if entity_key not in params.existing_records[record_type]:
+        existing_entity = params.existing_records[record_type][entity_key]
 
     if entity_key in params.new_records[params.entity_type]:
-        # override with last updated playlist is in this block
         existing_entity = params.new_records[params.entity_type][entity_key][-1]
 
     deleted_record = None
@@ -138,10 +144,10 @@ def validate_social_feature(params: ManageEntityParameters):
     if wallet and wallet.lower() != params.signer.lower():
         raise Exception("User does not match signer")
 
-    if params.entity_id not in params.existing_records[params.entity_type]:
+    record_type = action_to_record_type[params.action]
+    entity_key = get_record_key(params.user_id, params.entity_type, params.entity_id)
+    if entity_key not in params.existing_records[record_type]:
         raise Exception("Entity does not exist")
-    # TODO: Validate rest of the options here
-    # IE limit set of actions
 
 
 def copy_follow_record(

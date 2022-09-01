@@ -23,7 +23,7 @@ from src.tasks.entity_manager.social_features import (
     create_actions,
     create_social_record,
     delete_actions,
-    delete_social_records,
+    delete_social_record,
 )
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
 from src.tasks.entity_manager.utils import (
@@ -142,7 +142,7 @@ def entity_manager_update(
                     elif (
                         params.action in delete_actions and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        delete_social_records(params)
+                        delete_social_record(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -285,7 +285,8 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         )
     saves: List[Save] = session.query(Save).filter(or_(*and_queries)).all()
     existing_entities[EntityType.SAVE] = {
-        (save.user_id, save.save_type, save.save_item_id): save for save in saves
+        get_record_key(save.user_id, save.save_type, save.save_item_id): save
+        for save in saves
     }
 
     # REPOSTS
@@ -305,7 +306,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         )
     reposts: List[Repost] = session.query(Repost).filter(or_(*and_queries)).all()
     existing_entities[EntityType.REPOST] = {
-        (repost.user_id, repost.repost_type, repost.repost_item_id): repost
+        get_record_key(
+            repost.user_id, repost.repost_type, repost.repost_item_id
+        ): repost
         for repost in reposts
     }
 
