@@ -11,11 +11,11 @@ import { AppDrawer, useDrawerState } from '../drawer'
 
 const MODAL_NAME = 'DeactivateAccountConfirmation'
 const messages = {
-  confirmTitle: 'Deactivate Account',
-  areYouSureText: 'Are you sure you want to deactivate your account?',
+  confirmTitle: 'Delete Account',
+  areYouSureText: 'Are you sure you want to delete your account?',
   doubleCheckText:
     'There is no going back. This will remove all of your tracks, albums, and playlists. You will not be able to re-register with the same email or handle',
-  confirmText: 'Deactivate',
+  confirmText: 'Delete',
   cancelText: 'Take me back to safety'
 }
 
