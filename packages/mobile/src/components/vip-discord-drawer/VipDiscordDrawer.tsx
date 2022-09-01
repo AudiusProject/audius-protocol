@@ -1,22 +1,14 @@
-import { useCallback } from 'react'
-
-import {
-  tokenDashboardPageActions,
-  tokenDashboardPageSelectors
-} from '@audius/common'
+import { vipDiscordModalSelectors } from '@audius/common'
 import { AUDIUS_DISCORD_LINK } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 
 import IconDiscord from 'app/assets/images/iconDiscord.svg'
 import { CopyTextTile } from 'app/components/copy-text-tile'
 import { Text, Button } from 'app/components/core'
-import Drawer from 'app/components/drawer'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import Drawer, { useDrawerState } from 'app/components/drawer'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
-const { getDiscordCode, getModalState, getModalVisible } =
-  tokenDashboardPageSelectors
-const { setModalState, setModalVisibility } = tokenDashboardPageActions
+const { getDiscordCode } = vipDiscordModalSelectors
 
 const messages = {
   title: 'Launch the VIP Discord',
@@ -43,34 +35,25 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
-export const DiscordDrawer = () => {
+export const VipDiscordDrawer = () => {
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
+  const { isOpen, onClose } = useDrawerState('VipDiscord')
 
-  // TODO: Discord modal state should probably be pulled out of token dashboard
-  const modalVisible = useSelectorWeb(getModalVisible)
-  const modalState = useSelectorWeb(getModalState)
   const discordCode = useSelectorWeb(getDiscordCode)
-
-  const isOpen =
-    modalVisible && modalState !== null && modalState.stage === 'DISCORD_CODE'
-
-  const handleClose = useCallback(() => {
-    dispatchWeb(setModalVisibility({ isVisible: false }))
-    dispatchWeb(setModalState({ modalState: null }))
-  }, [dispatchWeb])
 
   return (
     <Drawer
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       isFullscreen
       isGestureSupported={false}
       title={messages.title}
     >
       <View style={styles.container}>
         <Text style={styles.body}>{messages.body}</Text>
-        <CopyTextTile hint={messages.copyThisCode} text={discordCode} />
+        {discordCode ? (
+          <CopyTextTile hint={messages.copyThisCode} text={discordCode} />
+        ) : null}
         <Button
           style={styles.launchDiscord}
           title={messages.launchDiscord}

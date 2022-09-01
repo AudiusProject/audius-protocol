@@ -4,9 +4,9 @@ import {
   BadgeTier,
   Nullable,
   accountSelectors,
-  tokenDashboardPageActions,
   badgeTiers,
-  getTierNumber
+  getTierNumber,
+  vipDiscordModalActions
 } from '@audius/common'
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
@@ -25,7 +25,7 @@ import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import styles from './Tiers.module.css'
-const { pressDiscord } = tokenDashboardPageActions
+const { pressDiscord } = vipDiscordModalActions
 const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {

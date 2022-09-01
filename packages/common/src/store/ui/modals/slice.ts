@@ -30,7 +30,8 @@ const initialState: ModalsState = {
   DeletePlaylistConfirmation: false,
   FeatureFlagOverride: false,
   BuyAudio: false,
-  TransactionDetails: false
+  TransactionDetails: false,
+  VipDiscord: false
 }
 
 const slice = createSlice({
