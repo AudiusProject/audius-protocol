@@ -1,4 +1,5 @@
 'use strict'
+
 const { setupTracing } = require('./tracer')
 setupTracing('content-node')
 
@@ -12,6 +13,7 @@ const { sequelize } = require('./models')
 const { runMigrations, clearRunningQueries } = require('./migrationManager')
 const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
+const redisClient = require('./redis')
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
@@ -123,6 +125,13 @@ const startApp = async () => {
   // Some Services cannot start until server is up. Start them now
   // No need to await on this as this process can take a while and can run in the background
   serviceRegistry.initServicesThatRequireServer(appInfo.app)
+
+  // Clear all redis locks
+  try {
+    await redisClient.WalletWriteLock.clearWriteLocks()
+  } catch (e: any) {
+    logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
+  }
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal: any, error: any) => {
