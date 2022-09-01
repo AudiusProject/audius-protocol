@@ -26,8 +26,8 @@ import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
-import { DiscordDrawer } from './components/discord-drawer'
 import { useDrawerState } from './components/drawer'
+import { VipDiscordDrawer } from './components/vip-discord-drawer'
 import { useDrawer } from './hooks/useDrawer'
 import type { Drawer } from './store/drawers/slice'
 
@@ -83,7 +83,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   SignOutConfirmation: SignOutConfirmationDrawer,
   AddToPlaylist: AddToPlaylistDrawer,
   AudioBreakdown: AudioBreakdownDrawer,
-  DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer
+  DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
+  VipDiscord: VipDiscordDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
@@ -117,7 +118,6 @@ export const Drawers = () => {
           drawer={Drawer}
         />
       ))}
-      <DiscordDrawer />
     </>
   )
 }

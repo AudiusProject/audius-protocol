@@ -74,6 +74,8 @@ import theme from './ui/theme/reducer'
 import { ThemeState } from './ui/theme/types'
 import toastReducer from './ui/toast/slice'
 import transactionDetailsReducer from './ui/transaction-details/slice'
+import vipDiscordModalReducer from './ui/vip-discord-modal/slice'
+import { VipDiscordModalState } from './ui/vip-discord-modal/types'
 import favoritesUserListReducer from './user-list/favorites/reducers'
 import followersUserListReducer from './user-list/followers/reducers'
 import followingUserListReducer from './user-list/following/reducers'
@@ -149,7 +151,8 @@ export const reducers = () => ({
       mutuals: mutualsUserListReducer,
       notifications: notificationsUserListReducer
     }),
-    theme
+    theme,
+    vipDiscordModal: vipDiscordModalReducer
   }),
 
   // Pages
@@ -240,6 +243,7 @@ export type CommonState = {
       supporting: ReturnType<typeof supportingUserListReducer>
     }
     theme: ThemeState
+    vipDiscordModal: VipDiscordModalState
   }
 
   pages: {

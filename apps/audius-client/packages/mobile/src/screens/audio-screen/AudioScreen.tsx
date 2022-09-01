@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 
 import type { BNWei, StringWei, Nullable } from '@audius/common'
 import {
+  vipDiscordModalActions,
   formatWei,
-  tokenDashboardPageActions,
   tokenDashboardPageSelectors,
   walletSelectors,
   walletActions,
@@ -46,7 +46,7 @@ const { setVisibility } = modalsActions
 const { getBalance } = walletActions
 const { getAccountTotalBalance } = walletSelectors
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
-const { setModalState, setModalVisibility } = tokenDashboardPageActions
+const { pressDiscord } = vipDiscordModalActions
 
 const LEARN_MORE_LINK = 'https://blog.audius.co/article/community-meet-audio'
 
@@ -330,8 +330,7 @@ export const AudioScreen = () => {
   }
 
   const onPressLaunchDiscord = useCallback(() => {
-    dispatchWeb(setModalState({ modalState: { stage: 'DISCORD_CODE' } }))
-    dispatchWeb(setModalVisibility({ isVisible: true }))
+    dispatchWeb(pressDiscord())
   }, [dispatchWeb])
 
   const renderTierTile = () => {

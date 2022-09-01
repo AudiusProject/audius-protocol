@@ -1,0 +1,48 @@
+.modalBody {
+  max-width: 760px;
+  min-height: 320px;
+  width: 100%;
+}
+
+.modalContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.mobile .modalContainer {
+  width: 100%;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  color: #9147cc; /* Dark secondary */
+  margin-bottom: 4px;
+}
+
+.discordDrawerTitle {
+  margin-top: 24px;
+}
+
+.btn {
+  margin: 24px 0px;
+}
+
+.btn svg {
+  height: 20px;
+}
+
+.description {
+  font-weight: 600;
+  font-size: var(--font-m);
+  line-height: 24px;
+  text-align: center;
+  color: var(--neutral);
+  text-align: center;
+  margin: 24px 0px;
+  max-width: 622px;
+}

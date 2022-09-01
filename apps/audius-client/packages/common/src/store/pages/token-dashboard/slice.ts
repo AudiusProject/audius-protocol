@@ -17,7 +17,6 @@ import {
 const initialState: TokenDashboardState = {
   modalState: null,
   modalVisible: false,
-  discordCode: null,
   associatedWallets: {
     status: null,
     connectedEthWallets: null,
@@ -125,16 +124,6 @@ const slice = createSlice({
         flowState: { stage: 'KEY_DISPLAY' }
       }
       state.modalVisible = true
-    },
-    pressDiscord: (state) => {
-      state.modalState = { stage: 'DISCORD_CODE' }
-      state.modalVisible = true
-    },
-    setDiscordCode: (
-      state,
-      { payload: { code } }: PayloadAction<{ code: Nullable<string> }>
-    ) => {
-      state.discordCode = code
     },
 
     // Saga Actions
@@ -293,8 +282,6 @@ export const {
   pressSend,
   inputSendData,
   confirmSend,
-  pressDiscord,
-  setDiscordCode,
   fetchAssociatedWallets,
   setWalletAddedConfirmed,
   setAssociatedWallets,
