@@ -82,7 +82,7 @@ class StateMachineManager {
         maxWaitingJobs: 10
       }
     }
-    for (const [queueName, queue] of Object.entries(queueNameToQueueMap)) {
+    for (const [queueName, { queue }] of Object.entries(queueNameToQueueMap)) {
       queue.on(
         'global:completed',
         makeOnCompleteCallback(
