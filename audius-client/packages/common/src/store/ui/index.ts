@@ -65,6 +65,14 @@ export * as shareModalUISelectors from './share-modal/selectors'
 export { default as shareModalUISagas } from './share-modal/sagas'
 
 export {
+  default as vipDiscordModalReducer,
+  actions as vipDiscordModalActions
+} from './vip-discord-modal/slice'
+export * from './vip-discord-modal/types'
+export * as vipDiscordModalSelectors from './vip-discord-modal/selectors'
+export { default as vipDiscordModalSagas } from './vip-discord-modal/sagas'
+
+export {
   default as shareSoundToTiktokModalReducer,
   actions as shareSoundToTiktokModalActions
 } from './share-sound-to-tiktok-modal/slice'

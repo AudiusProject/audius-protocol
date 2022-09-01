@@ -28,6 +28,7 @@ import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import RewardsModals from 'pages/audio-rewards-page/components/modals/RewardsModals'
+import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
 import { getClient } from 'utils/clientUtil'
 
 import { AppModal } from './AppModal'
@@ -37,7 +38,8 @@ const NATIVE_NAVIGATION_ENABLED =
   process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
 
 const appModalsMap = {
-  Share: ShareModal
+  Share: ShareModal,
+  VipDiscord: VipDiscordModal
 }
 
 const appModals = Object.entries(appModalsMap) as [ModalTypes, ComponentType][]

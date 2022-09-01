@@ -7,7 +7,6 @@ import {
   weiToString,
   getErrorMessage,
   accountSelectors,
-  accountActions,
   cacheActions,
   tokenDashboardPageActions,
   AssociatedWallets,
@@ -62,7 +61,6 @@ const {
   setModalState,
   setModalVisibility: setSendAUDIOModalVisibility,
   confirmSend,
-  setDiscordCode,
   setIsConnectingWallet,
   setWalletAddedConfirmed,
   setAssociatedWallets,
@@ -70,7 +68,6 @@ const {
   updateWalletError,
   preloadWalletProviders
 } = tokenDashboardPageActions
-const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 
 const { getUserId, getAccountUser } = accountSelectors
 
@@ -821,21 +818,6 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
   }
 }
 
-const getSignableData = () => {
-  const vals = 'abcdefghijklmnopqrstuvwxyz123456789'
-  return vals.charAt(Math.floor(Math.random() * vals.length))
-}
-
-function* watchForDiscordCode() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* call(audiusBackendInstance.waitForWeb3)
-  yield* take(fetchAccountSucceeded.type)
-  const data = getSignableData()
-  const signature = yield* call(audiusBackendInstance.getSignature, data)
-  const appended = `${signature}:${data}`
-  yield* put(setDiscordCode({ code: appended }))
-}
-
 function* preloadProviders() {
   yield loadWalletConnect()
   yield loadBitski()
@@ -870,7 +852,6 @@ const sagas = () => {
   return [
     watchPressSend,
     watchConfirmSend,
-    watchForDiscordCode,
     watchGetAssociatedWallets,
     watchConnectNewWallet,
     watchRemoveWallet,

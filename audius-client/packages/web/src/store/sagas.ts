@@ -4,7 +4,8 @@ import {
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
-  toastSagas
+  toastSagas,
+  vipDiscordModalSagas
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
@@ -171,6 +172,7 @@ export default function* rootSaga() {
     tokenDashboardSagas(),
     userListModalSagas(),
     oauthSagas(),
+    vipDiscordModalSagas(),
 
     // Remote config
     remoteConfigSagas(),

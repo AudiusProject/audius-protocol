@@ -27,5 +27,6 @@ export type Modals =
   | 'FeatureFlagOverride'
   | 'BuyAudio'
   | 'TransactionDetails'
+  | 'VipDiscord'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }
