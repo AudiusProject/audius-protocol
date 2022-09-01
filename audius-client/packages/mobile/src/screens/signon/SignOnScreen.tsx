@@ -1,16 +1,16 @@
 import { useEffect } from 'react'
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import {
+  getAccountReady,
+  getEmailField,
+  getHandleField
+} from 'common/store/pages/signon/selectors'
+import type { EditableField } from 'common/store/pages/signon/types'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 import { track, make } from 'app/services/analytics'
-import { getOnSignUp } from 'app/store/lifecycle/selectors'
-import {
-  getAccountAvailable,
-  getFinalEmail,
-  getFinalHandle
-} from 'app/store/signon/selectors'
 import { EventNames } from 'app/types/analytics'
 
 import CreatePassword from './CreatePassword'
@@ -58,23 +58,23 @@ const screenOptions = {
 export const SignOnScreen = () => {
   const dispatch = useDispatch()
 
-  const onSignUp = useSelector(getOnSignUp)
-  const isAccountAvailable = useSelector(getAccountAvailable)
-  const finalEmail = useSelector(getFinalEmail)
-  const finalHandle = useSelector(getFinalHandle)
+  const accountReady = useSelector(getAccountReady)
+
+  const emailField: EditableField = useSelector(getEmailField)
+  const handleField: EditableField = useSelector(getHandleField)
 
   useEffect(() => {
-    if (onSignUp && isAccountAvailable) {
+    if (accountReady) {
       track(
         make({
           eventName: EventNames.CREATE_ACCOUNT_FINISH,
-          emailAddress: finalEmail,
-          handle: finalHandle
+          emailAddress: emailField.value,
+          handle: handleField.value
         })
       )
       remindUserToTurnOnNotifications(dispatch)
     }
-  }, [onSignUp, isAccountAvailable, finalEmail, finalHandle, dispatch])
+  }, [accountReady, dispatch, emailField.value, handleField.value])
 
   return (
     <Stack.Navigator

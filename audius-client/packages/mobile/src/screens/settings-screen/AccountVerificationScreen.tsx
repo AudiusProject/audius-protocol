@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { Status, accountSelectors } from '@audius/common'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
+import { getHandleField } from 'common/store/pages/signon/selectors'
+import type { EditableField } from 'common/store/pages/signon/types'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -26,7 +29,6 @@ import {
   getTwitterError,
   getTwitterInfo
 } from 'app/store/oauth/selectors'
-import { getHandleError, getHandleIsValid } from 'app/store/signon/selectors'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 import { getUserRoute } from 'app/utils/routes'
@@ -117,8 +119,8 @@ export const AccountVerificationScreen = () => {
   const twitterError = useSelector(getTwitterError)
   const instagramInfo = useSelector(getInstagramInfo)
   const instagramError = useSelector(getInstagramError)
-  const handleIsValid = useSelector(getHandleIsValid)
-  const handleError = useSelector(getHandleError)
+
+  const handleField: EditableField = useSelector(getHandleField)
 
   const name = accountUser?.name
   const handle = accountUser?.handle
@@ -185,21 +187,20 @@ export const AccountVerificationScreen = () => {
 
   useEffect(() => {
     if (twitterInfo) {
-      if (!handleIsValid && !didValidateHandle) {
+      if (handleField.status !== EditingStatus.SUCCESS && !didValidateHandle) {
         validateHandle('twitter')
         setDidValidateHandle(true)
-      } else if (handleError || twitterInfo.requiresUserReview) {
+      } else if (handleField.error || twitterInfo.requiresUserReview) {
         trackOAuthComplete('twitter')
         setStatus('')
-      } else if (handleIsValid) {
+      } else if (handleField.status === EditingStatus.SUCCESS) {
         trackOAuthComplete('twitter')
         setStatus(Status.SUCCESS)
       }
     }
   }, [
     twitterInfo,
-    handleIsValid,
-    handleError,
+    handleField,
     didValidateHandle,
     validateHandle,
     trackOAuthComplete
@@ -211,21 +212,20 @@ export const AccountVerificationScreen = () => {
 
   useEffect(() => {
     if (instagramInfo) {
-      if (!handleIsValid && !didValidateHandle) {
+      if (handleField.status !== EditingStatus.SUCCESS && !didValidateHandle) {
         validateHandle('instagram')
         setDidValidateHandle(true)
-      } else if (handleError || instagramInfo.requiresUserReview) {
+      } else if (handleField.error || instagramInfo.requiresUserReview) {
         trackOAuthComplete('instagram')
         setStatus('')
-      } else if (handleIsValid) {
+      } else if (handleField.status === EditingStatus.SUCCESS) {
         trackOAuthComplete('instagram')
         setStatus(Status.SUCCESS)
       }
     }
   }, [
     instagramInfo,
-    handleIsValid,
-    handleError,
+    handleField,
     didValidateHandle,
     validateHandle,
     trackOAuthComplete
