@@ -8,7 +8,6 @@ from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_route import TrackRoute
 from src.models.tracks.track_with_aggregates import TrackWithAggregates
 from src.models.users.user import User
-from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     SortDirection,
     SortMethod,
@@ -244,22 +243,6 @@ def get_tracks(args: GetTrackArgs):
                 # If none of the handles were found, return empty lists
                 if not args["routes"]:
                     return ([], [])
-
-            can_use_shared_cache = (
-                "id" in args
-                and "min_block_number" not in args
-                and "sort" not in args
-                and "sort_method" not in args
-                and "user_id" not in args
-            )
-
-            if can_use_shared_cache:
-                should_filter_deleted = args.get("filter_deleted", False)
-                tracks = get_unpopulated_tracks(
-                    session, args["id"], should_filter_deleted
-                )
-                track_ids = list(map(lambda track: track["track_id"], tracks))
-                return (tracks, track_ids)
 
             (limit, offset) = get_pagination_vars()
             args["limit"] = limit
