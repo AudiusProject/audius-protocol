@@ -119,19 +119,19 @@ const startApp = async () => {
   const appInfo = initializeApp(getPort(), serviceRegistry)
   logger.info('Initialized app and server')
 
-  // Initialize services that do not require the server, but do not need to be awaited.
-  serviceRegistry.initServicesAsynchronously()
-
-  // Some Services cannot start until server is up. Start them now
-  // No need to await on this as this process can take a while and can run in the background
-  serviceRegistry.initServicesThatRequireServer(appInfo.app)
-
   // Clear all redis locks
   try {
     await redisClient.WalletWriteLock.clearWriteLocks()
   } catch (e: any) {
     logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
   }
+
+  // Initialize services that do not require the server, but do not need to be awaited.
+  serviceRegistry.initServicesAsynchronously()
+
+  // Some Services cannot start until server is up. Start them now
+  // No need to await on this as this process can take a while and can run in the background
+  serviceRegistry.initServicesThatRequireServer(appInfo.app)
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal: any, error: any) => {
