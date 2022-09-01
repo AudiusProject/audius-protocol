@@ -12,6 +12,14 @@ import type {
   SyncRequestAxiosParams
 } from './types'
 
+import {
+  SYNC_MONITORING_RETRY_DELAY_MS,
+  SYNC_MODES,
+  SyncType,
+  MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
+  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
+} from '../stateMachineConstants'
+
 import { QUEUE_NAMES } from '../stateMachineConstants'
 
 const axios = require('axios')
@@ -31,13 +39,7 @@ const {
   makeHistogramToRecord
 } = require('../stateMachineUtils')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
-const {
-  SYNC_MONITORING_RETRY_DELAY_MS,
-  SYNC_MODES,
-  SyncType,
-  MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
-  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-} = require('../stateMachineConstants')
+
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {
