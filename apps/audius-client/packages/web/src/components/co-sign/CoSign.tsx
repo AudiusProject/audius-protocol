@@ -5,14 +5,11 @@ import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'utils/clientUtil'
-import { getCurrentThemeColors } from 'utils/theme/theme'
 
 import Check from './Check'
 import styles from './CoSign.module.css'
 import HoverInfo from './HoverInfo'
 import { Size } from './types'
-
-const themeColors = getCurrentThemeColors()
 
 const CoSignCheck = ({
   coSignName,
@@ -46,7 +43,7 @@ const CoSignCheck = ({
       text={tooltipText}
       mount='page'
       className={styles.tooltip}
-      color={themeColors['--white']}
+      color={'--white'}
     >
       <div>
         <Check size={size} />
