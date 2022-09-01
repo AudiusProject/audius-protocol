@@ -16,11 +16,10 @@ import {
   SYNC_MONITORING_RETRY_DELAY_MS,
   SYNC_MODES,
   SyncType,
+  QUEUE_NAMES,
   MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } from '../stateMachineConstants'
-
-import { QUEUE_NAMES } from '../stateMachineConstants'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
