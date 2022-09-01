@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import * as oauthActions from 'common/store/oauth/actions'
+import * as signOnActions from 'common/store/pages/signon/actions'
+import {
+  getEmailField,
+  getHandleField
+} from 'common/store/pages/signon/selectors'
+import { EditingStatus } from 'common/store/pages/signon/types'
+import type { EditableField } from 'common/store/pages/signon/types'
 import {
   Animated,
   StyleSheet,
@@ -18,17 +26,14 @@ import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { MessageType } from 'app/message/types'
 import { track, make } from 'app/services/analytics'
-import * as oauthActions from 'app/store/oauth/actions'
+import * as oauthActionsLegacy from 'app/store/oauth/actions'
 import {
   getInstagramError,
   getInstagramInfo,
   getTwitterError,
   getTwitterInfo
 } from 'app/store/oauth/selectors'
-import { getHandleError, getHandleIsValid } from 'app/store/signon/selectors'
 import { EventNames } from 'app/types/analytics'
 import { useColor } from 'app/utils/theme'
 
@@ -231,56 +236,24 @@ type ProfileAutoProps = NativeStackScreenProps<
   'ProfileAuto'
 >
 const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
-  const { email, password } = route.params
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
   const spinnerColor = useColor('neutralLight4')
   const twitterInfo = useSelector(getTwitterInfo)
   const twitterError = useSelector(getTwitterError)
   const instagramInfo = useSelector(getInstagramInfo)
   const instagramError = useSelector(getInstagramError)
-  const handleIsValid = useSelector(getHandleIsValid)
-  const handleError = useSelector(getHandleError)
+  const handleField: EditableField = useSelector(getHandleField)
+  const emailField: EditableField = useSelector(getEmailField)
+
   const [isLoading, setIsLoading] = useState(false)
   const [hasNavigatedAway, setHasNavigatedAway] = useState(false)
   const [didValidateHandle, setDidValidateHandle] = useState(false)
 
   const goTo = useCallback(
     (page: 'ProfileManual' | 'FirstFollows') => {
-      const routeParams: any = { email }
-
-      if (page === 'ProfileManual') {
-        routeParams.password = password
-      }
-
-      if (twitterInfo) {
-        routeParams.handle = twitterInfo.profile.screen_name
-        if (page === 'ProfileManual') {
-          routeParams.twitterId = twitterInfo.twitterId
-          routeParams.name = twitterInfo.profile.name
-          routeParams.twitterScreenName = twitterInfo.profile.screen_name
-          routeParams.verified = twitterInfo.profile.verified
-          routeParams.profilePictureUrl =
-            twitterInfo.profile.profile_image_url_https ?? null
-          routeParams.coverPhotoUrl =
-            twitterInfo.profile.profile_banner_url ?? null
-        }
-      } else if (instagramInfo) {
-        routeParams.handle = instagramInfo.profile.username
-        if (page === 'ProfileManual') {
-          routeParams.instagramId = instagramInfo.instagramId
-          routeParams.name = instagramInfo.profile.full_name
-          routeParams.instagramScreenName = instagramInfo.profile.username
-          routeParams.verified = instagramInfo.profile.is_verified
-          routeParams.profilePictureUrl =
-            instagramInfo.profile.profile_pic_url_hd ?? null
-          routeParams.coverPhotoUrl = null
-        }
-      }
-
-      navigation.replace(page, routeParams)
+      navigation.replace(page)
     },
-    [navigation, email, password, twitterInfo, instagramInfo]
+    [navigation]
   )
 
   const validateHandle = useCallback(
@@ -293,15 +266,9 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
       const handle = type === 'twitter' ? profile.screen_name : profile.username
       const verified =
         type === 'twitter' ? profile.verified : profile.is_verified
-      dispatchWeb({
-        type: MessageType.SIGN_UP_VALIDATE_HANDLE,
-        handle,
-        verified,
-        isAction: true,
-        onValidate: null
-      })
+      dispatch(signOnActions.validateHandle(handle, verified))
     },
-    [dispatchWeb, twitterInfo, instagramInfo]
+    [dispatch, twitterInfo, instagramInfo]
   )
 
   const trackOAuthComplete = useCallback(
@@ -324,57 +291,51 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
         make({
           eventName,
           isVerified,
-          emailAddress: email,
+          emailAddress: emailField.value,
           handle
         })
       )
     },
-    [twitterInfo, instagramInfo, email]
+    [twitterInfo, instagramInfo, emailField]
   )
 
   const signUp = useCallback(() => {
-    const signUpParams: any = { email, password }
     if (twitterInfo) {
-      signUpParams.twitterId = twitterInfo.twitterId
-      signUpParams.name = twitterInfo.profile.name
-      signUpParams.handle = twitterInfo.profile.screen_name
-      signUpParams.twitterScreenName = twitterInfo.profile.screen_name
-      signUpParams.verified = twitterInfo.profile.verified
-      signUpParams.profilePictureUrl =
-        twitterInfo.profile.profile_image_url_https ?? null
-      signUpParams.coverPhotoUrl =
-        twitterInfo.profile.profile_banner_url ?? null
+      dispatch(
+        signOnActions.setTwitterProfile(
+          twitterInfo.twitterId,
+          twitterInfo.profile,
+          twitterInfo.profile.profile_image_url_https ?? null,
+          twitterInfo.profile.profile_banner_url ?? null
+        )
+      )
     } else if (instagramInfo) {
-      signUpParams.instagramId = instagramInfo.instagramId
-      signUpParams.name = instagramInfo.profile.full_name
-      signUpParams.handle = instagramInfo.profile.username
-      signUpParams.instagramScreenName = instagramInfo.profile.username
-      signUpParams.verified = instagramInfo.profile.is_verified
-      signUpParams.profilePictureUrl =
-        instagramInfo.profile.profile_pic_url_hd ?? null
-      signUpParams.coverPhotoUrl = null
+      dispatch(
+        signOnActions.setInstagramProfile(
+          instagramInfo.instagramId,
+          instagramInfo.profile,
+          instagramInfo.profile.profile_pic_url_hd ?? null
+        )
+      )
     }
 
-    dispatchWeb({
-      type: MessageType.SUBMIT_SIGNUP,
-      ...signUpParams,
-      accountAlreadyExisted: false,
-      referrer: null,
-      isAction: true
-    })
-  }, [dispatchWeb, email, password, twitterInfo, instagramInfo])
+    dispatch(signOnActions.signUp())
+  }, [dispatch, twitterInfo, instagramInfo])
 
   useEffect(() => {
     if (!hasNavigatedAway && twitterInfo) {
-      if (!handleIsValid && !didValidateHandle) {
+      if (handleField.status !== EditingStatus.SUCCESS && !didValidateHandle) {
         validateHandle('twitter')
         setDidValidateHandle(true)
-      } else if (handleError || twitterInfo.requiresUserReview) {
+      } else if (
+        handleField.status === EditingStatus.FAILURE ||
+        twitterInfo.requiresUserReview
+      ) {
         trackOAuthComplete('twitter')
         goTo('ProfileManual')
         setHasNavigatedAway(true)
         setIsLoading(false)
-      } else if (handleIsValid) {
+      } else if (handleField.status === EditingStatus.SUCCESS) {
         trackOAuthComplete('twitter')
         signUp()
         goTo('FirstFollows')
@@ -385,8 +346,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
   }, [
     hasNavigatedAway,
     twitterInfo,
-    handleIsValid,
-    handleError,
+    handleField,
     didValidateHandle,
     validateHandle,
     signUp,
@@ -402,15 +362,18 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
 
   useEffect(() => {
     if (!hasNavigatedAway && instagramInfo) {
-      if (!handleIsValid && !didValidateHandle) {
+      if (handleField.status !== EditingStatus.SUCCESS && !didValidateHandle) {
         validateHandle('instagram')
         setDidValidateHandle(true)
-      } else if (handleError || instagramInfo.requiresUserReview) {
+      } else if (
+        handleField.status === EditingStatus.FAILURE ||
+        instagramInfo.requiresUserReview
+      ) {
         trackOAuthComplete('instagram')
         goTo('ProfileManual')
         setHasNavigatedAway(true)
         setIsLoading(false)
-      } else if (handleIsValid) {
+      } else if (handleField.status === EditingStatus.SUCCESS) {
         trackOAuthComplete('instagram')
         signUp()
         goTo('FirstFollows')
@@ -421,8 +384,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
   }, [
     hasNavigatedAway,
     instagramInfo,
-    handleIsValid,
-    handleError,
+    handleField,
     didValidateHandle,
     validateHandle,
     signUp,
@@ -438,30 +400,24 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
 
   const onTwitterPress = () => {
     setIsLoading(true)
-    dispatch(oauthActions.setTwitterError(null))
-    dispatchWeb({
-      type: MessageType.REQUEST_TWITTER_AUTH,
-      isAction: true
-    })
+    dispatch(oauthActionsLegacy.setTwitterError(null))
+    dispatch(oauthActions.twitterAuth())
     track(
       make({
         eventName: EventNames.CREATE_ACCOUNT_START_TWITTER,
-        emailAddress: email
+        emailAddress: emailField.value
       })
     )
   }
 
   const onInstagramPress = () => {
     setIsLoading(true)
-    dispatch(oauthActions.setInstagramError(null))
-    dispatchWeb({
-      type: MessageType.REQUEST_INSTAGRAM_AUTH,
-      isAction: true
-    })
+    dispatch(oauthActionsLegacy.setInstagramError(null))
+    dispatch(oauthActions.instagramAuth())
     track(
       make({
         eventName: EventNames.CREATE_ACCOUNT_START_INSTAGRAM,
-        emailAddress: email
+        emailAddress: emailField.value
       })
     )
   }

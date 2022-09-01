@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import * as signOnActions from 'common/store/pages/signon/actions'
+import { getEmailField } from 'common/store/pages/signon/selectors'
+import type { EditableField } from 'common/store/pages/signon/types'
 import commonPasswordList from 'fxa-common-password-list'
 import {
   Animated,
@@ -18,18 +21,15 @@ import {
   ScrollView
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCheck from 'app/assets/images/iconValidationCheck.svg'
 import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { MessageType } from 'app/message/types'
 import { track, make } from 'app/services/analytics'
-import * as lifecycleActions from 'app/store/lifecycle/actions'
-import { getOnSignUp } from 'app/store/lifecycle/selectors'
 import { EventNames } from 'app/types/analytics'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -271,9 +271,9 @@ type CreatePasswordProps = NativeStackScreenProps<
 >
 const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
-  const onSignOn = useSelector(getOnSignUp)
-  const [didFetchArtists, setDidFetchArtists] = useState(false)
+
+  const emailField: EditableField = useSelector(getEmailField)
+
   const [passwordBorderColor, setPasswordBorderColor] =
     useState(defaultBorderColor)
   const [passwordConfirmationBorderColor, setPasswordConfirmationBorderColor] =
@@ -307,15 +307,9 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
     }
   })
 
-  useEffect(() => {
-    if (!didFetchArtists) {
-      setDidFetchArtists(true)
-      dispatchWeb({
-        type: MessageType.FETCH_ALL_FOLLOW_ARTISTS,
-        isAction: true
-      })
-    }
-  }, [didFetchArtists, dispatchWeb])
+  useEffectOnce(() => {
+    dispatch(signOnActions.fetchAllFollowArtists())
+  })
 
   useEffect(() => {
     setIsDisabled(
@@ -406,13 +400,6 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
     []
   )
 
-  // Set Lifecycle onSignUp(true) so signup flow isn't hidden even if signed in
-  const setOnSignOn = () => {
-    if (!onSignOn) {
-      dispatch(lifecycleActions.onSignUp(true))
-    }
-  }
-
   const onTermsOfUse = () => {
     Linking.openURL('https://audius.co/legal/terms-of-use').catch((err) =>
       console.error('An error occurred trying to open terms of use', err)
@@ -432,17 +419,14 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
         onPress={() => {
           Keyboard.dismiss()
           setisWorking(true)
-          setOnSignOn()
+          dispatch(signOnActions.setValueField('password', password))
           track(
             make({
               eventName: EventNames.CREATE_ACCOUNT_COMPLETE_PASSWORD,
-              emailAddress: route.params.email
+              emailAddress: emailField.value
             })
           )
-          navigation.replace('ProfileAuto', {
-            email: route.params.email,
-            password
-          })
+          navigation.replace('ProfileAuto')
         }}
         disabled={isDisabled}
         containerStyle={styles.mainButtonContainer}

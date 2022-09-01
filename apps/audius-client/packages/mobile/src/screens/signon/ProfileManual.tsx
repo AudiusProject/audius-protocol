@@ -1,9 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import * as signOnActions from 'common/store/pages/signon/actions'
+import {
+  getHandleField,
+  getNameField,
+  getProfileImageField,
+  getIsVerified
+} from 'common/store/pages/signon/selectors'
+import type { EditableField } from 'common/store/pages/signon/types'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import {
   Animated,
-  StyleSheet,
   Text,
   View,
   TouchableWithoutFeedback,
@@ -11,16 +19,8 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  ActionSheetIOS,
-  Alert,
   ScrollView
 } from 'react-native'
-import type {
-  Asset,
-  Callback,
-  ImageLibraryOptions
-} from 'react-native-image-picker'
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -28,14 +28,9 @@ import IconArrow from 'app/assets/images/iconArrow.svg'
 import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { MessageType } from 'app/message/types'
-import * as signonActions from 'app/store/signon/actions'
-import {
-  getHandleIsValid,
-  getHandleError,
-  getHandleStatus
-} from 'app/store/signon/selectors'
+import { makeStyles } from 'app/styles'
+import type { Image } from 'app/types/image'
+import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 import { useColor, useThemeColors } from 'app/utils/theme'
 
 import PhotoButton from './PhotoButton'
@@ -45,7 +40,7 @@ import type { SignOnStackParamList } from './types'
 
 const defaultBorderColor = '#F2F2F4'
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ palette }) => ({
   container: {
     width: '100%',
     height: '100%',
@@ -168,8 +163,11 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingLeft: 10,
     margin: 0
+  },
+  shareSheet: {
+    color: palette.secondary
   }
-})
+}))
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You',
@@ -192,6 +190,7 @@ const messages = {
 
 let didAnimation = false
 const FormTitle = () => {
+  const styles = useStyles()
   let opacity = new Animated.Value(1)
   if (!didAnimation) {
     opacity = new Animated.Value(0)
@@ -219,6 +218,7 @@ const ContinueButton = ({
   onPress: () => void
   disabled: boolean
 }) => {
+  const styles = useStyles()
   const { staticWhite } = useThemeColors()
   return (
     <Button
@@ -238,78 +238,54 @@ const ContinueButton = ({
   )
 }
 
-let handleTimeout: any
+let updateHandleConfirmationTimeout: any
 const HANDLE_VALIDATION_IN_PROGRESS_DELAY_MS = 1000
 
 export type ProfileManualProps = NativeStackScreenProps<
   SignOnStackParamList,
   'ProfileManual'
 >
-const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
-  const {
-    email,
-    password,
-    name: oAuthName = '',
-    handle: oAuthHandle = '',
-    twitterId = '',
-    twitterScreenName = '',
-    instagramId = '',
-    instagramScreenName = '',
-    verified = false,
-    profilePictureUrl = null,
-    coverPhotoUrl = null
-  } = route.params
+const ProfileManual = ({ navigation }: ProfileManualProps) => {
   const spinnerColor = useColor('staticWhite')
+  const styles = useStyles()
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
-  const handleIsValid = useSelector(getHandleIsValid)
-  const handleStatus = useSelector(getHandleStatus)
-  const handleError = useSelector(getHandleError)
-  const [name, setName] = useState(oAuthName)
-  const [handle, setHandle] = useState(oAuthHandle)
-  const [handleDebounce, setHandleDebounce] = useState(false)
+
+  const handleField: EditableField = useSelector(getHandleField)
+  const nameField: EditableField = useSelector(getNameField)
+  const profileImage: Image = useSelector(getProfileImageField)
+  const isVerified: boolean = useSelector(getIsVerified)
+
+  const [showHandleConfirmingSpinner, setShowHandleConfirmingSpinner] =
+    useState(false)
   const [nameBorderColor, setNameBorderColor] = useState(defaultBorderColor)
   const [handleBorderColor, setHandleBorderColor] = useState(defaultBorderColor)
   const [photoBtnIsHidden, setPhotoBtnIsHidden] = useState(false)
-  const [profileImage, setProfileImage] = useState<any>(
-    profilePictureUrl
-      ? {
-          uri: profilePictureUrl
-        }
-      : {
-          height: 0,
-          width: 0,
-          name: '',
-          size: 0,
-          fileType: '',
-          uri: '',
-          file: ''
-        }
-  )
-  const [imageSet, setImageSet] = useState(!!profilePictureUrl)
   const [isPhotoLoading, setIsPhotoLoading] = useState(false)
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false)
 
   useEffect(() => {
     setIsSubmitDisabled(
-      !name.trim().length ||
-        !handle.length ||
-        handleStatus === 'editing' ||
-        !handleIsValid
+      !nameField.value.trim().length ||
+        !handleField.value.length ||
+        handleField.status === EditingStatus.EDITING ||
+        handleField.status === EditingStatus.LOADING ||
+        handleField.status === EditingStatus.FAILURE
     )
 
     // if handle change timeout was set and validation
     // has returned, then clear the timeout
-    if (handleStatus === 'done') {
-      if (handleTimeout) {
-        clearTimeout(handleTimeout)
+    if (handleField.status === EditingStatus.SUCCESS) {
+      if (updateHandleConfirmationTimeout) {
+        clearTimeout(updateHandleConfirmationTimeout)
       }
-      setHandleDebounce(false)
+      setShowHandleConfirmingSpinner(false)
     }
-  }, [name, handle, handleStatus, handleIsValid])
+  }, [nameField, handleField])
 
   useEffect(() => {
-    setPhotoBtnIsHidden(profileImage.file !== '')
+    if (profileImage !== null) {
+      setPhotoBtnIsHidden(true)
+    }
   }, [profileImage])
 
   const LoadingPhoto = () => {
@@ -320,98 +296,13 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
     ) : null
   }
 
-  const photoOptions = {
-    includeBase64: true,
-    maxWidth: 1440,
-    mediaType: 'photo',
-    quality: 0.9
-  }
-
-  // TODO: use `launchSelectImageActionSheet` util
-  const handlePhoto = ({ assets }: { assets: Asset[] | undefined }) => {
-    const response = assets?.[0]
-    const selectedPhoto = !!response?.base64
-    setIsPhotoLoading(selectedPhoto)
-    if (selectedPhoto) {
-      setImageSet(true)
-      const image = {
-        height: response.height ?? 0,
-        width: response.width ?? 0,
-        name: response.fileName ?? response.uri?.split('/').pop() ?? '',
-        size: response.fileSize ?? 0,
-        fileType: response.type ?? '',
-        uri: response.uri ?? '',
-        file: `data:${response.type};base64,${response.base64}`
-      }
-      setProfileImage(image)
+  const openPhotoMenu = useCallback(() => {
+    const handleImageSelected = (image: Image) => {
+      setIsPhotoLoading(true)
+      dispatch(signOnActions.setField('profileImage', image))
     }
-  }
-
-  const selectPhotoFromLibrary = () => {
-    launchImageLibrary(
-      {
-        ...photoOptions,
-        selectionLimit: 1
-      } as ImageLibraryOptions,
-      handlePhoto as Callback
-    )
-  }
-
-  const takePhoto = () => {
-    launchCamera(
-      {
-        ...photoOptions,
-        saveToPhotos: true
-      } as ImageLibraryOptions,
-      handlePhoto as Callback
-    )
-  }
-
-  const openPhotoMenu = () => {
-    if (Platform.OS === 'ios') {
-      // iOS ActionSheet
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ['Cancel', 'Photo Library', 'Take Photo'],
-          tintColor: '#7E1BCC',
-          cancelButtonIndex: 0
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            selectPhotoFromLibrary()
-          } else if (buttonIndex === 2) {
-            takePhoto()
-          }
-        }
-      )
-    } else {
-      // Android Alert
-      Alert.alert(
-        'Profile Photo',
-        '',
-        [
-          {
-            text: 'Photo Library',
-            style: 'default',
-            onPress: () => selectPhotoFromLibrary()
-          },
-          {
-            text: 'Take Photo',
-            style: 'default',
-            onPress: () => takePhoto()
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel'
-          }
-        ],
-        {
-          cancelable: true,
-          onDismiss: () => null
-        }
-      )
-    }
-  }
+    launchSelectImageActionSheet(handleImageSelected, styles.shareSheet.color)
+  }, [setIsPhotoLoading, styles.shareSheet.color, dispatch])
 
   const errorView = ({
     handleIsValid,
@@ -442,45 +333,13 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
   }
 
   const validateHandle = (handle: string) => {
-    dispatchWeb({
-      type: MessageType.SIGN_UP_VALIDATE_HANDLE,
-      handle,
-      verified,
-      onValidate: null,
-      isAction: true
-    })
+    dispatch(signOnActions.validateHandle(handle, isVerified))
   }
 
   const onContinuePress = () => {
     Keyboard.dismiss()
-
-    dispatchWeb({
-      type: MessageType.SUBMIT_SIGNUP,
-      email,
-      password,
-      name: name.trim(),
-      handle,
-      verified,
-      // if the file property is populated, it means the user picked from photo library
-      // otherwise we take the profile picture url from oauth if the user went through oauth
-      // if there is no profile picture url, we ensure that it's null
-      profilePictureUrl: profileImage.file
-        ? profileImage.file
-        : profilePictureUrl ?? null,
-      coverPhotoUrl,
-      accountAlreadyExisted: false,
-      referrer: null,
-      twitterId,
-      twitterScreenName,
-      instagramId,
-      instagramScreenName,
-      isAction: true
-    })
-
-    navigation.replace('FirstFollows', {
-      email,
-      handle
-    })
+    dispatch(signOnActions.signUp())
+    navigation.replace('FirstFollows')
   }
 
   return (
@@ -506,13 +365,13 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                   <ProfileImage
                     isPhotoLoading={isPhotoLoading}
                     setIsPhotoLoading={setIsPhotoLoading}
-                    imageSet={imageSet}
+                    hasSelectedImage={!!profileImage}
                     photoBtnIsHidden={photoBtnIsHidden}
                     setPhotoBtnIsHidden={setPhotoBtnIsHidden}
                     profileImage={profileImage}
                   />
                   <PhotoButton
-                    imageSet={imageSet}
+                    hasSelectedImage={!!profileImage}
                     photoBtnIsHidden={photoBtnIsHidden}
                     doAction={openPhotoMenu}
                   />
@@ -530,9 +389,11 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                   enablesReturnKeyAutomatically={true}
                   maxLength={32}
                   textContentType='name'
-                  value={name}
+                  value={nameField.value}
                   onChangeText={(newText) => {
-                    setName(newText)
+                    dispatch(
+                      signOnActions.setValueField('name', newText.trim())
+                    )
                   }}
                   onFocus={() => {
                     setNameBorderColor('#7E1BCC')
@@ -561,19 +422,15 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                     enablesReturnKeyAutomatically={true}
                     maxLength={16}
                     textContentType='nickname'
-                    value={handle}
+                    value={handleField.value}
                     onChangeText={(newText) => {
-                      clearTimeout(handleTimeout)
-                      handleTimeout = setTimeout(() => {
-                        // if the handle validation has not returned yet, then set to true
-                        // to denote that validation is still in progess after the 1s delay
-                        if (handleStatus === 'editing') {
-                          setHandleDebounce(true)
-                        }
+                      clearTimeout(updateHandleConfirmationTimeout)
+                      updateHandleConfirmationTimeout = setTimeout(() => {
+                        // Show a spinner after a delay while the handle validates
+                        setShowHandleConfirmingSpinner(true)
                       }, HANDLE_VALIDATION_IN_PROGRESS_DELAY_MS)
-                      dispatch(signonActions.setHandleStatus('editing'))
                       const newHandle = newText.trim()
-                      setHandle(newHandle)
+                      dispatch(signOnActions.setValueField('handle', newHandle))
                       validateHandle(newHandle)
                     }}
                     onFocus={() => {
@@ -585,10 +442,17 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                   />
                 </View>
 
-                {errorView({ handleIsValid, handleError })}
+                {errorView({
+                  handleIsValid: !handleField.error,
+                  handleError: handleField.error
+                })}
 
                 <ContinueButton
-                  isWorking={handleStatus === 'editing' && handleDebounce}
+                  isWorking={
+                    (handleField.status === EditingStatus.EDITING ||
+                      handleField.status === EditingStatus.LOADING) &&
+                    showHandleConfirmingSpinner
+                  }
                   onPress={onContinuePress}
                   disabled={isSubmitDisabled}
                 />

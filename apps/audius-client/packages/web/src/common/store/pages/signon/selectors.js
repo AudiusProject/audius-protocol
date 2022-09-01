@@ -5,7 +5,11 @@ const { getUsers } = cacheUsersSelectors
 // Sign On selectors
 export const getSignOn = (state) => state.signOn
 export const getEmailField = (state) => state.signOn.email
+export const getNameField = (state) => state.signOn.name
 export const getPasswordField = (state) => state.signOn.password
+export const getHandleField = (state) => state.signOn.handle
+export const getIsVerified = (state) => state.signOn.verified
+export const getProfileImageField = (state) => state.signOn.profileImage
 export const getIsMobileSignOnVisible = (state) =>
   state.signOn.isMobileSignOnVisible
 export const getStatus = (state) => state.signOn.status
@@ -18,6 +22,7 @@ export const getStartedSignOnProcess = (state) =>
   state.signOn.startedSignOnProcess
 export const getReferrer = (state) => state.signOn.referrer
 
+export const getFollowArtists = (state) => state.signOn.followArtists
 export const getFollowIds = (state) =>
   state.signOn.followArtists.selectedUserIds
 export const getSuggestedFollowIds = (state) => {

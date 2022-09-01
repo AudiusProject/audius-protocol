@@ -9,6 +9,7 @@ import {
   getEmailField,
   getStatus
 } from 'common/store/pages/signon/selectors'
+import type { EditableField } from 'common/store/pages/signon/types'
 import querystring from 'query-string'
 import {
   Animated,
@@ -37,13 +38,9 @@ import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 import useAppState from 'app/hooks/useAppState'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { MessageType } from 'app/message/types'
 import { track, make } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
-import { getIsSignedIn } from 'app/store/lifecycle/selectors'
-import * as signOnActionsLegacy from 'app/store/signon/actions'
 import { EventNames } from 'app/types/analytics'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -320,7 +317,6 @@ const isValidEmailString = (email: string) => {
 
 type SignOnProps = NativeStackScreenProps<SignOnStackParamList, 'SignOn'>
 const SignOn = ({ navigation }: SignOnProps) => {
-  const dispatchWeb = useDispatchWeb()
   const dispatch = useDispatch()
 
   const [isWorking, setIsWorking] = useState(false)
@@ -339,21 +335,15 @@ const SignOn = ({ navigation }: SignOnProps) => {
 
   const isKeyboardOpen = useSelector(getIsKeyboardOpen)
 
-  const lifecycleSignIn = useSelector(getIsSignedIn)
-
   const signOnStatus = useSelector(getStatus)
-  const passwordFieldValue: { error: string } = useSelector(getPasswordField)
-  const emailFieldValue: {
-    error: '' | 'inUse' | 'characters'
-    status: 'success' | 'failure'
-  } = useSelector(getEmailField)
+  const passwordField: EditableField = useSelector(getPasswordField)
+  const emailField: EditableField = useSelector(getEmailField)
   const accountUser = useSelector(getAccountUser)
 
   const signedIn = signOnStatus === 'success'
-  const isSigninError = passwordFieldValue.error
-  const emailIsAvailable = emailFieldValue.error !== 'inUse'
-  const emailIsValid = emailFieldValue.error !== 'characters'
-  const emailStatus = emailFieldValue.status
+  const isSigninError = passwordField.error
+  const emailIsAvailable = emailField.error !== 'inUse'
+  const emailIsValid = emailField.error !== 'characters'
 
   const topDrawer = useRef(new Animated.Value(-800)).current
   const animateDrawer = useCallback(() => {
@@ -391,14 +381,14 @@ const SignOn = ({ navigation }: SignOnProps) => {
   }, [isSigninError, isWorking])
 
   useEffect(() => {
-    if (signedIn && accountUser && lifecycleSignIn) {
+    if (signedIn && accountUser) {
       setIsWorking(false)
       setEmail('')
       setPassword('')
 
       remindUserToTurnOnNotifications(dispatch)
     }
-  }, [signedIn, accountUser, lifecycleSignIn, dispatch])
+  }, [signedIn, accountUser, dispatch])
 
   useEffect(() => {
     animateDrawer()
@@ -439,11 +429,11 @@ const SignOn = ({ navigation }: SignOnProps) => {
         const parsed = querystring.parseUrl(contents)
         const handle = parsed.query?.ref as string
         if (handle) {
-          dispatchWeb(signOnActions.fetchReferrer(handle))
+          dispatch(signOnActions.fetchReferrer(handle))
         }
       }
     }
-  }, [dispatchWeb])
+  }, [dispatch])
 
   useEffect(() => {
     processReferrerFromClipboard()
@@ -570,12 +560,11 @@ const SignOn = ({ navigation }: SignOnProps) => {
       setShowEmptyPasswordError(false)
       setAttemptedPassword(false)
       setisSignIn(!isSignin)
-      dispatch(signOnActionsLegacy.signinFailedReset())
       Keyboard.dismiss()
     }
   }
 
-  const passwordField = () => {
+  const passwordInputField = () => {
     if (isSignin) {
       return (
         <TextInput
@@ -646,10 +635,21 @@ const SignOn = ({ navigation }: SignOnProps) => {
                   // in case email is what was wrong with the credentials
                   setShowDefaultError(true)
                 }
-              } else if (emailIsAvailable && emailStatus === 'success') {
-                dispatch(signOnActionsLegacy.signinFailedReset())
-                setIsWorking(false)
-                navigation.replace('CreatePassword', { email })
+              } else {
+                setIsWorking(true)
+                dispatch(
+                  signOnActions.checkEmail(
+                    email,
+                    () => {
+                      navigation.replace('CreatePassword')
+                      setIsWorking(false)
+                    },
+                    () => {
+                      switchForm()
+                      setIsWorking(false)
+                    }
+                  )
+                )
               }
             } else {
               setShowInvalidEmailError(true)
@@ -677,26 +677,11 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const validateEmail = (email: string) => {
     dispatch(signOnActions.setValueField('email', email))
     dispatch(signOnActions.validateEmail(email))
-    // TODO: Remove after reloaded
-    dispatch(signOnActionsLegacy.setEmailStatus('editing'))
-    dispatchWeb({
-      type: MessageType.SIGN_UP_VALIDATE_AND_CHECK_EMAIL,
-      email,
-      isAction: true
-    })
   }
 
   const signIn = () => {
     setIsWorking(true)
     dispatch(signOnActions.signIn(email, password))
-    // TODO: Remove after reloaded
-    dispatch(signOnActionsLegacy.signinFailedReset())
-    dispatchWeb({
-      type: MessageType.SUBMIT_SIGNIN,
-      email,
-      password,
-      isAction: true
-    })
   }
 
   return (
@@ -769,7 +754,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
                 }
               }}
             />
-            {passwordField()}
+            {passwordInputField()}
             {errorView()}
             <MainButton isWorking={isWorking} isSignin={isSignin} />
           </Animated.View>
