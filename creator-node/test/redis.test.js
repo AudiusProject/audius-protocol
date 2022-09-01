@@ -99,7 +99,7 @@ describe('test Redis client', function () {
     assert.equal(await WalletWriteLock.isHeld(wallet), false)
   })
 
-  it.only('Clears write locks', async function () {
+  it('Clears write locks', async function () {
     const wallet1 = 'wallet1'
     const wallet2 = 'wallet2'
     const wallet3 = 'wallet3'
