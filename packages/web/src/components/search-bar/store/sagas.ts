@@ -21,8 +21,6 @@ export function* getSearchResults(searchText: string) {
   yield* waitForAccount()
   const userId = yield* select(getUserId)
 
-  if (!userId) return
-
   const results = yield* call([apiClient, 'getSearchAutocomplete'], {
     currentUserId: userId,
     query: searchText,
