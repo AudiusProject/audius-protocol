@@ -15,7 +15,7 @@ const messages = {
   cost: 'Cost',
   purchased: 'Purchased',
   convertedTo: 'Converted To',
-  viewOnSolScan: 'View on Solscan'
+  viewOnExplorer: 'View on Solana Explorer'
 }
 
 export const TransactionPurchaseMetadata = ({
@@ -36,9 +36,9 @@ export const TransactionPurchaseMetadata = ({
             <IconButton
               className={styles.iconButton}
               icon={<IconExternalLink />}
-              title={messages.viewOnSolScan}
-              aria-label={messages.viewOnSolScan}
-              href={`https://solscan.io/tx/${metadata.buyTransaction}`}
+              title={messages.viewOnExplorer}
+              aria-label={messages.viewOnExplorer}
+              href={`https://explorer.solana.com/tx/${metadata.purchaseTransactionId}`}
               target='_blank'
             />
           </>
@@ -54,9 +54,9 @@ export const TransactionPurchaseMetadata = ({
             <IconButton
               className={styles.iconButton}
               icon={<IconExternalLink />}
-              title={messages.viewOnSolScan}
-              aria-label={messages.viewOnSolScan}
-              href={`https://solscan.io/tx/${metadata.swapTransaction}`}
+              title={messages.viewOnExplorer}
+              aria-label={messages.viewOnExplorer}
+              href={`https://explorer.solana.com/tx/${metadata.swapTransactionId}`}
               target='_blank'
             />
           </>

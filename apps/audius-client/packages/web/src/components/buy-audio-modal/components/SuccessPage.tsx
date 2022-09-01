@@ -1,14 +1,11 @@
 import { useCallback } from 'react'
 
 import {
-  BNAudio,
-  BNWei,
-  buyAudioSelectors,
-  formatWei,
-  walletSelectors
+  Status,
+  transactionDetailsSelectors,
+  formatNumberString
 } from '@audius/common'
 import { Button, ButtonSize, ButtonType, IconInfo } from '@audius/stems'
-import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
@@ -23,18 +20,22 @@ const messages = {
   done: 'Done'
 }
 
-const { getAccountTotalBalance } = walletSelectors
-const { getAudioPurchaseInfo } = buyAudioSelectors
+const { getTransactionDetails } = transactionDetailsSelectors
 
 export const SuccessPage = () => {
-  const totalBalance = useSelector<BNAudio>(getAccountTotalBalance)
-  const uiBalance = formatWei(totalBalance || (new BN(0) as BNWei), true, 0)
-  const purchaseInfo = useSelector(getAudioPurchaseInfo)
+  const transactionDetails = useSelector(getTransactionDetails)
   const [, setModalVisibility] = useModalState('BuyAudio')
+  const [, setTransactionDetailsModalVisibility] =
+    useModalState('TransactionDetails')
 
   const handleDoneClicked = useCallback(() => {
     setModalVisibility(false)
   }, [setModalVisibility])
+
+  const handleReviewTransactionClicked = useCallback(() => {
+    setTransactionDetailsModalVisibility(true)
+    setModalVisibility(false)
+  }, [setModalVisibility, setTransactionDetailsModalVisibility])
 
   return (
     <div className={styles.successPage}>
@@ -45,13 +46,21 @@ export const SuccessPage = () => {
           <span className={styles.label}>{messages.audio}</span>
           <span>
             +
-            {purchaseInfo?.isError === false
-              ? purchaseInfo.desiredAudioAmount.uiAmountString
+            {transactionDetails.status === Status.SUCCESS
+              ? formatNumberString(
+                  transactionDetails.transactionDetails.change,
+                  { maxDecimals: 0 }
+                )
               : '0'}
           </span>
         </div>
         <div className={styles.newBalance}>
-          {uiBalance}
+          {transactionDetails.status === Status.SUCCESS
+            ? formatNumberString(
+                transactionDetails.transactionDetails.balance,
+                { maxDecimals: 0 }
+              )
+            : '0'}
           <span className={styles.label}>{messages.audio}</span>
         </div>
       </div>
@@ -67,6 +76,7 @@ export const SuccessPage = () => {
           size={ButtonSize.SMALL}
           text={messages.review}
           leftIcon={<IconInfo />}
+          onClick={handleReviewTransactionClicked}
         />
       </div>
     </div>

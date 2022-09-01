@@ -11,17 +11,22 @@ import {
   buyAudioSelectors,
   PurchaseInfoErrorType,
   buyAudioActions,
-  OnRampProvider
+  OnRampProvider,
+  transactionDetailsActions,
+  TransactionMetadataType,
+  TransactionType,
+  TransactionMethod,
+  TransactionDetails,
+  walletSelectors,
+  StringWei,
+  BNWei
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { RouteInfo } from '@jup-ag/core'
 import { u64 } from '@solana/spl-token'
-import {
-  Keypair,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  Transaction
-} from '@solana/web3.js'
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import BN from 'bn.js'
+import dayjs from 'dayjs'
 import JSBI from 'jsbi'
 import { takeLatest } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
@@ -37,7 +42,8 @@ import {
   getRootSolanaAccount,
   getSolanaConnection,
   pollForAudioBalanceChange,
-  pollForSolBalanceChange
+  pollForSolBalanceChange,
+  saveUserBankTransactionMetadata
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import {
@@ -64,100 +70,12 @@ const {
 
 const { getBuyAudioFlowStage, getFeesCache } = buyAudioSelectors
 const { increaseBalance } = walletActions
+const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
-const ERROR_CODE_INSUFFICIENT_FUNDS = 1 // Error code for when the swap fails due to insufficient funds in the wallet
-const ERROR_CODE_SLIPPAGE = 6000 // Error code for when the swap fails due to specified slippage being exceeded
 const SLIPPAGE = 3 // The slippage amount to allow for exchanges
 
 const MEMO_MESSAGES = {
   [OnRampProvider.COINBASE]: 'In-App $AUDIO Purchase: Coinbase'
-}
-
-/**
- * Wrapper for TransactionHandler.handleTransaction that does some logging and error checking
- */
-async function sendTransaction({
-  name,
-  transaction,
-  feePayer,
-  transactionHandler
-}: {
-  name: string
-  transaction: Transaction
-  feePayer: Keypair
-  transactionHandler: TransactionHandler
-}) {
-  console.debug(`Exchange: starting ${name} transaction...`)
-  const result = await transactionHandler.handleTransaction({
-    instructions: transaction.instructions,
-    feePayerOverride: feePayer.publicKey,
-    skipPreflight: true,
-    errorMapping: {
-      fromErrorCode: (errorCode) => {
-        if (errorCode === ERROR_CODE_SLIPPAGE) {
-          return 'Slippage threshold exceeded'
-        } else if (errorCode === ERROR_CODE_INSUFFICIENT_FUNDS) {
-          return 'Insufficient funds'
-        }
-        return `Error Code: ${errorCode}`
-      }
-    }
-  })
-  if (result.error) {
-    console.debug(
-      `Exchange: ${name} transaction stringified:`,
-      JSON.stringify(transaction)
-    )
-    throw new Error(`${name} transaction failed: ${result.error}`)
-  }
-  console.debug(`Exchange: ${name} transaction... success txid: ${result.res}`)
-  return result
-}
-
-/**
- * Executes a Jupiter Swap given the RouteInfo, account, and the transactionHandler
- */
-function* executeSwap({
-  route,
-  account,
-  transactionHandler
-}: {
-  route: RouteInfo
-  account: Keypair
-  transactionHandler: TransactionHandler
-}) {
-  const {
-    transactions: { setupTransaction, swapTransaction, cleanupTransaction }
-  } = yield* call(JupiterSingleton.exchange, {
-    routeInfo: route,
-    userPublicKey: account.publicKey
-  })
-  if (setupTransaction) {
-    yield* call(sendTransaction, {
-      name: 'Setup',
-      transaction: setupTransaction,
-      feePayer: account,
-      transactionHandler
-    })
-  }
-  // Wrap this in try/finally to ensure cleanup transaction runs, if applicable
-  try {
-    yield* call(sendTransaction, {
-      name: 'Swap',
-      transaction: swapTransaction,
-      feePayer: account,
-      transactionHandler
-    })
-  } finally {
-    if (cleanupTransaction) {
-      yield* call(sendTransaction, {
-        name: 'Cleanup',
-        transaction: cleanupTransaction,
-        feePayer: account,
-        transactionHandler
-      })
-    }
-  }
 }
 
 /**
@@ -257,15 +175,12 @@ function* getTransactionFees({
         if (!transaction.feePayer) {
           transaction.feePayer = rootAccount
         }
-        const message = transaction.compileMessage()
-        const fees = yield* call(
-          [connection, connection.getFeeForMessage],
-          message
+        const fee = yield* call(
+          [transaction, transaction.getEstimatedFee],
+          connection
         )
-        console.debug(
-          `Fee for "${names[i]}" transaction: ${fees.value} Lamports`
-        )
-        transactionFees += fees.value
+        console.debug(`Fee for "${names[i]}" transaction: ${fee} Lamports`)
+        transactionFees += fee ?? 5000 // For some reason, swap transactions don't have fee estimates??
       }
       i++
     }
@@ -450,11 +365,73 @@ Total: ${estimatedLamports / LAMPORTS_PER_SOL} SOL ($${
   }
 }
 
+type PopulateAndSaveTransactionDetailsArgs = {
+  purchaseTransactionId: string
+  setupTransactionId?: string
+  swapTransactionId: string
+  cleanupTransactionId?: string
+  transferTransactionId: string
+  estimatedUSD: string
+  purchasedLamports: BN
+  purchasedAudioWei: BNWei
+}
+function* populateAndSaveTransactionDetails({
+  purchaseTransactionId,
+  setupTransactionId,
+  swapTransactionId,
+  cleanupTransactionId,
+  transferTransactionId,
+  estimatedUSD,
+  purchasedLamports,
+  purchasedAudioWei
+}: PopulateAndSaveTransactionDetailsArgs) {
+  const postAUDIOBalanceWei: StringWei = yield* select(
+    walletSelectors.getAccountTotalBalance
+  )
+  const postAUDIOBalance = formatWei(
+    new BN(postAUDIOBalanceWei) as BNWei
+  ).replaceAll(',', '')
+  const purchasedAUDIO = formatWei(purchasedAudioWei).replaceAll(',', '')
+  const divisor = new BN(LAMPORTS_PER_SOL)
+  const purchasedSOL = `${purchasedLamports.div(divisor)}.${purchasedLamports
+    .mod(divisor)
+    .toString()
+    .padStart(divisor.toString().length - 1, '0')}`
+
+  const transactionMetadata = {
+    discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
+    purchaseTransactionId,
+    setupTransactionId,
+    swapTransactionId: swapTransactionId!,
+    cleanupTransactionId,
+    usd: estimatedUSD,
+    sol: purchasedSOL,
+    audio: purchasedAUDIO
+  }
+  const transactionDetails: TransactionDetails = {
+    date: dayjs().format('MM/DD/YYYY'),
+    signature: transferTransactionId!,
+    transactionType: TransactionType.PURCHASE,
+    method: TransactionMethod.COINBASE,
+    balance: postAUDIOBalance,
+    change: purchasedAUDIO,
+    metadata: transactionMetadata
+  }
+
+  yield* put(
+    fetchTransactionDetailsSucceeded({
+      transactionId: transferTransactionId!,
+      transactionDetails
+    })
+  )
+  yield* call(saveUserBankTransactionMetadata, transactionMetadata)
+}
+
 /**
  * Exchanges all but the minimum balance required for a swap from a wallet once a balance change is seen
  */
 function* startBuyAudioFlow({
-  payload: { desiredAudioAmount, estimatedSOL }
+  payload: { desiredAudioAmount, estimatedSOL, estimatedUSD }
 }: ReturnType<typeof onRampOpened>) {
   try {
     // Record start
@@ -507,11 +484,23 @@ function* startBuyAudioFlow({
       initialBalance
     })
 
+    // Get the purchase transaction
+    const signatures = yield* call(
+      [connection, connection.getSignaturesForAddress],
+      rootAccount.publicKey,
+      {
+        limit: 1
+      }
+    )
+    const purchaseTransactionId = signatures[0].signature
+
     // Check that we got the requested SOL
-    if (newBalance - initialBalance !== estimatedSOL.amount) {
+    const purchasedLamports = new BN(newBalance).sub(new BN(initialBalance))
+    if (purchasedLamports !== new BN(estimatedSOL.amount)) {
       console.warn(
         `Warning: Purchase SOL amount differs from expected. Actual: ${
-          (newBalance - initialBalance) / LAMPORTS_PER_SOL
+          new BN(newBalance).sub(new BN(initialBalance)).toNumber() /
+          LAMPORTS_PER_SOL
         } SOL. Expected: ${estimatedSOL.uiAmountString} SOL.`
       )
     }
@@ -564,16 +553,20 @@ function* startBuyAudioFlow({
       tokenAccount
     })
     const beforeSwapAudioBalance =
-      // eslint-disable-next-line new-cap
-      beforeSwapAudioAccountInfo?.amount ?? new u64(0)
+      beforeSwapAudioAccountInfo?.amount ?? new BN(0)
 
     // Swap the SOL for AUDIO
     yield* put(swapStarted())
-    yield* call(executeSwap, {
-      route: quote.route,
-      account: rootAccount,
-      transactionHandler
+    const { transactions } = yield* call(JupiterSingleton.exchange, {
+      routeInfo: quote.route,
+      userPublicKey: rootAccount.publicKey
     })
+    const { setupTransactionId, swapTransactionId, cleanupTransactionId } =
+      yield* call(JupiterSingleton.executeExchange, {
+        ...transactions,
+        feePayer: rootAccount.publicKey,
+        transactionHandler
+      })
     yield* put(swapCompleted())
 
     // Reset associated token account cache now that the swap created the accounts
@@ -598,12 +591,21 @@ function* startBuyAudioFlow({
         memo: MEMO_MESSAGES[OnRampProvider.COINBASE]
       }
     )
-    yield* call(sendTransaction, {
-      name: 'Transfer',
-      transaction: transferTransaction,
-      feePayer: rootAccount,
-      transactionHandler
-    })
+
+    console.debug(`Starting transfer transaction...`)
+    const { res: transferTransactionId, error: transferError } = yield* call(
+      [transactionHandler, transactionHandler.handleTransaction],
+      {
+        instructions: transferTransaction.instructions,
+        feePayerOverride: rootAccount.publicKey,
+        skipPreflight: true
+      }
+    )
+    if (transferError) {
+      console.debug(`Transfer transaction stringified: ${transferTransaction}`)
+      throw new Error(`Transfer transaction failed: ${transferError}`)
+    }
+
     yield* put(transferCompleted())
 
     // Update wallet balance optimistically
@@ -614,6 +616,19 @@ function* startBuyAudioFlow({
       })
     )
 
+    // Setup transaction details
+    const transactionDetailsArgs: PopulateAndSaveTransactionDetailsArgs = {
+      transferTransactionId: transferTransactionId!,
+      setupTransactionId: setupTransactionId ?? undefined,
+      swapTransactionId: swapTransactionId!,
+      cleanupTransactionId: cleanupTransactionId ?? undefined,
+      purchaseTransactionId,
+      estimatedUSD: estimatedUSD.uiAmountString,
+      purchasedLamports,
+      purchasedAudioWei: outputAmount
+    }
+    yield* call(populateAndSaveTransactionDetails, transactionDetailsArgs)
+
     // Record success
     yield* put(
       make(Name.BUY_AUDIO_SUCCESS, {
@@ -623,8 +638,7 @@ function* startBuyAudioFlow({
         surplusAudio: parseFloat(
           formatWei(
             convertWAudioToWei(
-              // eslint-disable-next-line new-cap
-              transferAmount.sub(new u64(desiredAudioAmount.amount))
+              transferAmount.sub(new BN(desiredAudioAmount.amount))
             )
           ).replaceAll(',', '')
         )
