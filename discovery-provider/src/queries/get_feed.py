@@ -91,7 +91,9 @@ def get_feed_sql(args):
                         playlist_track_ids.add(track["track"])
 
                 # get all track objects for track ids
-                playlist_tracks = get_unpopulated_tracks(session, playlist_track_ids)
+                playlist_tracks = get_unpopulated_tracks(
+                    session, playlist_track_ids, exclude_premium=False
+                )
                 playlist_tracks_dict = {
                     track["track_id"]: track for track in playlist_tracks
                 }

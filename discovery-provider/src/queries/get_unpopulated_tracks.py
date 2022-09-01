@@ -54,6 +54,9 @@ def get_unpopulated_tracks(
     Args:
         session: DB session
         track_ids: array A list of track ids
+        filter_deleted: boolean indicating whether to filter out deleted tracks
+        filter_unlisted: boolean indicating whether to filter out unlisted tracks
+        exclude_premium: boolean indicating whether to filter out premium tracks
 
     Returns:
         Array of tracks

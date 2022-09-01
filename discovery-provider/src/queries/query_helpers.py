@@ -339,7 +339,7 @@ def get_track_play_count_dict(session, track_ids):
 #   repost_count, save_count
 #   if remix: remix users, has_remix_author_reposted, has_remix_author_saved
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
-#   if current_user_id available and track is premium: populates has_current_user_unlocked, premium_content_signature
+#   if current_user_id available and track is premium and user has access, populates premium_content_signature
 def populate_track_metadata(
     session, track_ids, tracks, current_user_id, track_has_aggregates=False
 ):
@@ -533,18 +533,14 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
 
     for track in premium_tracks:
         track_id = track["track_id"]
-        has_current_user_unlocked_track = (
+        does_user_have_track_access = (
             current_user_id in premium_content_access["track"]
             and track_id in premium_content_access["track"][current_user_id]
             and premium_content_access["track"][current_user_id][track_id][
                 "does_user_have_access"
             ]
         )
-        track[
-            response_name_constants.has_current_user_unlocked
-        ] = has_current_user_unlocked_track
-
-        if has_current_user_unlocked_track:
+        if does_user_have_track_access:
             track[
                 response_name_constants.premium_content_signature
             ] = get_premium_content_signature(

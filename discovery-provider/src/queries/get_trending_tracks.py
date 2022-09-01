@@ -64,7 +64,7 @@ def generate_unpopulated_trending(
 
     # Get unpopulated metadata
     track_ids = [track["track_id"] for track in sorted_track_scores]
-    tracks = get_unpopulated_tracks(session, track_ids)
+    tracks = get_unpopulated_tracks(session, track_ids, exclude_premium=exclude_premium)
 
     # Make sure to apply the limit if not previously applied
     # because of the filtering out of premium tracks
@@ -123,7 +123,7 @@ def generate_unpopulated_trending_from_mat_views(
 
     # Get unpopulated metadata
     track_ids = [track_id[0] for track_id in trending_track_ids]
-    tracks = get_unpopulated_tracks(session, track_ids)
+    tracks = get_unpopulated_tracks(session, track_ids, exclude_premium=exclude_premium)
 
     # Make sure to apply the limit if not previously applied
     # because of the filtering out of premium tracks

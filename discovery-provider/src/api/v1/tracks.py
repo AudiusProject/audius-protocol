@@ -88,12 +88,12 @@ full_tracks_response = make_full_response(
 # Get single track
 
 
-def get_single_track(track_id, current_user_id, endpoint_ns, is_full_ns=False):
+def get_single_track(track_id, current_user_id, endpoint_ns, exclude_premium=True):
     args = {
         "id": [track_id],
         "with_users": True,
         "filter_deleted": True,
-        "exclude_premium": not is_full_ns,
+        "exclude_premium": exclude_premium,
         "current_user_id": current_user_id,
     }
     tracks = get_tracks(args)
@@ -182,7 +182,12 @@ class FullTrack(Resource):
                 decoded_id, url_title, handle, current_user_id, full_ns
             )
 
-        return get_single_track(decoded_id, current_user_id, full_ns, True)
+        return get_single_track(
+            track_id=decoded_id,
+            current_user_id=current_user_id,
+            endpoint_ns=full_ns,
+            exclude_premium=False,
+        )
 
 
 full_track_route_parser = current_user_parser.copy()
