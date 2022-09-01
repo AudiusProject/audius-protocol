@@ -528,7 +528,7 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
         )
 
     premium_content_access = premium_content_access_checker.check_access_for_batch(
-        premium_content_access_args
+        session, premium_content_access_args
     )
 
     for track in premium_tracks:

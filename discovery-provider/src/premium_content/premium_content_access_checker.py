@@ -2,10 +2,11 @@ import json
 import logging
 from typing import Dict, List, TypedDict, cast
 
+from sqlalchemy.orm.session import Session
 from src.models.tracks.track import Track
 from src.premium_content.helpers import does_user_have_nft_collection
 from src.premium_content.types import PremiumContentType
-from src.utils import db_session, helpers
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class PremiumContentAccessChecker:
     #   }
     # }
     def check_access_for_batch(
-        self, args: List[PremiumContentAccessArgs]
+        self, session: Session, args: List[PremiumContentAccessArgs]
     ) -> PremiumContentAccessBatchResponse:
         # for now, we only allow tracks to be premium; premium playlists will come later
         valid_args = list(
@@ -58,9 +59,11 @@ class PremiumContentAccessChecker:
         track_access_users = {
             arg["premium_content_id"]: arg["user_id"] for arg in valid_args
         }
+
         premium_track_data = self._get_premium_track_data_for_batch(
-            list(track_access_users.keys())
+            session, list(track_access_users.keys())
         )
+
         track_access_result: PremiumTrackAccessResult = {}
 
         for track_id, data in premium_track_data.items():
@@ -115,28 +118,26 @@ class PremiumContentAccessChecker:
 
         return {"track": track_access_result}
 
-    def _get_premium_track_data_for_batch(self, track_ids: List[int]):
-        db = db_session.get_db_read_replica()
-        with db.scoped_session() as session:
-            tracks = (
-                session.query(Track)
-                .filter(
-                    Track.track_id.in_(track_ids),
-                    Track.is_current == True,
-                    Track.is_delete == False,
-                )
-                .all()
+    def _get_premium_track_data_for_batch(self, session: Session, track_ids: List[int]):
+        tracks = (
+            session.query(Track)
+            .filter(
+                Track.track_id.in_(track_ids),
+                Track.is_current == True,
+                Track.is_delete == False,
             )
-            tracks = list(map(helpers.model_to_dictionary, tracks))
+            .all()
+        )
+        tracks = list(map(helpers.model_to_dictionary, tracks))
 
-            return {
-                track["track_id"]: {
-                    "is_premium": track["is_premium"],
-                    "premium_conditions": track["premium_conditions"],
-                    "content_owner_id": track["owner_id"],
-                }
-                for track in tracks
+        return {
+            track["track_id"]: {  # type: ignore
+                "is_premium": track["is_premium"],  # type: ignore
+                "premium_conditions": track["premium_conditions"],  # type: ignore
+                "content_owner_id": track["owner_id"],  # type: ignore
             }
+            for track in tracks
+        }
 
     # There will eventually be another step prior to this one where
     # we aggregate multiple conditions and evaluate them altogether.
