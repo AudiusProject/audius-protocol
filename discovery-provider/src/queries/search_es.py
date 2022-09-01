@@ -1,13 +1,7 @@
 import logging
 from typing import Any, Dict, Optional
 
-from src.api.v1.helpers import (
-    extend_favorite,
-    extend_playlist,
-    extend_repost,
-    extend_track,
-    extend_user,
-)
+from src.api.v1.helpers import extend_playlist, extend_track, extend_user
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -218,7 +212,7 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
         if current_user_id:
             response["followed_users"] = pluck_hits(mfound["responses"].pop(0))
 
-    finalize_response(response, limit, current_user_id, legacy_mode=True)
+    finalize_response(response, limit, current_user_id)
     return response
 
 
@@ -240,16 +234,10 @@ def finalize_response(
     response: Dict,
     limit: int,
     current_user_id: Optional[int],
-    legacy_mode=False,
     is_auto_complete=False,
 ):
     """Hydrates users and contextualizes results for current user (if applicable).
     Also removes extra indexed fields so as to match the fieldset from postgres.
-
-    legacy_mode=True will skip v1 api transforms.
-    This is similar to the code in get_feed_es (which does it's own thing,
-      but could one day use finalize_response with legacy_mode=True).
-    e.g. doesn't encode IDs and populates `followee_saves` instead of `followee_reposts`
     """
     if not esclient:
         raise Exception("esclient is None")
@@ -290,14 +278,14 @@ def finalize_response(
         tracks = response[k]
         hydrate_user(tracks, users_by_id)
         if not is_auto_complete:
-            hydrate_saves_reposts(tracks, follow_saves, follow_reposts, legacy_mode)
-        response[k] = [map_track(track, current_user, legacy_mode) for track in tracks]
+            hydrate_saves_reposts(tracks, follow_saves, follow_reposts)
+        response[k] = [map_track(track, current_user) for track in tracks]
 
     # users: finalize
     for k in ["users", "followed_users"]:
         users = drop_copycats(response[k])
         users = users[:limit]
-        response[k] = [map_user(user, current_user, legacy_mode) for user in users]
+        response[k] = [map_user(user, current_user) for user in users]
 
     # playlists: finalize
     for k in ["playlists", "saved_playlists", "albums", "saved_albums"]:
@@ -305,11 +293,9 @@ def finalize_response(
             continue
         playlists = response[k]
         if not is_auto_complete:
-            hydrate_saves_reposts(playlists, follow_saves, follow_reposts, legacy_mode)
+            hydrate_saves_reposts(playlists, follow_saves, follow_reposts)
         hydrate_user(playlists, users_by_id)
-        response[k] = [
-            map_playlist(playlist, current_user, legacy_mode) for playlist in playlists
-        ]
+        response[k] = [map_playlist(playlist, current_user) for playlist in playlists]
 
     return response
 
@@ -479,33 +465,26 @@ def hydrate_user(items, users_by_id):
             item["user"] = user
 
 
-def hydrate_saves_reposts(items, follow_saves, follow_reposts, legacy_mode):
+def hydrate_saves_reposts(items, follow_saves, follow_reposts):
     for item in items:
         ik = item_key(item)
-        if legacy_mode:
-            item["followee_reposts"] = follow_reposts[ik]
-            item["followee_saves"] = follow_saves[ik]
-        else:
-            item["followee_reposts"] = [extend_repost(r) for r in follow_reposts[ik]]
-            item["followee_favorites"] = [extend_favorite(x) for x in follow_saves[ik]]
+        item["followee_reposts"] = follow_reposts[ik]
+        item["followee_saves"] = follow_saves[ik]
 
 
-def map_user(user, current_user, legacy_mode):
+def map_user(user, current_user):
     user = populate_user_metadata_es(user, current_user)
-    if not legacy_mode:
-        user = extend_user(user)
+    user = extend_user(user)
     return user
 
 
-def map_track(track, current_user, legacy_mode):
+def map_track(track, current_user):
     track = populate_track_or_playlist_metadata_es(track, current_user)
-    if not legacy_mode:
-        track = extend_track(track)
+    track = extend_track(track)
     return track
 
 
-def map_playlist(playlist, current_user, legacy_mode):
+def map_playlist(playlist, current_user):
     playlist = populate_track_or_playlist_metadata_es(playlist, current_user)
-    if not legacy_mode:
-        playlist = extend_playlist(playlist)
+    playlist = extend_playlist(playlist)
     return playlist

@@ -382,6 +382,9 @@ hashids = Hashids(min_length=5, salt=HASH_SALT)
 
 
 def encode_int_id(id: int):
+    # if id is already a string, assume it has already been encoded
+    if isinstance(id, str):
+        return id
     return cast(str, hashids.encode(id))
 
 
