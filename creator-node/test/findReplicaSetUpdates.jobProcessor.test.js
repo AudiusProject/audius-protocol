@@ -149,7 +149,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       jobProcessorArgs?.cNodeEndpointToSpIdMap ||
         DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
     )
-    // expect(jo.exist
+
     if (expectedUnhealthyReplicas?.length) {
       expect(
         jobOutput.jobsToEnqueue[QUEUE_NAMES.UPDATE_REPLICA_SET].length
