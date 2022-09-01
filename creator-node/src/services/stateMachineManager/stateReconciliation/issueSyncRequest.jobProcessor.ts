@@ -12,7 +12,14 @@ import type {
   SyncRequestAxiosParams
 } from './types'
 
-import { QUEUE_NAMES } from '../stateMachineConstants'
+import {
+  SYNC_MONITORING_RETRY_DELAY_MS,
+  SYNC_MODES,
+  SyncType,
+  QUEUE_NAMES,
+  MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
+  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
+} from '../stateMachineConstants'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
@@ -31,13 +38,7 @@ const {
   makeHistogramToRecord
 } = require('../stateMachineUtils')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
-const {
-  SYNC_MONITORING_RETRY_DELAY_MS,
-  SYNC_MODES,
-  SyncType,
-  MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
-  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-} = require('../stateMachineConstants')
+
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {
@@ -422,7 +423,7 @@ const _additionalSyncIsRequired = async (
   const startTimeMs = Date.now()
   const maxMonitoringTimeMs =
     startTimeMs +
-    (syncType === SyncType.MANUAL
+    (syncType === SyncType.Manual
       ? maxManualSyncMonitoringDurationInMs
       : maxSyncMonitoringDurationInMs)
 
