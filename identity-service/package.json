@@ -55,6 +55,7 @@
     "hashids": "^2.2.2",
     "hcaptcha": "^0.1.0",
     "ioredis": "^4.9.0",
+    "jsonschema": "^1.4.1",
     "keccak256": "^1.0.2",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",
