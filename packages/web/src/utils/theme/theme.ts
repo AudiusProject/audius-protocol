@@ -11,6 +11,10 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const THEME_KEY = 'theme'
 export const PREFERS_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
 
+export type ThemeColor = keyof typeof DefaultTheme &
+  keyof typeof DarkTheme &
+  keyof typeof MatrixTheme
+
 const applyTheme = (themeObject: { [key: string]: string }) => {
   Object.keys(themeObject).forEach((key) => {
     document.documentElement.style.setProperty(key, themeObject[key])
