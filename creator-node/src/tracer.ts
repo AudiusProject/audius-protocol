@@ -111,6 +111,7 @@ export const setupTracing = () => {
  */
 export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   name,
+  context,
   fn,
   options
 }: {
@@ -119,6 +120,8 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   fn: TFunction
   options?: SpanOptions
 }) => {
+  const objectContext = context || this
+
   // build a wrapper around `fn` that accepts the same parameters and returns the same return type
   const wrapper = function (
     ...args: Parameters<TFunction>
@@ -135,7 +138,7 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
 
           // TODO add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
-          const result = fn.apply(this, args)
+          const result = fn.apply(objectContext, args)
 
           // if `fn` is async, await the result
           if (result && result.then) {
