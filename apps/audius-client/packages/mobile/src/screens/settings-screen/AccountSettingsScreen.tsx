@@ -45,10 +45,9 @@ const messages = {
   passwordTitle: 'Change Password',
   passwordDescription: 'Change your password',
   passwordButtonTitle: 'Change',
-  deactivateAccountTitle: 'Deactivate Account',
-  deactivateAccountDescription:
-    'Deactivate your account. This cannot be undone',
-  deactivateAccountButtonTitle: 'Deactivate',
+  deactivateAccountTitle: 'Delete Account',
+  deactivateAccountDescription: 'Delete your account. This cannot be undone',
+  deactivateAccountButtonTitle: 'Delete',
   signOutTitle: 'Sign Out',
   signOutDescription:
     'Make sure you have your account recovery email stored somewhere safe before signing out!',
