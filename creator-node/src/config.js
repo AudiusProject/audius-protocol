@@ -555,13 +555,13 @@ const config = convict({
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 5
+    default: 30
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 3
+    default: 15
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
