@@ -41,11 +41,11 @@ const messages = {
 }
 
 const PhotoButton = ({
-  imageSet,
+  hasSelectedImage,
   photoBtnIsHidden,
   doAction
 }: {
-  imageSet: boolean
+  hasSelectedImage: boolean
   photoBtnIsHidden: boolean
   doAction: () => void
 }) => {
@@ -60,7 +60,7 @@ const PhotoButton = ({
       <View style={styles.cameraBtnTitleContainer}>
         <IconCamera height={18} width={22} fill={'#7E1BCC'} />
         <Text style={styles.cameraBtnTitle}>
-          {!imageSet ? messages.photoBtnAdd : messages.photoBtnChange}
+          {!hasSelectedImage ? messages.photoBtnAdd : messages.photoBtnChange}
         </Text>
       </View>
     </TouchableOpacity>

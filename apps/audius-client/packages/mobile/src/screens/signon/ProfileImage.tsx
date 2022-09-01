@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 
 import NoPicture from 'app/assets/images/noPicture.png'
+import type { Image as ImageType } from 'app/types/image'
 
 const styles = StyleSheet.create({
   profilePicEmpty: {
@@ -40,25 +41,17 @@ const styles = StyleSheet.create({
 const ProfileImage = ({
   isPhotoLoading,
   setIsPhotoLoading,
-  imageSet,
+  hasSelectedImage,
   photoBtnIsHidden,
   setPhotoBtnIsHidden,
   profileImage
 }: {
   isPhotoLoading: boolean
   setIsPhotoLoading: (value: boolean) => void
-  imageSet: boolean
+  hasSelectedImage: boolean
   photoBtnIsHidden: boolean
   setPhotoBtnIsHidden: (value: boolean) => void
-  profileImage: {
-    uri: string
-    height?: number
-    width?: number
-    name?: string
-    size?: number
-    fileType?: string
-    file?: string
-  }
+  profileImage: ImageType
 }) => {
   const opacity = useRef(new Animated.Value(0)).current
   const [firstRender, setFirstRender] = useState(true)
@@ -83,7 +76,7 @@ const ProfileImage = ({
 
   return (
     <View>
-      {imageSet ? (
+      {hasSelectedImage ? (
         <Animated.View style={{ opacity }}>
           <TouchableOpacity
             style={styles.profilePicShadow}

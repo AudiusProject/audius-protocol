@@ -21,15 +21,11 @@ import type { DrawersState } from './drawers/slice'
 import drawers from './drawers/slice'
 import type { KeyboardState } from './keyboard/slice'
 import keyboard from './keyboard/slice'
-import type { LifecycleState } from './lifecycle/reducer'
-import lifecycle from './lifecycle/reducer'
 import type { OAuthState } from './oauth/reducer'
 import oauth from './oauth/reducer'
 import rootSaga from './sagas'
 import type { SearchState } from './search/reducer'
 import search from './search/reducer'
-import type { SignonState } from './signon/reducer'
-import signon from './signon/reducer'
 import { storeContext } from './storeContext'
 
 export type AppState = {
@@ -43,11 +39,9 @@ export type AppState = {
   drawers: DrawersState
   downloads: DownloadState
   keyboard: KeyboardState
-  lifecycle: LifecycleState
   oauth: OAuthState
   remoteConfig: RemoteConfigState
   search: SearchState
-  signOnLegacy: SignonState
 }
 
 const commonStoreReducers = commonReducers()
@@ -65,14 +59,9 @@ const createRootReducer = () =>
     drawers,
     downloads,
     keyboard,
-    lifecycle,
     oauth,
     remoteConfig,
-    search,
-    // Sign on store that is part of the mobile client
-    // Should be entirely removed in favor of the shared common
-    // sign on store
-    signOnLegacy: signon
+    search
   })
 
 const sagaMiddleware = createSagaMiddleware({ context: storeContext })

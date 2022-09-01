@@ -1,6 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import type { User } from '@audius/common'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import * as signOnActions from 'common/store/pages/signon/actions'
+import {
+  getEmailField,
+  getHandleField,
+  getFollowArtists,
+  makeGetFollowArtists
+} from 'common/store/pages/signon/selectors'
+import type {
+  FollowArtists,
+  EditableField,
+  FollowArtistsCategory
+} from 'common/store/pages/signon/types'
+import { artistCategories } from 'common/store/pages/signon/types'
 import { sampleSize } from 'lodash'
 import {
   Animated,
@@ -13,24 +27,13 @@ import {
 } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconWand from 'app/assets/images/iconWand.svg'
 import Button from 'app/components/button'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { MessageType } from 'app/message/types'
 import { track, make } from 'app/services/analytics'
-import {
-  setFollowArtistsCategory,
-  setFollowedArtists
-} from 'app/store/signon/actions'
-import {
-  getAllFollowArtists,
-  makeGetFollowArtists
-} from 'app/store/signon/selectors'
-import type { FollowArtistsCategory } from 'app/store/signon/types'
-import { artistCategories } from 'app/store/signon/types'
 import { EventNames } from 'app/types/analytics'
 
 import UserImage from '../../components/image/UserImage'
@@ -367,37 +370,32 @@ export type FirstFollowsProps = NativeStackScreenProps<
   SignOnStackParamList,
   'FirstFollows'
 >
-const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
-  const { email, handle } = route.params
+const FirstFollows = ({ navigation }: FirstFollowsProps) => {
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
+
+  const emailField: EditableField = useSelector(getEmailField)
+  const handleField: EditableField = useSelector(getHandleField)
+
   const getSuggestedFollows = makeGetFollowArtists()
-  const suggestedFollowArtists = useSelector(getSuggestedFollows)
+  const suggestedFollowArtists: User[] = useSelector(getSuggestedFollows)
   const suggestedFollowArtistsMap = suggestedFollowArtists.reduce(
     (result, user) => ({ ...result, [user.user_id]: user }),
     {}
   )
-  const followArtists = useSelector(getAllFollowArtists)
+  const followArtists: FollowArtists = useSelector(getFollowArtists)
   const {
     categories,
     selectedCategory,
     selectedUserIds: followedArtistIds
   } = followArtists
   const [isDisabled, setIsDisabled] = useState(false)
-  const [didFetchArtistsToFollow, setDidFetchArtistsToFollow] = useState(false)
   const [isPickForMeActive, setIsPickForMeActive] = useState(false)
   const pickForMeScale = useRef(new Animated.Value(1)).current
   const cardOpacity = useRef(new Animated.Value(1)).current
 
-  useEffect(() => {
-    if (!didFetchArtistsToFollow) {
-      setDidFetchArtistsToFollow(true)
-      dispatchWeb({
-        type: MessageType.GET_USERS_TO_FOLLOW,
-        isAction: true
-      })
-    }
-  }, [didFetchArtistsToFollow, dispatchWeb])
+  useEffectOnce(() => {
+    dispatch(signOnActions.fetchAllFollowArtists())
+  })
 
   useEffect(() => {
     setIsDisabled(followedArtistIds.length < MINIMUM_FOLLOWER_COUNT)
@@ -416,7 +414,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
       const newFollowedArtists = followedArtistIds.includes(userId)
         ? followedArtistIds.filter((id) => id !== userId)
         : followedArtistIds.concat([userId])
-      dispatch(setFollowedArtists(newFollowedArtists))
+      dispatch(signOnActions.addFollowArtists(newFollowedArtists))
     },
     [followedArtistIds, dispatch]
   )
@@ -426,7 +424,9 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
       const newUserIds = userIds.filter(
         (userId) => !followedArtistIds.includes(userId)
       )
-      dispatch(setFollowedArtists(followedArtistIds.concat(newUserIds)))
+      dispatch(
+        signOnActions.addFollowArtists(followedArtistIds.concat(newUserIds))
+      )
     },
     [followedArtistIds, dispatch]
   )
@@ -466,7 +466,9 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
           toValue: 0,
           duration: 0,
           useNativeDriver: true
-        }).start(() => dispatch(setFollowArtistsCategory(category)))
+        }).start(() =>
+          dispatch(signOnActions.setFollowAristsCategory(category))
+        )
       }
     }, [isActive, category, dispatch])
 
@@ -491,18 +493,14 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
     )
   }
 
-  const onContinuePress = () => {
-    dispatchWeb({
-      type: MessageType.SET_FOLLOW_ARTISTS,
-      followArtists,
-      isAction: true
-    })
+  const onPressContinue = () => {
+    dispatch(signOnActions.followArtists(followArtists.selectedUserIds))
 
     track(
       make({
         eventName: EventNames.CREATE_ACCOUNT_COMPLETE_FOLLOW,
-        emailAddress: email,
-        handle,
+        emailAddress: emailField.value,
+        handle: handleField.value,
         users: followedArtistIds.join('|'),
         count: followedArtistIds.length
       })
@@ -581,7 +579,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
         </ScrollView>
 
         <View style={styles.containerButton}>
-          <ContinueButton onPress={onContinuePress} disabled={isDisabled} />
+          <ContinueButton onPress={onPressContinue} disabled={isDisabled} />
           <Text style={styles.followCounter}>
             {`${messages.following} ${
               followedArtistIds.length > MINIMUM_FOLLOWER_COUNT

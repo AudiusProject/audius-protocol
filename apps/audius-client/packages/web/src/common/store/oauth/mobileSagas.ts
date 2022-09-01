@@ -1,7 +1,7 @@
 import { takeEvery, put } from 'redux-saga/effects'
 
+import * as oauthActions from 'common/store/oauth/actions'
 import { MessageType } from 'services/native-mobile-interface/types'
-import * as oauthActions from 'store/oauth/actions'
 
 function* watchTwitterAuth() {
   yield takeEvery(MessageType.REQUEST_TWITTER_AUTH, function* () {
