@@ -1,12 +1,9 @@
 import Tooltip from 'components/tooltip/Tooltip'
-import { getCurrentThemeColors } from 'utils/theme/theme'
 
 import { getPercentageComplete } from './ProfileCompletionHeroCard'
 import styles from './ProfileCompletionTooltip.module.css'
 import { CompletionStageArray } from './PropTypes'
 import TaskCompletionList from './TaskCompletionList'
-
-const themeColors = getCurrentThemeColors()
 
 const makeStrings = ({ completionPercentage }) => ({
   completionPercentage: `Profile ${completionPercentage}% Complete`
@@ -40,7 +37,7 @@ const ProfileCompletionTooltip = ({
 }) => {
   return (
     <Tooltip
-      color={themeColors['--secondary']}
+      color={'--secondary'}
       shouldWrapContent={false}
       className={styles.tooltip}
       disabled={isDisabled}

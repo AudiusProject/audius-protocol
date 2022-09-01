@@ -8,12 +8,10 @@ import { getCurrentThemeColors } from 'utils/theme/theme'
 import styles from './Tooltip.module.css'
 import { TooltipProps } from './types'
 
-const themeColors = getCurrentThemeColors()
-
 export const Tooltip = ({
   children,
   className = '',
-  color = themeColors['--secondary-transparent'],
+  color = '--secondary-transparent',
   disabled = false,
   mount = 'parent',
   getPopupContainer,
@@ -24,6 +22,10 @@ export const Tooltip = ({
   shouldWrapContent = true,
   text = ''
 }: TooltipProps) => {
+  // This is part of the render cycle so that when the theme changes the new
+  // color is applied
+  const themedColor = getCurrentThemeColors()[color]
+
   // Keep track of a hidden state ourselves so we can dismiss the tooltip on click
   const [isHiddenOverride, setIsHiddenOverride] = useState(false)
 
@@ -88,7 +90,7 @@ export const Tooltip = ({
       overlayStyle={overlayStyle}
       placement={placement}
       title={text}
-      color={color}
+      color={themedColor}
       // @ts-ignore
       getPopupContainer={getPopupContainer || popupContainer}
       overlayClassName={cn(styles.tooltip, className, {
