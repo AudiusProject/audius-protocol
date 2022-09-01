@@ -422,7 +422,7 @@ const _additionalSyncIsRequired = async (
   const startTimeMs = Date.now()
   const maxMonitoringTimeMs =
     startTimeMs +
-    (syncType === SyncType.MANUAL
+    (syncType === SyncType.Manual
       ? maxManualSyncMonitoringDurationInMs
       : maxSyncMonitoringDurationInMs)
 
