@@ -213,7 +213,7 @@ def ps(protocol_dir):
 
     print(
         "CONTAINER ID".ljust(13),
-        "NAME".ljust(25),
+        "NAME".ljust(35),
         "STATUS".ljust(10),
         "PORTS",
     )
@@ -238,13 +238,15 @@ def ps(protocol_dir):
         if service["Service"] == "discovery-provider":
             name = f"{service['Service']}-{replica}"
             ports[5000 + replica - 1] = 5000
+        if service["Service"] == "discovery-provider-elasticsearch":
+            name = f"{service['Service']}-{replica}"
 
         ports = sorted(ports.items())
         ports = ", ".join(f"{target}->{published}" for target, published in ports)
 
         print(
             service["ID"][:12].ljust(13),
-            name.ljust(25),
+            name.ljust(35),
             status.ljust(10),
             ports,
         )
