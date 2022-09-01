@@ -681,7 +681,7 @@ def record_metrics(func):
         else:
             route = "/".join(route.split("/")[:3])
 
-        metric.save_time({"route": route, "code": code})
+        metric.save_time({"route": route, "code": str(code)})
 
         return result
 

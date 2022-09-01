@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from flask import request
 from sqlalchemy import and_, desc, func, or_
@@ -24,6 +25,8 @@ from src.utils.elasticdsl import es_url
 
 trackDedupeMaxMinutes = 10
 
+logger = logging.getLogger(__name__)
+
 
 def get_feed(args):
     skip_es = request.args.get("es") == "0"
@@ -32,7 +35,8 @@ def get_feed(args):
         try:
             (limit, _) = get_pagination_vars()
             return get_feed_es(args, limit)
-        except:
+        except Exception as e:
+            logger.error(f"elasticsearch get_feed_es failed: {e}")
             return get_feed_sql(args)
     else:
         return get_feed_sql(args)

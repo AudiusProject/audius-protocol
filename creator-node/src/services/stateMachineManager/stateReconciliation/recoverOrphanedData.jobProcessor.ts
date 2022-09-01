@@ -271,7 +271,9 @@ const _batchIssueReqsToRecoverOrphanedData = async (
 
     const elapsedMs = Date.now() - start
     logger.info(
-      `Issued /merge_primary_and_secondary requests for ${i}/${numWalletsWithOrphanedData} wallets. 
+      `Issued /merge_primary_and_secondary requests for ${
+        i + numWalletsWithOrphanedData
+      }/${numWalletsWithOrphanedData} wallets. 
       Time elapsed: ${elapsedMs}/${MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS}`
     )
     if (elapsedMs >= MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS) {
