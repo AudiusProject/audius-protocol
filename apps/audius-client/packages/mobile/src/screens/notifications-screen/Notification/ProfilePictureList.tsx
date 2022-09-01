@@ -34,13 +34,23 @@ const useStyles = makeStyles(
       justifyContent: 'center',
       alignItems: 'center'
     },
+    imageExtraDim: {
+      marginLeft: spacing(2.5) - imageDimensions.width,
+      backgroundColor: 'rgba(0,0,0,0.1)',
+      borderRadius: 15,
+      width: 24,
+      height: 24
+    },
     imageCount: {
       width: imageDimensions.width,
-      marginLeft: spacing(2) - imageDimensions.width,
+      marginLeft: spacing(0.5) - imageDimensions.width,
       textAlign: 'center',
       color: palette.staticWhite,
       fontSize: typography.fontSize.small,
-      fontFamily: typography.fontByWeight.bold
+      fontFamily: typography.fontByWeight.bold,
+      textShadowColor: 'rgba(0,0,0,0.25)',
+      textShadowOffset: { width: 0, height: 2 },
+      textShadowRadius: 1
     }
   })
 )
@@ -112,6 +122,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
             navigationType={navigationType}
             interactive={interactive}
           />
+          <View style={styles.imageExtraDim} />
           <Text style={styles.imageCount}>
             {`+${formatCount(remainingUsersCount)}`}
           </Text>
