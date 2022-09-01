@@ -31,8 +31,19 @@
 
 .usersContainer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   font-size: var(--font-s);
+  column-gap: 10px;
+}
+.recipientContainer {
+  display: flex;
+  align-items: center;
+}
+.senderContainer {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
 }
 .profilePicture {
   cursor: pointer;
@@ -60,7 +71,6 @@
 .wasTippedByContainer {
   display: flex;
   align-items: center;
-  margin-left: 10px;
 }
 .wasTippedByIcon {
   width: 14px;
