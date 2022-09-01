@@ -31,10 +31,10 @@ def save_duration_metric(metric_group):
 
                 try:
                     histogram_metric.save_time(
-                        {"func_name": func.__name__, "success": True}
+                        {"func_name": func.__name__, "success": "true"}
                     )
                     gauge_metric.save_time(
-                        {"func_name": func.__name__, "success": True}
+                        {"func_name": func.__name__, "success": "true"}
                     )
                 except Exception as e:
                     logger.exception("Failed to save successful metrics", e)
@@ -46,10 +46,10 @@ def save_duration_metric(metric_group):
             except Exception as e:
                 try:
                     histogram_metric.save_time(
-                        {"func_name": func.__name__, "success": False}
+                        {"func_name": func.__name__, "success": "false"}
                     )
                     gauge_metric.save_time(
-                        {"func_name": func.__name__, "success": False}
+                        {"func_name": func.__name__, "success": "false"}
                     )
                 except Exception as inner_e:
                     logger.exception("Failed to save unsuccessful metrics", inner_e)
@@ -111,6 +111,9 @@ class PrometheusMetricNames:
     )
     UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
     USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
+    ENTITY_MANAGER_UPDATE_CHANGED_LATEST = "entity_manager_update_changed_latest"
+    ENTITY_MANAGER_UPDATE_DURATION_SECONDS = "entity_manager_update_duration_seconds"
+    ENTITY_MANAGER_UPDATE_ERRORS = "entity_manager_update_errors"
 
 
 """
@@ -221,6 +224,21 @@ PrometheusRegistry = {
         "Runtimes for src.task.users:user_state_update()",
         ("scope",),
     ),
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST}",
+        "Number of entities changed by entity type",
+        ("entity_type",),
+    ),
+    # Don't use this metric as an example
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS}",
+        "Number of errors by entity type",
+        ("entity_type",),
+    ),
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS}",
+        "Duration for entity manager updates",
+    ),
 }
 
 
@@ -249,9 +267,8 @@ class PrometheusMetric:
         this_metric = self.metric
         if labels:
             this_metric = this_metric.labels(**labels)
-
         if isinstance(this_metric, Histogram):
-            this_metric.observe(value)
+            this_metric.observe(value, labels)
         elif isinstance(this_metric, Gauge):
             this_metric.set(value)
 
