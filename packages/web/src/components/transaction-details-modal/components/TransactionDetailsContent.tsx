@@ -24,7 +24,8 @@ const messages = {
   date: 'Date',
   change: 'Change ($AUDIO)',
   balance: 'Balance ($AUDIO)',
-  purchaseDescription: 'Purchased $AUDIO'
+  purchaseDescription: 'Purchased $AUDIO',
+  unknown: 'Unknown'
 }
 
 const AppLogo = () => (
@@ -62,18 +63,19 @@ export const TransactionDetailsContent = ({
           {typeIconMap[transactionDetails.transactionType]}
         </div>
       </div>
-      {transactionDetails.metadata ? (
+      {transactionDetails.transactionType === TransactionType.PURCHASE ? (
         <TransactionPurchaseMetadata metadata={transactionDetails.metadata} />
       ) : null}
 
-      {transactionDetails.method === TransactionMethod.COINBASE ? (
+      {transactionDetails.transactionType === TransactionType.PURCHASE ? (
         <Block className={styles.method} header={messages.method}>
-          <LogoCoinbase />
-        </Block>
-      ) : null}
-      {transactionDetails.method === TransactionMethod.STRIPE ? (
-        <Block className={styles.method} header={messages.method}>
-          <LogoStripe />
+          {transactionDetails.method === TransactionMethod.COINBASE ? (
+            <LogoCoinbase />
+          ) : transactionDetails.method === TransactionMethod.STRIPE ? (
+            <LogoStripe />
+          ) : (
+            messages.unknown
+          )}
         </Block>
       ) : null}
 

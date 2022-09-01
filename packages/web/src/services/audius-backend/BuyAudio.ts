@@ -1,12 +1,12 @@
+import { InAppAudioPurchaseMetadata } from '@audius/common'
+import { AudiusLibs } from '@audius/sdk'
 import {
-  AccountInfo,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   Token,
   TOKEN_PROGRAM_ID,
   u64
 } from '@solana/spl-token'
 import {
-  Connection,
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
@@ -16,7 +16,7 @@ import {
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 // @ts-ignore
-const libs = () => window.audiusLibs
+const libs = (): AudiusLibs => window.audiusLibs
 
 const TOKEN_ACCOUNT_POLL_MS = 5000
 const MAX_TOKEN_ACCOUNT_POLL_COUNT = 20
@@ -38,14 +38,14 @@ const delay = (ms: number) =>
 
 export const getRootSolanaAccount = async () => {
   await waitForLibsInit()
-  return libs().solanaWeb3Manager.solanaWeb3.Keypair.fromSeed(
-    libs().Account.hedgehog.wallet.getPrivateKey()
-  ) as Keypair
+  return libs().solanaWeb3Manager!.solanaWeb3.Keypair.fromSeed(
+    libs().Account!.hedgehog.wallet!.getPrivateKey()
+  )
 }
 
 export const getSolanaConnection = async () => {
   await waitForLibsInit()
-  return libs().solanaWeb3Manager.connection as Connection
+  return libs().solanaWeb3Manager!.connection
 }
 
 export const getRootAccountRentExemptionMinimum = async () => {
@@ -103,9 +103,9 @@ export const getAudioAccount = async ({
   rootAccount: PublicKey
 }) => {
   await waitForLibsInit()
-  return (await libs().solanaWeb3Manager.findAssociatedTokenAddress(
+  return await libs().solanaWeb3Manager!.findAssociatedTokenAddress(
     rootAccount.toString()
-  )) as PublicKey
+  )
 }
 
 export const getAudioAccountInfo = async ({
@@ -114,9 +114,9 @@ export const getAudioAccountInfo = async ({
   tokenAccount: PublicKey
 }) => {
   await waitForLibsInit()
-  const tokenAccountInfo: AccountInfo | null =
-    await libs().solanaWeb3Manager.getTokenAccountInfo(tokenAccount.toString())
-  return tokenAccountInfo
+  return await libs().solanaWeb3Manager!.getTokenAccountInfo(
+    tokenAccount.toString()
+  )
 }
 
 export const pollForAudioBalanceChange = async ({
@@ -241,4 +241,11 @@ export const createTransferToUserBankTransaction = async ({
   tx.add(memoInstruction)
   tx.add(transferInstruction)
   return tx
+}
+
+export const saveUserBankTransactionMetadata = async (
+  data: InAppAudioPurchaseMetadata
+) => {
+  await waitForLibsInit()
+  // return await libs().identityService!.saveUserBankTransactionMetadata(data)
 }

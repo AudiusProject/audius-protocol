@@ -35,7 +35,7 @@ export const TransactionDetailsModal = () => {
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} bodyClassName={styles.root}>
-      <ModalHeader>
+      <ModalHeader onClose={handleClose}>
         <ModalTitle
           title={messages.transactionDetails}
           icon={<IconTransaction />}

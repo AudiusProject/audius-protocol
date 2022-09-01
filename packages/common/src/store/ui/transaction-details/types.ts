@@ -9,8 +9,11 @@ export enum TransactionType {
 }
 
 export enum TransactionMethod {
+  // Transfer methods
   SEND = 'SENT',
   RECEIVE = 'RECEIVED',
+
+  // Purchase Methods
   COINBASE = 'COINBASE',
   STRIPE = 'STRIPE'
 }
@@ -24,19 +27,42 @@ export type InAppAudioPurchaseMetadata = {
   usd: string
   sol: string
   audio: StringAudio
-  swapTransaction: string
-  buyTransaction: string
+  purchaseTransactionId: string
+  setupTransactionId?: string
+  swapTransactionId: string
+  cleanupTransactionId?: string
 }
 
-export type TransactionDetails = {
-  signature: string
-  transactionType: TransactionType
-  method: TransactionMethod
-  date: string
-  change: StringAudio
-  balance: StringAudio
-  metadata: InAppAudioPurchaseMetadata | undefined
-}
+export type TransactionDetails =
+  | {
+      signature: string
+      transactionType: TransactionType.PURCHASE
+      method: TransactionMethod.COINBASE | TransactionMethod.STRIPE
+      date: string
+      change: StringAudio
+      balance: StringAudio
+      metadata: InAppAudioPurchaseMetadata
+    }
+  | {
+      signature: string
+      transactionType: TransactionType.TIP | TransactionType.TRANSFER
+      method: TransactionMethod.SEND | TransactionMethod.RECEIVE
+      date: string
+      change: StringAudio
+      balance: StringAudio
+      metadata?: {}
+    }
+  | {
+      signature: string
+      transactionType:
+        | TransactionType.CHALLENGE_REWARD
+        | TransactionType.TRENDING_REWARD
+      method: TransactionMethod.RECEIVE
+      date: string
+      change: StringAudio
+      balance: StringAudio
+      metadata: InAppAudioPurchaseMetadata | undefined
+    }
 
 export type TransactionDetailsState =
   | { status: Status.IDLE }
