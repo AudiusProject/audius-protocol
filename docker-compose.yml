@@ -339,7 +339,9 @@ services:
 
       audius_discprov_dev_mode: "true"
     volumes:
-      - ./discovery-provider:/audius-discovery-provider
+      - ./discovery-provider/alembic:/audius-discovery-provider/alembic
+      - ./discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
+      - ./discovery-provider/src:/audius-discovery-provider/src
       - poa-contracts-abis:/audius-discovery-provider/build/contracts
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
