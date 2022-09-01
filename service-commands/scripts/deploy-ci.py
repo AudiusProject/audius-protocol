@@ -3,12 +3,13 @@
 import logging
 from pprint import pprint
 from subprocess import PIPE, Popen
+from threading import Thread
 
 import click
 import requests
 
 logging.basicConfig(
-    format="%(levelname)-8s [%(asctime)s] %(message)s", level=logging.INFO
+    format="%(levelname)-8s [%(asctime)s] %(message)s", level=logging.ERROR
 )
 logger = logging.getLogger("cli")
 
@@ -102,50 +103,80 @@ def generate_deploy_list(service, hosts):
     return deploy_list
 
 
-def generate_release_tags(deploy_list):
-    release_tags = {}
-    for host in deploy_list:
-        output = ssh(host, "grep TAG audius-docker-compose/*/.env")
-        tag = output.split()[0].split("=")[1].strip("'")
+def get_release_tag(release_tags, host, github_user, github_token):
+    output = ssh(host, "grep TAG audius-docker-compose/*/.env")
+    tag = output.split()[0].split("=")[1].strip("'")
 
-        try:
-            branches = run_cmd(
-                f"git name-rev --name-only {tag}", exit_on_error=False
-            ).split("\n")
-        except:
-            branches = ["missing"]
+    try:
+        branches = run_cmd(
+            f"git name-rev --name-only {tag}", exit_on_error=False
+        ).split("\n")
+    except:
+        branches = ["missing"]
 
-        branch = standardize_branch(branches)
-        release_tags[host] = {
-            "branch": branch,
-            "tag": tag,
+    branch = standardize_branch(branches)
+
+    # release_tags.update() is thread-safe, other interactions may not be
+    release_tags.update(
+        {
+            host: {
+                "branch": branch,
+                "tag": tag,
+            }
         }
-        if branch not in ("master", "release", "missing"):
-            author, commit_date = run_cmd(f"git log --format='%an|%ci' {tag}^!").split(
-                "|"
-            )
-            release_tags[host] = {
-                "author": author,
-                "commit_date": commit_date,
-                "branch": branch,
-                "tag": tag,
+    )
+    if branch not in ("master", "release", "missing"):
+        author, commit_date = run_cmd(f"git log --format='%an|%ci' {tag}^!").split("|")
+        release_tags.update(
+            {
+                host: {
+                    "author": author,
+                    "commit_date": commit_date,
+                    "branch": branch,
+                    "tag": tag,
+                }
             }
-        if branch == "missing":
-            r = requests.get(
-                f"https://api.github.com/repos/AudiusProject/audius-protocol/git/commits/{tag}",
-                headers={
-                    "Accept": "application/vnd.github+json",
-                    # f"Authorization": "token {token}",  # required when performing too many requests
-                },
-            )
-            r = r.json()
-            release_tags[host] = {
-                "author": r["author"]["name"],
-                "branch": branch,
-                "commit_date": commit_date,
-                "tag": tag,
-                "url": r["html_url"],
+        )
+    if branch == "missing":
+        r = requests.get(
+            f"https://api.github.com/repos/AudiusProject/audius-protocol/git/commits/{tag}",
+            headers={
+                "Accept": "application/vnd.github+json",
+            },
+            auth=(github_user, github_token),
+        )
+        r = r.json()
+        release_tags.update(
+            {
+                host: {
+                    "author": r["author"]["name"],
+                    "branch": branch,
+                    "commit_date": r["author"]["date"],
+                    "tag": tag,
+                    "url": r["html_url"],
+                }
             }
+        )
+
+
+def generate_release_tags(deploy_list, parallel_mode, github_user, github_token):
+    release_tags = {}
+    threads = list()
+    for host in deploy_list:
+        thread = Thread(
+            target=get_release_tag, args=(release_tags, host, github_user, github_token)
+        )
+        threads.append(thread)
+
+    for thread in threads:
+        thread.start()
+        if not parallel_mode:
+            thread.join(timeout=10)
+
+    # required for parallel_mode, no-op for non-parallel mode
+    for thread in threads:
+        thread.join(timeout=10)
+
     return release_tags
 
 
@@ -155,6 +186,9 @@ def display_release_tags(
     affected_hosts=None,
     skipped_hosts=None,
     failed_hosts=None,
+    parallel_mode=True,
+    github_user=None,
+    github_token=None,
 ):
     if not affected_hosts and not skipped_hosts:
         key = "pre-deploy"
@@ -163,7 +197,9 @@ def display_release_tags(
         key = "post-deploy"
         logging_messages = ["New state:", "Upgraded:", "Skipped:"]
 
-    release_tags[key] = generate_release_tags(deploy_list)
+    release_tags[key] = generate_release_tags(
+        deploy_list, parallel_mode, github_user, github_token
+    )
     logger.info(logging_messages[0])
     pprint(release_tags, sort_dicts=False)
 
@@ -191,6 +227,8 @@ def display_release_tags(
 
 
 @click.command()
+@click.option("-u", "--github-user", required=True)
+@click.option("-g", "--github-token", required=True)
 @click.option(
     "-e", "--environment", type=click.Choice(environments, case_sensitive=False)
 )
@@ -201,11 +239,24 @@ def display_release_tags(
     "-h", "--hosts", type=click.Choice(all_nodes), required=False, multiple=True
 )
 @click.option("-t", "--git-tag", required=False)
-def cli(environment, service, hosts, git_tag):
+@click.option(
+    "--parallel-mode/--no-parallel-mode",
+    " /-P",
+    show_default=True,
+    default=True,
+    help="Run this script in parallel mode.",
+)
+def cli(github_user, github_token, environment, service, hosts, git_tag, parallel_mode):
     release_tags = {}
     deploy_list = generate_deploy_list(service, hosts)
 
-    affected_hosts, skipped_hosts = display_release_tags(release_tags, deploy_list)
+    affected_hosts, skipped_hosts = display_release_tags(
+        release_tags,
+        deploy_list,
+        parallel_mode=parallel_mode,
+        github_user=github_user,
+        github_token=github_token,
+    )
 
     failed_hosts = []
     for host in affected_hosts:
@@ -224,7 +275,14 @@ def cli(environment, service, hosts, git_tag):
             failed_hosts.append(host)
 
     display_release_tags(
-        release_tags, deploy_list, affected_hosts, skipped_hosts, failed_hosts
+        release_tags,
+        deploy_list,
+        affected_hosts,
+        skipped_hosts,
+        failed_hosts,
+        parallel_mode=parallel_mode,
+        github_user=github_user,
+        github_token=github_token,
     )
 
 
