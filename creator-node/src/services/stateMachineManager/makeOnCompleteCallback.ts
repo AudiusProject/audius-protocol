@@ -146,6 +146,7 @@ const enqueueJobs = async (
     logger.warn(
       `Queue ${queueNameToAddTo} already has ${numWaitingJobs} waiting jobs. Not adding any more jobs until ${maxWaitingJobs} or fewer jobs are waiting in this queue`
     )
+    return
   }
 
   // Add 'enqueuedBy' field for tracking
