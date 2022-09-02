@@ -47,6 +47,7 @@ import notificationUsersPageSagas from 'common/store/user-list/notifications/sag
 import repostPageSagas from 'common/store/user-list/reposts/sagas'
 import supportingPageSagas from 'common/store/user-list/supporting/sagas'
 import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
+import walletSagas from 'common/store/wallet/sagas'
 import addToPlaylistSagas from 'components/add-to-playlist/store/sagas'
 import changePasswordSagas from 'components/change-password/store/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
@@ -79,7 +80,6 @@ import playlistLibrarySagas from 'store/playlist-library/sagas'
 import routingSagas from 'store/routing/sagas'
 import solanaSagas from 'store/solana/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
-import walletSagas from 'store/wallet/sagas'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

@@ -10,6 +10,7 @@ import confirmerSagas from 'common/store/confirmer/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
+import walletSagas from 'common/store/wallet/sagas'
 import { all, fork } from 'typed-redux-saga'
 
 import initKeyboardEvents from './keyboard/sagas'
@@ -36,6 +37,8 @@ export default function* rootSaga() {
 
     // Tipping
     ...tippingSagas(),
+
+    ...walletSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),
