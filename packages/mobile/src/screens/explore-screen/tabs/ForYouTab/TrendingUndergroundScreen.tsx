@@ -3,22 +3,22 @@ import {
   trendingUndergroundPageLineupSelectors,
   lineupSelectors
 } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import { RewardsBanner } from 'app/components/audio-rewards'
 import { Header } from 'app/components/header'
 import { Lineup } from 'app/components/lineup'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+const { makeGetLineupMetadatas } = lineupSelectors
 const { getLineup } = trendingUndergroundPageLineupSelectors
 
-const getTrendingUndergroundLineup =
-  lineupSelectors.makeGetLineupMetadatas(getLineup)
+const getTrendingUndergroundLineup = makeGetLineupMetadatas(getLineup)
 
 const messages = {
   header: 'Underground Trending'
 }
 
 export const TrendingUndergroundScreen = () => {
-  const lineup = useSelectorWeb(getTrendingUndergroundLineup)
+  const lineup = useSelector(getTrendingUndergroundLineup)
 
   return (
     <>
@@ -29,6 +29,7 @@ export const TrendingUndergroundScreen = () => {
         actions={trendingUndergroundPageLineupActions}
         rankIconCount={5}
         isTrending
+        selfLoad
       />
     </>
   )
