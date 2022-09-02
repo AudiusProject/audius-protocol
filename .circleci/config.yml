@@ -963,8 +963,8 @@ jobs:
     steps:
       - checkout
       - run-on-gcp:
-          command-name: Verify generated sdk types
-          instance-name: test-sdk
+          command-name: Test VPN
+          instance-name: test-vpn
           interactive-command: |
             hostname
           command: |
@@ -983,6 +983,8 @@ workflows:
     jobs:
       - check-vpn:
           name: check-vpn
+          context:
+            - GCP2
       - test-libs:
           name: test-libs
       - docker-build-and-push:
