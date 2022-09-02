@@ -1,3 +1,7 @@
+import { explorePageActions } from '@audius/common'
+import { useDispatch } from 'react-redux'
+import { useEffectOnce } from 'react-use'
+
 import IconForYou from 'app/assets/images/iconExploreForYou.svg'
 import IconMoods from 'app/assets/images/iconExploreMoods.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
@@ -11,6 +15,8 @@ import { ArtistsTab } from './tabs/ArtistsTab'
 import { ForYouTab } from './tabs/ForYouTab'
 import { MoodsTab } from './tabs/MoodsTab'
 import { PlaylistsTab } from './tabs/PlaylistsTab'
+
+const { fetchExplore } = explorePageActions
 
 const exploreScreens = [
   {
@@ -37,7 +43,12 @@ const exploreScreens = [
 ]
 
 const ExploreScreen = () => {
+  const dispatch = useDispatch()
   usePopToTopOnDrawerOpen()
+
+  useEffectOnce(() => {
+    dispatch(fetchExplore())
+  })
 
   return (
     <Screen>
