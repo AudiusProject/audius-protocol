@@ -35,7 +35,10 @@ discovery_nodes = (
     "stage-discovery-4",  # canary
     "stage-discovery-5",
 )
-all_nodes = content_nodes + discovery_nodes
+identity_nodes = (
+    "stage-identity",
+)
+all_nodes = content_nodes + discovery_nodes + identity_nodes
 
 FORCE_INSTRUCTIONS = "INSTRUCTIONS GO HERE."
 
@@ -92,6 +95,8 @@ def generate_deploy_list(service, hosts):
         deploy_list += content_nodes
     if service in ["all", "discovery"]:
         deploy_list += discovery_nodes
+    if service in ["all", "identity"]:
+        deploy_list += identity_nodes
 
     # make sure hosts is not a superset of deploy_list
     for host in hosts:
@@ -318,11 +323,11 @@ def cli(github_user, github_token, environment, service, hosts, git_tag, paralle
                 logger.error("A --git-tag is required when deploying identity")
                 raise
             # if git_tag:
-            #     ssh(host, "yes | audius-cli pull", exit_on_error=False)
-            #     ssh(host, f"yes | audius-cli set-tag {git_tag}", exit_on_error=False)
-            #     ssh(host, f"yes | audius-cli launch {service}", exit_on_error=False)
+            #     ssh(host, "yes | audius-cli pull", exit_on_error=False, show_output=True)
+            #     ssh(host, f"yes | audius-cli set-tag {git_tag}", exit_on_error=False, show_output=True)
+            #     ssh(host, f"yes | audius-cli launch {service}", exit_on_error=False, show_output=True)
             # else:
-            #     ssh(host, "yes | audius-cli upgrade", exit_on_error=False)
+            #     ssh(host, "yes | audius-cli upgrade", exit_on_error=False, show_output=True)
             print("-" * 40)
         except:
             failed_hosts.append(host)
