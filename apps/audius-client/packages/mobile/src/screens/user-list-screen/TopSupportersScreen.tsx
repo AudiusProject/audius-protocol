@@ -6,12 +6,11 @@ import {
   topSupportersUserListActions
 } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { Text } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { UserList } from './UserList'
@@ -39,15 +38,15 @@ export const TopSupportersScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'TopSupporters'>()
   const { userId, source } = params
-  const supportersId = useSelectorWeb(getSupportersId)
-  const supportersUser = useSelectorWeb((state) =>
+  const supportersId = useSelector(getSupportersId)
+  const supportersUser = useSelector((state) =>
     getUser(state, { id: supportersId })
   )
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const handleSetSupporters = useCallback(() => {
-    dispatchWeb(setTopSupporters(userId))
-  }, [dispatchWeb, userId])
+    dispatch(setTopSupporters(userId))
+  }, [dispatch, userId])
 
   const title =
     source === 'feed' && supportersUser ? (

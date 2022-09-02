@@ -4,9 +4,9 @@ import {
   favoritesUserListActions,
   favoritesUserListSelectors
 } from '@audius/common'
+import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
@@ -21,11 +21,11 @@ const messages = {
 export const FavoritedScreen = () => {
   const { params } = useRoute<'Favorited'>()
   const { id, favoriteType } = params
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const handleSetFavorited = useCallback(() => {
-    dispatchWeb(setFavorite(id, favoriteType))
-  }, [dispatchWeb, id, favoriteType])
+    dispatch(setFavorite(id, favoriteType))
+  }, [dispatch, id, favoriteType])
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconHeart}>

@@ -17,9 +17,6 @@ export const UserListScreen = (props: UserListScreenProps) => {
   const { title, titleIcon, children } = props
 
   const headerTitle = useCallback(() => {
-    if (!titleIcon) {
-      return null
-    }
     return <UserListTitle icon={titleIcon} title={title} />
   }, [titleIcon, title])
 
