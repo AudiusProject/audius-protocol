@@ -13,12 +13,13 @@ import type {
   ReactionTypes
 } from '@audius/common'
 import { Image, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -76,10 +77,7 @@ export const TipReceivedNotification = (
   const { amount, tipTxSignature } = notification
   const uiAmount = useUIAudio(amount)
 
-  const user = useSelectorWeb(
-    (state) => getNotificationUser(state, notification),
-    isEqual
-  )
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
   const reactionValue = useSelectorWeb(
     makeGetReactionForSignature(tipTxSignature)

@@ -2,11 +2,9 @@ import { useCallback } from 'react'
 
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { TouchableOpacity } from 'react-native'
-import { useDispatch } from 'react-redux'
 
 import type { ProfilePictureProps as ProfilePictureBaseProps } from 'app/components/user'
 import { ProfilePicture as ProfilePictureBase } from 'app/components/user'
-import { close } from 'app/store/notifications/actions'
 import { makeStyles } from 'app/styles'
 import { getUserRoute } from 'app/utils/routes'
 
@@ -39,7 +37,6 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     ...other
   } = props
   const styles = useStyles()
-  const dispatch = useDispatch()
   const navigation = useDrawerNavigation()
 
   const handlePress = useCallback(() => {
@@ -50,8 +47,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       },
       web: { route: getUserRoute(profile), fromPage: NOTIFICATION_PAGE }
     })
-    dispatch(close())
-  }, [navigation, navigationType, profile, dispatch])
+  }, [navigation, navigationType, profile])
 
   const profilePictureElement = (
     <ProfilePictureBase

@@ -7,9 +7,9 @@ import type {
 } from '@audius/common'
 import { notificationsSelectors } from '@audius/common'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
@@ -44,14 +44,11 @@ export const RemixCosignNotification = (
   const { notification } = props
   const navigation = useDrawerNavigation()
   const { childTrackId, parentTrackUserId } = notification
-  const user = useSelectorWeb((state) =>
-    getNotificationUser(state, notification)
-  )
+  const user = useSelector((state) => getNotificationUser(state, notification))
   // TODO: casting from EntityType to TrackEntity here, but
   // getNotificationEntities should be smart enough based on notif type
-  const tracks = useSelectorWeb(
-    (state) => getNotificationEntities(state, notification),
-    isEqual
+  const tracks = useSelector((state) =>
+    getNotificationEntities(state, notification)
   ) as Nullable<TrackEntity[]>
 
   const childTrack = tracks?.find(({ track_id }) => track_id === childTrackId)

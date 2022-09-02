@@ -1,12 +1,12 @@
 import type { TierChangeNotification as TierChangeNotificationType } from '@audius/common'
 import { cacheUsersSelectors } from '@audius/common'
 import { fullProfilePage } from 'audius-client/src/utils/route'
+import { useSelector } from 'react-redux'
 
 import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
 import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
 import IconPlatinumBadge from 'app/assets/images/IconPlatinumBadge.svg'
 import IconSilverBadge from 'app/assets/images/IconSilverBadge.svg'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import {
   NotificationTile,
@@ -65,7 +65,7 @@ type TierChangeNotificationProps = {
 export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
   const { tier, userId } = notification
-  const user = useSelectorWeb((state) => getUser(state, { id: userId }))
+  const user = useSelector((state) => getUser(state, { id: userId }))
   const { icon, label, amount, twitterIcon } = tierInfoMap[tier]
 
   if (!user) return null

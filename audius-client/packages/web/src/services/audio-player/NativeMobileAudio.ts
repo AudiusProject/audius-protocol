@@ -1,4 +1,6 @@
 export class NativeMobileAudio {
+  audio = null as any
+  audioCtx = null
   load = () => {}
   play = () => {}
   pause = () => {}
@@ -6,8 +8,8 @@ export class NativeMobileAudio {
   seek = () => {}
   setVolume = () => null
   isBuffering = () => false
-  getPosition = async () => {}
-  getDuration = () => {}
+  getPosition = async () => 0
+  getDuration = () => 0
   onBufferingChange = () => {}
   onError = () => {}
 }
