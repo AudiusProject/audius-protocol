@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { createDrawerNavigator } from '@react-navigation/drawer'
@@ -8,9 +8,11 @@ import type { NavigatorScreenParams } from '@react-navigation/native'
 import { useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Dimensions } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
+import useAppState from 'app/hooks/useAppState'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
+import PushNotifications from 'app/notifications'
 import type { AppScreenParamList } from 'app/screens/app-screen'
 import { AppScreen } from 'app/screens/app-screen'
 import {
@@ -19,6 +21,7 @@ import {
 } from 'app/screens/notifications-screen'
 import { SignOnScreen } from 'app/screens/signon'
 import { UpdateRequiredScreen } from 'app/screens/update-required-screen/UpdateRequiredScreen'
+import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 import {
   getDappLoaded,
   getIsSignedIn,
@@ -106,6 +109,11 @@ const NotificationsDrawerContents = (
     state
   } = props
   const drawerNavigation = useNavigation()
+
+  useEffect(() => {
+    PushNotifications.setDrawerHelpers(drawerHelpers)
+  }, [drawerHelpers])
+
   return (
     <NotificationsDrawerNavigationContextProvider
       drawerHelpers={drawerHelpers}
@@ -124,12 +132,18 @@ const NotificationsDrawerContents = (
  * based on if the user is authed
  */
 export const RootScreen = () => {
+  const dispatch = useDispatch()
   const dappLoaded = useSelector(getDappLoaded)
   const signedIn = useSelector(getIsSignedIn)
   const onSignUp = useSelector(getOnSignUp)
   const isAccountAvailable = useSelector(getAccountAvailable)
   const [disableGestures, setDisableGestures] = useState(false)
   const { updateRequired } = useUpdateRequired()
+
+  useAppState(
+    () => dispatch(enterForeground()),
+    () => dispatch(enterBackground())
+  )
 
   if (updateRequired) return <UpdateStack />
 

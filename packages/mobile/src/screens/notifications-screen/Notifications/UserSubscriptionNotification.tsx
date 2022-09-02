@@ -4,9 +4,9 @@ import type { UserSubscriptionNotification as UserSubscriptionNotificationType }
 import { notificationsSelectors, Entity } from '@audius/common'
 import { profilePage } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconStars from 'app/assets/images/iconStars.svg'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import {
   NotificationHeader,
@@ -37,12 +37,9 @@ export const UserSubscriptionNotification = (
   const { notification } = props
   const { entityType } = notification
   const navigation = useDrawerNavigation()
-  const user = useSelectorWeb((state) =>
-    getNotificationUser(state, notification)
-  )
-  const entities = useSelectorWeb(
-    (state) => getNotificationEntities(state, notification),
-    isEqual
+  const user = useSelector((state) => getNotificationUser(state, notification))
+  const entities = useSelector((state) =>
+    getNotificationEntities(state, notification)
   )
 
   const uploadCount = entities?.length ?? 0

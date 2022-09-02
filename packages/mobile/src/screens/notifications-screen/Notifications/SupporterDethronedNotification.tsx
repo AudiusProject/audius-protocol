@@ -9,11 +9,11 @@ import type {
   Nullable,
   SupporterDethronedNotification as SupporterDethroned
 } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import IconCrownSource from 'app/assets/images/crown2x.png'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -51,11 +51,11 @@ export const SupporterDethronedNotification = (
   const { supportedUserId } = notification
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
-  const usurpingUser = useSelectorWeb((state) =>
+  const usurpingUser = useSelector((state) =>
     getNotificationUser(state, notification)
   )
 
-  const supportedUser = useSelectorWeb((state) =>
+  const supportedUser = useSelector((state) =>
     getUser(state, { id: supportedUserId })
   )
 

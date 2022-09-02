@@ -36,17 +36,8 @@ export enum MessageType {
   // Notifications
   ENABLE_PUSH_NOTIFICATIONS = 'enable-push-notifications',
   DISABLE_PUSH_NOTIFICATIONS = 'disable-push-notifications',
-  RESET_NOTIFICATIONS_BADGE_COUNT = 'reset-notifications-badge-count',
   ENABLE_PUSH_NOTIFICATIONS_REMINDER = 'action/enable-push-notifications-reminder',
   PROMPT_PUSH_NOTIFICATION_REMINDER = 'prompt-push-notifications-reminder',
-
-  OPEN_NOTIFICATIONS = 'open-notifications',
-  FETCH_NOTIFICATIONS = 'fetch-notifications',
-  FETCH_NOTIFICATIONS_SUCCESS = 'fetch-notifications-success',
-  FETCH_NOTIFICATIONS_REPLACE = 'fetch-notifications-replace',
-  FETCH_NOTIFICATIONS_FAILURE = 'fetch-notifications-failure',
-  REFRESH_NOTIFICATIONS = 'refresh-notifications',
-  MARK_ALL_NOTIFICATIONS_AS_VIEWED = 'mark-all-notifications-as-viewed',
 
   // Search
   OPEN_SEARCH = 'open-search',

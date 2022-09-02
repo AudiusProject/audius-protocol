@@ -27,6 +27,7 @@ export const SET_NOTIFICATION_USERS = 'NOTIFICATION/SET_NOTIFICATION_USERS'
 export const SET_TOTAL_UNVIEWED_TO_ZERO =
   'NOTIFICATION/SET_TOTAL_UNVIEWED_TO_ZERO'
 export const MARK_ALL_AS_VIEWED = 'NOTIFICATION/MARK_ALL_AS_VIEWED'
+export const MARKED_ALL_AS_VIEWED = 'NOTIFICATION/MARKED_ALL_AS_VIEWED'
 
 export const TOGGLE_NOTIFICATION_PANEL =
   'NOTIFICATION/TOGGLE_NOTIFICATION_PANEL'
@@ -112,6 +113,8 @@ export const setTotalUnviewedToZero = () => ({
 })
 
 export const markAllAsViewed = () => ({ type: MARK_ALL_AS_VIEWED })
+
+export const markedAllAsViewed = () => ({ type: MARKED_ALL_AS_VIEWED })
 
 export const setNotificationModal = (
   open: boolean,
