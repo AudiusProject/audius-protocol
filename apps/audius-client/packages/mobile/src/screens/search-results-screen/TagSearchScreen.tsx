@@ -13,6 +13,7 @@ import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { SearchFocusContext } from './SearchFocusContext'
+import { SearchQueryContext } from './SearchQueryContext'
 import { ProfilesTab } from './tabs/ProfilesTab'
 import { TracksTab } from './tabs/TracksTab'
 
@@ -41,6 +42,10 @@ export const TagSearchScreen = () => {
   const dispatch = useDispatch()
   const { params } = useRoute<'TagSearch'>()
   const { query } = params
+  const searchQueryContext = useMemo(
+    () => ({ isTagSearch: true, query }),
+    [query]
+  )
 
   useEffect(() => {
     dispatch(fetchSearch(query))
@@ -64,10 +69,12 @@ export const TagSearchScreen = () => {
         <Tag style={styles.tag}>{query.replace(/^#/, '')}</Tag>
       </Header>
       <SearchFocusContext.Provider value={focusContext}>
-        <TabNavigator initialScreenName='Tracks'>
-          {tracksScreen}
-          {profilesScreen}
-        </TabNavigator>
+        <SearchQueryContext.Provider value={searchQueryContext}>
+          <TabNavigator initialScreenName='Tracks'>
+            {tracksScreen}
+            {profilesScreen}
+          </TabNavigator>
+        </SearchQueryContext.Provider>
       </SearchFocusContext.Provider>
     </Screen>
   )

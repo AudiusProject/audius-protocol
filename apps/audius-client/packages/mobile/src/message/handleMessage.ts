@@ -15,7 +15,6 @@ import { messageHandlers as linking } from './handlers/linking'
 import { messageHandlers as logging } from './handlers/logging'
 import { messageHandlers as notification } from './handlers/notification'
 import { messageHandlers as oauth } from './handlers/oauth'
-import { messageHandlers as search } from './handlers/search'
 import { messageHandlers as signon } from './handlers/signon'
 import { messageHandlers as theme } from './handlers/theme'
 import { messageHandlers as tipping } from './handlers/tipping'
@@ -36,7 +35,6 @@ const messageHandlers: Partial<MessageHandlers> = {
   ...logging,
   ...notification,
   ...oauth,
-  ...search,
   ...signon,
   ...theme,
   ...version,

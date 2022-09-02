@@ -32,7 +32,6 @@ const actionsMap: ActionsMap<SearchBarState> = {
   [FETCH_SEARCH_SUCCEEDED](state, action) {
     const newState = { ...state }
     newState.status = Status.SUCCESS
-
     // We might have since deleted the text that
     // we originally queried for;
     if (state.disregardResponses) return { ...newState }
