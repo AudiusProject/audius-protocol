@@ -954,6 +954,25 @@ jobs:
             docker push audius/<< parameters.repo >>:$IMAGE_TAG
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
+  check-vpn:
+    docker:
+      - image: audius/circleci-gcloud-bake:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - checkout
+      - run-on-gcp:
+          command-name: Verify generated sdk types
+          instance-name: test-sdk
+          interactive-command: |
+            hostname
+          command: |
+            cd /home/ubuntu/audius-protocol
+            git pull
+            git checkout $CIRCLE_BRANCH
+            hostname
+
 workflows:
   # test, build and push all commits
   test-build-and-push:
