@@ -962,16 +962,21 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
       - run-on-gcp:
           command-name: Test VPN
           instance-name: test-vpn
           interactive-command: |
             hostname
+            ssh ubuntu@18.220.56.46 "hostname"
           command: |
             cd /home/ubuntu/audius-protocol
             git pull
             git checkout $CIRCLE_BRANCH
             hostname
+            ssh ubuntu@18.220.56.46 "hostname"
 
 workflows:
   # test, build and push all commits
