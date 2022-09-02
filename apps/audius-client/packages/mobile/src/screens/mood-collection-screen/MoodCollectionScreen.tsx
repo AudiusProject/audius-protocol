@@ -1,31 +1,41 @@
+import { useEffect } from 'react'
+
 import {
   Status,
   explorePageCollectionsSelectors,
-  ExploreCollectionsVariant
+  ExploreCollectionsVariant,
+  explorePageCollectionsActions
 } from '@audius/common'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
-import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
-import type { ExploreCollection as CollectionMetadata } from 'app/screens/explore-screen/collections'
+import type { ExploreMoodCollection } from 'app/screens/explore-screen/collections'
 const { getCollections, getStatus } = explorePageCollectionsSelectors
+const { fetch } = explorePageCollectionsActions
 
 type MoodCollectionScreenProps = {
-  collection: CollectionMetadata
+  collection: ExploreMoodCollection
 }
 
 export const MoodCollectionScreen = ({
   collection
 }: MoodCollectionScreenProps) => {
-  const status = useSelectorWeb((state) =>
+  const { moods } = collection
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(fetch({ variant: ExploreCollectionsVariant.MOOD, moods }))
+  }, [dispatch, moods])
+
+  const status = useSelector((state) =>
     getStatus(state, { variant: ExploreCollectionsVariant.MOOD })
   )
-  const exploreData = useSelectorWeb(
-    (state) =>
-      getCollections(state, { variant: ExploreCollectionsVariant.MOOD }),
-    isEqual
+
+  const exploreData = useSelector((state) =>
+    getCollections(state, { variant: ExploreCollectionsVariant.MOOD })
   )
 
   return (
