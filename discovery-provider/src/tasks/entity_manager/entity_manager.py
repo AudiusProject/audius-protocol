@@ -83,7 +83,7 @@ def entity_manager_update(
         # collect events by entity type and action
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
 
-        # fetch existing tracks playlists
+        # fetch existing tracks and playlists
         existing_records: ExistingRecordDict = fetch_existing_entities(
             session, entities_to_fetch
         )
