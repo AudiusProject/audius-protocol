@@ -25,9 +25,6 @@ export const messageHandlers: Partial<MessageHandlers> = {
       ...info
     })
   },
-  [MessageType.RESET_NOTIFICATIONS_BADGE_COUNT]: () => {
-    PushNotifications.setBadgeCount(0)
-  },
   [MessageType.PROMPT_PUSH_NOTIFICATION_REMINDER]: ({ dispatch }) => {
     remindUserToTurnOnNotifications(dispatch)
   }

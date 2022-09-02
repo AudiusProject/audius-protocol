@@ -11,9 +11,9 @@ import {
   fullProfilePage,
   NOTIFICATION_PAGE
 } from 'audius-client/src/utils/route'
+import { useSelector } from 'react-redux'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
-import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'
@@ -95,13 +95,10 @@ type MilestoneNotificationProps = {
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
   const { achievement } = notification
-  const entity = useSelectorWeb(
-    (state) => getNotificationEntity(state, notification),
-    isEqual
+  const entity = useSelector((state) =>
+    getNotificationEntity(state, notification)
   )
-  const user = useSelectorWeb((state) =>
-    getNotificationUser(state, notification)
-  )
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
   const navigation = useDrawerNavigation()
 

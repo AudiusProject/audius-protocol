@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
 import type { EntityType } from '@audius/common'
-import { useDispatch } from 'react-redux'
 
 import { Text } from 'app/components/core'
-import { close } from 'app/store/notifications/actions'
 import { getCollectionRoute, getTrackRoute } from 'app/utils/routes'
 
 import { useDrawerNavigation } from '../useDrawerNavigation'
@@ -15,7 +13,6 @@ type EntityLinkProps = {
 
 export const EntityLink = (props: EntityLinkProps) => {
   const { entity } = props
-  const dispatch = useDispatch()
   const navigation = useDrawerNavigation()
 
   const onPress = useCallback(() => {
@@ -38,8 +35,7 @@ export const EntityLink = (props: EntityLinkProps) => {
         web: { route: getCollectionRoute({ ...entity, user }) }
       })
     }
-    dispatch(close())
-  }, [entity, navigation, dispatch])
+  }, [entity, navigation])
 
   return (
     <Text fontSize='large' weight='medium' color='secondary' onPress={onPress}>

@@ -8,11 +8,10 @@ import {
 } from '@audius/common'
 import type { ViewToken } from 'react-native'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { EmptyNotifications } from './EmptyNotifications'
@@ -102,18 +101,18 @@ const useIsViewable = () => {
 
 export const NotificationList = () => {
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
-  const notifications = useSelectorWeb(getNotifications, isEqual)
-  const status = useSelectorWeb(getNotificationStatus)
-  const hasMore = useSelectorWeb(getNotificationHasMore)
+  const dispatch = useDispatch()
+  const notifications = useSelector(getNotifications)
+  const status = useSelector(getNotificationStatus)
+  const hasMore = useSelector(getNotificationHasMore)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const { gesturesDisabled } = useContext(NotificationsDrawerNavigationContext)
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
-    dispatchWeb(refreshNotifications())
-  }, [dispatchWeb])
+    dispatch(refreshNotifications())
+  }, [dispatch])
 
   useEffect(() => {
     if (status !== Status.LOADING) {
@@ -123,9 +122,9 @@ export const NotificationList = () => {
 
   const handleEndReached = useCallback(() => {
     if (status !== Status.LOADING && hasMore) {
-      dispatchWeb(fetchNotifications(NOTIFICATION_PAGE_SIZE))
+      dispatch(fetchNotifications(NOTIFICATION_PAGE_SIZE))
     }
-  }, [status, dispatchWeb, hasMore])
+  }, [status, dispatch, hasMore])
 
   const [isVisible, visibilityCallback] = useIsViewable()
 
