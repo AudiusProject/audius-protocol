@@ -965,17 +965,20 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
       - run-on-gcp:
           command-name: Test VPN
           instance-name: test-vpn
           interactive-command: |
             hostname
-            ssh -A ubuntu@18.220.56.46 "hostname"
+            ssh -T git@github.com
+            # ssh -A ubuntu@18.220.56.46 "hostname"
           command: |
             cd /home/ubuntu/audius-protocol
             git pull
             git checkout $CIRCLE_BRANCH
             hostname
+            ssh -T git@github.com
             ssh -A ubuntu@18.220.56.46 "hostname"
 
 workflows:
