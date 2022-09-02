@@ -60,7 +60,7 @@ def create_playlist(params: ManageEntityParameters):
                 "time": params.block_integer_time,
             }
         )
-        last_added_to = params.block_integer_time
+        last_added_to = params.block_datetime
     create_playlist_record = Playlist(
         playlist_id=playlist_id,
         metadata_multihash=params.metadata_cid,

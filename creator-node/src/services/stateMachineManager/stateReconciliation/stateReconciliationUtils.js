@@ -10,6 +10,7 @@ const {
   HEALTHY_SERVICES_TTL_SEC
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+const { instrumentTracing, tracing } = require('../../../tracer')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
@@ -97,7 +98,7 @@ const getNewOrExistingSyncReq = ({
  * Issues syncRequest for user against secondary, and polls for replication up to primary
  * If secondary fails to sync within specified timeoutMs, will error
  */
-const issueSyncRequestsUntilSynced = async (
+const _issueSyncRequestsUntilSynced = async (
   primaryUrl,
   secondaryUrl,
   wallet,
@@ -162,6 +163,15 @@ const issueSyncRequestsUntilSynced = async (
     `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
   )
 }
+
+const issueSyncRequestsUntilSynced = instrumentTracing({
+  fn: _issueSyncRequestsUntilSynced,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
 
 const getCachedHealthyNodes = async () => {
   const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)

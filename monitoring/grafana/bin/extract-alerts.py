@@ -49,6 +49,7 @@ def extract_alerts(template, dashboard, env):
 
             mentions = ""
             team = ""
+            alert_on = []
             if "mappings" in panel["fieldConfig"]["defaults"]:
                 for mapping in panel["fieldConfig"]["defaults"]["mappings"]:
                     for key, mapping in mapping["options"].items():
@@ -56,6 +57,9 @@ def extract_alerts(template, dashboard, env):
                             mentions = mapping["text"]
                         elif key == "team":
                             team = mapping["text"]
+                        elif key == "alert_on":
+                            for ref_id in mapping["text"].split(","):
+                                alert_on.append(ref_id.strip())
 
             if "links" in panel["fieldConfig"]["defaults"]:
                 links = []
@@ -115,8 +119,13 @@ def extract_alerts(template, dashboard, env):
                 for i, target in enumerate(panel["targets"]):
                     # ignore expr's that are hidden on the panel
                     # only what is readily visible is what will be alerted on
-                    if "hide" in panel["targets"] and panel["targets"]["hide"]:
-                        break
+                    if "hide" in target and target["hide"]:
+                        continue
+
+                    # when the alert_on key appears within Value Mappings,
+                    # only create alerts for the listed refIds
+                    if alert_on and target["refId"] not in alert_on:
+                        continue
 
                     # assume all metrics missing $env are Prod-only metrics
                     expression = target["expr"]
@@ -149,6 +158,10 @@ def extract_alerts(template, dashboard, env):
                             },
                         }
                     )
+
+                # don't create alerts without alert conditions
+                if not data:
+                    continue
 
                 alert_conditions = []
                 for ref_id in ref_ids:
@@ -188,12 +201,30 @@ def extract_alerts(template, dashboard, env):
                 )
 
                 title_level = level.title()
-                alert_uid = f"{dashboard_uid}_{panel_id:03}_{title_level}"
-                alert_id = (dashboard_id * 10000) + (panel_id * 10) + level_id + 100000
+                alert_uid = f"{dashboard_uid}_{panel_id:03}_{title_level}_{env}"
+
+                # arbitrary, deterministic id generation with an offset to allow for
+                # 100k manually created panels
+                alert_id = (
+                    (dashboard_id * 100000)
+                    + (panel_id * 100)
+                    + (level_id * 10)
+                    + int(env == "prod")
+                    + 100000
+                )
 
                 title = sanatize_text(panel["title"])
                 title_env = env.upper()
                 title = f"{title_env} {title_level} | {title}"
+
+                labels = {
+                    "alert": level,
+                    "env": env,
+                }
+                if mentions:
+                    labels["mentions"] = mentions
+                if team:
+                    labels["team"] = team
 
                 formatted_text = template.format(
                     alert_id=alert_id,
@@ -205,10 +236,7 @@ def extract_alerts(template, dashboard, env):
                     runbook_url=runbook_url,
                     description=sanatize_text(description),
                     summary=sanatize_text(summary),
-                    env=env,
-                    level=level,
-                    mentions=mentions,
-                    team=team,
+                    labels=json.dumps(labels),
                     condition_ref=ref_ids[-1],
                     data=json.dumps(data),
                 )

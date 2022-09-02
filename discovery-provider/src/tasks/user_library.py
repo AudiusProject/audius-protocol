@@ -250,6 +250,7 @@ def delete_track_save(
             tx_receipt
         )
     )
+
     for event in new_delete_track_events:
         event_args = event["args"]
         save_user_id = event_args._userId

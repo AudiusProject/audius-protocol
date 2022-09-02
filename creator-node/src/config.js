@@ -419,7 +419,7 @@ const config = convict({
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
     env: 'snapbackHighestReconfigMode',
-    default: 'RECONFIG_DISABLED'
+    default: 'ONE_SECONDARY'
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
@@ -555,13 +555,13 @@ const config = convict({
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 5
+    default: 30
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 3
+    default: 15
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',

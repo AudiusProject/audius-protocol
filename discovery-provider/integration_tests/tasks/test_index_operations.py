@@ -105,6 +105,8 @@ def seed_contract_data(task, contracts, web3):
         "release_date": str(chance.date()),
         "file_type": "mp3",
         "track_segments": test_track_segments,
+        "is_premium": False,
+        "premium_conditions": None,
     }
 
     # dump metadata to file

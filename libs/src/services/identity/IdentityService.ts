@@ -61,6 +61,21 @@ type Reaction = {
   reactionValue: number
 }
 
+enum TransactionMetadataType {
+  PURCHASE_SOL_AUDIO_SWAP = 'PURCHASE_SOL_AUDIO_SWAP'
+}
+
+type InAppAudioPurchaseMetadata = {
+  discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP
+  usd: string
+  sol: string
+  audio: string
+  purchaseTransactionId: string
+  setupTransactionId?: string
+  swapTransactionId: string
+  cleanupTransactionId?: string
+}
+
 // Only probabilistically capture 50% of relay captchas
 const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
 
@@ -530,6 +545,17 @@ export class IdentityService {
     })
   }
 
+  async saveUserBankTransactionMetadata(data: InAppAudioPurchaseMetadata) {
+    const headers = await this._signData()
+
+    return await this._makeRequest({
+      url: '/transaction_metadata',
+      method: 'post',
+      data,
+      headers
+    })
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
@@ -567,7 +593,9 @@ export class IdentityService {
     if (this.web3Manager) {
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       const message = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager?.sign(message)
+      const signature = await this.web3Manager?.sign(
+        Buffer.from(message, 'utf-8')
+      )
       return {
         [AuthHeaders.MESSAGE]: message,
         [AuthHeaders.SIGNATURE]: signature

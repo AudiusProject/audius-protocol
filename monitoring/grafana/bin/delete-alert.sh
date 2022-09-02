@@ -3,7 +3,7 @@
 set -e
 
 # only accept a single UID at a time
-UID=${1}
+DASHBOARD_UID=${1}
 
 : "${BEARER_PATH:=grafana/bearer.env}"
 set -o allexport
@@ -25,6 +25,5 @@ curl \
     -X DELETE \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
-    -d "${alert}" \
-    ${BASE_URL}/api/v1/provisioning/alert-rules/${UID} \
+    ${BASE_URL}/api/v1/provisioning/alert-rules/${DASHBOARD_UID} \
 | jq .

@@ -2,16 +2,6 @@
   "receiver": "#eng-alerts-debug",
   "routes": [
     {
-      "receiver": "#eng-token-alerts",
-      "object_matchers": [
-        [
-          "channel",
-          "=",
-          "slack-eng-token-alerts"
-        ]
-      ]
-    },
-    {
       "receiver": "#eng-incidents-prod",
       "object_matchers": [
         [
@@ -57,7 +47,7 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Infrastructure (P3)",
+          "receiver": "PagerDuty | Infra (P3)",
           "object_matchers": [
             [
               "team",
@@ -67,12 +57,12 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Monetization (P3)",
+          "receiver": "PagerDuty | Money (P3)",
           "object_matchers": [
             [
               "team",
               "=",
-              "monetization"
+              "money"
             ]
           ]
         }
@@ -126,7 +116,7 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Infrastructure (P3)",
+          "receiver": "PagerDuty | Infra (P3)",
           "object_matchers": [
             [
               "team",
@@ -136,12 +126,12 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Monetization (P3)",
+          "receiver": "PagerDuty | Money (P3)",
           "object_matchers": [
             [
               "team",
               "=",
-              "monetization"
+              "money"
             ]
           ]
         }
@@ -195,7 +185,7 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Infrastructure (P3)",
+          "receiver": "PagerDuty | Infra (P3)",
           "object_matchers": [
             [
               "team",
@@ -205,12 +195,12 @@
           ]
         },
         {
-          "receiver": "PagerDuty | Monetization (P3)",
+          "receiver": "PagerDuty | Money (P3)",
           "object_matchers": [
             [
               "team",
               "=",
-              "monetization"
+              "money"
             ]
           ]
         }
