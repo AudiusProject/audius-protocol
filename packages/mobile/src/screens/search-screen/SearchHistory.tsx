@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { fetchSearch } from 'audius-client/src/common/store/search-bar/actions'
 import {
   StyleSheet,
   View,
@@ -11,15 +12,12 @@ import {
 import { useDispatch } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { MessageType } from 'app/message'
-import { submitQuery } from 'app/store/search/actions'
+import { useNavigation } from 'app/hooks/useNavigation'
+import { updateQuery } from 'app/store/search/actions'
 import useSearchHistory from 'app/store/search/hooks'
-import { getTagSearchRoute } from 'app/utils/routes'
 import { useColor, useTheme } from 'app/utils/theme'
 
 import EmptySearch from './content/EmptySearch'
-import { usePushSearchRoute } from './utils'
 
 const messages = {
   clear: 'Clear Recent Searches',
@@ -73,6 +71,7 @@ type SearchHistoryItemProps = {
   text: string
 }
 const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
+  const navigation = useNavigation()
   const backgroundColor = useColor('neutralLight8')
   const color = useColor('neutralLight4')
   const itemTextStyles = useTheme(styles.itemText, { color: 'neutral' })
@@ -80,20 +79,20 @@ const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
     borderBottomColor: 'neutralLight8'
   })
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
-  const pushRoute = usePushSearchRoute()
 
   const onPress = useCallback(() => {
-    dispatch(submitQuery(text))
+    dispatch(updateQuery(text))
     if (text.startsWith('#')) {
-      pushRoute(getTagSearchRoute(text.substring(1)), 'search')
-    } else {
-      dispatchWeb({
-        type: MessageType.SUBMIT_SEARCH_QUERY,
-        query: text
+      navigation.push({
+        native: {
+          screen: 'TagSearch',
+          params: { query: text }
+        }
       })
+    } else {
+      dispatch(fetchSearch(text))
     }
-  }, [dispatch, text, pushRoute, dispatchWeb])
+  }, [dispatch, text, navigation])
 
   return (
     <TouchableHighlight

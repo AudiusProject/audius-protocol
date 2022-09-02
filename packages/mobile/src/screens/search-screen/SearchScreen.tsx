@@ -1,13 +1,14 @@
+import {
+  getSearch,
+  getSearchBarText
+} from 'audius-client/src/common/store/search-bar/selectors'
+import pick from 'lodash/pick'
 import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
-import {
-  getSearchQuery,
-  getSearchResultQuery,
-  getSearchResults
-} from 'app/store/search/selectors'
+import { getSearchQuery } from 'app/store/search/selectors'
 import { makeStyles } from 'app/styles'
 
 import { SearchBar } from './SearchBar'
@@ -37,8 +38,14 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const SearchScreen = () => {
   const styles = useStyles()
   const searchQuery = useSelector(getSearchQuery)
-  const searchResultQuery = useSelector(getSearchResultQuery)
-  const searchResults = useSelector(getSearchResults)
+  const searchResultQuery = useSelector(getSearchBarText)
+  const searchState = useSelector(getSearch)
+  const searchResults = pick(searchState, [
+    'tracks',
+    'users',
+    'playlists',
+    'albums'
+  ])
   const hasResults = Object.values(searchResults).some(
     (result) => result && result.length > 0
   )
