@@ -149,7 +149,7 @@ def get_release_tag(release_tags, host, github_user, github_token):
                         "Accept": "application/vnd.github+json",
                     },
                     auth=(github_user, github_token),
-                    timeout=5
+                    timeout=5,
                 )
             except:
                 continue
@@ -246,6 +246,21 @@ def display_release_tags(
     return affected_hosts, skipped_hosts
 
 
+def format_hosts(heading, hosts):
+    if hosts:
+        print(f"{heading}:")
+        for h in hosts:
+            print(f"* {h}")
+
+
+def format_skipped(skipped):
+    keys = [k for k in skipped.keys()]
+    keys.sort()
+    print("Skipped:")
+    for k in keys:
+        print(f"* {k}: {skipped[k]['author']}")
+
+
 @click.command()
 @click.option("-u", "--github-user", required=True)
 @click.option("-g", "--github-token", required=True)
@@ -278,6 +293,7 @@ def cli(github_user, github_token, environment, service, hosts, git_tag, paralle
         github_token=github_token,
     )
 
+    print("v" * 40)
     failed_hosts = []
     for host in affected_hosts:
         try:
@@ -291,8 +307,10 @@ def cli(github_user, github_token, environment, service, hosts, git_tag, paralle
             #     ssh(host, f"yes | audius-cli launch {service}", exit_on_error=False)
             # else:
             #     ssh(host, "yes | audius-cli upgrade", exit_on_error=False)
+            print("-" * 40)
         except:
             failed_hosts.append(host)
+    print("^" * 40)
 
     display_release_tags(
         release_tags,
@@ -304,6 +322,10 @@ def cli(github_user, github_token, environment, service, hosts, git_tag, paralle
         github_user=github_user,
         github_token=github_token,
     )
+
+    format_skipped(skipped_hosts)
+    format_hosts("Upgraded", affected_hosts)
+    format_hosts("Failed", failed_hosts)
 
 
 if __name__ == "__main__":
