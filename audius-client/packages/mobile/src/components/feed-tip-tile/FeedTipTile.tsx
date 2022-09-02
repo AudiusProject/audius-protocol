@@ -7,6 +7,10 @@ import {
   tippingSelectors,
   tippingActions
 } from '@audius/common'
+import {
+  dismissRecentTip,
+  getRecentTipsStorage
+} from 'audius-client/src/common/store/tipping/storageUtils'
 import { View } from 'react-native'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
@@ -15,10 +19,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
 import { make, track } from 'app/services/analytics'
-import {
-  dismissRecentTip,
-  getRecentTipsStorage
-} from 'app/store/tipping/storageUtils'
+import { localStorage } from 'app/services/local-storage'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 
@@ -77,7 +78,7 @@ export const FeedTipTile = () => {
 
   useEffect(() => {
     const fetchRecentTipsAsync = async () => {
-      const storage = await getRecentTipsStorage()
+      const storage = await getRecentTipsStorage(localStorage)
       dispatchWeb({
         type: MessageType.FETCH_RECENT_TIPS,
         storage
@@ -86,8 +87,8 @@ export const FeedTipTile = () => {
     fetchRecentTipsAsync()
   }, [dispatchWeb])
 
-  const handlePressClose = useCallback(() => {
-    dismissRecentTip()
+  const handlePressClose = useCallback(async () => {
+    await dismissRecentTip(localStorage)
     dispatchWeb(hideTip())
     if (account && tipToDisplay) {
       track(
