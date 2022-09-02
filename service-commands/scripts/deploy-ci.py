@@ -35,9 +35,7 @@ discovery_nodes = (
     "stage-discovery-4",  # canary
     "stage-discovery-5",
 )
-identity_nodes = (
-    "stage-identity",
-)
+identity_nodes = ("stage-identity",)
 all_nodes = content_nodes + discovery_nodes + identity_nodes
 
 FORCE_INSTRUCTIONS = "INSTRUCTIONS GO HERE."
