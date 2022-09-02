@@ -9,7 +9,7 @@ import {
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
+import commonSettingsSagas from 'common/store/pages/settings/sagas'
 import {
   Permission,
   isPushManagerAvailable,
@@ -21,33 +21,19 @@ import {
 } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
 
-import errorSagas from './errorSagas'
-import mobileSagas from './mobileSagas'
 const { getBrowserNotificationSettings } = settingsPageSelectors
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
-      yield* call(waitForBackendSetup)
-      const emailSettings = yield* call(
-        audiusBackendInstance.getEmailNotificationSettings
-      )
-      yield* put(
-        actions.updateEmailFrequency(
-          emailSettings.settings.emailFrequency,
-          false
-        )
-      )
       if (!isBrowserPushAvailable) return
       const settings = yield* call(
         audiusBackendInstance.getBrowserPushNotificationSettings
       )
       // If settings exist, set them in the store, else leave it at the defaults.
       if (settings) yield* put(actions.setNotificationSettings(settings))
-      if (!isElectron() && !NATIVE_MOBILE) {
+      if (!isElectron()) {
         if (isPushManagerAvailable) {
           const permission = yield* call(getPushManagerPermission)
           if (permission) {
@@ -209,29 +195,12 @@ function* watchUpdateNotificationSettings() {
   )
 }
 
-function* watchUpdateEmailFrequency() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* takeEvery(
-    actions.UPDATE_EMAIL_FREQUENCY,
-    function* (action: actions.UpdateEmailFrequency) {
-      if (action.updateServer) {
-        yield* call(
-          audiusBackendInstance.updateEmailNotificationSettings,
-          action.frequency
-        )
-      }
-    }
-  )
-}
-
 export default function sagas() {
-  const sagas = [
+  return [
+    ...commonSettingsSagas(),
     watchGetSettings,
     watchSetBrowserNotificationSettingsOn,
     watchToogleBrowserPushNotification,
-    watchUpdateNotificationSettings,
-    watchUpdateEmailFrequency,
-    errorSagas
+    watchUpdateNotificationSettings
   ]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
 }

@@ -1,6 +1,12 @@
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 
-import { Name, User, encodeHashId, accountSelectors } from '@audius/common'
+import {
+  Name,
+  User,
+  encodeHashId,
+  accountSelectors,
+  signOutActions
+} from '@audius/common'
 import {
   Button,
   ButtonProps,
@@ -12,7 +18,7 @@ import {
 import base64url from 'base64url'
 import cn from 'classnames'
 import * as queryString from 'query-string'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
@@ -21,12 +27,11 @@ import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ProfileInfo } from 'components/profile-info/ProfileInfo'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { localStorage } from 'services/local-storage'
 import { ERROR_PAGE, SIGN_UP_PAGE } from 'utils/route'
-import { signOut } from 'utils/signOut'
 
 import styles from '../styles/OAuthLoginPage.module.css'
-const getAccountUser = accountSelectors.getAccountUser
+const { signOut } = signOutActions
+const { getAccountUser } = accountSelectors
 
 const messages = {
   alreadyLoggedInAuthorizePrompt: (appName: string) =>
@@ -97,6 +102,7 @@ export const OAuthLoginPage = () => {
     response_mode,
     origin: originParam
   } = queryString.parse(search)
+  const dispatch = useDispatch()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -409,6 +415,10 @@ export const OAuthLoginPage = () => {
     }
   }
 
+  const handleSignOut = () => {
+    dispatch(signOut())
+  }
+
   if (queryParamsError) {
     return (
       <div className={styles.wrapper}>
@@ -529,10 +539,7 @@ export const OAuthLoginPage = () => {
               />
             </div>
             <div className={styles.signOutButtonContainer}>
-              <button
-                className={styles.linkButton}
-                onClick={() => signOut(audiusBackendInstance, localStorage)}
-              >
+              <button className={styles.linkButton} onClick={handleSignOut}>
                 {messages.signOut}
               </button>
             </div>

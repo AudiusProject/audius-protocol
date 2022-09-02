@@ -1,24 +1,29 @@
+import type { PushNotifications as TPushNotifications } from '@audius/common'
 import {
   getErrorMessage,
   accountSelectors,
   settingsPageInitialState as initialState,
   settingsPageSelectors,
-  PushNotifications,
   PushNotificationSetting,
   settingsPageActions as actions,
   getContext,
-  AudiusBackend,
   waitForValue
 } from '@audius/common'
+import { waitForBackendSetup } from 'common/store/backend/sagas'
+import commonSettingsSagas from 'common/store/pages/settings/sagas'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
-import {
-  EnablePushNotificationsMessage,
-  DisablePushNotificationsMessage
-} from 'services/native-mobile-interface/notifications'
+import PushNotifications from 'app/notifications'
+
 const { getPushNotificationSettings } = settingsPageSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
+
+export async function* disablePushNotifications() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const { token } = yield* call([PushNotifications, 'getToken'])
+  PushNotifications.deregister()
+  yield* call(audiusBackendInstance.deregisterDeviceToken, token)
+}
 
 function* watchGetPushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -27,7 +32,7 @@ function* watchGetPushNotificationSettings() {
     try {
       const settings = (yield* call(
         audiusBackendInstance.getPushNotificationSettings
-      )) as PushNotifications
+      )) as TPushNotifications
       const pushNotificationSettings = {
         ...settings,
         [PushNotificationSetting.MobilePush]: !!settings
@@ -41,39 +46,23 @@ function* watchGetPushNotificationSettings() {
   })
 }
 
-export async function disablePushNotifications(
-  audiusBackendInstance: AudiusBackend
-) {
-  // Disabling push notifications should delete the device token
-  const message = new DisablePushNotificationsMessage()
-  message.send()
-  const { token } = await message.receive()
-  if (token) {
-    await audiusBackendInstance.deregisterDeviceToken(token)
-  }
-}
-
 function* watchUpdatePushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     actions.TOGGLE_PUSH_NOTIFICATION_SETTING,
-    function* (action: actions.TogglePushNotificationSetting) {
+    async function* (action: actions.TogglePushNotificationSetting) {
       let isOn = action.isOn
 
       try {
         if (action.notificationType === PushNotificationSetting.MobilePush) {
           if (isOn) {
+            const { token, os } = yield* call([PushNotifications, 'getToken'])
             // Enabling push notifications should enable all of the notification types
-            const message = new EnablePushNotificationsMessage()
-            message.send()
-            const { token, os } = yield* call(async () => message.receive())
-
             const newSettings = { ...initialState.pushNotifications }
             yield* put(actions.setPushNotificationSettings(newSettings))
 
             // We need a user for this to work (and in the case of sign up, we might not
             // have one right away when this function is called)
-            // @ts-ignore: remove this ignore when waitForValue is typed
             yield* call(waitForValue, getAccountUser)
             yield* call(
               audiusBackendInstance.updatePushNotificationSettings,
@@ -81,7 +70,7 @@ function* watchUpdatePushNotificationSettings() {
             )
             yield* call(audiusBackendInstance.registerDeviceToken, token, os)
           } else {
-            yield* call(disablePushNotifications, audiusBackendInstance)
+            yield* call(disablePushNotifications)
           }
         } else {
           if (isOn === undefined) {
@@ -107,5 +96,9 @@ function* watchUpdatePushNotificationSettings() {
 }
 
 export default function sagas() {
-  return [watchGetPushNotificationSettings, watchUpdatePushNotificationSettings]
+  return [
+    ...commonSettingsSagas(),
+    watchGetPushNotificationSettings,
+    watchUpdatePushNotificationSettings
+  ]
 }
