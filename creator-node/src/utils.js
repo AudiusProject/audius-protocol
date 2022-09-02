@@ -123,14 +123,13 @@ async function findCIDInNetwork(
   numRetries = 5
 ) {
   if (!config.get('findCIDInNetworkEnabled')) return
-  let found = false
 
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
-  if (attemptedStateFix) return
+  if (attemptedStateFix) return false
 
   // get list of creator nodes
   const creatorNodes = await getAllRegisteredCNodes(libs)
-  if (!creatorNodes.length) return
+  if (!creatorNodes.length) return false
 
   // Remove excluded nodes from list of creator nodes, no-op if empty list or nothing passed in
   const creatorNodesFiltered = creatorNodes.filter(
@@ -143,8 +142,8 @@ async function findCIDInNetwork(
     { filePath, delegateWallet },
     config.get('delegatePrivateKey')
   )
-  let node
 
+  let found = false
   for (const { endpoint } of creatorNodesFiltered) {
     try {
       const streamData = await asyncRetry({
@@ -226,7 +225,6 @@ async function findCIDInNetwork(
       logger.error(
         `findCIDInNetwork fetch error from ${endpoint} - ${e.toString()}`
       )
-      continue
     }
   }
 
