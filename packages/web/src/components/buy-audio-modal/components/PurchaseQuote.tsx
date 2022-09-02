@@ -47,9 +47,6 @@ export const PurchaseQuote = () => {
         {purchaseInfo?.isError ? (
           <div className={styles.error}>
             <span>{errorMessage}</span>
-            {purchaseInfoStatus === Status.LOADING ? (
-              <LoadingSpinner className={styles.spinner} />
-            ) : null}
           </div>
         ) : (
           <>
@@ -67,9 +64,6 @@ export const PurchaseQuote = () => {
               }
             )}
             <span className={styles.tokenLabel}>{messages.audio}</span>
-            {purchaseInfoStatus === Status.LOADING ? (
-              <LoadingSpinner className={styles.spinner} />
-            ) : null}
           </>
         )}
       </div>
@@ -77,20 +71,23 @@ export const PurchaseQuote = () => {
         <div className={styles.row}>
           <IconUSD />
           <span className={styles.tokenLabel}>{messages.usd}</span>
-          {purchaseInfoStatus === Status.LOADING ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : null}
         </div>
         <div className={styles.dollarEstimate}>
-          <span className={styles.tokenLabel}>$</span>
-          {formatNumberString(
-            !purchaseInfo?.isError
-              ? purchaseInfo?.estimatedUSD.uiAmountString ?? '0'
-              : '0',
-            {
-              minDecimals: 2,
-              maxDecimals: 2
-            }
+          {purchaseInfoStatus === Status.LOADING ? (
+            <LoadingSpinner className={styles.spinner} />
+          ) : (
+            <>
+              <span className={styles.tokenLabel}>$</span>
+              {formatNumberString(
+                !purchaseInfo?.isError
+                  ? purchaseInfo?.estimatedUSD.uiAmountString ?? '0'
+                  : '0',
+                {
+                  minDecimals: 2,
+                  maxDecimals: 2
+                }
+              )}
+            </>
           )}
         </div>
       </div>

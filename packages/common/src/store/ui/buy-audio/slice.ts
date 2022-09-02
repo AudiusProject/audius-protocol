@@ -83,6 +83,9 @@ const slice = createSlice({
       }
       state.purchaseInfoStatus = Status.ERROR
     },
+    precalculateSwapFees: () => {
+      // Triggers a saga to calculate and cache swap fees
+    },
     cacheAssociatedTokenAccount: (
       state,
       {
@@ -110,7 +113,9 @@ const slice = createSlice({
       state.stage = BuyAudioStage.PURCHASING
     },
     onRampCanceled: (state) => {
-      state.error = true
+      if (state.stage === BuyAudioStage.PURCHASING) {
+        state.error = true
+      }
     },
     onRampSucceeded: (state) => {
       state.stage = BuyAudioStage.CONFIRMING_PURCHASE
@@ -147,7 +152,8 @@ export const {
   swapStarted,
   swapCompleted,
   transferStarted,
-  transferCompleted
+  transferCompleted,
+  precalculateSwapFees
 } = slice.actions
 
 export default slice.reducer
