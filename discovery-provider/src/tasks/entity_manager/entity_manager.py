@@ -14,9 +14,6 @@ from src.models.social.save import Save
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.premium_content.premium_content_access_checker import (
-    premium_content_access_checker,
-)
 from src.tasks.entity_manager.playlist import (
     create_playlist,
     delete_playlist,
@@ -26,8 +23,10 @@ from src.tasks.entity_manager.social_features import (
     action_to_record_type,
     create_social_action_types,
     create_social_record,
+    create_social_record_if_access,
     delete_social_action_types,
     delete_social_record,
+    delete_social_record_if_access,
     premium_content_validation_actions,
     premium_content_validation_entities,
 )
@@ -379,57 +378,3 @@ def should_check_entity_access(action: Action, entity_type: EntityType):
         action in premium_content_validation_actions
         and entity_type in premium_content_validation_entities
     )
-
-
-def create_social_record_if_access(
-    existing_records: ExistingRecordDict, params: ManageEntityParameters
-):
-    user_id = params.user_id
-    entity_id = params.entity_id
-    entity_type = params.entity_type
-    entity = (
-        existing_records[entity_type][entity_id]
-        if entity_type in existing_records
-        and entity_id in existing_records[entity_type]
-        else None
-    )
-    if entity:
-        premium_content_access = premium_content_access_checker.check_access(
-            {
-                "user_id": user_id,
-                "premium_content_id": entity_id,
-                "premium_content_type": "track",
-                "premium_content": entity,
-            }
-        )
-        if premium_content_access["does_user_have_access"]:
-            create_social_record(params)
-    else:
-        raise Exception("entity_manager.py | entity is not in existing records")
-
-
-def delete_social_record_if_access(
-    existing_records: ExistingRecordDict, params: ManageEntityParameters
-):
-    user_id = params.user_id
-    entity_id = params.entity_id
-    entity_type = params.entity_type
-    entity = (
-        existing_records[entity_type][entity_id]
-        if entity_type in existing_records
-        and entity_id in existing_records[entity_type]
-        else None
-    )
-    if entity:
-        premium_content_access = premium_content_access_checker.check_access(
-            {
-                "user_id": user_id,
-                "premium_content_id": entity_id,
-                "premium_content_type": "track",
-                "premium_content": entity,
-            }
-        )
-        if premium_content_access["does_user_have_access"]:
-            delete_social_record(params)
-    else:
-        raise Exception("entity_manager.py | entity is not in existing records")
