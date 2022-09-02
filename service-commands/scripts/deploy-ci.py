@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import time
 from pprint import pprint
 from subprocess import PIPE, Popen
 from threading import Thread
@@ -303,6 +304,10 @@ def cli(github_user, github_token, environment, service, hosts, git_tag, paralle
         github_user=github_user,
         github_token=github_token,
     )
+
+    seconds = 1
+    print(f"Waiting {seconds} seconds for manual inspection of parallel jobs.")
+    time.sleep(seconds)
 
     print("v" * 40)
     failed_hosts = []
