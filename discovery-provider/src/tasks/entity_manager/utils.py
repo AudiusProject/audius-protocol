@@ -125,7 +125,6 @@ class ManageEntityParameters:
     ):
         key = get_record_key(user_id, entity_type, entity_id)
         self.new_records[record_type][key].append(record)  # type: ignore
-        self.existing_records[record_type][key] = record  # type: ignore
 
 
 def get_record_key(user_id, entity_type, entity_id):
