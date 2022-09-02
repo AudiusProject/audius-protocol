@@ -296,19 +296,19 @@ const CollectionPage = ({
                 onClickFavorite={onClickSave}
                 onClickTrackName={onClickTrackName}
                 onClickArtistName={onClickArtistName}
+                onClickRemove={isOwner ? onClickRemove : undefined}
                 onClickRepost={onClickRepostTrack}
+                onReorderTracks={onReorderTracks}
                 onSortTracks={onSortTracks}
-                // allowReordering={
-                //   userId !== null &&
-                //   userId === playlistOwnerId &&
-                //   allowReordering &&
-                //   !isAlbum
-                // }
-                // onReorderTracks={onReorderTracks}
-                // onClickRemove={isOwner ? onClickRemove : null}
-                // removeText={`${messages.remove} ${
-                //   isAlbum ? messages.type.album : messages.type.playlist
-                // }`}
+                isReorderable={
+                  userId !== null &&
+                  userId === playlistOwnerId &&
+                  allowReordering &&
+                  !isAlbum
+                }
+                removeText={`${messages.remove} ${
+                  isAlbum ? messages.type.album : messages.type.playlist
+                }`}
               />
             ) : (
               <TracksTable
