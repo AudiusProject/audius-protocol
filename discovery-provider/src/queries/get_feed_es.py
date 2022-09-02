@@ -18,6 +18,7 @@ def get_feed_es(args, limit=10):
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
     load_orig = feed_filter in ["original", "all"]
+    exclude_premium = args.get("exclude_premium", False)
 
     mdsl = []
 
@@ -220,10 +221,6 @@ def get_feed_es(args, limit=10):
         current_user_id, item_keys
     )
 
-    # store items which are tracks to later batch populate their
-    # premium track metadata (playlists are not yet supported)
-    track_items = []
-
     for item in sorted_feed:
         item["followee_reposts"] = follow_reposts[item["item_key"]]
         item["followee_saves"] = follow_saves[item["item_key"]]
@@ -233,20 +230,28 @@ def get_feed_es(args, limit=10):
         if "favorite_count" in item:
             item["save_count"] = item["favorite_count"]
 
-        # add to track items if item is a track
-        if "track_id" in item:
-            track_items.append(item)
+    if exclude_premium:
+        # filter out premium tracks from the feed before populating metadata
+        sorted_feed = list(
+            filter(
+                lambda item: "track_id" not in item or not item["is_premium"],
+                sorted_feed,
+            )
+        )
+    else:
+        # batch populate premium track metadata
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
+            _populate_premium_track_metadata(
+                session, track_items, current_user["user_id"]
+            )
 
     # populate metadata + remove extra fields from items
     sorted_feed = [
         populate_track_or_playlist_metadata_es(item, current_user)
         for item in sorted_feed
     ]
-
-    # populate premium track metadata
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        _populate_premium_track_metadata(session, track_items, current_user["user_id"])
 
     return sorted_feed[0:limit]
 
