@@ -155,7 +155,7 @@ def create_social_record_if_access(
                 "user_id": user_id,
                 "premium_content_id": entity_id,
                 "premium_content_type": "track",
-                "premium_content": entity,
+                "premium_content_entity": entity,
             }
         )
         if premium_content_access["does_user_have_access"]:
@@ -184,7 +184,7 @@ def delete_social_record_if_access(
                 "user_id": user_id,
                 "premium_content_id": entity_id,
                 "premium_content_type": "track",
-                "premium_content": entity,
+                "premium_content_entity": entity,
             }
         )
         if premium_content_access["does_user_have_access"]:
