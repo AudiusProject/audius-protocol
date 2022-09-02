@@ -4,6 +4,7 @@ import type {
   FetchCNodeEndpointToSpIdMapJobReturnValue
 } from './types'
 
+import { instrumentTracing, tracing } from '../../../tracer'
 const initAudiusLibs = require('../../initAudiusLibs')
 const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 
@@ -14,7 +15,7 @@ const ContentNodeInfoManager = require('../ContentNodeInfoManager')
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  * @return {Object} the updated mapping, which will be used to update the enabled reconfig modes in stateMachineManager/index.js, and any error message that occurred
  */
-module.exports = async function ({
+async function fetchCNodeEndpointToSpIdMap({
   logger
 }: DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>): Promise<
   DecoratedJobReturnValue<FetchCNodeEndpointToSpIdMapJobReturnValue>
@@ -32,6 +33,7 @@ module.exports = async function ({
       audiusLibs.ethContracts
     )
   } catch (e: any) {
+    tracing.recordException(e)
     errorMsg = e.message || e.toString()
     logger.error(`updateEndpointToSpIdMap Error: ${errorMsg}`)
   }
@@ -39,4 +41,27 @@ module.exports = async function ({
     cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
     errorMsg
   }
+}
+
+module.exports = async (
+  params: DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'fetchCNodeEndpointToSpIdMap.jobProcessor',
+    fn: fetchCNodeEndpointToSpIdMap,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+  return await jobProcessor(params)
 }
