@@ -14,8 +14,8 @@ action_to_record_type = {
     Action.UNREPOST: EntityType.REPOST,
 }
 
-create_actions = {Action.FOLLOW, Action.SAVE, Action.REPOST}
-delete_actions = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
+create_social_action_types = {Action.FOLLOW, Action.SAVE, Action.REPOST}
+delete_social_action_types = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
 
 
 def create_social_record(params: ManageEntityParameters):
