@@ -9,7 +9,7 @@ import click
 import requests
 
 logging.basicConfig(
-    format="%(levelname)-8s [%(asctime)s] %(message)s", level=logging.ERROR
+    format="%(levelname)-8s [%(asctime)s] %(message)s", level=logging.INFO
 )
 logger = logging.getLogger("cli")
 
@@ -40,29 +40,32 @@ FORCE_INSTRUCTIONS = "INSTRUCTIONS GO HERE."
 
 
 # like run_cmd with msg formatting tweaks
-def ssh(host, cmd, exit_on_error=True):
+def ssh(host, cmd, exit_on_error=True, show_output=False):
     return run_cmd(
         f"ssh {host} -- {cmd}",
         msg=f">> {host}: {cmd}",
         exit_on_error=exit_on_error,
+        show_output=show_output,
     )
 
 
 # execute shell command and capture the output
-def run_cmd(cmd, exit_on_error=True, msg=None):
-    logger.info(msg if msg else f"< {cmd}")
+def run_cmd(cmd, exit_on_error=True, msg=None, show_output=False):
+    log = logger.debug
+    if show_output:
+        log = logger.info
+    log(msg if msg else f"< {cmd}")
     sp = Popen(cmd.split(" "), stdout=PIPE, stderr=PIPE)
     stdout, stderr = sp.communicate()
     stdout = stdout.strip().decode()
     stderr = stderr.strip().decode()
 
     if stdout:
-        logger.info(stdout)
+        log(stdout)
     if stderr:
-        logger.info(stdout)
-        logger.error(stderr)
+        logger.warning(stderr)
         if "Could not get object for" in stderr:
-            logger.info(
+            log(
                 "FIX: Run `git fetch` within your local audius-protocol repo, or the branch was deleted."
             )
         if exit_on_error:
@@ -77,7 +80,7 @@ def standardize_branch(branches):
     for branch in branches:
         if "remotes/origin/master" in branch or "remotes/origin/HEAD" in branch:
             return "master"
-        if "tags/@audius" in branch:
+        if "tags/@audius" in branch or "remotes/origin/release" in branch:
             return "release"
     return branch
 
@@ -138,13 +141,19 @@ def get_release_tag(release_tags, host, github_user, github_token):
             }
         )
     if branch == "missing":
-        r = requests.get(
-            f"https://api.github.com/repos/AudiusProject/audius-protocol/git/commits/{tag}",
-            headers={
-                "Accept": "application/vnd.github+json",
-            },
-            auth=(github_user, github_token),
-        )
+        while True:
+            try:
+                r = requests.get(
+                    f"https://api.github.com/repos/AudiusProject/audius-protocol/git/commits/{tag}",
+                    headers={
+                        "Accept": "application/vnd.github+json",
+                    },
+                    auth=(github_user, github_token),
+                    timeout=5
+                )
+            except:
+                continue
+            break
         r = r.json()
         release_tags.update(
             {
@@ -171,11 +180,17 @@ def generate_release_tags(deploy_list, parallel_mode, github_user, github_token)
     for thread in threads:
         thread.start()
         if not parallel_mode:
-            thread.join(timeout=10)
+            thread.join(timeout=15)
+            if thread.is_alive():
+                print("Timeout seen with Github API.")
+                exit(1)
 
     # required for parallel_mode, no-op for non-parallel mode
     for thread in threads:
-        thread.join(timeout=10)
+        thread.join(timeout=15)
+        if thread.is_alive():
+            print("Timeout seen with Github API.")
+            exit(1)
 
     return release_tags
 
@@ -200,8 +215,9 @@ def display_release_tags(
     release_tags[key] = generate_release_tags(
         deploy_list, parallel_mode, github_user, github_token
     )
+    print("=" * 40)
     logger.info(logging_messages[0])
-    pprint(release_tags, sort_dicts=False)
+    pprint(release_tags, sort_dicts=True)
 
     if not affected_hosts and not skipped_hosts:
         affected_hosts = []
@@ -212,16 +228,20 @@ def display_release_tags(
             else:
                 skipped_hosts[host] = metadata
 
-    logging.info(logging_messages[1])
-    pprint(affected_hosts)
+    print("=" * 40)
+    logger.info(logging_messages[1])
+    pprint(affected_hosts, sort_dicts=True)
 
+    print("=" * 40)
     logging.error(logging_messages[2])
-    pprint(skipped_hosts)
-    logging.info(FORCE_INSTRUCTIONS)
+    pprint(skipped_hosts, sort_dicts=True)
+    logger.info(FORCE_INSTRUCTIONS)
 
     if failed_hosts:
+        print("=" * 40)
+        logging.error("Failed:")
         logging.error("See logs for the following failed hosts:")
-        pprint(failed_hosts)
+        pprint(failed_hosts, sort_dicts=True)
 
     return affected_hosts, skipped_hosts
 
@@ -261,7 +281,7 @@ def cli(github_user, github_token, environment, service, hosts, git_tag, paralle
     failed_hosts = []
     for host in affected_hosts:
         try:
-            ssh(host, "hostname", exit_on_error=False)
+            ssh(host, "hostname", exit_on_error=False, show_output=True)
             if service == "identity" and not git_tag:
                 logger.error("A --git-tag is required when deploying identity")
                 raise
