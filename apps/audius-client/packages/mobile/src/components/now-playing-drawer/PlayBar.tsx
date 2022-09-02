@@ -7,11 +7,11 @@ import {
   tracksSocialActions
 } from '@audius/common'
 import { TouchableOpacity, Animated, View, Dimensions } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { DynamicImage } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { makeStyles } from 'app/styles'
 
@@ -104,17 +104,17 @@ export const PlayBar = ({
   translationAnim
 }: PlayBarProps) => {
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const onPressFavoriteButton = useCallback(() => {
     if (track) {
       if (track.has_current_user_saved) {
-        dispatchWeb(unsaveTrack(track.track_id, FavoriteSource.PLAYBAR))
+        dispatch(unsaveTrack(track.track_id, FavoriteSource.PLAYBAR))
       } else {
-        dispatchWeb(saveTrack(track.track_id, FavoriteSource.PLAYBAR))
+        dispatch(saveTrack(track.track_id, FavoriteSource.PLAYBAR))
       }
     }
-  }, [dispatchWeb, track])
+  }, [dispatch, track])
 
   const renderFavoriteButton = () => {
     return (

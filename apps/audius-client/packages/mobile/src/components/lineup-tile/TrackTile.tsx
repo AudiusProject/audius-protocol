@@ -22,7 +22,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 
@@ -67,7 +66,6 @@ const TrackTileComponent = ({
   ...lineupTileProps
 }: TrackTileProps) => {
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const currentUserId = useSelector(getUserId)
   const playingUid = useSelector(getUid)
@@ -175,22 +173,22 @@ const TrackTileComponent = ({
       return
     }
     if (has_current_user_saved) {
-      dispatchWeb(unsaveTrack(track_id, FavoriteSource.TILE))
+      dispatch(unsaveTrack(track_id, FavoriteSource.TILE))
     } else {
-      dispatchWeb(saveTrack(track_id, FavoriteSource.TILE))
+      dispatch(saveTrack(track_id, FavoriteSource.TILE))
     }
-  }, [track_id, dispatchWeb, has_current_user_saved])
+  }, [track_id, dispatch, has_current_user_saved])
 
   const handlePressRepost = useCallback(() => {
     if (track_id === undefined) {
       return
     }
     if (has_current_user_reposted) {
-      dispatchWeb(undoRepostTrack(track_id, RepostSource.TILE))
+      dispatch(undoRepostTrack(track_id, RepostSource.TILE))
     } else {
-      dispatchWeb(repostTrack(track_id, RepostSource.TILE))
+      dispatch(repostTrack(track_id, RepostSource.TILE))
     }
-  }, [track_id, dispatchWeb, has_current_user_reposted])
+  }, [track_id, dispatch, has_current_user_reposted])
 
   const hideShare = field_visibility?.share === false
   const hidePlays = field_visibility?.play_count === false

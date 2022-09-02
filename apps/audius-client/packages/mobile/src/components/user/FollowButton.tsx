@@ -3,12 +3,12 @@ import { useCallback } from 'react'
 import type { FollowSource, User } from '@audius/common'
 import { usersSocialActions } from '@audius/common'
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
 import type { ButtonProps } from 'app/components/core'
 import { Button } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
@@ -27,7 +27,7 @@ export const FollowButton = (props: FollowButtonsProps) => {
   const { profile, noIcon, style, onPress, followSource, ...other } = props
   const { does_current_user_follow, user_id } = profile
   const isFollowing = does_current_user_follow
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const Icon = isFollowing ? IconFollowing : IconFollow
 
@@ -37,12 +37,12 @@ export const FollowButton = (props: FollowButtonsProps) => {
     (event: GestureResponderEvent) => {
       onPress?.(event)
       if (does_current_user_follow) {
-        dispatchWeb(unfollowUser(user_id, followSource))
+        dispatch(unfollowUser(user_id, followSource))
       } else {
-        dispatchWeb(followUser(user_id, followSource))
+        dispatch(followUser(user_id, followSource))
       }
     },
-    [onPress, dispatchWeb, does_current_user_follow, user_id, followSource]
+    [onPress, dispatch, does_current_user_follow, user_id, followSource]
   )
 
   return (

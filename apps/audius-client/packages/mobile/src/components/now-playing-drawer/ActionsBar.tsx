@@ -84,22 +84,22 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const onToggleFavorite = useCallback(() => {
     if (track) {
       if (track.has_current_user_saved) {
-        dispatchWeb(unsaveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
+        dispatch(unsaveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
       } else {
-        dispatchWeb(saveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
+        dispatch(saveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
       }
     }
-  }, [dispatchWeb, track])
+  }, [dispatch, track])
 
   const onToggleRepost = useCallback(() => {
     if (track) {
       if (track.has_current_user_reposted) {
-        dispatchWeb(undoRepostTrack(track.track_id, RepostSource.NOW_PLAYING))
+        dispatch(undoRepostTrack(track.track_id, RepostSource.NOW_PLAYING))
       } else {
-        dispatchWeb(repostTrack(track.track_id, RepostSource.NOW_PLAYING))
+        dispatch(repostTrack(track.track_id, RepostSource.NOW_PLAYING))
       }
     }
-  }, [dispatchWeb, track])
+  }, [dispatch, track])
 
   const onPressShare = useCallback(() => {
     if (track) {
