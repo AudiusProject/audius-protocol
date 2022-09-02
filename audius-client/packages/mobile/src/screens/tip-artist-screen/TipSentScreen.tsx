@@ -6,12 +6,12 @@ import {
   tippingSelectors
 } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
+import { useSelector } from 'react-redux'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import { TextButton } from 'app/components/core'
 import { TwitterButton } from 'app/components/twitter-button'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -43,12 +43,12 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const TipSentScreen = () => {
-  const account = useSelectorWeb(getAccountUser)
+  const account = useSelector(getAccountUser)
   const {
     user: recipient,
     amount: sendAmount,
     source
-  } = useSelectorWeb(getSendTipData)
+  } = useSelector(getSendTipData)
   const styles = useStyles()
   const navigation = useNavigation()
 

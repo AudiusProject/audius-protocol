@@ -2,8 +2,7 @@ import { useEffect } from 'react'
 
 import { tippingActions } from '@audius/common'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useDispatch } from 'react-redux'
 
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 
@@ -18,13 +17,13 @@ const screenOptionOverrides = { headerRight: () => null }
 
 export const TipArtistModal = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     return () => {
-      dispatchWeb(resetSend())
+      dispatch(resetSend())
     }
-  }, [dispatchWeb])
+  }, [dispatch])
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
