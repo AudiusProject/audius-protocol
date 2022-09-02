@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
 import {
   Name,
@@ -12,15 +12,21 @@ import { IconButton, PillButton } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 import useMeasure from 'react-use-measure'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
+import {
+  dismissRecentTip,
+  getRecentTipsStorage
+} from 'common/store/tipping/storageUtils'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { localStorage } from 'services/local-storage'
 import {
   setUsers,
   setVisibility
@@ -29,10 +35,6 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
-import {
-  dismissRecentTip,
-  getRecentTipsStorage
-} from 'store/tipping/storageUtils'
 import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
 
@@ -160,8 +162,8 @@ const DismissTipButton = () => {
   const account = useSelector(getAccountUser)
   const tipToDisplay = useSelector(getTipToDisplay)
 
-  const handleClick = useCallback(() => {
-    dismissRecentTip()
+  const handleClick = useCallback(async () => {
+    await dismissRecentTip(localStorage)
     dispatch(hideTip())
     if (account && tipToDisplay) {
       record(
@@ -211,8 +213,8 @@ export const FeedTipTile = () => {
   const maxTipButtonWidth = useRef(0)
   const useShortButtonFormat = useRef(false)
 
-  useEffect(() => {
-    const storage = getRecentTipsStorage()
+  useAsync(async () => {
+    const storage = await getRecentTipsStorage(localStorage)
     dispatch(fetchRecentTips({ storage }))
   }, [dispatch])
 

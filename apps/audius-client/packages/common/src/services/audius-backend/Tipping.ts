@@ -1,25 +1,29 @@
-import { UserTip, SupporterResponse, SupportingResponse } from '@audius/common'
+import {
+  SupporterResponse,
+  SupportingResponse
+} from 'services/audius-api-client'
 
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
+import { UserTip } from '../../models'
+
+import { AudiusBackend } from './AudiusBackend'
 
 export const TIPPING_SUPPORT_DEFAULT_LIMIT = 25
-
-// @ts-ignore
-const libs = () => window.audiusLibs
 
 export type SupportRequest = {
   encodedUserId: string
   limit?: number
   offset?: number
+  audiusBackendInstance: AudiusBackend
 }
 export const fetchSupporting = async ({
   encodedUserId,
   limit = TIPPING_SUPPORT_DEFAULT_LIMIT,
-  offset = 0
+  offset = 0,
+  audiusBackendInstance
 }: SupportRequest): Promise<SupportingResponse[]> => {
   try {
-    await waitForLibsInit()
-    const response = await libs().discoveryProvider._makeRequest({
+    const audiusLibs = await audiusBackendInstance.getAudiusLibs()
+    const response = await audiusLibs.discoveryProvider._makeRequest({
       endpoint: `/v1/full/users/${encodedUserId}/supporting`,
       queryParams: { limit, offset }
     })
@@ -37,11 +41,12 @@ export const fetchSupporting = async ({
 export const fetchSupporters = async ({
   encodedUserId,
   limit = TIPPING_SUPPORT_DEFAULT_LIMIT,
-  offset = 0
+  offset = 0,
+  audiusBackendInstance
 }: SupportRequest): Promise<SupporterResponse[]> => {
   try {
-    await waitForLibsInit()
-    const response = await libs().discoveryProvider._makeRequest({
+    const audiusLibs = await audiusBackendInstance.getAudiusLibs()
+    const response = await audiusLibs.discoveryProvider._makeRequest({
       endpoint: `/v1/full/users/${encodedUserId}/supporters`,
       queryParams: { limit, offset }
     })
@@ -67,6 +72,7 @@ export type UserTipRequest = {
   minSlot?: number
   maxSlot?: number
   txSignatures?: string[]
+  audiusBackendInstance: AudiusBackend
 }
 type UserTipOmitIds = 'sender_id' | 'receiver_id' | 'followee_supporter_ids'
 type UserTipResponse = Omit<UserTip, UserTipOmitIds> & {
@@ -85,9 +91,9 @@ export const fetchRecentUserTips = async ({
   uniqueBy,
   minSlot,
   maxSlot,
-  txSignatures
+  txSignatures,
+  audiusBackendInstance
 }: UserTipRequest): Promise<UserTipResponse[]> => {
-  await waitForLibsInit()
   const queryParams = {
     user_id: userId,
     limit,
@@ -101,7 +107,8 @@ export const fetchRecentUserTips = async ({
     tx_signatures: txSignatures
   }
   try {
-    const response = await libs().discoveryProvider._makeRequest({
+    const audiusLibs = await audiusBackendInstance.getAudiusLibs()
+    const response = await audiusLibs.discoveryProvider._makeRequest({
       endpoint: `/v1/full/tips`,
       queryParams
     })
