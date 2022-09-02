@@ -971,7 +971,8 @@ jobs:
           instance-name: test-vpn
           interactive-command: |
             hostname
-            eval `ssh-agent` && ssh-add ~/.ssh/id_rsa*
+            eval `ssh-agent`
+            ssh-add ~/.ssh/id_rsa*
             ssh -A -T git@github.com
             ssh -A ubuntu@18.220.56.46 "hostname"
           command: |
@@ -979,7 +980,8 @@ jobs:
             git pull
             git checkout $CIRCLE_BRANCH
             hostname
-            eval `ssh-agent` && ssh-add ~/.ssh/id_rsa*
+            eval `ssh-agent`
+            ssh-add ~/.ssh/id_rsa*
             ssh -A -T git@github.com
             ssh -A ubuntu@18.220.56.46 "hostname"
 
