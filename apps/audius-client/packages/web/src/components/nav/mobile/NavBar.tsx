@@ -11,7 +11,6 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import { History } from 'history'
-import { useHistory } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
 
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
@@ -26,14 +25,10 @@ import NavContext, {
 } from 'components/nav/store/context'
 import SearchBar from 'components/search-bar/SearchBar'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { OpenNotificationsMessage } from 'services/native-mobile-interface/notifications'
 import { getIsIOS } from 'utils/browser'
-import { onNativeBack } from 'utils/nativeRoute'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './NavBar.module.css'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 interface NavBarProps {
   isLoading: boolean
@@ -96,14 +91,6 @@ const NavBar = ({
     setSearchValue('')
   }
 
-  const onClickNotifications = useCallback(() => {
-    if (NATIVE_MOBILE) {
-      new OpenNotificationsMessage().send()
-    } else {
-      goToNotificationPage()
-    }
-  }, [goToNotificationPage])
-
   const logoTransitions = useTransition(!isSearching, null, {
     from: {
       opacity: 0,
@@ -123,27 +110,16 @@ const NavBar = ({
   })
 
   const { setSlideDirection } = useContext(RouterContext)
-  const { location } = useHistory()
-
-  const onGoBack = useCallback(() => {
-    // @ts-ignore
-    if (location.state?.fromNativeNotifications) {
-      // @ts-ignore
-      onNativeBack(location.state?.fromPage)
-    } else {
-      goBack()
-    }
-  }, [goBack, location])
 
   const goBackAndResetSlide = useCallback(() => {
-    onGoBack()
+    goBack()
     setSlideDirection(SlideDirection.FROM_LEFT)
-  }, [onGoBack, setSlideDirection])
+  }, [goBack, setSlideDirection])
 
   const goBackAndDoNotAnimate = useCallback(() => {
     setStackReset(true)
-    setImmediate(onGoBack)
-  }, [setStackReset, onGoBack])
+    setImmediate(goBack)
+  }, [setStackReset, goBack])
 
   let left = null
   if (leftElement === LeftPreset.BACK) {
@@ -152,7 +128,7 @@ const NavBar = ({
         aria-label='go back'
         className={cn(styles.leftIconButton, styles.caretRight)}
         icon={<IconCaretRight />}
-        onClick={onGoBack}
+        onClick={goBack}
       />
     )
   } else if (leftElement === LeftPreset.CLOSE) {
@@ -188,7 +164,7 @@ const NavBar = ({
             [styles.hasUnread]: notificationCount > 0
           })}
           icon={<IconNotification />}
-          onClick={onClickNotifications}
+          onClick={goToNotificationPage}
         />
         {notificationCount > 0 && (
           <div className={styles.iconTag}>{formatCount(notificationCount)}</div>

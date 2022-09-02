@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import type { TipSendNotification } from '@audius/common'
 import { useUIAudio, notificationsSelectors } from '@audius/common'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconTip from 'app/assets/images/iconTip.svg'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -41,10 +41,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { amount } = notification
   const uiAmount = useUIAudio(amount)
 
-  const user = useSelectorWeb(
-    (state) => getNotificationUser(state, notification),
-    isEqual
-  )
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
   const handlePress = useGoToProfile(user)
 

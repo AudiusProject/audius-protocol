@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 
 import type { SupporterRankUpNotification } from '@audius/common'
 import { notificationsSelectors } from '@audius/common'
+import { useSelector } from 'react-redux'
 
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -31,10 +31,7 @@ export const TopSupporterNotification = (
   const { notification } = props
   const { rank } = notification
 
-  const user = useSelectorWeb(
-    (state) => getNotificationUser(state, notification),
-    isEqual
-  )
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
   const handlePress = useGoToProfile(user)
 

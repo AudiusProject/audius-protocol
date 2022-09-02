@@ -3,9 +3,9 @@ import { memo, useEffect } from 'react'
 import { notificationsActions } from '@audius/common'
 import { useDrawerStatus } from '@react-navigation/drawer'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { makeStyles } from 'app/styles'
 
 import { NotificationList } from './NotificationList'
@@ -25,15 +25,15 @@ const useStyles = makeStyles(({ palette }) => ({
  */
 export const NotificationsScreen = memo(() => {
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const isDrawerOpen = useDrawerStatus() === 'open'
   const wasDrawerOpen = usePrevious(isDrawerOpen)
 
   useEffect(() => {
     if (wasDrawerOpen && !isDrawerOpen) {
-      dispatchWeb(markAllAsViewed())
+      dispatch(markAllAsViewed())
     }
-  }, [isDrawerOpen, wasDrawerOpen, dispatchWeb])
+  }, [isDrawerOpen, wasDrawerOpen, dispatch])
 
   return (
     <View style={styles.root}>
