@@ -4,11 +4,11 @@ import {
   topSupportersUserListSelectors
 } from '@audius/common'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { Text } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -40,8 +40,8 @@ type SupporterInfoProps = {
 export const SupporterInfo = (props: SupporterInfoProps) => {
   const styles = useStyles()
   const { secondary, neutralLight4 } = useThemeColors()
-  const supportersMap = useSelectorWeb(getOptimisticSupporters)
-  const supportersId = useSelectorWeb(getSupportersId)
+  const supportersMap = useSelector(getOptimisticSupporters)
+  const supportersId = useSelector(getSupportersId)
   const supportersForUser = supportersId
     ? supportersMap[supportersId] ?? null
     : null
