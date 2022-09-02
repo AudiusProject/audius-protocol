@@ -7,14 +7,13 @@ import {
   useRemoteMediaClient,
   useStreamPosition
 } from 'react-native-google-cast'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 const { setIsCasting } = castActions
 const { getCurrentTrack, getPlaying, getSeek } = playerSelectors
 
 export const useChromecast = () => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   // Data hooks
   const track = useSelector(getCurrentTrack)
@@ -63,13 +62,13 @@ export const useChromecast = () => {
   useEffect(() => {
     switch (castState) {
       case CastState.CONNECTED:
-        dispatchWeb(setIsCasting({ isCasting: true }))
+        dispatch(setIsCasting({ isCasting: true }))
         break
       default:
-        dispatchWeb(setIsCasting({ isCasting: false }))
+        dispatch(setIsCasting({ isCasting: false }))
         break
     }
-  }, [castState, dispatchWeb])
+  }, [castState, dispatch])
 
   // Load media when the cast connects
   useEffect(() => {

@@ -1,16 +1,16 @@
 import React from 'react'
 
-import type { Track } from '@audius/common'
+import type { CommonState, Track } from '@audius/common'
 import { SquareSizes, averageColorSelectors } from '@audius/common'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { Shadow } from 'react-native-shadow-2'
+import { useSelector } from 'react-redux'
 
 import { DynamicImage } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import type { ThemeColors } from 'app/utils/theme'
-const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
+const { getDominantColorsByTrack } = averageColorSelectors
 
 const dimensions = Dimensions.get('window')
 const spacing = 24
@@ -50,7 +50,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
     size: SquareSizes.SIZE_1000_BY_1000
   })
 
-  const dominantColors = useSelectorWeb((state) =>
+  const dominantColors = useSelector((state: CommonState) =>
     getDominantColorsByTrack(state, {
       track
     })

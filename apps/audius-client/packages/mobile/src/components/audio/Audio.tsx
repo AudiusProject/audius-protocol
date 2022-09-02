@@ -1,4 +1,3 @@
-import type { RefObject } from 'react'
 import { useState, useRef, useEffect, useCallback } from 'react'
 
 import type { CommonState } from '@audius/common'
@@ -22,7 +21,6 @@ import { connect, useSelector } from 'react-redux'
 import type { Dispatch } from 'redux'
 
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
-import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 
 import { gateways as imageGateways } from '../image/utils'
 
@@ -68,16 +66,10 @@ const styles = StyleSheet.create({
   }
 })
 
-type OwnProps = {
-  webRef: RefObject<MessagePostingWebView>
-}
-
-type AudioProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
+type AudioProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const Audio = ({
-  webRef,
   track,
   index,
   queueLength,
@@ -185,7 +177,7 @@ const Audio = ({
     MusicControl.on(Command.pause, () => {
       pause()
     })
-  }, [webRef, videoRef, seek, next, previous, play, pause])
+  }, [videoRef, seek, next, previous, play, pause])
 
   // Playing handler
   useEffect(() => {
@@ -226,7 +218,7 @@ const Audio = ({
         MusicControl.handleAudioInterruptions(false)
       }
     }
-  }, [webRef, track, index, duration, trackOwner])
+  }, [track, index, duration, trackOwner])
 
   // Next and Previous handler
   useEffect(() => {
@@ -285,7 +277,7 @@ const Audio = ({
         elapsedTime: elapsedTime.current
       })
     }
-  }, [seek, webRef, progressInvalidator, elapsedTime, isCasting])
+  }, [seek, progressInvalidator, elapsedTime, isCasting])
 
   useEffect(() => {
     setListenLoggedForTrack(false)
@@ -310,12 +302,12 @@ const Audio = ({
 
   const onNext = useCallback(() => {
     const isSingleRepeating = repeatMode === RepeatMode.SINGLE
-    if (webRef.current && isSingleRepeating) {
+    if (isSingleRepeating) {
       global.progress.currentTime = 0
     }
 
     next()
-  }, [next, repeatMode, webRef])
+  }, [next, repeatMode])
 
   const onProgress = useCallback(
     (progress: OnProgressData) => {

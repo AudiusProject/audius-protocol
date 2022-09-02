@@ -2,7 +2,6 @@ import type { MessageType } from 'app/message'
 
 import type { OAuthActions } from './actions'
 import {
-  OPEN_POPUP,
   NATIVE_OPEN_POPUP,
   CLOSE_POPUP,
   SET_TWITTER_INFO,
@@ -65,15 +64,6 @@ const reducer = (
   action: OAuthActions
 ): OAuthState => {
   switch (action.type) {
-    case OPEN_POPUP:
-      return {
-        ...state,
-        isOpen: true,
-        messageId: action.message.id,
-        messageType: action.message.type as MessageType,
-        url: action.message.authURL,
-        provider: action.provider
-      }
     case NATIVE_OPEN_POPUP:
       return {
         ...state,

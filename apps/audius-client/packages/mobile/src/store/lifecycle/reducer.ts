@@ -2,20 +2,13 @@ import type { User } from '@audius/common'
 
 import type { LifecycleActions } from './actions'
 import {
-  BACKEND_LOADED,
-  BACKEND_TEAR_DOWN,
-  ON_FIRST_PAGE,
-  NOT_ON_FIRST_PAGE,
   SIGNED_IN,
   SIGNED_OUT,
-  CHANGED_PAGE,
   ON_SIGN_UP,
   FETCH_ACCOUNT_FAILED
 } from './actions'
 
 export type LifecycleState = {
-  dappLoaded: boolean
-  onFirstPage: boolean
   signedIn: boolean | null
   account: User | null
   location: any
@@ -23,8 +16,6 @@ export type LifecycleState = {
 }
 
 const initialState = {
-  dappLoaded: false,
-  onFirstPage: true,
   signedIn: null,
   account: null,
   location: null,
@@ -36,31 +27,6 @@ const reducer = (
   action: LifecycleActions
 ) => {
   switch (action.type) {
-    case BACKEND_LOADED:
-      return {
-        ...state,
-        dappLoaded: true
-      }
-    case BACKEND_TEAR_DOWN:
-      return {
-        ...state,
-        dappLoaded: false
-      }
-    case ON_FIRST_PAGE:
-      return {
-        ...state,
-        onFirstPage: true
-      }
-    case NOT_ON_FIRST_PAGE:
-      return {
-        ...state,
-        onFirstPage: false
-      }
-    case CHANGED_PAGE:
-      return {
-        ...state,
-        location: action.location
-      }
     case SIGNED_IN:
       return {
         ...state,
@@ -72,7 +38,6 @@ const reducer = (
         ...state,
         signedIn: false,
         onSignUp: false,
-        dappLoaded: false,
         account: action.account
       }
     case ON_SIGN_UP:

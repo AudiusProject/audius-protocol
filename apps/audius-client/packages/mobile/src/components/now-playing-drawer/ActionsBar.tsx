@@ -16,15 +16,13 @@ import {
 } from '@audius/common'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { IconButton } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -68,18 +66,17 @@ type ActionsBarProps = {
 
 export const ActionsBar = ({ track }: ActionsBarProps) => {
   const styles = useStyles()
-  const currentUserId = useSelectorWeb(getUserId)
-  const castMethod = useSelectorWeb(getCastMethod)
-  const isCasting = useSelectorWeb(getIsCasting)
+  const currentUserId = useSelector(getUserId)
+  const castMethod = useSelector(getCastMethod)
+  const isCasting = useSelector(getIsCasting)
   const { neutral, primary } = useThemeColors()
-  const dispatchWeb = useDispatchWeb()
   const dispatch = useDispatch()
 
   useLayoutEffect(() => {
     if (Platform.OS === 'android' && castMethod === 'airplay') {
-      dispatchWeb(updateMethod({ method: 'chromecast' }))
+      dispatch(updateMethod({ method: 'chromecast' }))
     }
-  }, [castMethod, dispatchWeb])
+  }, [castMethod, dispatch])
 
   const onToggleFavorite = useCallback(() => {
     if (track) {

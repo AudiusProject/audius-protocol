@@ -4,8 +4,6 @@ import type {
   TwitterProfile
 } from '@audius/common'
 
-import type { Message } from 'app/message'
-
 import type { Provider } from './reducer'
 import type { Credentials } from './types'
 
@@ -20,11 +18,6 @@ export const SET_INSTAGRAM_INFO = 'OAUTH/SET_INSTAGRAM_INFO'
 export const SET_INSTAGRAM_ERROR = 'OAUTH/SET_INSTAGRAM_ERROR'
 export const RESET_OAUTH_STATE = 'OAUTH/RESET_OAUTH_STATE'
 
-type OpenPopupAction = {
-  type: typeof OPEN_POPUP
-  message: Message
-  provider: Provider
-}
 export type RequestNativeOpenPopupAction = {
   type: typeof REQUEST_NATIVE_OPEN_POPUP
   resolve: (c: Credentials | PromiseLike<Credentials>) => void
@@ -75,7 +68,6 @@ type ResetOAuthStateAction = {
 }
 
 export type OAuthActions =
-  | OpenPopupAction
   | RequestNativeOpenPopupAction
   | SetCredentialsAction
   | NativeOpenPopupAction
@@ -86,14 +78,6 @@ export type OAuthActions =
   | SetInstagramErrorAction
   | ResetOAuthStateAction
 
-export const openPopup = (
-  message: Message,
-  provider: Provider
-): OpenPopupAction => ({
-  type: OPEN_POPUP,
-  message,
-  provider
-})
 export const requestNativeOpenPopup = (
   resolve: (c: Credentials | PromiseLike<Credentials>) => void,
   reject: (e: Error) => void,
@@ -106,12 +90,14 @@ export const requestNativeOpenPopup = (
   url,
   provider
 })
+
 export const setCredentials = (
   credentials: Credentials
 ): SetCredentialsAction => ({
   type: SET_CREDENTIALS,
   credentials
 })
+
 export const nativeOpenPopup = (
   url: string,
   provider: Provider
@@ -120,6 +106,7 @@ export const nativeOpenPopup = (
   url,
   provider
 })
+
 export const closePopup = (): ClosePopupAction => ({
   type: CLOSE_POPUP
 })

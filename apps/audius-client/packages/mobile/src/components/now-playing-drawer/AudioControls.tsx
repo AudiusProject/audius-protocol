@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { queueActions, queueSelectors, RepeatMode } from '@audius/common'
 import { Animated, View, StyleSheet } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconNext from 'app/assets/images/iconNext.svg'
 import IconPodcastBack from 'app/assets/images/iconPodcastBack.svg'
@@ -10,9 +11,7 @@ import IconPrev from 'app/assets/images/iconPrev.svg'
 import { IconButton } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import type { ThemeColors } from 'app/utils/theme'
 
 import { PlayButton } from './PlayButton'
 import { RepeatButton } from './RepeatButton'
@@ -20,7 +19,7 @@ import { ShuffleButton } from './ShuffleButton'
 const { getRepeat, getShuffle } = queueSelectors
 const { shuffle, repeat } = queueActions
 
-const createStyles = (themeColors: ThemeColors) =>
+const createStyles = () =>
   StyleSheet.create({
     container: {
       marginTop: 40,
@@ -63,8 +62,8 @@ export const AudioControls = ({
 
   const styles = useThemedStyles(createStyles)
 
-  const shuffleEnabled = useSelectorWeb(getShuffle)
-  const repeatMode = useSelectorWeb(getRepeat)
+  const shuffleEnabled = useSelector(getShuffle)
+  const repeatMode = useSelector(getRepeat)
 
   const {
     scale,

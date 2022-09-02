@@ -6,12 +6,11 @@ import {
   cacheUsersActions,
   cacheUsersSelectors
 } from '@audius/common'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import type { ButtonProps } from 'app/components/core'
 import { Button, useOnOpenLink } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { make } from 'app/services/analytics'
 import { track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -55,12 +54,13 @@ export const TwitterButton = (props: TwitterButtonProps) => {
   const { url = null, style, ...other } = props
   const styles = useStyles()
   const openLink = useOnOpenLink()
-  const dispatchWeb = useDispatchWeb()
-  const user = useSelectorWeb((state) =>
+  const dispatch = useDispatch()
+
+  const user = useSelector((state) =>
     getUser(state, { handle: 'handle' in other ? other.handle : undefined })
   )
 
-  const additionalUser = useSelectorWeb((state) =>
+  const additionalUser = useSelector((state) =>
     getUser(state, {
       handle: 'additionalHandle' in other ? other.additionalHandle : undefined
     })
@@ -81,13 +81,13 @@ export const TwitterButton = (props: TwitterButtonProps) => {
       track(other.analytics)
     }
     if (other.type === 'dynamic') {
-      dispatchWeb(fetchUserSocials(other.handle))
+      dispatch(fetchUserSocials(other.handle))
       if (other.additionalHandle) {
-        dispatchWeb(fetchUserSocials(other.additionalHandle))
+        dispatch(fetchUserSocials(other.additionalHandle))
       }
       setLoading()
     }
-  }, [other, dispatchWeb, setLoading])
+  }, [other, dispatch, setLoading])
 
   if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
     const handle = twitterHandle ? `@${twitterHandle}` : userName

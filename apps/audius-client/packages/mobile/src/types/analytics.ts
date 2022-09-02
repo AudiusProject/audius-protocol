@@ -1,8 +1,6 @@
 import type { AllTrackingEvents as CommonTrackingEvents } from '@audius/common'
 import { Name as CommonEventNames } from '@audius/common'
 
-import type { Message } from 'app/message'
-
 enum MobileEventNames {
   NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification'
 }
@@ -30,8 +28,6 @@ export type Screen = {
   route: string
   properties?: JsonMap
 }
-
-export type AnalyticsMessage = Message & (Track | Screen)
 
 export {
   PlaybackSource,
