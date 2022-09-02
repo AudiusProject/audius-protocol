@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { StyleSheet, View, Text, TouchableHighlight } from 'react-native'
-import { useDispatch } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import PlaylistImage from 'app/components/image/PlaylistImage'
@@ -9,7 +8,6 @@ import TrackImage from 'app/components/image/TrackImage'
 import UserImage from 'app/components/image/UserImage'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { close as closeSearch } from 'app/store/search/actions'
 import useSearchHistory from 'app/store/search/hooks'
 import type {
   SearchPlaylist,
@@ -89,22 +87,21 @@ const UserSearchResult = ({ isLast, item: user }: UserSearchResultProps) => {
   const imageStyle = useTheme(styles.userImage, {
     backgroundColor: 'neutralLight4'
   })
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const { appendSearchItem } = useSearchHistory()
 
   const handlePress = useCallback(() => {
     appendSearchItem(user.name)
     const userRoute = getUserRoute(user)
-    dispatch(closeSearch())
     navigation.push({
       native: {
         screen: 'Profile',
         params: { handle: user.handle }
       },
+      // TODO(nkang): Delete when ready (RN-reloaded)
       web: { route: userRoute, fromPage: 'search' }
     })
-  }, [user, dispatch, navigation, appendSearchItem])
+  }, [user, navigation, appendSearchItem])
 
   return (
     <ItemContainer isLast={isLast} onPress={handlePress}>
@@ -126,22 +123,21 @@ const TrackSearchResult = ({ isLast, item: track }: TrackSearchResultProps) => {
     backgroundColor: 'neutralLight4'
   })
 
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const { appendSearchItem } = useSearchHistory()
 
   const handlePress = useCallback(() => {
     appendSearchItem(track.title)
     const trackRoute = getTrackRoute(track)
-    dispatch(closeSearch())
     navigation.push({
       native: {
         screen: 'Track',
         params: { id: track.track_id, searchTrack: track }
       },
+      // TODO(nkang): Delete when ready (RN-reloaded)
       web: { route: trackRoute, fromPage: 'search' }
     })
-  }, [track, dispatch, navigation, appendSearchItem])
+  }, [track, navigation, appendSearchItem])
 
   return (
     <ItemContainer isLast={isLast} onPress={handlePress}>
@@ -175,22 +171,21 @@ const PlaylistSearchResult = ({
     backgroundColor: 'neutralLight4'
   })
 
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const { appendSearchItem } = useSearchHistory()
 
   const handlePress = useCallback(() => {
     appendSearchItem(playlist.playlist_name)
     const collectionRoute = getCollectionRoute(playlist as any)
-    dispatch(closeSearch())
     navigation.push({
       native: {
         screen: 'Collection',
         params: { id: playlist.playlist_id, searchCollection: playlist }
       },
+      // TODO(nkang): Delete when ready (RN-reloaded)
       web: { route: collectionRoute, fromPage: 'search' }
     })
-  }, [playlist, dispatch, navigation, appendSearchItem])
+  }, [playlist, navigation, appendSearchItem])
 
   return (
     <ItemContainer isLast={isLast} onPress={handlePress}>
@@ -221,22 +216,21 @@ const AlbumSearchResult = ({ isLast, item: album }: AlbumSearchResultProps) => {
     backgroundColor: 'neutralLight4'
   })
 
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const { appendSearchItem } = useSearchHistory()
 
   const handlePress = useCallback(() => {
     appendSearchItem(album.playlist_name)
     const collectionRoute = getCollectionRoute(album as any)
-    dispatch(closeSearch())
     navigation.push({
       native: {
         screen: 'Collection',
         params: { id: album.playlist_id, searchCollection: album }
       },
+      // TODO(nkang): Delete when ready (RN-reloaded)
       web: { route: collectionRoute, fromPage: 'search' }
     })
-  }, [album, dispatch, navigation, appendSearchItem])
+  }, [album, navigation, appendSearchItem])
 
   return (
     <ItemContainer isLast={isLast} onPress={handlePress}>

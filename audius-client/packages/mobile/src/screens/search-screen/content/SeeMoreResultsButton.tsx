@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 
+import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { getSearchResultQuery } from 'app/store/search/selectors'
 import { makeStyles } from 'app/styles'
-import { getSearchRoute } from 'app/utils/routes'
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -23,17 +22,15 @@ const messages = {
 
 export const SeeMoreResultsButton = () => {
   const styles = useStyles()
-  const searchResultQuery = useSelector(getSearchResultQuery)
+  const searchResultQuery = useSelector(getSearchBarText)
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    const route = getSearchRoute(searchResultQuery)
     navigation.push({
       native: {
         screen: 'SearchResults',
         params: { query: searchResultQuery }
-      },
-      web: { route, fromPage: 'search' }
+      }
     })
   }, [navigation, searchResultQuery])
 
