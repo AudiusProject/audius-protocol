@@ -2,14 +2,13 @@ import { useCallback, useEffect } from 'react'
 
 import { tippingSelectors, tippingActions } from '@audius/common'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import { Button, TextButton } from 'app/components/core'
 import loadingSpinner from 'app/components/loading-spinner'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { ReceiverDetails } from './ReceiverDetails'
@@ -52,18 +51,18 @@ export const ConfirmSendTipScreen = ({
     user: receiver,
     status: sendStatus,
     source
-  } = useSelectorWeb(getSendTipData)
+  } = useSelector(getSendTipData)
   const navigation = useNavigation<TipArtistNavigationParamList>()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const handleConfirm = useCallback(() => {
-    dispatchWeb(confirmSendTip())
-  }, [dispatchWeb])
+    dispatch(confirmSendTip())
+  }, [dispatch])
 
   const handleGoBack = useCallback(() => {
-    dispatchWeb(beginTip({ user: receiver, source }))
+    dispatch(beginTip({ user: receiver, source }))
     navigation.goBack()
-  }, [dispatchWeb, navigation, receiver, source])
+  }, [dispatch, navigation, receiver, source])
 
   const inProgress = sendStatus === 'SENDING' || sendStatus === 'CONVERTING'
 

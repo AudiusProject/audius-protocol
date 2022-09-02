@@ -1,9 +1,9 @@
 import { profilePageSelectors, badgeTiers } from '@audius/common'
 import type { BadgeTierInfo } from '@audius/common'
 import { Text, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { AppDrawer } from '../drawer/AppDrawer'
@@ -64,7 +64,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 export const TiersExplainerDrawer = () => {
   const styles = useStyles()
 
-  const profileId = useSelectorWeb(getProfileUserId)
+  const profileId = useSelector(getProfileUserId)
   const { tier, tierNumber } = useSelectTierInfo(profileId)
 
   const { minAudio } = badgeTiers.find(

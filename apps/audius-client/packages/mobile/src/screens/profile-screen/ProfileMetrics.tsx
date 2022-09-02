@@ -5,8 +5,8 @@ import {
   followingUserListActions
 } from '@audius/common'
 import { Pressable, Text, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles/makeStyles'
 import { formatCount } from 'app/utils/format'
@@ -66,23 +66,23 @@ export const ProfileMetrics = () => {
   ])
 
   const navigation = useNavigation()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const handlePressFollowers = useCallback(() => {
-    dispatchWeb(setFollowers(user_id))
+    dispatch(setFollowers(user_id))
     navigation.push({
       native: { screen: 'Followers', params: { userId: user_id } },
       web: { route: '/followers', fromPage: 'profile' }
     })
-  }, [dispatchWeb, user_id, navigation])
+  }, [dispatch, user_id, navigation])
 
   const handlePressFollowing = useCallback(() => {
-    dispatchWeb(setFollowing(user_id))
+    dispatch(setFollowing(user_id))
     navigation.push({
       native: { screen: 'Following', params: { userId: user_id } },
       web: { route: '/following', fromPage: 'profile' }
     })
-  }, [dispatchWeb, user_id, navigation])
+  }, [dispatch, user_id, navigation])
 
   return (
     <View pointerEvents='box-none' style={styles.root}>
