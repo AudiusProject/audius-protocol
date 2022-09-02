@@ -95,8 +95,9 @@ export const setupTracing = () => {
  * This wrapper works for both sync and async functions
  *
  * @param {string?} param.name optional name to give to the span, defaults to the function name
+ * @param {Object?} param.context optional object context to get wrapped, useful when wrapping non-static methods to classes
  * @param {TFunction} param.fn the generic function to instrument
- * @param {SpanOptions} param.options objects to pass into the span
+ * @param {SpanOptions?} param.options objects to pass into the span
  * @returns the instrumented function
  * @throws rethrows any errors from the original fn
  *
@@ -110,13 +111,17 @@ export const setupTracing = () => {
  */
 export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   name,
+  context,
   fn,
   options
 }: {
   name?: string
+  context?: Object
   fn: TFunction
   options?: SpanOptions
 }) => {
+  const objectContext = context || this
+
   // build a wrapper around `fn` that accepts the same parameters and returns the same return type
   const wrapper = function (
     ...args: Parameters<TFunction>
@@ -133,7 +138,7 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
 
           // TODO add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
-          const result = fn.apply(this, args)
+          const result = fn.apply(objectContext, args)
 
           // if `fn` is async, await the result
           if (result && result.then) {
