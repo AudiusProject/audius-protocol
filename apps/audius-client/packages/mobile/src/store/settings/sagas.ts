@@ -18,7 +18,7 @@ import PushNotifications from 'app/notifications'
 const { getPushNotificationSettings } = settingsPageSelectors
 const { getAccountUser } = accountSelectors
 
-export async function* disablePushNotifications() {
+export function* disablePushNotifications() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { token } = yield* call([PushNotifications, 'getToken'])
   PushNotifications.deregister()

@@ -6,6 +6,7 @@ import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { localStorage } from 'app/services/local-storage'
 
 import { resetOAuthState } from '../oauth/actions'
+import { setSearchHistory } from '../search/actions'
 import { disablePushNotifications } from '../settings/sagas'
 
 const { resetAccount } = accountActions
@@ -21,6 +22,8 @@ function* watchSignOut() {
     yield* call([localStorage, 'clearAudiusAccountUser'])
     yield* call([audiusBackendInstance, 'signOut'])
     yield* call([localStorage, 'removeItem'], 'theme')
+
+    yield* put(setSearchHistory([]))
     yield* put(resetOAuthState())
   })
 }

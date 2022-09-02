@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux'
 
 import { Button, Text } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer/AppDrawer'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import useSearchHistory from 'app/store/search/hooks'
 import { makeStyles } from 'app/styles'
 const { signOut } = signOutActions
@@ -38,7 +37,6 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const SignOutConfirmationDrawer = () => {
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
   const dispatch = useDispatch()
   const { clearHistory } = useSearchHistory()
 
@@ -46,11 +44,9 @@ export const SignOutConfirmationDrawer = () => {
 
   const handleSignOut = useCallback(() => {
     dispatch(signOut())
-    // TODO: move to the sign-out saga when store migrated to react-native
-    dispatchWeb(signOut)
     clearHistory()
     onClose()
-  }, [dispatchWeb, dispatch, clearHistory, onClose])
+  }, [dispatch, clearHistory, onClose])
 
   return (
     <AppDrawer modalName={MODAL_NAME} title={messages.drawerTitle}>
