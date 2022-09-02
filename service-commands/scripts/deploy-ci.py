@@ -248,17 +248,28 @@ def display_release_tags(
 
 def format_hosts(heading, hosts):
     if hosts:
-        print(f"{heading}:")
+        hosts.sort()
+        summary = [f"{heading}:"]
         for h in hosts:
-            print(f"* {h}")
+            summary.append(f"* {h}")
+
+        print("\n".join(summary))
+        with open("/tmp/summary.txt", "a") as f:
+            f.write("\n".join(summary))
+            f.write("\n\n")
 
 
 def format_skipped(skipped):
     keys = [k for k in skipped.keys()]
     keys.sort()
-    print("Skipped:")
+    summary = ["Skipped:"]
     for k in keys:
-        print(f"* {k}: {skipped[k]['author']}")
+        summary.append(f"* {k}: {skipped[k]['author']}")
+
+    print("\n".join(summary))
+    with open("/tmp/summary.txt", "w") as f:
+        f.write("\n".join(summary))
+        f.write("\n\n")
 
 
 @click.command()
@@ -324,7 +335,7 @@ def cli(github_user, github_token, environment, service, hosts, git_tag, paralle
     )
 
     format_skipped(skipped_hosts)
-    format_hosts(f"Upgraded to {git_tag if git_tag else 'master'}", affected_hosts)
+    format_hosts(f"Upgraded to `{git_tag if git_tag else 'master'}`", affected_hosts)
     format_hosts("Failed", failed_hosts)
 
 
