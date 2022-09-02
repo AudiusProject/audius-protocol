@@ -48,9 +48,11 @@ import notificationsSagasNative from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
 import settingsSagas from './settings/sagas'
 import signOutSagas from './sign-out/sagas'
+import themeSagas, { setupTheme } from './theme/sagas'
 
 export default function* rootSaga() {
   yield* fork(setupBackend)
+  yield* fork(setupTheme)
   const sagas = [
     // config
     ...backendSagas(),
@@ -111,6 +113,7 @@ export default function* rootSaga() {
     ...overflowMenuSagas(),
     ...shareModalSagas(),
     ...vipDiscordModalSagas(),
+    ...themeSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),
