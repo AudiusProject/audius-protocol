@@ -49,13 +49,13 @@ export const audiusBackendInstance = audiusBackend({
       ? JSON.parse(useMetaMaskSerialized)
       : false
 
-    if (useMetaMask && window.web3) {
+    if (useMetaMask && window.Web3) {
       try {
         return {
           error: false,
           web3Config: await libs.configExternalWeb3(
             registryAddress,
-            window.web3.currentProvider,
+            window.Web3.currentProvider,
             web3NetworkId,
             entityManagerAddress
           )
