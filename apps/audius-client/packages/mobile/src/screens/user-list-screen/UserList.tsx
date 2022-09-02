@@ -9,11 +9,10 @@ import {
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 import { View } from 'react-native'
 import type { Selector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Divider, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { UserListItem } from './UserListItem'
@@ -60,17 +59,16 @@ export const UserList = (props: UserListProps) => {
   const isFocused = useIsFocused()
   const styles = useStyles()
   const cachedUsers = useRef<User[]>([])
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const [isRefreshing, setIsRefreshing] = useState(true)
-  const { hasMore, userIds, loading } = useSelectorWeb(userSelector, isEqual)
+  const { hasMore, userIds, loading } = useSelector(userSelector)
   const getOptimisticUserIds = makeGetOptimisticUserIdsIfNeeded({
     userIds,
     tag
   })
-  const optimisticUserIds: ID[] = useSelectorWeb(getOptimisticUserIds)
-  const usersMap = useSelectorWeb(
-    (state) => getUsers(state, { ids: optimisticUserIds }),
-    isEqual
+  const optimisticUserIds: ID[] = useSelector(getOptimisticUserIds)
+  const usersMap = useSelector((state) =>
+    getUsers(state, { ids: optimisticUserIds })
   )
   const users: User[] = useMemo(
     () =>
@@ -84,13 +82,13 @@ export const UserList = (props: UserListProps) => {
     useCallback(() => {
       setIsRefreshing(true)
       setUserList()
-      dispatchWeb(setLoading(tag, true))
-      dispatchWeb(loadMore(tag))
+      dispatch(setLoading(tag, true))
+      dispatch(loadMore(tag))
 
       return () => {
-        dispatchWeb(reset(tag))
+        dispatch(reset(tag))
       }
-    }, [dispatchWeb, setUserList, tag])
+    }, [dispatch, setUserList, tag])
   )
 
   const isEmpty = users.length === 0
@@ -110,10 +108,10 @@ export const UserList = (props: UserListProps) => {
 
   const handleEndReached = useCallback(() => {
     if (hasMore && isFocused) {
-      dispatchWeb(setLoading(tag, true))
-      dispatchWeb(loadMore(tag))
+      dispatch(setLoading(tag, true))
+      dispatch(loadMore(tag))
     }
-  }, [hasMore, isFocused, dispatchWeb, tag])
+  }, [hasMore, isFocused, dispatch, tag])
 
   const data =
     isEmpty || isRefreshing || loading || !isFocused

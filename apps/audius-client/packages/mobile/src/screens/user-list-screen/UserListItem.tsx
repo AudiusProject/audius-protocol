@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import type { User } from '@audius/common'
 import { FollowSource, accountSelectors } from '@audius/common'
 import { Pressable, View, Animated } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconUser from 'app/assets/images/iconUser.svg'
 import { Text } from 'app/components/core'
@@ -14,7 +15,6 @@ import {
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 import { useThemeColors } from 'app/utils/theme'
@@ -76,7 +76,7 @@ export const UserListItem = (props: UserListItemProps) => {
   const { tag, user } = props
   const { user_id, handle, name, follower_count, does_follow_current_user } =
     user
-  const currentUserId = useSelectorWeb(getUserId)
+  const currentUserId = useSelector(getUserId)
   const styles = useStyles()
   const navigation = useNavigation()
   const { white, neutralLight10 } = useThemeColors()
