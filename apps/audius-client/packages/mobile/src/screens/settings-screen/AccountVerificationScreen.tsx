@@ -17,9 +17,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message'
 import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
@@ -109,11 +107,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 export const AccountVerificationScreen = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
   const [didValidateHandle, setDidValidateHandle] = useState(false)
-  const accountUser = useSelectorWeb(getAccountUser)
+  const accountUser = useSelector(getAccountUser)
   const navigation = useNavigation()
   const twitterInfo = useSelector(getTwitterInfo)
   const twitterError = useSelector(getTwitterError)
@@ -143,7 +140,7 @@ export const AccountVerificationScreen = () => {
       const handle = type === 'twitter' ? profile.screen_name : profile.username
       const verified =
         type === 'twitter' ? profile.verified : profile.is_verified
-      dispatchWeb({
+      dispatch({
         type: MessageType.SIGN_UP_VALIDATE_HANDLE,
         handle,
         verified,
@@ -151,7 +148,7 @@ export const AccountVerificationScreen = () => {
         onValidate: null
       })
     },
-    [dispatchWeb, twitterInfo, instagramInfo]
+    [dispatch, twitterInfo, instagramInfo]
   )
 
   const trackOAuthComplete = useCallback(
@@ -239,7 +236,7 @@ export const AccountVerificationScreen = () => {
     if (!handle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setTwitterError(null))
-    dispatchWeb({
+    dispatch({
       type: MessageType.REQUEST_TWITTER_AUTH,
       isAction: true
     })
@@ -255,7 +252,7 @@ export const AccountVerificationScreen = () => {
     if (!handle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setInstagramError(null))
-    dispatchWeb({
+    dispatch({
       type: MessageType.REQUEST_INSTAGRAM_AUTH,
       isAction: true
     })
