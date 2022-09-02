@@ -7,6 +7,7 @@ import {
   artistRecommendationsUIActions
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import IconFollow from 'app/assets/images/iconFollow.svg'
@@ -89,6 +90,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const navigation = useNavigation()
   const { user_id, name } = useSelectProfile(['user_id', 'name'])
 
+  const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
 
   useEffectOnce(() => {
@@ -114,19 +116,19 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const handlePressFollow = useCallback(() => {
     suggestedArtists.forEach((artist) => {
       if (isFollowingAllArtists) {
-        dispatchWeb(
+        dispatch(
           unfollowUser(
             artist.user_id,
             FollowSource.ARTIST_RECOMMENDATIONS_POPUP
           )
         )
       } else {
-        dispatchWeb(
+        dispatch(
           followUser(artist.user_id, FollowSource.ARTIST_RECOMMENDATIONS_POPUP)
         )
       }
     })
-  }, [suggestedArtists, isFollowingAllArtists, dispatchWeb])
+  }, [suggestedArtists, isFollowingAllArtists, dispatch])
 
   const handlePressArtist = useCallback(
     (artist) => () => {
