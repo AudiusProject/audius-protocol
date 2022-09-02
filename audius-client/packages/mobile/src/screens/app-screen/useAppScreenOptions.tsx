@@ -12,14 +12,13 @@ import type {
 } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
 import { Text, View } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconNotification from 'app/assets/images/iconNotification.svg'
 import IconSearch from 'app/assets/images/iconSearch.svg'
 import { IconButton } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import type { ContextualParams } from 'app/hooks/useNavigation'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -94,7 +93,7 @@ export const useAppScreenOptions = (
 ) => {
   const styles = useStyles()
   const { accentOrangeLight1, neutralLight4 } = useThemeColors()
-  const dispatch = useDispatchWeb()
+  const dispatch = useDispatch()
   const notificationCount = useSelector(getNotificationUnviewedCount)
   const navigation = useNavigation<
     AppScreenParamList & AppTabScreenParamList['Search']

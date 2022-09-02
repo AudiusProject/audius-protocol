@@ -97,11 +97,11 @@ const NOTIFICATION_LIMIT_DEFAULT = 20
 
 function* recordPlaylistUpdatesAnalytics(playlistUpdates: ID[]) {
   const existingUpdates: ID[] = yield* select(getPlaylistUpdates)
-  yield* put(notificationActions.setPlaylistUpdates(playlistUpdates))
   if (
     playlistUpdates.length > 0 &&
     existingUpdates.length !== playlistUpdates.length
   ) {
+    yield* put(notificationActions.setPlaylistUpdates(playlistUpdates))
     const event = make(Name.PLAYLIST_LIBRARY_HAS_UPDATE, {
       count: playlistUpdates.length
     })

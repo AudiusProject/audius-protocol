@@ -5,7 +5,7 @@ import {
   waitForValue
 } from '@audius/common'
 import { waitForBackendSetup } from 'audius-client/src/common/store/backend/sagas'
-import {
+import commonNotificationsSagas, {
   getNotifications,
   getPollingIntervalMs
 } from 'audius-client/src/common/store/notifications/sagas'
@@ -73,6 +73,7 @@ function* watchMarkedAllNotificationsViewed() {
 
 export default function sagas() {
   return [
+    ...commonNotificationsSagas(),
     watchMarkedAllNotificationsViewed,
     watchResetNotificationBadgeCount,
     notificationPollingDaemon
