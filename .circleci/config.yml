@@ -981,6 +981,8 @@ workflows:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
+      - check-vpn:
+          name: check-vpn
       - test-libs:
           name: test-libs
       - docker-build-and-push:
