@@ -4,9 +4,9 @@ import {
   repostsUserListActions,
   repostsUserListSelectors
 } from '@audius/common'
+import { useDispatch } from 'react-redux'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
@@ -21,11 +21,11 @@ const messages = {
 export const RepostsScreen = () => {
   const { params } = useRoute<'Reposts'>()
   const { id, repostType } = params
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const handleSetRepost = useCallback(() => {
-    dispatchWeb(setRepost(id, repostType))
-  }, [dispatchWeb, id, repostType])
+    dispatch(setRepost(id, repostType))
+  }, [dispatch, id, repostType])
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconRepost}>

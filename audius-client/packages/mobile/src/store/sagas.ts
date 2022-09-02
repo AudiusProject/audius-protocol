@@ -30,6 +30,14 @@ import signOutSagas from 'common/store/sign-out/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
+import favoritePageSagas from 'common/store/user-list/favorites/sagas'
+import followersPageSagas from 'common/store/user-list/followers/sagas'
+import followingPageSagas from 'common/store/user-list/following/sagas'
+import mutualsPageSagas from 'common/store/user-list/mutuals/sagas'
+import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
+import repostPageSagas from 'common/store/user-list/reposts/sagas'
+import supportingPageSagas from 'common/store/user-list/supporting/sagas'
+import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import { all, fork } from 'typed-redux-saga'
 
@@ -82,6 +90,14 @@ export default function* rootSaga() {
     ...trendingUndergroundSagas(),
     ...savedSagas(),
     ...socialSagas(),
+    ...favoritePageSagas(),
+    ...followersPageSagas(),
+    ...followingPageSagas(),
+    ...mutualsPageSagas(),
+    ...notificationUsersPageSagas(),
+    ...repostPageSagas(),
+    ...supportingPageSagas(),
+    ...topSupportersPageSagas(),
 
     // Application
     ...smartCollectionPageSagas(),
