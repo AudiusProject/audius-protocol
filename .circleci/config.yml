@@ -970,13 +970,13 @@ jobs:
           instance-name: test-vpn
           interactive-command: |
             hostname
-            ssh ubuntu@18.220.56.46 "hostname"
+            ssh -A ubuntu@18.220.56.46 "hostname"
           command: |
             cd /home/ubuntu/audius-protocol
             git pull
             git checkout $CIRCLE_BRANCH
             hostname
-            ssh ubuntu@18.220.56.46 "hostname"
+            ssh -A ubuntu@18.220.56.46 "hostname"
 
 workflows:
   # test, build and push all commits
