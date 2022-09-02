@@ -149,7 +149,7 @@ export class IdentityService {
   }
 
   async sendRecoveryInfo(obj: Record<string, unknown>) {
-    return await this._makeRequest({
+    return await this._makeRequest<{ status: true }>({
       url: '/recovery',
       method: 'post',
       data: obj

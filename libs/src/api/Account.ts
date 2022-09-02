@@ -234,23 +234,28 @@ export class Account extends Base {
     host
   }: { handle?: string; host?: Nullable<string> } = {}) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    // @ts-expect-error hard to type this hedgehog addon
-    const recoveryInfo = await this.hedgehog.generateRecoveryInfo()
-    handle = handle ?? this.userStateManager.getCurrentUser()!.handle
+    try {
+      // @ts-expect-error hard to type this hedgehog addon
+      const recoveryInfo = await this.hedgehog.generateRecoveryInfo()
+      handle = handle ?? this.userStateManager.getCurrentUser()!.handle
 
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = await this.web3Manager.sign(Buffer.from(data, 'utf-8'))
+      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+      const data = `Click sign to authenticate with identity service: ${unixTs}`
+      const signature = await this.web3Manager.sign(Buffer.from(data, 'utf-8'))
 
-    const recoveryData = {
-      login: recoveryInfo.login,
-      host: host ?? recoveryInfo.host,
-      data,
-      signature,
-      handle
+      const recoveryData = {
+        login: recoveryInfo.login,
+        host: host ?? recoveryInfo.host,
+        data,
+        signature,
+        handle
+      }
+
+      return await this.identityService.sendRecoveryInfo(recoveryData)
+    } catch (e) {
+      console.error(e)
+      return { status: false }
     }
-
-    await this.identityService.sendRecoveryInfo(recoveryData)
   }
 
   async resetPassword(email: string, newpassword: string) {
