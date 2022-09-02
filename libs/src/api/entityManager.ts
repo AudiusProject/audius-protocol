@@ -1,18 +1,32 @@
 import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
-import { Nullable, Utils } from '../utils'
-import {
-  EntityType,
-  Action
-} from '../services/dataContracts/EntityManagerClient'
+import type { Nullable } from '../utils'
 
-export interface PlaylistOperationResponse {
+export enum Action {
+  CREATE = 'Create',
+  UPDATE = 'Update',
+  DELETE = 'Delete',
+  FOLLOW = 'Follow',
+  UNFOLLOW = 'Unfollow',
+  SAVE = 'Save',
+  UNSAVE = 'Unsave',
+  REPOST = 'Repost',
+  UNREPOST = 'Unrepost'
+}
+
+export enum EntityType {
+  TRACK = 'Track',
+  PLAYLIST = 'Playlist',
+  USER = 'User'
+}
+
+export interface EntityManagerOperationResponse {
   /**
-   * Blockhash of playlist transaction
+   * Blockhash of entityManager transaction
    */
   blockHash: Nullable<string>
   /**
-   * Block number of playlist transaction
+   * Block number of entityManager transaction
    */
   blockNumber: Nullable<number>
   /**
@@ -42,7 +56,6 @@ export class EntityManager extends Base {
   /**
    * Generate random integer between two known values
    */
-  getRandomInt = Utils.getRandomInt
 
   mapTimestamps(addedTimestamps: PlaylistTrack[]) {
     const trackIds = addedTimestamps.map((trackObj) => ({
@@ -53,10 +66,15 @@ export class EntityManager extends Base {
     return trackIds
   }
 
-  /**
-   * Playlist default response values
-   */
-  getDefaultPlaylistReponseValues(): PlaylistOperationResponse {
+  getCurrentUserId() {
+    const userId: number | null = this.userStateManager.getCurrentUserId()
+    if (!userId) {
+      throw new Error('Missing current user ID')
+    }
+    return userId
+  }
+
+  getDefaultEntityManagerResponseValues(): EntityManagerOperationResponse {
     return {
       blockHash: null,
       blockNumber: null,
@@ -64,14 +82,210 @@ export class EntityManager extends Base {
     }
   }
 
-  /**
-   * Create a playlist using updated data contracts flow
-   */
+  /** Social Features */
+
+  async followUser(
+    followeeUserId: number
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.USER,
+        entityId: followeeUserId,
+        action: Action.FOLLOW,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async unfollowUser(
+    followeeUserId: number
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.USER,
+        entityId: followeeUserId,
+        action: Action.UNFOLLOW,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async saveTrack(trackId: number): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.TRACK,
+        entityId: trackId,
+        action: Action.SAVE,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async unsaveTrack(trackId: number): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.TRACK,
+        entityId: trackId,
+        action: Action.UNSAVE,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async savePlaylist(
+    playlistId: number
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.PLAYLIST,
+        entityId: playlistId,
+        action: Action.SAVE,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async unsavePlaylist(
+    playlistId: number
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.PLAYLIST,
+        entityId: playlistId,
+        action: Action.UNSAVE,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async repostTrack(trackId: number): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.TRACK,
+        entityId: trackId,
+        action: Action.REPOST,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async unrepostTrack(
+    trackId: number
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.TRACK,
+        entityId: trackId,
+        action: Action.UNREPOST,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async repostPlaylist(
+    playlistId: number
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.PLAYLIST,
+        entityId: playlistId,
+        action: Action.REPOST,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+  async unrepostPlaylist(
+    playlistId: number
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
+    try {
+      return await this.manageEntity({
+        userId: this.getCurrentUserId(),
+        entityType: EntityType.PLAYLIST,
+        entityId: playlistId,
+        action: Action.UNREPOST,
+        metadataMultihash: ''
+      })
+    } catch (e) {
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
+    }
+  }
+
+
+  /** Playlist */
+
   async createPlaylist(
     playlist: PlaylistParam
-  ): Promise<PlaylistOperationResponse> {
-    const responseValues: PlaylistOperationResponse =
-      this.getDefaultPlaylistReponseValues()
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
     try {
       const userId: number | null = this.userStateManager.getCurrentUserId()
       if (!userId) {
@@ -121,29 +335,24 @@ export class EntityManager extends Base {
     }
   }
 
-  /**
-   * Delete a playlist using updated data contracts flow
-   */
-  async deletePlaylist(playlistId: number): Promise<PlaylistOperationResponse> {
-    const responseValues: PlaylistOperationResponse =
-      this.getDefaultPlaylistReponseValues()
+  async deletePlaylist(
+    playlistId: number
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
     const userId: number | null = this.userStateManager.getCurrentUserId()
     if (!userId) {
       responseValues.error = 'Missing current user ID'
       return responseValues
     }
     try {
-      const resp = await this.manageEntity({
+      return await this.manageEntity({
         userId,
         entityType: EntityType.PLAYLIST,
         entityId: playlistId,
         action: Action.DELETE,
         metadataMultihash: ''
       })
-      const txReceipt = resp.txReceipt
-      responseValues.blockHash = txReceipt.blockHash
-      responseValues.blockNumber = txReceipt.blockNumber
-      return responseValues
     } catch (e) {
       const error = (e as Error).message
       responseValues.error = error
@@ -151,14 +360,11 @@ export class EntityManager extends Base {
     }
   }
 
-  /**
-   * Update a playlist using updated data contracts flow
-   */
   async updatePlaylist(
     playlist: PlaylistParam
-  ): Promise<PlaylistOperationResponse> {
-    const responseValues: PlaylistOperationResponse =
-      this.getDefaultPlaylistReponseValues()
+  ): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
 
     try {
       const userId: number | null = this.userStateManager.getCurrentUserId()
@@ -196,17 +402,13 @@ export class EntityManager extends Base {
       }
       const { metadataMultihash } =
         await this.creatorNode.uploadPlaylistMetadata(metadata)
-      const resp = await this.manageEntity({
+      return await this.manageEntity({
         userId,
         entityType,
         entityId: playlist.playlist_id,
         action: updateAction,
         metadataMultihash
       })
-      const txReceipt = resp.txReceipt
-      responseValues.blockHash = txReceipt.blockHash
-      responseValues.blockNumber = txReceipt.blockNumber
-      return responseValues
     } catch (e) {
       const error = (e as Error).message
       responseValues.error = error
@@ -230,13 +432,14 @@ export class EntityManager extends Base {
     entityId: number
     action: Action
     metadataMultihash: string
-  }): Promise<
-    { txReceipt: any; error: null } | { txReceipt: null; error: string }
-  > {
-    let error = null
-    let resp: any
+  }): Promise<EntityManagerOperationResponse> {
+    const responseValues: EntityManagerOperationResponse =
+      this.getDefaultEntityManagerResponseValues()
     try {
-      resp = await this.contracts.EntityManagerClient?.manageEntity(
+      if (this.contracts.EntityManagerClient === undefined) {
+        throw new Error('EntityManagerClient is undefined')
+      }
+      const resp = await this.contracts.EntityManagerClient.manageEntity(
         userId,
         entityType,
         entityId,
@@ -244,10 +447,13 @@ export class EntityManager extends Base {
         metadataMultihash
       )
 
-      return { txReceipt: resp.txReceipt, error }
+      responseValues.blockHash = resp.txReceipt.blockHash
+      responseValues.blockNumber = resp.txReceipt.blockNumber
+      return responseValues
     } catch (e) {
-      error = (e as Error).message
-      return { txReceipt: null, error }
+      const error = (e as Error).message
+      responseValues.error = error
+      return responseValues
     }
   }
 }
