@@ -269,6 +269,20 @@ def test_index_invalid_social_features(app, mocker):
                 )
             },
         ],
+        "UserCannotFollowThemselfTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Follow",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [

@@ -81,7 +81,7 @@ def delete_social_record(params):
     entity_key = get_record_key(params.user_id, params.entity_type, params.entity_id)
     record_type = action_to_record_type[params.action]
 
-    if entity_key not in params.existing_records[record_type]:
+    if entity_key in params.existing_records[record_type]:
         existing_entity = params.existing_records[record_type][entity_key]
 
     if entity_key in params.new_records[params.entity_type]:
@@ -124,9 +124,8 @@ def delete_social_record(params):
             txhash=params.txhash,
         )
 
-    deleted_record.is_delete = True
-
     if deleted_record:
+        deleted_record.is_delete = True
         params.add_social_feature_record(
             params.user_id,
             params.entity_type,
@@ -144,10 +143,12 @@ def validate_social_feature(params: ManageEntityParameters):
     if wallet and wallet.lower() != params.signer.lower():
         raise Exception("User does not match signer")
 
-    record_type = action_to_record_type[params.action]
-    entity_key = get_record_key(params.user_id, params.entity_type, params.entity_id)
-    if entity_key not in params.existing_records[record_type]:
+    if params.entity_id not in params.existing_records[params.entity_type]:
         raise Exception("Entity does not exist")
+
+    if params.action == Action.FOLLOW or params.action == Action.UNFOLLOW:
+        if params.user_id == params.entity_id:
+            raise Exception("User cannot follow themself")
 
 
 def copy_follow_record(
