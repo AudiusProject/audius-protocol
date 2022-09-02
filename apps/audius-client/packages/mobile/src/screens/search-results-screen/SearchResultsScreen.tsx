@@ -12,8 +12,10 @@ import {
   TabNavigator,
   tabScreen
 } from 'app/components/top-tab-bar/TopTabNavigator'
+import { useRoute } from 'app/hooks/useRoute'
 
 import { SearchFocusContext } from './SearchFocusContext'
+import { SearchQueryContext } from './SearchQueryContext'
 import { AlbumsTab } from './tabs/AlbumsTab'
 import { PlaylistsTab } from './tabs/PlaylistsTab'
 import { ProfilesTab } from './tabs/ProfilesTab'
@@ -24,8 +26,14 @@ const messages = {
 }
 
 export const SearchResultsScreen = () => {
+  const { params } = useRoute<'SearchResults'>()
+  const { query } = params
   const isFocused = useIsFocused()
   const focusContext = useMemo(() => ({ isFocused }), [isFocused])
+  const searchQueryContext = useMemo(
+    () => ({ isTagSearch: false, query }),
+    [query]
+  )
 
   const profilesScreen = tabScreen({
     name: 'Profiles',
@@ -55,12 +63,14 @@ export const SearchResultsScreen = () => {
     <Screen topbarRight={null}>
       <Header text={messages.header} />
       <SearchFocusContext.Provider value={focusContext}>
-        <TabNavigator initialScreenName='Profiles'>
-          {profilesScreen}
-          {tracksScreen}
-          {albumsScreen}
-          {playlistsScreen}
-        </TabNavigator>
+        <SearchQueryContext.Provider value={searchQueryContext}>
+          <TabNavigator initialScreenName='Profiles'>
+            {profilesScreen}
+            {tracksScreen}
+            {albumsScreen}
+            {playlistsScreen}
+          </TabNavigator>
+        </SearchQueryContext.Provider>
       </SearchFocusContext.Provider>
     </Screen>
   )

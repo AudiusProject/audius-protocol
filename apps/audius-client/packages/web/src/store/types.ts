@@ -52,11 +52,14 @@ import { DragNDropState } from './dragndrop/types'
 const averageColor = averageColorReducer
 
 export type AppState = CommonState & {
-  // Config
+  // These belong in CommonState but are here until we move them to the @audius/common package:
   backend: BackendState
   confirmer: ConfirmerState
-  reachability: ReachabilityState
+  searchBar: SearchBarState
+  signOn: ReturnType<typeof signOnReducer>
 
+  // Config
+  reachability: ReachabilityState
   // Account
   passwordReset: PasswordResetState
   playlistLibrary: ReturnType<typeof PlaylistLibraryReducer>
@@ -104,9 +107,7 @@ export type AppState = CommonState & {
   // Pages
   upload: UploadPageState
   dashboard: ArtistDashboardState
-  signOn: ReturnType<typeof signOnReducer>
   history: HistoryPageState
-  searchBar: SearchBarState
   collection: CollectionsPageState
   notification: NotificationState
 

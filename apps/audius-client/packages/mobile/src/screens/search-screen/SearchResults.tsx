@@ -1,14 +1,10 @@
+import type { Collection, Track, User } from '@audius/common'
+import { getSearch } from 'audius-client/src/common/store/search-bar/selectors'
 import { StyleSheet, View, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { SectionList } from 'app/components/core'
-import { getSearchResults } from 'app/store/search/selectors'
-import type {
-  SearchUser,
-  SearchTrack,
-  SearchPlaylist,
-  SectionHeader
-} from 'app/store/search/types'
+import type { SectionHeader } from 'app/store/search/types'
 
 import SearchItem from './content/SearchItem'
 import SearchSectionHeader from './content/SearchSectionHeader'
@@ -41,7 +37,7 @@ const headerMapping: { [key in SectionHeader]: string } = {
 }
 
 const SearchResults = () => {
-  const searchResults = useSelector(getSearchResults)
+  const searchResults = useSelector(getSearch)
   const sections = sectionHeaders
     .map((header) => {
       return {
@@ -53,7 +49,7 @@ const SearchResults = () => {
 
   const sectionWithMore: {
     title: SectionHeader | 'more'
-    data: (SearchUser | SearchTrack | SearchPlaylist)[]
+    data: (User | Track | Collection)[]
   }[] = [...sections, { title: 'more', data: [] }]
 
   return (

@@ -8,15 +8,15 @@ import { select, all, call } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import {
+  getSearchResults,
+  getTagSearchResults
+} from 'common/store/pages/search-page/sagas'
+import {
   getCategory,
   getQuery,
   isTagSearch,
   getSearchTag
 } from 'pages/search-page/helpers'
-import {
-  getSearchResults,
-  getTagSearchResults
-} from 'pages/search-page/store/sagas'
 import { isMobile } from 'utils/clientUtil'
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
   searchResultsPageSelectors

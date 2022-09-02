@@ -10,11 +10,9 @@ import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 
 import * as searchActions from './actions'
-import mobileSagas from './mobileSagas'
 import { getSearch } from './selectors'
 
 const getUserId = accountSelectors.getUserId
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export function* getSearchResults(searchText: string) {
   const apiClient = yield* getContext('apiClient')
@@ -27,7 +25,6 @@ export function* getSearchResults(searchText: string) {
     limit: 3,
     offset: 0
   })
-
   const { tracks, albums, playlists, users } = results
   const checkedUsers = users.filter((u) => !u.is_deactivated)
   const checkedTracks = tracks.filter(
@@ -97,6 +94,5 @@ function* watchSearch() {
 
 export default function sagas() {
   const sagas = [watchSearch]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
+  return sagas
 }
-// can go in common - mobile sagas should be in mobile

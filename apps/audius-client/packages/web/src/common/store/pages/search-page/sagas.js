@@ -12,7 +12,6 @@ import { processAndCacheCollections } from 'common/store/cache/collections/utils
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
-import tracksSagas from 'pages/search-page/store/lineups/tracks/sagas'
 const getUserId = accountSelectors.getUserId
 
 export function* getTagSearchResults(tag, kind, limit, offset) {
@@ -133,7 +132,7 @@ function* watchFetchSearchPageResults() {
 
 export default function sagas() {
   return [
-    ...tracksSagas(),
+    // TODO(nkang): Put track sagas back here when ready for mobile
     watchFetchSearchPageResults,
     watchFetchSearchPageTags
   ]
