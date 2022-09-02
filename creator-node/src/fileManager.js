@@ -118,10 +118,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
   })
 
   // Note - Requests are intentionally not parallel to minimize additional load on gateways
-  let url
   for (const contentUrl of gatewayContentRoutes) {
-    url = contentUrl
-
     decisionTree.recordStage({
       name: 'Fetching from target gateways',
       data: { replicaUrl: contentUrl }
@@ -197,7 +194,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
       decisionTree.recordStage({
         name: 'Error - Could not retrieve file from gateway',
         data: {
-          url,
+          url: contentUrl,
           errorMsg: e.message,
           statusCode: e.response?.status,
           multihash
