@@ -17,6 +17,7 @@ import collectionPageSagas from 'common/store/pages/collection/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
 import explorePageSagas from 'common/store/pages/explore/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
+import historySagas from 'common/store/pages/history/sagas'
 import savedSagas from 'common/store/pages/saved/sagas'
 import searchResultsSagas from 'common/store/pages/search-page/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
@@ -101,6 +102,7 @@ export default function* rootSaga() {
     ...repostPageSagas(),
     ...supportingPageSagas(),
     ...topSupportersPageSagas(),
+    ...historySagas(),
     ...settingsSagas(),
     ...signOutSagas(),
 
