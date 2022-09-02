@@ -5,39 +5,39 @@ import {
   notificationsUserListActions,
   notificationsUserListSelectors
 } from '@audius/common'
+import { useDispatch } from 'react-redux'
 
-import { Screen } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
 import { formatCount } from 'app/utils/format'
 
 import { UserList } from './UserList'
+import { UserListScreen } from './UserListScreen'
 const { getUserList } = notificationsUserListSelectors
 const { setNotificationId } = notificationsUserListActions
 
 export const NotificationUsersScreen = () => {
   const { params } = useRoute<'NotificationUsers'>()
   const { notificationType, count, id } = params
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const handleSetNotificationId = useCallback(() => {
-    dispatchWeb(setNotificationId(id))
-  }, [dispatchWeb, id])
+    dispatch(setNotificationId(id))
+  }, [dispatch, id])
 
   const getTitle = useCallback(() => {
     if (notificationType === NotificationType.Follow) {
-      return `${formatCount(count)} new followers`
+      return `${formatCount(count)} New Followers`
     }
-    return `${formatCount(count)} ${notificationType.toLowerCase()}s`
+    return `${formatCount(count)} ${notificationType}s`
   }, [notificationType, count])
 
   return (
-    <Screen title={getTitle()} variant='white'>
+    <UserListScreen title={getTitle()}>
       <UserList
         userSelector={getUserList}
         tag='NOTIFICATION'
         setUserList={handleSetNotificationId}
       />
-    </Screen>
+    </UserListScreen>
   )
 }
