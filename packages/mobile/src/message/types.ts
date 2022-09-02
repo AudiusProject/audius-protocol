@@ -1,8 +1,3 @@
-import type { Theme } from '@audius/common'
-import type { Dispatch } from 'redux'
-
-import type { AnalyticsMessage } from '../types/analytics'
-
 export enum MessageType {
   LOADED = 'loaded',
   SET_INFO = 'set-info',
@@ -113,31 +108,3 @@ export enum MessageType {
   FETCH_RECENT_TIPS = 'fetch-recent-tips',
   UPDATE_TIPS_STORAGE = 'update-tips-storage'
 }
-
-export type Message = {
-  type: string
-  [key: string]: any
-}
-
-export type MessageHandler = (args: {
-  // The message to handle
-  message: Message | AnalyticsMessage
-  // Used to dispatch an action to the redux store
-  dispatch: Dispatch
-  // Used to post a message back to the web client
-  postMessage: (message: Message) => void
-  // Used to reload the WebView
-  reload: () => void
-  // Used to set the theme. Specific because theme state is
-  // handled via the context API outside of the store to be able to
-  // theme the error boundary that renders if the store throws.
-  // Generally messages should make
-  // use of dispatch to talk to global state.
-  setTheme: (theme: Theme) => void
-}) => void
-
-export type MessageHandlers = {
-  [key in MessageType]: MessageHandler
-}
-
-export type MessageHandlersGetter = () => Partial<MessageHandlers>

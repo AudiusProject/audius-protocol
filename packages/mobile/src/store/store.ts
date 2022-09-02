@@ -31,8 +31,6 @@ import search from './search/reducer'
 import type { SignonState } from './signon/reducer'
 import signon from './signon/reducer'
 import { storeContext } from './storeContext'
-import type { WebState } from './web/reducer'
-import web from './web/reducer'
 
 export type AppState = {
   // These also belong in CommonState but are here until we move them to the @audius/common package:
@@ -50,7 +48,6 @@ export type AppState = {
   remoteConfig: RemoteConfigState
   search: SearchState
   signOnLegacy: SignonState
-  web: WebState
 }
 
 const commonStoreReducers = commonReducers()
@@ -75,8 +72,7 @@ const createRootReducer = () =>
     // Sign on store that is part of the mobile client
     // Should be entirely removed in favor of the shared common
     // sign on store
-    signOnLegacy: signon,
-    web
+    signOnLegacy: signon
   })
 
 const sagaMiddleware = createSagaMiddleware({ context: storeContext })

@@ -1,4 +1,3 @@
-import type { RefObject } from 'react'
 import { useCallback } from 'react'
 
 import type { NativeSyntheticEvent } from 'react-native'
@@ -18,8 +17,6 @@ import {
   getMessageType
 } from 'app/store/oauth/selectors'
 import type { Credentials } from 'app/store/oauth/types'
-import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
-import { postMessage } from 'app/utils/postMessage'
 
 const AUTH_RESPONSE = 'auth-response'
 
@@ -179,11 +176,7 @@ const TIKTOK_POLLER = `
 })();
 `
 
-type Props = {
-  webRef: RefObject<MessagePostingWebView>
-}
-
-const OAuth = ({ webRef }: Props) => {
+const OAuth = () => {
   const dispatch = useDispatch()
   const url = useSelector(getUrl)
   const isOpen = useSelector(getIsOpen)
@@ -195,7 +188,7 @@ const OAuth = ({ webRef }: Props) => {
 
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
-    if (event.nativeEvent.data && webRef.current) {
+    if (event.nativeEvent.data) {
       const data = JSON.parse(event.nativeEvent.data)
 
       if (data.type === AUTH_RESPONSE) {
@@ -230,27 +223,11 @@ const OAuth = ({ webRef }: Props) => {
 
         if (isNativeOAuth) {
           dispatch(setCredentials(payload as Credentials))
-        } else if (messageType) {
-          postMessage(webRef.current, {
-            type: messageType,
-            id: messageId,
-            ...payload
-          })
         }
         close()
       }
     }
   }
-  const onClose = useCallback(() => {
-    if (webRef.current && messageType) {
-      postMessage(webRef.current, {
-        type: messageType,
-        id: messageId,
-        error: 'Popup has been closed by user'
-      })
-    }
-    close()
-  }, [webRef, messageId, messageType, close])
 
   const injected = {
     [Provider.TWITTER]: TWITTER_POLLER,
@@ -274,7 +251,7 @@ const OAuth = ({ webRef }: Props) => {
             marginBottom: 8
           }}
         >
-          <Button onPress={onClose} title='Close' />
+          <Button onPress={close} title='Close' />
         </View>
         <WebView
           injectedJavaScript={injected}

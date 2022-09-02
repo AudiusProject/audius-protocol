@@ -36,7 +36,6 @@ import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { make, track as record } from 'app/services/analytics'
 import type { SearchTrack, SearchUser } from 'app/store/search/types'
@@ -54,7 +53,7 @@ const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
 const { tracksActions } = trackPageLineupActions
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
 
 const messages = {
   track: 'track',
@@ -126,7 +125,7 @@ export const TrackScreenDetailsTile = ({
   const navigation = useNavigation()
   const { accentOrange } = useThemeColors()
 
-  const currentUserId = useSelectorWeb(getUserId)
+  const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
   const playingUid = useSelector(getUid)
   const isPlaying = useSelector(getPlaying)

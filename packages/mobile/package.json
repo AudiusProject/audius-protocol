@@ -106,7 +106,6 @@
     "react-native-screens": "3.13.0",
     "react-native-scrypt": "1.2.1",
     "react-native-shadow-2": "6.0.1",
-    "react-native-static-server": "github:futurepress/react-native-static-server.git#034c04e7a2999ae11a799fb68266c94389fc61bf",
     "react-native-svg": "12.1.1",
     "react-native-svg-transformer": "0.14.3",
     "react-native-tab-view": "3.1.1",

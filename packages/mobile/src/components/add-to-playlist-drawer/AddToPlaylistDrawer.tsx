@@ -7,7 +7,6 @@ import {
   addToPlaylistUISelectors,
   newCollectionMetadata
 } from '@audius/common'
-import { FEED_PAGE, playlistPage } from 'audius-client/src/utils/route'
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { View } from 'react-native'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
@@ -18,7 +17,6 @@ import { CardList } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles, shadow } from 'app/styles'
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
@@ -50,7 +48,6 @@ export const AddToPlaylistDrawer = () => {
   const styles = useStyles()
   const { toast } = useContext(ToastContext)
   const dispatchWeb = useDispatchWeb()
-  const pushRouteWeb = usePushRouteWeb()
   const { onClose } = useDrawerState('AddToPlaylist')
   const trackId = useSelectorWeb(getTrackId)
   const trackTitle = useSelectorWeb(getTrackTitle)
@@ -73,7 +70,6 @@ export const AddToPlaylistDrawer = () => {
     )
     dispatchWeb(addTrackToPlaylist(trackId!, tempId))
     toast({ content: messages.createdToast })
-    pushRouteWeb(playlistPage(user.handle, trackTitle, tempId), FEED_PAGE)
     onClose()
   }
 

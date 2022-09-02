@@ -10,8 +10,8 @@ import type {
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { MessageType } from 'audius-client/src/services/native-mobile-interface/types'
+import { useDispatch } from 'react-redux'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { ContextualParams } from 'app/hooks/useNavigation'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
@@ -89,7 +89,7 @@ type AppTabScreenProps = {
  * like track and profile
  */
 export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
@@ -136,7 +136,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
             !e.target?.includes('SupportingUsers')
           ) {
             // When a screen is removed, notify the web layer to pop navigation
-            dispatchWeb({
+            dispatch({
               type: MessageType.POP_ROUTE
             })
           }

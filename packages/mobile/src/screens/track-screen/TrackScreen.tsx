@@ -16,7 +16,6 @@ import { Button, Screen } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { TrackScreenMainContent } from './TrackScreenMainContent'
@@ -69,20 +68,14 @@ export const TrackScreen = () => {
 
   const track = cachedTrack ?? searchTrack
 
-  const cachedUser = useSelectorWeb(
-    (state) => getUser(state, { id: track?.owner_id }),
-    isEqual
+  const cachedUser = useSelector((state) =>
+    getUser(state, { id: track?.owner_id })
   )
 
   const user = cachedUser ?? searchTrack?.user
 
-  const lineup = useSelectorWeb(
-    getMoreByArtistLineup,
-    // Checking for equality between the entries themselves, because
-    // lineup reset state changes cause extra renders
-    (a, b) => (!a.entries && !b.entries) || isEqual(a.entries, b.entries)
-  )
-  const remixParentTrack = useSelectorWeb(getRemixParentTrack)
+  const lineup = useSelector(getMoreByArtistLineup)
+  const remixParentTrack = useSelector(getRemixParentTrack)
 
   if (!track || !user) {
     console.warn(
@@ -163,6 +156,7 @@ export const TrackScreen = () => {
         lineup={lineup}
         start={1}
         includeLineupStatus
+        selfLoad
       />
     </Screen>
   )

@@ -31,20 +31,6 @@ npm run bundle:ios
 
 ### Android
 
-## Running against localhost
-
-To run against localhost, specify `URL_OVERRIDE` in the `.env` file you intend to use.
-
-```
-URL_OVERRIDE=http://localhost:3001
-```
-
-> The WebView will be pointed at the url contained in `URL_OVERRIDE`
-
-This URL should be a serving a mobile audius-client with either
-
-`npm run start:mobile-stage` or `npm run start:mobile-prod`
-
 ## Running against a local static build
 
 To run against a local staging or production build, build the client and copy the build into the mobile client:
