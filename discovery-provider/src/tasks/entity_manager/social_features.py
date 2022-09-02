@@ -17,6 +17,14 @@ action_to_record_type = {
 create_social_action_types = {Action.FOLLOW, Action.SAVE, Action.REPOST}
 delete_social_action_types = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
 
+premium_content_validation_actions = {
+    Action.SAVE,
+    Action.UNSAVE,
+    Action.REPOST,
+    Action.UNREPOST,
+}
+premium_content_validation_entities = {EntityType.TRACK}
+
 
 def create_social_record(params: ManageEntityParameters):
 

@@ -14,6 +14,9 @@ from src.models.social.save import Save
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
+)
 from src.tasks.entity_manager.playlist import (
     create_playlist,
     delete_playlist,
@@ -25,6 +28,8 @@ from src.tasks.entity_manager.social_features import (
     create_social_record,
     delete_social_action_types,
     delete_social_record,
+    premium_content_validation_actions,
+    premium_content_validation_entities,
 )
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
 from src.tasks.entity_manager.utils import (
@@ -79,7 +84,7 @@ def entity_manager_update(
         # collect events by entity type and action
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
 
-        # fetch existing playlists
+        # fetch existing tracks playlists
         existing_records: ExistingRecordDict = fetch_existing_entities(
             session, entities_to_fetch
         )
@@ -91,7 +96,7 @@ def entity_manager_update(
 
         pending_track_routes: List[TrackRoute] = []
 
-        # process in tx order and populate playlists_to_save
+        # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             entity_manager_event_tx = get_entity_manager_events_tx(
@@ -151,12 +156,22 @@ def entity_manager_update(
                         params.action in create_social_action_types
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        create_social_record(params)
+                        if should_check_entity_access(
+                            params.action, params.entity_type
+                        ):
+                            create_social_record_if_access(existing_records, params)
+                        else:
+                            create_social_record(params)
                     elif (
                         params.action in delete_social_action_types
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        delete_social_record(params)
+                        if should_check_entity_access(
+                            params.action, params.entity_type
+                        ):
+                            delete_social_record_if_access(existing_records, params)
+                        else:
+                            delete_social_record(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -357,3 +372,64 @@ def get_entity_manager_events_tx(update_task, tx_receipt):
     return getattr(
         update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
     )().processReceipt(tx_receipt)
+
+
+def should_check_entity_access(action: Action, entity_type: EntityType):
+    return (
+        action in premium_content_validation_actions
+        and entity_type in premium_content_validation_entities
+    )
+
+
+def create_social_record_if_access(
+    existing_records: ExistingRecordDict, params: ManageEntityParameters
+):
+    user_id = params.user_id
+    entity_id = params.entity_id
+    entity_type = params.entity_type
+    entity = (
+        existing_records[entity_type][entity_id]
+        if entity_type in existing_records
+        and entity_id in existing_records[entity_type]
+        else None
+    )
+    if entity:
+        premium_content_access = premium_content_access_checker.check_access(
+            {
+                "user_id": user_id,
+                "premium_content_id": entity_id,
+                "premium_content_type": "track",
+                "premium_content": entity,
+            }
+        )
+        if premium_content_access["does_user_have_access"]:
+            create_social_record(params)
+    else:
+        raise Exception("entity_manager.py | entity is not in existing records")
+
+
+def delete_social_record_if_access(
+    existing_records: ExistingRecordDict, params: ManageEntityParameters
+):
+    user_id = params.user_id
+    entity_id = params.entity_id
+    entity_type = params.entity_type
+    entity = (
+        existing_records[entity_type][entity_id]
+        if entity_type in existing_records
+        and entity_id in existing_records[entity_type]
+        else None
+    )
+    if entity:
+        premium_content_access = premium_content_access_checker.check_access(
+            {
+                "user_id": user_id,
+                "premium_content_id": entity_id,
+                "premium_content_type": "track",
+                "premium_content": entity,
+            }
+        )
+        if premium_content_access["does_user_have_access"]:
+            delete_social_record(params)
+    else:
+        raise Exception("entity_manager.py | entity is not in existing records")
