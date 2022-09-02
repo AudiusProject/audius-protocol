@@ -1,12 +1,8 @@
 import { Theme } from '@audius/common'
 
-import { getIsIOS } from 'utils/browser'
-
 import DarkTheme from './dark'
 import DefaultTheme from './default'
 import MatrixTheme from './matrix'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const THEME_KEY = 'theme'
 export const PREFERS_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
@@ -22,10 +18,6 @@ const applyTheme = (themeObject: { [key: string]: string }) => {
 }
 
 const doesPreferDarkMode = () => {
-  if (NATIVE_MOBILE && !getIsIOS()) {
-    // @ts-ignore
-    return window.prefersDarkMode
-  }
   return (
     window.matchMedia && window.matchMedia(PREFERS_DARK_MEDIA_QUERY).matches
   )

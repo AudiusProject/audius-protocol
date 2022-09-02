@@ -1,12 +1,11 @@
-import { useContext, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { isEqual } from 'lodash'
 import type { TextStyle, ViewStyle, ImageStyle } from 'react-native'
 import { StyleSheet } from 'react-native'
 
-import { ThemeContext } from '../components/theme/ThemeContext'
-import type { ThemeColors } from '../utils/theme'
-import { Theme as ThemeType, useThemeColors } from '../utils/theme'
+import type { ThemeColors, Theme as ThemeType } from '../utils/theme'
+import { useThemeVariant, useThemeColors } from '../utils/theme'
 
 import { spacing } from './spacing'
 import { typography } from './typography'
@@ -54,22 +53,16 @@ export const makeStyles = <PropsT, T extends NamedStyles<T> = NamedStyles<any>>(
   styles: Styles<T, PropsT>
 ) => {
   const useStyles = (props?: PropsT): T => {
-    const { theme: themeType, isSystemDarkMode } = useContext(ThemeContext)
-    const type =
-      themeType === ThemeType.AUTO
-        ? isSystemDarkMode
-          ? ThemeType.DARK
-          : ThemeType.DEFAULT
-        : themeType
+    const themeVariant = useThemeVariant()
     const palette = useThemeColors()
 
     const memoizedProps = useMemoCompare<PropsT | undefined>(props, isEqual)
 
     const stylesheet = useMemo(() => {
-      const theme = { palette, typography, spacing, type }
+      const theme = { palette, typography, spacing, type: themeVariant }
       const namedStyles = styles(theme, memoizedProps)
       return StyleSheet.create(namedStyles)
-    }, [palette, type, memoizedProps])
+    }, [palette, themeVariant, memoizedProps])
 
     return stylesheet
   }
