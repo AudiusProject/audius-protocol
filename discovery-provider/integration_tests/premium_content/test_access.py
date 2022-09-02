@@ -5,7 +5,76 @@ from src.premium_content.premium_content_access_checker import (
 from src.utils.db_session import get_db_read_replica
 
 
-def test_track_access(app):
+def test_access(app):
+    with app.app_context():
+        db = get_db_read_replica()
+
+        user_entity_1 = {"user_id": 1}
+        user_entity_2 = {"user_id": 2}
+        user_entities = [user_entity_1, user_entity_2]
+
+        non_premium_track_entity = {
+            "track_id": 1,
+            "owner_id": 3,
+            "is_premium": False,
+            "premium_conditions": None,
+        }
+        premium_track_entity_1 = {
+            "track_id": 2,
+            "owner_id": 3,
+            "is_premium": True,
+            "premium_conditions": {"nft-collection": "some-nft-collection"},
+        }
+        premium_track_entity_2 = {
+            "track_id": 3,
+            "owner_id": user_entity_2["user_id"],
+            "is_premium": True,
+            "premium_conditions": {"nft-collection": "some-nft-collection"},
+        }
+        track_entities = [
+            non_premium_track_entity,
+            premium_track_entity_1,
+            premium_track_entity_2,
+        ]
+
+        entities = {"users": user_entities, "tracks": track_entities}
+
+        populate_mock_db(db, entities)
+
+        premium_content_access_checker = PremiumContentAccessChecker()
+
+        # test non-premium content
+        result = premium_content_access_checker.check_access(
+            user_id=user_entity_1["user_id"],
+            premium_content_id=non_premium_track_entity["track_id"],
+            premium_content_type="track",
+            premium_content_entity=non_premium_track_entity,
+        )
+        assert not result["is_premium"] and result["does_user_have_access"]
+
+        # test premium content with user who has access
+        result = premium_content_access_checker.check_access(
+            user_id=user_entity_2["user_id"],
+            premium_content_id=premium_track_entity_1["track_id"],
+            premium_content_type="track",
+            premium_content_entity=premium_track_entity_1,
+        )
+        assert result["is_premium"] and result["does_user_have_access"]
+
+        # test premium content with user who owns the track
+        result = premium_content_access_checker.check_access(
+            user_id=user_entity_2["user_id"],
+            premium_content_id=premium_track_entity_2["track_id"],
+            premium_content_type="track",
+            premium_content_entity=premium_track_entity_2,
+        )
+        assert result["is_premium"] and result["does_user_have_access"]
+
+        # todo: test premium content with user who has no access
+        # after we implement nft infexing
+
+
+def test_batch_access(app):
     with app.app_context():
         db = get_db_read_replica()
 
