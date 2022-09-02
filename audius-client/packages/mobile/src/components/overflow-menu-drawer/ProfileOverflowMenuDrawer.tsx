@@ -18,7 +18,7 @@ type Props = {
 }
 
 const ProfileOverflowMenuDrawer = ({ render }: Props) => {
-  const dispatchWeb = useDispatch()
+  const dispatch = useDispatch()
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
   const user = useSelector((state: CommonState) => getUser(state, { id }))
@@ -34,11 +34,10 @@ const ProfileOverflowMenuDrawer = ({ render }: Props) => {
 
   const callbacks = {
     [OverflowAction.FOLLOW]: () =>
-      dispatchWeb(followUser(id, FollowSource.OVERFLOW)),
+      dispatch(followUser(id, FollowSource.OVERFLOW)),
     [OverflowAction.UNFOLLOW]: () =>
-      dispatchWeb(unfollowUser(id, FollowSource.OVERFLOW)),
-    [OverflowAction.SHARE]: () =>
-      dispatchWeb(shareUser(id, ShareSource.OVERFLOW))
+      dispatch(unfollowUser(id, FollowSource.OVERFLOW)),
+    [OverflowAction.SHARE]: () => dispatch(shareUser(id, ShareSource.OVERFLOW))
   }
 
   return render(callbacks)
