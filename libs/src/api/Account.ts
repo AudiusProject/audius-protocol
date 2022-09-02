@@ -251,9 +251,10 @@ export class Account extends Base {
         handle
       }
 
-      await this.identityService.sendRecoveryInfo(recoveryData)
+      return await this.identityService.sendRecoveryInfo(recoveryData)
     } catch (e) {
       console.error(e)
+      return { status: false }
     }
   }
 
