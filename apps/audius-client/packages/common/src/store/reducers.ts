@@ -42,6 +42,7 @@ import player, { PlayerState } from './player/slice'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
+import { recoveryEmailReducer, RecoveryEmailState } from './recovery-email'
 import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
@@ -151,7 +152,8 @@ export const reducers = () => ({
       notifications: notificationsUserListReducer
     }),
     theme,
-    vipDiscordModal: vipDiscordModalReducer
+    vipDiscordModal: vipDiscordModalReducer,
+    recoveryEmail: recoveryEmailReducer
   }),
 
   // Pages
@@ -243,6 +245,7 @@ export type CommonState = {
     }
     theme: ThemeState
     vipDiscordModal: VipDiscordModalState
+    recoveryEmail: RecoveryEmailState
   }
 
   pages: {
