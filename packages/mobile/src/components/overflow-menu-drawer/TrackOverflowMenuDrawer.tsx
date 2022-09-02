@@ -15,7 +15,7 @@ import {
 // Importing directly from audius-client for now, this will be removed
 // when the profile page is implemented in RN
 import { profilePage } from 'audius-client/src/utils/route'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -35,6 +35,7 @@ type Props = {
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
   const navigation = useNavigation()
+  const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
@@ -57,15 +58,15 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
 
   const callbacks = {
     [OverflowAction.REPOST]: () =>
-      dispatchWeb(repostTrack(id, RepostSource.OVERFLOW)),
+      dispatch(repostTrack(id, RepostSource.OVERFLOW)),
     [OverflowAction.UNREPOST]: () =>
-      dispatchWeb(undoRepostTrack(id, RepostSource.OVERFLOW)),
+      dispatch(undoRepostTrack(id, RepostSource.OVERFLOW)),
     [OverflowAction.FAVORITE]: () =>
-      dispatchWeb(saveTrack(id, FavoriteSource.OVERFLOW)),
+      dispatch(saveTrack(id, FavoriteSource.OVERFLOW)),
     [OverflowAction.UNFAVORITE]: () =>
-      dispatchWeb(unsaveTrack(id, FavoriteSource.OVERFLOW)),
+      dispatch(unsaveTrack(id, FavoriteSource.OVERFLOW)),
     [OverflowAction.SHARE]: () =>
-      dispatchWeb(shareTrack(id, ShareSource.OVERFLOW)),
+      dispatch(shareTrack(id, ShareSource.OVERFLOW)),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
       dispatchWeb(openAddToPlaylistModal(id, title)),
     [OverflowAction.VIEW_TRACK_PAGE]: () => {
@@ -83,9 +84,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       })
     },
     [OverflowAction.FOLLOW_ARTIST]: () =>
-      dispatchWeb(followUser(owner_id, FollowSource.OVERFLOW)),
+      dispatch(followUser(owner_id, FollowSource.OVERFLOW)),
     [OverflowAction.UNFOLLOW_ARTIST]: () =>
-      dispatchWeb(unfollowUser(owner_id, FollowSource.OVERFLOW))
+      dispatch(unfollowUser(owner_id, FollowSource.OVERFLOW))
   }
 
   return render(callbacks)
