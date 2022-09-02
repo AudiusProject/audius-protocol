@@ -100,7 +100,7 @@ For more details on the `A` command and options, run `A --help` and checkout the
 ## Contributing
 
 We welcome contributions to Audius from anyone who opens a PR. Feel free to reach out to
-our team [on Discord](https://discord.com/invite/yNUg2e2) or via other channels for feedback and/or support!
+our team [on Discord](https://discord.gg/audius) or via other channels for feedback and/or support!
 
 ## Security
 
