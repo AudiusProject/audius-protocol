@@ -2,9 +2,6 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 
 import LottieView from 'lottie-react-native'
 import { StyleSheet, Animated } from 'react-native'
-import { useSelector } from 'react-redux'
-
-import { getDappLoaded } from 'app/store/lifecycle/selectors'
 
 const SCALE_TO = 1.2
 const ANIM_DURATION_MS = 2000
@@ -12,16 +9,13 @@ const LOTTIE_HEIGHT = 1350
 const BACKGROUND_COLOR = '#7E1BCC'
 
 export const SplashScreen = () => {
-  const dappLoaded = useSelector(getDappLoaded)
   const [animationFinished, setAnimationFinished] = useState(false)
 
   useEffect(() => {
-    if (dappLoaded) {
-      if (animationRef.current) {
-        animationRef.current.play()
-      }
+    if (animationRef.current) {
+      animationRef.current.play()
     }
-  }, [dappLoaded])
+  })
 
   const [scaleAnim] = useState(new Animated.Value(1))
 

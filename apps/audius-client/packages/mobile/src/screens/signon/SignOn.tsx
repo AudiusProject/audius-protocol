@@ -42,7 +42,7 @@ import { MessageType } from 'app/message/types'
 import { track, make } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
-import { getDappLoaded, getIsSignedIn } from 'app/store/lifecycle/selectors'
+import { getIsSignedIn } from 'app/store/lifecycle/selectors'
 import * as signOnActionsLegacy from 'app/store/signon/actions'
 import { EventNames } from 'app/types/analytics'
 import { useThemeColors } from 'app/utils/theme'
@@ -339,8 +339,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
 
   const isKeyboardOpen = useSelector(getIsKeyboardOpen)
 
-  // TODO: Remove when fully on react native store
-  const dappLoaded = useSelector(getDappLoaded)
   const lifecycleSignIn = useSelector(getIsSignedIn)
 
   const signOnStatus = useSelector(getStatus)
@@ -403,11 +401,9 @@ const SignOn = ({ navigation }: SignOnProps) => {
   }, [signedIn, accountUser, lifecycleSignIn, dispatch])
 
   useEffect(() => {
-    if (dappLoaded) {
-      animateDrawer()
-      fadeCTA()
-    }
-  }, [dappLoaded, animateDrawer, fadeCTA])
+    animateDrawer()
+    fadeCTA()
+  }, [animateDrawer, fadeCTA])
 
   useEffect(() => {
     if (

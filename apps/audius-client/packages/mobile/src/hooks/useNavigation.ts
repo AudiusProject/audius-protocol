@@ -8,8 +8,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 import type { AppTabScreenParamList } from 'app/screens/app-screen/AppTabScreen'
 
-import { usePushRouteWeb } from './usePushRouteWeb'
-
 export type ContextualParams = { fromNotifications?: boolean }
 
 type UseNavigationConfig<
@@ -37,22 +35,16 @@ export const useNavigation = <
   const defaultNativeNavigation =
     useNavigationNative<NativeStackNavigationProp<ParamList>>()
   const nativeNavigation = customNativeNavigation || defaultNativeNavigation
-  const pushRouteWeb = usePushRouteWeb()
 
   const performNavigation = useCallback(
     (method) =>
       <RouteName extends keyof ParamList>(
         config: UseNavigationConfig<ParamList, RouteName>
       ) => {
-        const { native, web } = config
+        const { native } = config
         method(native.screen, native.params)
-        if (web) {
-          pushRouteWeb(web.route, web.fromPage, web.fromNativeNotifications)
-        }
       },
-    // eslint thinks ParamList is a variable
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pushRouteWeb]
+    []
   )
 
   return useMemo(

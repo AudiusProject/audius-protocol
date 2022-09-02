@@ -22,11 +22,7 @@ import {
 import { SignOnScreen } from 'app/screens/signon'
 import { UpdateRequiredScreen } from 'app/screens/update-required-screen/UpdateRequiredScreen'
 import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
-import {
-  getDappLoaded,
-  getIsSignedIn,
-  getOnSignUp
-} from 'app/store/lifecycle/selectors'
+import { getIsSignedIn, getOnSignUp } from 'app/store/lifecycle/selectors'
 import { getAccountAvailable } from 'app/store/signon/selectors'
 
 export type RootScreenParamList = {
@@ -133,7 +129,6 @@ const NotificationsDrawerContents = (
  */
 export const RootScreen = () => {
   const dispatch = useDispatch()
-  const dappLoaded = useSelector(getDappLoaded)
   const signedIn = useSelector(getIsSignedIn)
   const onSignUp = useSelector(getOnSignUp)
   const isAccountAvailable = useSelector(getAccountAvailable)
@@ -151,10 +146,7 @@ export const RootScreen = () => {
   // However, this allows the feed screen to load initially so that when the
   // splash screen disappears there is already content (skeletons) on the screen
   const isAuthed =
-    !dappLoaded ||
-    signedIn === null ||
-    (signedIn && !onSignUp) ||
-    isAccountAvailable
+    signedIn === null || (signedIn && !onSignUp) || isAccountAvailable
 
   return isAuthed ? (
     <Drawer.Navigator

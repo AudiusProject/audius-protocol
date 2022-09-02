@@ -2,10 +2,11 @@ import type { ReactNode } from 'react'
 import { createContext, useCallback } from 'react'
 
 import { Name, themeActions, themeSelectors } from '@audius/common'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useDarkMode } from 'react-native-dark-mode'
+import { useDispatch, useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
 import { Theme } from 'app/utils/theme'
 const { setTheme } = themeActions
@@ -29,13 +30,23 @@ type ThemeProviderProps = {
 
 export const ThemeProvider = (props: ThemeProviderProps) => {
   const { children } = props
-  const dispatchWeb = useDispatchWeb()
-  const theme = useSelectorWeb(getTheme) ?? Theme.DEFAULT
+  const dispatch = useDispatch()
+  const theme = useSelector(getTheme) ?? Theme.DEFAULT
   const isSystemDarkMode = useDarkMode()
+
+  useAsync(async () => {
+    const savedTheme = await AsyncStorage.getItem('theme')
+    if (!savedTheme) {
+      await AsyncStorage.setItem('theme', Theme.DEFAULT)
+      dispatch(setTheme(Theme.DEFAULT))
+    } else {
+      dispatch(setTheme(savedTheme as Theme))
+    }
+  }, [])
 
   const handleSetTheme = useCallback(
     (theme: Theme, isChange?: boolean) => {
-      dispatchWeb(setTheme(theme, isChange))
+      dispatch(setTheme(theme, isChange))
 
       const recordedTheme =
         theme === Theme.DEFAULT ? 'light' : theme.toLocaleLowerCase()
@@ -47,7 +58,7 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
 
       track(trackEvent)
     },
-    [dispatchWeb]
+    [dispatch]
   )
 
   return (

@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react'
 import { reachabilitySelectors } from '@audius/common'
 import { View, Animated } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 const { getIsReachable } = reachabilitySelectors
@@ -44,7 +44,7 @@ const useStyles = makeStyles(({ palette, typography }) => ({
 
 export const ReachabilityBar = () => {
   const translationAnim = useRef(new Animated.Value(-40)).current
-  const isNotReachable = useSelectorWeb(getIsReachable) === false
+  const isNotReachable = useSelector(getIsReachable) === false
 
   const styles = useStyles()
 
