@@ -52,9 +52,9 @@ class PremiumContentAccessChecker:
             )
             return {"is_premium": False, "does_user_have_access": True}
 
-        is_premium = premium_content_entity["is_premium"]  # type: ignore
-        premium_conditions = premium_content_entity["premium_conditions"]  # type: ignore
-        content_owner_id = premium_content_entity["owner_id"]  # type: ignore
+        is_premium = premium_content_entity.is_premium
+        premium_conditions = premium_content_entity.premium_conditions
+        content_owner_id = premium_content_entity.owner_id
 
         if not is_premium:
             # premium_conditions should always be null here as it makes
@@ -89,7 +89,7 @@ class PremiumContentAccessChecker:
             "does_user_have_access": self._evaluate_conditions(
                 user_id=user_id,
                 premium_content_owner_id=cast(int, content_owner_id),
-                premium_conditions=premium_conditions,
+                premium_conditions=cast(dict, premium_conditions),
             ),
         }
 

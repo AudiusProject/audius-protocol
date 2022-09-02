@@ -129,6 +129,8 @@ def test_index_valid_track(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
             "field_visibility": {
                 "mood": True,
                 "tags": True,
@@ -171,6 +173,8 @@ def test_index_valid_track(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
             "field_visibility": {
                 "genre": True,
                 "mood": True,
@@ -211,6 +215,8 @@ def test_index_valid_track(app, mocker):
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
             "field_visibility": {
                 "mood": True,
                 "tags": True,

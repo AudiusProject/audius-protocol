@@ -151,12 +151,10 @@ def create_social_record_if_access(
     )
     if entity:
         premium_content_access = premium_content_access_checker.check_access(
-            {
-                "user_id": user_id,
-                "premium_content_id": entity_id,
-                "premium_content_type": "track",
-                "premium_content_entity": entity,
-            }
+            user_id=user_id,
+            premium_content_id=entity_id,
+            premium_content_type="track",
+            premium_content_entity=entity,
         )
         if premium_content_access["does_user_have_access"]:
             create_social_record(params)
@@ -180,12 +178,10 @@ def delete_social_record_if_access(
     )
     if entity:
         premium_content_access = premium_content_access_checker.check_access(
-            {
-                "user_id": user_id,
-                "premium_content_id": entity_id,
-                "premium_content_type": "track",
-                "premium_content_entity": entity,
-            }
+            user_id=user_id,
+            premium_content_id=entity_id,
+            premium_content_type="track",
+            premium_content_entity=entity,
         )
         if premium_content_access["does_user_have_access"]:
             delete_social_record(params)
