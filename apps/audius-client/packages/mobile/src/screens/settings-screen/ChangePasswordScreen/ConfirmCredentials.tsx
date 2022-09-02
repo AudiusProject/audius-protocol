@@ -6,13 +6,12 @@ import {
   changePasswordActions
 } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { StatusMessage } from 'app/components/status-message/'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { StatusMessage } from 'app/components/status-message'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 const { confirmCredentials } = changePasswordActions
@@ -45,13 +44,13 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const styles = useStyles()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errorSeen, setErrorSeen] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
-  const status = useSelectorWeb(getConfirmCredentialsStatus)
+  const status = useSelector(getConfirmCredentialsStatus)
   const { neutralLight4, primary } = useThemeColors()
 
   const handleEmailChange = (val: string) => setEmail(val)
@@ -59,7 +58,7 @@ export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
   const handleKeyPress = () => setErrorSeen(true)
 
   const onSubmit = () => {
-    dispatchWeb(confirmCredentials({ email, password }))
+    dispatch(confirmCredentials({ email, password }))
     setHasSubmitted(true)
     setErrorSeen(false)
   }
