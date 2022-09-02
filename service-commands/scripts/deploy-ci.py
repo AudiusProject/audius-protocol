@@ -324,7 +324,7 @@ def cli(github_user, github_token, environment, service, hosts, git_tag, paralle
     )
 
     format_skipped(skipped_hosts)
-    format_hosts("Upgraded", affected_hosts)
+    format_hosts(f"Upgraded to {git_tag if git_tag else 'master'}", affected_hosts)
     format_hosts("Failed", failed_hosts)
 
 
