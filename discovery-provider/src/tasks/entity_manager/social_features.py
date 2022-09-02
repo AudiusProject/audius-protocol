@@ -135,34 +135,3 @@ def validate_social_feature(params: ManageEntityParameters):
     if params.action == Action.FOLLOW or params.action == Action.UNFOLLOW:
         if params.user_id == params.entity_id:
             raise Exception("User cannot follow themself")
-
-
-def copy_follow_record(
-    old_follow: Follow, block_number: int, event_blockhash: str, txhash: str
-):
-    return Follow(
-        blockhash=event_blockhash,
-        blocknumber=block_number,
-        follower_user_id=old_follow.follower_user_id,
-        followee_user_id=old_follow.followee_user_id,
-        is_current=old_follow.is_current,
-        is_delete=old_follow.is_delete,
-        created_at=old_follow.created_at,
-        txhash=txhash,
-    )
-
-
-def copy_save_record(
-    existing_entity: Save, block_number: int, event_blockhash: str, txhash: str
-):
-    return Save(
-        blockhash=event_blockhash,
-        blocknumber=block_number,
-        user_id=existing_entity.user_id,
-        save_item_id=existing_entity.save_item_id,
-        save_type=existing_entity.save_type,
-        is_current=existing_entity.is_current,
-        is_delete=existing_entity.is_delete,
-        created_at=existing_entity.created_at,
-        txhash=txhash,
-    )
