@@ -1346,7 +1346,8 @@ function* watchFetchCoverArt() {
         )
       } catch (e) {
         console.error(
-          `Unable to fetch cover art for collection ${collectionId}`
+          `Unable to fetch cover art for collection ${collectionId}`,
+          e
         )
       } finally {
         inProgress.delete(key)

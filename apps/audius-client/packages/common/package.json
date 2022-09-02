@@ -18,6 +18,7 @@
   },
   "scripts": {
     "build": "rollup -c",
+    "start": "rollup -c -w",
     "lint": "eslint --cache src",
     "lint:fix": "npm run lint -- --fix",
     "start": "rollup -c -w",
