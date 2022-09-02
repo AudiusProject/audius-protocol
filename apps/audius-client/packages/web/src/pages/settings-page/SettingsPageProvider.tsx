@@ -18,7 +18,8 @@ import {
   themeSelectors,
   themeActions,
   accountActions,
-  TwitterProfile
+  TwitterProfile,
+  signOutActions
 } from '@audius/common'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -42,6 +43,8 @@ import {
   SettingsPageProps as MobileSettingsPageProps,
   SubPage
 } from './components/mobile/SettingsPage'
+
+const { signOut } = signOutActions
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 const { setVisibility } = modalsActions
@@ -178,7 +181,8 @@ class SettingsPage extends PureComponent<
       recordSignOut,
       recordAccountRecovery,
       recordDownloadDesktopApp,
-      tier
+      tier,
+      signOut
     } = this.props
 
     const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
@@ -211,7 +215,8 @@ class SettingsPage extends PureComponent<
       recordDownloadDesktopApp,
       goToRoute,
       goBack,
-      showMatrix
+      showMatrix,
+      signOut
     }
 
     const mobileProps = {
@@ -323,6 +328,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     },
     showMatrixConfetti: () => {
       dispatch(show())
+    },
+    signOut: () => {
+      dispatch(signOut())
     }
   }
 }
