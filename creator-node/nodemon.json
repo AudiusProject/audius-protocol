@@ -6,7 +6,8 @@
     "node_modules/",
     "build/",
     "build_test/",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "**/*.js.map"
   ],
   "env": {
     "NODE_ENV": "development"
