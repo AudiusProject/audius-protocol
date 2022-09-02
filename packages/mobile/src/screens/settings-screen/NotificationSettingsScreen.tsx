@@ -1,7 +1,6 @@
-import { useEffect } from 'react'
-
-import { PushNotificationSetting } from '@audius/common'
+import { PushNotificationSetting, settingsPageActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { Screen } from 'app/components/core'
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
@@ -9,6 +8,9 @@ import { remindUserToTurnOnNotifications } from 'app/components/notification-rem
 import { Divider } from './Divider'
 import { EmailFrequencyControlRow } from './EmailFrequencyControlRow'
 import { NotificationRow } from './NotificationRow'
+
+const { getPushNotificationSettings, getNotificationSettings } =
+  settingsPageActions
 
 const messages = {
   title: 'Notifications',
@@ -23,9 +25,11 @@ const messages = {
 export const NotificationSettingsScreen = () => {
   const dispatch = useDispatch()
 
-  useEffect(() => {
+  useEffectOnce(() => {
+    dispatch(getPushNotificationSettings())
+    dispatch(getNotificationSettings())
     remindUserToTurnOnNotifications(dispatch)
-  }, [dispatch])
+  })
 
   return (
     <Screen title={messages.title} variant='secondary' topbarRight={null}>
