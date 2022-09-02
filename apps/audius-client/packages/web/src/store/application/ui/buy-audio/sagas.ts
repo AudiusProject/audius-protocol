@@ -65,7 +65,8 @@ const {
   transferCompleted,
   clearFeesCache,
   calculateAudioPurchaseInfoFailed,
-  buyAudioFlowFailed
+  buyAudioFlowFailed,
+  precalculateSwapFees
 } = buyAudioActions
 
 const { getBuyAudioFlowStage, getFeesCache } = buyAudioSelectors
@@ -313,18 +314,20 @@ function* getAudioPurchaseInfo({
       'finalized'
     )
 
-    const estimatedLamports =
-      inSol +
-      associatedAccountCreationFees +
-      transactionFees +
-      rootAccountMinBalance -
-      existingBalance
+    const estimatedLamports = BN.max(
+      new BN(inSol)
+        .add(new BN(associatedAccountCreationFees))
+        .add(new BN(transactionFees))
+        .add(new BN(rootAccountMinBalance))
+        .sub(new BN(existingBalance)),
+      new BN(0)
+    )
 
     // Get SOL => USDC quote to estimate $USD cost
     const quoteUSD = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'USDC',
-      inputAmount: estimatedLamports / LAMPORTS_PER_SOL,
+      inputAmount: estimatedLamports.toNumber() / LAMPORTS_PER_SOL,
       slippage: 0
     })
 
@@ -340,7 +343,7 @@ Fees: ${
         LAMPORTS_PER_SOL
       } SOL
 Existing Balance: ${existingBalance / LAMPORTS_PER_SOL} SOL
-Total: ${estimatedLamports / LAMPORTS_PER_SOL} SOL ($${
+Total: ${estimatedLamports.toNumber() / LAMPORTS_PER_SOL} SOL ($${
         quoteUSD.outputAmount.uiAmountString
       } USDC)`
     )
@@ -667,6 +670,23 @@ function* watchOnRampStarted() {
   yield takeLatest(onRampOpened, startBuyAudioFlow)
 }
 
+function* watchPrecalculateSwapFees() {
+  yield takeLatest(precalculateSwapFees, function* () {
+    // Get SOL => AUDIO quote to calculate fees
+    const quote = yield* call(JupiterSingleton.getQuote, {
+      inputTokenSymbol: 'SOL',
+      outputTokenSymbol: 'AUDIO',
+      inputAmount: 0,
+      slippage: 0
+    })
+    yield* call(getSwapFees, { route: quote.route })
+  })
+}
+
 export default function sagas() {
-  return [watchOnRampStarted, watchCalculateAudioPurchaseInfo]
+  return [
+    watchOnRampStarted,
+    watchCalculateAudioPurchaseInfo,
+    watchPrecalculateSwapFees
+  ]
 }

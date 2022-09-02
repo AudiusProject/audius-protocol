@@ -20,10 +20,12 @@ const { getAudioPurchaseInfo, getBuyAudioFlowStage, getBuyAudioFlowError } =
 const messages = {
   pleaseHold: 'Please hold on. This may take a few moments.',
   completeWithCoinbase: 'Complete this step with Coinbase',
-  step1: 'Step 1',
-  step2: 'Step 2',
+  step1: 'Step 1/3',
+  step2: 'Step 2/3',
+  step3: 'Step 3/3',
   purchasingSol: 'Purchasing SOL',
   convertingSol: 'Converting SOL to $AUDIO',
+  finishingUp: 'Finalizing Transaction',
   moreInfo: 'More Info',
   lessInfo: 'Less Info',
   usd: 'USD',
@@ -42,11 +44,41 @@ type Token = {
   icon: ReactNode
 }
 
+const stageToStep = (stage: BuyAudioStage) => {
+  switch (stage) {
+    case BuyAudioStage.PURCHASING:
+      return 1
+    case BuyAudioStage.CONFIRMING_PURCHASE:
+    case BuyAudioStage.SWAPPING:
+      return 2
+    case BuyAudioStage.CONFIRMING_SWAP:
+    case BuyAudioStage.TRANSFERRING:
+      return 3
+  }
+  console.error('Reached unexpected stage in InProgressPage.tsx:', stage)
+  return 1
+}
+
+const stepMessages = {
+  1: {
+    stepName: messages.step1,
+    moreInfo: messages.purchasingSol
+  },
+  2: {
+    stepName: messages.step2,
+    moreInfo: messages.convertingSol
+  },
+  3: {
+    stepName: messages.step3,
+    moreInfo: messages.finishingUp
+  }
+}
+
 export const InProgressPage = () => {
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
   const buyAudioFlowStage = useSelector(getBuyAudioFlowStage)
   const isError = useSelector(getBuyAudioFlowError)
-  const isStepOne = buyAudioFlowStage === BuyAudioStage.PURCHASING
+  const step = stageToStep(buyAudioFlowStage)
   let firstToken: Token | undefined
   let secondToken: Token | undefined
   if (purchaseInfo?.isError === false) {
@@ -57,7 +89,17 @@ export const InProgressPage = () => {
         maxDecimals: 2
       })
     }
-    if (isStepOne) {
+    const audioToken = {
+      label: messages.audio,
+      icon: <IconAUDIO />,
+      amount: formatNumberString(
+        purchaseInfo.desiredAudioAmount.uiAmountString,
+        {
+          maxDecimals: 2
+        }
+      )
+    }
+    if (step === 1) {
       firstToken = {
         label: messages.usd,
         icon: <IconUSD />,
@@ -67,18 +109,11 @@ export const InProgressPage = () => {
         })
       }
       secondToken = solToken
-    } else {
+    } else if (step === 2) {
       firstToken = solToken
-      secondToken = {
-        label: messages.audio,
-        icon: <IconAUDIO />,
-        amount: formatNumberString(
-          purchaseInfo.desiredAudioAmount.uiAmountString,
-          {
-            maxDecimals: 2
-          }
-        )
-      }
+      secondToken = audioToken
+    } else {
+      firstToken = audioToken
     }
   }
   return (
@@ -90,9 +125,7 @@ export const InProgressPage = () => {
         ) : (
           <LoadingSpinner className={styles.spinner} />
         )}
-        <span className={styles.headerCaps}>
-          {isStepOne ? messages.step1 : messages.step2}
-        </span>
+        <span className={styles.headerCaps}>{stepMessages[step].stepName}</span>
       </div>
       {isError ? (
         <div className={styles.error}>
@@ -102,7 +135,7 @@ export const InProgressPage = () => {
             ? messages.coinbaseErrorMessage
             : messages.swapErrorMessage}
         </div>
-      ) : isStepOne ? (
+      ) : step === 1 ? (
         <div className={styles.callToAction}>
           {messages.completeWithCoinbase}
         </div>
@@ -115,17 +148,19 @@ export const InProgressPage = () => {
         hideText={messages.lessInfo}
       >
         <div className={styles.moreInfo}>
-          <div className={styles.headerCaps}>
-            {isStepOne ? messages.purchasingSol : messages.convertingSol}
-          </div>
+          <div className={styles.headerCaps}>{stepMessages[step].moreInfo}</div>
           <div className={styles.quote}>
             {firstToken?.icon}
             <span className={styles.amount}>{firstToken?.amount}</span>
             <span className={styles.headerCaps}>{firstToken?.label}</span>
-            <IconCaretDown className={styles.caret} />
-            {secondToken?.icon}
-            <span className={styles.amount}>{secondToken?.amount}</span>
-            <span className={styles.headerCaps}>{secondToken?.label}</span>
+            {secondToken ? (
+              <>
+                <IconCaretDown className={styles.caret} />
+                {secondToken.icon}
+                <span className={styles.amount}>{secondToken.amount}</span>
+                <span className={styles.headerCaps}>{secondToken.label}</span>
+              </>
+            ) : null}
           </div>
         </div>
       </CollapsibleContent>

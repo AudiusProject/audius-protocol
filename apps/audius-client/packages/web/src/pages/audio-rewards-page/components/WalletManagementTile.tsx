@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   Nullable,
@@ -6,7 +6,8 @@ import {
   tokenDashboardPageActions,
   walletSelectors,
   tokenDashboardPageSelectors,
-  formatWei
+  formatWei,
+  buyAudioActions
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
@@ -44,6 +45,8 @@ const messages = {
   advancedOptions: 'Advanced Options'
 }
 const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
+const { precalculateSwapFees } = buyAudioActions
 
 const AdvancedWalletActions = () => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
@@ -131,17 +134,24 @@ const AdvancedWalletActions = () => {
 }
 
 export const WalletManagementTile = () => {
+  const dispatch = useDispatch()
   const totalBalance: Nullable<BNWei> =
     useSelector(getAccountTotalBalance) ?? null
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   const [, setOpen] = useModalState('AudioBreakdown')
   const [, setBuyAudioModalOpen] = useModalState('BuyAudio')
+
   const onClickOpen = useCallback(() => {
     setOpen(true)
   }, [setOpen])
+
   const onBuyAudioClicked = useCallback(() => {
     setBuyAudioModalOpen(true)
   }, [setBuyAudioModalOpen])
+
+  useEffect(() => {
+    dispatch(precalculateSwapFees())
+  }, [dispatch])
 
   return (
     <div className={styles.walletManagementTile}>
