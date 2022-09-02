@@ -7,17 +7,17 @@ import {
   changePasswordActions
 } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { ConfirmCredentials } from 'app/components/confirm-credentials'
 import { Button, Screen, Text } from 'app/components/core'
-import { EnterPassword } from 'app/components/enter-password'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
-import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+import type { ProfileTabScreenParamList } from '../../app-screen/ProfileTabScreen'
+
+import { ConfirmCredentials } from './ConfirmCredentials'
+import { EnterPassword } from './EnterPassword'
 const { changePage, changePassword } = changePasswordActions
 const { getChangePasswordStatus, getCurrentPage } = changePasswordSelectors
 
@@ -59,18 +59,18 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 export const ChangePasswordScreen = () => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const styles = useStyles()
   const [email, setEmail] = useState('')
   const [oldPassword, setOldPassword] = useState('')
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
-  const changePasswordStatus = useSelectorWeb(getChangePasswordStatus)
-  const currentPage = useSelectorWeb(getCurrentPage)
+  const changePasswordStatus = useSelector(getChangePasswordStatus)
+  const currentPage = useSelector(getCurrentPage)
 
   const setCurrentPage = useCallback(
-    (page: ChangePasswordPageStep) => dispatchWeb(changePage(page)),
-    [dispatchWeb]
+    (page: ChangePasswordPageStep) => dispatch(changePage(page)),
+    [dispatch]
   )
 
   const handleCredentialsConfirmed = ({
@@ -86,7 +86,7 @@ export const ChangePasswordScreen = () => {
   }
 
   const handleNewPasswordSubmitted = (password: string) => {
-    dispatchWeb(changePassword({ email, password, oldPassword }))
+    dispatch(changePassword({ email, password, oldPassword }))
   }
 
   const handlePressDone = useCallback(() => {
@@ -142,7 +142,7 @@ export const ChangePasswordScreen = () => {
     </View>
   )
 
-  const getPageContent = () => {
+  const renderContent = () => {
     switch (currentPage) {
       case ChangePasswordPageStep.NEW_PASSWORD:
         return changePasswordView
@@ -159,7 +159,7 @@ export const ChangePasswordScreen = () => {
 
   return (
     <Screen topbarRight={null} variant='secondary'>
-      {getPageContent()}
+      {renderContent()}
     </Screen>
   )
 }
