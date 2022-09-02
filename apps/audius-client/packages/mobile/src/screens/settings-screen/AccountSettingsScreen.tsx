@@ -1,8 +1,9 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import {
   accountSelectors,
   recoveryEmailActions,
+  recoveryEmailSelectors,
   modalsActions
 } from '@audius/common'
 import { Text, View } from 'react-native'
@@ -27,6 +28,7 @@ import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { AccountSettingsItem } from './AccountSettingsItem'
 const { resendRecoveryEmail } = recoveryEmailActions
+const { getRecoveryEmailStatus } = recoveryEmailSelectors
 const { setVisibility } = modalsActions
 const { getAccountUser } = accountSelectors
 
@@ -37,6 +39,7 @@ const messages = {
     'Store your recovery email safely. This email is the only way to recover your account if you forget your password.',
   recoveryButtonTitle: 'Resend',
   recoveryEmailSent: 'Recovery Email Sent!',
+  recoveryEmailNotSent: 'Unable to send recovery email. Please try again!',
   verifyTitle: 'Get Verified',
   verifyDescription:
     'Get verified by linking a verified social account to Audius',
@@ -76,12 +79,21 @@ export const AccountSettingsScreen = () => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const accountUser = useSelector(getAccountUser)
+  const recoveryEmailStatus = useSelector(getRecoveryEmailStatus)
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePressRecoveryEmail = useCallback(() => {
-    dispatch(resendRecoveryEmail)
-    toast({ content: messages.recoveryEmailSent })
-  }, [dispatch, toast])
+    dispatch(resendRecoveryEmail())
+  }, [dispatch])
+
+  useEffect(() => {
+    if (recoveryEmailStatus === 'resolved') {
+      toast({ content: messages.recoveryEmailSent })
+    }
+    if (recoveryEmailStatus === 'rejected') {
+      toast({ content: messages.recoveryEmailSent })
+    }
+  }, [recoveryEmailStatus, toast])
 
   const handlePressVerification = useCallback(() => {
     navigation.push({
