@@ -1,21 +1,19 @@
 import { explorePageSelectors } from '@audius/common'
 import { EXPLORE_PAGE } from 'audius-client/src/utils/route'
+import { useSelector } from 'react-redux'
 
 import { ArtistCard } from 'app/components/artist-card'
 import { CardList } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { TabInfo } from '../components/TabInfo'
-const { makeGetExplore } = explorePageSelectors
+const { getExploreArtists } = explorePageSelectors
 
 const messages = {
   infoHeader: 'Featured Artists'
 }
 
-const getExplore = makeGetExplore()
-
 export const ArtistsTab = () => {
-  const { profiles } = useSelectorWeb(getExplore)
+  const profiles = useSelector(getExploreArtists)
 
   return (
     <CardList

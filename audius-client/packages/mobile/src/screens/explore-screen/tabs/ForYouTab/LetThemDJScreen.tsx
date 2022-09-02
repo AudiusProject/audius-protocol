@@ -1,26 +1,35 @@
+import { useEffect } from 'react'
+
 import {
   Status,
   explorePageCollectionsSelectors,
-  ExploreCollectionsVariant
+  ExploreCollectionsVariant,
+  explorePageCollectionsActions
 } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { LET_THEM_DJ } from '../../collections'
 const { getCollections, getStatus } = explorePageCollectionsSelectors
+const { fetch } = explorePageCollectionsActions
 
 export const LetThemDJScreen = () => {
-  const status = useSelectorWeb(
-    (state) =>
-      getStatus(state, { variant: ExploreCollectionsVariant.LET_THEM_DJ }),
-    isEqual
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(fetch({ variant: ExploreCollectionsVariant.LET_THEM_DJ }))
+  }, [dispatch])
+
+  const status = useSelector((state) =>
+    getStatus(state, { variant: ExploreCollectionsVariant.LET_THEM_DJ })
   )
-  const exploreData = useSelectorWeb((state) =>
+
+  const exploreData = useSelector((state) =>
     getCollections(state, { variant: ExploreCollectionsVariant.LET_THEM_DJ })
   )
 
