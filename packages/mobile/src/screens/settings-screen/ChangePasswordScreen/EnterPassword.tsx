@@ -95,7 +95,7 @@ export const EnterPassword = ({
   })
   const { neutralLight4, primary } = useThemeColors()
 
-  const onPasswordChange = (password: string) => {
+  const handlePasswordChange = (password: string) => {
     const number =
       requirements.number === 'default'
         ? getNumberRequirement(password) === 'valid'
@@ -127,7 +127,7 @@ export const EnterPassword = ({
     })
   }
 
-  const onPasswordConfirmationChange = (passwordConfirmation: string) => {
+  const handlePasswordConfirmationChange = (passwordConfirmation: string) => {
     if (requirements.match !== 'default') {
       setRequirements({
         ...requirements,
@@ -197,7 +197,7 @@ export const EnterPassword = ({
         style={styles.input}
         placeholder={messages.passwordPlaceholder}
         value={password}
-        onChangeText={onPasswordChange}
+        onChangeText={handlePasswordChange}
         onBlur={handlePasswordBlur}
         textContentType='password'
         secureTextEntry
@@ -206,7 +206,7 @@ export const EnterPassword = ({
         style={styles.input}
         placeholder={messages.confirmationPlaceholder}
         value={passwordConfirmation}
-        onChangeText={onPasswordConfirmationChange}
+        onChangeText={handlePasswordConfirmationChange}
         onBlur={handleConfirmationBlur}
         textContentType='password'
         secureTextEntry

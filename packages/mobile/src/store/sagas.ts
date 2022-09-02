@@ -12,6 +12,7 @@ import collectionsSagas from 'common/store/cache/collections/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
+import changePasswordSagas from 'common/store/change-password/sagas'
 import confirmerSagas from 'common/store/confirmer/sagas'
 import collectionPageSagas from 'common/store/pages/collection/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
@@ -113,6 +114,7 @@ export default function* rootSaga() {
     ...castSagas(),
 
     // Application
+    ...changePasswordSagas(),
     ...smartCollectionPageSagas(),
     ...overflowMenuSagas(),
     ...shareModalSagas(),
