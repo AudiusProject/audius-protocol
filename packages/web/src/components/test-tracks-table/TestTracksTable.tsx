@@ -43,21 +43,30 @@ type TestTracksTableProps = {
   data: any[]
   defaultSorter?: (a: any, b: any) => number
   isVirtualized?: boolean
+  isReorderable?: boolean
   loading?: boolean
   // TODO: Need to add the rows and skeletons when the loadingRowCount is passed
   // loadingRowCount?: number
   maxRowNum?: number
   onClickArtistName?: (track: any) => void
   onClickFavorite?: (track: any) => void
+  onClickRemove?: (
+    track: any,
+    index: number,
+    uid: string,
+    timestamp: number
+  ) => void
   onClickRepost?: (track: any) => void
   onClickRow?: (track: any, index: number) => void
   onClickTrackName?: (track: any) => void
+  onReorderTracks?: (source: number, destination: number) => void
   onSortTracks?: (sortProps: {
     column: { sorter: (a: any, b: any) => number }
     order: string
   }) => void
   playing?: boolean
   playingIndex?: number
+  removeText?: string
   tableClassName?: string
   userId?: number | null
   wrapperClassName?: string
@@ -80,18 +89,22 @@ export const TestTracksTable = ({
   columns = defaultColumns,
   data,
   defaultSorter,
+  isReorderable = false,
   isVirtualized = false,
   loading = false,
   // loadingRowCount = 0,
   maxRowNum = 20,
   onClickArtistName,
   onClickFavorite,
+  onClickRemove,
   onClickRepost,
   onClickRow,
   onClickTrackName,
+  onReorderTracks,
   onSortTracks,
   playing = false,
   playingIndex = -1,
+  removeText,
   tableClassName,
   userId,
   wrapperClassName
@@ -275,8 +288,8 @@ export const TestTracksTable = ({
             e.stopPropagation()
           }}
           isDeleted={deleted}
-          // onRemove={props.onClickRemove}
-          // removeText={props.removeText}
+          onRemove={onClickRemove}
+          removeText={removeText}
           handle={track.handle}
           trackId={track.track_id}
           uid={track.uid}
@@ -293,7 +306,7 @@ export const TestTracksTable = ({
         />
       )
     },
-    [userId]
+    [onClickRemove, removeText, userId]
   )
 
   const renderTrackActions = useCallback(
@@ -447,18 +460,20 @@ export const TestTracksTable = ({
 
   return (
     <TestTable
-      wrapperClassName={wrapperClassName}
-      tableClassName={tableClassName}
-      getRowClassName={getRowClassName}
-      columns={tableColumns}
-      maxRowNum={maxRowNum}
-      data={data}
-      loading={loading}
-      onClickRow={handleClickRow}
-      onSort={onSortTracks}
-      defaultSorter={defaultSorter}
       activeIndex={playingIndex}
+      columns={tableColumns}
+      data={data}
+      defaultSorter={defaultSorter}
+      getRowClassName={getRowClassName}
+      isReorderable={isReorderable}
       isVirtualized={isVirtualized}
+      loading={loading}
+      maxRowNum={maxRowNum}
+      onClickRow={handleClickRow}
+      onReorder={onReorderTracks}
+      onSort={onSortTracks}
+      tableClassName={tableClassName}
+      wrapperClassName={wrapperClassName}
     />
   )
 }

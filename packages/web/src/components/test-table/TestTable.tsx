@@ -3,6 +3,11 @@ import { useCallback, useEffect, useMemo } from 'react'
 import cn from 'classnames'
 import moment from 'moment'
 import {
+  DragDropContext,
+  Draggable as RbdDraggable,
+  Droppable as RbdDroppable
+} from 'react-beautiful-dnd'
+import {
   useTable,
   useSortBy,
   useResizeColumns,
@@ -55,7 +60,7 @@ type TestTableProps = {
   loading?: boolean
   maxRowNum?: number
   onClickRow?: (rowInfo: any, index: number) => void
-  onReorder?: () => void
+  onReorder?: (source: number, destination: number) => void
   onSort?: (sortProps: {
     column: { sorter: (a: any, b: any) => number }
     order: string
@@ -211,16 +216,19 @@ export const TestTable = ({
     []
   )
 
-  const renderRow = useCallback(
-    ({ index, key, style }) => {
-      const row = rows[index]
-      prepareRow(row)
+  const renderTableRow = useCallback(
+    (row, key, props, className = '') => {
       return (
         <tr
-          className={cn(styles.tableRow, getRowClassName?.(row.index), {
-            [styles.active]: row.index === activeIndex
-          })}
-          {...row.getRowProps({ style })}
+          className={cn(
+            styles.tableRow,
+            getRowClassName?.(row.index),
+            className,
+            {
+              [styles.active]: row.index === activeIndex
+            }
+          )}
+          {...props}
           key={key}
           onClick={() => onClickRow?.(row, row.index)}
         >
@@ -228,26 +236,53 @@ export const TestTable = ({
         </tr>
       )
     },
-    [rows, prepareRow, getRowClassName, activeIndex, renderCell, onClickRow]
+    [activeIndex, getRowClassName, onClickRow, renderCell]
+  )
+
+  const renderDraggableTableRow = useCallback(
+    (row, key, props) => {
+      return (
+        <RbdDraggable
+          key={`row_${row.id}`}
+          draggableId={row.index.toString()}
+          index={row.index}
+        >
+          {(provided, snapshot) => {
+            return renderTableRow(
+              row,
+              key,
+              {
+                ...props,
+                ...provided.draggableProps,
+                ...provided.dragHandleProps,
+                ref: provided.innerRef
+              },
+              snapshot.isDragging ? styles.dragging : ''
+            )
+          }}
+        </RbdDraggable>
+      )
+    },
+    [renderTableRow]
+  )
+
+  const renderRow = useCallback(
+    ({ index, key, style }) => {
+      const row = rows[index]
+      prepareRow(row)
+      const render = isReorderable ? renderDraggableTableRow : renderTableRow
+      return render(row, key, { ...row.getRowProps({ style }) })
+    },
+    [rows, prepareRow, isReorderable, renderDraggableTableRow, renderTableRow]
   )
 
   const renderRows = useCallback(() => {
     return rows.map((row, i) => {
       prepareRow(row)
-      return (
-        <tr
-          className={cn(styles.tableRow, getRowClassName?.(row.index), {
-            [styles.active]: row.index === activeIndex
-          })}
-          {...row.getRowProps()}
-          key={row.id}
-          onClick={() => onClickRow?.(row, row.index)}
-        >
-          {row.cells.map(renderCell)}
-        </tr>
-      )
+      const render = isReorderable ? renderDraggableTableRow : renderTableRow
+      return render(row, row.id, { ...row.getRowProps() })
     })
-  }, [rows, prepareRow, getRowClassName, activeIndex, renderCell, onClickRow])
+  }, [rows, prepareRow, isReorderable, renderDraggableTableRow, renderTableRow])
 
   const renderVirtualizedRows = useCallback(() => {
     return (
@@ -269,6 +304,64 @@ export const TestTable = ({
     )
   }, [maxRowNum, renderRow, rows.length])
 
+  const renderTableBody = useCallback(
+    (props = {}) => {
+      return (
+        <tbody
+          className={styles.tableBody}
+          style={{ maxHeight: (maxRowNum + 0.5) * 44 }}
+          {...getTableBodyProps()}
+          {...props}
+        >
+          {isVirtualized ? renderVirtualizedRows() : renderRows()}
+        </tbody>
+      )
+    },
+    [
+      getTableBodyProps,
+      isVirtualized,
+      maxRowNum,
+      renderRows,
+      renderVirtualizedRows
+    ]
+  )
+
+  const onDragEnd = useCallback(
+    ({ source, destination }) => {
+      if (!source || !destination || !onReorder) {
+        return
+      }
+      if (
+        destination.droppableId === source.droppableId &&
+        destination.index === source.index
+      ) {
+        return
+      }
+
+      onReorder(source.index, destination.index)
+    },
+    [onReorder]
+  )
+
+  const renderDraggableTableBody = useCallback(
+    (props = {}) => {
+      return (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <RbdDroppable droppableId='tracks-table-droppable' type='TABLE'>
+            {(provided) =>
+              renderTableBody({
+                ref: provided.innerRef,
+                ...provided.droppableProps,
+                ...props
+              })
+            }
+          </RbdDroppable>
+        </DragDropContext>
+      )
+    },
+    [onDragEnd, renderTableBody]
+  )
+
   return (
     <div className={cn(styles.tableWrapper, wrapperClassName)}>
       <table
@@ -281,14 +374,10 @@ export const TestTable = ({
         {/* TODO: Need to confirm loading state with design */}
         {loading ? (
           <LoadingSpinner className={styles.loader} />
+        ) : isReorderable ? (
+          renderDraggableTableBody()
         ) : (
-          <tbody
-            className={styles.tableBody}
-            style={{ maxHeight: (maxRowNum + 0.5) * 44 }}
-            {...getTableBodyProps()}
-          >
-            {isVirtualized ? renderVirtualizedRows() : renderRows()}
-          </tbody>
+          renderTableBody()
         )}
       </table>
       {isPaginated ? <p>Render the pagination controls here</p> : null}

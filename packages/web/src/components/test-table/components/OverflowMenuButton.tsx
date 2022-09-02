@@ -21,12 +21,7 @@ type OverflowMenuButtonProps = {
   isOwnerDeactivated?: boolean
   isReposted?: boolean
   onClick?: (e: any) => void
-  onRemove?: (
-    trackId?: number,
-    index?: number,
-    uid?: string,
-    date?: any
-  ) => void
+  onRemove?: (trackId: number, index: number, uid: string, date: number) => void
   removeText?: string
   trackId?: number
   trackPermalink?: string
@@ -50,7 +45,11 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
 
   const removeMenuItem = {
     text: removeText,
-    onClick: () => onRemove?.(trackId, index, uid, date?.unix())
+    onClick: () => {
+      if (trackId && index && uid) {
+        onRemove?.(trackId, index, uid, date?.unix())
+      }
+    }
   }
 
   const overflowMenu = {

@@ -84,9 +84,11 @@
 .tableBody {
   display: block;
   overflow: auto;
+  background-color: var(--neutral-light-9);
 }
 
 .tableRow {
+  display: flex;
   position: relative;
   background: var(--white);
   color: var(--neutral);
