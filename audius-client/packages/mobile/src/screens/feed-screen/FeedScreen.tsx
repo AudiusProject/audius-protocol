@@ -13,7 +13,6 @@ import { Header } from 'app/components/header'
 import { Lineup } from 'app/components/lineup'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 import { make, track } from 'app/services/analytics'
-import { getIsSignedIn } from 'app/store/lifecycle/selectors'
 
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
@@ -31,7 +30,6 @@ export const FeedScreen = () => {
   const dispatch = useDispatch()
 
   const feedLineup = useSelector(getFeedLineup)
-  const signedIn = useSelector(getIsSignedIn)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const loadMore = useCallback(
@@ -65,7 +63,7 @@ export const FeedScreen = () => {
         loadMore={loadMore}
         refresh={handleRefresh}
         refreshing={isRefreshing}
-        selfLoad={!!signedIn}
+        selfLoad
         showsVerticalScrollIndicator={false}
         isFeed
       />
