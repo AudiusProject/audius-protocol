@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 const initialState = {}
 
-type SignOutPayload = {}
+type SignOutPayload = undefined
 
 const slice = createSlice({
   name: 'sign-out',

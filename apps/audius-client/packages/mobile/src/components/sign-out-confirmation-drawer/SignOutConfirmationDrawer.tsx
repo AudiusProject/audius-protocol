@@ -45,7 +45,7 @@ export const SignOutConfirmationDrawer = () => {
   const { onClose } = useDrawerState(MODAL_NAME)
 
   const handleSignOut = useCallback(() => {
-    dispatch(signOut({}))
+    dispatch(signOut())
     // TODO: move to the sign-out saga when store migrated to react-native
     dispatchWeb(signOut)
     clearHistory()

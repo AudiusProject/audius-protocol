@@ -44,9 +44,3 @@ export class FetchAccountFailed extends NativeMobileMessage {
     super(MessageType.FETCH_ACCOUNT_FAILED)
   }
 }
-
-export class SignedOut extends NativeMobileMessage {
-  constructor() {
-    super(MessageType.SIGNED_OUT, {})
-  }
-}

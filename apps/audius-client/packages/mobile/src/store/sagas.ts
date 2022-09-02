@@ -28,7 +28,6 @@ import playerSagas from 'common/store/player/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
-import signOutSagas from 'common/store/sign-out/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
@@ -46,6 +45,8 @@ import { all, fork } from 'typed-redux-saga'
 import initKeyboardEvents from './keyboard/sagas'
 import notificationsSagasNative from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
+import settingsSagas from './settings/sagas'
+import signOutSagas from './sign-out/sagas'
 
 export default function* rootSaga() {
   yield* fork(setupBackend)
@@ -100,6 +101,8 @@ export default function* rootSaga() {
     ...repostPageSagas(),
     ...supportingPageSagas(),
     ...topSupportersPageSagas(),
+    ...settingsSagas(),
+    ...signOutSagas(),
 
     // Application
     ...smartCollectionPageSagas(),
