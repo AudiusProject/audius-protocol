@@ -1,8 +1,8 @@
-import { useContext } from 'react'
-
+import { themeSelectors } from '@audius/common'
 import { StatusBar } from 'react-native'
+import { useSelector } from 'react-redux'
 
-import { ThemeContext } from 'app/components/theme/ThemeContext'
+const { getTheme, getSystemAppearance } = themeSelectors
 
 export enum Theme {
   DEFAULT = 'default',
@@ -243,10 +243,11 @@ const themeColorsByThemeVariant: Record<
 }
 
 export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
-  const { isSystemDarkMode, theme } = useContext(ThemeContext)
+  const theme = useSelector(getTheme)
+  const systemAppearance = useSelector(getSystemAppearance)
 
-  const systemTheme = isSystemDarkMode ? Theme.DARK : Theme.DEFAULT
-  return theme === Theme.AUTO ? systemTheme : theme
+  const systemTheme = systemAppearance === 'dark' ? Theme.DARK : Theme.DEFAULT
+  return theme === Theme.AUTO ? systemTheme : theme ?? Theme.DEFAULT
 }
 
 export const useThemeColors = () => {
@@ -261,7 +262,7 @@ export const useColor = (color: string) => {
 
 // Uses normalColor when in light/dark mode, but "special color" when in other mode
 export const useSpecialColor = (normalColor: string, specialColor: string) => {
-  const { theme } = useContext(ThemeContext)
+  const theme = useSelector(getTheme)
   const themeVariant = useThemeColors()
   if (theme === Theme.MATRIX) {
     return (themeVariant as any)[specialColor]

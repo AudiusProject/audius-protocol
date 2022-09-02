@@ -10,7 +10,6 @@ import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import OAuth from 'app/components/oauth/OAuth'
 import { ReachabilityBar } from 'app/components/reachability-bar'
-import { ThemeProvider } from 'app/components/theme/ThemeContext'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
@@ -49,17 +48,15 @@ const App = () => {
         <PortalProvider>
           <ToastContextProvider>
             <ErrorBoundary>
-              <ThemeProvider>
-                <NavigationContainer>
-                  <Airplay />
-                  <ReachabilityBar />
-                  <RootScreen />
-                  <Drawers />
-                  <Modals />
-                  <Audio />
-                  <OAuth />
-                </NavigationContainer>
-              </ThemeProvider>
+              <NavigationContainer>
+                <Airplay />
+                <ReachabilityBar />
+                <RootScreen />
+                <Drawers />
+                <Modals />
+                <Audio />
+                <OAuth />
+              </NavigationContainer>
             </ErrorBoundary>
           </ToastContextProvider>
         </PortalProvider>
