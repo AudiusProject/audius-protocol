@@ -253,7 +253,7 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    setTheme: (theme: any) => dispatch(setTheme(theme)),
+    setTheme: (theme: any) => dispatch(setTheme({ theme })),
     getNotificationSettings: () =>
       dispatch(settingPageActions.getNotificationSettings()),
     getPushNotificationSettings: () =>
