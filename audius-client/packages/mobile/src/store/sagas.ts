@@ -7,7 +7,9 @@ import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import confirmerSagas from 'common/store/confirmer/sagas'
+import collectionPageSagas from 'common/store/pages/collection/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
+import trackPageSagas from 'common/store/pages/track/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
@@ -41,6 +43,10 @@ export default function* rootSaga() {
     ...tippingSagas(),
 
     ...walletSagas(),
+
+    // Pages
+    ...trackPageSagas(),
+    ...collectionPageSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),
