@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 from src.queries.query_helpers import _populate_premium_track_metadata, get_users_ids
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
@@ -307,15 +305,17 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys):
     ]
 
     founds = esclient.msearch(searches=mdsl)
-    (reposts, saves) = [pluck_hits(r) for r in founds["responses"]]
+    collapsed_reposts = founds["responses"][0]["hits"]["hits"]
+    collapsed_saves = founds["responses"][1]["hits"]["hits"]
 
-    follow_reposts = defaultdict(list)
-    follow_saves = defaultdict(list)
-
-    for r in reposts:
-        follow_reposts[r["item_key"]].append(r)
-    for s in saves:
-        follow_saves[s["item_key"]].append(s)
+    for group in collapsed_reposts:
+        reposts = pluck_hits(group["inner_hits"]["most_recent"])
+        item_key = reposts[0]["item_key"]
+        follow_reposts[item_key] = reposts
+    for group in collapsed_saves:
+        saves = pluck_hits(group["inner_hits"]["most_recent"])
+        item_key = saves[0]["item_key"]
+        follow_saves[item_key] = saves
 
     return (follow_saves, follow_reposts)
 
