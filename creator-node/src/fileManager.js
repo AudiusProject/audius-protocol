@@ -108,7 +108,8 @@ async function fetchFileFromNetworkAndWriteToDisk({
   path,
   numRetries,
   logger,
-  decisionTree
+  decisionTree,
+  trackId
 }) {
   // First try to fetch from other cnode gateways if user has non-empty replica set.
   decisionTree.recordStage({
@@ -131,12 +132,20 @@ async function fetchFileFromNetworkAndWriteToDisk({
         asyncFn: async (bail) => {
           let response
           try {
-            response = await axios({
+            const fetchReqParams = {
               method: 'get',
               url: contentUrl,
               responseType: 'stream',
               timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-            })
+            }
+
+            if (trackId) {
+              fetchReqParams.params = {
+                trackId
+              }
+            }
+
+            response = await axios(fetchReqParams)
           } catch (e) {
             // Do not retry fetching content if content is delisted or request is bad
             if (
@@ -360,7 +369,8 @@ async function saveFileForMultihashToFS(
       path: expectedStoragePath,
       numRetries,
       logger,
-      decisionTree
+      decisionTree,
+      trackId
     })
 
     try {
