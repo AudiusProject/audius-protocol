@@ -6,6 +6,7 @@ import {
   modalsActions
 } from '@audius/common'
 import { Text, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import Door from 'app/assets/images/emojis/door.png'
 import Key from 'app/assets/images/emojis/key.png'
@@ -19,9 +20,7 @@ import IconVerified from 'app/assets/images/iconVerified.svg'
 import { ScrollView, Screen } from 'app/components/core'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { ProfilePicture } from 'app/components/user'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
@@ -29,7 +28,7 @@ import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 import { AccountSettingsItem } from './AccountSettingsItem'
 const { resendRecoveryEmail } = recoveryEmailActions
 const { setVisibility } = modalsActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
 
 const messages = {
   title: 'Account',
@@ -75,14 +74,14 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 export const AccountSettingsScreen = () => {
   const styles = useStyles()
   const { toast } = useContext(ToastContext)
-  const dispatchWeb = useDispatchWeb()
-  const accountUser = useSelectorWeb(getAccountUser)
+  const dispatch = useDispatch()
+  const accountUser = useSelector(getAccountUser)
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePressRecoveryEmail = useCallback(() => {
-    dispatchWeb(resendRecoveryEmail)
+    dispatch(resendRecoveryEmail)
     toast({ content: messages.recoveryEmailSent })
-  }, [dispatchWeb, toast])
+  }, [dispatch, toast])
 
   const handlePressVerification = useCallback(() => {
     navigation.push({
@@ -99,14 +98,14 @@ export const AccountSettingsScreen = () => {
   }, [navigation])
 
   const openSignOutDrawer = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: 'SignOutConfirmation', visible: true }))
-  }, [dispatchWeb])
+    dispatch(setVisibility({ modal: 'SignOutConfirmation', visible: true }))
+  }, [dispatch])
 
   const openDeactivateAccountDrawer = useCallback(() => {
-    dispatchWeb(
+    dispatch(
       setVisibility({ modal: 'DeactivateAccountConfirmation', visible: true })
     )
-  }, [dispatchWeb])
+  }, [dispatch])
 
   if (!accountUser) return null
 

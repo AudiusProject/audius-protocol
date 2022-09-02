@@ -5,10 +5,9 @@ import {
   settingsPageSelectors,
   EmailFrequency
 } from '@audius/common'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { SegmentedControl } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
@@ -32,14 +31,14 @@ const emailFrequencyOptions = [
 ]
 
 export const EmailFrequencyControlRow = () => {
-  const dispatchWeb = useDispatchWeb()
-  const emailFrequency = useSelectorWeb(getEmailFrequency)
+  const dispatch = useDispatch()
+  const emailFrequency = useSelector(getEmailFrequency)
 
   const handleSelectOption = useCallback(
     (option: EmailFrequency) => {
-      dispatchWeb(updateEmailFrequency(option))
+      dispatch(updateEmailFrequency(option))
     },
-    [dispatchWeb]
+    [dispatch]
   )
 
   return (

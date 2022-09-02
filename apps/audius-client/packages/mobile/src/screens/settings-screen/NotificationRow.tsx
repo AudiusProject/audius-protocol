@@ -6,10 +6,9 @@ import {
   PushNotificationSetting
 } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { SettingsRowLabel } from './SettingRowLabel'
@@ -35,8 +34,8 @@ type NotficationRowProps = {
 export const NotificationRow = (props: NotficationRowProps) => {
   const { label, type } = props
   const styles = useStyles()
-  const notificationSettings = useSelectorWeb(getPushNotificationSettings)
-  const dispatchWeb = useDispatchWeb()
+  const notificationSettings = useSelector(getPushNotificationSettings)
+  const dispatch = useDispatch()
 
   const isMobilePushEnabled =
     notificationSettings[PushNotificationSetting.MobilePush]
@@ -49,9 +48,9 @@ export const NotificationRow = (props: NotficationRowProps) => {
 
   const handleValueChange = useCallback(
     (value: boolean) => {
-      dispatchWeb(togglePushNotificationSetting(type, value))
+      dispatch(togglePushNotificationSetting(type, value))
     },
-    [dispatchWeb, type]
+    [dispatch, type]
   )
 
   return (
