@@ -218,7 +218,7 @@ commands:
             pwd "$PROTOCOL_DIR"
             ls -la "$PROTOCOL_DIR"
             cd "$PROTOCOL_DIR/service-commands/"
-            npm install --unsafe-perm
+            # npm install --unsafe-perm
 
             # add IP to firewall
             CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
@@ -230,6 +230,13 @@ commands:
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME $A_SETUP_ARGS --spot-instance || true
 
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+
+            eval `ssh-agent`
+            sleep 2
+            ls -alh ~/.ssh/*
+            ssh-add ~/.ssh/*
+            ssh -A -T git@github.com
+            ssh -A ubuntu@18.220.56.46 "hostname"
 
             # Run interactive command on remotebox
             ssh -o "StrictHostKeyChecking no" -o IdentitiesOnly=yes -i ~/.ssh/google_compute_engine -t ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
@@ -981,10 +988,6 @@ jobs:
             # git pull
             # git checkout $CIRCLE_BRANCH
             hostname
-            eval `ssh-agent`
-            sleep 2
-            ls -alh ~/.ssh/*
-            ssh-add ~/.ssh/*
             ssh -A -T git@github.com
             ssh -A ubuntu@18.220.56.46 "hostname"
 
