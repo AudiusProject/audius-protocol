@@ -1,7 +1,7 @@
-import { shouldForceResync } from '../src/services/sync/secondarySyncFromPrimaryUtils'
-
 import assert from 'assert'
 import proxyquire from 'proxyquire'
+
+import { shouldForceResync } from '../src/services/sync/secondarySyncFromPrimaryUtils'
 
 describe('test secondarySyncFromPrimaryUtils', function () {
   const mockedLibs = {
@@ -12,6 +12,15 @@ describe('test secondarySyncFromPrimaryUtils', function () {
     }
   }
   const mockLogContext = { context: 'test' }
+  const contentNodeInfoManagerStub = {
+    ContentNodeInfoManager: (_) => {
+      return {
+        getContentNodeInfoFromSpId: async () => {
+          return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
+        }
+      }
+    }
+  }
 
   it('if force resync configs are not passed it, will not force resync', async function () {
     assert.deepStrictEqual(
@@ -71,11 +80,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
             return '0xcorrectprimarywallet'
           }
         },
-        '../stateMachineManager/ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: () => {
-            return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
-          }
-        }
+        '../ContentNodeInfoManager': contentNodeInfoManagerStub
       }
     )
 
@@ -101,11 +106,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
     const { shouldForceResync } = proxyquire(
       '../src/services/sync/secondarySyncFromPrimaryUtils',
       {
-        '../stateMachineManager/ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: () => {
-            return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
-          }
-        }
+        '../ContentNodeInfoManager': contentNodeInfoManagerStub
       }
     )
 
@@ -158,11 +159,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
             return false
           }
         },
-        '../stateMachineManager/ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: () => {
-            return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
-          }
-        }
+        '../ContentNodeInfoManager': contentNodeInfoManagerStub
       }
     )
 
@@ -196,11 +193,7 @@ describe('test secondarySyncFromPrimaryUtils', function () {
             return false
           }
         },
-        '../stateMachineManager/ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: () => {
-            return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
-          }
-        }
+        '../ContentNodeInfoManager': contentNodeInfoManagerStub
       }
     )
 

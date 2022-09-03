@@ -14,6 +14,8 @@ import type {
   StateMonitoringUser
 } from './types'
 
+import { ContentNodeInfoManager } from '../../ContentNodeInfoManager'
+
 const _: LoDashStatic = require('lodash')
 
 const {
@@ -21,7 +23,6 @@ const {
   QUEUE_NAMES
 } = require('../stateMachineConstants')
 const CNodeHealthManager = require('../CNodeHealthManager')
-const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const config = require('../../../config')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -136,7 +137,7 @@ module.exports = async function ({
   }
 
   return {
-    cNodeEndpointToSpIdMap: ContentNodeInfoManager.getCNodeEndpointToSpIdMap(),
+    cNodeEndpointToSpIdMap: JSON.stringify(Array.from(ContentNodeInfoManager.getCNodeEndpointToSpIdMap().entries())),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
           [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs

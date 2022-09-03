@@ -12,7 +12,6 @@ const {
   FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
 } = require('./stateMachineConstants')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
-const ContentNodeInfoManager = require('./ContentNodeInfoManager')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -24,19 +23,13 @@ class StateMachineManager {
 
     await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
 
-    // Initialize class immediately since bull jobs are run on cadence even on deploy
-    await ContentNodeInfoManager.updateContentNodeChainInfo(
-      audiusLibs.ethContracts
-    )
-
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
     const stateReconciliationManager = new StateReconciliationManager()
     const {
       monitorStateQueue,
       findSyncRequestsQueue,
-      findReplicaSetUpdatesQueue,
-      cNodeEndpointToSpIdMapQueue
+      findReplicaSetUpdatesQueue
     } = await stateMonitoringManager.init(
       audiusLibs.discoveryProvider.discoveryProviderEndpoint,
       prometheusRegistry
@@ -72,52 +65,14 @@ class StateMachineManager {
       )
     }
 
-    // Update the mapping in this StateMachineManager whenever a job successfully fetches it
-    cNodeEndpointToSpIdMapQueue.on(
-      'global:completed',
-      this.updateMapOnMapFetchJobComplete.bind(this)
-    )
-
     return {
       monitorStateQueue,
       findSyncRequestsQueue,
       findReplicaSetUpdatesQueue,
-      cNodeEndpointToSpIdMapQueue,
       manualSyncQueue,
       recurringSyncQueue,
       updateReplicaSetQueue,
       recoverOrphanedDataQueue
-    }
-  }
-
-  /**
-   * Deserializes the results of a job and updates the enabled reconfig modes to be either:
-   * - enabled (to the highest enabled mode configured) if the job fetched the mapping successfully
-   * - disabled if the job encountered an error fetching the mapping
-   * @param {number} jobId the ID of the job that completed
-   * @param {string} resultString the stringified JSON of the job's returnValue
-   */
-  async updateMapOnMapFetchJobComplete(jobId, resultString) {
-    // Bull serializes the job result into redis, so we have to deserialize it into JSON
-    let jobResult = {}
-    try {
-      jobResult = JSON.parse(resultString) || {}
-    } catch (e) {
-      baseLogger.warn(
-        `Failed to parse cNodeEndpoint->spId map jobId ${jobId} result string: ${resultString}`
-      )
-      return
-    }
-
-    const { errorMsg } = jobResult
-    if (errorMsg?.length) {
-      // Disable reconfigs if there was an error fetching the mapping
-      this.updateEnabledReconfigModesSet(
-        /* override */ RECONFIG_MODES.RECONFIG_DISABLED.key
-      )
-    } else {
-      // Update the reconfig mode to the highest enabled mode if there was no error
-      this.updateEnabledReconfigModesSet()
     }
   }
 
