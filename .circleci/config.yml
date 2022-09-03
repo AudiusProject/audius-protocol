@@ -235,7 +235,7 @@ commands:
             sleep 2
             ls -alh ~/.ssh/id_rsa_*
             ssh-add ~/.ssh/id_rsa_*
-            ssh -A -T git@github.com
+            ssh -A -T git@github.com || true
             ssh -A ubuntu@18.220.56.46 "hostname"
 
             # Run interactive command on remotebox
