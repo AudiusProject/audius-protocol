@@ -677,6 +677,36 @@ async function removeFile(storagePath) {
   }
 }
 
+/**
+ * Verify that the file written matches the hash expected
+ * @param {Object} param
+ * @param {string} param.cid target cid
+ * @param {string} param.path the path at which the cid exists
+ * @param {Object} param.logger
+ * @returns boolean if the cid is proper or not
+ */
+async function verifyCIDIsProper({ cid, path, logger }) {
+  const fileSize = (await fs.stat(path)).size
+  const fileIsEmpty = fileSize === 0
+
+  // there is one case where an empty file could be valid, check for that CID explicitly
+  if (fileIsEmpty && cid !== EMPTY_FILE_CID) {
+    logger.error(`File has no content, content length is 0: ${cid}`)
+    return false
+  }
+
+  const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(path)
+
+  const isCIDProper = cid !== expectedCID
+  if (!isCIDProper) {
+    logger.error(
+      `File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+    )
+  }
+
+  return isCIDProper
+}
+
 module.exports = {
   saveFileFromBufferToDisk,
   saveFileForMultihashToFS,
@@ -691,5 +721,6 @@ module.exports = {
   getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
   copyMultihashToFs,
-  EMPTY_FILE_CID
+  EMPTY_FILE_CID,
+  verifyCIDIsProper
 }

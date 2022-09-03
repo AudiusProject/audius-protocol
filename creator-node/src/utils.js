@@ -6,14 +6,14 @@ const spawn = require('child_process').spawn
 const stream = require('stream')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
-const { logger: genericLogger } = require('./logging.js')
 
+const asyncRetry = require('./utils/asyncRetry')
+const { logger: genericLogger } = require('./logging.js')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { libs } = require('@audius/sdk')
-const LibsUtils = libs.Utils
+const { verifyCIDIsProper } = require('./fileManager')
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
@@ -102,7 +102,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
 }
 
 /**
- * Fetches a CID from the Content Node network
+ * Fetches a CID from the Content Node network, verifies content, and writes to disk up to numRetries times
  *
  * @param {String} filePath location of the file on disk
  * @param {String} cid content hash of the file
@@ -118,74 +118,108 @@ async function findCIDInNetwork(
   logger,
   libs,
   trackId = null,
-  excludeList = []
+  excludeList = [],
+  numRetries = 5
 ) {
-  if (!config.get('findCIDInNetworkEnabled')) return
-  let found = false
+  if (!config.get('findCIDInNetworkEnabled')) return false
 
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
-  if (attemptedStateFix) return
+  if (attemptedStateFix) return false
 
-  // get list of creator nodes
+  // Get all registered Content Nodes
   const creatorNodes = await getAllRegisteredCNodes(libs)
-  if (!creatorNodes.length) return
+  if (!creatorNodes.length) return false
 
   // Remove excluded nodes from list of creator nodes, no-op if empty list or nothing passed in
   const creatorNodesFiltered = creatorNodes.filter(
     (c) => !excludeList.includes(c.endpoint)
   )
 
-  // generate signature
+  // Generate signature to auth fetching files
   const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
   const { signature, timestamp } = generateTimestampAndSignature(
     { filePath, delegateWallet },
     config.get('delegatePrivateKey')
   )
-  let node
 
-  for (let index = 0; index < creatorNodesFiltered.length; index++) {
-    node = creatorNodesFiltered[index]
+  let found = false
+  for (const { endpoint } of creatorNodesFiltered) {
     try {
-      const resp = await axios({
-        method: 'get',
-        url: `${node.endpoint}/file_lookup`,
-        params: {
-          filePath,
-          timestamp,
-          delegateWallet,
-          signature,
-          trackId
-        },
-        responseType: 'stream',
-        timeout: 1000
-      })
-      if (resp.data) {
-        await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
+      found = await asyncRetry({
+        asyncFn: async (bail) => {
+          let response
+          try {
+            response = await axios({
+              method: 'get',
+              url: `${endpoint}/file_lookup`,
+              params: {
+                filePath,
+                timestamp,
+                delegateWallet,
+                signature,
+                trackId
+              },
+              responseType: 'stream',
+              timeout: 1000
+            })
+          } catch (e) {
+            if (
+              e.response?.status === 403 || // delist
+              e.response?.status === 401 || // unauth
+              e.response?.status === 400 || // bad req
+              e.response?.status === 404 // not found
+            ) {
+              bail(
+                new Error(
+                  `Content multihash=${cid} is delisted, request is unauthorized, or request is bad on ${endpoint} with statusCode=${e.response?.status}`
+                )
+              )
+              return
+            }
 
-        // Verify that the file written matches the hash expected
-        const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
-          filePath
-        )
+            throw new Error(
+              `Failed to fetch content multihash=${cid} with statusCode=${e.response?.status}. Retrying..`
+            )
+          }
 
-        if (cid !== expectedCID) {
-          await fs.unlink(filePath)
-          logger.error(
-            `findCIDInNetwork - File contents from ${node.endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+          if (!response || !response.data) {
+            throw new Error('Received empty response from file lookup')
+          }
+
+          await writeStreamToFileSystem(
+            response.data,
+            filePath,
+            /* createDir */ true
           )
-        } else {
-          found = true
+
+          const isCIDProper = await verifyCIDIsProper({
+            cid,
+            path: filePath,
+            logger
+          })
+
+          if (!isCIDProper) {
+            await fs.unlink(filePath)
+            bail(new Error(`CID=${cid} from endpoint=${endpoint} is improper`))
+            return
+          }
+
           logger.info(
-            `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
+            `Successfully fetched CID=${cid} file=${filePath} from node ${endpoint}`
           )
-          break
+        },
+        logger,
+        logLabel: 'fetchFileFromNetworkAndWriteToDisk',
+        options: {
+          retries: numRetries,
+          minTimeout: 3000
         }
-      }
+      })
+
+      return true
     } catch (e) {
       // Do not error and stop the flow of execution for functions that call it
-      logger.error(
-        `findCIDInNetwork fetch error from ${node.endpoint} - ${e.toString()}`
-      )
-      continue
+      logger.error(`findCIDInNetwork error from ${endpoint} - ${e.message}`)
     }
   }
 
