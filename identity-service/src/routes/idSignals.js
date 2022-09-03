@@ -5,15 +5,7 @@ const { QueryTypes } = require('sequelize')
 const userHandleMiddleware = require('../userHandleMiddleware')
 const authMiddleware = require('../authMiddleware')
 const { getDeviceIDCountForUserId } = require('../utils/fpHelpers')
-
-const getIP = (req) => {
-  const forwardedFor = req.get('X-Forwarded-For')
-  if (forwardedFor) {
-    const ip = forwardedFor.split(',')[0].trim()
-    return ip
-  }
-  return req.ip
-}
+const { getIP, recordIP } = require('../utils/antiAbuse')
 
 module.exports = function (app) {
   app.get('/id_signals', userHandleMiddleware, handleResponse(async req => {
@@ -92,19 +84,7 @@ module.exports = function (app) {
     try {
       const userIP = getIP(req)
       req.logger.info(`idSignals | record_ip | User IP is ${userIP} for user with id ${blockchainUserId} and handle ${handle}`)
-
-      const record = await models.UserIPs.findOne({ where: { handle } })
-      if (!record) {
-        req.logger.info(`idSignals | record_ip | Saving IP ${userIP} for user ${handle}`)
-        await models.UserIPs.create({
-          handle,
-          userIP
-        })
-      } else {
-        // update even if IP has not changed so that we can later use updatedAt value if necessary
-        req.logger.info(`idSignals | record_ip | Updating IP from ${record.userIP} to ${userIP} for user ${handle}`)
-        await record.update({ userIP, updatedAt: Date.now() })
-      }
+      await recordIP(userIP, handle)
       return successResponse({ userIP })
     } catch (e) {
       req.logger.error(`idSignals | record_ip | Failed to record IP for user ${handle}`)

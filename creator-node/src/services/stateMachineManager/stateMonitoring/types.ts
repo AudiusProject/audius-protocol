@@ -1,4 +1,5 @@
 import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
+import type { SpanContext } from '@opentelemetry/api'
 
 export type StateMonitoringUser = {
   primary: string
@@ -37,7 +38,9 @@ export type ReplicaSetNodesToUserWalletsMap = {
 export type CNodeEndpointToSpIdMap = {
   [endpoint: string]: number
 }
-export type FetchCNodeEndpointToSpIdMapJobParams = {}
+export type FetchCNodeEndpointToSpIdMapJobParams = {
+  parentSpanContext?: SpanContext
+}
 export type FetchCNodeEndpointToSpIdMapJobReturnValue = {
   cNodeEndpointToSpIdMap: any
   errorMsg: string
@@ -47,6 +50,7 @@ export type FetchCNodeEndpointToSpIdMapJobReturnValue = {
 export type MonitorStateJobParams = {
   lastProcessedUserId: number
   discoveryNodeEndpoint: string
+  parentSpanContext?: SpanContext
 }
 export type MonitorStateJobReturnValue = {}
 
@@ -56,6 +60,7 @@ export type FindSyncRequestsJobParams = {
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
   userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap
+  parentSpanContext?: SpanContext
 }
 export type FindSyncRequestsJobReturnValue = {
   duplicateSyncReqs: IssueSyncRequestJobParams[]
@@ -73,6 +78,7 @@ export type FindReplicaSetUpdateJobParams = {
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
   userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap
+  parentSpanContext?: SpanContext
 }
 export type FindReplicaSetUpdatesJobReturnValue = {
   cNodeEndpointToSpIdMap: CNodeEndpointToSpIdMap
