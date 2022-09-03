@@ -233,8 +233,8 @@ commands:
 
             eval `ssh-agent`
             sleep 2
-            ls -alh ~/.ssh/*
-            ssh-add ~/.ssh/*
+            ls -alh ~/.ssh/id_rsa_*
+            ssh-add ~/.ssh/id_rsa_*
             ssh -A -T git@github.com
             ssh -A ubuntu@18.220.56.46 "hostname"
 
