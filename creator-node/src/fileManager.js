@@ -125,7 +125,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
     })
 
     try {
-      const streamData = await asyncRetry({
+      await asyncRetry({
         asyncFn: async (bail) => {
           let response
           try {
@@ -144,7 +144,6 @@ async function fetchFileFromNetworkAndWriteToDisk({
 
             response = await axios(fetchReqParams)
           } catch (e) {
-            // Do not retry fetching content if content is delisted or request is bad
             if (
               e.response?.status === 403 || // delist
               e.response?.status === 401 || // unauth
@@ -167,7 +166,37 @@ async function fetchFileFromNetworkAndWriteToDisk({
             throw new Error(`Received empty response`)
           }
 
-          return response.data
+          decisionTree.recordStage({
+            name: 'Retrieved file from target gateway',
+            data: { url: contentUrl }
+          })
+
+          await Utils.writeStreamToFileSystem(response.data, path)
+
+          decisionTree.recordStage({
+            name: 'Wrote file to file system after fetching from target gateway',
+            data: { expectedStoragePath: path }
+          })
+
+          const isCIDProper = await verifyCIDIsProper({
+            cid: multihash,
+            path: path,
+            logger
+          })
+
+          if (!isCIDProper) {
+            await fs.unlink(path)
+            bail(
+              new Error(
+                `CID=${multihash} from endpoint=${contentUrl} is improper`
+              )
+            )
+            return
+          }
+
+          logger.info(
+            `Successfully fetched CID=${multihash} file=${path} from node ${contentUrl}`
+          )
         },
         logger,
         logLabel: 'fetchFileFromNetworkAndWriteToDisk',
@@ -175,18 +204,6 @@ async function fetchFileFromNetworkAndWriteToDisk({
           retries: numRetries,
           minTimeout: 3000
         }
-      })
-
-      decisionTree.recordStage({
-        name: 'Retrieved file from target gateway',
-        data: { url: contentUrl }
-      })
-
-      await Utils.writeStreamToFileSystem(streamData, path)
-
-      decisionTree.recordStage({
-        name: 'Wrote file to file system after fetching from target gateway',
-        data: { expectedStoragePath: path }
       })
 
       return
