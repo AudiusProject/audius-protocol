@@ -983,7 +983,8 @@ jobs:
             hostname
             eval `ssh-agent`
             sleep 2
-            ssh-add ~/.ssh/id_rsa*
+            ls -alh ~/.ssh/*
+            ssh-add ~/.ssh/*
             ssh -A -T git@github.com
             ssh -A ubuntu@18.220.56.46 "hostname"
 
