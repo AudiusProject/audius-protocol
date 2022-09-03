@@ -971,11 +971,11 @@ jobs:
           instance-name: test-vpn
           interactive-command: |
             hostname
-            eval `ssh-agent`
-            sleep 2
-            ssh-add ~/.ssh/id_rsa*
-            ssh -A -T git@github.com
-            ssh -A ubuntu@18.220.56.46 "hostname"
+            # eval `ssh-agent`
+            # sleep 2
+            # ssh-add ~/.ssh/id_rsa*
+            # ssh -A -T git@github.com
+            # ssh -A ubuntu@18.220.56.46 "hostname"
           command: |
             # cd /home/ubuntu/audius-protocol
             # git pull
