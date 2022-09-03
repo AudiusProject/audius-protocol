@@ -102,7 +102,10 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
 }
 
 /**
- * Fetches a CID from the Content Node network, verifies content, and writes to disk up to numRetries times
+ * Fetches a CID from the Content Node network, verifies content, and writes to disk up to numRetries times.
+ * If the fetch request is unauthorized or bad, or if the target content is delisted or not found, do not retry on
+ * the particular Content Node.
+ * Also do not retry if after content verifications that recently written content is not what is expected.
  *
  * @param {String} filePath location of the file on disk
  * @param {String} cid content hash of the file
