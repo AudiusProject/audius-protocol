@@ -171,7 +171,7 @@ async function findCIDInNetwork(
             ) {
               bail(
                 new Error(
-                  `Content multihash=${cid} is delisted, request is unauthorized, or request is bad on ${endpoint} with statusCode=${e.response?.status}`
+                  `Content multihash=${cid} not available on ${endpoint} with statusCode=${e.response?.status}`
                 )
               )
               return
