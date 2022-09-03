@@ -2180,7 +2180,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     assertTableEquality(localFinalClockRecords, localInitialClockRecords, [])
   })
 
-  it.only('Primary correctly syncs from secondary when nodes have divergent state and content is unavailable in network', async function () {
+  it('Primary correctly syncs from secondary when nodes have divergent state and content is unavailable in network', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
