@@ -1365,6 +1365,15 @@ describe('Test secondarySyncFromPrimary()', async function () {
         )
         .reply(404)
 
+      nock(MOCK_CN4)
+        .persist()
+        .get(
+          (uri) =>
+            uri.includes('/file_lookup') &&
+            uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(404)
+
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {

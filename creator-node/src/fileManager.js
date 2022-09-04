@@ -7,20 +7,18 @@ const axios = require('axios')
 const config = require('./config')
 const Utils = require('./utils')
 const { libs: audiusLibs } = require('@audius/sdk')
-const LibsUtils = audiusLibs.Utils
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const { findCIDInNetwork } = require('./utils')
 const DecisionTree = require('./utils/decisionTree')
 const asyncRetry = require('./utils/asyncRetry')
 
+const LibsUtils = audiusLibs.Utils
+
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
-
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
-
 const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
 
 /**
@@ -178,7 +176,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
             data: { expectedStoragePath: path }
           })
 
-          const isCIDProper = await verifyCIDIsProper({
+          const isCIDProper = await Utils.verifyCIDIsProper({
             cid: multihash,
             path: path,
             logger
@@ -222,7 +220,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
 
   // If file is not found in replica set, check network (remaining registered nodes)
   try {
-    const found = await findCIDInNetwork(
+    const found = await Utils.findCIDInNetwork(
       path,
       multihash,
       logger,
@@ -409,7 +407,7 @@ async function saveFileForMultihashToFS(
     }
   } catch (e) {
     decisionTree.recordStage({
-      name: `Uncaught Error`,
+      name: `saveFileForMultihashToFS Error`,
       data: { errorMsg: e.message }
     })
 
@@ -731,36 +729,6 @@ async function removeFile(storagePath) {
   }
 }
 
-/**
- * Verify that the file written matches the hash expected
- * @param {Object} param
- * @param {string} param.cid target cid
- * @param {string} param.path the path at which the cid exists
- * @param {Object} param.logger
- * @returns boolean if the cid is proper or not
- */
-async function verifyCIDIsProper({ cid, path, logger }) {
-  const fileSize = (await fs.stat(path)).size
-  const fileIsEmpty = fileSize === 0
-
-  // there is one case where an empty file could be valid, check for that CID explicitly
-  if (fileIsEmpty && cid !== EMPTY_FILE_CID) {
-    logger.error(`File has no content, content length is 0: ${cid}`)
-    return false
-  }
-
-  const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(path)
-
-  const isCIDProper = cid !== expectedCID
-  if (!isCIDProper) {
-    logger.error(
-      `File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
-    )
-  }
-
-  return isCIDProper
-}
-
 module.exports = {
   saveFileFromBufferToDisk,
   saveFileForMultihashToFS,
@@ -775,6 +743,5 @@ module.exports = {
   getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
   copyMultihashToFs,
-  EMPTY_FILE_CID,
-  verifyCIDIsProper
+  EMPTY_FILE_CID
 }

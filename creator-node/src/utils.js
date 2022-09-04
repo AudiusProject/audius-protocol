@@ -5,17 +5,20 @@ const axios = require('axios')
 const spawn = require('child_process').spawn
 const stream = require('stream')
 const { promisify } = require('util')
-const pipeline = promisify(stream.pipeline)
+const { libs: audiusLibs } = require('@audius/sdk')
 
 const asyncRetry = require('./utils/asyncRetry')
-const { logger: genericLogger } = require('./logging.js')
+const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { verifyCIDIsProper } = require('./fileManager')
+
+const pipeline = promisify(stream.pipeline)
+const LibsUtils = audiusLibs.Utils
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
+const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
 
 class Utils {
   static verifySignature(data, sig) {
@@ -388,6 +391,36 @@ function currentNodeShouldHandleTranscode({
   return currentNodeShouldHandleTranscode
 }
 
+/**
+ * Verify that the file written matches the hash expected
+ * @param {Object} param
+ * @param {string} param.cid target cid
+ * @param {string} param.path the path at which the cid exists
+ * @param {Object} param.logger
+ * @returns boolean if the cid is proper or not
+ */
+async function verifyCIDIsProper({ cid, path, logger }) {
+  const fileSize = (await fs.stat(path)).size
+  const fileIsEmpty = fileSize === 0
+
+  // there is one case where an empty file could be valid, check for that CID explicitly
+  if (fileIsEmpty && cid !== EMPTY_FILE_CID) {
+    logger.error(`File has no content, content length is 0: ${cid}`)
+    return false
+  }
+
+  const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(path)
+
+  const isCIDProper = cid === expectedCID
+  if (!isCIDProper) {
+    logger.error(
+      `File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+    )
+  }
+
+  return isCIDProper
+}
+
 module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
@@ -397,3 +430,4 @@ module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
 module.exports.currentNodeShouldHandleTranscode =
   currentNodeShouldHandleTranscode
+module.exports.verifyCIDIsProper = verifyCIDIsProper
