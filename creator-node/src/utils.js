@@ -205,7 +205,12 @@ async function findCIDInNetwork(
           })
 
           if (!isCIDProper) {
-            await fs.unlink(filePath)
+            try {
+              await fs.unlink(filePath)
+            } catch (e) {
+              logger.error(`Could not remove file at path=${path}`)
+            }
+
             bail(new Error(`CID=${cid} from endpoint=${endpoint} is improper`))
             return
           }

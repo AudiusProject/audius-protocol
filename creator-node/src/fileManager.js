@@ -204,6 +204,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
         }
       })
 
+      // If successful, will reach this point in code. Return out of fn
       return
     } catch (e) {
       decisionTree.recordStage({
@@ -384,30 +385,9 @@ async function saveFileForMultihashToFS(
       decisionTree,
       trackId
     })
-
-    try {
-      await asyncRetry({
-        asyncFn: verifyFile({ expectedStoragePath, decisionTree, multihash }),
-        logger,
-        logLabel: 'Saving fetched content to disk',
-        options: {
-          retries: numRetries
-        }
-      })
-    } catch (e) {
-      // On error, delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
-      await removeFile(expectedStoragePath)
-
-      decisionTree.recordStage({
-        name: `Error during content verification for multihash`
-      })
-      throw new Error(
-        `Error during content verification for multihash ${multihash} ${e.message}`
-      )
-    }
   } catch (e) {
     decisionTree.recordStage({
-      name: `saveFileForMultihashToFS Error`,
+      name: 'saveFileForMultihashToFS Error',
       data: { errorMsg: e.message }
     })
 
@@ -417,40 +397,6 @@ async function saveFileForMultihashToFS(
   }
 
   // If no error, return nothing
-}
-
-// Verify that the contents of the file match the file's cid
-function verifyFile({ expectedStoragePath, decisionTree, multihash }) {
-  return async () => {
-    const fileSize = (await fs.stat(expectedStoragePath)).size
-    decisionTree.recordStage({
-      name: 'About to verify the file contents for the CID',
-      data: { multihash, fileSize }
-    })
-
-    const fileIsEmpty = fileSize === 0
-    // there is one case where an empty file could be valid, check for that CID explicitly
-    if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
-      throw new Error(`File has no content, content length is 0: ${multihash}`)
-    }
-
-    const expectedCid = await LibsUtils.fileHasher.generateNonImageCid(
-      expectedStoragePath
-    )
-    if (multihash !== expectedCid) {
-      decisionTree.recordStage({
-        name: "File contents don't match their expected CID",
-        data: { expectedCid }
-      })
-      throw new Error(
-        `File contents don't match their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
-      )
-    }
-    decisionTree.recordStage({
-      name: 'Successfully verified the file contents for the CID',
-      data: { multihash }
-    })
-  }
 }
 
 /**
