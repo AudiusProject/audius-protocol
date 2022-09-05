@@ -13,6 +13,7 @@ import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
 import { ContentNodeInfoManager } from '../../ContentNodeInfoManager'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 const _: LoDashStatic = require('lodash')
 
@@ -56,7 +57,7 @@ type FindSyncsForUserResult = {
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
  */
-module.exports = async function ({
+async function findSyncRequests({
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
@@ -267,6 +268,7 @@ async function _findSyncsForUser(
         secondaryFilesHash
       })
     } catch (e: any) {
+      tracing.recordException(e)
       outcomesBySecondary[secondary].result =
         'no_sync_error_computing_sync_mode'
       errors.push(
@@ -301,6 +303,7 @@ async function _findSyncsForUser(
           result = 'new_sync_request_unable_to_enqueue'
         }
       } catch (e: any) {
+        tracing.recordException(e)
         result = 'no_sync_unexpected_error'
         errors.push(
           `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary} - ${e.message}`
@@ -320,4 +323,28 @@ async function _findSyncsForUser(
     errors,
     outcomesBySecondary
   }
+}
+
+module.exports = async (
+  params: DecoratedJobParams<FindSyncRequestsJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'findSyncRequests.jobProcessor',
+    fn: findSyncRequests,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
 }

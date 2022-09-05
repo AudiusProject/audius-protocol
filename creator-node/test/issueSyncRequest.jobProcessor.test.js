@@ -241,7 +241,7 @@ describe('test issueSyncRequest job processor', function () {
     const initialSecondaryClockValue = 2
     const finalSecondaryClockValue = 3
 
-    config.set('maxSyncMonitoringDurationInMs', 100)
+    config.set('maxManualSyncMonitoringDurationInMs', 100)
 
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
@@ -288,10 +288,13 @@ describe('test issueSyncRequest job processor', function () {
       syncRequestParameters
     })
     expect(result).to.have.deep.property('error', {})
-    expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue],
-      [QUEUE_NAMES.RECURRING_SYNC]: []
-    })
+    const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
+      (job) => {
+        const { parentSpanContext, ...rest } = job
+        return rest
+      }
+    )
+    expect(jobsToEnqueueRest).to.eql([expectedSyncReqToEnqueue])
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
@@ -322,7 +325,7 @@ describe('test issueSyncRequest job processor', function () {
     const primaryClockValue = 5
     const finalSecondaryClockValue = 3
 
-    config.set('maxSyncMonitoringDurationInMs', 100)
+    config.set('maxManualSyncMonitoringDurationInMs', 100)
 
     const expectedSyncReqToEnqueue = {
       attemptNumber: 2,
@@ -366,10 +369,13 @@ describe('test issueSyncRequest job processor', function () {
       syncRequestParameters
     })
     expect(result).to.have.deep.property('error', {})
-    expect(result).to.have.deep.property('jobsToEnqueue', {
-      [QUEUE_NAMES.MANUAL_SYNC]: [expectedSyncReqToEnqueue],
-      [QUEUE_NAMES.RECURRING_SYNC]: []
-    })
+    const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
+      (job) => {
+        const { parentSpanContext, ...rest } = job
+        return rest
+      }
+    )
+    expect(jobsToEnqueueRest).to.eql([expectedSyncReqToEnqueue])
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',

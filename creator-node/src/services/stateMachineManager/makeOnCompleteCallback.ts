@@ -9,6 +9,7 @@ import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
 
 import { Queue } from 'bull'
+import { instrumentTracing, tracing } from '../../tracer'
 
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES } = require('./stateMachineConstants')
@@ -38,7 +39,7 @@ const {
  *      See usage in index.js (in same directory) for example of how it's bound to StateMachineManager.
  *
  * @param {string} nameOfQueueWithCompletedJob the name of the queue that this onComplete callback is for
- * @param {Object} queueNameToQueueMap mapping of queue name (string) to queue object (BullQueue)
+ * @param {Object} queueNameToQueueMap mapping of queue name (string) to queue object (BullQueue) and max jobs that are allowed to be waiting in the queue
  * @param {Object} prometheusRegistry the registry of prometheus metrics
  * @returns a function that:
  * - takes a jobId (string) and result (string) of a job that successfully completed
@@ -47,7 +48,7 @@ const {
  * - bulk-enqueues all jobs under result[QUEUE_NAMES.STATE_RECONCILIATION] into the state reconciliation queue
  * - records metrics from result.metricsToRecord
  */
-module.exports = function (
+function makeOnCompleteCallback(
   nameOfQueueWithCompletedJob: TQUEUE_NAMES,
   queueNameToQueueMap: QueueNameToQueueMap,
   prometheusRegistry: any
@@ -88,7 +89,7 @@ module.exports = function (
       jobsToEnqueue || {}
     ) as [TQUEUE_NAMES, ParamsForJobsToEnqueue[]][]) {
       // Make sure we're working with a valid queue
-      const queue: Queue = queueNameToQueueMap[queueName]
+      const { queue, maxWaitingJobs } = queueNameToQueueMap[queueName]
       if (!queue) {
         logger.error(
           `Job returned data trying to enqueue jobs to a queue whose name isn't recognized: ${queueName}`
@@ -117,6 +118,7 @@ module.exports = function (
         queue,
         queueName,
         nameOfQueueWithCompletedJob,
+        maxWaitingJobs,
         jobId,
         logger
       )
@@ -131,12 +133,22 @@ const enqueueJobs = async (
   queueToAddTo: Queue,
   queueNameToAddTo: TQUEUE_NAMES,
   triggeredByQueueName: TQUEUE_NAMES,
+  maxWaitingJobs: number,
   triggeredByJobId: string,
   logger: Logger
 ) => {
   logger.info(
     `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueNameToAddTo}`
   )
+
+  // Don't add to the queue if the queue is already backed up (i.e., it has too many waiting jobs)
+  const numWaitingJobs = await queueToAddTo.getWaitingCount()
+  if (numWaitingJobs > maxWaitingJobs) {
+    logger.warn(
+      `Queue ${queueNameToAddTo} already has ${numWaitingJobs} waiting jobs. Not adding any more jobs until ${maxWaitingJobs} or fewer jobs are waiting in this queue`
+    )
+    return
+  }
 
   // Add 'enqueuedBy' field for tracking
   try {
@@ -195,3 +207,13 @@ const recordMetrics = (
     }
   }
 }
+
+module.exports = instrumentTracing({
+  name: 'onComplete bull queue callback',
+  fn: makeOnCompleteCallback,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})

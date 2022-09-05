@@ -162,12 +162,9 @@ describe('test findReplicaSetUpdates job processor', function () {
     return expect(
       runJobProcessor(jobProcessorArgs)
     ).to.eventually.be.fulfilled.and.deep.equal({
-      cNodeEndpointToSpIdMap: JSON.stringify(
-        Array.from(
-          jobProcessorArgs?.cNodeEndpointToSpIdMap ||
-            DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
-        ).entries()
-      ),
+      cNodeEndpointToSpIdMap:
+        jobProcessorArgs?.cNodeEndpointToSpIdMap ||
+        DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
       jobsToEnqueue: expectedUnhealthyReplicas?.length
         ? {
             [QUEUE_NAMES.UPDATE_REPLICA_SET]: [

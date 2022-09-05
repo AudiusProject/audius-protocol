@@ -12,6 +12,7 @@ const {
 const {
   processTranscodeAndSegments
 } = require('./components/tracks/trackContentUploadManager')
+const { instrumentTracing, tracing } = require('./tracer')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
@@ -53,8 +54,32 @@ class AsyncProcessingQueue {
 
     this.libs = libs
 
+    const untracedProcessTask = this.processTask
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
-      await this.processTask(job, done)
+      const { logContext, parentSpanContext, task } = job.data
+      const processTask = instrumentTracing({
+        name: `AsyncProcessingQueue.process ${task}`,
+        fn: untracedProcessTask,
+        context: this,
+        options: {
+          // if a parentSpanContext is provided
+          // reference it so the async queue job can remember
+          // who enqueued it
+          links: parentSpanContext
+            ? [
+                {
+                  context: parentSpanContext
+                }
+              ]
+            : [],
+          attributes: {
+            requestID: logContext.requestID,
+            [tracing.CODE_FILEPATH]: __filename
+          }
+        }
+      })
+
+      await processTask(job, done)
     })
 
     this.PROCESS_NAMES = PROCESS_NAMES
@@ -88,6 +113,7 @@ class AsyncProcessingQueue {
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
         )
         await this.addProcessTranscodeAndSegmentTask({
+          parentSpanContext: tracing.currentSpanContext(),
           logContext,
           req: { ...job.data.req, transcodeFilePath, segmentFileNames }
         })
@@ -98,6 +124,7 @@ class AsyncProcessingQueue {
         const response = await this.monitorProgress(task, func, job.data)
         done(null, { response })
       } catch (e) {
+        tracing.recordException(e)
         this.logError(
           `Could not process taskType=${task} uuid=${
             logContext.requestID
@@ -116,6 +143,9 @@ class AsyncProcessingQueue {
     logger.info(
       `AsyncProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
     )
+    tracing.info(
+      `AsyncProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+    )
   }
 
   async logError(message, logContext = {}) {
@@ -123,6 +153,9 @@ class AsyncProcessingQueue {
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
     logger.error(
+      `AsyncProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
+    )
+    tracing.error(
       `AsyncProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
     )
   }

@@ -6,6 +6,7 @@ const captchaMiddleware = require('../captchaMiddleware')
 const { detectAbuse } = require('../utils/antiAbuse')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const models = require('../models')
+const { getIP } = require('../utils/antiAbuse')
 
 const blockRelayAbuseErrorCodes = new Set(['0', '8', '9', '10'])
 
@@ -90,7 +91,7 @@ module.exports = function (app) {
       }
 
       if (user && detectAbuseOnRelay) {
-        const reqIP = req.get('X-Forwarded-For') || req.ip
+        const reqIP = getIP(req)
         detectAbuse(user, 'relay', reqIP) // fired & forgotten
       }
 
