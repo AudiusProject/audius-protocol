@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions */
 import type {
   LibsServiceProvider,
-  EthContractsType
+  EthContracts
 } from '../src/services/ContentNodeInfoManager'
 
 import chai from 'chai'
@@ -39,7 +39,7 @@ const SERVICE_PROVIDERS_FROM_LIBS: LibsServiceProvider[] = [
 describe('test ContentNodeInfoManager', function () {
   let sandbox: sinon.SinonSandbox
   let logger: bunyan
-  let makeEthContractsStub: () => Promise<EthContractsType>
+  let makeEthContractsStub: () => Promise<EthContracts>
   beforeEach(async function () {
     await redis.flushall()
     sandbox = sinon.createSandbox()
@@ -62,7 +62,7 @@ describe('test ContentNodeInfoManager', function () {
       redis,
       makeEthContractsStub,
       cacheTtlSec
-    ).getSpIdToChainInfo()
+    ).getMapOfSpIdToChainInfo()
     expect(mapping).to.have.property('size', 2)
     expect(mapping.get(1)).to.eql({
       endpoint: 'http://cn1_creator-node_1:4000',

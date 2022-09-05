@@ -105,7 +105,14 @@ describe('test monitorState job processor', function () {
     if (!getCNodeEndpointToSpIdMapStub) {
       getCNodeEndpointToSpIdMapStub = sandbox
         .stub()
-        .returns(cNodeEndpointToSpIdMap)
+        .resolves(new Map(Object.entries(cNodeEndpointToSpIdMap)))
+    }
+    const contentNodeInfoManagerStub = {
+      ContentNodeInfoManager: (_) => {
+        return {
+          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
+        }
+      }
     }
 
     // Make monitorState.jobProcessor.ts's imports return our stubs
@@ -123,9 +130,7 @@ describe('test monitorState job processor', function () {
         '../CNodeHealthManager': {
           getUnhealthyPeers: getUnhealthyPeersStub
         },
-        '../ContentNodeInfoManager': {
-          getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
-        },
+        '../../ContentNodeInfoManager': contentNodeInfoManagerStub,
         '../stateMachineUtils': {
           retrieveUserInfoFromReplicaSet: retrieveUserInfoFromReplicaSetStub
         }

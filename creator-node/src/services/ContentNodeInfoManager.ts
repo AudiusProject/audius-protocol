@@ -1,17 +1,14 @@
 import type Logger from 'bunyan'
+import { EthContracts as EthContractsClass } from '@audius/sdk/src/services/ethContracts/EthContracts'
 
 import _ from 'lodash'
-// TODO: Use _.invert()
 
 import initAudiusLibs from './initAudiusLibs'
 import { logger as defaultLogger } from '../logging'
 import defaultRedisClient from '../redis'
 import { Redis } from 'ioredis'
 
-// type EthContractsType = InstanceType<typeof libs>['myMethod']
-export type EthContractsType = {
-  getServiceProviderList: (spType: string) => Promise<LibsServiceProvider[]>
-}
+export type EthContracts = InstanceType<typeof EthContractsClass>
 export type LibsServiceProvider = {
   owner: any // Libs typed this as any, but the contract has it as address
   delegateOwnerWallet: any // Libs typed this as any, but the contract has it as address
@@ -25,8 +22,10 @@ export type ContentNodeFromChain = {
   delegateOwnerWallet: string
 }
 export interface IContentNodeInfoManager {
-  getSpIdToChainInfo: () => Promise<Map<number, ContentNodeFromChain>>
-  getEndpointToSpId: () => Promise<Map<string, number>> // TODO: Implement
+  getMapOfSpIdToChainInfo: () => Promise<Map<number, ContentNodeFromChain>>
+  getMapOfCNodeEndpointToSpId: () => Promise<Map<string, number>>
+  getSerializedMapOfCNodeEndpointToSpId: () => Promise<string>
+  getSpIdFromEndpoint: (endpoint: string) => Promise<number | undefined>
   getContentNodeInfoFromSpId: (
     spId: number
   ) => Promise<ContentNodeFromChain | undefined>
@@ -37,12 +36,14 @@ const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 function ContentNodeInfoManager(
   logger = defaultLogger,
   redisClient = defaultRedisClient,
-  makeEthContracts: () => Promise<EthContractsType> = _makeEthContracts(logger),
+  makeEthContracts: () => Promise<EthContracts> = _makeEthContracts(logger),
   cacheTtlSeconds = 10 * 60, // 10 minutes
   ignoreCache = false
 ): IContentNodeInfoManager {
   return {
-    async getSpIdToChainInfo(): Promise<Map<number, ContentNodeFromChain>> {
+    async getMapOfSpIdToChainInfo(): Promise<
+      Map<number, ContentNodeFromChain>
+    > {
       try {
         // Return cached mapping from redis if it's present and non-empty
         if (!ignoreCache) {
@@ -71,17 +72,39 @@ function ContentNodeInfoManager(
       }
     },
 
+    async getMapOfCNodeEndpointToSpId(): Promise<Map<string, number>> {
+      const spIdToChainInfo: Map<number, ContentNodeFromChain> =
+        await this.getMapOfSpIdToChainInfo()
+      const cNodeEndpointToSpIdMap = new Map<string, number>()
+      spIdToChainInfo.forEach((chainInfo, spId) => {
+        cNodeEndpointToSpIdMap.set(chainInfo.endpoint, spId)
+      })
+      return cNodeEndpointToSpIdMap
+    },
+
+    async getSerializedMapOfCNodeEndpointToSpId(): Promise<string> {
+      return JSON.stringify(
+        Array.from((await this.getMapOfCNodeEndpointToSpId()).entries())
+      )
+    },
+
+    async getSpIdFromEndpoint(endpoint: string): Promise<number | undefined> {
+      const cNodeEndpointToSpIdMap: Map<string, number> =
+        await this.getMapOfCNodeEndpointToSpId()
+      return cNodeEndpointToSpIdMap.get(endpoint)
+    },
+
     async getContentNodeInfoFromSpId(
       spId: number
     ): Promise<ContentNodeFromChain | undefined> {
-      const map = await this.getSpIdToChainInfo()
+      const map = await this.getMapOfSpIdToChainInfo()
       return map.get(spId)
     }
   }
 }
 
 function _makeEthContracts(logger: Logger) {
-  return async function (): Promise<EthContractsType> {
+  return async function (): Promise<EthContracts> {
     const audiusLibs = await initAudiusLibs({
       enableEthContracts: true,
       enableContracts: false,
@@ -95,11 +118,11 @@ function _makeEthContracts(logger: Logger) {
 
 async function _getContentNodeInfoFromChain(
   logger: Logger,
-  makeEthContracts: () => Promise<EthContractsType>
+  makeEthContracts: () => Promise<EthContracts>
 ): Promise<Map<number, ContentNodeFromChain>> {
   try {
     const ethContracts = await makeEthContracts()
-    const contentNodesFromLibs: LibsServiceProvider[] =
+    const contentNodesFromLibs =
       (await ethContracts.getServiceProviderList('content-node')) || []
     return new Map(
       contentNodesFromLibs.map((cn) => [

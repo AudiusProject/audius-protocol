@@ -14,6 +14,7 @@ import type {
 } from './types'
 import { makeHistogramToRecord } from '../stateMachineUtils'
 import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
+import { ContentNodeInfoManager } from '../../ContentNodeInfoManager'
 
 const _ = require('lodash')
 
@@ -26,7 +27,6 @@ const {
   SYNC_MODES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
-const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const initAudiusLibs = require('../../initAudiusLibs')
 
@@ -591,21 +591,22 @@ const _issueUpdateReplicaSetOp = async (
       return response
     }
 
+    const contentNodeInfoManager = ContentNodeInfoManager(logger)
+    const cNodeEndpointToSpIdMap =
+      await contentNodeInfoManager.getMapOfCNodeEndpointToSpId()
+
     // Create new array of replica set spIds and write to URSM
     for (const endpt of newReplicaSetEndpoints) {
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
-      if (!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]) {
+      const spIdFromChain = cNodeEndpointToSpIdMap.get(endpt)
+      if (spIdFromChain === undefined) {
         response.result = UpdateReplicaSetJobResult.FailureNoValidSP
-        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
-          ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
-        )} | endpt=${endpt}. Skipping reconfig.`
+        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${await contentNodeInfoManager.getSerializedMapOfCNodeEndpointToSpId()} | endpt=${endpt}. Skipping reconfig.`
         logger.error(response.errorMsg)
         return response
       }
-      newReplicaSetSPIds.push(
-        ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]
-      )
+      newReplicaSetSPIds.push(spIdFromChain)
     }
 
     // Submit chain tx to update replica set
@@ -621,11 +622,9 @@ const _issueUpdateReplicaSetOp = async (
         })
       }
 
-      const {
-        [primary]: oldPrimarySpId,
-        [secondary1]: oldSecondary1SpId,
-        [secondary2]: oldSecondary2SpId
-      } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
+      const oldPrimarySpId = cNodeEndpointToSpIdMap.get(primary)
+      const oldSecondary1SpId = cNodeEndpointToSpIdMap.get(secondary1)
+      const oldSecondary2SpId = cNodeEndpointToSpIdMap.get(secondary2)
 
       const { canReconfig, chainPrimarySpId, chainSecondarySpIds, error } =
         await _canReconfig({
@@ -737,9 +736,9 @@ const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
 
 type CanReconfigParams = {
   libs: any
-  oldPrimarySpId: number
-  oldSecondary1SpId: number
-  oldSecondary2SpId: number
+  oldPrimarySpId: number | undefined
+  oldSecondary1SpId: number | undefined
+  oldSecondary2SpId: number | undefined
   userId: number
   logger: Logger
 }

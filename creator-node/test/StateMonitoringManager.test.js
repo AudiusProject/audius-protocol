@@ -86,8 +86,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     const {
       monitorStateQueue,
       findSyncRequestsQueue,
-      findReplicaSetUpdatesQueue,
-      cNodeEndpointToSpIdMapQueue
+      findReplicaSetUpdatesQueue
     } = await stateMonitoringManager.init(
       discoveryNodeEndpoint,
       getPrometheusRegistry()
@@ -97,7 +96,6 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     expect(monitorStateQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(findSyncRequestsQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(findReplicaSetUpdatesQueue).to.exist.and.to.be.instanceOf(BullQueue)
-    expect(cNodeEndpointToSpIdMapQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(
       stateMonitoringManager.registerMonitoringQueueEventHandlersAndJobProcessors
     ).to.have.been.calledOnce
@@ -122,16 +120,6 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     )
       .to.have.property('findReplicaSetUpdatesQueue')
       .that.has.deep.property('name', QUEUE_NAMES.FIND_REPLICA_SET_UPDATES)
-    expect(
-      stateMonitoringManager.registerMonitoringQueueEventHandlersAndJobProcessors.getCall(
-        0
-      ).args[0]
-    )
-      .to.have.property('cNodeEndpointToSpIdMapQueue')
-      .that.has.deep.property(
-        'name',
-        QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
-      )
   })
 
   it('kicks off an initial job when initting', async function () {
