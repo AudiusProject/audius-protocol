@@ -26,9 +26,6 @@ from src.tasks.entity_manager.social_features import (
     create_social_record_if_access,
     delete_social_action_types,
     delete_social_record,
-    delete_social_record_if_access,
-    premium_content_validation_actions,
-    premium_content_validation_entities,
 )
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
 from src.tasks.entity_manager.utils import (
@@ -155,22 +152,12 @@ def entity_manager_update(
                         params.action in create_social_action_types
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        if should_check_entity_access(
-                            params.action, params.entity_type
-                        ):
-                            create_social_record_if_access(existing_records, params)
-                        else:
-                            create_social_record(params)
+                        create_social_record(params)
                     elif (
                         params.action in delete_social_action_types
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        if should_check_entity_access(
-                            params.action, params.entity_type
-                        ):
-                            delete_social_record_if_access(existing_records, params)
-                        else:
-                            delete_social_record(params)
+                        delete_social_record(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -371,10 +358,3 @@ def get_entity_manager_events_tx(update_task, tx_receipt):
     return getattr(
         update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
     )().processReceipt(tx_receipt)
-
-
-def should_check_entity_access(action: Action, entity_type: EntityType):
-    return (
-        action in premium_content_validation_actions
-        and entity_type in premium_content_validation_entities
-    )
