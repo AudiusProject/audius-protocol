@@ -11,7 +11,7 @@ import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHeal
 import _ from 'lodash'
 import axios from 'axios'
 
-import asyncRetry from '../../../utils/asyncRetry'
+import { asyncRetry } from '../../../utils/asyncRetry'
 import { logger } from '../../../logging'
 
 import DBManager from '../../../dbManager'

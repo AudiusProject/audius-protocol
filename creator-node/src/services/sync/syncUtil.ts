@@ -3,7 +3,7 @@ import type Logger from 'bunyan'
 import axios from 'axios'
 import _ from 'lodash'
 
-import asyncRetry from '../../utils/asyncRetry'
+import { asyncRetry } from '../../utils/asyncRetry'
 
 const EXPORT_REQ_TIMEOUT_MS = 60 /* sec */ * 1000 /* millis */
 const EXPORT_REQ_MAX_RETRIES = 3

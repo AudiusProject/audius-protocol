@@ -10,7 +10,7 @@ import { logger as genericLogger } from '../../logging'
 import ContentNodeInfoManager from '../stateMachineManager/ContentNodeInfoManager'
 import { recoverWallet, signatureHasExpired } from '../../apiSigning'
 
-import asyncRetry from '../../utils/asyncRetry'
+import { asyncRetry } from '../../utils/asyncRetry'
 
 const generateDataForSignatureRecovery = (
   body: SyncRequestAxiosData
