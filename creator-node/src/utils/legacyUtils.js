@@ -155,6 +155,8 @@ export async function findCIDInNetwork(
 
   let found = false
   for (const { endpoint } of creatorNodesFiltered) {
+    if (found) break
+
     try {
       found = await asyncRetry({
         asyncFn: async (bail) => {
@@ -182,14 +184,14 @@ export async function findCIDInNetwork(
             ) {
               bail(
                 new Error(
-                  `Content multihash=${cid} not available on ${endpoint} with statusCode=${e.response?.status}`
+                  `Content is not available with statusCode=${e.response?.status}`
                 )
               )
               return
             }
 
             throw new Error(
-              `Failed to fetch content multihash=${cid} with statusCode=${e.response?.status} from endpoint=${endpoint}. Retrying..`
+              `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
             )
           }
 
@@ -203,26 +205,28 @@ export async function findCIDInNetwork(
             /* createDir */ true
           )
 
-          const isCIDProper = await verifyCIDMatchesExpected({
+          const CIDMatchesExpected = await verifyCIDMatchesExpected({
             cid,
             path: filePath,
             logger
           })
 
-          if (!isCIDProper) {
+          if (!CIDMatchesExpected) {
             try {
               await fs.unlink(filePath)
             } catch (e) {
               logger.error(`Could not remove file at path=${path}`)
             }
 
-            bail(new Error(`CID=${cid} from endpoint=${endpoint} is improper`))
+            bail(new Error('CID does not match what is expected to be'))
             return
           }
 
           logger.info(
             `Successfully fetched CID=${cid} file=${filePath} from node ${endpoint}`
           )
+
+          return true
         },
         logger,
         logLabel: 'findCIDInNetwork',
@@ -231,11 +235,11 @@ export async function findCIDInNetwork(
           minTimeout: 3000
         }
       })
-
-      found = true
     } catch (e) {
       // Do not error and stop the flow of execution for functions that call it
-      logger.error(`findCIDInNetwork error from ${endpoint} - ${e.message}`)
+      logger.error(
+        `findCIDInNetwork error from ${endpoint} for ${cid} - ${e.message}`
+      )
     }
   }
 
