@@ -22,7 +22,7 @@ const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
  *   syncReqToEnqueue
  * }
  */
-const getNewOrExistingSyncReq = ({
+const _getNewOrExistingSyncReq = ({
   userWallet,
   primaryEndpoint,
   secondaryEndpoint,
@@ -99,6 +99,10 @@ const getNewOrExistingSyncReq = ({
   return { syncReqToEnqueue }
 }
 
+export const getNewOrExistingSyncReq = instrumentTracing({
+  fn: _getNewOrExistingSyncReq
+})
+
 /**
  * Issues syncRequest for user against secondary, and polls for replication up to primary
  * If secondary fails to sync within specified timeoutMs, will error
@@ -169,7 +173,7 @@ const _issueSyncRequestsUntilSynced = async (
   )
 }
 
-const issueSyncRequestsUntilSynced = instrumentTracing({
+export const issueSyncRequestsUntilSynced = instrumentTracing({
   fn: _issueSyncRequestsUntilSynced,
   options: {
     attributes: {
@@ -178,12 +182,16 @@ const issueSyncRequestsUntilSynced = instrumentTracing({
   }
 })
 
-const getCachedHealthyNodes = async () => {
+const _getCachedHealthyNodes = async () => {
   const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)
   return healthyNodes
 }
 
-const cacheHealthyNodes = async (healthyNodes) => {
+export const getCachedHealthyNodes = instrumentTracing({
+  fn: _getCachedHealthyNodes
+})
+
+const _cacheHealthyNodes = async (healthyNodes) => {
   const pipeline = redisClient.pipeline()
   await pipeline
     .del(HEALTHY_NODES_CACHE_KEY)
@@ -192,13 +200,11 @@ const cacheHealthyNodes = async (healthyNodes) => {
     .exec()
 }
 
+export const cacheHealthyNodes = instrumentTracing({ fn: _cacheHealthyNodes })
+
 module.exports = {
-  getNewOrExistingSyncReq: instrumentTracing({
-    fn: getNewOrExistingSyncReq
-  }),
-  issueSyncRequestsUntilSynced: instrumentTracing({
-    fn: issueSyncRequestsUntilSynced
-  }),
-  getCachedHealthyNodes: instrumentTracing({ fn: getCachedHealthyNodes }),
-  cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes })
+  getNewOrExistingSyncReq,
+  issueSyncRequestsUntilSynced,
+  getCachedHealthyNodes,
+  cacheHealthyNodes
 }

@@ -17,7 +17,7 @@ const LibsUtils = libs.Utils
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
-class Utils {
+export default class Utils {
   static verifySignature(data, sig) {
     return recoverPersonalSignature({ data, sig })
   }
