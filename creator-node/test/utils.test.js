@@ -1,3 +1,4 @@
+import { asyncRetry } from '../src/utils/asyncRetry'
 const assert = require('assert')
 const nock = require('nock')
 const axios = require('axios')
@@ -6,7 +7,6 @@ const { logger: genericLogger } = require('../src/logging')
 
 // Module under test
 const Utils = require('../src/utils')
-const asyncRetry = require('../src/utils/asyncRetry')
 
 // Partially tested test file!!
 
@@ -59,8 +59,7 @@ describe('test src/utils.js', () => {
           },
           retries: 1
         },
-        logLabel:
-          'test handleBackwardsCompatibility=false with 404 response'
+        logLabel: 'test handleBackwardsCompatibility=false with 404 response'
       })
     } catch (e) {
       assert.strictEqual(didRetry, true)

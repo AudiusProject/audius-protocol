@@ -8,7 +8,7 @@ import type { WalletsToSecondariesMapping } from '../types'
 // eslint-disable-next-line import/no-unresolved
 import { UserSecondarySyncMetricsMap } from '../stateMonitoring/types'
 
-import redisClient from '../../../redis'
+import { redisClient } from '../../../redis'
 import { logger } from '../../../logging'
 
 const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
