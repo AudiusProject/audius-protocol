@@ -89,7 +89,7 @@ const SearchBarResult = memo((props) => {
             <UserBadges
               className={styles.verified}
               userId={userId}
-              badgeSize={10}
+              badgeSize={12}
               isVerifiedOverride={isVerifiedUser}
               overrideTier={tier}
             />
@@ -102,12 +102,12 @@ const SearchBarResult = memo((props) => {
               searchBarStyles.resultText
             )}
           >
-            {secondary}
+            <span>{secondary}</span>
             {!isUser && (
               <UserBadges
                 className={styles.verified}
                 userId={userId}
-                badgeSize={8}
+                badgeSize={10}
                 isVerifiedOverride={isVerifiedUser}
                 overrideTier={tier}
               />

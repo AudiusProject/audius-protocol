@@ -53,7 +53,7 @@ const ArtistIdentifier = ({
           <UserBadges
             userId={userId}
             className={cn(styles.badge)}
-            badgeSize={10}
+            badgeSize={14}
             inline
           />
         </div>
@@ -74,7 +74,7 @@ const ArtistIdentifier = ({
         <UserBadges
           userId={userId}
           className={cn(styles.badge)}
-          badgeSize={10}
+          badgeSize={14}
           inline
         />
       </div>
