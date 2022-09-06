@@ -1,6 +1,6 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
-import { ReplicaSet } from '../../../utils'
+import Utils, { ReplicaSet } from '../../../utils'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -12,39 +12,34 @@ import type {
   SyncRequestAxiosParams
 } from './types'
 
-import { QUEUE_NAMES } from '../stateMachineConstants'
-
-const axios = require('axios')
-const _: LoDashStatic = require('lodash')
-
-const config = require('../../../config')
-const models = require('../../../models')
-const Utils = require('../../../utils')
-const {
-  getUserReplicaSetEndpointsFromDiscovery
-} = require('../../../middlewares')
-const {
-  METRIC_NAMES
-} = require('../../prometheusMonitoring/prometheus.constants')
-const {
-  retrieveClockValueForUserFromReplica,
-  makeHistogramToRecord
-} = require('../stateMachineUtils')
-const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
-const {
+import {
+  QUEUE_NAMES,
   SYNC_MONITORING_RETRY_DELAY_MS,
   SYNC_MODES,
   SyncType,
   MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-} = require('../stateMachineConstants')
-const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
-const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
-const {
-  generateDataForSignatureRecovery
-} = require('../../sync/secondarySyncFromPrimaryUtils')
-const initAudiusLibs = require('../../initAudiusLibs')
-const { generateTimestampAndSignature } = require('../../../apiSigning')
+} from '../stateMachineConstants'
+
+import axios, { AxiosRequestConfig } from 'axios'
+import _ from 'lodash'
+
+import config from '../../../config'
+import { getUserReplicaSetEndpointsFromDiscovery } from '../../../middlewares'
+import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
+import {
+  retrieveClockValueForUserFromReplica,
+  makeHistogramToRecord
+} from '../stateMachineUtils'
+import SecondarySyncHealthTracker from './SecondarySyncHealthTracker'
+import primarySyncFromSecondary from '../../sync/primarySyncFromSecondary'
+import SyncRequestDeDuplicator from './SyncRequestDeDuplicator'
+import { generateDataForSignatureRecovery } from '../../sync/secondarySyncFromPrimaryUtils'
+import initAudiusLibs from '../../initAudiusLibs'
+import { generateTimestampAndSignature } from '../../../apiSigning'
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const models = require('../../../models')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
@@ -326,9 +321,9 @@ async function _handleIssueSyncRequest({
           timestamp,
           signature
         }
-      })
+      } as AxiosRequestConfig)
     } else {
-      await axios(syncRequestParameters)
+      await axios(syncRequestParameters as AxiosRequestConfig)
     }
   } catch (e: any) {
     // Retry a failed sync in all scenarios except recovering orphaned data
@@ -422,7 +417,7 @@ const _additionalSyncIsRequired = async (
   const startTimeMs = Date.now()
   const maxMonitoringTimeMs =
     startTimeMs +
-    (syncType === SyncType.MANUAL
+    (syncType === SyncType.Manual
       ? maxManualSyncMonitoringDurationInMs
       : maxSyncMonitoringDurationInMs)
 

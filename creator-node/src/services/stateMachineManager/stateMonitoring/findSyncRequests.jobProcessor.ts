@@ -1,4 +1,3 @@
-import type { LoDashStatic } from 'lodash'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 import type {
   FindSyncRequestsJobParams,
@@ -10,22 +9,15 @@ import type {
 } from './types'
 import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 
-// eslint-disable-next-line import/no-unresolved
-import { QUEUE_NAMES } from '../stateMachineConstants'
+import _ from 'lodash'
 
-const _: LoDashStatic = require('lodash')
-
-const config = require('../../../config')
-const {
-  METRIC_NAMES
-} = require('../../prometheusMonitoring/prometheus.constants')
-const ContentNodeInfoManager = require('../ContentNodeInfoManager')
-const { makeGaugeIncToRecord } = require('../stateMachineUtils')
-const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
-const {
-  getNewOrExistingSyncReq
-} = require('../stateReconciliation/stateReconciliationUtils')
-const { computeSyncModeForUserAndReplica } = require('./stateMonitoringUtils')
+import config from '../../../config'
+import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
+import ContentNodeInfoManager from '../ContentNodeInfoManager'
+import { makeGaugeIncToRecord } from '../stateMachineUtils'
+import { SyncType, SYNC_MODES, QUEUE_NAMES } from '../stateMachineConstants'
+import { getNewOrExistingSyncReq } from '../stateReconciliation/stateReconciliationUtils'
+import { computeSyncModeForUserAndReplica } from './stateMonitoringUtils'
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const minSecondaryUserSyncSuccessPercent =
@@ -214,7 +206,7 @@ async function _findSyncsForUser(
     (entry) => entry.endpoint
   )
 
-  const syncReqsToEnqueue = []
+  const syncReqsToEnqueue: IssueSyncRequestJobParams[] = []
   const duplicateSyncReqs = []
   const errors: string[] = []
 
@@ -289,7 +281,7 @@ async function _findSyncsForUser(
 
         if (!_.isEmpty(syncReqToEnqueue)) {
           result = 'new_sync_request_enqueued'
-          syncReqsToEnqueue.push(syncReqToEnqueue)
+          syncReqsToEnqueue.push(syncReqToEnqueue!)
         } else if (!_.isEmpty(duplicateSyncReq)) {
           result = 'sync_request_already_enqueued'
           duplicateSyncReqs.push(duplicateSyncReq)

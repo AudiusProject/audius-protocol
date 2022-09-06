@@ -1,4 +1,4 @@
-const redis = require('../../redis')
+import redis from '../../redis'
 
 const HSetKey = 'UserSyncFailureCounts'
 
@@ -15,6 +15,7 @@ module.exports = class UserSyncFailureCountService {
   }
 
   static async getFailureCount(wallet: string) {
+    // @ts-ignore
     return (await redis.hget(wallet)) || 0
   }
 }

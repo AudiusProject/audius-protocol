@@ -3,7 +3,8 @@ import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 import { METRIC_NAMES } from '../../../services/prometheusMonitoring/prometheus.constants'
 import {
   getCachedHealthyNodes,
-  cacheHealthyNodes
+  cacheHealthyNodes,
+  getNewOrExistingSyncReq
 } from './stateReconciliationUtils'
 import type {
   IssueSyncRequestJobParams,
@@ -12,23 +13,24 @@ import type {
   UpdateReplicaSetJobParams,
   UpdateReplicaSetJobReturnValue
 } from './types'
-import { makeHistogramToRecord } from '../stateMachineUtils'
-import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
-
-const _ = require('lodash')
-
-const config = require('../../../config')
-const {
+import {
+  makeHistogramToRecord,
+  retrieveClockValueForUserFromReplica
+} from '../stateMachineUtils'
+import {
+  UpdateReplicaSetJobResult,
   SyncType,
   RECONFIG_MODES,
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
   QUEUE_NAMES,
   SYNC_MODES
-} = require('../stateMachineConstants')
-const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
-const ContentNodeInfoManager = require('../ContentNodeInfoManager')
-const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
-const initAudiusLibs = require('../../initAudiusLibs')
+} from '../stateMachineConstants'
+
+import _ from 'lodash'
+
+import config from '../../../config'
+import ContentNodeInfoManager from '../ContentNodeInfoManager'
+import initAudiusLibs from '../../initAudiusLibs'
 
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
@@ -477,7 +479,7 @@ const _selectRandomReplicaSetNodes = async (
       numberOfUnhealthyReplicas + numberOfEmptyReplicas &&
     selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS
   ) {
-    const randomHealthyNode = _.sample(viablePotentialReplicas)
+    const randomHealthyNode = _.sample(viablePotentialReplicas)!
 
     // If node is already present in new replica set or is part of the existing replica set, keep finding a unique healthy node
     if (newReplicaNodesSet.has(randomHealthyNode)) continue
@@ -689,7 +691,7 @@ const _issueUpdateReplicaSetOp = async (
         `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary1: ${duplicateSyncReq}`
       )
     } else if (!_.isEmpty(syncToEnqueueToSecondary1)) {
-      response.syncJobsToEnqueue.push(syncToEnqueueToSecondary1)
+      response.syncJobsToEnqueue.push(syncToEnqueueToSecondary1!)
     }
 
     // Enqueue a sync from new primary to new secondary2. If there is no diff, then this is a no-op.
@@ -708,7 +710,7 @@ const _issueUpdateReplicaSetOp = async (
         `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary2: ${duplicateSyncReq2}`
       )
     } else if (!_.isEmpty(syncToEnqueueToSecondary2)) {
-      response.syncJobsToEnqueue.push(syncToEnqueueToSecondary2)
+      response.syncJobsToEnqueue.push(syncToEnqueueToSecondary2!)
     }
 
     logger.info(

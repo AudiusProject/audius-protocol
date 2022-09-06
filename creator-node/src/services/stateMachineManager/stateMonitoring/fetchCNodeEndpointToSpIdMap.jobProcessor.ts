@@ -4,8 +4,8 @@ import type {
   FetchCNodeEndpointToSpIdMapJobReturnValue
 } from './types'
 
-const initAudiusLibs = require('../../initAudiusLibs')
-const ContentNodeInfoManager = require('../ContentNodeInfoManager')
+import initAudiusLibs from '../../initAudiusLibs'
+import ContentNodeInfoManager from '../ContentNodeInfoManager'
 
 /**
  * Processes a job to update the cNodeEndpoint->spId map by reading the chain.

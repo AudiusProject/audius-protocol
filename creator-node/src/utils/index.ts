@@ -1,9 +1,30 @@
 import type { ReplicaSet } from './strToReplicaSet'
 import { strToReplicaSet } from './strToReplicaSet'
-const validateMetadata = require('./validateAudiusUserMetadata')
+import * as validateMetadata from './validateAudiusUserMetadata'
+import {
+  timeout,
+  getRandomInt,
+  verifySignature,
+  validateStateForImageDirCIDAndReturnFileUUID,
+  writeStreamToFileSystem,
+  getAllRegisteredCNodes,
+  findCIDInNetwork,
+  runShellCommand,
+  currentNodeShouldHandleTranscode
+} from './Utils'
+
 const { validateAssociatedWallets } = validateMetadata
 
-module.exports = {
+export default {
+  timeout,
+  getRandomInt,
+  verifySignature,
+  validateStateForImageDirCIDAndReturnFileUUID,
+  writeStreamToFileSystem,
+  getAllRegisteredCNodes,
+  findCIDInNetwork,
+  runShellCommand,
+  currentNodeShouldHandleTranscode,
   strToReplicaSet,
   validateMetadata,
   validateAssociatedWallets

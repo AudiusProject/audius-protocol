@@ -526,12 +526,14 @@ async function getOwnEndpoint({ libs }) {
  *      - Errors if retrieved primary does not match myCnodeEndpoint
  *    - If neither of above conditions are met, falls back to single discprov query without polling
  *
- * @param {string} wallet - wallet used to query discprov for user data
- * @param {Object} serviceRegistry
- * @param {Object} logger
- * @param {number} blockNumber - blocknumber of eth TX preceding CN call
- * @param {string} myCnodeEndpoint - endpoint of this CN
- * @param {boolean} ensurePrimary - determines if function should error if this CN is not primary
+ * @param {Object} param
+ * @param {string} param.wallet - wallet used to query discprov for user data
+ * @param {Object=} param.serviceRegistry
+ * @param {Object} param.logger
+ * @param {number | null} param.blockNumber - blocknumber of eth TX preceding CN call
+ * @param {string=} param.myCnodeEndpoint - endpoint of this CN
+ * @param {boolean} param.ensurePrimary - determines if function should error if this CN is not primary
+ * @param {AudiusLibs} param.libs - AudiusLibs
  *
  * @returns {ReplicaSet} - replica set object with optional primary, secondary1, and secondary2 properties
  */

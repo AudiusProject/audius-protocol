@@ -8,8 +8,8 @@ import type { WalletsToSecondariesMapping } from '../types'
 // eslint-disable-next-line import/no-unresolved
 import { UserSecondarySyncMetricsMap } from '../stateMonitoring/types'
 
-const redisClient = require('../../../redis')
-const { logger } = require('../../../logging')
+import redisClient from '../../../redis'
+import { logger } from '../../../logging'
 
 const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
 
@@ -77,7 +77,7 @@ const Utils = {
     const keySet = new Set<string>()
     return new Promise<string[]>((resolve, reject) => {
       stream.on('data', async (keys = []) => {
-        keys.filter(extraFilter).forEach((key) => {
+        keys.filter(extraFilter).forEach((key: string) => {
           keySet.add(key)
         })
       })

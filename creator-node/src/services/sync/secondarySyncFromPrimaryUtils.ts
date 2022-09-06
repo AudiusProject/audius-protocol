@@ -4,13 +4,13 @@ import type {
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
 
-const _ = require('lodash')
+import _ from 'lodash'
 
-const { logger: genericLogger } = require('../../logging')
-const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
-const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
+import { logger as genericLogger } from '../../logging'
+import ContentNodeInfoManager from '../stateMachineManager/ContentNodeInfoManager'
+import { recoverWallet, signatureHasExpired } from '../../apiSigning'
 
-const asyncRetry = require('../../utils/asyncRetry')
+import asyncRetry from '../../utils/asyncRetry'
 
 const generateDataForSignatureRecovery = (
   body: SyncRequestAxiosData

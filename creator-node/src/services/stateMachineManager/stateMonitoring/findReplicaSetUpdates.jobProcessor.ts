@@ -1,5 +1,4 @@
 import type Logger from 'bunyan'
-import type { LoDashStatic } from 'lodash'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 import type {
   UpdateReplicaSetUser,
@@ -14,15 +13,15 @@ import type {
   StateMonitoringUser
 } from './types'
 
-const _: LoDashStatic = require('lodash')
+import _ from 'lodash'
 
-const {
+import {
   FIND_REPLICA_SET_UPDATES_BATCH_SIZE,
   QUEUE_NAMES
-} = require('../stateMachineConstants')
-const CNodeHealthManager = require('../CNodeHealthManager')
-const ContentNodeInfoManager = require('../ContentNodeInfoManager')
-const config = require('../../../config')
+} from '../stateMachineConstants'
+import CNodeHealthManager from '../CNodeHealthManager'
+import ContentNodeInfoManager from '../ContentNodeInfoManager'
+import config from '../../../config'
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const minSecondaryUserSyncSuccessPercent =

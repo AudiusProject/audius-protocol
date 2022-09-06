@@ -9,6 +9,9 @@ const _ = require('lodash')
  */
 class ContentNodeInfoManager {
   constructor() {
+    /**
+     * @type {Record<string, number>}
+     */
     this.cNodeEndpointToSpIdMap = {}
     this.contentNodeSpIdToChainInfo = {}
   }

@@ -1,4 +1,4 @@
-const Hashids = require('hashids/cjs')
+import Hashids from 'hashids/cjs'
 
 /* We use a JS implementation of the the HashIds protocol (http://hashids.org)
  * to obfuscate our monotonically increasing int IDs as
@@ -20,5 +20,5 @@ export function encode(id: number): string {
 export function decode(id: string): number | null {
   const ids = hashids.decode(id)
   if (!ids.length) return null
-  return ids[0]
+  return ids[0] as number
 }

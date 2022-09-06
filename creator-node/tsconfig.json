@@ -3,7 +3,8 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./build_test",
-    "types": ["node", "mocha"]
+    "types": ["node", "mocha"],
+    "strict": true                                      /* Enable all strict type-checking options. */
   },
   "include": [
     "src",

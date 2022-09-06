@@ -11,6 +11,8 @@ module.exports = {
   },
   plugins: ['prettier'],
   rules: {
+      '@typescript-eslint/no-require-imports': 'warn',
+
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/member-delimiter-style': 'off',
@@ -51,5 +53,13 @@ module.exports = {
 
       'import/no-unresolved': 'error',
       'import/order': 'off'
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts"],
+      "rules": {
+        '@typescript-eslint/no-require-imports': 'error',
+      }
+    }
+  ]
 }

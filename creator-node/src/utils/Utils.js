@@ -17,25 +17,23 @@ const LibsUtils = libs.Utils
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
-class Utils {
-  static verifySignature(data, sig) {
-    return recoverPersonalSignature({ data, sig })
-  }
+function verifySignature(data, sig) {
+  return recoverPersonalSignature({ data, sig })
+}
 
-  static async timeout(ms, log = true) {
-    if (log) {
-      genericLogger.info(`starting timeout of ${ms}`)
-    }
-    return new Promise((resolve) => setTimeout(resolve, ms))
+async function timeout(ms, log = true) {
+  if (log) {
+    genericLogger.info(`starting timeout of ${ms}`)
   }
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
-  /**
-   * Generates a random number from [0, max)
-   * @param {number} max the max random number. exclusive
-   */
-  static getRandomInt(max) {
-    return Math.floor(Math.random() * max)
-  }
+/**
+ * Generates a random number from [0, max)
+ * @param {number} max the max random number. exclusive
+ */
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max)
 }
 
 /**
@@ -351,12 +349,14 @@ function currentNodeShouldHandleTranscode({
   return currentNodeShouldHandleTranscode
 }
 
-module.exports = Utils
-module.exports.validateStateForImageDirCIDAndReturnFileUUID =
-  validateStateForImageDirCIDAndReturnFileUUID
-module.exports.writeStreamToFileSystem = writeStreamToFileSystem
-module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
-module.exports.findCIDInNetwork = findCIDInNetwork
-module.exports.runShellCommand = runShellCommand
-module.exports.currentNodeShouldHandleTranscode =
+module.exports = {
+  verifySignature,
+  timeout,
+  getRandomInt,
+  validateStateForImageDirCIDAndReturnFileUUID,
+  writeStreamToFileSystem,
+  getAllRegisteredCNodes,
+  findCIDInNetwork,
+  runShellCommand,
   currentNodeShouldHandleTranscode
+}
