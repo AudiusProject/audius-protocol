@@ -23,8 +23,7 @@ const handleSyncFromPrimary = async ({
   forceWipe,
   logContext,
   secondarySyncFromPrimaryLogger,
-  blockNumber = null,
-  start = Date.now()
+  blockNumber = null
 }) => {
   const { nodeConfig, redis, libs } = serviceRegistry
   const FileSaveMaxConcurrency = nodeConfig.get(
@@ -36,7 +35,6 @@ const handleSyncFromPrimary = async ({
   const thisContentNodeEndpoint = nodeConfig.get('creatorNodeEndpoint')
 
   const logger = secondarySyncFromPrimaryLogger
-  logger.info('begin nodesync', 'time', start)
 
   let returnValue = {}
   try {
@@ -664,6 +662,8 @@ async function _secondarySyncFromPrimary({
     primary: creatorNodeEndpoint
   })
 
+  secondarySyncFromPrimaryLogger.info('begin nodesync', 'time', start)
+
   const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
@@ -672,7 +672,6 @@ async function _secondarySyncFromPrimary({
     forceResyncConfig,
     forceWipe,
     logContext,
-    start,
     secondarySyncFromPrimaryLogger
   })
   metricEndTimerFn({ result, mode })
