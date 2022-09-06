@@ -121,3 +121,4 @@ export {
   actions as audioRewardsPageActions
 } from './audio-rewards/slice'
 export * from './audio-rewards/types'
+export * from './deactivate-account'
