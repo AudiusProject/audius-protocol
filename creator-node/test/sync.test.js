@@ -2225,7 +2225,23 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
 
-    // Mock that fetching any content via /file_lookup is unavailable
+    // Mock that fetching any content via /file_lookup is unavailables
+    nock(MOCK_CN2)
+      .persist()
+      .get('/file_lookup')
+      .query(() => {
+        return true
+      })
+      .reply(404)
+
+    nock(MOCK_CN3)
+      .persist()
+      .get('/file_lookup')
+      .query(() => {
+        return true
+      })
+      .reply(404)
+
     nock(MOCK_CN4)
       .persist()
       .get('/file_lookup')
