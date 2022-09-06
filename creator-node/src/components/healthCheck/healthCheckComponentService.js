@@ -1,4 +1,4 @@
-import utils from '../../utils'
+import { timeout, currentNodeShouldHandleTranscode } from '../../utils'
 const path = require('path')
 const versionInfo = require(path.join(process.cwd(), '.version.json'))
 const { Keypair } = require('@solana/web3.js')
@@ -114,7 +114,7 @@ const healthCheck = async (
   const asyncProcessingQueueJobs = await getAsyncProcessingQueueJobs()
 
   const isAvailable = await transcodingQueueIsAvailable()
-  const shouldHandleTranscode = utils.currentNodeShouldHandleTranscode({
+  const shouldHandleTranscode = currentNodeShouldHandleTranscode({
     transcodingQueueCanAcceptMoreJobs: isAvailable,
     spID: config.get('spID')
   })
@@ -277,7 +277,7 @@ const healthCheckVerbose = async (
  */
 const healthCheckDuration = async () => {
   // Wait 5 minutes, intentionally holding this route open
-  await utils.timeout(300000)
+  await timeout(300000)
   return { success: true }
 }
 

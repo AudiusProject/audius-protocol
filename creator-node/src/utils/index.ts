@@ -15,7 +15,7 @@ import {
 
 const { validateAssociatedWallets } = validateMetadata
 
-export default {
+export {
   timeout,
   getRandomInt,
   verifySignature,
