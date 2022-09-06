@@ -11,7 +11,7 @@ function getLibsMock() {
                 blockNumber: 163,
                 delegateOwnerWallet:
                   '0x1F9a71dEC0eCf3FC8E916a17458f173AC453ca33',
-                endpoint: 'http://cn1_creator-node_1:4000',
+                endpoint: 'http://mock-cn1.audius.co',
                 owner: '0x1F9a71dEC0eCf3FC8E916a17458f173AC453ca33',
                 spID: 1,
                 type: 'content-node'
@@ -20,7 +20,7 @@ function getLibsMock() {
                 blockNumber: 165,
                 delegateOwnerWallet:
                   '0xc0B03742234deFbAFaD16E1fAf5F8b069b1AeB7d',
-                endpoint: 'http://cn2_creator-node_1:4001',
+                endpoint: 'http://mock-cn2.audius.co',
                 owner: '0xc0B03742234deFbAFaD16E1fAf5F8b069b1AeB7d',
                 spID: 2,
                 type: 'content-node'
@@ -29,9 +29,18 @@ function getLibsMock() {
                 blockNumber: 167,
                 delegateOwnerWallet:
                   '0x242E1Cd7bB405941063814c241a1f046CCC9810b',
-                endpoint: 'http://cn3_creator-node_1:4002',
+                endpoint: 'http://mock-cn3.audius.co',
                 owner: '0x242E1Cd7bB405941063814c241a1f046CCC9810b',
                 spID: 3,
+                type: 'content-node'
+              },
+              {
+                blockNumber: 169,
+                delegateOwnerWallet:
+                  '0x242E1Cd7bB405941063814c241a1f046CCCaaaaa',
+                endpoint: 'http://mock-cn4.audius.co',
+                owner: '0x242E1Cd7bB405941063814c241a1f046CCCaaaaa',
+                spID: 4,
                 type: 'content-node'
               }
             ]

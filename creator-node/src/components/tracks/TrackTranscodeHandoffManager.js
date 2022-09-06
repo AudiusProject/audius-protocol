@@ -2,6 +2,7 @@ const axios = require('axios')
 const fs = require('fs')
 const fsExtra = require('fs-extra')
 const FormData = require('form-data')
+const _ = require('lodash')
 
 const config = require('../../config.js')
 const Utils = require('../../utils')
@@ -135,33 +136,26 @@ class TrackTranscodeHandoffManager {
   }
 
   /**
-   * Select a default number of random Content Nodes
+   * Select a default number of random Content Nodes, excluding self
    * @param {Object} libs
    * @returns array of healthy Content Nodes for transcode hand off
    */
   static async selectRandomSPs(libs) {
-    let allSPs = await libs.ethContracts.getServiceProviderList('content-node')
-    allSPs = allSPs.map((sp) => sp.endpoint)
+    let allValidSPs = await libs.ethContracts.getServiceProviderList(
+      'content-node'
+    )
+    allValidSPs = allValidSPs
+      .map((sp) => sp.endpoint)
+      .filter((endpoint) => endpoint !== CREATOR_NODE_ENDPOINT)
 
     // If there are less Content Nodes than the default number, set the cap to the number
     // of available SPs. This will probably only happen in local dev :shrugs:
-    const numberOfSps =
-      allSPs.length < NUMBER_OF_SPS_FOR_HANDOFF_TRACK
-        ? allSPs.length
+    const numOfSPsToSelect =
+      allValidSPs.length < NUMBER_OF_SPS_FOR_HANDOFF_TRACK
+        ? allValidSPs.length
         : NUMBER_OF_SPS_FOR_HANDOFF_TRACK
 
-    const validSPs = new Set()
-    while (validSPs.size < numberOfSps) {
-      const index = Utils.getRandomInt(allSPs.length)
-      const currentSP = allSPs[index]
-
-      if (currentSP === CREATOR_NODE_ENDPOINT || validSPs.has(currentSP)) {
-        continue
-      }
-      validSPs.add(currentSP)
-    }
-
-    return Array.from(validSPs)
+    return _.sampleSize(allValidSPs, numOfSPsToSelect)
   }
 
   /**
