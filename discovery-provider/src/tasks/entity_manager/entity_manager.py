@@ -316,9 +316,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
     saves: List[Save] = session.query(Save).filter(or_(*and_queries)).all()
     existing_entities[EntityType.SAVE] = {
         # capitalize since save_type is lower case and needs to match EntityType
-        get_record_key(
-            save.user_id, save.save_type.capitalize(), save.save_item_id
-        ): save
+        get_record_key(save.user_id, save.save_type, save.save_item_id): save
         for save in saves
     }
 
@@ -341,7 +339,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
     existing_entities[EntityType.REPOST] = {
         # capitalize since repost_type is lower case and needs to match EntityType
         get_record_key(
-            repost.user_id, repost.repost_type.capitalize(), repost.repost_item_id
+            repost.user_id, repost.repost_type, repost.repost_item_id
         ): repost
         for repost in reposts
     }
