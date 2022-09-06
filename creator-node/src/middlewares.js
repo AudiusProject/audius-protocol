@@ -1,4 +1,4 @@
-import utils from './utils'
+import utils, { strToReplicaSet } from './utils'
 const promiseAny = require('promise.any')
 
 const {
@@ -10,7 +10,6 @@ const {
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
-const { strToReplicaSet } = require('./utils/index')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')

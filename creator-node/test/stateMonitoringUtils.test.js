@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-expressions */
+import Utils from '../src/utils'
 const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
@@ -14,7 +15,6 @@ const DBManager = require('../src/dbManager')
 const config = require('../src/config')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const Utils = require('../src/utils')
 const {
   getLatestUserIdFromDiscovery,
   buildReplicaSetNodesToUserWalletsMap,
@@ -556,9 +556,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         return secondaryFilesHash
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       const syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -583,9 +586,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         return primaryFilesHashMock
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       const syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -613,9 +619,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         throw new Error(errorMsg)
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       try {
         await computeSyncModeForUserAndReplica({

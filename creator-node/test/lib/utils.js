@@ -1,7 +1,7 @@
+import Utils from '../../src/utils'
+
 const assert = require('assert')
 const _ = require('lodash')
-
-const Utils = require('../../src/utils')
 
 const stringifiedDateFields = (obj) => {
   const newObj = { ...obj }

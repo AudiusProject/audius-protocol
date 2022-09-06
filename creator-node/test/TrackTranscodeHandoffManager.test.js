@@ -1,3 +1,4 @@
+import Utils from '../src/utils'
 const assert = require('assert')
 const sinon = require('sinon')
 const nock = require('nock')
@@ -9,7 +10,6 @@ const axios = require('axios')
 const { getLibsMock } = require('./lib/libsMock')
 
 const { logger: genericLogger } = require('../src/logging')
-const Utils = require('../src/utils')
 const TrackTranscodeHandoffManager = require('../src/components/tracks/TrackTranscodeHandoffManager')
 
 describe('test TrackTranscodeHandoffManager', function () {

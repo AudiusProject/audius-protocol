@@ -1,19 +1,21 @@
-const _ = require('lodash')
+import _ from 'lodash'
 
-const { logger: genericLogger, createChildLogger } = require('../../logging')
-const config = require('../../config')
-const models = require('../../models')
-const { saveFileForMultihashToFS } = require('../../fileManager')
-const {
+import { logger as genericLogger, createChildLogger } from '../../logging'
+import config from '../../config'
+import { saveFileForMultihashToFS } from '../../fileManager'
+import {
   getOwnEndpoint,
   getUserReplicaSetEndpointsFromDiscovery
-} = require('../../middlewares')
-const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
-const DBManager = require('../../dbManager')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
-const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
-const { instrumentTracing, tracing } = require('../../tracer')
-const { fetchExportFromNode } = require('./syncUtil')
+} from '../../middlewares'
+import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
+import DBManager from '../../dbManager'
+import UserSyncFailureCountService from './UserSyncFailureCountService'
+import { shouldForceResync } from './secondarySyncFromPrimaryUtils'
+import { instrumentTracing, tracing } from '../../tracer'
+import { fetchExportFromNode } from './syncUtil'
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const models = require('../../models')
 
 const handleSyncFromPrimary = async ({
   serviceRegistry,

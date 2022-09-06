@@ -1,3 +1,4 @@
+import Utils from '../src/utils'
 const assert = require('assert')
 const proxyquire = require('proxyquire')
 const chai = require('chai')
@@ -7,7 +8,6 @@ const sinon = require('sinon')
 const { CancelToken } = require('axios').default
 
 const PeerSetManager = require('../src/snapbackSM/peerSetManager')
-const Utils = require('../src/utils')
 
 const { expect } = chai
 chai.use(require('sinon-chai'))
@@ -46,7 +46,7 @@ describe('test peerSetManager -- determinePeerHealth', () => {
       numberOfCPUs: 12,
       latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
       latestSyncFailTimestamp: '',
-  
+
       // Fields to consider in this test
       thirtyDayRollingSyncSuccessCount: 50,
       thirtyDayRollingSyncFailCount: 10,
@@ -67,7 +67,7 @@ describe('test peerSetManager -- determinePeerHealth', () => {
   })
 
   it('should throw error if storage path vars are improper', () => {
-    let verboseHealthCheckResp = {
+    const verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
     delete verboseHealthCheckResp.storagePathSize
@@ -76,7 +76,9 @@ describe('test peerSetManager -- determinePeerHealth', () => {
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
     } catch (e) {
-      assert.fail('Should not have considered storage criteria if vars are not present')
+      assert.fail(
+        'Should not have considered storage criteria if vars are not present'
+      )
     }
 
     // In bytes
@@ -85,14 +87,16 @@ describe('test peerSetManager -- determinePeerHealth', () => {
 
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
-      assert.fail('Should not have passed without meeting minimum storage requirements')
+      assert.fail(
+        'Should not have passed without meeting minimum storage requirements'
+      )
     } catch (e) {
       assert.ok(e.message.includes('storage'))
     }
   })
 
   it('should throw error if memory vars are improper', () => {
-    let verboseHealthCheckResp = {
+    const verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
     delete verboseHealthCheckResp.usedMemory
@@ -102,7 +106,9 @@ describe('test peerSetManager -- determinePeerHealth', () => {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
     } catch (e) {
       // Swallow error
-      assert.fail('Should not have considered memory criteria if vars are not present')
+      assert.fail(
+        'Should not have considered memory criteria if vars are not present'
+      )
     }
 
     // In bytes
@@ -111,14 +117,16 @@ describe('test peerSetManager -- determinePeerHealth', () => {
 
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
-      assert.fail('Should not have passed without meeting minimum memory requirements')
+      assert.fail(
+        'Should not have passed without meeting minimum memory requirements'
+      )
     } catch (e) {
       assert.ok(e.message.includes('memory'))
     }
   })
 
   it('should throw error if the file descriptors are improper', () => {
-    let verboseHealthCheckResp = {
+    const verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
     delete verboseHealthCheckResp.allocatedFileDescriptors
@@ -127,7 +135,9 @@ describe('test peerSetManager -- determinePeerHealth', () => {
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
     } catch (e) {
-      assert.fail('Should not have considered file descriptors if vars are not present')
+      assert.fail(
+        'Should not have considered file descriptors if vars are not present'
+      )
     }
 
     verboseHealthCheckResp.allocatedFileDescriptors = 1000
@@ -135,14 +145,16 @@ describe('test peerSetManager -- determinePeerHealth', () => {
 
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
-      assert.fail('Should not have passed when surpassing file descriptors open threshold')
+      assert.fail(
+        'Should not have passed when surpassing file descriptors open threshold'
+      )
     } catch (e) {
       assert.ok(e.message.includes('file descriptors'))
     }
   })
 
   it('should throw error if latest sync history vars are improper', () => {
-    let verboseHealthCheckResp = {
+    const verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
     delete verboseHealthCheckResp.dailySyncSuccessCount
@@ -151,7 +163,9 @@ describe('test peerSetManager -- determinePeerHealth', () => {
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
     } catch (e) {
-      assert.fail('Should not have considered latest sync history if vars are not present')
+      assert.fail(
+        'Should not have considered latest sync history if vars are not present'
+      )
     }
 
     verboseHealthCheckResp.dailySyncSuccessCount = 2
@@ -160,7 +174,9 @@ describe('test peerSetManager -- determinePeerHealth', () => {
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
     } catch (e) {
-      assert.fail('Should not have considered latest sync history if mininum count not met')
+      assert.fail(
+        'Should not have considered latest sync history if mininum count not met'
+      )
     }
 
     verboseHealthCheckResp.dailySyncSuccessCount = 5
@@ -168,14 +184,16 @@ describe('test peerSetManager -- determinePeerHealth', () => {
 
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
-      assert.fail('Should not have passed when fail count percentage is greater than success count')
+      assert.fail(
+        'Should not have passed when fail count percentage is greater than success count'
+      )
     } catch (e) {
       assert.ok(e.message.includes('sync data'))
     }
   })
 
   it('should throw error if rolling sync history vars are improper', () => {
-    let verboseHealthCheckResp = {
+    const verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
     delete verboseHealthCheckResp.thirtyDayRollingSyncSuccessCount
@@ -184,7 +202,9 @@ describe('test peerSetManager -- determinePeerHealth', () => {
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
     } catch (e) {
-      assert.fail('Should not have considered rolling sync history if vars are not present')
+      assert.fail(
+        'Should not have considered rolling sync history if vars are not present'
+      )
     }
 
     verboseHealthCheckResp.thirtyDayRollingSyncSuccessCount = 5
@@ -193,7 +213,9 @@ describe('test peerSetManager -- determinePeerHealth', () => {
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
     } catch (e) {
-      assert.fail('Should not have considered rolling sync history if mininum count not met')
+      assert.fail(
+        'Should not have considered rolling sync history if mininum count not met'
+      )
     }
 
     verboseHealthCheckResp.thirtyDayRollingSyncSuccessCount = 1
@@ -201,7 +223,9 @@ describe('test peerSetManager -- determinePeerHealth', () => {
 
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
-      assert.fail('Should not have passed when fail count percentage is greater than success count')
+      assert.fail(
+        'Should not have passed when fail count percentage is greater than success count'
+      )
     } catch (e) {
       assert.ok(e.message.includes('sync data'))
     }
@@ -230,21 +254,34 @@ describe('test peerSetManager -- isPrimaryHealthy', () => {
 
   it('should mark primary as healthy if responds with 200 from health check', async () => {
     // Mock method
-    peerSetManager.isNodeHealthy = async () => { return true }
+    peerSetManager.isNodeHealthy = async () => {
+      return true
+    }
 
     const isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.strictEqual(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint], undefined)
+    assert.strictEqual(
+      peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[
+        primaryEndpoint
+      ],
+      undefined
+    )
   })
 
   it('should mark primary as healthy if responds with 500 from health check and has not been visited yet', async () => {
-    peerSetManager.isNodeHealthy = async () => { return false }
+    peerSetManager.isNodeHealthy = async () => {
+      return false
+    }
 
     const isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+    assert.ok(
+      peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[
+        primaryEndpoint
+      ]
+    )
   })
 
   it('should mark primary as unhealthy if responds with 500 from health check and the primary has surpassed the allowed threshold time to be unhealthy', async () => {
@@ -254,34 +291,56 @@ describe('test peerSetManager -- isPrimaryHealthy', () => {
       creatorNodeEndpoint: 'https://content_node_endpoint.audius.co',
       maxNumberSecondsPrimaryRemainsUnhealthy: 0
     })
-    peerSetManager.isNodeHealthy = async () => { return false }
+    peerSetManager.isNodeHealthy = async () => {
+      return false
+    }
 
     let isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+    assert.ok(
+      peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[
+        primaryEndpoint
+      ]
+    )
 
     isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, false)
-    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+    assert.ok(
+      peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[
+        primaryEndpoint
+      ]
+    )
   })
 
   it('removes primary from map if it goes from unhealthy and back to healthy', async () => {
-    peerSetManager.isNodeHealthy = async () => { return false }
+    peerSetManager.isNodeHealthy = async () => {
+      return false
+    }
 
     let isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+    assert.ok(
+      peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[
+        primaryEndpoint
+      ]
+    )
 
     //  Mock again
-    peerSetManager.isNodeHealthy = async () => { return true }
+    peerSetManager.isNodeHealthy = async () => {
+      return true
+    }
 
     isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.ok(!peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+    assert.ok(
+      !peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[
+        primaryEndpoint
+      ]
+    )
   })
 })
 
@@ -291,14 +350,14 @@ describe('test peerSetManager -- getNodeUsers', () => {
   const users = []
   _.range(1, 20).forEach((userId) => {
     users.push({
-      'user_id': userId,
-      'wallet': `wallet${userId}`,
-      'primary': 'http://cn1.co',
-      'secondary1': 'http://cn2.co',
-      'secondary2': 'http://cn3.co',
-      'primarySpID': 1,
-      'secondary1SpID': 2,
-      'secondary2SpID': 3
+      user_id: userId,
+      wallet: `wallet${userId}`,
+      primary: 'http://cn1.co',
+      secondary1: 'http://cn2.co',
+      secondary2: 'http://cn3.co',
+      primarySpID: 1,
+      secondary1SpID: 2,
+      secondary2SpID: 3
     })
   })
 
@@ -318,15 +377,8 @@ describe('test peerSetManager -- getNodeUsers', () => {
 
     let method, baseURL, url, params, timeout, cancelToken, otherParams
     const axios = async (req) => {
-      ;({
-        method,
-        baseURL,
-        url,
-        params,
-        timeout,
-        cancelToken,
-        ...otherParams
-      } = req)
+      ;({ method, baseURL, url, params, timeout, cancelToken, ...otherParams } =
+        req)
 
       return { data: { data: users } }
     }
@@ -338,7 +390,7 @@ describe('test peerSetManager -- getNodeUsers', () => {
     const MockedPeerSetManager = proxyquire(
       '../src/snapbackSM/peerSetManager.js',
       {
-        'axios': axios,
+        axios: axios,
         './StateMachineConstants': {
           GET_NODE_USERS_TIMEOUT_MS,
           GET_NODE_USERS_CANCEL_TOKEN_MS,
@@ -377,15 +429,8 @@ describe('test peerSetManager -- getNodeUsers', () => {
 
     let method, baseURL, url, params, timeout, cancelToken, otherParams
     const axios = async (req) => {
-      ;({
-        method,
-        baseURL,
-        url,
-        params,
-        timeout,
-        cancelToken,
-        ...otherParams
-      } = req)
+      ;({ method, baseURL, url, params, timeout, cancelToken, ...otherParams } =
+        req)
 
       return { data: { data: users } }
     }
@@ -397,7 +442,7 @@ describe('test peerSetManager -- getNodeUsers', () => {
     const MockedPeerSetManager = proxyquire(
       '../src/snapbackSM/peerSetManager.js',
       {
-        'axios': axios,
+        axios: axios,
         './StateMachineConstants': {
           GET_NODE_USERS_TIMEOUT_MS,
           GET_NODE_USERS_CANCEL_TOKEN_MS,
@@ -429,19 +474,17 @@ describe('test peerSetManager -- getNodeUsers', () => {
   it('throws when one or more users is missing a required field', async () => {
     const axios = async (_) => {
       return {
-        data:
-        {
-          data:
-          [
+        data: {
+          data: [
             ...users,
             {
-              'user_id': 'userId with missing secondary2SpID',
-              'wallet': `wallet`,
-              'primary': 'http://cn1.co',
-              'secondary1': 'http://cn2.co',
-              'secondary2': 'http://cn3.co',
-              'primarySpID': 1,
-              'secondary1SpID': 2
+              user_id: 'userId with missing secondary2SpID',
+              wallet: `wallet`,
+              primary: 'http://cn1.co',
+              secondary1: 'http://cn2.co',
+              secondary2: 'http://cn3.co',
+              primarySpID: 1,
+              secondary1SpID: 2
             }
           ]
         }
@@ -450,7 +493,7 @@ describe('test peerSetManager -- getNodeUsers', () => {
     const MockedPeerSetManager = proxyquire(
       '../src/snapbackSM/peerSetManager.js',
       {
-        'axios': axios
+        axios: axios
       }
     )
     const peerSetManager = new MockedPeerSetManager({
@@ -458,8 +501,10 @@ describe('test peerSetManager -- getNodeUsers', () => {
       creatorNodeEndpoint: CREATOR_NODE_ENDPOINT
     })
 
-    return expect(peerSetManager.getNodeUsers()).to.eventually
-      .be.rejectedWith('getNodeUsers() Error: Unexpected response format during getNodeUsers() call')
+    return expect(peerSetManager.getNodeUsers())
+      .to.eventually.be.rejectedWith(
+        'getNodeUsers() Error: Unexpected response format during getNodeUsers() call'
+      )
       .and.be.an.instanceOf(Error)
   })
 
@@ -470,10 +515,7 @@ describe('test peerSetManager -- getNodeUsers', () => {
 
     let timeout, cancelToken
     const axios = async (req) => {
-      ;({
-        timeout,
-        cancelToken
-      } = req)
+      ;({ timeout, cancelToken } = req)
 
       // Wait long enough for the cancel token to cancel the axios request
       await Utils.timeout(GET_NODE_USERS_CANCEL_TOKEN_MS + 1)
@@ -488,7 +530,7 @@ describe('test peerSetManager -- getNodeUsers', () => {
     const MockedPeerSetManager = proxyquire(
       '../src/snapbackSM/peerSetManager.js',
       {
-        'axios': axios,
+        axios: axios,
         './StateMachineConstants': {
           GET_NODE_USERS_TIMEOUT_MS,
           GET_NODE_USERS_CANCEL_TOKEN_MS,
@@ -540,8 +582,8 @@ describe('test peerSetManager -- getNodeUsers', () => {
       .delay(GET_NODE_USERS_CANCEL_TOKEN_MS + 1)
       .reply(200, { data: users })
 
-    return expect(peerSetManager.getNodeUsers()).to.eventually
-      .be.rejectedWith(
+    return expect(peerSetManager.getNodeUsers())
+      .to.eventually.be.rejectedWith(
         `getNodeUsers() Error: Cancel: getNodeUsers took more than ${GET_NODE_USERS_CANCEL_TOKEN_MS}ms and did not time out - connected discprov [${DISCOVERY_NODE_ENDPOINT}]`
       )
       .and.be.an.instanceOf(Error)
@@ -577,8 +619,8 @@ describe('test peerSetManager -- getNodeUsers', () => {
       .delayBody(GET_NODE_USERS_CANCEL_TOKEN_MS + 1)
       .reply(200, { data: users })
 
-    return expect(peerSetManager.getNodeUsers()).to.eventually
-      .be.rejectedWith(
+    return expect(peerSetManager.getNodeUsers())
+      .to.eventually.be.rejectedWith(
         `getNodeUsers() Error: Cancel: getNodeUsers took more than ${GET_NODE_USERS_CANCEL_TOKEN_MS}ms and did not time out - connected discprov [${DISCOVERY_NODE_ENDPOINT}]`
       )
       .and.be.an.instanceOf(Error)

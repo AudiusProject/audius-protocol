@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-expressions */
+import Utils from '../src/utils'
 const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
@@ -9,7 +10,6 @@ const proxyquire = require('proxyquire')
 
 const CNodeHealthManager = require('../src/services/stateMachineManager/CNodeHealthManager')
 const config = require('../src/config')
-const Utils = require('../src/utils')
 
 describe('test CNodeHealthManager -- getUnhealthyPeers()', function () {
   let sandbox
@@ -177,7 +177,9 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
   it('returns false when determinePeerHealth throws with performSimpleCheck=false', async function () {
     // Stub functions that isNodeHealthy() will call
     const node = 'http://some_content_node.co'
-    const isNodeHealthyError = new Error('Node health check returned healthy: false')
+    const isNodeHealthyError = new Error(
+      'Node health check returned healthy: false'
+    )
     const determinePeerHealthError = new Error('test determinePeerHealthError')
     const verboseHealthCheckResp = { healthy: false }
     const queryVerboseHealthCheckStub = sandbox
@@ -326,7 +328,7 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
       numberOfCPUs: 12,
       latestSyncSuccessTimestamp: '2022-06-08T21:29:34.231Z',
       latestSyncFailTimestamp: '',
-  
+
       // Fields to consider in this test
       thirtyDayRollingSyncSuccessCount: 50,
       thirtyDayRollingSyncFailCount: 10,

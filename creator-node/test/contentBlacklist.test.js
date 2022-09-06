@@ -1,10 +1,10 @@
+import Utils from '../src/utils'
+
 const assert = require('assert')
 const request = require('supertest')
 const sinon = require('sinon')
 const path = require('path')
 const _ = require('lodash')
-
-const Utils = require('../src/utils')
 const BlacklistManager = require('../src/blacklistManager')
 const models = require('../src/models')
 const redis = require('../src/redis')

@@ -1,8 +1,8 @@
+import utils from '../src/utils'
 const assert = require('assert')
 
 const redis = require('../src/redis')
 const { WalletWriteLock } = redis
-const utils = require('../src/utils')
 
 describe('test Redis client', function () {
   /** Reset redis state */
@@ -20,35 +20,44 @@ describe('test Redis client', function () {
     assert.equal(await redis.get('key'), 'value')
   })
 
-  it('Confirms user write locking works', async function() {
+  it('Confirms user write locking works', async function () {
     const wallet = 'wallet'
-    const defaultExpirationSec = WalletWriteLock.WALLET_WRITE_LOCK_EXPIRATION_SEC
+    const defaultExpirationSec =
+      WalletWriteLock.WALLET_WRITE_LOCK_EXPIRATION_SEC
     const validAcquirers = WalletWriteLock.VALID_ACQUIRERS
 
     // Confirm expected initial state
-    
+
     assert.equal(await WalletWriteLock.isHeld(wallet), false)
 
     assert.equal(await WalletWriteLock.getCurrentHolder(wallet), null)
 
     // Acquire lock + confirm expected state
 
-    assert.doesNotReject(WalletWriteLock.acquire(wallet, validAcquirers.PrimarySyncFromSecondary))
+    assert.doesNotReject(
+      WalletWriteLock.acquire(wallet, validAcquirers.PrimarySyncFromSecondary)
+    )
 
     assert.equal(await WalletWriteLock.ttl(wallet), defaultExpirationSec)
 
     assert.equal(await WalletWriteLock.isHeld(wallet), true)
 
-    assert.equal(await WalletWriteLock.getCurrentHolder(wallet), validAcquirers.PrimarySyncFromSecondary)
+    assert.equal(
+      await WalletWriteLock.getCurrentHolder(wallet),
+      validAcquirers.PrimarySyncFromSecondary
+    )
 
     assert.equal(await WalletWriteLock.syncIsInProgress(wallet), true)
 
     // Confirm acquisition fails when already held
 
-    assert.rejects(WalletWriteLock.acquire(wallet, validAcquirers.PrimarySyncFromSecondary), {
-      name: 'Error',
-      message: `[acquireWriteLockForWallet][Wallet: ${wallet}] Error: Failed to acquire lock - already held.`
-    })
+    assert.rejects(
+      WalletWriteLock.acquire(wallet, validAcquirers.PrimarySyncFromSecondary),
+      {
+        name: 'Error',
+        message: `[acquireWriteLockForWallet][Wallet: ${wallet}] Error: Failed to acquire lock - already held.`
+      }
+    )
 
     // Release lock + confirm expected state
 
@@ -64,18 +73,27 @@ describe('test Redis client', function () {
 
     const expirationSec = 1
 
-    assert.doesNotReject(WalletWriteLock.acquire(wallet, validAcquirers.SecondarySyncFromPrimary, expirationSec))
+    assert.doesNotReject(
+      WalletWriteLock.acquire(
+        wallet,
+        validAcquirers.SecondarySyncFromPrimary,
+        expirationSec
+      )
+    )
 
     assert.equal(await WalletWriteLock.ttl(wallet), expirationSec)
 
     assert.equal(await WalletWriteLock.isHeld(wallet), true)
 
-    assert.equal(await WalletWriteLock.getCurrentHolder(wallet), validAcquirers.SecondarySyncFromPrimary)
+    assert.equal(
+      await WalletWriteLock.getCurrentHolder(wallet),
+      validAcquirers.SecondarySyncFromPrimary
+    )
 
     assert.equal(await WalletWriteLock.syncIsInProgress(wallet), true)
 
     // Confirm lock auto-expired after expected expiration time (plus a small buffer)
-    
+
     await utils.timeout(expirationSec * 1000 + 100)
 
     assert.equal(await WalletWriteLock.isHeld(wallet), false)
