@@ -4,7 +4,8 @@ import {
   getContext,
   waitForValue,
   waitForAccount,
-  signOutActions
+  signOutActions,
+  deactivateAccountActions
 } from '@audius/common'
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
@@ -14,11 +15,8 @@ import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
 
-import {
-  afterDeactivationSignOut,
-  deactivateAccount,
-  deactivateAccountFailed
-} from './slice'
+const { afterDeactivationSignOut, deactivateAccount, deactivateAccountFailed } =
+  deactivateAccountActions
 const { signOut } = signOutActions
 const { getAccountUser, getUserId } = accountSelectors
 

@@ -4,7 +4,8 @@ import {
   accountSelectors,
   recoveryEmailActions,
   recoveryEmailSelectors,
-  modalsActions
+  modalsActions,
+  Status
 } from '@audius/common'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -87,10 +88,10 @@ export const AccountSettingsScreen = () => {
   }, [dispatch])
 
   useEffect(() => {
-    if (recoveryEmailStatus === 'resolved') {
+    if (recoveryEmailStatus === Status.SUCCESS) {
       toast({ content: messages.recoveryEmailSent })
     }
-    if (recoveryEmailStatus === 'rejected') {
+    if (recoveryEmailStatus === Status.ERROR) {
       toast({ content: messages.recoveryEmailSent })
     }
   }, [recoveryEmailStatus, toast])

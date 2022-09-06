@@ -1,11 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+import { Status } from '../../models'
+
 export type RecoveryEmailState = {
-  status: 'idle' | 'pending' | 'resolved' | 'rejected'
+  status: Status
 }
 
 const initialState: RecoveryEmailState = {
-  status: 'idle'
+  status: Status.IDLE
 }
 
 const slice = createSlice({
@@ -13,13 +15,13 @@ const slice = createSlice({
   initialState,
   reducers: {
     resendRecoveryEmail: (state) => {
-      state.status = 'pending'
+      state.status = Status.LOADING
     },
     resendSuccess: (state) => {
-      state.status = 'resolved'
+      state.status = Status.SUCCESS
     },
     resendError: (state) => {
-      state.status = 'rejected'
+      state.status = Status.ERROR
     }
   }
 })
