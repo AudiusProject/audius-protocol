@@ -22,7 +22,9 @@ const handleSyncFromPrimary = async ({
   forceResyncConfig,
   forceWipe,
   logContext,
-  blockNumber = null
+  secondarySyncFromPrimaryLogger,
+  blockNumber = null,
+  start = Date.now()
 }) => {
   const { nodeConfig, redis, libs } = serviceRegistry
   const FileSaveMaxConcurrency = nodeConfig.get(
@@ -33,13 +35,7 @@ const handleSyncFromPrimary = async ({
   )
   const thisContentNodeEndpoint = nodeConfig.get('creatorNodeEndpoint')
 
-  const start = Date.now()
-
-  const logger = createChildLogger(genericLogger, {
-    wallet,
-    sync: 'secondarySyncFromPrimary',
-    primary: creatorNodeEndpoint
-  })
+  const logger = secondarySyncFromPrimaryLogger
   logger.info('begin nodesync', 'time', start)
 
   let returnValue = {}
@@ -571,11 +567,7 @@ const handleSyncFromPrimary = async ({
       // track that sync for this user was successful
       await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
 
-      logger.info(
-        `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
-          Date.now() - start
-        }. From endpoint ${creatorNodeEndpoint}.`
-      )
+      // for final log check the _secondarySyncFromPrimary function
 
       return { result: 'success' }
     } catch (e) {
@@ -609,13 +601,8 @@ const handleSyncFromPrimary = async ({
   } catch (e) {
     tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
-    logger.error(
-      `Sync complete for wallet: ${wallet}. Status: Error, message: ${
-        e.message
-      }. Duration sync: ${
-        Date.now() - start
-      }. From endpoint ${creatorNodeEndpoint}.`
-    )
+
+    // for final log check the _secondarySyncFromPrimary function
 
     return _.isEmpty(returnValue)
       ? {
@@ -669,6 +656,14 @@ async function _secondarySyncFromPrimary({
   if (forceResyncConfig?.forceResync) mode = 'force_resync'
   if (forceWipe) mode = 'force_wipe'
 
+  const start = Date.now()
+
+  const secondarySyncFromPrimaryLogger = createChildLogger(genericLogger, {
+    wallet,
+    sync: 'secondarySyncFromPrimary',
+    primary: creatorNodeEndpoint
+  })
+
   const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
@@ -676,14 +671,29 @@ async function _secondarySyncFromPrimary({
     blockNumber,
     forceResyncConfig,
     forceWipe,
-    logContext
+    logContext,
+    start,
+    secondarySyncFromPrimaryLogger
   })
   metricEndTimerFn({ result, mode })
   tracing.setSpanAttribute('result', result)
   tracing.setSpanAttribute('mode', mode)
 
   if (error) {
+    secondarySyncFromPrimaryLogger.error(
+      `Sync complete for wallet: ${wallet}. Status: Error, message: ${
+        error.message
+      }. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
+    )
     throw new Error(error)
+  } else {
+    secondarySyncFromPrimaryLogger.info(
+      `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
+    )
   }
 
   return { result }
