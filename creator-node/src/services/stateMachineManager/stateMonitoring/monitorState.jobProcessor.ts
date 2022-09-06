@@ -14,14 +14,14 @@ import type {
 import { QUEUE_NAMES } from '../stateMachineConstants'
 import { instrumentTracing, tracing } from '../../../tracer'
 
-const config = require('../../../config')
-const NodeHealthManager = require('../CNodeHealthManager')
-const {
+import config from '../../../config'
+import NodeHealthManager from '../CNodeHealthManager'
+import {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
   computeUserSecondarySyncSuccessRatesMap
-} = require('./stateMonitoringUtils')
-const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
+} from './stateMonitoringUtils'
+import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
