@@ -223,7 +223,7 @@ export async function findCIDInNetwork(
           )
         },
         logger,
-        logLabel: 'fetchFileFromNetworkAndWriteToDisk',
+        logLabel: 'findCIDInNetwork',
         options: {
           retries: numRetries,
           minTimeout: 3000
