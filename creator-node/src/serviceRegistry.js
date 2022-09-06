@@ -32,7 +32,7 @@ const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRe
  * services for use throughout CreatorNode.
  *
  */
-export class ServiceRegistry {
+class ServiceRegistry {
   constructor() {
     // TODO: this is redundant and we should just rely on the import, but this is too tightly coupled with existing logic
     this.nodeConfig = config
@@ -507,7 +507,9 @@ export class ServiceRegistry {
   }
 }
 
+export const serviceRegistry = new ServiceRegistry()
+
 //  Export a singleton instance of the ServiceRegistry
 module.exports = {
-  serviceRegistry: new ServiceRegistry()
+  serviceRegistry
 }
