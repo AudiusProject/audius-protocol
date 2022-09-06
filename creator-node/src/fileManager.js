@@ -1,4 +1,5 @@
-import Utils, { findCIDInNetwork } from './utils'
+import { findCIDInNetwork } from './utils'
+import * as Utils from './utils'
 const path = require('path')
 const fs = require('fs-extra')
 const multer = require('multer')

@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
-import Utils, { ReplicaSet } from '../../../utils'
+import type { ReplicaSet } from '../../../utils'
+import { timeout } from '../../../utils'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -479,7 +480,7 @@ const _additionalSyncIsRequired = async (
     }
 
     // Delay between retries
-    await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
+    await timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
   }
 
   // Orphaned data sync failed to wipe the orphan node if we reach this far

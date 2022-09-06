@@ -23,7 +23,7 @@ import { getNodeUsers } from '../stateMonitoring/stateMonitoringUtils'
 import config from '../../../config'
 import redisClient from '../../../redis'
 import asyncRetry from '../../../utils/asyncRetry'
-import Utils from '../../../utils'
+import * as Utils from '../../../utils'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const models = require('../../../models')

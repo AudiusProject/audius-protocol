@@ -1,4 +1,4 @@
-import Utils from '../../../utils'
+import * as Utils from '../../../utils'
 const _ = require('lodash')
 const axios = require('axios')
 

@@ -1,4 +1,4 @@
-import Utils from '../../utils'
+import * as Utils from '../../utils'
 const axios = require('axios')
 const fs = require('fs')
 const fsExtra = require('fs-extra')

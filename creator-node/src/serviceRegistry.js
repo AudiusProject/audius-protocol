@@ -1,4 +1,4 @@
-import utils from './utils'
+import * as utils from './utils'
 const _ = require('lodash')
 const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')

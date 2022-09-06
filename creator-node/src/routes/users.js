@@ -1,4 +1,4 @@
-import utils from '../utils'
+import * as utils from '../utils'
 const express = require('express')
 const ethereumUtils = require('ethereumjs-util')
 const crypto = require('crypto')

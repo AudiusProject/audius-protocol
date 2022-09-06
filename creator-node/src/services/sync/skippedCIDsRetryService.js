@@ -1,4 +1,4 @@
-import utils from '../../utils'
+import * as utils from '../../utils'
 const Bull = require('bull')
 
 const models = require('../../models')

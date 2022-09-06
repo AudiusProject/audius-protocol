@@ -1,4 +1,4 @@
-import Utils from '../utils'
+import * as Utils from '../utils'
 const Bull = require('bull')
 const axios = require('axios')
 const _ = require('lodash')
