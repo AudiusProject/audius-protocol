@@ -1,6 +1,6 @@
+import { redisClient as redis } from './redis'
 const { logger } = require('./logging')
 const models = require('./models')
-const redis = require('./redis')
 const config = require('./config')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))

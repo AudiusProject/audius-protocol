@@ -1,3 +1,4 @@
+import { redisClient } from '../src/redis'
 const assert = require('assert')
 const sinon = require('sinon')
 
@@ -6,8 +7,12 @@ const { SessionToken } = models
 const DBManager = require('../src/dbManager')
 const SessionManager = require('../src/sessionManager')
 const BlacklistManager = require('../src/blacklistManager')
-const redisClient = require('../src/redis')
-const { createStarterCNodeUser, getCNodeUser, destroyUsers, createSession } = require('./lib/dataSeeds')
+const {
+  createStarterCNodeUser,
+  getCNodeUser,
+  destroyUsers,
+  createSession
+} = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
@@ -57,14 +62,22 @@ describe('SessionManager', async function () {
           await SessionManager.deleteSessions(sessionsToDelete)
         })
         it('deletes sessions from Redis', async function () {
-          let deletedTestSessionInCache1 = await redisClient.get(`SESSION.${testSession1.token}`)
-          let deletedTestSessionInCache2 = await redisClient.get(`SESSION.${testSession2.token}`)
+          const deletedTestSessionInCache1 = await redisClient.get(
+            `SESSION.${testSession1.token}`
+          )
+          const deletedTestSessionInCache2 = await redisClient.get(
+            `SESSION.${testSession2.token}`
+          )
           assert(deletedTestSessionInCache1 === null)
           assert(deletedTestSessionInCache2 === null)
         })
         it('deletes sessions from the DB', async function () {
-          let deletedTestSession1 = await SessionToken.findByPk(testSession1.id)
-          let deletedTestSession2 = await SessionToken.findByPk(testSession2.id)
+          const deletedTestSession1 = await SessionToken.findByPk(
+            testSession1.id
+          )
+          const deletedTestSession2 = await SessionToken.findByPk(
+            testSession2.id
+          )
           assert(deletedTestSession1 === null)
           assert(deletedTestSession2 === null)
         })
@@ -72,7 +85,10 @@ describe('SessionManager', async function () {
       describe('and the DB transaction fails', async function () {
         let dbManagerDeleteSessionTokensFromDBStub, retrySpy
         beforeEach(async function () {
-          dbManagerDeleteSessionTokensFromDBStub = sinon.stub(DBManager, 'deleteSessionTokensFromDB')
+          dbManagerDeleteSessionTokensFromDBStub = sinon.stub(
+            DBManager,
+            'deleteSessionTokensFromDB'
+          )
           dbManagerDeleteSessionTokensFromDBStub.onFirstCall().rejects()
         })
         afterEach(async function () {
@@ -81,7 +97,9 @@ describe('SessionManager', async function () {
         })
         it('retries the transaction', async function () {
           retrySpy = sinon.spy()
-          dbManagerDeleteSessionTokensFromDBStub.onSecondCall().callsFake(retrySpy)
+          dbManagerDeleteSessionTokensFromDBStub
+            .onSecondCall()
+            .callsFake(retrySpy)
           await SessionManager.deleteSessions(sessionsToDelete)
           assert(retrySpy.called)
         })
@@ -91,14 +109,22 @@ describe('SessionManager', async function () {
             await SessionManager.deleteSessions(sessionsToDelete)
           })
           it('deletes sessions from Redis', async function () {
-            let deletedTestSessionInCache1 = await redisClient.get(`SESSION.${testSession1.token}`)
-            let deletedTestSessionInCache2 = await redisClient.get(`SESSION.${testSession2.token}`)
+            const deletedTestSessionInCache1 = await redisClient.get(
+              `SESSION.${testSession1.token}`
+            )
+            const deletedTestSessionInCache2 = await redisClient.get(
+              `SESSION.${testSession2.token}`
+            )
             assert(deletedTestSessionInCache1 === null)
             assert(deletedTestSessionInCache2 === null)
           })
           it('deletes sessions from the DB', async function () {
-            let deletedTestSession1 = await SessionToken.findByPk(testSession1.id)
-            let deletedTestSession2 = await SessionToken.findByPk(testSession2.id)
+            const deletedTestSession1 = await SessionToken.findByPk(
+              testSession1.id
+            )
+            const deletedTestSession2 = await SessionToken.findByPk(
+              testSession2.id
+            )
             assert(deletedTestSession1 === null)
             assert(deletedTestSession2 === null)
           })

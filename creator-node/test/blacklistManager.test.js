@@ -1,8 +1,8 @@
+import { redisClient as redis } from '../src/redis'
 const assert = require('assert')
 const sinon = require('sinon')
 
 const BlacklistManager = require('../src/blacklistManager')
-const redis = require('../src/redis')
 
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')

@@ -1,4 +1,4 @@
-const redis = require('../redis')
+import { redisClient as redis } from '../redis'
 
 const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
 const { SYNC_STATES } = require('../snapbackSM/syncHistoryAggregator')

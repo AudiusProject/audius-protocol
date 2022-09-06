@@ -3,7 +3,7 @@
  * API for Primary to measure SyncRequest success and failure counts per Secondary, User, and Day
  */
 
-const redisClient = require('../redis')
+import { redisClient } from '../redis'
 const { logger } = require('../logging')
 
 const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'

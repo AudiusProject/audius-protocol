@@ -1,8 +1,7 @@
+import { redisClient as redis, WalletWriteLock } from '../../redis'
 const _ = require('lodash')
 
 const config = require('../../config')
-const redis = require('../../redis')
-const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')

@@ -1,3 +1,5 @@
+import { redisClient } from '../src/redis'
+
 const request = require('supertest')
 const fs = require('fs-extra')
 const path = require('path')
@@ -22,8 +24,6 @@ const {
 const { uploadTrack } = require('./lib/helpers')
 const BlacklistManager = require('../src/blacklistManager')
 const sessionManager = require('../src/sessionManager')
-
-const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 
 chai.use(require('sinon-chai'))
@@ -104,7 +104,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
     async function createUserAndTrack() {
       // Create user
-      ; ({
+      ;({
         cnodeUserUUID,
         sessionToken,
         userId,

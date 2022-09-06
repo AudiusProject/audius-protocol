@@ -1,9 +1,9 @@
+import { redisClient } from './redis'
+
 const _ = require('lodash')
 const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
-
-const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const initAudiusLibs = require('./services/initAudiusLibs')

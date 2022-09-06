@@ -1,7 +1,6 @@
-const assert = require('assert')
+import { redisClient as redis, WalletWriteLock } from '../src/redis'
 
-const redis = require('../src/redis')
-const { WalletWriteLock } = redis
+const assert = require('assert')
 const utils = require('../src/utils')
 
 describe('test Redis client', function () {

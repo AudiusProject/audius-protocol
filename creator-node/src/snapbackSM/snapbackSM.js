@@ -1,4 +1,5 @@
 import { asyncRetry } from '../utils/asyncRetry'
+import { redisClient as redis } from '../redis.js'
 const Bull = require('bull')
 const axios = require('axios')
 const _ = require('lodash')
@@ -7,7 +8,6 @@ const retry = require('async-retry')
 const Utils = require('../utils')
 const models = require('../models')
 const { logger } = require('../logging')
-const redis = require('../redis.js')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')

@@ -1,4 +1,4 @@
-const redis = require('../redis')
+import { redisClient as redis } from '../redis'
 
 /**
  * Parses the result from a redis `info` command

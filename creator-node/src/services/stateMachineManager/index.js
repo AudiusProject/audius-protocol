@@ -1,8 +1,8 @@
+import { redisClient as redis } from '../../redis'
 const _ = require('lodash')
 
 const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
-const redis = require('../../redis')
 
 const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')

@@ -1,7 +1,7 @@
+import { redisClient } from '../../../redis'
+
 const _ = require('lodash')
 const axios = require('axios')
-
-const redisClient = require('../../../redis')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
 const {

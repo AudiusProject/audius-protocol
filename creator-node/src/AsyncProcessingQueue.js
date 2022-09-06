@@ -1,7 +1,7 @@
+import { redisClient } from './redis'
 const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
-const redisClient = require('./redis')
 
 // Processing fns
 const {

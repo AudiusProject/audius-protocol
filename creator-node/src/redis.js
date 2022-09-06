@@ -3,10 +3,10 @@
  */
 
 import { asyncRetry } from './utils/asyncRetry'
-const Redis = require('ioredis')
+import Redis from 'ioredis'
 
-const config = require('./config.js')
-const { logger: genericLogger } = require('./logging')
+import config from './config.js'
+import { logger as genericLogger } from './logging'
 
 export const redisClient = new Redis(
   config.get('redisPort'),
@@ -164,5 +164,4 @@ const deleteAllKeysMatchingPattern = async function (keyPattern) {
 
 redisClient.deleteAllKeysMatchingPattern = deleteAllKeysMatchingPattern
 
-module.exports = redisClient
-module.exports.WalletWriteLock = WalletWriteLock
+export default redisClient

@@ -1,10 +1,10 @@
+import { redisClient } from './redis'
 const crypto = require('crypto')
 const base64url = require('base64-url')
 const { promisify } = require('util')
 const randomBytes = promisify(crypto.randomBytes)
 
 const models = require('./models')
-const redisClient = require('./redis')
 const DBManager = require('./dbManager')
 
 const sessionTokenHeaderKey = 'X-Session-ID'

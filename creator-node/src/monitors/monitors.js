@@ -1,3 +1,4 @@
+import { redisClient as redis } from '../redis'
 const {
   getDatabaseSize,
   getDatabaseConnections,
@@ -41,7 +42,6 @@ const {
   getLatestFindReplicaSetUpdatesJobStart,
   getLatestFindReplicaSetUpdatesJobSuccess
 } = require('./stateMachine')
-const redis = require('../redis')
 
 // Prefix used to key each monitored value in redis
 const MONITORING_REDIS_PREFIX = 'monitoring'

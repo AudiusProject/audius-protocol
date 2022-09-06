@@ -1,4 +1,4 @@
-const redisClient = require('../redis')
+import { redisClient } from '../redis'
 const { logger: genericLogger } = require('../logging')
 
 const SYNC_STATES = Object.freeze({

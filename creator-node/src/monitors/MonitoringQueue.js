@@ -1,5 +1,5 @@
+import { redisClient as redis } from '../redis'
 const Bull = require('bull')
-const redis = require('../redis')
 const config = require('../config')
 const { MONITORS, getMonitorRedisKey } = require('./monitors')
 const { logger } = require('../logging')

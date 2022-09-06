@@ -1,3 +1,4 @@
+import { redisClient as redis } from './redis'
 const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs-extra')
 const path = require('path')
@@ -9,7 +10,6 @@ const pipeline = promisify(stream.pipeline)
 const { logger: genericLogger } = require('./logging.js')
 
 const models = require('./models')
-const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
 const { libs } = require('@audius/sdk')
