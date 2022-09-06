@@ -98,4 +98,44 @@ describe('test Redis client', function () {
 
     assert.equal(await WalletWriteLock.isHeld(wallet), false)
   })
+
+  it('Clears write locks', async function () {
+    const wallet1 = 'wallet1'
+    const wallet2 = 'wallet2'
+    const wallet3 = 'wallet3'
+    const wallet4 = 'wallet4'
+
+    await WalletWriteLock.acquire(
+      wallet1,
+      WalletWriteLock.VALID_ACQUIRERS.PrimarySyncFromSecondary
+    )
+
+    await WalletWriteLock.acquire(
+      wallet2,
+      WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
+    )
+
+    await WalletWriteLock.acquire(
+      wallet3,
+      WalletWriteLock.VALID_ACQUIRERS.PrimarySyncFromSecondary
+    )
+
+    await WalletWriteLock.acquire(
+      wallet4,
+      WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
+    )
+
+    // Check that all the wallets have a sync lock
+    assert.deepEqual(await WalletWriteLock.syncIsInProgress(wallet1), true)
+    assert.deepEqual(await WalletWriteLock.syncIsInProgress(wallet2), true)
+    assert.deepEqual(await WalletWriteLock.syncIsInProgress(wallet3), true)
+    assert.deepEqual(await WalletWriteLock.syncIsInProgress(wallet4), true)
+
+    // Clear all the locks
+    await WalletWriteLock.clearWriteLocks()
+    assert.deepEqual(await WalletWriteLock.syncIsInProgress(wallet1), false)
+    assert.deepEqual(await WalletWriteLock.syncIsInProgress(wallet2), false)
+    assert.deepEqual(await WalletWriteLock.syncIsInProgress(wallet3), false)
+    assert.deepEqual(await WalletWriteLock.syncIsInProgress(wallet4), false)
+  })
 })

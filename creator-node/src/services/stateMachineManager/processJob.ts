@@ -1,4 +1,5 @@
 import type Logger from 'bunyan'
+import { instrumentTracing, tracing } from '../../tracer'
 import type {
   AnyDecoratedJobParams,
   AnyDecoratedJobReturnValue,
@@ -19,7 +20,7 @@ import redis from '../../redis'
  * @param {Object} prometheusRegistry the registry for prometheus to log metrics
  * @returns the result of the completed job, or an object with an error property if the job throws
  */
-module.exports = async function (
+async function processJob(
   job: { id: string; data: AnyJobParams },
   jobProcessor: (job: AnyDecoratedJobParams) => AnyDecoratedJobReturnValue,
   parentLogger: Logger,
@@ -52,6 +53,7 @@ module.exports = async function (
     metricEndTimerFn({ uncaughtError: false })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error: any) {
+    tracing.recordException(error)
     jobLogger.error(`Error processing job: ${error}`)
     jobLogger.error(error.stack)
     result = { error: error.message || `${error}` }
@@ -60,3 +62,12 @@ module.exports = async function (
 
   return result
 }
+
+module.exports = instrumentTracing({
+  fn: processJob,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})

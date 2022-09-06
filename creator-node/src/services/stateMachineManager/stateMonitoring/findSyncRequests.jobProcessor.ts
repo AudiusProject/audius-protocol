@@ -10,6 +10,7 @@ import type {
 import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 
 import _ from 'lodash'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 import config from '../../../config'
 import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
@@ -48,7 +49,7 @@ type FindSyncsForUserResult = {
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
  */
-module.exports = async function ({
+async function findSyncRequests({
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
@@ -181,7 +182,10 @@ async function _findSyncsForUser(
     secondary2SpID
   } = user
 
-  const outcomesBySecondary = {
+  const outcomesBySecondary: Record<
+    string,
+    { syncMode: string; result: string }
+  > = {
     [secondary1]: { syncMode: SYNC_MODES.None, result: 'not_checked' },
     [secondary2]: { syncMode: SYNC_MODES.None, result: 'not_checked' }
   }
@@ -255,6 +259,7 @@ async function _findSyncsForUser(
         secondaryFilesHash
       })
     } catch (e: any) {
+      tracing.recordException(e)
       outcomesBySecondary[secondary].result =
         'no_sync_error_computing_sync_mode'
       errors.push(
@@ -289,6 +294,7 @@ async function _findSyncsForUser(
           result = 'new_sync_request_unable_to_enqueue'
         }
       } catch (e: any) {
+        tracing.recordException(e)
         result = 'no_sync_unexpected_error'
         errors.push(
           `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary} - ${e.message}`
@@ -308,4 +314,28 @@ async function _findSyncsForUser(
     errors,
     outcomesBySecondary
   }
+}
+
+module.exports = async (
+  params: DecoratedJobParams<FindSyncRequestsJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'findSyncRequests.jobProcessor',
+    fn: findSyncRequests,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
 }

@@ -41,14 +41,14 @@ describe('test findSyncRequests job processor', function () {
     config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
   })
 
-  let primary = 'http://primary_cn.co'
-  let secondary1 = 'http://secondary_to_sync_to.co'
-  let secondary2 = 'http://secondary_already_synced.co'
-  let primarySpID = 1
-  let secondary1SpID = 2
-  let secondary2SpID = 3
-  let user_id = 1
-  let wallet = '0x123456789'
+  const primary = 'http://primary_cn.co'
+  const secondary1 = 'http://secondary_to_sync_to.co'
+  const secondary2 = 'http://secondary_already_synced.co'
+  const primarySpID = 1
+  const secondary1SpID = 2
+  const secondary2SpID = 3
+  const user_id = 1
+  const wallet = '0x123456789'
   let users = [
     {
       user_id,
@@ -61,9 +61,9 @@ describe('test findSyncRequests job processor', function () {
       secondary2SpID
     }
   ]
-  let syncType = SyncType.Recurring
-  let metricName = 'audius_cn_find_sync_request_counts'
-  let metricType = 'GAUGE_INC'
+  const syncType = SyncType.Recurring
+  const metricName = 'audius_cn_find_sync_request_counts'
+  const metricType = 'GAUGE_INC'
 
   function getJobProcessorStub(
     getNewOrExistingSyncReqStub,

@@ -13,6 +13,7 @@ import config from './config'
 import { runMigrations, clearRunningQueries } from './migrationManager'
 import { logger } from './logging'
 import { serviceRegistry } from './serviceRegistry'
+import { WalletWriteLock } from './redis'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { sequelize } = require('./models')
@@ -120,6 +121,13 @@ const startApp = async () => {
 
   const appInfo = initializeApp(getPort(), serviceRegistry)
   logger.info('Initialized app and server')
+
+  // Clear all redis locks
+  try {
+    await WalletWriteLock.clearWriteLocks()
+  } catch (e: any) {
+    logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
+  }
 
   // Initialize services that do not require the server, but do not need to be awaited.
   serviceRegistry.initServicesAsynchronously()

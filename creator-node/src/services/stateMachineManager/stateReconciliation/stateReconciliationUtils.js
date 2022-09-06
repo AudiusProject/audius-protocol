@@ -57,7 +57,10 @@ export const getNewOrExistingSyncReq = ({
     )
 
     return {
-      duplicateSyncReq: duplicateSyncJobInfo
+      duplicateSyncReq: {
+        ...duplicateSyncJobInfo,
+        parentSpanContext: tracing.currentSpanContext()
+      }
     }
   }
 
@@ -80,7 +83,8 @@ export const getNewOrExistingSyncReq = ({
   const syncReqToEnqueue = {
     syncType,
     syncMode,
-    syncRequestParameters
+    syncRequestParameters,
+    parentSpanContext: tracing.currentSpanContext()
   }
 
   SyncRequestDeDuplicator.recordSync(
@@ -91,6 +95,7 @@ export const getNewOrExistingSyncReq = ({
     immediate
   )
 
+  tracing.info(JSON.stringify(syncReqToEnqueue))
   return { syncReqToEnqueue }
 }
 
@@ -188,8 +193,12 @@ export const cacheHealthyNodes = async (healthyNodes) => {
 }
 
 module.exports = {
-  getNewOrExistingSyncReq,
-  issueSyncRequestsUntilSynced,
-  getCachedHealthyNodes,
-  cacheHealthyNodes
+  getNewOrExistingSyncReq: instrumentTracing({
+    fn: getNewOrExistingSyncReq
+  }),
+  issueSyncRequestsUntilSynced: instrumentTracing({
+    fn: issueSyncRequestsUntilSynced
+  }),
+  getCachedHealthyNodes: instrumentTracing({ fn: getCachedHealthyNodes }),
+  cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes })
 }

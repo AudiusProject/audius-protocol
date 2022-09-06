@@ -1,5 +1,4 @@
 import type Logger from 'bunyan'
-import type { LoDashStatic } from 'lodash'
 import Utils, { ReplicaSet } from '../../../utils'
 import type {
   DecoratedJobParams,
@@ -12,6 +11,7 @@ import type {
   SyncRequestAxiosParams
 } from './types'
 
+import { instrumentTracing, tracing } from '../../../tracer'
 import {
   QUEUE_NAMES,
   SYNC_MONITORING_RETRY_DELAY_MS,
@@ -82,7 +82,7 @@ type AdditionalSyncIsRequiredResponse = {
  * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
  * @param {number} [param.attemptNumber] optional number of times this job has been run. It will be a no-op if it exceeds MAX_ISSUE_SYNC_JOB_ATTEMPTS
  */
-module.exports = async function ({
+async function issueSyncRequest({
   syncType,
   syncMode,
   syncRequestParameters,
@@ -288,7 +288,8 @@ async function _handleIssueSyncRequest({
                 sync_type: SyncType.Recurring,
                 wallet: [userWallet]
               }
-            }
+            },
+            parentSpanContext: tracing.currentSpanContext()
           })
         })
     }
@@ -326,13 +327,16 @@ async function _handleIssueSyncRequest({
       await axios(syncRequestParameters as AxiosRequestConfig)
     }
   } catch (e: any) {
+    tracing.recordException(e)
+
     // Retry a failed sync in all scenarios except recovering orphaned data
     let additionalSync
     if (syncMode !== SYNC_MODES.MergePrimaryThenWipeSecondary) {
       additionalSync = {
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-        syncRequestParameters
+        syncRequestParameters,
+        parentSpanContext: tracing.currentSpanContext()
       }
     }
 
@@ -360,6 +364,8 @@ async function _handleIssueSyncRequest({
       syncRequestParameters,
       logger
     )
+
+  tracing.info(outcome)
 
   return {
     result: outcome,
@@ -468,6 +474,7 @@ const _additionalSyncIsRequired = async (
         break
       }
     } catch (e: any) {
+      tracing.recordException(e)
       logger.warn(`${logMsgString} || Error: ${e.message}`)
     }
 
@@ -573,4 +580,28 @@ const _ensureSyncsEnqueuedToCorrectNodes = (
   }
 
   return ''
+}
+
+module.exports = async (
+  params: DecoratedJobParams<IssueSyncRequestJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'issueSyncRequest.jobProcessor',
+    fn: issueSyncRequest,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
 }

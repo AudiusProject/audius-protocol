@@ -71,6 +71,7 @@ router.post(
     if (selfTranscode) {
       tracing.info('adding upload track task')
       await AsyncProcessingQueue.addTrackContentUploadTask({
+        parentSpanContext: tracing.currentSpanContext(),
         logContext: req.logContext,
         req: {
           fileName: req.fileName,
@@ -82,6 +83,7 @@ router.post(
     } else {
       tracing.info('adding transcode handoff task')
       await AsyncProcessingQueue.addTranscodeHandOffTask({
+        parentSpanContext: tracing.currentSpanContext(),
         logContext: req.logContext,
         req: {
           fileName: req.fileName,

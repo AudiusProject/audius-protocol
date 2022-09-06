@@ -8,10 +8,15 @@ const config = require('./config.js')
 const { logger: genericLogger } = require('./logging')
 const asyncRetry = require('./utils/asyncRetry')
 
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+export const redisClient = new Redis(
+  config.get('redisPort'),
+  config.get('redisHost')
+)
+
+const WRITE_WALLET_LOCK_PREFIX = 'WRITE.WALLET.'
 
 const _getWalletWriteLockKey = function (wallet) {
-  return `WRITE.WALLET.${wallet}`
+  return `${WRITE_WALLET_LOCK_PREFIX}${wallet}`
 }
 
 const WalletWriteLock = {
@@ -116,6 +121,12 @@ const WalletWriteLock = {
       logger: genericLogger,
       log: false
     })
+  },
+
+  clearWriteLocks: async function () {
+    await redisClient.deleteAllKeysMatchingPattern(
+      `${WRITE_WALLET_LOCK_PREFIX}*`
+    )
   }
 }
 
@@ -152,5 +163,6 @@ const deleteAllKeysMatchingPattern = async function (keyPattern) {
 }
 
 redisClient.deleteAllKeysMatchingPattern = deleteAllKeysMatchingPattern
+
 module.exports = redisClient
 module.exports.WalletWriteLock = WalletWriteLock

@@ -1,7 +1,14 @@
 {
   "//": "This file is used by nodemon to watch js and ts extensions and exclude the ignore directory. This will be read by nodemon even if not explicitly passed in with --config flag",
   "restartable": "rs",
-  "ignore": [".git", "node_modules/", "build/", "build_test/"],
+  "ignore": [
+    ".git",
+    "node_modules/",
+    "build/",
+    "build_test/",
+    "**/*.d.ts",
+    "**/*.js.map"
+  ],
   "env": {
     "NODE_ENV": "development"
   },

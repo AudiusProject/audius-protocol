@@ -17,6 +17,7 @@ import {
   MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS,
   QUEUE_NAMES
 } from '../stateMachineConstants'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 import { getNodeUsers } from '../stateMonitoring/stateMonitoringUtils'
 import config from '../../../config'
@@ -43,7 +44,7 @@ const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
  * @param {string} param.discoveryNodeEndpoint the endpoint of a Discovery Node to query
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  */
-export default async function ({
+async function _recoverOrphanedData({
   discoveryNodeEndpoint,
   logger
 }: DecoratedJobParams<RecoverOrphanedDataJobParams>): Promise<
@@ -72,6 +73,7 @@ export default async function ({
       // Enqueue another job to search for any new data that gets orphaned after this job finishes
       [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: [
         {
+          parentSpanContext: tracing.currentSpanContext(),
           discoveryNodeEndpoint
         }
       ]
@@ -326,3 +328,30 @@ const _getPrimaryForWallet = async (
   }
   return replicaSet[0]
 }
+
+async function recoverOrphanedData(
+  params: DecoratedJobParams<RecoverOrphanedDataJobParams>
+) {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'recoverOrphanedData.jobProcessor',
+    fn: _recoverOrphanedData,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
+}
+
+export default recoverOrphanedData
+module.exports = recoverOrphanedData

@@ -61,6 +61,21 @@ type Reaction = {
   reactionValue: number
 }
 
+enum TransactionMetadataType {
+  PURCHASE_SOL_AUDIO_SWAP = 'PURCHASE_SOL_AUDIO_SWAP'
+}
+
+type InAppAudioPurchaseMetadata = {
+  discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP
+  usd: string
+  sol: string
+  audio: string
+  purchaseTransactionId: string
+  setupTransactionId?: string
+  swapTransactionId: string
+  cleanupTransactionId?: string
+}
+
 // Only probabilistically capture 50% of relay captchas
 const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
 
@@ -134,7 +149,7 @@ export class IdentityService {
   }
 
   async sendRecoveryInfo(obj: Record<string, unknown>) {
-    return await this._makeRequest({
+    return await this._makeRequest<{ status: true }>({
       url: '/recovery',
       method: 'post',
       data: obj
@@ -524,6 +539,17 @@ export class IdentityService {
 
     return await this._makeRequest({
       url: '/reactions',
+      method: 'post',
+      data,
+      headers
+    })
+  }
+
+  async saveUserBankTransactionMetadata(data: InAppAudioPurchaseMetadata) {
+    const headers = await this._signData()
+
+    return await this._makeRequest({
+      url: '/transaction_metadata',
       method: 'post',
       data,
       headers

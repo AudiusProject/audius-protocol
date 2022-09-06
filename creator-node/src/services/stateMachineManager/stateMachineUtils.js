@@ -18,6 +18,7 @@ const {
   CLOCK_STATUS_REQUEST_TIMEOUT_MS,
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
 } = require('./stateMachineConstants')
+const { instrumentTracing, tracing } = require('../../tracer')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
@@ -119,7 +120,7 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
  * Make request to given replica to get its clock value for given user
  * Signs request with spID to bypass rate limits
  */
-const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
+const _retrieveClockValueForUserFromReplica = async (replica, wallet) => {
   const spID = config.get('spID')
 
   const { timestamp, signature } = generateTimestampAndSignature(
@@ -140,6 +141,15 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
 
   return clockValue
 }
+
+const retrieveClockValueForUserFromReplica = instrumentTracing({
+  fn: _retrieveClockValueForUserFromReplica,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
 
 /**
  * Returns an object that can be returned from any state machine job to record a histogram metric being observed.
