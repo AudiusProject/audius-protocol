@@ -6,10 +6,10 @@ import type {
   AnyJobParams
 } from './types'
 
-const _ = require('lodash')
+import _ from 'lodash'
 
-const { createChildLogger } = require('../../logging')
-const redis = require('../../redis')
+import { createChildLogger } from '../../logging'
+import redis from '../../redis'
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
