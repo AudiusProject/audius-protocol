@@ -15,6 +15,7 @@ import {
   getContext,
   waitForAccount
 } from '@audius/common'
+import type { AudiusLibs } from '@audius/sdk'
 import BN from 'bn.js'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
@@ -234,13 +235,15 @@ function* fetchBalanceAsync() {
  */
 function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
   const walletClient = yield* getContext('walletClient')
-  const { audiusLibs } = yield* getContext('audiusBackendInstance')
+  const audiusBackend = yield* getContext('audiusBackendInstance')
   const address = action.payload.wallet
 
-  const connection = audiusLibs.solanaWeb3Manager!.connection
+  const audiusLibs = yield* call(audiusBackend.getAudiusLibs)
+  const connection = (audiusLibs as AudiusLibs).solanaWeb3Manager!.connection
 
-  const associatedTokenAccount = yield* call(() =>
-    walletClient.getAssociatedTokenAccountInfo(address)
+  const associatedTokenAccount = yield* call(
+    [walletClient, 'getAssociatedTokenAccountInfo'],
+    address
   )
   if (!associatedTokenAccount) {
     const balance: BNWei = yield* call(() =>
@@ -249,7 +252,8 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
 
     // TODO: this can become a call to getAssociatedTokenRentExemptionMinimum
     // when the BuyAudio service has been migrated
-    const minRentForATA = yield* connection.getMinimumBalanceForRentExemption(
+    const minRentForATA = yield* call(
+      [connection, 'getMinimumBalanceForRentExemption'],
       ATA_SIZE,
       'processed'
     )
