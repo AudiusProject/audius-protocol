@@ -31,7 +31,6 @@ import { PasswordResetState } from 'components/password-reset/store/types'
 import RemixSettingsModalReducer from 'components/remix-settings-modal/store/slice'
 import { UnfollowConfirmationModalState } from 'components/unfollow-confirmation-modal/store/types'
 import ArtistDashboardState from 'pages/artist-dashboard-page/store/types'
-import { DeactivateAccountState } from 'pages/deactivate-account-page/store/slice'
 import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import { UploadPageState } from 'pages/upload-page/store/types'
 import VisualizerReducer from 'pages/visualizer/store/slice'
@@ -80,7 +79,6 @@ export type AppState = CommonState & {
       editFolderModal: EditFolderModalState
       editTrackModal: EditTrackModalState
       embedModal: EmbedModalState
-      deactivateAccount: DeactivateAccountState
       firstUploadModal: FirstUploadModalState
       mobileKeyboard: MobileKeyboardState
       musicConfetti: ReturnType<typeof MusicConfetti>
