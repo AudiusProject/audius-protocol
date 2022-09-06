@@ -1,3 +1,4 @@
+import utils from './utils'
 const promiseAny = require('promise.any')
 
 const {
@@ -9,7 +10,6 @@ const {
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
-const utils = require('./utils')
 const { strToReplicaSet } = require('./utils/index')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
@@ -537,7 +537,7 @@ async function getOwnEndpoint({ libs }) {
  *
  * @returns {ReplicaSet} - replica set object with optional primary, secondary1, and secondary2 properties
  */
-async function getUserReplicaSetEndpointsFromDiscovery({
+export async function getUserReplicaSetEndpointsFromDiscovery({
   wallet,
   libs,
   logger,

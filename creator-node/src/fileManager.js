@@ -1,3 +1,4 @@
+import Utils, { findCIDInNetwork } from './utils'
 const path = require('path')
 const fs = require('fs-extra')
 const multer = require('multer')
@@ -5,13 +6,11 @@ const getUuid = require('uuid/v4')
 const axios = require('axios')
 
 const config = require('./config')
-const Utils = require('./utils')
 const { libs: audiusLibs } = require('@audius/sdk')
 const LibsUtils = audiusLibs.Utils
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const { findCIDInNetwork } = require('./utils')
 const DecisionTree = require('./utils/decisionTree')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB

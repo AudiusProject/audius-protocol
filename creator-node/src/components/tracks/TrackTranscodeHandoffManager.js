@@ -1,10 +1,10 @@
+import Utils from '../../utils'
 const axios = require('axios')
 const fs = require('fs')
 const fsExtra = require('fs-extra')
 const FormData = require('form-data')
 
 const config = require('../../config.js')
-const Utils = require('../../utils')
 const asyncRetry = require('../../utils/asyncRetry')
 const { logger: genericLogger } = require('../../logging')
 const {

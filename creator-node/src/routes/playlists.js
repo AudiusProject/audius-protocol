@@ -1,3 +1,4 @@
+import { validateStateForImageDirCIDAndReturnFileUUID } from '../utils'
 const express = require('express')
 const fs = require('fs')
 const { promisify } = require('util')
@@ -10,7 +11,6 @@ const {
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const { validateMetadata } = require('../utils/index')
 const {
   authMiddleware,

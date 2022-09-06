@@ -1,5 +1,5 @@
+import { timeout } from '../utils'
 const { logger } = require('../logging')
-const { timeout } = require('../utils')
 
 const TEN_MINS_IN_MS = 1000 * 60 * 10
 class TrustedNotifierManager {

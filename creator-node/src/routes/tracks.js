@@ -1,3 +1,7 @@
+import {
+  validateStateForImageDirCIDAndReturnFileUUID,
+  currentNodeShouldHandleTranscode
+} from '../utils'
 const express = require('express')
 const path = require('path')
 const fs = require('fs')
@@ -20,10 +24,6 @@ const {
   errorResponseServerError,
   errorResponseForbidden
 } = require('../apiHelpers')
-const {
-  validateStateForImageDirCIDAndReturnFileUUID,
-  currentNodeShouldHandleTranscode
-} = require('../utils')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,

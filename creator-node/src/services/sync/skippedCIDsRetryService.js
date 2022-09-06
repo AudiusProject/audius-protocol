@@ -1,8 +1,8 @@
+import utils from '../../utils'
 const Bull = require('bull')
 
 const models = require('../../models')
 const { logger } = require('../../logging')
-const utils = require('../../utils')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'

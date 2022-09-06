@@ -1,3 +1,4 @@
+import { getAllRegisteredCNodes, findCIDInNetwork, timeout } from '../utils'
 const express = require('express')
 const Redis = require('ioredis')
 const fs = require('fs-extra')
@@ -30,11 +31,7 @@ const {
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
-const {
-  getAllRegisteredCNodes,
-  findCIDInNetwork,
-  timeout
-} = require('../utils')
+
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')

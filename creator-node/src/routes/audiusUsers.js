@@ -1,3 +1,4 @@
+import { validateStateForImageDirCIDAndReturnFileUUID } from '../utils'
 const express = require('express')
 const { Buffer } = require('buffer')
 const fs = require('fs')
@@ -11,7 +12,6 @@ const {
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const validateMetadata = require('../utils/validateAudiusUserMetadata')
 const {
   authMiddleware,

@@ -1,3 +1,4 @@
+import utils from '../utils'
 const express = require('express')
 const ethereumUtils = require('ethereumjs-util')
 const crypto = require('crypto')
@@ -16,7 +17,6 @@ const {
   errorResponseBadRequest
 } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
-const utils = require('../utils')
 const DBManager = require('../dbManager.js')
 
 const CHALLENGE_VALUE_LENGTH = 20

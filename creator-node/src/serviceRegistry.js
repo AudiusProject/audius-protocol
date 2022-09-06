@@ -1,3 +1,4 @@
+import utils from './utils'
 const _ = require('lodash')
 const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
@@ -13,7 +14,6 @@ const {
   getStartTime,
   logInfoWithDuration
 } = require('./logging')
-const utils = require('./utils')
 const config = require('./config')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
