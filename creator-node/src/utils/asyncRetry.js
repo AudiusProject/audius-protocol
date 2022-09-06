@@ -43,5 +43,3 @@ export function asyncRetry({
 
   return retry(asyncFn, options)
 }
-
-module.exports = asyncRetry

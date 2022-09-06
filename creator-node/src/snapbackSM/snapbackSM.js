@@ -1,10 +1,10 @@
+import { asyncRetry } from '../utils/asyncRetry'
 const Bull = require('bull')
 const axios = require('axios')
 const _ = require('lodash')
 const retry = require('async-retry')
 
 const Utils = require('../utils')
-const asyncRetry = require('../utils/asyncRetry')
 const models = require('../models')
 const { logger } = require('../logging')
 const redis = require('../redis.js')

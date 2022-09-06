@@ -2,11 +2,11 @@
  * Exports a Singleton Redis client instance, with custom wallet write locking logic
  */
 
+import { asyncRetry } from './utils/asyncRetry'
 const Redis = require('ioredis')
 
 const config = require('./config.js')
 const { logger: genericLogger } = require('./logging')
-const asyncRetry = require('./utils/asyncRetry')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
