@@ -17,25 +17,23 @@ const LibsUtils = libs.Utils
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
-class Utils {
-  static verifySignature(data, sig) {
-    return recoverPersonalSignature({ data, sig })
-  }
+export function verifySignature(data, sig) {
+  return recoverPersonalSignature({ data, sig })
+}
 
-  static async timeout(ms, log = true) {
-    if (log) {
-      genericLogger.info(`starting timeout of ${ms}`)
-    }
-    return new Promise((resolve) => setTimeout(resolve, ms))
+export async function timeout(ms, log = true) {
+  if (log) {
+    genericLogger.info(`starting timeout of ${ms}`)
   }
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
-  /**
-   * Generates a random number from [0, max)
-   * @param {number} max the max random number. exclusive
-   */
-  static getRandomInt(max) {
-    return Math.floor(Math.random() * max)
-  }
+/**
+ * Generates a random number from [0, max)
+ * @param {number} max the max random number. exclusive
+ */
+export function getRandomInt(max) {
+  return Math.floor(Math.random() * max)
 }
 
 /**
@@ -43,7 +41,10 @@ class Utils {
  * Return fileUUID for dir DB record
  * This function does not do further validation since image_upload provides remaining guarantees
  */
-async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
+export async function validateStateForImageDirCIDAndReturnFileUUID(
+  req,
+  imageDirCID
+) {
   // This handles case where a user/track metadata obj contains no image CID
   if (!imageDirCID) {
     return null
@@ -112,7 +113,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
  * @param {Array?} excludeList optional array of content nodes to exclude in network wide search
  * @returns {Boolean} returns true if the file was found in the network
  */
-async function findCIDInNetwork(
+export async function findCIDInNetwork(
   filePath,
   cid,
   logger,
@@ -197,7 +198,7 @@ async function findCIDInNetwork(
  * Fetches from Redis if available, else fetches from chain and updates Redis value
  * @returns {Object[]} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
  */
-async function getAllRegisteredCNodes(libs, logger) {
+export async function getAllRegisteredCNodes(libs, logger) {
   const cacheKey = 'all_registered_cnodes'
 
   let CNodes
@@ -249,7 +250,7 @@ async function getAllRegisteredCNodes(libs, logger) {
  * Return if a fix has already been attempted in today for this filePath
  * @param {String} filePath path of CID on the file system
  */
-async function getIfAttemptedStateFix(filePath) {
+export async function getIfAttemptedStateFix(filePath) {
   // key is `attempted_fs_fixes:<today's date>`
   // the date function just generates the ISOString and removes the timestamp component
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
@@ -260,7 +261,7 @@ async function getIfAttemptedStateFix(filePath) {
   return !firstTime
 }
 
-async function createDirForFile(fileStoragePath) {
+export async function createDirForFile(fileStoragePath) {
   const dir = path.dirname(fileStoragePath)
   await fs.ensureDir(dir)
 }
@@ -272,7 +273,7 @@ async function createDirForFile(fileStoragePath) {
  * @param {String} expectedStoragePath path in local file system to store. includes the file name
  * @param {Boolean?} createDir if true, will ensure the expectedStoragePath path exists so we don't have errors from folders missing
  */
-async function writeStreamToFileSystem(
+export async function writeStreamToFileSystem(
   inputStream,
   expectedStoragePath,
   createDir = false
@@ -290,7 +291,10 @@ async function writeStreamToFileSystem(
  * @param {stream} inputStream Stream to persist to disk
  * @param {String} expectedStoragePath path in local file system to store
  */
-async function _streamFileToDiskHelper(inputStream, expectedStoragePath) {
+export async function _streamFileToDiskHelper(
+  inputStream,
+  expectedStoragePath
+) {
   // https://nodejs.org/en/docs/guides/backpressuring-in-streams/
   await pipeline(
     inputStream, // input stream
@@ -304,7 +308,7 @@ async function _streamFileToDiskHelper(inputStream, expectedStoragePath) {
  * @param {Array} args array of string quoted arguments to pass eg ['-alh']
  * @param {Object} logger logger object with context
  */
-async function runShellCommand(command, args, logger) {
+export async function runShellCommand(command, args, logger) {
   return new Promise((resolve, reject) => {
     const proc = spawn(command, args)
     let stdout = ''
@@ -337,7 +341,7 @@ async function runShellCommand(command, args, logger) {
  * @param {number} param.spID the spID of the current node
  * @returns whether or not the current node can handle the transcode
  */
-function currentNodeShouldHandleTranscode({
+export function currentNodeShouldHandleTranscode({
   transcodingQueueCanAcceptMoreJobs,
   spID
 }) {
@@ -351,7 +355,9 @@ function currentNodeShouldHandleTranscode({
   return currentNodeShouldHandleTranscode
 }
 
-module.exports = Utils
+module.exports.timeout = timeout
+module.exports.verifySignature = verifySignature
+module.exports.getRandomInt = getRandomInt
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
 module.exports.writeStreamToFileSystem = writeStreamToFileSystem
