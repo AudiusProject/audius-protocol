@@ -8,10 +8,7 @@ const config = require('./config.js')
 const { logger: genericLogger } = require('./logging')
 const asyncRetry = require('./utils/asyncRetry')
 
-export const redisClient = new Redis(
-  config.get('redisPort'),
-  config.get('redisHost')
-)
+const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const WRITE_WALLET_LOCK_PREFIX = 'WRITE.WALLET.'
 
