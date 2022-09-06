@@ -1,6 +1,19 @@
 import type { ReplicaSet } from './strToReplicaSet'
 import { strToReplicaSet } from './strToReplicaSet'
-import { timeout, getRandomInt, verifySignature } from './legacyUtils'
+import {
+  timeout,
+  getRandomInt,
+  verifySignature,
+  currentNodeShouldHandleTranscode,
+  validateStateForImageDirCIDAndReturnFileUUID,
+  findCIDInNetwork,
+  getAllRegisteredCNodes,
+  getIfAttemptedStateFix,
+  createDirForFile,
+  writeStreamToFileSystem,
+  _streamFileToDiskHelper,
+  runShellCommand
+} from './legacyUtils'
 import {
   validateMetadata,
   validateAssociatedWallets
@@ -11,6 +24,15 @@ export {
   timeout,
   getRandomInt,
   verifySignature,
+  currentNodeShouldHandleTranscode,
+  validateStateForImageDirCIDAndReturnFileUUID,
+  findCIDInNetwork,
+  getAllRegisteredCNodes,
+  getIfAttemptedStateFix,
+  createDirForFile,
+  writeStreamToFileSystem,
+  _streamFileToDiskHelper,
+  runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
   strToReplicaSet
@@ -20,6 +42,15 @@ module.exports = {
   timeout,
   getRandomInt,
   verifySignature,
+  currentNodeShouldHandleTranscode,
+  validateStateForImageDirCIDAndReturnFileUUID,
+  findCIDInNetwork,
+  getAllRegisteredCNodes,
+  getIfAttemptedStateFix,
+  createDirForFile,
+  writeStreamToFileSystem,
+  _streamFileToDiskHelper,
+  runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
   strToReplicaSet
