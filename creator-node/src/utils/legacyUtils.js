@@ -187,7 +187,7 @@ export async function findCIDInNetwork(
             }
 
             throw new Error(
-              `Failed to fetch content multihash=${cid} with statusCode=${e.response?.status}. Retrying..`
+              `Failed to fetch content multihash=${cid} with statusCode=${e.response?.status} from endpoint=${endpoint}. Retrying..`
             )
           }
 

@@ -1336,7 +1336,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       )
     })
 
-    it('Syncs correctly from clean user state, even when content is unavailable, by skipping files', async function () {
+    it.only('Syncs correctly from clean user state, even when content is unavailable, by skipping files', async function () {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
@@ -1356,29 +1356,35 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       nock(MOCK_CN1)
         .persist()
-        .get(
-          (uri) =>
+        .get((uri) => {
+          console.log('what is the uri mock_cn1', uri)
+          return (
             uri.includes('/file_lookup') &&
             uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
+          )
+        })
         .reply(404)
 
       nock(MOCK_CN3)
         .persist()
-        .get(
-          (uri) =>
+        .get((uri) => {
+          console.log('what is the uri mock_cn2', uri)
+          return (
             uri.includes('/file_lookup') &&
             uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
+          )
+        })
         .reply(404)
 
       nock(MOCK_CN4)
         .persist()
-        .get(
-          (uri) =>
+        .get((uri) => {
+          console.log('what is the uri mock_cn3', uri)
+          return (
             uri.includes('/file_lookup') &&
             uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
+          )
+        })
         .reply(404)
 
       const SyncRequestMaxUserFailureCountBeforeSkip = 3
