@@ -1,5 +1,4 @@
 import type Logger from 'bunyan'
-import { EthContracts as EthContractsClass } from '@audius/sdk/src/services/ethContracts/EthContracts'
 
 import _ from 'lodash'
 
@@ -8,7 +7,9 @@ import { logger as defaultLogger } from '../logging'
 import defaultRedisClient from '../redis'
 import { Redis } from 'ioredis'
 
-export type EthContracts = InstanceType<typeof EthContractsClass>
+export type EthContracts = {
+  getServiceProviderList: (spType: string) => Promise<LibsServiceProvider[]>
+}
 export type LibsServiceProvider = {
   owner: any // Libs typed this as any, but the contract has it as address
   delegateOwnerWallet: any // Libs typed this as any, but the contract has it as address
