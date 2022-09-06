@@ -116,6 +116,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
  * @param {Object} libs libs instance
  * @param {Integer?} trackId optional trackId that corresponds to the cid, see file_lookup route for more info
  * @param {Array?} excludeList optional array of content nodes to exclude in network wide search
+ * @param {number?} [numRetries=5] the number of retries to attempt to fetch cid, write to disk, and verify
  * @returns {Boolean} returns true if the file was found in the network
  */
 async function findCIDInNetwork(
