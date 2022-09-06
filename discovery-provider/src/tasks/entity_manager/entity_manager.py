@@ -236,108 +236,116 @@ def collect_entities_to_fetch(
 
 
 def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetchDict):
-    existing_entities: ExistingRecordDict = {}
+    existing_entities: ExistingRecordDict = defaultdict(dict)
 
     # PLAYLISTS
-    playlists: List[Playlist] = (
-        session.query(Playlist)
-        .filter(
-            Playlist.playlist_id.in_(entities_to_fetch[EntityType.PLAYLIST]),
-            Playlist.is_current == True,
+    if entities_to_fetch[EntityType.PLAYLIST]:
+        playlists: List[Playlist] = (
+            session.query(Playlist)
+            .filter(
+                Playlist.playlist_id.in_(entities_to_fetch[EntityType.PLAYLIST]),
+                Playlist.is_current == True,
+            )
+            .all()
         )
-        .all()
-    )
-    existing_entities[EntityType.PLAYLIST] = {
-        playlist.playlist_id: playlist for playlist in playlists
-    }
+        existing_entities[EntityType.PLAYLIST] = {
+            playlist.playlist_id: playlist for playlist in playlists
+        }
 
     # TRACKS
-    tracks: List[Track] = (
-        session.query(Track)
-        .filter(
-            Track.track_id.in_(entities_to_fetch[EntityType.TRACK]),
-            Track.is_current == True,
+    if entities_to_fetch[EntityType.TRACK]:
+        tracks: List[Track] = (
+            session.query(Track)
+            .filter(
+                Track.track_id.in_(entities_to_fetch[EntityType.TRACK]),
+                Track.is_current == True,
+            )
+            .all()
         )
-        .all()
-    )
-    existing_entities[EntityType.TRACK] = {track.track_id: track for track in tracks}
+        existing_entities[EntityType.TRACK] = {
+            track.track_id: track for track in tracks
+        }
 
     # USERS
-    users: List[User] = (
-        session.query(User)
-        .filter(
-            User.user_id.in_(entities_to_fetch[EntityType.USER]),
-            User.is_current == True,
+    if entities_to_fetch[EntityType.USER]:
+        users: List[User] = (
+            session.query(User)
+            .filter(
+                User.user_id.in_(entities_to_fetch[EntityType.USER]),
+                User.is_current == True,
+            )
+            .all()
         )
-        .all()
-    )
-    existing_entities[EntityType.USER] = {user.user_id: user for user in users}
+        existing_entities[EntityType.USER] = {user.user_id: user for user in users}
 
     # FOLLOWS
-    follow_ops_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.FOLLOW]
-    and_queries = []
-    for follow_to_fetch in follow_ops_to_fetch:
-        follower = follow_to_fetch[0]
-        # follows does not need entity type in follow_to_fetch[1]
-        followee = follow_to_fetch[2]
-        and_queries.append(
-            and_(
-                Follow.followee_user_id == followee,
-                Follow.follower_user_id == follower,
-                Follow.is_current == True,
+    if entities_to_fetch[EntityType.FOLLOW]:
+        follow_ops_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.FOLLOW]
+        and_queries = []
+        for follow_to_fetch in follow_ops_to_fetch:
+            follower = follow_to_fetch[0]
+            # follows does not need entity type in follow_to_fetch[1]
+            followee = follow_to_fetch[2]
+            and_queries.append(
+                and_(
+                    Follow.followee_user_id == followee,
+                    Follow.follower_user_id == follower,
+                    Follow.is_current == True,
+                )
             )
-        )
-    follows: List[Follow] = session.query(Follow).filter(or_(*and_queries)).all()
-    existing_entities[EntityType.FOLLOW] = {
-        get_record_key(
-            follow.follower_user_id, EntityType.USER, follow.followee_user_id
-        ): follow
-        for follow in follows
-    }
+        follows: List[Follow] = session.query(Follow).filter(or_(*and_queries)).all()
+        existing_entities[EntityType.FOLLOW] = {
+            get_record_key(
+                follow.follower_user_id, EntityType.USER, follow.followee_user_id
+            ): follow
+            for follow in follows
+        }
 
     # SAVES
-    saves_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.SAVE]
-    and_queries = []
-    for save_to_fetch in saves_to_fetch:
-        user_id = save_to_fetch[0]
-        entity_type = save_to_fetch[1]
-        entity_id = save_to_fetch[2]
-        and_queries.append(
-            and_(
-                Save.user_id == user_id,
-                Save.save_type == entity_type.lower(),
-                Save.save_item_id == entity_id,
-                Save.is_current == True,
+    if entities_to_fetch[EntityType.SAVE]:
+        saves_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.SAVE]
+        and_queries = []
+        for save_to_fetch in saves_to_fetch:
+            user_id = save_to_fetch[0]
+            entity_type = save_to_fetch[1]
+            entity_id = save_to_fetch[2]
+            and_queries.append(
+                and_(
+                    Save.user_id == user_id,
+                    Save.save_type == entity_type.lower(),
+                    Save.save_item_id == entity_id,
+                    Save.is_current == True,
+                )
             )
-        )
-    saves: List[Save] = session.query(Save).filter(or_(*and_queries)).all()
-    existing_entities[EntityType.SAVE] = {
-        get_record_key(save.user_id, save.save_type, save.save_item_id): save
-        for save in saves
-    }
+        saves: List[Save] = session.query(Save).filter(or_(*and_queries)).all()
+        existing_entities[EntityType.SAVE] = {
+            get_record_key(save.user_id, save.save_type, save.save_item_id): save
+            for save in saves
+        }
 
     # REPOSTS
-    reposts_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.REPOST]
-    and_queries = []
-    for repost_to_fetch in reposts_to_fetch:
-        user_id = repost_to_fetch[0]
-        entity_type = repost_to_fetch[1]
-        entity_id = repost_to_fetch[2]
-        and_queries.append(
-            and_(
-                Repost.user_id == user_id,
-                Repost.repost_type == entity_type.lower(),
-                Repost.repost_item_id == entity_id,
-                Repost.is_current == True,
+    if entities_to_fetch[EntityType.REPOST]:
+        reposts_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.REPOST]
+        and_queries = []
+        for repost_to_fetch in reposts_to_fetch:
+            user_id = repost_to_fetch[0]
+            entity_type = repost_to_fetch[1]
+            entity_id = repost_to_fetch[2]
+            and_queries.append(
+                and_(
+                    Repost.user_id == user_id,
+                    Repost.repost_type == entity_type.lower(),
+                    Repost.repost_item_id == entity_id,
+                    Repost.is_current == True,
+                )
             )
-        )
-    reposts: List[Repost] = session.query(Repost).filter(or_(*and_queries)).all()
-    existing_entities[EntityType.REPOST] = {
-        get_record_key(
-            repost.user_id, repost.repost_type, repost.repost_item_id
-        ): repost
-        for repost in reposts
-    }
+        reposts: List[Repost] = session.query(Repost).filter(or_(*and_queries)).all()
+        existing_entities[EntityType.REPOST] = {
+            get_record_key(
+                repost.user_id, repost.repost_type, repost.repost_item_id
+            ): repost
+            for repost in reposts
+        }
 
     return existing_entities
 
