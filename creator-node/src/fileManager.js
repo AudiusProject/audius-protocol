@@ -257,14 +257,18 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
     data: { expectedStoragePath: path }
   })
 
-  const isCIDProper = await Utils.verifyCIDIsProper({
+  const CIDMatchesExpected = await Utils.verifyCIDMatchesExpected({
     cid: multihash,
     path: path,
     logger
   })
 
-  if (!isCIDProper) {
-    await fs.unlink(path)
+  if (!CIDMatchesExpected) {
+    try {
+      await fs.unlink(path)
+    } catch (e) {
+      logger.error(`Could not remove file at path=${path}`)
+    }
     bail(new Error(`CID=${multihash} from endpoint=${contentUrl} is improper`))
     return
   }

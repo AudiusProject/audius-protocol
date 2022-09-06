@@ -283,7 +283,7 @@ describe('test fileManager', () => {
               resolve('file stream successfully written')
             )
           }),
-          verifyCIDIsProper: sinon.stub().callsFake(() => {
+          verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
             return new Promise((resolve, reject) => resolve(true))
           })
         }
