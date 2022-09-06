@@ -7,7 +7,7 @@ const stream = require('stream')
 const { promisify } = require('util')
 
 const { logger: genericLogger } = require('../logging')
-const asyncRetry = require('./utils/asyncRetry')
+const asyncRetry = require('./asyncRetry')
 const models = require('../models')
 const redis = require('../redis')
 const config = require('../config')
