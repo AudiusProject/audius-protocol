@@ -12,7 +12,9 @@ import {
   createDirForFile,
   writeStreamToFileSystem,
   _streamFileToDiskHelper,
-  runShellCommand
+  runShellCommand,
+  verifyCIDMatchesExpected,
+  EMPTY_FILE_CID
 } from './legacyUtils'
 import {
   validateMetadata,
@@ -53,5 +55,7 @@ module.exports = {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
-  strToReplicaSet
+  strToReplicaSet,
+  verifyCIDMatchesExpected,
+  EMPTY_FILE_CID
 }

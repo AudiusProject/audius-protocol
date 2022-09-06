@@ -18,7 +18,8 @@ const pipeline = promisify(stream.pipeline)
 const LibsUtils = libs.Utils
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
-const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
+
+export const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
 
 export function verifySignature(data, sig) {
   return recoverPersonalSignature({ data, sig })
@@ -443,3 +444,4 @@ module.exports.runShellCommand = runShellCommand
 module.exports.currentNodeShouldHandleTranscode =
   currentNodeShouldHandleTranscode
 module.exports.verifyCIDMatchesExpected = verifyCIDMatchesExpected
+module.exports.EMPTY_FILE_CID = EMPTY_FILE_CID
