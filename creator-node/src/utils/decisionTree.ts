@@ -1,5 +1,7 @@
 import type Logger from 'bunyan'
 
+const { logger: genericLogger } = require('../logging')
+
 type Stage = {
   name: string
   data: object | null
@@ -28,7 +30,9 @@ module.exports = class DecisionTree {
 
   tree: Stage[]
 
-  public constructor({ name, logger }: ConstructorParams) {
+  public constructor(
+    { name, logger }: ConstructorParams = { name: '', logger: genericLogger }
+  ) {
     this.logger = logger
     this.tree = []
     this.name = name

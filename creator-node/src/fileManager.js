@@ -689,5 +689,6 @@ module.exports = {
   getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
   copyMultihashToFs,
+  fetchFileFromNetworkAndWriteToDisk,
   EMPTY_FILE_CID
 }

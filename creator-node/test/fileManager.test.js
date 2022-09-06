@@ -4,6 +4,7 @@ const uuid = require('uuid/v4')
 const fs = require('fs-extra')
 const path = require('path')
 const proxyquire = require('proxyquire')
+const nock = require('nock')
 
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
@@ -11,12 +12,15 @@ const { logger: genericLogger } = require('../src/logging')
 const {
   removeTrackFolder,
   saveFileFromBufferToDisk,
-  copyMultihashToFs
+  copyMultihashToFs,
+  fetchFileFromNetworkAndWriteToDisk
 } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
 const { sortKeys } = require('../src/apiSigning')
 const DiskManager = require('../src/diskManager')
+const { getLibsMock } = require('./lib/libsMock')
+const DecisionTree = require('../src/utils/decisionTree')
 
 const storagePath = config.get('storagePath')
 
@@ -55,7 +59,19 @@ const metadata = {
 }
 const buffer = Buffer.from(JSON.stringify(metadata))
 
+const MOCK_CN1 = 'http://mock-cn1.audius.co'
+const MOCK_CN2 = 'http://mock-cn2.audius.co'
+const MOCK_CN3 = 'http://mock-cn3.audius.co'
+const MOCK_CN4 = 'http://mock-cn4.audius.co'
+const DUMMY_MULTIHASH = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+
 describe('test fileManager', () => {
+  let libsMock
+
+  before(function () {
+    libsMock = getLibsMock()
+  })
+
   afterEach(function () {
     sinon.restore()
   })
@@ -236,7 +252,66 @@ describe('test fileManager', () => {
   })
 
   // TODO: tests
-  it('If fetching content from target gateways succeeds with 200, do not retry', async function () {})
+  it.only('If fetching content from all target gateways succeeds with 200, do not retry', async function () {
+    nock(MOCK_CN1)
+      .persist()
+      .get(
+        (uri) =>
+          uri.includes('ipfs') &&
+          uri.includes('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+      )
+      .reply(200)
+
+    nock(MOCK_CN2)
+      .persist()
+      .get(
+        (uri) =>
+          uri.includes('ipfs') &&
+          uri.includes('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+      )
+      .reply(200)
+
+    nock(MOCK_CN3)
+      .persist()
+      .get(
+        (uri) =>
+          uri.includes('ipfs') &&
+          uri.includes('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+      )
+      .reply(200)
+
+    nock(MOCK_CN4)
+      .persist()
+      .get(
+        (uri) =>
+          uri.includes('ipfs') &&
+          uri.includes('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+      )
+      .reply(200)
+
+    try {
+      const decisionTree = new DecisionTree()
+      await fetchFileFromNetworkAndWriteToDisk({
+        libs: libsMock,
+        gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+          (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
+        ),
+        targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
+        multihash: DUMMY_MULTIHASH,
+        path,
+        numRetries: 0,
+        logger: genericLogger,
+        decisionTree
+      })
+
+      assert.ok(decisionTree.name.includes('Found file from network'))
+      assert.ok(true)
+    } catch (e) {
+      // Should not have thrown bc file was found in target gateways
+      assert.fail(e.message)
+    }
+  })
+
   it('If fetching content from target gateways fails with 400 (bad req), do not retry', async function () {})
   it('If fetching content from target gateways fails with 401 (unauth), do not retry', async function () {})
   it('If fetching content from target gateways fails with 403 (forbidden), do not retry', async function () {})
