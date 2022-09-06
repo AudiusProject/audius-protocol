@@ -120,7 +120,7 @@ const PlayingTrackInfo = ({
           </div>
           <UserBadges
             userId={artistUserId}
-            badgeSize={10}
+            badgeSize={12}
             className={styles.iconVerified}
           />
         </animated.div>
