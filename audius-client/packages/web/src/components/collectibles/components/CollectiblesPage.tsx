@@ -533,7 +533,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                 <UserBadges
                   className={styles.badges}
                   userId={userId}
-                  badgeSize={12}
+                  badgeSize={14}
                 />
               )}
             </div>
