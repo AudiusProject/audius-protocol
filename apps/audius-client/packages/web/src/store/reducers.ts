@@ -21,7 +21,6 @@ import passwordReset from 'components/password-reset/store/reducer'
 import remixSettingsModal from 'components/remix-settings-modal/store/slice'
 import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/reducers'
 import dashboard from 'pages/artist-dashboard-page/store/reducer'
-import deactivateAccount from 'pages/deactivate-account-page/store/slice'
 import deleted from 'pages/deleted-page/store/slice'
 import upload from 'pages/upload-page/store/reducer'
 import visualizer from 'pages/visualizer/store/slice'
@@ -75,7 +74,6 @@ const createRootReducer = (routeHistory: History) =>
       ui: combineReducers({
         appCTAModal,
         cookieBanner,
-        deactivateAccount,
         editFolderModal,
         editPlaylistModal,
         editTrackModal,

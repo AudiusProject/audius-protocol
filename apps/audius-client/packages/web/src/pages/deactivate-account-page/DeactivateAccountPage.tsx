@@ -1,6 +1,11 @@
 import { ReactNode, useCallback, useEffect } from 'react'
 
-import { Name, Status } from '@audius/common'
+import {
+  deactivateAccountActions,
+  deactivateAccountSelectors,
+  Name,
+  Status
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -14,8 +19,9 @@ import { isMobile } from 'utils/clientUtil'
 import styles from './DeactivateAccountPage.module.css'
 import { DeactivateAccountPageDesktop } from './components/desktop/DeactivateAccountPage'
 import { DeactivateAccountPageMobile } from './components/mobile/DeactivateAccountPage'
-import { getDeactivateAccountStatus } from './store/selectors'
-import { deactivateAccount } from './store/slice'
+
+const { deactivateAccount } = deactivateAccountActions
+const { getDeactivateAccountStatus } = deactivateAccountSelectors
 
 export const messages = {
   title: 'Delete',

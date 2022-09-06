@@ -17,6 +17,10 @@ import notifications from './notifications/reducer'
 import audioRewardsSlice from './pages/audio-rewards/slice'
 import collection from './pages/collection/reducer'
 import { CollectionsPageState } from './pages/collection/types'
+import {
+  deactivateAccountReducer,
+  DeactivateAccountState
+} from './pages/deactivate-account'
 import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
 import explorePageReducer from './pages/explore/slice'
 import feed from './pages/feed/reducer'
@@ -175,7 +179,8 @@ export const reducers = () => ({
     trendingUnderground,
     settings,
     notifications,
-    remixes
+    remixes,
+    deactivateAccount: deactivateAccountReducer
   }),
 
   // Solana
@@ -267,6 +272,7 @@ export type CommonState = {
     trendingUnderground: ReturnType<typeof trendingUnderground>
     notifications: ReturnType<typeof notifications>
     remixes: ReturnType<typeof remixes>
+    deactivateAccount: DeactivateAccountState
   }
 
   solana: ReturnType<typeof solanaReducer>
