@@ -1,19 +1,22 @@
-'use strict'
+/* eslint-disable import/first */
+import { setupTracing } from './tracer'
+setupTracing()
 
-const { setupTracing } = require('./tracer')
-setupTracing('content-node')
+import type Signal from 'death'
+import ON_DEATH from 'death'
+// @ts-ignore
+import EthereumWallet from 'ethereumjs-wallet'
+import { Keypair } from '@solana/web3.js'
 
-const ON_DEATH = require('death')
-const EthereumWallet = require('ethereumjs-wallet')
-const { Keypair } = require('@solana/web3.js')
+import initializeApp from './app'
+import config from './config'
+import { runMigrations, clearRunningQueries } from './migrationManager'
+import { logger } from './logging'
+import { serviceRegistry } from './serviceRegistry'
+import { WalletWriteLock } from './redis'
 
-const initializeApp = require('./app')
-const config = require('./config')
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { sequelize } = require('./models')
-const { runMigrations, clearRunningQueries } = require('./migrationManager')
-const { logger } = require('./logging')
-const { serviceRegistry } = require('./serviceRegistry')
-const redisClient = require('./redis')
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
@@ -121,7 +124,7 @@ const startApp = async () => {
 
   // Clear all redis locks
   try {
-    await redisClient.WalletWriteLock.clearWriteLocks()
+    await WalletWriteLock.clearWriteLocks()
   } catch (e: any) {
     logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
   }
@@ -134,11 +137,11 @@ const startApp = async () => {
   serviceRegistry.initServicesThatRequireServer(appInfo.app)
 
   // when app terminates, close down any open DB connections gracefully
-  ON_DEATH((signal: any, error: any) => {
+  ON_DEATH((signal: 'SIGINT' | 'SIGTERM' | 'SIGQUIT' | Error) => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
-    logger.info('Shutting down db and express app...', signal, error)
+    logger.info('Shutting down db and express app...', signal)
     sequelize.close()
     if (appInfo) {
       appInfo.server.close()
