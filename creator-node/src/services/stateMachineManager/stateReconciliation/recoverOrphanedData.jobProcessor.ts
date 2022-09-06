@@ -1,5 +1,4 @@
 import type Logger from 'bunyan'
-import type { Redis } from 'ioredis'
 import type {
   RecoverOrphanedDataJobParams,
   RecoverOrphanedDataJobReturnValue
@@ -15,17 +14,19 @@ import {
   ORPHANED_DATA_NUM_USERS_PER_QUERY,
   ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH,
   ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS,
-  MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS
+  MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS,
+  QUEUE_NAMES
 } from '../stateMachineConstants'
 import { instrumentTracing, tracing } from '../../../tracer'
 
-const { QUEUE_NAMES } = require('../stateMachineConstants')
-const { getNodeUsers } = require('../stateMonitoring/stateMonitoringUtils')
-const config = require('../../../config')
-const redisClient: Redis = require('../../../redis')
+import { getNodeUsers } from '../stateMonitoring/stateMonitoringUtils'
+import config from '../../../config'
+import redisClient from '../../../redis'
+import { asyncRetry } from '../../../utils/asyncRetry'
+import Utils from '../../../utils.js'
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const models = require('../../../models')
-const asyncRetry = require('../../../utils/asyncRetry')
-const Utils = require('../../../utils')
 
 const WALLETS_ON_NODE_KEY = 'orphanedDataWalletsWithStateOnNode'
 const WALLETS_WITH_NODE_IN_REPLICA_SET_KEY =

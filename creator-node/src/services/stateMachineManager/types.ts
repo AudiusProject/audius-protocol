@@ -12,7 +12,8 @@ import type {
   IssueSyncRequestJobParams,
   IssueSyncRequestJobReturnValue,
   UpdateReplicaSetJobReturnValue,
-  UpdateReplicaSetJobParamsWithoutEnabledReconfigModes
+  UpdateReplicaSetJobParamsWithoutEnabledReconfigModes,
+  RecoverOrphanedDataJobParams
 } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
 
@@ -61,6 +62,7 @@ export type ParamsForJobsToEnqueue =
   | FindReplicaSetUpdateJobParams
   | IssueSyncRequestJobParams
   | UpdateReplicaSetJobParamsWithoutEnabledReconfigModes
+  | RecoverOrphanedDataJobParams
 export type JobsToEnqueue = Partial<
   Record<TQUEUE_NAMES, ParamsForJobsToEnqueue[]>
 >
