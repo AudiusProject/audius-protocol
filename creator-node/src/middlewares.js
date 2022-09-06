@@ -1,4 +1,4 @@
-import utils, { strToReplicaSet } from './utils'
+import { strToReplicaSet, getAllRegisteredCNodes, timeout } from './utils'
 const promiseAny = require('promise.any')
 
 const {
@@ -175,7 +175,7 @@ async function ensurePrimaryMiddleware(req, res, next) {
    * Currently `req.session.creatorNodeEndpoints` is only used by `issueAndWaitForSecondarySyncRequests()`
    * There is a possibility of failing to retrieve endpoints for each spID, so the consumer of req.session.creatorNodeEndpoints must perform null checks
    */
-  const allRegisteredCNodes = await utils.getAllRegisteredCNodes(libs, logger)
+  const allRegisteredCNodes = await getAllRegisteredCNodes(libs, logger)
   const replicaSetEndpoints = replicaSetSpIDs.map((replicaSpID) => {
     if (replicaSpID === selfSpID) {
       return nodeConfig.get('creatorNodeEndpoint')
@@ -595,7 +595,7 @@ export async function getUserReplicaSetEndpointsFromDiscovery({
         logger.info(e)
       }
 
-      await utils.timeout(RetryTimeout)
+      await timeout(RetryTimeout)
       logger.info(
         `getUserReplicaSetEndpointsFromDiscovery AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
           Date.now() - start2
@@ -661,7 +661,7 @@ export async function getUserReplicaSetEndpointsFromDiscovery({
         logger.info(e)
       }
 
-      await utils.timeout(RetryTimeout)
+      await timeout(RetryTimeout)
       logger.info(
         `getUserReplicaSetEndpointsFromDiscovery AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
           Date.now() - start2
@@ -775,7 +775,7 @@ async function getReplicaSetSpIDs({
         errorMsg = e.message
       } // Ignore all errors until MAX_RETRIES exceeded
 
-      await utils.timeout(RETRY_TIMEOUT_MS)
+      await timeout(RETRY_TIMEOUT_MS)
     }
 
     // Error if indexed blockNumber but didn't find any replicaSet for user
@@ -833,7 +833,7 @@ async function getReplicaSetSpIDs({
         errorMsg = e.message
       } // Ignore all errors until MAX_RETRIES exceeded
 
-      await utils.timeout(RETRY_TIMEOUT_MS)
+      await timeout(RETRY_TIMEOUT_MS)
     }
 
     // Error if failed to retrieve replicaSet
