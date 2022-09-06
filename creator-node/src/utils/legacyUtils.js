@@ -139,9 +139,11 @@ export async function findCIDInNetwork(
   const creatorNodes = await getAllRegisteredCNodes(libs)
   if (!creatorNodes.length) return false
 
-  // Remove excluded nodes from list of creator nodes, no-op if empty list or nothing passed in
+  // Remove excluded nodes from list of creator nodes or self, no-op if empty list or nothing passed in
   const creatorNodesFiltered = creatorNodes.filter(
-    (c) => !excludeList.includes(c.endpoint)
+    (c) =>
+      !excludeList.includes(c.endpoint) ||
+      config.get('creatorNodeEndpoint') !== c.endpoint
   )
 
   // Generate signature to auth fetching files

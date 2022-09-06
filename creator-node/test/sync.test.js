@@ -1363,15 +1363,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
         )
         .reply(404)
 
-      nock(MOCK_CN2)
-        .persist()
-        .get(
-          (uri) =>
-            uri.includes('/file_lookup') &&
-            uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
-        )
-        .reply(404)
-
       nock(MOCK_CN3)
         .persist()
         .get(
