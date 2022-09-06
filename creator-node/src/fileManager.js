@@ -155,7 +155,6 @@ async function fetchFileFromNetworkAndWriteToDisk({
         data: {
           url: contentUrl,
           errorMsg: e.message,
-          statusCode: e.response?.status,
           multihash
         }
       })
@@ -269,8 +268,7 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
     } catch (e) {
       logger.error(`Could not remove file at path=${path}`)
     }
-    bail(new Error(`CID=${multihash} from endpoint=${contentUrl} is improper`))
-    return
+    throw new Error('CID does not match what is expected to be')
   }
 
   logger.info(

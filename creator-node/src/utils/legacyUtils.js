@@ -218,8 +218,7 @@ export async function findCIDInNetwork(
               logger.error(`Could not remove file at path=${path}`)
             }
 
-            bail(new Error('CID does not match what is expected to be'))
-            return
+            throw new Error('CID does not match what is expected to be')
           }
 
           logger.info(
