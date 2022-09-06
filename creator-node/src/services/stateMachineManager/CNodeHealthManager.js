@@ -50,8 +50,8 @@ class CNodeHealthManager {
   /**
    * Performs a health check on the peer set
    * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-   * @param {string} contentNodeEndpoint the IP address / URL of this Content Node
-   * @param {boolean?} [performSimpleCheck=false] flag to dictate whether or not to check health check response to
+   * @param {string} [contentNodeEndpoint=undefined] the IP address / URL of this Content Node
+   * @param {boolean} [performSimpleCheck=false] flag to dictate whether or not to check health check response to
    *  determine node health
    * @returns the unhealthy peers in a Set
    *
@@ -60,7 +60,7 @@ class CNodeHealthManager {
    */
   async getUnhealthyPeers(
     nodeUsers,
-    thisContentNodeEndpoint,
+    thisContentNodeEndpoint = undefined,
     performSimpleCheck = false
   ) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
