@@ -229,7 +229,7 @@ export async function findCIDInNetwork(
         }
       })
 
-      return true
+      found = true
     } catch (e) {
       // Do not error and stop the flow of execution for functions that call it
       logger.error(`findCIDInNetwork error from ${endpoint} - ${e.message}`)
