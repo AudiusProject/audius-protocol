@@ -97,6 +97,27 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
   return dstPath
 }
 
+/**
+ * Fetches a file from the target gateways (usually the replica set of a user),
+ * then the network if it is not found on the target gateways.
+ *
+ * Retries occur when:
+ * - fetching from the target gateways result in 500s or 404s
+ * - writing to fs fails
+ * - verifying cids fails
+ * - fetching from network gateways result in 500s
+ *
+ * @param {Object} param
+ * @param {Object} param.libs instance of audiusLibs
+ * @param {string[]} param.gatewayContentRoutes list of CN endpoints with /ipfs/<cid>
+ * @param {string[]} param.targetGateways list of CN endpoints
+ * @param {string} param.multihash the target cid
+ * @param {string} param.path the path to save the cid to
+ * @param {number} param.numRetries the number of max retries
+ * @param {number|undefined} param.trackId the trackId associated with a multihash if there is one
+ * @param {Object} param.decisionTree instance of DecisionTree
+ * @param {Object} param.logger
+ */
 async function fetchFileFromNetworkAndWriteToDisk({
   libs,
   gatewayContentRoutes,
@@ -104,9 +125,9 @@ async function fetchFileFromNetworkAndWriteToDisk({
   multihash,
   path,
   numRetries,
-  logger,
+  trackId,
   decisionTree,
-  trackId
+  logger
 }) {
   // First try to fetch from other cnode gateways if user has non-empty replica set.
   decisionTree.recordStage({
@@ -196,6 +217,17 @@ async function fetchFileFromNetworkAndWriteToDisk({
   throw new Error(errorMsg)
 }
 
+/**
+ * Fetches a multihash via the /ipfs route, writes to disk, and verifies that the CID is what we
+ * expect it to be with retries
+ * @param {Object} param
+ * @param {function} param.bail the npm module async-retry bail fn
+ * @param {string} param.contentUrl the target content node ipfs gateway route
+ * @param {number} param.trackId the track id if one is associated with the multihash fetched
+ * @param {Object} param.decisionTree an instance of DecisionTree
+ * @param {string} param.path the path at which to save the fetched multihash from
+ * @param {Object} param.logger
+ */
 async function fetchFileFromTargetGatewayAndWriteToDisk({
   bail,
   contentUrl,
