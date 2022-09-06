@@ -1,6 +1,5 @@
-const retry = require('async-retry')
-
-const { logger: genericLogger } = require('../logging')
+import retry from 'async-retry'
+import { logger as genericLogger } from '../logging'
 
 /**
  * Wrapper around async-retry API.

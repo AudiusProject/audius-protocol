@@ -21,7 +21,7 @@ import { instrumentTracing, tracing } from '../../../tracer'
 
 import { getNodeUsers } from '../stateMonitoring/stateMonitoringUtils'
 import config from '../../../config'
-import redisClient from '../../../redis'
+import { redisClient } from '../../../redis'
 import { asyncRetry } from '../../../utils/asyncRetry'
 import Utils from '../../../utils.js'
 

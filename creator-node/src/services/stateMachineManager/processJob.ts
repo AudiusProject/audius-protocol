@@ -9,7 +9,7 @@ import type {
 import _ from 'lodash'
 
 import { createChildLogger } from '../../logging'
-import redis from '../../redis'
+import { redisClient as redis } from '../../redis'
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.

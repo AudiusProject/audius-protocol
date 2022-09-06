@@ -8,7 +8,10 @@ const Redis = require('ioredis')
 const config = require('./config.js')
 const { logger: genericLogger } = require('./logging')
 
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+export const redisClient = new Redis(
+  config.get('redisPort'),
+  config.get('redisHost')
+)
 
 const WRITE_WALLET_LOCK_PREFIX = 'WRITE.WALLET.'
 
@@ -16,7 +19,7 @@ const _getWalletWriteLockKey = function (wallet) {
   return `${WRITE_WALLET_LOCK_PREFIX}${wallet}`
 }
 
-const WalletWriteLock = {
+export const WalletWriteLock = {
   WALLET_WRITE_LOCK_EXPIRATION_SEC: 1800, // 30 min in sec
 
   VALID_ACQUIRERS: {

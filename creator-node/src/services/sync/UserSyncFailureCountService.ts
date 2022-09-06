@@ -1,4 +1,4 @@
-import redis from '../../redis'
+import { redisClient as redis } from '../../redis'
 
 const HSetKey = 'UserSyncFailureCounts'
 
