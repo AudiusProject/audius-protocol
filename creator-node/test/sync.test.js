@@ -1104,6 +1104,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         }
       )
@@ -1145,6 +1152,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         }
       )
@@ -1195,6 +1209,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         }
       )
@@ -1261,6 +1282,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         }
       )
@@ -1314,6 +1342,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         }
       )
@@ -1365,6 +1400,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         }
       )
@@ -1734,7 +1776,14 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       {
         '../../serviceRegistry': { serviceRegistry: serviceRegistryMock },
         '../initAudiusLibs': async () => libsMock,
-        './../../config': config
+        './../../config': config,
+        '../ContentNodeInfoManager': {
+          getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+            primary: NODES.CN1,
+            secondary1: NODES.CN2,
+            secondary2: NODES.CN3
+          })
+        }
       }
     )
   })

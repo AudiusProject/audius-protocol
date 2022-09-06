@@ -4,10 +4,8 @@ const { logger: genericLogger, createChildLogger } = require('../../logging')
 const config = require('../../config')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
-const {
-  getOwnEndpoint,
-  getUserReplicaSetEndpointsFromDiscovery
-} = require('../../middlewares')
+const { getOwnEndpoint } = require('../../middlewares')
+const { getReplicaSetEndpointsByWallet } = require('../ContentNodeInfoManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const UserSyncFailureCountService = require('./UserSyncFailureCountService')
@@ -60,12 +58,11 @@ const handleSyncFromPrimary = async ({
     }
 
     // Ensure this node is syncing from the user's primary
-    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
+    const userReplicaSet = await getReplicaSetEndpointsByWallet({
+      userReplicaSetManagerClient: libs.contracts.UserReplicaSetManagerClient,
       wallet,
-      blockNumber: null,
-      ensurePrimary: false
+      getUsers: libs.User.getUsers,
+      parentLogger: logger
     })
     if (userReplicaSet.primary !== creatorNodeEndpoint) {
       throw new Error(

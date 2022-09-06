@@ -6,7 +6,7 @@ const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
-const { getUserReplicaSetEndpointsFromDiscovery } = require('../../middlewares')
+const { getReplicaSetEndpointsByWallet } = require('../ContentNodeInfoManager')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
@@ -80,12 +80,11 @@ async function _primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
+    const userReplicaSet = await getReplicaSetEndpointsByWallet({
+      userReplicaSetManagerClient: libs.contracts.UserReplicaSetManagerClient,
       wallet,
-      blockNumber: null,
-      ensurePrimary: false
+      getUsers: libs.User.getUsers,
+      parentLogger: logger
     })
     decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
