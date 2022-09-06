@@ -30,9 +30,7 @@ module.exports = class DecisionTree {
 
   tree: Stage[]
 
-  public constructor(
-    { name, logger }: ConstructorParams = { name: '', logger: genericLogger }
-  ) {
+  public constructor({ name, logger = genericLogger }: ConstructorParams) {
     this.logger = logger
     this.tree = []
     this.name = name

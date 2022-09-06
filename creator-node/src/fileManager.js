@@ -119,89 +119,33 @@ async function fetchFileFromNetworkAndWriteToDisk({
   for (const contentUrl of gatewayContentRoutes) {
     decisionTree.recordStage({
       name: 'Fetching from target gateways',
-      data: { replicaUrl: contentUrl }
+      data: { targetGateway: contentUrl }
     })
 
     try {
       await asyncRetry({
         asyncFn: async (bail) => {
-          let response
-          try {
-            const fetchReqParams = {
-              method: 'get',
-              url: contentUrl,
-              responseType: 'stream',
-              timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-            }
-
-            if (trackId) {
-              fetchReqParams.params = {
-                trackId
-              }
-            }
-
-            response = await axios(fetchReqParams)
-          } catch (e) {
-            if (
-              e.response?.status === 403 || // delist
-              e.response?.status === 401 || // unauth
-              e.response?.status === 400 // bad request
-            ) {
-              bail(
-                new Error(
-                  `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
-                )
-              )
-              return
-            }
-
-            throw new Error(
-              `Failed to fetch content=${multihash} with statusCode=${e.response?.status}. Retrying..`
-            )
-          }
-
-          if (!response || !response.data) {
-            throw new Error(`Received empty response`)
-          }
-
-          decisionTree.recordStage({
-            name: 'Retrieved file from target gateway',
-            data: { url: contentUrl }
-          })
-
-          await Utils.writeStreamToFileSystem(response.data, path)
-
-          decisionTree.recordStage({
-            name: 'Wrote file to file system after fetching from target gateway',
-            data: { expectedStoragePath: path }
-          })
-
-          const isCIDProper = await Utils.verifyCIDIsProper({
-            cid: multihash,
-            path: path,
+          await fetchFileFromTargetGatewayAndWriteToDisk({
+            bail,
+            contentUrl,
+            trackId,
+            multihash,
+            decisionTree,
+            path,
             logger
           })
-
-          if (!isCIDProper) {
-            await fs.unlink(path)
-            bail(
-              new Error(
-                `CID=${multihash} from endpoint=${contentUrl} is improper`
-              )
-            )
-            return
-          }
-
-          logger.info(
-            `Successfully fetched CID=${multihash} file=${path} from node ${contentUrl}`
-          )
         },
         logger,
-        logLabel: 'fetchFileFromNetworkAndWriteToDisk',
+        logLabel: 'fetchFileFromTargetGatewayAndWriteToDisk',
         options: {
           retries: numRetries,
           minTimeout: 3000
         }
+      })
+
+      decisionTree.recordStage({
+        name: 'Found file from target gateway',
+        data: { targetGateway: contentUrl }
       })
 
       // If successful, will reach this point in code. Return out of fn
@@ -252,6 +196,83 @@ async function fetchFileFromNetworkAndWriteToDisk({
     name: errorMsg
   })
   throw new Error(errorMsg)
+}
+
+async function fetchFileFromTargetGatewayAndWriteToDisk({
+  bail,
+  contentUrl,
+  trackId,
+  multihash,
+  decisionTree,
+  path,
+  logger
+}) {
+  let response
+  try {
+    const fetchReqParams = {
+      method: 'get',
+      url: contentUrl,
+      responseType: 'stream',
+      timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+    }
+
+    if (trackId) {
+      fetchReqParams.params = {
+        trackId
+      }
+    }
+
+    response = await axios(fetchReqParams)
+  } catch (e) {
+    if (
+      e.response?.status === 403 || // delist
+      e.response?.status === 401 || // unauth
+      e.response?.status === 400 // bad request
+    ) {
+      bail(
+        new Error(
+          `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
+        )
+      )
+      return
+    }
+
+    throw new Error(
+      `Failed to fetch content=${multihash} with statusCode=${e.response?.status}. Retrying..`
+    )
+  }
+
+  if (!response || !response.data) {
+    throw new Error(`Received empty response`)
+  }
+
+  decisionTree.recordStage({
+    name: 'Retrieved file from target gateway',
+    data: { url: contentUrl }
+  })
+
+  await Utils.writeStreamToFileSystem(response.data, path)
+
+  decisionTree.recordStage({
+    name: 'Wrote file to file system after fetching from target gateway',
+    data: { expectedStoragePath: path }
+  })
+
+  const isCIDProper = await Utils.verifyCIDIsProper({
+    cid: multihash,
+    path: path,
+    logger
+  })
+
+  if (!isCIDProper) {
+    await fs.unlink(path)
+    bail(new Error(`CID=${multihash} from endpoint=${contentUrl} is improper`))
+    return
+  }
+
+  logger.info(
+    `Successfully fetched CID=${multihash} file=${path} from node ${contentUrl}`
+  )
 }
 
 /**
