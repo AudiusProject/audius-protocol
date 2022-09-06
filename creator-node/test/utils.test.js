@@ -146,7 +146,7 @@ describe('test src/utils.js', () => {
     })
 
     assert.deepStrictEqual(
-      await UtilsWithMockFs.verifyCIDIsProper({
+      await UtilsWithMockFs.verifyCIDMatchesExpected({
         cid: DUMMY_NON_EMPTY_CID_1,
         path: '/some/path',
         logger: genericLogger
@@ -178,7 +178,7 @@ describe('test src/utils.js', () => {
     })
 
     assert.deepStrictEqual(
-      await UtilsWithMockFsAndMockLibs.verifyCIDIsProper({
+      await UtilsWithMockFsAndMockLibs.verifyCIDMatchesExpected({
         cid: DUMMY_NON_EMPTY_CID_1,
         path: '/some/path',
         logger: genericLogger
@@ -210,7 +210,7 @@ describe('test src/utils.js', () => {
     })
 
     assert.deepStrictEqual(
-      await UtilsWithMockFsAndMockLibs.verifyCIDIsProper({
+      await UtilsWithMockFsAndMockLibs.verifyCIDMatchesExpected({
         cid: DUMMY_NON_EMPTY_CID_1,
         path: '/some/path',
         logger: genericLogger

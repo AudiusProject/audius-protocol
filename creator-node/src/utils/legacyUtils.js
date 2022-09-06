@@ -200,7 +200,7 @@ export async function findCIDInNetwork(
             /* createDir */ true
           )
 
-          const isCIDProper = await verifyCIDIsProper({
+          const isCIDProper = await verifyCIDMatchesExpected({
             cid,
             path: filePath,
             logger
@@ -409,7 +409,7 @@ export function currentNodeShouldHandleTranscode({
  * @param {Object} param.logger
  * @returns boolean if the cid is proper or not
  */
-export async function verifyCIDIsProper({ cid, path, logger }) {
+export async function verifyCIDMatchesExpected({ cid, path, logger }) {
   const fileSize = (await fs.stat(path)).size
   const fileIsEmpty = fileSize === 0
 
@@ -442,4 +442,4 @@ module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
 module.exports.currentNodeShouldHandleTranscode =
   currentNodeShouldHandleTranscode
-module.exports.verifyCIDIsProper = verifyCIDIsProper
+module.exports.verifyCIDMatchesExpected = verifyCIDMatchesExpected
