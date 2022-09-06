@@ -19,7 +19,7 @@ const { logger: genericLogger } = require('../logging')
  * @param {((...any) => any)} [param.options.onRetry=((err, i) => void)] fn that gets called per retry
  * @returns the fn response if success, or throws an error
  */
-module.exports = function asyncRetry({
+export function asyncRetry({
   asyncFn,
   options = {},
   logger = genericLogger,
@@ -43,3 +43,5 @@ module.exports = function asyncRetry({
 
   return retry(asyncFn, options)
 }
+
+module.exports = asyncRetry

@@ -1,6 +1,6 @@
 import type Logger from 'bunyan'
 import { Redis } from 'ioredis'
-import asyncRetry from './asyncRetry'
+import { asyncRetry } from './asyncRetry'
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
