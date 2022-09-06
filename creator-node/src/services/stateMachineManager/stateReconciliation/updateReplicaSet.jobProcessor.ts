@@ -592,7 +592,16 @@ const _issueUpdateReplicaSetOp = async (
       throw new Error(errorMsg)
     }
 
-    if (!issueReconfig) {
+    /**
+     * TODO: Remove this after rollout. This is an extra gating condition to NOT issue reconfigs of primaries
+     * except when the cause of the reconfig is that the primary endpoint was deregistered or changed.
+     */
+    const causeOfReconfigIsPrimaryChanged =
+      !!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[primary]
+    const dontIssueEvenIfEnabled =
+      causeOfReconfigIsPrimaryChanged &&
+      reconfigType === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES
+    if (!issueReconfig || dontIssueEvenIfEnabled) {
       response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
       return response
     }
