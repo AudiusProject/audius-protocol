@@ -6,12 +6,12 @@ const spawn = require('child_process').spawn
 const stream = require('stream')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
-const { logger: genericLogger } = require('./logging.js')
+const { logger: genericLogger } = require('../logging.js')
 
-const models = require('./models')
-const redis = require('./redis')
-const config = require('./config')
-const { generateTimestampAndSignature } = require('./apiSigning')
+const models = require('../models')
+const redis = require('../redis')
+const config = require('../config')
+const { generateTimestampAndSignature } = require('../apiSigning')
 const { libs } = require('@audius/sdk')
 const LibsUtils = libs.Utils
 
