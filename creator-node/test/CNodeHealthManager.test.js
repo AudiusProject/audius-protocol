@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions */
-import Utils from '../src/utils'
+import * as Utils from '../src/utils'
 const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')

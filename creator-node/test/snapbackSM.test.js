@@ -1,6 +1,6 @@
 /** Integration tests for SnapbackSM module */
 
-import utils from '../src/utils'
+import * as utils from '../src/utils'
 const nock = require('nock')
 const assert = require('assert')
 const chai = require('chai')

@@ -1,4 +1,4 @@
-import Utils from '../src/utils'
+import * as Utils from '../src/utils'
 const assert = require('assert')
 const proxyquire = require('proxyquire')
 const chai = require('chai')

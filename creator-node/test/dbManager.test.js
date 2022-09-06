@@ -1,4 +1,4 @@
-import utils from '../src/utils'
+import * as utils from '../src/utils'
 const assert = require('assert')
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
