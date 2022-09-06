@@ -19,7 +19,6 @@ const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Def
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
-const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
 
 /**
  * Saves file to disk under /multihash name
@@ -44,7 +43,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
     const fileSize = (await fs.stat(dstPath)).size
     const fileIsEmpty = fileSize === 0
     // there is one case where an empty file could be valid, check for that CID explicitly
-    if (fileIsEmpty && cid !== EMPTY_FILE_CID) {
+    if (fileIsEmpty && cid !== Utils.EMPTY_FILE_CID) {
       throw new Error(`File has no content, content length is 0: ${cid}`)
     }
 
@@ -710,6 +709,5 @@ module.exports = {
   getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
   copyMultihashToFs,
-  fetchFileFromNetworkAndWriteToDisk,
-  EMPTY_FILE_CID
+  fetchFileFromNetworkAndWriteToDisk
 }

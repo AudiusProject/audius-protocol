@@ -32,15 +32,14 @@ chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
 
-const MOCK_CN1 = 'http://mock-cn1.audius.co'
-const MOCK_CN2 = 'http://mock-cn2.audius.co'
-const MOCK_CN3 = 'http://mock-cn3.audius.co'
-const MOCK_CN4 = 'http://mock-cn4.audius.co'
-
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 const DUMMY_WALLET = testEthereumConstants.pubKey.toLowerCase()
 const DUMMY_CNODEUSER_BLOCKNUMBER = 10
+const MOCK_CN1 = 'http://mock-cn1.audius.co'
+const MOCK_CN2 = 'http://mock-cn2.audius.co'
+const MOCK_CN3 = 'http://mock-cn3.audius.co'
+const MOCK_CN4 = 'http://mock-cn4.audius.co'
 
 // Below files generated using above dummy data
 const sampleExportDummyCIDPath = path.resolve(
@@ -1356,6 +1355,15 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       setupMocks(sampleExport, false)
 
+      nock(MOCK_CN1)
+        .persist()
+        .get(
+          (uri) =>
+            uri.includes('/file_lookup') &&
+            uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(404)
+
       nock(MOCK_CN3)
         .persist()
         .get(
@@ -2209,6 +2217,22 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     assert.deepStrictEqual(initialLocalCNodeUser, null)
 
     // Mock that fetching any content via /file_lookup is unavailable
+    nock(MOCK_CN2)
+      .persist()
+      .get('/file_lookup')
+      .query(() => {
+        return true
+      })
+      .reply(404)
+
+    nock(MOCK_CN3)
+      .persist()
+      .get('/file_lookup')
+      .query(() => {
+        return true
+      })
+      .reply(404)
+
     nock(MOCK_CN4)
       .persist()
       .get('/file_lookup')

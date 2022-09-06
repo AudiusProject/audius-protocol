@@ -136,7 +136,7 @@ describe('test src/utils.js', () => {
   })
 
   it("If cid is empty but shouldn't be, return false", async function () {
-    const UtilsWithMockFs = proxyquire('../src/utils', {
+    const UtilsWithMockFs = proxyquire('../src/utils/legacyUtils', {
       'fs-extra': {
         // Mock fs.stat() to return size of 0
         stat: async () => {
@@ -146,7 +146,7 @@ describe('test src/utils.js', () => {
     })
 
     assert.deepStrictEqual(
-      await UtilsWithMockFs.verifyCIDIsProper({
+      await UtilsWithMockFs.verifyCIDMatchesExpected({
         cid: DUMMY_NON_EMPTY_CID_1,
         path: '/some/path',
         logger: genericLogger
@@ -156,7 +156,7 @@ describe('test src/utils.js', () => {
   })
 
   it('If cid is not what is expected to be, return false', async function () {
-    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils', {
+    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils/legacyUtils', {
       'fs-extra': {
         // Mock fs.stat() to return size of 1 (non-empty)
         stat: async () => {
@@ -178,7 +178,7 @@ describe('test src/utils.js', () => {
     })
 
     assert.deepStrictEqual(
-      await UtilsWithMockFsAndMockLibs.verifyCIDIsProper({
+      await UtilsWithMockFsAndMockLibs.verifyCIDMatchesExpected({
         cid: DUMMY_NON_EMPTY_CID_1,
         path: '/some/path',
         logger: genericLogger
@@ -188,7 +188,7 @@ describe('test src/utils.js', () => {
   })
 
   it('If cid is what is expected to be, return true', async function () {
-    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils', {
+    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils/legacyUtils', {
       'fs-extra': {
         // Mock fs.stat() to return size of 1 (non-empty)
         stat: async () => {
@@ -210,7 +210,7 @@ describe('test src/utils.js', () => {
     })
 
     assert.deepStrictEqual(
-      await UtilsWithMockFsAndMockLibs.verifyCIDIsProper({
+      await UtilsWithMockFsAndMockLibs.verifyCIDMatchesExpected({
         cid: DUMMY_NON_EMPTY_CID_1,
         path: '/some/path',
         logger: genericLogger
