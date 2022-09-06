@@ -1,6 +1,7 @@
 import type { ReplicaSet } from './strToReplicaSet'
 import { strToReplicaSet } from './strToReplicaSet'
-const validateMetadata = require('./validateAudiusUserMetadata')
+import * as validateMetadata from './validateAudiusUserMetadata'
+
 const { validateAssociatedWallets } = validateMetadata
 
 module.exports = {
