@@ -1,5 +1,6 @@
 const assert = require('assert')
 const nock = require('nock')
+const proxyquire = require('proxyquire')
 const axios = require('axios')
 
 const { logger: genericLogger } = require('../src/logging')
@@ -7,6 +8,9 @@ const { logger: genericLogger } = require('../src/logging')
 // Module under test
 const Utils = require('../src/utils')
 const asyncRetry = require('../src/utils/asyncRetry')
+
+const DUMMY_NON_EMPTY_CID_1 = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+const DUMMY_NON_EMPTY_CID_2 = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8V'
 
 // Partially tested test file!!
 
@@ -59,8 +63,7 @@ describe('test src/utils.js', () => {
           },
           retries: 1
         },
-        logLabel:
-          'test handleBackwardsCompatibility=false with 404 response'
+        logLabel: 'test handleBackwardsCompatibility=false with 404 response'
       })
     } catch (e) {
       assert.strictEqual(didRetry, true)
@@ -130,5 +133,89 @@ describe('test src/utils.js', () => {
     } catch (e) {
       assert.fail('Observed fn should not have failed')
     }
+  })
+
+  it("If cid is empty but shouldn't be, return false", async function () {
+    const UtilsWithMockFs = proxyquire('../src/utils', {
+      'fs-extra': {
+        // Mock fs.stat() to return size of 0
+        stat: async () => {
+          return { size: 0 }
+        }
+      }
+    })
+
+    assert.deepStrictEqual(
+      await UtilsWithMockFs.verifyCIDIsProper({
+        cid: DUMMY_NON_EMPTY_CID_1,
+        path: '/some/path',
+        logger: genericLogger
+      }),
+      false
+    )
+  })
+
+  it('If cid is not what is expected to be, return false', async function () {
+    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils', {
+      'fs-extra': {
+        // Mock fs.stat() to return size of 1 (non-empty)
+        stat: async () => {
+          return { size: 1 }
+        }
+      },
+      '@audius/sdk': {
+        libs: {
+          Utils: {
+            fileHasher: {
+              // Mock libs fn to return a different cid
+              generateNonImageCid: async () => {
+                return DUMMY_NON_EMPTY_CID_2
+              }
+            }
+          }
+        }
+      }
+    })
+
+    assert.deepStrictEqual(
+      await UtilsWithMockFsAndMockLibs.verifyCIDIsProper({
+        cid: DUMMY_NON_EMPTY_CID_1,
+        path: '/some/path',
+        logger: genericLogger
+      }),
+      false
+    )
+  })
+
+  it('If cid is what is expected to be, return true', async function () {
+    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils', {
+      'fs-extra': {
+        // Mock fs.stat() to return size of 1 (non-empty)
+        stat: async () => {
+          return { size: 1 }
+        }
+      },
+      '@audius/sdk': {
+        libs: {
+          Utils: {
+            fileHasher: {
+              // Mock libs fn to return the same cid
+              generateNonImageCid: async () => {
+                return DUMMY_NON_EMPTY_CID_1
+              }
+            }
+          }
+        }
+      }
+    })
+
+    assert.deepStrictEqual(
+      await UtilsWithMockFsAndMockLibs.verifyCIDIsProper({
+        cid: DUMMY_NON_EMPTY_CID_1,
+        path: '/some/path',
+        logger: genericLogger
+      }),
+      true
+    )
   })
 })
