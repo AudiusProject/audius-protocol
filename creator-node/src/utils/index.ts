@@ -1,24 +1,62 @@
-export type { ReplicaSet } from './strToReplicaSet'
-export { strToReplicaSet } from './strToReplicaSet'
-export { timeout, getRandomInt, verifySignature } from './utils'
-export {
+import { strToReplicaSet } from './strToReplicaSet'
+import { timeout, getRandomInt, verifySignature } from './utils'
+import {
   validateMetadata,
   validateAssociatedWallets
 } from './validateAudiusUserMetadata'
-export {
+import {
   findCIDInNetwork,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID
 } from './cidUtils'
-export {
+import {
   createDirForFile,
   writeStreamToFileSystem,
   getIfAttemptedStateFix,
   validateStateForImageDirCIDAndReturnFileUUID,
   _streamFileToDiskHelper
 } from './fsUtils'
-export { runShellCommand } from './runShellCommand'
-export {
+import { runShellCommand } from './runShellCommand'
+import {
   currentNodeShouldHandleTranscode,
   getAllRegisteredCNodes
 } from './contentNodeUtils'
+
+export type { ReplicaSet } from './strToReplicaSet'
+export {
+  timeout,
+  getRandomInt,
+  verifySignature,
+  currentNodeShouldHandleTranscode,
+  validateStateForImageDirCIDAndReturnFileUUID,
+  findCIDInNetwork,
+  getAllRegisteredCNodes,
+  getIfAttemptedStateFix,
+  createDirForFile,
+  writeStreamToFileSystem,
+  _streamFileToDiskHelper,
+  runShellCommand,
+  validateAssociatedWallets,
+  validateMetadata,
+  strToReplicaSet
+}
+
+module.exports = {
+  timeout,
+  getRandomInt,
+  verifySignature,
+  currentNodeShouldHandleTranscode,
+  validateStateForImageDirCIDAndReturnFileUUID,
+  findCIDInNetwork,
+  getAllRegisteredCNodes,
+  getIfAttemptedStateFix,
+  createDirForFile,
+  writeStreamToFileSystem,
+  _streamFileToDiskHelper,
+  runShellCommand,
+  validateAssociatedWallets,
+  validateMetadata,
+  strToReplicaSet,
+  verifyCIDMatchesExpected,
+  EMPTY_FILE_CID
+}
