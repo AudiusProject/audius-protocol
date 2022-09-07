@@ -88,6 +88,12 @@ export const setupTracing = () => {
         // Adds a hook to logs that injects more span info
         // and the service name into logs
         logHook: (span, record) => {
+          // @ts-ignore
+          record['resource.span.name'] = span.name
+          // @ts-ignore
+          record['resource.span.links'] = span.links
+          // @ts-ignore
+          record['resource.span.attributed'] = span.attributes
           record['resource.service.name'] =
             provider.resource.attributes['service.name']
           record['resource.service.spid'] = SPID
