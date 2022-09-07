@@ -12,6 +12,7 @@ import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
+import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
 
 const _: LoDashStatic = require('lodash')
@@ -20,7 +21,6 @@ const config = require('../../../config')
 const {
   METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
-const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const { makeGaugeIncToRecord } = require('../stateMachineUtils')
 const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
 const {
@@ -68,6 +68,7 @@ async function findSyncRequests({
 > {
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
   const metricsToRecord = []
+  const cNodeEndpointToSpIdMap = await getMapOfCNodeEndpointToSpId(logger)
 
   // mapping ( syncMode => mapping ( result => count ) )
   const outcomeCountsMap: OutcomeCountsMap = {}
@@ -101,7 +102,8 @@ async function findSyncRequests({
       userSecondarySyncMetrics,
       minSecondaryUserSyncSuccessPercent,
       minFailedSyncRequestsBeforeReconfig,
-      replicaToAllUserInfoMaps
+      replicaToAllUserInfoMaps,
+      cNodeEndpointToSpIdMap
     )
 
     if (userSyncReqsToEnqueue?.length) {
@@ -170,6 +172,7 @@ async function findSyncRequests({
  * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
  * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
  * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock value, filesHash }))
+ * @param {Map<string, number>} cNodeEndpointToSpIdMap map of cnode endpoints to SP IDs
  */
 async function _findSyncsForUser(
   user: StateMonitoringUser,
@@ -179,7 +182,8 @@ async function _findSyncsForUser(
   },
   minSecondaryUserSyncSuccessPercent: number,
   minFailedSyncRequestsBeforeReconfig: number,
-  replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
+  replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps,
+  cNodeEndpointToSpIdMap: Map<string, number>
 ): Promise<FindSyncsForUserResult> {
   const {
     wallet,
@@ -232,10 +236,8 @@ async function _findSyncsForUser(
     }
 
     // Secondary is unhealthy if its spID is mismatched -- don't sync to it
-    if (
-      ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[secondary] !==
-      secondaryInfo.spId
-    ) {
+    const spIdFromChain = cNodeEndpointToSpIdMap.get(secondary)
+    if (spIdFromChain !== secondaryInfo.spId) {
       outcomesBySecondary[secondary].result = 'no_sync_sp_id_mismatch'
       continue
     }

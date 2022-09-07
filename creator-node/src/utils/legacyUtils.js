@@ -355,6 +355,10 @@ export function currentNodeShouldHandleTranscode({
   return currentNodeShouldHandleTranscode
 }
 
+export function stringifyMap(map) {
+  return JSON.stringify(Array.from(map.entries()))
+}
+
 module.exports.timeout = timeout
 module.exports.verifySignature = verifySignature
 module.exports.getRandomInt = getRandomInt
@@ -366,3 +370,4 @@ module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
 module.exports.currentNodeShouldHandleTranscode =
   currentNodeShouldHandleTranscode
+module.exports.stringifyMap = stringifyMap

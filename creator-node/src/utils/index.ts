@@ -12,7 +12,8 @@ import {
   createDirForFile,
   writeStreamToFileSystem,
   _streamFileToDiskHelper,
-  runShellCommand
+  runShellCommand,
+  stringifyMap
 } from './legacyUtils'
 import {
   validateMetadata,
@@ -35,7 +36,8 @@ export {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
-  strToReplicaSet
+  strToReplicaSet,
+  stringifyMap
 }
 
 module.exports = {
@@ -53,5 +55,6 @@ module.exports = {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
-  strToReplicaSet
+  strToReplicaSet,
+  stringifyMap
 }

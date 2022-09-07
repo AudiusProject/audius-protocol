@@ -4,10 +4,11 @@ import type {
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
 
+import { getContentNodeInfoFromSpId } from '../ContentNodeInfoManager'
+
 const _ = require('lodash')
 
 const { logger: genericLogger } = require('../../logging')
-const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
 const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
 
 const asyncRetry = require('../../utils/asyncRetry')
@@ -75,8 +76,9 @@ const shouldForceResync = async (
       },
       logLabel: 'shouldForceResync'
     })
-    const { delegateOwnerWallet: actualPrimaryWallet } =
-      ContentNodeInfoManager.getContentNodeInfoFromSpId(userPrimaryId)
+    const primaryInfo = await getContentNodeInfoFromSpId(logger, userPrimaryId)
+    if (primaryInfo === undefined) return false
+    const { delegateOwnerWallet: actualPrimaryWallet } = primaryInfo
 
     logger.debug(
       `shouldForceResync wallets actual: ${actualPrimaryWallet} recovered: ${recoveredPrimaryWallet}`
@@ -88,7 +90,7 @@ const shouldForceResync = async (
     )
   } catch (e: any) {
     logger.error(
-      `shouldForceResync Could not verify primary delegate owner key: ${e.message}`
+      `shouldForceResync Could not verify primary delegate owner key: ${e.message}: ${e.stack}`
     )
   }
 
