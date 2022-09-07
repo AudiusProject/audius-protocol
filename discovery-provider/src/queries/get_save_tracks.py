@@ -1,6 +1,6 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import asc, desc, or_, func
+from sqlalchemy import asc, desc, func, or_
 from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.save import Save, SaveType
