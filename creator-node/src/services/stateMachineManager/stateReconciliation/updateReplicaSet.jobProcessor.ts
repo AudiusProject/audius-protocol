@@ -601,8 +601,9 @@ const _issueUpdateReplicaSetOp = async (
      * TODO: Remove this after rollout. This is an extra gating condition that only applies to primary reconfigs:
      * ONLY issue reconfigs of primaries when the cause of the reconfig is that the primary endpoint was deregistered or changed.
      */
-    const primaryExistsOnChain =
-      ContentNodeInfoManager.getCNodeEndpointToSpIdMap().hasOwnProperty(primary)
+    const primaryExistsOnChain = await getMapOfCNodeEndpointToSpId(
+      logger
+    ).hasOwnProperty(primary)
     const isPrimaryReconfig =
       reconfigType === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES
     const shouldSkipPrimaryReconfig = isPrimaryReconfig && primaryExistsOnChain
