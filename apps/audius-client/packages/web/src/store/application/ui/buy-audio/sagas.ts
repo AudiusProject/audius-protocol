@@ -453,6 +453,16 @@ function* startBuyAudioFlow({
       feePayerKeypairs: [rootAccount],
       skipPreflight: true
     })
+    const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+    yield* call(remoteConfigInstance.waitForRemoteConfig)
+    const retryDelay =
+      remoteConfigInstance.getRemoteVar(
+        IntKeys.BUY_AUDIO_WALLET_POLL_DELAY_MS
+      ) ?? undefined
+    const maxRetryCount =
+      remoteConfigInstance.getRemoteVar(
+        IntKeys.BUY_AUDIO_WALLET_POLL_MAX_RETRIES
+      ) ?? undefined
 
     // Ensure userbank is created
     yield* fork(function* () {
@@ -484,7 +494,9 @@ function* startBuyAudioFlow({
     // Wait for the SOL funds to come through
     const newBalance = yield* call(pollForSolBalanceChange, {
       rootAccount: rootAccount.publicKey,
-      initialBalance
+      initialBalance,
+      retryDelay,
+      maxRetryCount
     })
 
     // Get the purchase transaction
@@ -579,7 +591,9 @@ function* startBuyAudioFlow({
     // Wait for AUDIO funds to come through
     const transferAmount = yield* call(pollForAudioBalanceChange, {
       tokenAccount,
-      initialBalance: beforeSwapAudioBalance
+      initialBalance: beforeSwapAudioBalance,
+      retryDelay,
+      maxRetryCount
     })
 
     // Transfer AUDIO to userbank

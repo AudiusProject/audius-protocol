@@ -57,6 +57,7 @@ export const BuyAudioModal = () => {
   const [isOpen, setIsOpen] = useModalState('BuyAudio')
   const stage = useSelector(getBuyAudioFlowStage)
   const currentPage = stageToPage(stage)
+  const inProgress = currentPage === 1
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -73,8 +74,9 @@ export const BuyAudioModal = () => {
       onClose={handleClose}
       onClosed={handleClosed}
       bodyClassName={styles.modal}
+      dismissOnClickOutside={!inProgress}
     >
-      <ModalHeader onClose={handleClose}>
+      <ModalHeader onClose={handleClose} showDismissButton={!inProgress}>
         <ModalTitle title={messages.buyAudio} icon={<IconGoldBadge />} />
       </ModalHeader>
       <ModalContentPages

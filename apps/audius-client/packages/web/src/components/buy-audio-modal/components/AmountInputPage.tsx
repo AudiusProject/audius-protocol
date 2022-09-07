@@ -1,7 +1,9 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
-import { buyAudioActions, buyAudioSelectors } from '@audius/common'
+import { buyAudioActions, buyAudioSelectors, StringKeys } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
+
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import styles from './AmountInputPage.module.css'
 import { AudioAmountPicker } from './AudioAmountPicker'
@@ -18,6 +20,7 @@ const messages = {
 export const AmountInputPage = () => {
   const dispatch = useDispatch()
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
+  const presetAmountsConfig = useRemoteVar(StringKeys.BUY_AUDIO_PRESET_AMOUNTS)
 
   const handleAmountChange = useCallback(
     (amount) => {
@@ -33,10 +36,14 @@ export const AmountInputPage = () => {
     [dispatch]
   )
 
+  const presetAmounts = useMemo(() => {
+    return presetAmountsConfig.split(',').map((amount) => amount.trim())
+  }, [presetAmountsConfig])
+
   return (
     <div className={styles.inputPage}>
       <AudioAmountPicker
-        presetAmounts={['5', '10', '25', '50', '100']}
+        presetAmounts={presetAmounts}
         onAmountChanged={handleAmountChange}
       />
       <PurchaseQuote />

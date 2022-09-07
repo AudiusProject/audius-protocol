@@ -1,10 +1,21 @@
-.iconButton {
-  display: flex;
+.link {
+  transition: color var(--quick);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
 }
-.iconButton svg {
-  width: 16px;
-  height: 16px;
+.link svg {
+  width: 1em;
+  height: 1em;
 }
-.iconButton path {
+.link svg path {
+  transition: fill var(--quick);
   fill: var(--neutral-light-4);
+}
+.link:hover {
+  color: var(--secondary);
+}
+.link:hover svg path {
+  fill: var(--secondary);
 }
