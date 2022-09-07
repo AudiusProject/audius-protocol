@@ -742,7 +742,7 @@ const config = convict({
     doc: 'the url for the OpenTelemetry collector',
     format: String,
     env: 'otelCollectorUrl',
-    default: 'http://opentelemetry-collector.audius.co/v1/traces'
+    default: ''
   }
   /**
    * unsupported options at the moment
