@@ -31,7 +31,6 @@
 
 .usersContainer {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   font-size: var(--font-s);
   column-gap: 10px;
@@ -47,6 +46,7 @@
 }
 .profilePicture {
   cursor: pointer;
+  border: 1px solid var(--neutral-light-8);
 }
 .name {
   display: flex;
