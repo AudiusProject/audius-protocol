@@ -12,7 +12,9 @@ describe('test asyncRetry', function () {
           }
 
           throw new Error(`Test ${num}`)
-        }
+        },
+        minTimeout: 0,
+        maxTimeout: 100
       })
     } catch (e) {
       assert.deepStrictEqual(e.message, 'Will not retry after 3 retries')
