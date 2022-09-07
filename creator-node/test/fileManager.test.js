@@ -133,7 +133,11 @@ describe('test fileManager', () => {
 
         // Last stage should be successful
         const successStage = decisionTree.tree[decisionTree.tree.length - 1]
-        assert.ok(successStage.name.includes('Found file from target gateway'))
+        assert.ok(
+          successStage.name.includes(
+            'Successfully fetched CID from target gateway'
+          )
+        )
       } catch (e) {
         // Should not have thrown bc file was found in target gateways
         assert.fail(e.message)
@@ -192,7 +196,11 @@ describe('test fileManager', () => {
 
         // Last stage should be successful
         const successStage = decisionTree.tree[decisionTree.tree.length - 1]
-        assert.ok(successStage.name.includes('Found file from target gateway'))
+        assert.ok(
+          successStage.name.includes(
+            'Successfully fetched CID from target gateway'
+          )
+        )
       } catch (e) {
         // Should not have thrown bc file was found in target gateways
         assert.fail(e.message)
@@ -264,7 +272,11 @@ describe('test fileManager', () => {
 
         // Last stage should be successful
         const successStage = decisionTree.tree[decisionTree.tree.length - 1]
-        assert.ok(successStage.name.includes('Found file from target gateway'))
+        assert.ok(
+          successStage.name.includes(
+            'Successfully fetched CID from target gateway'
+          )
+        )
       } catch (e) {
         // Should not have thrown bc file was found in target gateways
         assert.fail(e.message)
@@ -337,7 +349,11 @@ describe('test fileManager', () => {
 
         // Last stage should be successful
         const successStage = decisionTree.tree[decisionTree.tree.length - 1]
-        assert.ok(successStage.name.includes('Found file from target gateway'))
+        assert.ok(
+          successStage.name.includes(
+            'Successfully fetched CID from target gateway'
+          )
+        )
       } catch (e) {
         // Should not have thrown bc file was found in target gateways
         assert.fail(e.message)
