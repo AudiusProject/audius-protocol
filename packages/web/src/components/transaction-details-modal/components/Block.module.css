@@ -29,6 +29,10 @@
   color: var(--neutral-light-4);
 }
 
+.blockHeader svg path {
+  fill: var(--neutral-light-4);
+}
+
 .blockContent {
   display: flex;
   align-items: center;

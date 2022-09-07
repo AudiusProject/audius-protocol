@@ -26,7 +26,9 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS]: 1000,
   [IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_TIMEOUT_MS]: 10000,
   [IntKeys.MIN_AUDIO_PURCHASE_AMOUNT]: 5,
-  [IntKeys.MAX_AUDIO_PURCHASE_AMOUNT]: 999
+  [IntKeys.MAX_AUDIO_PURCHASE_AMOUNT]: 999,
+  [IntKeys.BUY_AUDIO_WALLET_POLL_DELAY_MS]: 1000,
+  [IntKeys.BUY_AUDIO_WALLET_POLL_MAX_RETRIES]: 120
 }
 
 export const remoteConfigStringDefaults: {
@@ -60,7 +62,8 @@ export const remoteConfigStringDefaults: {
   [StringKeys.ORACLE_ETH_ADDRESS]: null,
   [StringKeys.ORACLE_ENDPOINT]: null,
   [StringKeys.REWARDS_ATTESTATION_ENDPOINTS]: null,
-  [StringKeys.MIN_APP_VERSION]: '1.0.0'
+  [StringKeys.MIN_APP_VERSION]: '1.0.0',
+  [StringKeys.BUY_AUDIO_PRESET_AMOUNTS]: '5,10,25,50,100'
 }
 export const remoteConfigDoubleDefaults: {
   [key in DoubleKeys]: number | null
