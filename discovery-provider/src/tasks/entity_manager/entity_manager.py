@@ -23,7 +23,6 @@ from src.tasks.entity_manager.social_features import (
     action_to_record_type,
     create_social_action_types,
     create_social_record,
-    create_social_record_if_access,
     delete_social_action_types,
     delete_social_record,
 )
