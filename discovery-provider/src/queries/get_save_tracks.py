@@ -1,7 +1,7 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy.sql.functions import coalesce
 from sqlalchemy import asc, desc, or_, func
+from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.save import Save, SaveType
 from src.models.tracks.aggregate_track import AggregateTrack
