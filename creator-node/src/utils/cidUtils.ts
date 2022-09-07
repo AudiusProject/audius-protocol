@@ -5,7 +5,7 @@ import axios from 'axios'
 import config from '../config'
 import { generateTimestampAndSignature } from '../apiSigning'
 import { libs } from '@audius/sdk'
-import { getAllRegisteredCNodes } from './cnodeUtils'
+import { getAllRegisteredCNodes } from './contentNodeUtils'
 import { getIfAttemptedStateFix, writeStreamToFileSystem } from './fsUtils'
 
 const DecisionTree = require('./decisionTree')

@@ -21,7 +21,7 @@ import { runShellCommand } from './runShellCommand'
 import {
   currentNodeShouldHandleTranscode,
   getAllRegisteredCNodes
-} from './cnodeUtils'
+} from './contentNodeUtils'
 
 export type { ReplicaSet }
 export {
