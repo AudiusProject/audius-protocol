@@ -4,7 +4,7 @@ const web3 = new Web3()
 /**
  * Validates that the user id was signed by the associated wallets
  */
-const validateAssociatedWallets = (metadataJSON) => {
+export const validateAssociatedWallets = (metadataJSON) => {
   if ('user_id' in metadataJSON && 'associated_wallets' in metadataJSON) {
     const userId = metadataJSON.user_id
     const walletMappings = metadataJSON.associated_wallets
@@ -26,7 +26,7 @@ const validateAssociatedWallets = (metadataJSON) => {
   return true
 }
 
-const validateMetadata = (req, metadataJSON) => {
+export const validateMetadata = (req, metadataJSON) => {
   // Check associated wallets
   if (typeof metadataJSON !== 'object' || metadataJSON === null) {
     return false
@@ -38,6 +38,3 @@ const validateMetadata = (req, metadataJSON) => {
   // TODO: Add more validation checks
   return true
 }
-
-module.exports = validateMetadata
-module.exports.validateAssociatedWallets = validateAssociatedWallets

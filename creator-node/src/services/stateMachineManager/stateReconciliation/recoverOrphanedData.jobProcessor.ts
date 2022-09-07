@@ -353,4 +353,3 @@ async function recoverOrphanedData(
 }
 
 export default recoverOrphanedData
-module.exports = recoverOrphanedData

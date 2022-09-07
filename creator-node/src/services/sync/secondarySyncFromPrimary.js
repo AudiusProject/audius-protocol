@@ -10,7 +10,6 @@ const {
 } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 const { instrumentTracing, tracing } = require('../../tracer')
 const { fetchExportFromNode } = require('./syncUtil')
@@ -22,25 +21,16 @@ const handleSyncFromPrimary = async ({
   forceResyncConfig,
   forceWipe,
   logContext,
+  secondarySyncFromPrimaryLogger,
   blockNumber = null
 }) => {
   const { nodeConfig, redis, libs } = serviceRegistry
   const FileSaveMaxConcurrency = nodeConfig.get(
     'nodeSyncFileSaveMaxConcurrency'
   )
-  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
-    'syncRequestMaxUserFailureCountBeforeSkip'
-  )
   const thisContentNodeEndpoint = nodeConfig.get('creatorNodeEndpoint')
 
-  const start = Date.now()
-
-  const logger = createChildLogger(genericLogger, {
-    wallet,
-    sync: 'secondarySyncFromPrimary',
-    primary: creatorNodeEndpoint
-  })
-  logger.info('begin nodesync', 'time', start)
+  const logger = secondarySyncFromPrimaryLogger
 
   let returnValue = {}
   try {
@@ -464,45 +454,6 @@ const handleSyncFromPrimary = async ({
       logger.info('Saved all non-track files to disk.')
 
       /**
-       * Handle scenario where failed to retrieve/save > 0 CIDs
-       * Reject sync if number of failures for user is below threshold, else proceed and mark unretrieved files as skipped
-       */
-      const numCIDsThatFailedSaveFileOp = CIDsThatFailedSaveFileOp.size
-      if (numCIDsThatFailedSaveFileOp > 0) {
-        const userSyncFailureCount =
-          await UserSyncFailureCountService.incrementFailureCount(
-            fetchedWalletPublicKey
-          )
-
-        // Throw error if failure threshold not yet reached
-        if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
-          const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
-          logger.error(errorMsg)
-          returnValue = {
-            error: new Error(errorMsg),
-            result: 'failure_skip_threshold_not_reached'
-          }
-          throw returnValue.error
-
-          // If max failure threshold reached, continue with sync and reset failure count
-        } else {
-          // Reset falure count so subsequent user syncs will not always succeed & skip
-          await UserSyncFailureCountService.resetFailureCount(
-            fetchedWalletPublicKey
-          )
-
-          logger.info(
-            `User Sync continuing with ${numCIDsThatFailedSaveFileOp} skipped files, since SyncRequestMaxUserFailureCountBeforeSkip (${SyncRequestMaxUserFailureCountBeforeSkip}) reached.`
-          )
-        }
-      } else {
-        // Reset failure count if all files were successfully saved
-        await UserSyncFailureCountService.resetFailureCount(
-          fetchedWalletPublicKey
-        )
-      }
-
-      /**
        * Write all records to DB
        */
 
@@ -565,17 +516,13 @@ const handleSyncFromPrimary = async ({
       await transaction.commit()
 
       logger.info(
-        `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${numCIDsThatFailedSaveFileOp} skipped.`
+        `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
       // track that sync for this user was successful
       await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
 
-      logger.info(
-        `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
-          Date.now() - start
-        }. From endpoint ${creatorNodeEndpoint}.`
-      )
+      // for final log check the _secondarySyncFromPrimary function
 
       return { result: 'success' }
     } catch (e) {
@@ -609,13 +556,8 @@ const handleSyncFromPrimary = async ({
   } catch (e) {
     tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
-    logger.error(
-      `Sync complete for wallet: ${wallet}. Status: Error, message: ${
-        e.message
-      }. Duration sync: ${
-        Date.now() - start
-      }. From endpoint ${creatorNodeEndpoint}.`
-    )
+
+    // for final log check the _secondarySyncFromPrimary function
 
     return _.isEmpty(returnValue)
       ? {
@@ -669,6 +611,16 @@ async function _secondarySyncFromPrimary({
   if (forceResyncConfig?.forceResync) mode = 'force_resync'
   if (forceWipe) mode = 'force_wipe'
 
+  const start = Date.now()
+
+  const secondarySyncFromPrimaryLogger = createChildLogger(genericLogger, {
+    wallet,
+    sync: 'secondarySyncFromPrimary',
+    primary: creatorNodeEndpoint
+  })
+
+  secondarySyncFromPrimaryLogger.info('begin nodesync', 'time', start)
+
   const { error, result } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
@@ -676,14 +628,28 @@ async function _secondarySyncFromPrimary({
     blockNumber,
     forceResyncConfig,
     forceWipe,
-    logContext
+    logContext,
+    secondarySyncFromPrimaryLogger
   })
   metricEndTimerFn({ result, mode })
   tracing.setSpanAttribute('result', result)
   tracing.setSpanAttribute('mode', mode)
 
   if (error) {
+    secondarySyncFromPrimaryLogger.error(
+      `Sync complete for wallet: ${wallet}. Status: Error, message: ${
+        error.message
+      }. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
+    )
     throw new Error(error)
+  } else {
+    secondarySyncFromPrimaryLogger.info(
+      `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
+    )
   }
 
   return { result }
