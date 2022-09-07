@@ -13,7 +13,7 @@ const config = require('../src/config')
 const models = require('../src/models')
 const { getApp, getServiceRegistryMock } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const libsMock = getLibsMock()
+
 const {
   createStarterCNodeUser,
   testEthereumConstants,
@@ -25,6 +25,8 @@ const sessionManager = require('../src/sessionManager')
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
+
+const { saveFileForMultihashToFS } = require('../src/fileManager')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -48,6 +50,8 @@ const sampleExportDummyCIDFromClock2Path = path.resolve(
   __dirname,
   'syncAssets/sampleExportDummyCIDFromClock2.json'
 )
+
+const libsMock = getLibsMock()
 
 describe('Test secondarySyncFromPrimary()', async function () {
   let server, app, mockServiceRegistry, userId
@@ -1349,9 +1353,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
         clockRecords: exportedClockRecords
       } = unpackSampleExportData(sampleExportDummyCIDPath)
 
-      const numUniqueCIDs = new Set(exportedFiles.map((file) => file.multihash))
-        .size
-
       setupMocks(sampleExport, false)
 
       nock(MOCK_CN1)
@@ -1381,19 +1382,35 @@ describe('Test secondarySyncFromPrimary()', async function () {
         )
         .reply(404)
 
-      const SyncRequestMaxUserFailureCountBeforeSkip = 3
-      config.set(
-        'syncRequestMaxUserFailureCountBeforeSkip',
-        SyncRequestMaxUserFailureCountBeforeSkip
-      )
-
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
-          './../../config': config,
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          },
+          '../../fileManager': {
+            saveFileForMultihashToFS: async function (
+              libs,
+              logger,
+              multihash,
+              expectedStoragePath,
+              targetGateways,
+              fileNameForImage = null,
+              trackId = null
+            ) {
+              return saveFileForMultihashToFS(
+                libs,
+                logger,
+                multihash,
+                expectedStoragePath,
+                targetGateways,
+                fileNameForImage,
+                trackId,
+                // Disable retries for testing purposes
+                0 /* numRetries */
+              )
+            }
           }
         }
       )
@@ -1401,24 +1418,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
       // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
-
-      // Ensure secondarySyncFromPrimary() fails until SyncRequestMaxUserFailureCountBeforeSkip reached
-      for (let i = 1; i < SyncRequestMaxUserFailureCountBeforeSkip; i++) {
-        await expect(
-          secondarySyncFromPrimaryMock({
-            serviceRegistry: serviceRegistryMock,
-            wallet: userWallets[0],
-            creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY
-          })
-        )
-          .to.eventually.be.rejectedWith(
-            `Error: User Sync failed due to ${numUniqueCIDs} failing saveFileForMultihashToFS op. userSyncFailureCount = ${i} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
-          )
-          .and.be.an.instanceOf(Error)
-
-        // Ensure no user data created
-        assert.strictEqual(await models.CNodeUser.count(), 0)
-      }
 
       // Ensure secondarySyncFromPrimary() succeeds after threshold reached
       const result = await secondarySyncFromPrimaryMock({
@@ -1471,7 +1470,6 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   const SP_ID_1 = 1
   const USER_1_WALLET = DUMMY_WALLET
   const USER_1_BLOCKNUMBER = DUMMY_CNODEUSER_BLOCKNUMBER
-  const SyncRequestMaxUserFailureCountBeforeSkip = 3
 
   const assetsDirPath = path.resolve(__dirname, 'sync/assets')
   const exportFilePath = path.resolve(assetsDirPath, 'realExport.json')
@@ -1747,10 +1745,6 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     server = appInfo.server
     app = appInfo.app
 
-    config.set(
-      'syncRequestMaxUserFailureCountBeforeSkip',
-      SyncRequestMaxUserFailureCountBeforeSkip
-    )
     originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
     config.set('creatorNodeEndpoint', NODES.CN1)
 
@@ -2213,9 +2207,6 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       clockRecords: exportedClockRecords
     } = unpackExportDataFromFile(exportFilePath)
 
-    const numUniqueCIDs = new Set(exportedFiles.map((file) => file.multihash))
-      .size
-
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks(false)
 
@@ -2225,7 +2216,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
 
-    // Mock that fetching any content via /file_lookup is unavailables
+    // Mock that fetching any content via /file_lookup is unavailable
     nock(MOCK_CN2)
       .persist()
       .get('/file_lookup')
@@ -2250,18 +2241,37 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       })
       .reply(404)
 
-    // Ensure primarySyncFromSecondary() fails until SyncRequestMaxUserFailureCountBeforeSkip reached
-    for (let i = 1; i < SyncRequestMaxUserFailureCountBeforeSkip; i++) {
-      const error = await primarySyncFromSecondaryStub({
-        secondary: SECONDARY,
-        wallet: USER_1_WALLET,
-        selfEndpoint: SELF
-      })
-      assert.deepStrictEqual(
-        error.message,
-        `[saveFilesToDisk] Failed to save ${numUniqueCIDs} files to disk. Cannot proceed because UserSyncFailureCount = ${i} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    }
+    primarySyncFromSecondaryStub = proxyquire(
+      '../src/services/sync/primarySyncFromSecondary',
+      {
+        '../../serviceRegistry': { serviceRegistry: serviceRegistryMock },
+        '../initAudiusLibs': async () => libsMock,
+        './../../config': config,
+        '../../fileManager': {
+          saveFileForMultihashToFS: async function (
+            libs,
+            logger,
+            multihash,
+            expectedStoragePath,
+            targetGateways,
+            fileNameForImage = null,
+            trackId = null
+          ) {
+            return saveFileForMultihashToFS(
+              libs,
+              logger,
+              multihash,
+              expectedStoragePath,
+              targetGateways,
+              fileNameForImage,
+              trackId,
+              // Disable retries for testing purposes
+              0 /* numRetries */
+            )
+          }
+        }
+      }
+    )
 
     const error = await primarySyncFromSecondaryStub({
       secondary: SECONDARY,
