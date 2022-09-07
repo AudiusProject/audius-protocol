@@ -1,6 +1,5 @@
 import {
   Kind,
-  USER_ID_AVAILABLE_EVENT,
   accountSelectors,
   accountActions,
   cacheActions,
@@ -248,11 +247,8 @@ export function* fetchAccountAsync(action) {
     return
   }
 
-  // Set account ID and let remote-config provider
-  // know that the user id is available
+  // Set the userId in the remoteConfigInstance
   remoteConfigInstance.setUserId(account.user_id)
-  const event = new CustomEvent(USER_ID_AVAILABLE_EVENT)
-  window.dispatchEvent(event)
 
   // Fire-and-forget fp identify
   const clientOrigin = isMobile() ? 'mobile' : isElectron() ? 'desktop' : 'web'
