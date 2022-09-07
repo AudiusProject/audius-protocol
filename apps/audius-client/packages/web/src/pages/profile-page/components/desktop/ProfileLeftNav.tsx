@@ -204,8 +204,8 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         ) : null}
         <SupportingList />
         <TopSupporters />
-        {isArtist ? <ProfileTags goToRoute={goToRoute} tags={tags} /> : null}
         <ProfileMutuals />
+        {isArtist ? <ProfileTags goToRoute={goToRoute} tags={tags} /> : null}
         {isOwner && !isArtist && (
           <UploadChip type='track' variant='nav' onClick={onClickUploadChip} />
         )}

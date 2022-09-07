@@ -19,6 +19,7 @@
   color: var(--neutral-light-2);
 
   padding: 32px;
+  margin-top: 32px;
 }
 
 .uploadChip:hover {
