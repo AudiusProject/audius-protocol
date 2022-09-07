@@ -1,5 +1,4 @@
 import { InAppAudioPurchaseMetadata, formatNumberString } from '@audius/common'
-import { IconButton } from '@audius/stems'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import {
@@ -31,17 +30,15 @@ export const TransactionPurchaseMetadata = ({
       </Block>
       <Block
         header={
-          <>
-            {messages.purchased}
-            <IconButton
-              className={styles.iconButton}
-              icon={<IconExternalLink />}
-              title={messages.viewOnExplorer}
-              aria-label={messages.viewOnExplorer}
-              href={`https://explorer.solana.com/tx/${metadata.purchaseTransactionId}`}
-              target='_blank'
-            />
-          </>
+          <a
+            className={styles.link}
+            href={`https://explorer.solana.com/tx/${metadata.purchaseTransactionId}`}
+            target='_blank'
+            title={messages.viewOnExplorer}
+            rel='noreferrer'
+          >
+            {messages.purchased} <IconExternalLink />
+          </a>
         }
       >
         <IconSOL />
@@ -49,17 +46,15 @@ export const TransactionPurchaseMetadata = ({
       </Block>
       <Block
         header={
-          <>
-            {messages.convertedTo}
-            <IconButton
-              className={styles.iconButton}
-              icon={<IconExternalLink />}
-              title={messages.viewOnExplorer}
-              aria-label={messages.viewOnExplorer}
-              href={`https://explorer.solana.com/tx/${metadata.swapTransactionId}`}
-              target='_blank'
-            />
-          </>
+          <a
+            className={styles.link}
+            href={`https://explorer.solana.com/tx/${metadata.swapTransactionId}`}
+            target='_blank'
+            title={messages.viewOnExplorer}
+            rel='noreferrer'
+          >
+            {messages.convertedTo} <IconExternalLink />
+          </a>
         }
       >
         <IconAUDIO />

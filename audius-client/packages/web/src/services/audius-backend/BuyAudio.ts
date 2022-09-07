@@ -18,11 +18,8 @@ import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 // @ts-ignore
 const libs = (): AudiusLibs => window.audiusLibs
 
-const TOKEN_ACCOUNT_POLL_MS = 5000
-const MAX_TOKEN_ACCOUNT_POLL_COUNT = 20
-
-const SOL_ACCOUNT_POLL_MS = 5000
-const MAX_SOL_ACCOUNT_POLL_COUNT = 20
+const DEFAULT_RETRY_DELAY = 1000
+const DEFAULT_MAX_RETRY_COUNT = 120
 
 const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
 const ATA_SIZE = 165 // Size allocated for an associated token account
@@ -121,10 +118,14 @@ export const getAudioAccountInfo = async ({
 
 export const pollForAudioBalanceChange = async ({
   tokenAccount,
-  initialBalance
+  initialBalance,
+  retryDelay = DEFAULT_RETRY_DELAY,
+  maxRetryCount = DEFAULT_MAX_RETRY_COUNT
 }: {
   tokenAccount: PublicKey
   initialBalance?: u64
+  retryDelay?: number
+  maxRetryCount?: number
 }) => {
   let retries = 0
   let tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
@@ -132,20 +133,20 @@ export const pollForAudioBalanceChange = async ({
     (!tokenAccountInfo ||
       initialBalance === undefined ||
       tokenAccountInfo.amount.eq(initialBalance)) &&
-    retries++ <= MAX_TOKEN_ACCOUNT_POLL_COUNT
+    retries++ < maxRetryCount
   ) {
     if (!tokenAccountInfo) {
       console.debug(
-        `AUDIO account not found. Retrying... ${retries}/${MAX_TOKEN_ACCOUNT_POLL_COUNT}`
+        `AUDIO account not found. Retrying... ${retries}/${maxRetryCount}`
       )
     } else if (initialBalance === undefined) {
       initialBalance = tokenAccountInfo.amount
     } else if (tokenAccountInfo.amount.eq(initialBalance)) {
       console.debug(
-        `Polling AUDIO balance (${initialBalance} === ${tokenAccountInfo.amount}) [${retries}/${MAX_TOKEN_ACCOUNT_POLL_COUNT}]`
+        `Polling AUDIO balance (${initialBalance} === ${tokenAccountInfo.amount}) [${retries}/${maxRetryCount}]`
       )
     }
-    await delay(TOKEN_ACCOUNT_POLL_MS)
+    await delay(retryDelay)
     tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
   }
   if (
@@ -165,10 +166,14 @@ export const pollForAudioBalanceChange = async ({
 
 export const pollForSolBalanceChange = async ({
   rootAccount,
-  initialBalance
+  initialBalance,
+  retryDelay = DEFAULT_RETRY_DELAY,
+  maxRetryCount = DEFAULT_MAX_RETRY_COUNT
 }: {
   rootAccount: PublicKey
   initialBalance?: number
+  retryDelay?: number
+  maxRetryCount?: number
 }) => {
   const connection = await getSolanaConnection()
   let balance = await connection.getBalance(rootAccount, 'finalized')
@@ -176,16 +181,13 @@ export const pollForSolBalanceChange = async ({
     initialBalance = balance
   }
   let retries = 0
-  while (
-    balance === initialBalance &&
-    retries++ <= MAX_SOL_ACCOUNT_POLL_COUNT
-  ) {
+  while (balance === initialBalance && retries++ < maxRetryCount) {
     console.debug(
       `Polling SOL balance (${initialBalance / LAMPORTS_PER_SOL} === ${
         balance / LAMPORTS_PER_SOL
-      }) [${retries}/${MAX_SOL_ACCOUNT_POLL_COUNT}]`
+      }) [${retries}/${maxRetryCount}]`
     )
-    await delay(SOL_ACCOUNT_POLL_MS)
+    await delay(retryDelay)
     balance = await connection.getBalance(rootAccount, 'finalized')
   }
   if (balance !== initialBalance) {
