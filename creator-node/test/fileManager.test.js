@@ -4,6 +4,7 @@ const uuid = require('uuid/v4')
 const fs = require('fs-extra')
 const path = require('path')
 const proxyquire = require('proxyquire')
+const nock = require('nock')
 
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
@@ -17,6 +18,8 @@ const config = require('../src/config')
 const models = require('../src/models')
 const { sortKeys } = require('../src/apiSigning')
 const DiskManager = require('../src/diskManager')
+const { getLibsMock } = require('./lib/libsMock')
+const DecisionTree = require('../src/utils/decisionTree')
 
 const storagePath = config.get('storagePath')
 
@@ -55,9 +58,435 @@ const metadata = {
 }
 const buffer = Buffer.from(JSON.stringify(metadata))
 
+const MOCK_CN1 = 'http://mock-cn1.audius.co'
+const MOCK_CN2 = 'http://mock-cn2.audius.co'
+const MOCK_CN3 = 'http://mock-cn3.audius.co'
+const MOCK_CN4 = 'http://mock-cn4.audius.co'
+const DUMMY_MULTIHASH = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+const PATH_TO_DUMMY_MULTIHASH = `some/path/${DUMMY_MULTIHASH}`
+
 describe('test fileManager', () => {
+  let libsMock
+
+  before(function () {
+    libsMock = getLibsMock()
+  })
+
   afterEach(function () {
     sinon.restore()
+  })
+
+  describe('test fetchFileFromNetworkAndWriteToDisk', function () {
+    beforeEach(function () {
+      nock.cleanAll()
+    })
+
+    it('If fetching content from all target gateways succeeds with 200, do not throw', async function () {
+      nock(MOCK_CN1)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN2)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN3)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN4)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      const { fetchFileFromNetworkAndWriteToDisk } = proxyquire(
+        '../src/fileManager',
+        {
+          './utils': {
+            writeStreamToFileSystem: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) =>
+                resolve('file stream successfully written')
+              )
+            }),
+            verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) => resolve(true))
+            })
+          }
+        }
+      )
+
+      try {
+        const decisionTree = new DecisionTree({
+          name: 'fetchFileFromNetworkAndWriteToDisk'
+        })
+        await fetchFileFromNetworkAndWriteToDisk({
+          libs: libsMock,
+          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+            (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
+          ),
+          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
+          multihash: DUMMY_MULTIHASH,
+          path: PATH_TO_DUMMY_MULTIHASH,
+          numRetries: 0,
+          logger: genericLogger,
+          decisionTree
+        })
+
+        // Last stage should be successful
+        const successStage = decisionTree.tree[decisionTree.tree.length - 1]
+        assert.ok(
+          successStage.name.includes(
+            'Successfully fetched CID from target gateway'
+          )
+        )
+      } catch (e) {
+        // Should not have thrown bc file was found in target gateways
+        assert.fail(e.message)
+      }
+    })
+
+    it('If fetching content from only 1 target gateway responds with 200, do not throw', async function () {
+      nock(MOCK_CN1)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(400)
+
+      nock(MOCK_CN2)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN3)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(400)
+
+      nock(MOCK_CN4)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(400)
+
+      const { fetchFileFromNetworkAndWriteToDisk } = proxyquire(
+        '../src/fileManager',
+        {
+          './utils': {
+            writeStreamToFileSystem: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) =>
+                resolve('file stream successfully written')
+              )
+            }),
+            verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) => resolve(true))
+            })
+          }
+        }
+      )
+
+      try {
+        const decisionTree = new DecisionTree({
+          name: 'fetchFileFromNetworkAndWriteToDisk'
+        })
+        await fetchFileFromNetworkAndWriteToDisk({
+          libs: libsMock,
+          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+            (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
+          ),
+          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
+          multihash: DUMMY_MULTIHASH,
+          path: PATH_TO_DUMMY_MULTIHASH,
+          numRetries: 0,
+          logger: genericLogger,
+          decisionTree
+        })
+
+        // Last stage should be successful
+        const successStage = decisionTree.tree[decisionTree.tree.length - 1]
+        assert.ok(
+          successStage.name.includes(
+            'Successfully fetched CID from target gateway'
+          )
+        )
+      } catch (e) {
+        // Should not have thrown bc file was found in target gateways
+        assert.fail(e.message)
+      }
+    })
+
+    it('If fetching content from target gateways fails writing to fs and on retry is successful, do not throw', async function () {
+      nock(MOCK_CN1)
+        .persist()
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN2)
+        .persist()
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN3)
+        .persist()
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN4)
+        .persist()
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      const { fetchFileFromNetworkAndWriteToDisk } = proxyquire(
+        '../src/fileManager',
+        {
+          './utils': {
+            writeStreamToFileSystem: sinon
+              .stub()
+              .onFirstCall()
+              .returns(
+                new Promise((resolve, reject) =>
+                  reject(new Error('failed to write stream to fs'))
+                )
+              )
+              .onSecondCall()
+              .returns(
+                new Promise((resolve, reject) =>
+                  resolve('file stream successfully written')
+                )
+              ),
+            verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) => resolve(true))
+            })
+          }
+        }
+      )
+
+      try {
+        const decisionTree = new DecisionTree({
+          name: 'fetchFileFromNetworkAndWriteToDisk'
+        })
+        await fetchFileFromNetworkAndWriteToDisk({
+          libs: libsMock,
+          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+            (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
+          ),
+          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
+          multihash: DUMMY_MULTIHASH,
+          path: PATH_TO_DUMMY_MULTIHASH,
+          numRetries: 1,
+          logger: genericLogger,
+          decisionTree
+        })
+
+        // Last stage should be successful
+        const successStage = decisionTree.tree[decisionTree.tree.length - 1]
+        assert.ok(
+          successStage.name.includes(
+            'Successfully fetched CID from target gateway'
+          )
+        )
+      } catch (e) {
+        // Should not have thrown bc file was found in target gateways
+        assert.fail(e.message)
+      }
+    })
+
+    it('If fetching content from target gateways leads to not an expected CID and on retry the CID matches, do not throw', async function () {
+      nock(MOCK_CN1)
+        .persist()
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN2)
+        .persist()
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN3)
+        .persist()
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      nock(MOCK_CN4)
+        .persist()
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(200)
+
+      const { fetchFileFromNetworkAndWriteToDisk } = proxyquire(
+        '../src/fileManager',
+        {
+          './utils': {
+            writeStreamToFileSystem: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) =>
+                resolve('file stream successfully written')
+              )
+            }),
+            verifyCIDMatchesExpected: sinon
+              .stub()
+              .onFirstCall()
+              .returns(new Promise((resolve, reject) => resolve(false)))
+              .onSecondCall()
+              .returns(new Promise((resolve, reject) => resolve(true)))
+          },
+          'fs-extra': {
+            unlink: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) => {
+                resolve('successfully removed file')
+              })
+            })
+          }
+        }
+      )
+
+      try {
+        const decisionTree = new DecisionTree({
+          name: 'fetchFileFromNetworkAndWriteToDisk'
+        })
+        await fetchFileFromNetworkAndWriteToDisk({
+          libs: libsMock,
+          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+            (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
+          ),
+          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
+          multihash: DUMMY_MULTIHASH,
+          path: PATH_TO_DUMMY_MULTIHASH,
+          numRetries: 1,
+          logger: genericLogger,
+          decisionTree
+        })
+
+        // Last stage should be successful
+        const successStage = decisionTree.tree[decisionTree.tree.length - 1]
+        assert.ok(
+          successStage.name.includes(
+            'Successfully fetched CID from target gateway'
+          )
+        )
+      } catch (e) {
+        // Should not have thrown bc file was found in target gateways
+        assert.fail(e.message)
+      }
+    })
+
+    it('If fetching content from target gateways fails but cid exists in network, do not throw', async function () {
+      nock(MOCK_CN1)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(401)
+
+      nock(MOCK_CN2)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(403)
+
+      nock(MOCK_CN3)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(400)
+
+      nock(MOCK_CN4)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(500)
+
+      const { fetchFileFromNetworkAndWriteToDisk } = proxyquire(
+        '../src/fileManager',
+        {
+          './utils': {
+            writeStreamToFileSystem: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) =>
+                resolve('file stream successfully written')
+              )
+            }),
+            verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) => resolve(true))
+            }),
+            findCIDInNetwork: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) => resolve(true))
+            })
+          }
+        }
+      )
+
+      try {
+        const decisionTree = new DecisionTree({
+          name: 'fetchFileFromNetworkAndWriteToDisk'
+        })
+        await fetchFileFromNetworkAndWriteToDisk({
+          libs: libsMock,
+          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+            (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
+          ),
+          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
+          multihash: DUMMY_MULTIHASH,
+          path: PATH_TO_DUMMY_MULTIHASH,
+          numRetries: 0,
+          logger: genericLogger,
+          decisionTree
+        })
+
+        // Last stage should be successful
+        const successStage = decisionTree.tree[decisionTree.tree.length - 1]
+        assert.ok(successStage.name.includes('Found file from network'))
+      } catch (e) {
+        // Should not have thrown bc file was found in network
+        assert.fail(e.message)
+      }
+    })
+
+    it('If fetching content from target gateways fails and cid does not exist in network, throw error', async function () {
+      nock(MOCK_CN1)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(401)
+
+      nock(MOCK_CN2)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(403)
+
+      nock(MOCK_CN3)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(400)
+
+      nock(MOCK_CN4)
+        .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
+        .reply(500)
+
+      const { fetchFileFromNetworkAndWriteToDisk } = proxyquire(
+        '../src/fileManager',
+        {
+          './utils': {
+            writeStreamToFileSystem: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) =>
+                resolve('file stream successfully written')
+              )
+            }),
+            verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) => resolve(true))
+            }),
+            findCIDInNetwork: sinon.stub().callsFake(() => {
+              return new Promise((resolve, reject) => resolve(false))
+            })
+          }
+        }
+      )
+
+      const decisionTree = new DecisionTree({
+        name: 'fetchFileFromNetworkAndWriteToDisk'
+      })
+      try {
+        await fetchFileFromNetworkAndWriteToDisk({
+          libs: libsMock,
+          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+            (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
+          ),
+          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
+          multihash: DUMMY_MULTIHASH,
+          path: PATH_TO_DUMMY_MULTIHASH,
+          numRetries: 0,
+          logger: genericLogger,
+          decisionTree
+        })
+
+        // Should have thrown bc file was found in network
+        assert.fail('Should have thrown if file is found in network')
+      } catch (e) {
+        // Last stage should be successful
+        const failedStage = decisionTree.tree[decisionTree.tree.length - 1]
+        assert.ok(
+          failedStage.name.includes(
+            `Failed to retrieve file for multihash ${DUMMY_MULTIHASH} after trying entire network`
+          )
+        )
+      }
+    })
   })
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ generateNonImageCid() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~

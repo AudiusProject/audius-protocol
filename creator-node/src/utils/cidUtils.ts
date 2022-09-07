@@ -8,6 +8,7 @@ import { libs } from '@audius/sdk'
 import { getAllRegisteredCNodes } from './cnodeUtils'
 import { getIfAttemptedStateFix, writeStreamToFileSystem } from './fsUtils'
 
+const DecisionTree = require('./decisionTree')
 const asyncRetry = require('./asyncRetry')
 const LibsUtils = libs.Utils
 
@@ -163,11 +164,13 @@ export async function findCIDInNetwork(
 export async function verifyCIDMatchesExpected({
   cid,
   path,
-  logger
+  logger,
+  decisionTree = null
 }: {
   cid: string
   path: string
   logger: Logger
+  decisionTree?: typeof DecisionTree | null
 }) {
   const fileSize = (await fs.stat(path)).size
   const fileIsEmpty = fileSize === 0
@@ -182,9 +185,19 @@ export async function verifyCIDMatchesExpected({
 
   const isCIDProper = cid === expectedCID
   if (!isCIDProper) {
-    logger.error(
-      `File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
-    )
+    if (decisionTree) {
+      decisionTree.recordStage({
+        name: "File contents and hash don't match",
+        data: {
+          inputCID: cid,
+          expectedCID
+        }
+      })
+    } else {
+      logger.error(
+        `File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+      )
+    }
   }
 
   return isCIDProper
