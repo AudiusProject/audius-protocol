@@ -77,7 +77,7 @@ describe('test updateReplicaSet job processor', function () {
   }) {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
-      .resolves(new Map(Object.entries(cNodeEndpointToSpIdMap)))
+      .returns(cNodeEndpointToSpIdMap)
     const updateReplicaSetStub = sandbox.stub().resolves()
     const autoSelectCreatorNodesStub = sandbox
       .stub()
@@ -90,13 +90,6 @@ describe('test updateReplicaSet job processor', function () {
         UserReplicaSetManagerClient: {
           updateReplicaSet: updateReplicaSetStub,
           _updateReplicaSet: updateReplicaSetStub
-        }
-      }
-    }
-    const contentNodeInfoManagerStub = {
-      ContentNodeInfoManager: (_) => {
-        return {
-          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
         }
       }
     }
@@ -118,7 +111,9 @@ describe('test updateReplicaSet job processor', function () {
           MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: maxSelectNewReplicaSetAttempts,
           QUEUE_NAMES
         },
-        '../../ContentNodeInfoManager': contentNodeInfoManagerStub
+        '../ContentNodeInfoManager': {
+          getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
+        }
       }
     )
   }

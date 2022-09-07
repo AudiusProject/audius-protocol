@@ -34,6 +34,18 @@ export type ReplicaSetNodesToUserWalletsMap = {
   [node: string]: string[]
 }
 
+// Fetch CNode To SP_ID Map job
+export type CNodeEndpointToSpIdMap = {
+  [endpoint: string]: number
+}
+export type FetchCNodeEndpointToSpIdMapJobParams = {
+  parentSpanContext?: SpanContext
+}
+export type FetchCNodeEndpointToSpIdMapJobReturnValue = {
+  cNodeEndpointToSpIdMap: any
+  errorMsg: string
+}
+
 // Monitor State job
 export type MonitorStateJobParams = {
   lastProcessedUserId: number
@@ -69,5 +81,5 @@ export type FindReplicaSetUpdateJobParams = {
   parentSpanContext?: SpanContext
 }
 export type FindReplicaSetUpdatesJobReturnValue = {
-  cNodeEndpointToSpIdMap: string
+  cNodeEndpointToSpIdMap: CNodeEndpointToSpIdMap
 }

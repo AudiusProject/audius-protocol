@@ -60,6 +60,7 @@ class ServiceRegistry {
     this.monitorStateQueue = null // Handles jobs for slicing batches of users and gathering data about them
     this.findSyncRequestsQueue = null // Handles jobs for finding sync requests
     this.findReplicaSetUpdatesQueue = null // Handles jobs for finding replica set updates
+    this.cNodeEndpointToSpIdMapQueue = null // Handles jobs for updating CNodeEndpointToSpIdMap
     this.manualSyncQueue = null // Handles jobs for issuing a manual sync request
     this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
     this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
@@ -188,6 +189,9 @@ class ServiceRegistry {
         monitorStateAdapter,
         findSyncRequestsAdapter,
         findReplicaSetUpdatesAdapter,
+        new BullAdapter(this.cNodeEndpointToSpIdMapQueue, {
+          readOnlyMode: true
+        }),
         new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
@@ -308,6 +312,7 @@ class ServiceRegistry {
       monitorStateQueue,
       findSyncRequestsQueue,
       findReplicaSetUpdatesQueue,
+      cNodeEndpointToSpIdMapQueue,
       manualSyncQueue,
       recurringSyncQueue,
       updateReplicaSetQueue,
@@ -316,6 +321,7 @@ class ServiceRegistry {
     this.monitorStateQueue = monitorStateQueue
     this.findSyncRequestsQueue = findSyncRequestsQueue
     this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
+    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
     this.manualSyncQueue = manualSyncQueue
     this.recurringSyncQueue = recurringSyncQueue
     this.updateReplicaSetQueue = updateReplicaSetQueue

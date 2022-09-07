@@ -60,21 +60,17 @@ describe('test findReplicaSetUpdates job processor', function () {
     }
   ]
 
-  const DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP = new Map(
-    Object.entries({
-      [primary]: primarySpID,
-      [secondary1]: secondary1SpID,
-      [secondary2]: secondary2SpID
-    })
-  )
+  const DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP = {
+    [primary]: primarySpID,
+    [secondary1]: secondary1SpID,
+    [secondary2]: secondary2SpID
+  }
 
-  const CNODE_ENDOINT_TO_SP_ID_MAP_WHERE_SECONDARY1_MISMATCHES = new Map(
-    Object.entries({
-      [primary]: primarySpID,
-      [secondary1]: secondary1SpID + 100,
-      [secondary2]: secondary2SpID
-    })
-  )
+  const CNODE_ENDOINT_TO_SP_ID_MAP_WHERE_SECONDARY1_MISMATCHES = {
+    [primary]: primarySpID,
+    [secondary1]: secondary1SpID + 100,
+    [secondary2]: secondary2SpID
+  }
 
   const DEFAULT_REPLICA_TO_USER_INFO_MAP = {
     [primary]: {
@@ -99,18 +95,8 @@ describe('test findReplicaSetUpdates job processor', function () {
 
   function getJobProcessorStub(
     isPrimaryHealthyStub,
-    getCNodeEndpointToSpIdMapStub,
-    getSerializedMapOfCNodeEndpointToSpIdStub
+    getCNodeEndpointToSpIdMapStub
   ) {
-    const contentNodeInfoManagerStub = {
-      ContentNodeInfoManager: (_) => {
-        return {
-          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub,
-          getSerializedMapOfCNodeEndpointToSpId:
-            getSerializedMapOfCNodeEndpointToSpIdStub
-        }
-      }
-    }
     return proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.ts',
       {
@@ -118,7 +104,9 @@ describe('test findReplicaSetUpdates job processor', function () {
         '../CNodeHealthManager': {
           isPrimaryHealthy: isPrimaryHealthyStub
         },
-        '../../ContentNodeInfoManager': contentNodeInfoManagerStub
+        '../ContentNodeInfoManager': {
+          getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
+        }
       }
     )
   }
@@ -131,18 +119,14 @@ describe('test findReplicaSetUpdates job processor', function () {
   }) {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
-      .resolves(cNodeEndpointToSpIdMap)
-    const getSerializedMapOfCNodeEndpointToSpIdStub = sandbox
-      .stub()
-      .resolves(JSON.stringify(Array.from(cNodeEndpointToSpIdMap).entries()))
+      .returns(cNodeEndpointToSpIdMap)
     const isPrimaryHealthyStub = sandbox
       .stub()
       .resolves(isPrimaryHealthyInExtraHealthCheck)
 
     const findReplicaSetUpdatesJobProcessor = getJobProcessorStub(
       isPrimaryHealthyStub,
-      getCNodeEndpointToSpIdMapStub,
-      getSerializedMapOfCNodeEndpointToSpIdStub
+      getCNodeEndpointToSpIdMapStub
     )
 
     // Verify job outputs the correct results: primary should be removed from replica set because it's unhealthy
@@ -162,12 +146,8 @@ describe('test findReplicaSetUpdates job processor', function () {
     const jobOutput = await runJobProcessor(jobProcessorArgs)
 
     expect(jobOutput.cNodeEndpointToSpIdMap).to.deep.equal(
-      JSON.stringify(
-        Array.from(
-          jobProcessorArgs?.cNodeEndpointToSpIdMap ||
-            DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
-        ).entries()
-      )
+      jobProcessorArgs?.cNodeEndpointToSpIdMap ||
+        DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
     )
 
     if (expectedUnhealthyReplicas?.length) {
