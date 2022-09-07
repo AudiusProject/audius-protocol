@@ -181,6 +181,7 @@ export async function verifyCIDMatchesExpected({
     return false
   }
 
+  // @ts-ignore
   const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(path)
 
   const isCIDProper = cid === expectedCID
