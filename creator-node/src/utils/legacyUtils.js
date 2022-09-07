@@ -412,10 +412,16 @@ export function currentNodeShouldHandleTranscode({
  * @param {Object} param
  * @param {string} param.cid target cid
  * @param {string} param.path the path at which the cid exists
+ * @param {Object} [param.decisionTree=null] an instance of the decisionTree
  * @param {Object} param.logger
  * @returns boolean if the cid is proper or not
  */
-export async function verifyCIDMatchesExpected({ cid, path, logger }) {
+export async function verifyCIDMatchesExpected({
+  cid,
+  path,
+  logger,
+  decisionTree = null
+}) {
   const fileSize = (await fs.stat(path)).size
   const fileIsEmpty = fileSize === 0
 
@@ -429,9 +435,19 @@ export async function verifyCIDMatchesExpected({ cid, path, logger }) {
 
   const isCIDProper = cid === expectedCID
   if (!isCIDProper) {
-    logger.error(
-      `File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
-    )
+    if (decisionTree) {
+      decisionTree.recordStage({
+        name: "File contents and hash don't match",
+        data: {
+          inputCID: cid,
+          expectedCID
+        }
+      })
+    } else {
+      logger.error(
+        `File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+      )
+    }
   }
 
   return isCIDProper

@@ -131,7 +131,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
 }) {
   // First try to fetch from other cnode gateways if user has non-empty replica set.
   decisionTree.recordStage({
-    name: 'About to race requests via gateways',
+    name: 'About to fetch content via gateways',
     data: { gatewayContentRoutes }
   })
 
@@ -164,7 +164,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
       })
 
       decisionTree.recordStage({
-        name: 'Found file from target gateway',
+        name: 'Successfully fetched CID from target gateway',
         data: { targetGateway: contentUrl }
       })
 
@@ -259,6 +259,13 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
       e.response?.status === 401 || // unauth
       e.response?.status === 400 // bad request
     ) {
+      decisionTree.recordStage({
+        name: 'Could not fetch content from target gateway',
+        data: {
+          statusCode: e.response.status,
+          url: contentUrl
+        }
+      })
       bail(
         new Error(
           `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
@@ -291,7 +298,8 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
   const CIDMatchesExpected = await Utils.verifyCIDMatchesExpected({
     cid: multihash,
     path: path,
-    logger
+    logger,
+    decisionTree
   })
 
   if (!CIDMatchesExpected) {
@@ -302,10 +310,6 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
     }
     throw new Error('CID does not match what is expected to be')
   }
-
-  logger.info(
-    `Successfully fetched CID=${multihash} file=${path} from node ${contentUrl}`
-  )
 }
 
 /**
