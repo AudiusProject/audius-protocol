@@ -41,23 +41,3 @@ export {
   validateMetadata,
   strToReplicaSet
 }
-
-module.exports = {
-  timeout,
-  getRandomInt,
-  verifySignature,
-  currentNodeShouldHandleTranscode,
-  validateStateForImageDirCIDAndReturnFileUUID,
-  findCIDInNetwork,
-  getAllRegisteredCNodes,
-  getIfAttemptedStateFix,
-  createDirForFile,
-  writeStreamToFileSystem,
-  _streamFileToDiskHelper,
-  runShellCommand,
-  validateAssociatedWallets,
-  validateMetadata,
-  strToReplicaSet,
-  verifyCIDMatchesExpected,
-  EMPTY_FILE_CID
-}
