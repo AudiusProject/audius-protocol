@@ -18,12 +18,17 @@ import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 import config from './config'
 
 const SERVICE_NAME = 'content-node'
 const SPID = config.get('spID')
 const ENDPOINT = config.get('creatorNodeEndpoint')
+
+const TRACING_ENABLED = config.get('otelTracingEnabled')
+const COLLECTOR_URL = config.get('otelCollectorUrl')
 
 /**
  * Initializes a tracer for content node as well as registers instrumentions
@@ -39,6 +44,12 @@ const ENDPOINT = config.get('creatorNodeEndpoint')
  * ```
  */
 export const setupTracing = () => {
+  // If tracing isn't enabled, we don't set up the trace provider
+  // or register any instrumentations. This won't cause any errors
+  // as methods like `span.startActiveTrace()` or `tracing.recordException()`
+  // will just silently do nothing.
+  if (!TRACING_ENABLED) return
+
   /**
    * A Tracer Provider is a factory for Tracers.
    * A Tracer Provider is initialized once and its lifecycle matches the application’s lifecycle.
@@ -85,6 +96,11 @@ export const setupTracing = () => {
       })
     ]
   })
+
+  const exporter = new OTLPTraceExporter({
+    url: COLLECTOR_URL
+  })
+  provider.addSpanProcessor(new BatchSpanProcessor(exporter))
 
   // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
   provider.register()
