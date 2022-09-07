@@ -1,6 +1,7 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import asc, desc, or_
+from sqlalchemy import asc, desc, or_, func
+from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.save import Save, SaveType
 from src.models.tracks.aggregate_track import AggregateTrack
@@ -84,7 +85,16 @@ def get_save_tracks(args: GetSaveTracksArgs):
         elif sort_method == SortMethod.artist_name:
             base_query = base_query.order_by(sort_fn(TrackWithAggregates.user.name))
         elif sort_method == SortMethod.release_date:
-            base_query = base_query.order_by(sort_fn(TrackWithAggregates.release_date))
+            base_query = base_query.order_by(
+                sort_fn(
+                    coalesce(
+                        func.to_date_safe(
+                            TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
+                        ),
+                        TrackWithAggregates.created_at,
+                    )
+                )
+            )
         elif sort_method == SortMethod.added_date:
             base_query = base_query.order_by(
                 sort_fn(Save.created_at), desc(TrackWithAggregates.track_id)
