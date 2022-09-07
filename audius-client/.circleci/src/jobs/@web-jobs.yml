@@ -364,7 +364,7 @@ web-dist-mac-staging:
 web-dist-win-staging:
   working_directory: ~/audius-client
   docker:
-    - image: electronuserland/builder:wine-mono
+    - image: electronuserland/builder:16-wine-mono-05.22
   steps:
     - web-distribute:
         build-type: win-publish
@@ -388,7 +388,7 @@ web-dist-mac-production:
 web-dist-win-production:
   working_directory: ~/audius-client
   docker:
-    - image: electronuserland/builder:wine-mono
+    - image: electronuserland/builder:16-wine-mono-05.22
   steps:
     - web-distribute:
         build-type: win-publish-production
