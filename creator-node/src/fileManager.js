@@ -145,15 +145,46 @@ async function fetchFileFromNetworkAndWriteToDisk({
     try {
       await asyncRetry({
         asyncFn: async (bail) => {
-          await fetchFileFromTargetGatewayAndWriteToDisk({
-            bail,
-            contentUrl,
-            trackId,
-            multihash,
-            decisionTree,
-            path,
-            logger
-          })
+          try {
+            await fetchFileFromTargetGatewayAndWriteToDisk({
+              contentUrl,
+              trackId,
+              multihash,
+              decisionTree,
+              path,
+              logger
+            })
+          } catch (e) {
+            /**
+             * Abort retries if fetch fails with 403, 401, or 400 status code
+             *
+             * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
+             */
+            if (
+              e.response?.status === 403 || // delist
+              e.response?.status === 401 || // unauth
+              e.response?.status === 400 // bad request
+            ) {
+              decisionTree.recordStage({
+                name: 'Could not fetch content from target gateway',
+                data: {
+                  statusCode: e.response.status,
+                  url: contentUrl
+                }
+              })
+              bail(
+                new Error(
+                  `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
+                )
+              )
+              return
+            }
+
+            // Re-throw any other error to continue with retry logic
+            throw new Error(
+              `Failed to fetch content=${multihash} with statusCode=${e.response?.status}. Retrying..`
+            )
+          }
         },
         logger,
         logLabel: 'fetchFileFromTargetGatewayAndWriteToDisk',
@@ -221,7 +252,6 @@ async function fetchFileFromNetworkAndWriteToDisk({
  * Fetches a multihash via the /ipfs route, writes to disk, and verifies that the CID is what we
  * expect it to be with retries
  * @param {Object} param
- * @param {function} param.bail the npm module async-retry bail fn
  * @param {string} param.contentUrl the target content node ipfs gateway route
  * @param {number} param.trackId the track id if one is associated with the multihash fetched
  * @param {Object} param.decisionTree an instance of DecisionTree
@@ -229,7 +259,6 @@ async function fetchFileFromNetworkAndWriteToDisk({
  * @param {Object} param.logger
  */
 async function fetchFileFromTargetGatewayAndWriteToDisk({
-  bail,
   contentUrl,
   trackId,
   multihash,
@@ -237,47 +266,21 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
   path,
   logger
 }) {
-  let response
-  try {
-    const fetchReqParams = {
-      method: 'get',
-      url: contentUrl,
-      responseType: 'stream',
-      timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-    }
-
-    if (trackId) {
-      fetchReqParams.params = {
-        trackId
-      }
-    }
-
-    response = await axios(fetchReqParams)
-  } catch (e) {
-    if (
-      e.response?.status === 403 || // delist
-      e.response?.status === 401 || // unauth
-      e.response?.status === 400 // bad request
-    ) {
-      decisionTree.recordStage({
-        name: 'Could not fetch content from target gateway',
-        data: {
-          statusCode: e.response.status,
-          url: contentUrl
-        }
-      })
-      bail(
-        new Error(
-          `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
-        )
-      )
-      return
-    }
-
-    throw new Error(
-      `Failed to fetch content=${multihash} with statusCode=${e.response?.status}. Retrying..`
-    )
+  const fetchReqParams = {
+    method: 'get',
+    url: contentUrl,
+    responseType: 'stream',
+    timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
   }
+
+  if (trackId) {
+    fetchReqParams.params = {
+      trackId
+    }
+  }
+
+  // Will throw error on non-200 response
+  const response = await axios(fetchReqParams)
 
   if (!response || !response.data) {
     throw new Error(`Received empty response`)
