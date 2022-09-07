@@ -38,6 +38,12 @@ import {
     FullRemixParentToJSON,
 } from './FullRemixParent';
 import {
+    PremiumConditions,
+    PremiumConditionsFromJSON,
+    PremiumConditionsFromJSONTyped,
+    PremiumConditionsToJSON,
+} from './PremiumConditions';
+import {
     Repost,
     RepostFromJSON,
     RepostFromJSONTyped,
@@ -314,5 +320,17 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     is_available?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    is_premium?: boolean;
+    /**
+     * 
+     * @type {PremiumConditions}
+     * @memberof TrackFull
+     */
+    premium_conditions?: PremiumConditions;
 }
 

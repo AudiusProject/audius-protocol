@@ -31,6 +31,7 @@ export * from './PlaylistAddedTimestamp';
 export * from './PlaylistArtwork';
 export * from './PlaylistFull';
 export * from './PlaylistLibrary';
+export * from './PremiumConditions';
 export * from './ProfilePicture';
 export * from './RelatedArtistResponseFull';
 export * from './RemixesResponse';
