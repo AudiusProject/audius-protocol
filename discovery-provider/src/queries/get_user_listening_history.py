@@ -103,7 +103,9 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
     if sort_method == SortMethod.title:
         base_query = base_query.order_by(sort_fn(TrackWithAggregates.title))
     elif sort_method == SortMethod.artist_name:
-        base_query = base_query.order_by(sort_fn(TrackWithAggregates.user.name))
+        base_query = base_query.join(TrackWithAggregates.user, aliased=True).order_by(
+                sort_fn(TrackWithAggregates.user.name)
+            )
     elif sort_method == SortMethod.release_date:
         base_query = base_query.order_by(
             sort_fn(
