@@ -142,7 +142,6 @@ def test_prune_plays_max_batch(app):
         assert plays_archive_result[0].id == 1
         assert plays_archive_result[0].play_item_id == 1
         assert plays_archive_result[0].archived_at == CURRENT_TIMESTAMP
-    pass
 
 
 def test_prune_plays_skip_prune(app):
