@@ -13,6 +13,10 @@ import defaultRedisClient from '../redis'
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 
+/**
+ * Updates redis cache of registered content nodes. Note that this queries ALL
+ * content nodes via ethContracts.getServiceProviderList.
+ */
 async function updateContentNodeChainInfo(
   logger: Logger,
   redisClient = defaultRedisClient,
