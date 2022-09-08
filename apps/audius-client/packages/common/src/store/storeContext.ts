@@ -36,6 +36,7 @@ export type CommonStoreContext = {
   walletClient: WalletClient
   localStorage: LocalStorage
   isNativeMobile: boolean
+  isElectron: boolean
   env: Env
   explore: Explore
   // A helper that returns the appropriate lineup selector for the current
@@ -43,4 +44,8 @@ export type CommonStoreContext = {
   getLineupSelectorForRoute?: () => (state: CommonState) => LineupState<Track>
   audioPlayer: AudioPlayer
   solanaClient: SolanaClient
+  sentry: {
+    setTag: (key: string, value: string) => void
+    configureScope: (fn: (scope: { setUser: any }) => void) => void
+  }
 }
