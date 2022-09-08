@@ -7,13 +7,14 @@ import {
   modalsActions,
   ShareSoundToTiktokModalStatus,
   shareSoundToTiktokModalActions,
-  shareSoundToTiktokModalSelectors
+  shareSoundToTiktokModalSelectors,
+  musicConfettiActions
 } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
 
 import { make } from 'common/store/analytics/actions'
-import { show as showConfetti } from 'components/music-confetti/store/slice'
 import { AppState } from 'store/types'
+const { show: showConfetti } = musicConfettiActions
 const {
   getAccessToken,
   getIsAuthenticated,

@@ -4,7 +4,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Nullable } from 'utils/typeUtils'
 
 import { Chain } from '../../../models/Chain'
-import { BNWei, StringWei, WalletAddress } from '../../../models/Wallet'
+import { BNWei, WalletAddress } from '../../../models/Wallet'
 
 import {
   AssociatedWallets,

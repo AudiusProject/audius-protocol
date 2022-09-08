@@ -1,8 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { AppState } from 'store/types'
-
-type MusicConfettiState = {
+export type MusicConfettiState = {
   isVisible: boolean
   isMatrix: boolean
 }
@@ -27,9 +25,5 @@ const slice = createSlice({
 
 export const { show, hide } = slice.actions
 
-// Selectors
-
-export const getIsVisible = (state: AppState) =>
-  state.application.ui.musicConfetti.isVisible
-
+export const actions = slice.actions
 export default slice.reducer

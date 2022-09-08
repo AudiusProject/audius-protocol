@@ -26,7 +26,6 @@ import SearchBarState from 'common/store/search-bar/types'
 import ServiceSelectionReducer from 'common/store/service-selection/slice'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
-import MusicConfetti from 'components/music-confetti/store/slice'
 import { PasswordResetState } from 'components/password-reset/store/types'
 import RemixSettingsModalReducer from 'components/remix-settings-modal/store/slice'
 import { UnfollowConfirmationModalState } from 'components/unfollow-confirmation-modal/store/types'
@@ -81,7 +80,6 @@ export type AppState = CommonState & {
       embedModal: EmbedModalState
       firstUploadModal: FirstUploadModalState
       mobileKeyboard: MobileKeyboardState
-      musicConfetti: ReturnType<typeof MusicConfetti>
       remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
       scrollLock: ScrollLockState
       setAsArtistPickConfirmation: SetAsArtistPickConfirmationState

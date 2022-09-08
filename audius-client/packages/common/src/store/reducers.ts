@@ -13,6 +13,9 @@ import { UsersCacheState } from './cache/users/types'
 import cast from './cast/slice'
 import changePasswordReducer from './change-password/slice'
 import { ChangePasswordState } from './change-password/types'
+import musicConfettiReducer, {
+  MusicConfettiState
+} from './music-confetti/slice'
 import notifications from './notifications/reducer'
 import audioRewardsSlice from './pages/audio-rewards/slice'
 import collection from './pages/collection/reducer'
@@ -139,6 +142,7 @@ export const reducers = () => ({
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     modals: modalsReducer,
+    musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
     reactions: reactionsReducer,
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
@@ -232,6 +236,7 @@ export type CommonState = {
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
     mobileOverflowModal: MobileOverflowModalState
     modals: ModalsState
+    musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState

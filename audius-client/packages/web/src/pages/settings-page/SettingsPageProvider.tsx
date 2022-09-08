@@ -19,14 +19,14 @@ import {
   themeActions,
   accountActions,
   TwitterProfile,
-  signOutActions
+  signOutActions,
+  musicConfettiActions
 } from '@audius/common'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
-import { show } from 'components/music-confetti/store/slice'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { AppState } from 'store/types'
 import {
@@ -43,6 +43,7 @@ import {
   SettingsPageProps as MobileSettingsPageProps,
   SubPage
 } from './components/mobile/SettingsPage'
+const { show } = musicConfettiActions
 
 const { signOut } = signOutActions
 const { setTheme } = themeActions
