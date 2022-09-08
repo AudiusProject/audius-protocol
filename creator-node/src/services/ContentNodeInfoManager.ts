@@ -11,6 +11,7 @@ import _ from 'lodash'
 import initAudiusLibs from './initAudiusLibs'
 import { createChildLogger } from '../logging'
 import defaultRedisClient from '../redis'
+import { timeout } from '../utils'
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 
@@ -297,8 +298,7 @@ async function getReplicaSetEndpointsByWallet({
   userReplicaSetManagerClient,
   wallet,
   parentLogger,
-  getUsers,
-  getMapOfSpIdToChainInfo = ContentNodeInfoManager().getMapOfSpIdToChainInfo
+  getUsers
 }: GetReplicaSetEndpointsParams): Promise<ReplicaSetEndpoints> {
   const user: { user_id: number } = await getUsers(1, 0, null, wallet)
   const replicaSetSpIds = await getReplicaSetSpIdsByUserId({
@@ -306,7 +306,7 @@ async function getReplicaSetEndpointsByWallet({
     userId: user.user_id,
     parentLogger
   })
-  const spIdToChainInfoMap = await getMapOfSpIdToChainInfo()
+  const spIdToChainInfoMap = await getMapOfSpIdToChainInfo(parentLogger)
   return {
     primary: replicaSetSpIds.primaryId
       ? spIdToChainInfoMap.get(replicaSetSpIds.primaryId!)?.endpoint
@@ -353,12 +353,16 @@ export {
   getMapOfSpIdToChainInfo,
   getMapOfCNodeEndpointToSpId,
   getSpIdFromEndpoint,
-  getContentNodeInfoFromSpId
+  getContentNodeInfoFromSpId,
+  getReplicaSetEndpointsByWallet,
+  getReplicaSetSpIdsByUserId
 }
 module.exports = {
   updateContentNodeChainInfo,
   getMapOfSpIdToChainInfo,
   getMapOfCNodeEndpointToSpId,
   getSpIdFromEndpoint,
-  getContentNodeInfoFromSpId
+  getContentNodeInfoFromSpId,
+  getReplicaSetEndpointsByWallet,
+  getReplicaSetSpIdsByUserId
 }
