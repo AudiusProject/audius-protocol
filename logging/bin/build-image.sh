@@ -2,6 +2,7 @@
 
 set -e
 
+DOCKER_IMAGE_MINOR=1
 CURRENT_INDEX_VERSION=$(cat current_index_version)
 
 # increment index to not clash with existing indexes
@@ -18,7 +19,7 @@ API_KEY=$(echo ${API_CREDS} | jq -j .api_key | base64)
 
 FILEBEAT_VERSION=$(head -n1 filebeat/Dockerfile | cut -f 2 -d ':')
 docker build \
-    -t audius/filebeat:${FILEBEAT_VERSION} \
+    -t audius/filebeat:${FILEBEAT_VERSION}-${DOCKER_IMAGE_MINOR} \
     --build-arg git_sha=$(git rev-parse HEAD) \
     --build-arg ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT} \
     --build-arg ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID} \
@@ -29,7 +30,7 @@ docker build \
 
 METRICBEAT_VERSION=$(head -n1 metricbeat/Dockerfile | cut -f 2 -d ':')
 docker build \
-    -t audius/metricbeat:${METRICBEAT_VERSION} \
+    -t audius/metricbeat:${METRICBEAT_VERSION}-${DOCKER_IMAGE_MINOR} \
     --build-arg git_sha=$(git rev-parse HEAD) \
     --build-arg ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT} \
     --build-arg ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID} \
@@ -38,6 +39,6 @@ docker build \
     metricbeat
 
 if [[ "${1}" == "push" ]]; then
-    docker push audius/metricbeat:${METRICBEAT_VERSION}
-    docker push audius/filebeat:${FILEBEAT_VERSION}
+    docker push audius/metricbeat:${METRICBEAT_VERSION}-${DOCKER_IMAGE_MINOR}
+    docker push audius/filebeat:${FILEBEAT_VERSION}-${DOCKER_IMAGE_MINOR}
 fi
