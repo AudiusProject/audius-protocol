@@ -25,7 +25,6 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import TrackDownload from 'services/audius-backend/TrackDownload'
 import { share } from 'utils/share'
 
 import watchTrackErrors from './errorSagas'
@@ -615,6 +614,7 @@ function* watchDownloadTrack() {
   yield* takeEvery(
     socialActions.DOWNLOAD_TRACK,
     function* (action: ReturnType<typeof socialActions.downloadTrack>) {
+      const trackDownload = yield* getContext('trackDownload')
       yield* call(waitForBackendSetup)
 
       // Check if there is a logged in account and if not,
@@ -660,21 +660,12 @@ function* watchDownloadTrack() {
         .split(',')
         .map((endpoint) => `${endpoint}/ipfs/`)
 
-      if (NATIVE_MOBILE) {
-        yield* call(
-          TrackDownload.downloadTrackMobile,
-          action.cid,
-          endpoints,
-          filename
-        )
-      } else {
-        yield* call(
-          TrackDownload.downloadTrack,
-          action.cid,
-          endpoints,
-          filename
-        )
-      }
+      yield* call(
+        [trackDownload, 'downloadTrack'],
+        action.cid,
+        endpoints,
+        filename
+      )
     }
   )
 }
