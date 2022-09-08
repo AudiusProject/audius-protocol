@@ -139,11 +139,7 @@ class Upload extends Component {
       return true
     })
 
-    const processedFiles = processFiles(
-      selectedFiles,
-      false,
-      this.invalidAudioFile
-    )
+    const processedFiles = processFiles(selectedFiles, this.invalidAudioFile)
     const tracks = (await Promise.all(processedFiles)).filter(Boolean)
     if (tracks.length === processedFiles.length) {
       this.setState({ uploadTrackerror: null })
@@ -164,11 +160,7 @@ class Upload extends Component {
   }
 
   onAddStemsToTrack = async (selectedStems, trackIndex) => {
-    const processedFiles = processFiles(
-      selectedStems,
-      true,
-      this.invalidAudioFile
-    )
+    const processedFiles = processFiles(selectedStems, this.invalidAudioFile)
     const stems = (await Promise.all(processedFiles))
       .filter(Boolean)
       .map((s) => ({
