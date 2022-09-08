@@ -1,4 +1,5 @@
-from src.queries.query_helpers import get_users_ids
+from src.queries.query_helpers import _populate_premium_track_metadata, get_users_ids
+from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_REPOSTS,
@@ -17,6 +18,7 @@ def get_feed_es(args, limit=10):
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
     load_orig = feed_filter in ["original", "all"]
+    exclude_premium = args.get("exclude_premium", False)
 
     mdsl = []
 
@@ -227,6 +229,23 @@ def get_feed_es(args, limit=10):
         # but /feed still expects save_count
         if "favorite_count" in item:
             item["save_count"] = item["favorite_count"]
+
+    if exclude_premium:
+        # filter out premium tracks from the feed before populating metadata
+        sorted_feed = list(
+            filter(
+                lambda item: "track_id" not in item or not item["is_premium"],
+                sorted_feed,
+            )
+        )
+    else:
+        # batch populate premium track metadata
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
+            _populate_premium_track_metadata(
+                session, track_items, current_user["user_id"]
+            )
 
     # populate metadata + remove extra fields from items
     sorted_feed = [

@@ -3,6 +3,9 @@ from typing import Union
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
+)
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 
 action_to_record_type = {
@@ -16,6 +19,14 @@ action_to_record_type = {
 
 create_social_action_types = {Action.FOLLOW, Action.SAVE, Action.REPOST}
 delete_social_action_types = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
+
+premium_content_validation_actions = {
+    Action.SAVE,
+    Action.UNSAVE,
+    Action.REPOST,
+    Action.UNREPOST,
+}
+premium_content_validation_entities = {EntityType.TRACK}
 
 
 def create_social_record(params: ManageEntityParameters):
@@ -135,3 +146,22 @@ def validate_social_feature(params: ManageEntityParameters):
     if params.action == Action.FOLLOW or params.action == Action.UNFOLLOW:
         if params.user_id == params.entity_id:
             raise Exception("User cannot follow themself")
+
+    if should_check_entity_access(params.action, params.entity_type):
+        premium_content_access = premium_content_access_checker.check_access(
+            user_id=params.user_id,
+            premium_content_id=params.entity_id,
+            premium_content_type="track",
+            premium_content_entity=params.existing_records[params.entity_type][
+                params.entity_id
+            ],
+        )
+        if not premium_content_access["does_user_have_access"]:
+            raise Exception("User has no access to entity")
+
+
+def should_check_entity_access(action: Action, entity_type: EntityType):
+    return (
+        action in premium_content_validation_actions
+        and entity_type in premium_content_validation_entities
+    )

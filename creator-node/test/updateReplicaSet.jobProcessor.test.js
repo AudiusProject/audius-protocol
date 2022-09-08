@@ -93,13 +93,6 @@ describe('test updateReplicaSet job processor', function () {
         }
       }
     }
-    const contentNodeInfoManagerStub = {
-      ContentNodeInfoManager: (_) => {
-        return {
-          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
-        }
-      }
-    }
     return proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.ts',
       {
@@ -118,7 +111,9 @@ describe('test updateReplicaSet job processor', function () {
           MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: maxSelectNewReplicaSetAttempts,
           QUEUE_NAMES
         },
-        '../../ContentNodeInfoManager': contentNodeInfoManagerStub
+        '../../ContentNodeInfoManager': {
+          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
+        }
       }
     )
   }

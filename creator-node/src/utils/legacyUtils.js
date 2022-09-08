@@ -407,6 +407,10 @@ export function currentNodeShouldHandleTranscode({
   return currentNodeShouldHandleTranscode
 }
 
+export function stringifyMap(map) {
+  return JSON.stringify(Array.from(map.entries()))
+}
+
 /**
  * Verify that the file written matches the hash expected
  * @param {Object} param
@@ -464,5 +468,6 @@ module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
 module.exports.currentNodeShouldHandleTranscode =
   currentNodeShouldHandleTranscode
+module.exports.stringifyMap = stringifyMap
 module.exports.verifyCIDMatchesExpected = verifyCIDMatchesExpected
 module.exports.EMPTY_FILE_CID = EMPTY_FILE_CID

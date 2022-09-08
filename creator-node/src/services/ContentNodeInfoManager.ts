@@ -1,108 +1,97 @@
+/**
+ * Util functions for fetching+updating the redis cache of info about content nodes.
+ * Maintains a bidirectional mappings of SP ID <--> chain info (endpoint and delegateOwnerWallet).
+ * TODO: Rename this to SpInfoManager and cache Discovery Nodes
+ */
+
 import type Logger from 'bunyan'
 
 import _ from 'lodash'
-import { Redis } from 'ioredis'
 
 import initAudiusLibs from './initAudiusLibs'
-import { logger as defaultLogger, createChildLogger } from '../logging'
+import { createChildLogger } from '../logging'
 import defaultRedisClient from '../redis'
-import { timeout } from '../utils.js'
-
-export type EthContracts = {
-  getServiceProviderList: (spType: string) => Promise<LibsServiceProvider[]>
-}
-export type LibsServiceProvider = {
-  owner: any // Libs typed this as any, but the contract has it as address
-  delegateOwnerWallet: any // Libs typed this as any, but the contract has it as address
-  endpoint: any // Libs typed this as any, but the contract has it as string
-  spID: number
-  type: string
-  blockNumber: number
-}
-export type ContentNodeFromChain = {
-  endpoint: string
-  delegateOwnerWallet: string
-}
-export interface IContentNodeInfoManager {
-  getMapOfSpIdToChainInfo: () => Promise<Map<number, ContentNodeFromChain>>
-  getMapOfCNodeEndpointToSpId: () => Promise<Map<string, number>>
-  getSerializedMapOfCNodeEndpointToSpId: () => Promise<string>
-  getSpIdFromEndpoint: (endpoint: string) => Promise<number | undefined>
-  getContentNodeInfoFromSpId: (
-    spId: number
-  ) => Promise<ContentNodeFromChain | undefined>
-}
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 
-function ContentNodeInfoManager(
-  logger = defaultLogger,
+async function updateContentNodeChainInfo(
+  logger: Logger,
   redisClient = defaultRedisClient,
-  makeEthContracts: () => Promise<EthContracts> = _makeEthContracts(logger),
-  cacheTtlSeconds = 10 * 60, // 10 minutes
-  ignoreCache = false
-): IContentNodeInfoManager {
-  return {
-    async getMapOfSpIdToChainInfo(): Promise<
-      Map<number, ContentNodeFromChain>
-    > {
-      try {
-        // Return cached mapping from redis if it's present and non-empty
-        if (!ignoreCache) {
-          const spIdToChainInfoFromRedis = await _getContentNodeInfoFromRedis(
-            logger,
-            redisClient
-          )
-          if (!_.isEmpty(spIdToChainInfoFromRedis))
-            return spIdToChainInfoFromRedis
-        }
-
-        // Since we didn't have a non-empty mapping cached, fetch mapping from chain and cache it
-        const spIdToChainInfoFromChain: Map<number, ContentNodeFromChain> =
-          await _getContentNodeInfoFromChain(logger, makeEthContracts)
-        redisClient.set(
-          SP_ID_TO_CHAIN_INFO_MAP_KEY,
-          JSON.stringify(Array.from(spIdToChainInfoFromChain.entries()))
-        )
-        redisClient.expire(SP_ID_TO_CHAIN_INFO_MAP_KEY, cacheTtlSeconds)
-        return spIdToChainInfoFromChain
-      } catch (e: any) {
-        logger.error(
-          `ContentNodeInfoManager error: Failed to fetch mapping: ${e.message}: ${e.stack}`
-        )
-        return new Map()
-      }
-    },
-
-    async getMapOfCNodeEndpointToSpId(): Promise<Map<string, number>> {
-      const spIdToChainInfo: Map<number, ContentNodeFromChain> =
-        await this.getMapOfSpIdToChainInfo()
-      const cNodeEndpointToSpIdMap = new Map<string, number>()
-      spIdToChainInfo.forEach((chainInfo, spId) => {
-        cNodeEndpointToSpIdMap.set(chainInfo.endpoint, spId)
-      })
-      return cNodeEndpointToSpIdMap
-    },
-
-    async getSerializedMapOfCNodeEndpointToSpId(): Promise<string> {
-      return JSON.stringify(
-        Array.from((await this.getMapOfCNodeEndpointToSpId()).entries())
+  ethContracts?: EthContracts
+) {
+  try {
+    if (!ethContracts) ethContracts = await _initLibsAndGetEthContracts(logger)
+    const contentNodesFromLibs =
+      (await ethContracts.getServiceProviderList('content-node')) || []
+    const spIdToChainInfoFromChain = new Map(
+      contentNodesFromLibs.map((cn) => [
+        cn.spID,
+        _.pick(cn, ['endpoint', 'delegateOwnerWallet'])
+      ])
+    )
+    if (spIdToChainInfoFromChain.size > 0) {
+      redisClient.set(
+        SP_ID_TO_CHAIN_INFO_MAP_KEY,
+        JSON.stringify(Array.from(spIdToChainInfoFromChain.entries()))
       )
-    },
-
-    async getSpIdFromEndpoint(endpoint: string): Promise<number | undefined> {
-      const cNodeEndpointToSpIdMap: Map<string, number> =
-        await this.getMapOfCNodeEndpointToSpId()
-      return cNodeEndpointToSpIdMap.get(endpoint)
-    },
-
-    async getContentNodeInfoFromSpId(
-      spId: number
-    ): Promise<ContentNodeFromChain | undefined> {
-      const map = await this.getMapOfSpIdToChainInfo()
-      return map.get(spId)
     }
+  } catch (e: any) {
+    logger.error(
+      `Failed to fetch content nodes from chain and update mapping: ${e.message}`
+    )
   }
+}
+
+async function getMapOfSpIdToChainInfo(
+  logger: Logger,
+  redisClient = defaultRedisClient
+): Promise<Map<number, ContentNodeFromChain>> {
+  try {
+    const serializedMapFromRedis = await redisClient.get(
+      SP_ID_TO_CHAIN_INFO_MAP_KEY
+    )
+    if (_.isEmpty(serializedMapFromRedis)) return new Map()
+    return new Map<number, ContentNodeFromChain>(
+      JSON.parse(serializedMapFromRedis as string)
+    )
+  } catch (e: any) {
+    logger.error(
+      `ContentNodeInfoManager error: Failed to fetch and parse serialized mapping: ${e.message}: ${e.stack}`
+    )
+    return new Map()
+  }
+}
+
+async function getMapOfCNodeEndpointToSpId(
+  logger: Logger,
+  redisClient = defaultRedisClient
+) {
+  const spIdToChainInfo: Map<number, ContentNodeFromChain> =
+    await getMapOfSpIdToChainInfo(logger, redisClient)
+  const cNodeEndpointToSpIdMap = new Map<string, number>()
+  spIdToChainInfo.forEach((chainInfo, spId) => {
+    cNodeEndpointToSpIdMap.set(chainInfo.endpoint, spId)
+  })
+  return cNodeEndpointToSpIdMap
+}
+
+async function getSpIdFromEndpoint(
+  endpoint: string,
+  logger: Logger,
+  redisClient = defaultRedisClient
+): Promise<number | undefined> {
+  const cNodeEndpointToSpIdMap: Map<string, number> =
+    await getMapOfCNodeEndpointToSpId(logger, redisClient)
+  return cNodeEndpointToSpIdMap.get(endpoint)
+}
+
+async function getContentNodeInfoFromSpId(
+  spId: number,
+  logger: Logger,
+  redisClient = defaultRedisClient
+): Promise<ContentNodeFromChain | undefined> {
+  const map = await getMapOfSpIdToChainInfo(logger, redisClient)
+  return map.get(spId)
 }
 
 export type ReplicaSetSpIds = {
@@ -331,66 +320,45 @@ async function getReplicaSetEndpointsByWallet({
   }
 }
 
-function _makeEthContracts(logger: Logger) {
-  return async function (): Promise<EthContracts> {
-    const audiusLibs = await initAudiusLibs({
-      enableEthContracts: true,
-      enableContracts: false,
-      enableDiscovery: false,
-      enableIdentity: false,
-      logger
-    })
-    return audiusLibs.ethContracts
-  }
+async function _initLibsAndGetEthContracts(
+  logger: Logger
+): Promise<EthContracts> {
+  const audiusLibs = await initAudiusLibs({
+    enableEthContracts: true,
+    enableContracts: false,
+    enableDiscovery: false,
+    enableIdentity: false,
+    logger
+  })
+  return audiusLibs.ethContracts
 }
 
-async function _getContentNodeInfoFromChain(
-  logger: Logger,
-  makeEthContracts: () => Promise<EthContracts>
-): Promise<Map<number, ContentNodeFromChain>> {
-  try {
-    const ethContracts = await makeEthContracts()
-    const contentNodesFromLibs =
-      (await ethContracts.getServiceProviderList('content-node')) || []
-    return new Map(
-      contentNodesFromLibs.map((cn) => [
-        cn.spID,
-        _.pick(cn, ['endpoint', 'delegateOwnerWallet'])
-      ])
-    )
-  } catch (e: any) {
-    logger.error(`Failed to fetch content nodes from chain: ${e.message}`)
-    return new Map()
-  }
+export type EthContracts = {
+  getServiceProviderList: (spType: string) => Promise<LibsServiceProvider[]>
 }
-
-async function _getContentNodeInfoFromRedis(
-  logger: Logger,
-  redisClient: Redis
-): Promise<Map<number, ContentNodeFromChain>> {
-  try {
-    const serializedMapFromRedis = await redisClient.get(
-      SP_ID_TO_CHAIN_INFO_MAP_KEY
-    )
-    if (_.isEmpty(serializedMapFromRedis)) return new Map()
-    return new Map<number, ContentNodeFromChain>(
-      JSON.parse(serializedMapFromRedis as string)
-    )
-  } catch (e: any) {
-    logger.error(
-      `ContentNodeInfoManager error: Failed to fetch and parse serialized mapping: ${e.message}: ${e.stack}`
-    )
-    return new Map()
-  }
+export type LibsServiceProvider = {
+  owner: any // Libs typed this as any, but the contract has it as address
+  delegateOwnerWallet: any // Libs typed this as any, but the contract has it as address
+  endpoint: any // Libs typed this as any, but the contract has it as string
+  spID: number
+  type: string
+  blockNumber: number
 }
-
+export type ContentNodeFromChain = {
+  endpoint: string
+  delegateOwnerWallet: string
+}
 export {
-  ContentNodeInfoManager,
-  getReplicaSetSpIdsByUserId,
-  getReplicaSetEndpointsByWallet
+  updateContentNodeChainInfo,
+  getMapOfSpIdToChainInfo,
+  getMapOfCNodeEndpointToSpId,
+  getSpIdFromEndpoint,
+  getContentNodeInfoFromSpId
 }
 module.exports = {
-  ContentNodeInfoManager,
-  getReplicaSetSpIdsByUserId,
-  getReplicaSetEndpointsByWallet
+  updateContentNodeChainInfo,
+  getMapOfSpIdToChainInfo,
+  getMapOfCNodeEndpointToSpId,
+  getSpIdFromEndpoint,
+  getContentNodeInfoFromSpId
 }

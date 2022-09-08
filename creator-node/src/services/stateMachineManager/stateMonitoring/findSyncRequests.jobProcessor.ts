@@ -12,7 +12,7 @@ import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
-import { ContentNodeInfoManager } from '../../ContentNodeInfoManager'
+import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
 
 const _: LoDashStatic = require('lodash')
@@ -68,9 +68,7 @@ async function findSyncRequests({
 > {
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
   const metricsToRecord = []
-  const contentNodeInfoManager = ContentNodeInfoManager(logger)
-  const cNodeEndpointToSpIdMap =
-    await contentNodeInfoManager.getMapOfCNodeEndpointToSpId()
+  const cNodeEndpointToSpIdMap = await getMapOfCNodeEndpointToSpId(logger)
 
   // mapping ( syncMode => mapping ( result => count ) )
   const outcomeCountsMap: OutcomeCountsMap = {}

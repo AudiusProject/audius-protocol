@@ -806,9 +806,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
   describe('Test secondarySyncFromPrimary function', async function () {
     let serviceRegistryMock, originalContentNodeEndpoint
 
-    const MOCK_CN1 = 'http://mock-cn1.audius.co'
-    const MOCK_CN2 = 'http://mock-cn2.audius.co'
-    const MOCK_CN3 = 'http://mock-cn3.audius.co'
     const TEST_ENDPOINT_PRIMARY = MOCK_CN1
     const USER_REPLICA_SET = `${MOCK_CN1},${MOCK_CN2},${MOCK_CN3}`
     const { pubKey } = testEthereumConstants
@@ -1423,7 +1420,6 @@ describe('Test secondarySyncFromPrimary()', async function () {
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
-          './../../config': config,
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)

@@ -99,18 +99,8 @@ describe('test findReplicaSetUpdates job processor', function () {
 
   function getJobProcessorStub(
     isPrimaryHealthyStub,
-    getCNodeEndpointToSpIdMapStub,
-    getSerializedMapOfCNodeEndpointToSpIdStub
+    getCNodeEndpointToSpIdMapStub
   ) {
-    const contentNodeInfoManagerStub = {
-      ContentNodeInfoManager: (_) => {
-        return {
-          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub,
-          getSerializedMapOfCNodeEndpointToSpId:
-            getSerializedMapOfCNodeEndpointToSpIdStub
-        }
-      }
-    }
     return proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.ts',
       {
@@ -118,7 +108,9 @@ describe('test findReplicaSetUpdates job processor', function () {
         '../CNodeHealthManager': {
           isPrimaryHealthy: isPrimaryHealthyStub
         },
-        '../../ContentNodeInfoManager': contentNodeInfoManagerStub
+        '../../ContentNodeInfoManager': {
+          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
+        }
       }
     )
   }
@@ -132,17 +124,13 @@ describe('test findReplicaSetUpdates job processor', function () {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
       .resolves(cNodeEndpointToSpIdMap)
-    const getSerializedMapOfCNodeEndpointToSpIdStub = sandbox
-      .stub()
-      .resolves(JSON.stringify(Array.from(cNodeEndpointToSpIdMap).entries()))
     const isPrimaryHealthyStub = sandbox
       .stub()
       .resolves(isPrimaryHealthyInExtraHealthCheck)
 
     const findReplicaSetUpdatesJobProcessor = getJobProcessorStub(
       isPrimaryHealthyStub,
-      getCNodeEndpointToSpIdMapStub,
-      getSerializedMapOfCNodeEndpointToSpIdStub
+      getCNodeEndpointToSpIdMapStub
     )
 
     // Verify job outputs the correct results: primary should be removed from replica set because it's unhealthy
@@ -164,9 +152,11 @@ describe('test findReplicaSetUpdates job processor', function () {
     expect(jobOutput.cNodeEndpointToSpIdMap).to.deep.equal(
       JSON.stringify(
         Array.from(
-          jobProcessorArgs?.cNodeEndpointToSpIdMap ||
+          (
+            jobProcessorArgs?.cNodeEndpointToSpIdMap ||
             DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
-        ).entries()
+          ).entries()
+        )
       )
     )
 

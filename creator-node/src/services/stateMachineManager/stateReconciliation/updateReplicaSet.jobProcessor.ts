@@ -14,7 +14,8 @@ import type {
 } from './types'
 import { makeHistogramToRecord } from '../stateMachineUtils'
 import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
-import { ContentNodeInfoManager } from '../../ContentNodeInfoManager'
+import { stringifyMap } from '../../../utils'
+import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
 
 const _ = require('lodash')
@@ -600,8 +601,9 @@ const _issueUpdateReplicaSetOp = async (
      * TODO: Remove this after rollout. This is an extra gating condition that only applies to primary reconfigs:
      * ONLY issue reconfigs of primaries when the cause of the reconfig is that the primary endpoint was deregistered or changed.
      */
-    const primaryExistsOnChain =
-      ContentNodeInfoManager.getCNodeEndpointToSpIdMap().hasOwnProperty(primary)
+    const primaryExistsOnChain = await getMapOfCNodeEndpointToSpId(
+      logger
+    ).hasOwnProperty(primary)
     const isPrimaryReconfig =
       reconfigType === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES
     const shouldSkipPrimaryReconfig = isPrimaryReconfig && primaryExistsOnChain
@@ -610,9 +612,7 @@ const _issueUpdateReplicaSetOp = async (
       return response
     }
 
-    const contentNodeInfoManager = ContentNodeInfoManager(logger)
-    const cNodeEndpointToSpIdMap =
-      await contentNodeInfoManager.getMapOfCNodeEndpointToSpId()
+    const cNodeEndpointToSpIdMap = await getMapOfCNodeEndpointToSpId(logger)
 
     // Create new array of replica set spIds and write to URSM
     for (const endpt of newReplicaSetEndpoints) {
@@ -621,7 +621,9 @@ const _issueUpdateReplicaSetOp = async (
       const spIdFromChain = cNodeEndpointToSpIdMap.get(endpt)
       if (spIdFromChain === undefined) {
         response.result = UpdateReplicaSetJobResult.FailureNoValidSP
-        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${await contentNodeInfoManager.getSerializedMapOfCNodeEndpointToSpId()} | endpt=${endpt}. Skipping reconfig.`
+        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${stringifyMap(
+          cNodeEndpointToSpIdMap
+        )} | endpt=${endpt}. Skipping reconfig.`
         logger.error(response.errorMsg)
         return response
       }

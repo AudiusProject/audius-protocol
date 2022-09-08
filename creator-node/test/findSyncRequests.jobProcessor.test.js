@@ -70,13 +70,6 @@ describe('test findSyncRequests job processor', function () {
     getCNodeEndpointToSpIdMapStub,
     computeSyncModeForUserAndReplicaStub
   ) {
-    const contentNodeInfoManagerStub = {
-      ContentNodeInfoManager: (_) => {
-        return {
-          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
-        }
-      }
-    }
     return proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/findSyncRequests.jobProcessor.ts',
       {
@@ -84,7 +77,9 @@ describe('test findSyncRequests job processor', function () {
         '../stateReconciliation/stateReconciliationUtils': {
           getNewOrExistingSyncReq: getNewOrExistingSyncReqStub
         },
-        '../../ContentNodeInfoManager': contentNodeInfoManagerStub,
+        '../../ContentNodeInfoManager': {
+          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
+        },
         './stateMonitoringUtils': {
           computeSyncModeForUserAndReplica: computeSyncModeForUserAndReplicaStub
         }

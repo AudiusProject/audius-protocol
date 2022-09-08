@@ -14,8 +14,8 @@ import type {
   StateMonitoringUser
 } from './types'
 import { instrumentTracing, tracing } from '../../../tracer'
-
-import { ContentNodeInfoManager } from '../../ContentNodeInfoManager'
+import { stringifyMap } from '../../../utils'
+import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 
 const _: LoDashStatic = require('lodash')
 
@@ -54,11 +54,7 @@ async function findReplicaSetUpdates({
   DecoratedJobReturnValue<FindReplicaSetUpdatesJobReturnValue>
 > {
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
-  const contentNodeInfoManager = ContentNodeInfoManager(logger)
-  const cNodeEndpointToSpIdMap =
-    await contentNodeInfoManager.getMapOfCNodeEndpointToSpId()
-  const cNodeEndpointToSpIdMapString =
-    await contentNodeInfoManager.getSerializedMapOfCNodeEndpointToSpId()
+  const cNodeEndpointToSpIdMap = await getMapOfCNodeEndpointToSpId(logger)
 
   // Parallelize calling findReplicaSetUpdatesForUser on chunks of 500 users at a time
   const userBatches: StateMonitoringUser[][] = _.chunk(
@@ -145,7 +141,7 @@ async function findReplicaSetUpdates({
   }
 
   return {
-    cNodeEndpointToSpIdMap: cNodeEndpointToSpIdMapString,
+    cNodeEndpointToSpIdMap: stringifyMap(cNodeEndpointToSpIdMap),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
           [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs
