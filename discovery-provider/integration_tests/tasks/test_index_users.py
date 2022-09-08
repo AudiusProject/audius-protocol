@@ -235,7 +235,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -264,7 +264,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -286,7 +286,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -308,7 +308,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -334,7 +334,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -359,7 +359,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -382,7 +382,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -408,7 +408,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -430,7 +430,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -447,18 +447,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
         session.flush()
 
         entry_multihash = helpers.multihash_digest_to_cid(entry.args._multihashDigest)
-        metadata = update_task.cid_metadata_client.get_metadata(
-            entry_multihash, "", ""
-        )
+        metadata = update_task.cid_metadata_client.get_metadata(entry_multihash, "", "")
 
         assert user_record.profile_picture == metadata["profile_picture"]
         assert user_record.cover_photo == metadata["cover_photo"]
         assert user_record.bio == metadata["bio"]
         assert user_record.name == metadata["name"]
         assert user_record.location == metadata["location"]
-        assert (
-            user_record.profile_picture_sizes == metadata["profile_picture_sizes"]
-        )
+        assert user_record.profile_picture_sizes == metadata["profile_picture_sizes"]
         assert user_record.cover_photo_sizes == metadata["cover_photo_sizes"]
         assert user_record.has_collectibles == True
         assert user_record.playlist_library == metadata["playlist_library"]
