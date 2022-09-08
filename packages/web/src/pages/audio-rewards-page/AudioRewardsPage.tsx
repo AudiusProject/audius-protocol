@@ -39,13 +39,17 @@ const messages = {
 
 const RewardsContent = () => {
   const wm = useWithMobileStyle(styles.mobile)
+
   const { isEnabled: isChallengeRewardsEnabled } = useFlag(
     FeatureFlags.CHALLENGE_REWARDS_UI
   )
+
   const { isEnabled: isBuyAudioEnabled } = useFlag(
     FeatureFlags.BUY_AUDIO_ENABLED
   )
+
   useRequiresAccount(TRENDING_PAGE)
+
   return (
     <>
       <WalletModal />

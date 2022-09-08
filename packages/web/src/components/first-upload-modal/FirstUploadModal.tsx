@@ -1,6 +1,11 @@
 import { useCallback, useEffect } from 'react'
 
-import { Name, SquareSizes, accountSelectors } from '@audius/common'
+import {
+  Name,
+  SquareSizes,
+  accountSelectors,
+  musicConfettiActions
+} from '@audius/common'
 import { Modal } from '@audius/stems'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -8,7 +13,6 @@ import { Dispatch } from 'redux'
 import { useRecord, make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
-import { show } from 'components/music-confetti/store/slice'
 import TwitterButton from 'components/twitter-button/TwitterButton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
@@ -20,6 +24,7 @@ import { withNullGuard } from 'utils/withNullGuard'
 import styles from './FirstUploadModal.module.css'
 import { getIsOpen } from './store/selectors'
 import { setVisibility } from './store/slice'
+const { show } = musicConfettiActions
 const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {

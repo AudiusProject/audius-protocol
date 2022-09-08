@@ -12,6 +12,7 @@ import {
   audioRewardsPageActions,
   ClaimStatus,
   CognitoFlowStatus,
+  CognitoFlowExistsResponse,
   HCaptchaStatus,
   UndisbursedUserChallenge,
   audioRewardsPageSelectors,
@@ -19,7 +20,10 @@ import {
   walletActions,
   modalsActions,
   waitForAccount,
-  waitForValue
+  waitForValue,
+  Env,
+  musicConfettiActions,
+  CognitoFlowResponse
 } from '@audius/common'
 import {
   call,
@@ -34,14 +38,12 @@ import {
 } from 'typed-redux-saga'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import { show as showMusicConfetti } from 'components/music-confetti/store/slice'
-import mobileSagas from 'pages/audio-rewards-page/store/mobileSagas'
-import { getCognitoExists } from 'services/audius-backend/Cognito'
 import { AUDIO_PAGE } from 'utils/route'
 import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
 } from 'utils/sagaPollingDaemons'
+const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
 const { getBalance, increaseBalance } = walletActions
 const { getFeePayer } = solanaSelectors
@@ -58,6 +60,9 @@ const {
   claimChallengeRewardFailed,
   claimChallengeRewardSucceeded,
   claimChallengeRewardWaitForRetry,
+  fetchCognitoFlowUrl,
+  fetchCognitoFlowUrlFailed,
+  fetchCognitoFlowUrlSucceeded,
   fetchUserChallenges,
   fetchUserChallengesFailed,
   fetchUserChallengesSucceeded,
@@ -76,18 +81,14 @@ const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 
 const { getAccountUser, getUserHandle, getUserId } = accountSelectors
 
-const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
-const REACT_APP_ORACLE_ETH_ADDRESSES =
-  process.env.REACT_APP_ORACLE_ETH_ADDRESSES
-const REACT_APP_AAO_ENDPOINT = process.env.REACT_APP_AAO_ENDPOINT
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const HCAPTCHA_MODAL_NAME = 'HCaptcha'
 const COGNITO_MODAL_NAME = 'Cognito'
 const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewardsExplainer'
 const COGNITO_CHECK_MAX_RETRIES = 5
 const COGNITO_CHECK_DELAY_MS = 3000
 
-function getOracleConfig(remoteConfigInstance: RemoteConfigInstance) {
+function getOracleConfig(remoteConfigInstance: RemoteConfigInstance, env: Env) {
+  const { ENVIRONMENT, ORACLE_ETH_ADDRESSES, AAO_ENDPOINT } = env
   let oracleEthAddress = remoteConfigInstance.getRemoteVar(
     StringKeys.ORACLE_ETH_ADDRESS
   )
@@ -95,12 +96,12 @@ function getOracleConfig(remoteConfigInstance: RemoteConfigInstance) {
     StringKeys.ORACLE_ENDPOINT
   )
   if (ENVIRONMENT === 'development') {
-    const oracleEthAddresses = (REACT_APP_ORACLE_ETH_ADDRESSES || '').split(',')
+    const oracleEthAddresses = (ORACLE_ETH_ADDRESSES || '').split(',')
     if (oracleEthAddresses.length > 0) {
       oracleEthAddress = oracleEthAddresses[0]
     }
-    if (REACT_APP_AAO_ENDPOINT) {
-      AAOEndpoint = REACT_APP_AAO_ENDPOINT
+    if (AAO_ENDPOINT) {
+      AAOEndpoint = AAO_ENDPOINT
     }
   }
 
@@ -136,7 +137,10 @@ export const getBackoff = (retryCount: number) => {
   return 200 * 2 ** (retryCount + 1)
 }
 
-const getClaimingConfig = (remoteConfigInstance: RemoteConfigInstance) => {
+const getClaimingConfig = (
+  remoteConfigInstance: RemoteConfigInstance,
+  env: Env
+) => {
   const quorumSize = remoteConfigInstance.getRemoteVar(
     IntKeys.ATTESTATION_QUORUM_SIZE
   )
@@ -155,8 +159,10 @@ const getClaimingConfig = (remoteConfigInstance: RemoteConfigInstance) => {
   const completionPollFrequency = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_CLAIM_COMPLETION_POLL_FREQUENCY_MS
   )
-  const { oracleEthAddress, AAOEndpoint } =
-    getOracleConfig(remoteConfigInstance)
+  const { oracleEthAddress, AAOEndpoint } = getOracleConfig(
+    remoteConfigInstance,
+    env
+  )
 
   return {
     quorumSize,
@@ -175,6 +181,7 @@ function* claimChallengeRewardAsync(
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  const env = yield* getContext('env')
   const { claim, retryOnFailure, retryCount = 0 } = action.payload
   const { specifiers, challengeId, amount } = claim
 
@@ -187,7 +194,7 @@ function* claimChallengeRewardAsync(
     parallelization,
     completionPollFrequency,
     completionPollTimeout
-  } = getClaimingConfig(remoteConfigInstance)
+  } = getClaimingConfig(remoteConfigInstance, env)
 
   // Do not proceed to claim if challenge is not complete from a DN perspective.
   // This is possible because the client may optimistically set a challenge as complete
@@ -366,6 +373,7 @@ function* watchSetHCaptchaStatus() {
 }
 
 function* watchSetCognitoFlowStatus() {
+  const cognito = yield* getContext('cognito')
   yield* takeLatest(
     setCognitoFlowStatus.type,
     function* (action: ReturnType<typeof setCognitoFlowStatus>) {
@@ -381,7 +389,10 @@ function* watchSetCognitoFlowStatus() {
         if (!handle) return
         do {
           try {
-            const { exists } = yield* call(getCognitoExists, handle)
+            const { exists } = (yield* call(
+              [cognito, 'getCognitoExists'],
+              handle
+            )) as CognitoFlowExistsResponse
             if (exists) {
               yield* call(retryClaimChallengeReward, {
                 errorResolved: true,
@@ -595,6 +606,10 @@ function* pollUserChallenges(frequency: number) {
 
 function* userChallengePollingDaemon() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+
+  const isNativeMobile = yield* getContext('isNativeMobile')
+  if (isNativeMobile) return
+
   yield* call(remoteConfigInstance.waitForRemoteConfig)
   const defaultChallengePollingTimeout = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_REFRESH_INTERVAL_MS
@@ -618,6 +633,24 @@ function* userChallengePollingDaemon() {
   )
 }
 
+function* fetchCognitoFlowUriAsync() {
+  const cognito = yield* getContext('cognito')
+  try {
+    const response = (yield* call([
+      cognito,
+      'getCognitoFlow'
+    ])) as CognitoFlowResponse
+    yield put(fetchCognitoFlowUrlSucceeded(response.shareable_url))
+  } catch (e) {
+    console.error(e)
+    yield put(fetchCognitoFlowUrlFailed())
+  }
+}
+
+function* watchFetchCognitoFlowUrl() {
+  yield takeLatest(fetchCognitoFlowUrl.type, fetchCognitoFlowUriAsync)
+}
+
 const sagas = () => {
   const sagas = [
     watchFetchUserChallenges,
@@ -627,9 +660,10 @@ const sagas = () => {
     watchSetCognitoFlowStatus,
     watchUpdateHCaptchaScore,
     userChallengePollingDaemon,
-    watchUpdateOptimisticListenStreak
+    watchUpdateOptimisticListenStreak,
+    watchFetchCognitoFlowUrl
   ]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
+  return sagas
 }
 
 export default sagas

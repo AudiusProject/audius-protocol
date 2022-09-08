@@ -19,7 +19,6 @@ import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -79,9 +78,7 @@ export const TipReceivedNotification = (
 
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const reactionValue = useSelectorWeb(
-    makeGetReactionForSignature(tipTxSignature)
-  )
+  const reactionValue = useSelector(makeGetReactionForSignature(tipTxSignature))
 
   const setReactionValue = useSetReaction(tipTxSignature)
 

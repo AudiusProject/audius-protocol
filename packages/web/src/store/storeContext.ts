@@ -5,6 +5,7 @@ import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { cognito } from 'services/cognito'
 import { env } from 'services/env'
 import { explore } from 'services/explore'
 import { fingerprintClient } from 'services/fingerprint'
@@ -38,5 +39,6 @@ export const storeContext: CommonStoreContext = {
     solanaClusterEndpoint: process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: process.env.REACT_APP_METADATA_PROGRAM_ID
   }),
-  sentry: Sentry
+  sentry: Sentry,
+  cognito
 }
