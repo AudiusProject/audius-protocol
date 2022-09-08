@@ -242,7 +242,8 @@ export const FeedTipTile = () => {
         <div className={styles.recipientContainer}>
           <ProfilePicture
             key={tipToDisplay.receiver_id}
-            className={styles.profilePicture}
+            className={styles.profilePictureWrapper}
+            innerClassName={styles.profilePicture}
             user={usersMap[tipToDisplay.receiver_id]}
           />
           <ArtistPopover
