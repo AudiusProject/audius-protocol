@@ -13,6 +13,8 @@ import { monitoringCallbacks } from 'services/serviceMonitoring'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron, isMobile } from 'utils/clientUtil'
 
+import { env } from '../env'
+
 declare global {
   interface Window {
     audiusLibs: any
@@ -25,6 +27,7 @@ declare global {
 export const audiusBackendInstance = audiusBackend({
   claimDistributionContractAddress:
     process.env.REACT_APP_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+  env,
   ethOwnerWallet: process.env.REACT_APP_ETH_OWNER_WALLET,
   ethProviderUrls: (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: process.env.REACT_APP_ETH_REGISTRY_ADDRESS,
