@@ -80,7 +80,6 @@ const createArtwork = async (selectedFiles: File[]) => {
 
 export const processFiles = (
   selectedFiles: File[],
-  isStem: boolean,
   handleInvalid: (fileName: string, errorType: 'size' | 'type') => void
 ) => {
   return selectedFiles.map(async (file) => {

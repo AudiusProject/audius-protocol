@@ -1,5 +1,4 @@
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 import ReactDropzone from 'react-dropzone'
 
 import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
@@ -14,19 +13,43 @@ const messages = {
   browse: 'browse to upload'
 }
 
-const Dropzone = ({
+type DropzoneProps = {
+  className?: string
+  messageClassName?: string
+  titleTextClassName?: string
+  iconClassName?: string
+  type?: 'track' | 'image' | 'stem'
+  // Extra text content to be displayed inside the dropzone.
+  textAboveIcon?: string
+  subtitle?: string
+  allowMultiple?: boolean
+  /**
+   * Callback fired when the user drops files onto the dropzone
+   */
+  onDropAccepted: (files: File[]) => void
+  /**
+   * Callback fired when the dropped file is rejected, usually
+   * from a disallowed file type
+   */
+  onDropRejected?: (files: File[]) => void
+  disabled?: boolean
+  disableClick?: boolean
+}
+
+export const Dropzone = ({
   className,
   titleTextClassName,
   messageClassName,
   iconClassName,
-  type,
+  type = 'track',
   textAboveIcon,
-  allowMultiple,
-  onDrop,
+  allowMultiple = true,
+  onDropAccepted,
+  onDropRejected,
   subtitle,
-  disabled,
+  disabled = false,
   disableClick
-}) => {
+}: DropzoneProps) => {
   const getMessage = () => {
     if (subtitle) return subtitle
     let message
@@ -53,7 +76,8 @@ const Dropzone = ({
   return (
     <ReactDropzone
       multiple={allowMultiple}
-      onDrop={onDrop}
+      onDropAccepted={onDropAccepted}
+      onDropRejected={onDropRejected}
       className={cn(styles.dropzone, className)}
       disabled={disabled}
       disableClick={disabled || disableClick}
@@ -78,25 +102,3 @@ const Dropzone = ({
     </ReactDropzone>
   )
 }
-
-Dropzone.propTypes = {
-  className: PropTypes.string,
-  messageClassName: PropTypes.string,
-  titleTextClassName: PropTypes.string,
-  iconClassName: PropTypes.string,
-  type: PropTypes.oneOf(['track', 'image', 'stem']).isRequired,
-  // Extra text content to be displayed inside the dropzone.
-  textAboveIcon: PropTypes.string,
-  subtitle: PropTypes.string,
-  allowMultiple: PropTypes.bool,
-  onDrop: PropTypes.func,
-  disabled: PropTypes.bool
-}
-
-Dropzone.defaultProps = {
-  type: 'track',
-  allowMultiple: true,
-  disabled: false
-}
-
-export default Dropzone
