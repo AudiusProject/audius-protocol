@@ -1,3 +1,6 @@
+import { setupTracing } from './tracer'
+setupTracing()
+
 import ReactDOM from 'react-dom'
 import { render } from 'react-nil'
 
