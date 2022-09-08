@@ -27,7 +27,7 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
+import { actions as playlistLibraryActions } from 'common/store/playlist-library/slice'
 import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
 import { share } from 'utils/share'
 
@@ -36,6 +36,7 @@ const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 
 const { getPlaylistLibrary, getUserId } = accountSelectors
+const { update: updatePlaylistLibrary } = playlistLibraryActions
 
 /* REPOST COLLECTION */
 

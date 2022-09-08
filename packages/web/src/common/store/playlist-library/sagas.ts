@@ -31,7 +31,9 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { getResult } from 'common/store/confirmer/selectors'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 
-import { update } from './slice'
+import { actions } from './slice'
+
+const { update } = actions
 
 const { getAccountNavigationPlaylists, getAccountUser, getPlaylistLibrary } =
   accountSelectors

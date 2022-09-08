@@ -1,4 +1,5 @@
 import { SolanaClient, CommonStoreContext } from '@audius/common'
+import * as Sentry from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
@@ -11,6 +12,7 @@ import { localStorage } from 'services/local-storage'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { walletClient } from 'services/wallet-client'
+import { isElectron } from 'utils/clientUtil'
 
 import { getLineupSelectorForRoute } from './lineup/lineupForRoute'
 
@@ -27,6 +29,7 @@ export const storeContext: CommonStoreContext = {
   walletClient,
   localStorage,
   isNativeMobile: false,
+  isElectron: isElectron(),
   env,
   explore,
   getLineupSelectorForRoute,
@@ -34,5 +37,6 @@ export const storeContext: CommonStoreContext = {
   solanaClient: new SolanaClient({
     solanaClusterEndpoint: process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: process.env.REACT_APP_METADATA_PROGRAM_ID
-  })
+  }),
+  sentry: Sentry
 }
