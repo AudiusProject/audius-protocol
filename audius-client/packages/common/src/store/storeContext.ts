@@ -1,3 +1,4 @@
+import { TrackDownload } from 'services'
 import { Cognito } from 'services/cognito'
 import { SolanaClient } from 'services/solana-client'
 
@@ -50,4 +51,5 @@ export type CommonStoreContext = {
     configureScope: (fn: (scope: { setUser: any }) => void) => void
   }
   cognito: Cognito
+  trackDownload: TrackDownload
 }
