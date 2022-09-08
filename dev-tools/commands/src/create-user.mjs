@@ -1,9 +1,11 @@
 import { randomBytes } from "crypto";
+import { mkdir, writeFile } from "fs/promises";
+import path from "path";
 
 import chalk from "chalk";
 import { program } from "commander";
 
-import { initializeAudiusLibs } from "./utils.mjs";
+import { ACCOUNTS_PATH, initializeAudiusLibs } from "./utils.mjs";
 
 program.command("create-user")
   .description("Create a new user")
@@ -13,7 +15,7 @@ program.command("create-user")
   .action(async (handle, { password, email }) => {
     const audiusLibs = await initializeAudiusLibs();
 
-    const rand = randomBytes(2).toString("hex").toUpperCase();
+    const rand = randomBytes(2).toString("hex").padStart(4, '0').toUpperCase();
 
     email = email || `audius-cmd+${rand}@audius.co`;
 
@@ -46,6 +48,12 @@ program.command("create-user")
       console.log(chalk.yellow.bold("Handle:   "), metadata.handle);
       console.log(chalk.yellow.bold("Email:    "), email);
       console.log(chalk.yellow.bold("Password: "), password);
+
+      await mkdir(ACCOUNTS_PATH, { recursive: true });
+      await writeFile(
+        path.join(ACCOUNTS_PATH, metadata.handle),
+        audiusLibs.web3Manager.ownerWallet.privateKey.toString("hex"),
+      );
     } catch (err) {
       program.error(err.message);
     }
