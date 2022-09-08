@@ -20,6 +20,7 @@
     "build": "rollup -c",
     "lint": "eslint --cache src",
     "lint:fix": "npm run lint -- --fix",
+    "postinstall": "rm -rf node_modules/react",
     "start": "rollup -c -w",
     "typecheck": "tsc --noEmit"
   },
