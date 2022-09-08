@@ -218,18 +218,11 @@ export function* retrieveTracks({
     },
     retrieveFromSource: function* (ids: ID[] | UnlistedTrackRequest[]) {
       const apiClient = yield* getContext('apiClient')
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       let fetched: UserTrackMetadata | UserTrackMetadata[] | null | undefined
       if (canBeUnlisted) {
         const ids = trackIds as UnlistedTrackRequest[]
-        // TODO: remove the AudiusBackend
-        // branches here when we support
-        // bulk track fetches in the API.
         if (ids.length > 1) {
-          fetched = yield* call(
-            audiusBackendInstance.getTracksIncludingUnlisted,
-            trackIds as UnlistedTrackRequest[]
-          )
+          throw new Error('Can only query for single unlisted track')
         } else {
           fetched = yield* call([apiClient, 'getTrack'], {
             id: ids[0].id,
@@ -243,10 +236,9 @@ export function* retrieveTracks({
       } else {
         const ids = trackIds as number[]
         if (ids.length > 1) {
-          fetched = yield* call(audiusBackendInstance.getAllTracks, {
-            offset: 0,
-            limit: ids.length,
-            idsArray: ids as ID[]
+          fetched = yield* call([apiClient, 'getTracks'], {
+            ids,
+            currentUserId
           })
         } else {
           fetched = yield* call([apiClient, 'getTrack'], {
