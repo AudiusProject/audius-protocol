@@ -58,47 +58,6 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  # Staging IPFS build
-  - web-build-ipfs-staging:
-      requires:
-        - web-init
-      filters:
-        branches:
-          only: /^main$/
-  - web-deploy-ipfs-staging:
-      context: Audius Client
-      requires:
-        - web-build-ipfs-staging
-      filters:
-        branches:
-          only: /^main$/
-  - web-update-staging-ga-ipfs-build:
-      context:
-        - Audius Client
-        - Pinata
-      requires:
-        - web-deploy-ipfs-staging
-      filters:
-        branches:
-          only: /^main$/
-  - web-publish-staging-build-cids:
-      context:
-        - Audius Client
-      requires:
-        - web-update-staging-ga-ipfs-build
-      filters:
-        branches:
-          only: /^main$/
-  - web-update-ipfs-staging-records:
-      context:
-        - Audius Client
-        - Cloudflare API
-      requires:
-        - web-update-staging-ga-ipfs-build
-      filters:
-        branches:
-          only: /^main$/
-
   # Release production web.
   - web-hold-production:
       type: approval
@@ -127,61 +86,6 @@ jobs:
       context: Audius Client
       requires:
         - web-deploy-production-s3
-      filters:
-        branches:
-          only: /(^release.*)$/
-
-  # Production IPFS build
-  - web-build-ipfs-production:
-      requires:
-        - web-init
-      filters:
-        branches:
-          only: /(^release.*)$/
-  - web-deploy-ipfs-production:
-      context: Audius Client
-      requires:
-        - web-build-ipfs-production
-      filters:
-        branches:
-          only: /(^release.*)$/
-  - web-hold-update-production-ga-ipfs-build:
-      type: approval
-      requires:
-        - web-deploy-ipfs-production
-      filters:
-        branches:
-          only: /(^release.*)$/
-  - web-update-production-ga-ipfs-build:
-      context:
-        - Audius Client
-        - Pinata
-      requires:
-        - web-hold-update-production-ga-ipfs-build
-      filters:
-        branches:
-          only: /(^release.*)$/
-  - web-publish-production-build-cids:
-      context:
-        - Audius Client
-      requires:
-        - web-update-production-ga-ipfs-build
-      filters:
-        branches:
-          only: /(^release.*)$/
-  - web-hold-update-ipfs-production-records:
-      type: approval
-      requires:
-        - web-update-production-ga-ipfs-build
-      filters:
-        branches:
-          only: /(^release.*)$/
-  - web-update-ipfs-production-records:
-      context:
-        - Audius Client
-        - Cloudflare API
-      requires:
-        - web-hold-update-ipfs-production-records
       filters:
         branches:
           only: /(^release.*)$/
