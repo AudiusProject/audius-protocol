@@ -44,8 +44,10 @@
   align-items: center;
   margin: 10px 0;
 }
-.profilePicture {
+.profilePictureWrapper {
   cursor: pointer;
+}
+.profilePicture {
   border: 1px solid var(--neutral-light-8);
 }
 .name {
