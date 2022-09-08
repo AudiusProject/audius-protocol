@@ -139,7 +139,6 @@ def test_index_valid_social_features(app, mocker):
         side_effect=get_events_side_effect,
         autospec=True,
     )
-    test_metadata = {}
 
     entities = {
         "users": [
@@ -163,7 +162,7 @@ def test_index_valid_social_features(app, mocker):
             block_number=1,
             block_timestamp=1585336422,
             block_hash=0,
-            ipfs_metadata=test_metadata,
+            ipfs_metadata={},
         )
 
         # Verify follows
@@ -298,7 +297,6 @@ def test_index_invalid_social_features(app, mocker):
         side_effect=get_events_side_effect,
         autospec=True,
     )
-    test_metadata = {}
 
     entities = {
         "users": [
@@ -322,7 +320,7 @@ def test_index_invalid_social_features(app, mocker):
             block_number=1,
             block_timestamp=1585336422,
             block_hash=0,
-            ipfs_metadata=test_metadata,
+            ipfs_metadata={},
         )
 
         # Verify follows

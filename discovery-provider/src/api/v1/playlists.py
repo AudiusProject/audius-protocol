@@ -86,13 +86,14 @@ def get_playlist(playlist_id, current_user_id):
     return None
 
 
-def get_tracks_for_playlist(playlist_id, current_user_id=None):
+def get_tracks_for_playlist(playlist_id, current_user_id=None, exclude_premium=False):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         args = {
             "playlist_ids": [playlist_id],
             "populate_tracks": True,
             "current_user_id": current_user_id,
+            "exclude_premium": exclude_premium,
         }
         playlist_tracks_map = get_playlist_tracks(session, args)
         playlist_tracks = playlist_tracks_map[playlist_id]
@@ -164,7 +165,7 @@ class PlaylistTracks(Resource):
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         decoded_id = decode_with_abort(playlist_id, ns)
-        tracks = get_tracks_for_playlist(decoded_id)
+        tracks = get_tracks_for_playlist(playlist_id=decoded_id, exclude_premium=True)
         return success_response(tracks)
 
 

@@ -79,7 +79,7 @@ def entity_manager_update(
         # collect events by entity type and action
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
 
-        # fetch existing playlists
+        # fetch existing tracks and playlists
         existing_records: ExistingRecordDict = fetch_existing_entities(
             session, entities_to_fetch
         )
@@ -91,7 +91,7 @@ def entity_manager_update(
 
         pending_track_routes: List[TrackRoute] = []
 
-        # process in tx order and populate playlists_to_save
+        # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             entity_manager_event_tx = get_entity_manager_events_tx(
