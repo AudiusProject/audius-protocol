@@ -2,7 +2,7 @@ import { combineReducers } from 'redux'
 
 import { Kind, Cache, Collection } from '../models'
 
-import accountSlice from './account/reducer'
+import accountSlice from './account/slice'
 import averageColorReducer from './average-color/slice'
 import collectionsReducer from './cache/collections/reducer'
 import { asCache } from './cache/reducer'

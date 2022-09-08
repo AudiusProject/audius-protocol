@@ -21,6 +21,7 @@ import {
 import { RouterState } from 'connected-react-router'
 
 import signOnReducer from 'common/store/pages/signon/reducer'
+import PlaylistLibraryReducer from 'common/store/playlist-library/slice'
 import ServiceSelectionReducer from 'common/store/service-selection/slice'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
@@ -35,7 +36,6 @@ import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import { UploadPageState } from 'pages/upload-page/store/types'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
-import PlaylistLibraryReducer from 'store/playlist-library/slice'
 
 import { BackendState } from '../common/store/backend/types'
 import { ConfirmerState } from '../common/store/confirmer/types'

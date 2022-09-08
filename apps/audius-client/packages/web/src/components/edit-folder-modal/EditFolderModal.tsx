@@ -18,15 +18,16 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
+import { actions as playlistLibraryActions } from 'common/store/playlist-library/slice'
 import FolderForm from 'components/create-playlist/FolderForm'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import { getFolderId } from 'store/application/ui/editFolderModal/selectors'
 import { setFolderId } from 'store/application/ui/editFolderModal/slice'
-import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { zIndex } from 'utils/zIndex'
 
 import styles from './EditFolderModal.module.css'
+const { update: updatePlaylistLibrary } = playlistLibraryActions
 const getPlaylistLibrary = accountSelectors.getPlaylistLibrary
 
 const messages = {

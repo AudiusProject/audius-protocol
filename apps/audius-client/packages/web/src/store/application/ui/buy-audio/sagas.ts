@@ -19,7 +19,9 @@ import {
   TransactionDetails,
   walletSelectors,
   StringWei,
-  BNWei
+  BNWei,
+  createUserBankIfNeeded,
+  deriveUserBank
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { RouteInfo } from '@jup-ag/core'
@@ -32,6 +34,7 @@ import { takeLatest } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
+import { track } from 'services/analytics'
 import {
   createTransferToUserBankTransaction,
   getAssociatedTokenAccountInfo,
@@ -46,10 +49,7 @@ import {
   saveUserBankTransactionMetadata
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
-import {
-  createUserBankIfNeeded,
-  deriveUserBank
-} from 'services/audius-backend/waudio'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 const {
   calculateAudioPurchaseInfo,
@@ -145,7 +145,7 @@ function* getTransactionFees({
       routeInfo: route,
       userPublicKey: rootAccount
     })
-    const userBank = yield* call(deriveUserBank)
+    const userBank = yield* call(deriveUserBank, audiusBackendInstance)
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
       {
@@ -273,7 +273,7 @@ function* getAudioPurchaseInfo({
 
     // Ensure userbank is created
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded)
+      yield* call(createUserBankIfNeeded, track, audiusBackendInstance)
     })
 
     // Setup
@@ -466,7 +466,7 @@ function* startBuyAudioFlow({
 
     // Ensure userbank is created
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded)
+      yield* call(createUserBankIfNeeded, track, audiusBackendInstance)
     })
 
     // Cache current SOL balance
@@ -597,7 +597,7 @@ function* startBuyAudioFlow({
     })
 
     // Transfer AUDIO to userbank
-    const userBank = yield* call(deriveUserBank)
+    const userBank = yield* call(deriveUserBank, audiusBackendInstance)
     yield* put(transferStarted())
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
