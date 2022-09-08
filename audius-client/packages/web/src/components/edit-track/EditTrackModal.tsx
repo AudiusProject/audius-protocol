@@ -129,9 +129,7 @@ const EditTrackModal = ({
   }
 
   const onAddStems = async (selectedStems: File[]) => {
-    const processed = (
-      await Promise.all(processFiles(selectedStems, false, () => {}))
-    )
+    const processed = (await Promise.all(processFiles(selectedStems, () => {})))
       .filter(removeNullable)
       .map((p) => ({
         ...p,
