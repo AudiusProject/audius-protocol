@@ -150,7 +150,7 @@ describe('test recoverOrphanedData job processor', function () {
               ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS: 1
             }
       }
-    )
+    ).default
   }
 
   type VerifyJobResults = {
@@ -173,7 +173,12 @@ describe('test recoverOrphanedData job processor', function () {
 
     expect(jobResults.jobsToEnqueue)
       .to.have.nested.property(QUEUE_NAMES.RECOVER_ORPHANED_DATA)
-      .that.eqls([{ discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT, parentSpanContext: undefined }])
+      .that.eqls([
+        {
+          discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT,
+          parentSpanContext: undefined
+        }
+      ])
 
     expect(jobResults.metricsToRecord).to.eql([
       {

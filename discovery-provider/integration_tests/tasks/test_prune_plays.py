@@ -112,7 +112,12 @@ def test_prune_plays_max_batch(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _prune_plays(session, CURRENT_TIMESTAMP, max_batch=1)
+        _prune_plays(
+            session,
+            CURRENT_TIMESTAMP,
+            cutoff_timestamp=CURRENT_TIMESTAMP - timedelta(weeks=140),
+            max_batch=1,
+        )
         # verify plays
         plays_result: List[Play] = session.query(Play).order_by(Play.id).all()
         assert len(plays_result) == 3

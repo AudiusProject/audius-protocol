@@ -11,7 +11,6 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const DecisionTree = require('../../utils/decisionTree')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { instrumentTracing, tracing } = require('../../tracer')
 const { fetchExportFromNode } = require('./syncUtil')
 const {
@@ -20,10 +19,6 @@ const {
 
 const DEFAULT_LOG_CONTEXT = {}
 const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
-const SyncRequestMaxUserFailureCountBeforeSkip = config.get(
-  'syncRequestMaxUserFailureCountBeforeSkip'
-)
-
 const {
   LOCAL_DB_ENTRIES_SET_KEY_PREFIX,
   FETCHED_ENTRIES_SET_KEY_PREFIX,
@@ -343,32 +338,6 @@ async function saveFilesToDisk({ files, gatewaysToTry, wallet, libs, logger }) {
         }
       })
     )
-  }
-
-  /**
-   * Handle case where some CIDs were not successfully saved
-   * Reject whole operation until threshold reached, then proceed and mark those CIDs as skipped
-   */
-  if (CIDsThatFailedSaveFileOp.size > 0) {
-    const userSyncFailureCount =
-      await UserSyncFailureCountService.incrementFailureCount(wallet)
-
-    // Throw error if failure threshold not yet reached
-    if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
-      throw new Error(
-        `[saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Cannot proceed because UserSyncFailureCount = ${userSyncFailureCount} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    } else {
-      // If threshold reached, reset failure count and continue
-      await UserSyncFailureCountService.resetFailureCount(wallet)
-
-      logger.info(
-        `[saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Proceeding anyway because UserSyncFailureCount = ${userSyncFailureCount} reached SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    }
-  } else {
-    // Reset failure count if all CIDs were successfully saved
-    await UserSyncFailureCountService.resetFailureCount(wallet)
   }
 
   return CIDsThatFailedSaveFileOp

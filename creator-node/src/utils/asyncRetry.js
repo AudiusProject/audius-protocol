@@ -5,6 +5,8 @@ const { logger: genericLogger } = require('../logging')
 /**
  * Wrapper around async-retry API.
  *
+ * NOTE: The asyncFn must throw in order for the function to retry.
+ *
  * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
  * @param {Object} param
  * @param {func} param.asyncFn the fn to asynchronously retry
