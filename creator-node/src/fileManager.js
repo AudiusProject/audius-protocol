@@ -188,7 +188,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
               )
             } else {
               throw new Error(
-                `Failed to fetch content=${multihash} with statusCode=${e.response?.status}. Retrying..`
+                `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
               )
             }
           }
