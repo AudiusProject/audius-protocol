@@ -144,7 +144,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
 
     try {
       await asyncRetry({
-        asyncFn: async (bail) => {
+        asyncFn: async (bail, num) => {
           try {
             await fetchFileFromTargetGatewayAndWriteToDisk({
               contentUrl,
@@ -181,9 +181,16 @@ async function fetchFileFromNetworkAndWriteToDisk({
             }
 
             // Re-throw any other error to continue with retry logic
-            throw new Error(
-              `Failed to fetch content=${multihash} with statusCode=${e.response?.status}. Retrying..`
-            )
+            if (num === numRetries + 1) {
+              // Final error thrown
+              throw new Error(
+                `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
+              )
+            } else {
+              throw new Error(
+                `Failed to fetch content=${multihash} with statusCode=${e.response?.status}. Retrying..`
+              )
+            }
           }
         },
         logger,
