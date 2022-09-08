@@ -7,9 +7,8 @@ import {
   trackPageSelectors
 } from '@audius/common'
 import { trackRemixesPage } from 'audius-client/src/utils/route'
-import { useSelector } from 'common/hooks/useSelector'
 import { Text, View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button, Screen } from 'app/components/core'
@@ -61,7 +60,7 @@ export const TrackScreen = () => {
   const { searchTrack, id } = params ?? {}
 
   useEffect(() => {
-    dispatch(fetchTrack(id))
+    dispatch(fetchTrack(id, undefined, undefined, true))
   }, [dispatch, id])
 
   const cachedTrack = useSelector((state) => getTrack(state, params))

@@ -1,13 +1,13 @@
 import moment from 'moment'
 import { useSelector as reduxUseSelector, shallowEqual } from 'react-redux'
 
-import { ID } from 'models/Identifiers'
-import { stemCategoryFriendlyNames, StemCategory } from 'models/Stems'
-import { Track, StemTrack } from 'models/Track'
-import { getHasAccount } from 'store/account/selectors'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
-import { CommonState } from 'store/commonStore'
-import { getCurrentUploads } from 'store/stems-upload/selectors'
+import { ID } from '../models/Identifiers'
+import { stemCategoryFriendlyNames, StemCategory } from '../models/Stems'
+import { Track, StemTrack } from '../models/Track'
+import { getHasAccount } from '../store/account/selectors'
+import { getTrack, getTracks } from '../store/cache/tracks/selectors'
+import { CommonState } from '../store/commonStore'
+import { getCurrentUploads } from '../store/stems-upload/selectors'
 
 export type DownloadButtonConfig = {
   state: ButtonState
@@ -68,7 +68,7 @@ const useCurrentStems = ({
   trackId: ID
   useSelector: typeof reduxUseSelector
 }) => {
-  const track: Track | null = useSelector(
+  const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )

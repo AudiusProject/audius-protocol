@@ -87,9 +87,6 @@ export enum MessageType {
   // Share
   SHARE_MESSAGE = 'share',
 
-  // Download
-  DOWNLOAD_TRACK = 'download-track',
-
   // Navigation
   ON_FIRST_PAGE = 'nav-on-first-page',
   NOT_ON_FIRST_PAGE = 'nav-not-on-first-page',
