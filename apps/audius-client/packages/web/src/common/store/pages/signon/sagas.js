@@ -427,7 +427,7 @@ function* signUp() {
       },
       function* () {
         yield put(signOnActions.signUpSucceeded())
-        yield call(fetchAccountAsync)
+        yield call(fetchAccountAsync, { isSignUp: true })
       },
       function* ({ timeout }) {
         if (timeout) {
