@@ -3,6 +3,9 @@ from typing import Optional, TypedDict
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track_trending_score import TrackTrendingScore
+from src.premium_content.premium_content_constants import (
+    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+)
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.tasks.generate_trending import generate_trending
@@ -32,7 +35,12 @@ def make_trending_cache_key(
 
 
 def generate_unpopulated_trending(
-    session, genre, time_range, strategy, limit=TRENDING_LIMIT
+    session,
+    genre,
+    time_range,
+    strategy,
+    exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+    limit=TRENDING_LIMIT,
 ):
     trending_tracks = generate_trending(session, time_range, genre, limit, 0, strategy)
 
@@ -40,18 +48,39 @@ def generate_unpopulated_trending(
         strategy.get_track_score(time_range, track)
         for track in trending_tracks["listen_counts"]
     ]
-    # Re apply the limit just in case we did decide to include more tracks in the scoring than the limit
     sorted_track_scores = sorted(
         track_scores, key=lambda k: (k["score"], k["track_id"]), reverse=True
-    )[:limit]
-    track_ids = [track["track_id"] for track in sorted_track_scores]
+    )
 
-    tracks = get_unpopulated_tracks(session, track_ids)
+    # Re apply the limit just in case we did decide to include more tracks in the scoring than the limit
+    # Only limit the number of sorted tracks here if we are not later
+    # filtering out the premium tracks. Otherwise, the number of
+    # tracks we return later may be smaller than the limit.
+    # If we don't limit it here, we limit it later after getting the
+    # unpopulated tracks.
+    should_apply_limit_early = not exclude_premium
+    if should_apply_limit_early:
+        sorted_track_scores = sorted_track_scores[:limit]
+
+    # Get unpopulated metadata
+    track_ids = [track["track_id"] for track in sorted_track_scores]
+    tracks = get_unpopulated_tracks(session, track_ids, exclude_premium=exclude_premium)
+
+    # Make sure to apply the limit if not previously applied
+    # because of the filtering out of premium tracks
+    if not should_apply_limit_early:
+        tracks = tracks[:limit]
+
     return (tracks, track_ids)
 
 
 def generate_unpopulated_trending_from_mat_views(
-    session, genre, time_range, strategy, limit=TRENDING_LIMIT
+    session,
+    genre,
+    time_range,
+    strategy,
+    exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+    limit=TRENDING_LIMIT,
 ):
 
     # use all time instead of year for version EJ57D
@@ -73,29 +102,63 @@ def generate_unpopulated_trending_from_mat_views(
             TrackTrendingScore.genre == genre
         )
 
-    trending_track_ids = (
-        trending_track_ids_query.order_by(
-            desc(TrackTrendingScore.score), desc(TrackTrendingScore.track_id)
+    # Only limit the number of sorted tracks here if we are not later
+    # filtering out the premium tracks. Otherwise, the number of
+    # tracks we return later may be smaller than the limit.
+    # If we don't limit it here, we limit it later after getting the
+    # unpopulated tracks.
+    should_apply_limit_early = not exclude_premium
+    if should_apply_limit_early:
+        trending_track_ids = (
+            trending_track_ids_query.order_by(
+                desc(TrackTrendingScore.score), desc(TrackTrendingScore.track_id)
+            )
+            .limit(limit)
+            .all()
         )
-        .limit(limit)
-        .all()
-    )
+    else:
+        trending_track_ids = trending_track_ids_query.order_by(
+            desc(TrackTrendingScore.score), desc(TrackTrendingScore.track_id)
+        ).all()
 
+    # Get unpopulated metadata
     track_ids = [track_id[0] for track_id in trending_track_ids]
-    tracks = get_unpopulated_tracks(session, track_ids)
+    tracks = get_unpopulated_tracks(session, track_ids, exclude_premium=exclude_premium)
+
+    # Make sure to apply the limit if not previously applied
+    # because of the filtering out of premium tracks
+    if not should_apply_limit_early:
+        tracks = tracks[:limit]
+
     return (tracks, track_ids)
 
 
-def make_generate_unpopulated_trending(session, genre, time_range, strategy):
+def make_generate_unpopulated_trending(
+    session: Session,
+    genre: Optional[str],
+    time_range: str,
+    strategy: str,
+    exclude_premium: bool,
+):
     """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which
     expects to be passed a function with no arguments."""
 
     def wrapped():
         if strategy.use_mat_view:
             return generate_unpopulated_trending_from_mat_views(
-                session, genre, time_range, strategy
+                session=session,
+                genre=genre,
+                time_range=time_range,
+                strategy=strategy,
+                exclude_premium=exclude_premium,
             )
-        return generate_unpopulated_trending(session, genre, time_range, strategy)
+        return generate_unpopulated_trending(
+            session=session,
+            genre=genre,
+            time_range=time_range,
+            strategy=strategy,
+            exclude_premium=exclude_premium,
+        )
 
     return wrapped
 
@@ -104,6 +167,7 @@ class GetTrendingTracksArgs(TypedDict, total=False):
     current_user_id: Optional[int]
     genre: Optional[str]
     time: str
+    exclude_premium: bool
 
 
 def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy):
@@ -116,10 +180,11 @@ def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrat
 def _get_trending_tracks_with_session(
     session: Session, args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy
 ):
-    current_user_id, genre, time = (
+    current_user_id, genre, time, exclude_premium = (
         args.get("current_user_id"),
         args.get("genre"),
         args.get("time", "week"),
+        args.get("exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS),
     )
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
     key = make_trending_cache_key(time_range, genre, strategy.version)
@@ -129,7 +194,13 @@ def _get_trending_tracks_with_session(
     (tracks, track_ids) = use_redis_cache(
         key,
         None,
-        make_generate_unpopulated_trending(session, genre, time_range, strategy),
+        make_generate_unpopulated_trending(
+            session=session,
+            genre=genre,
+            time_range=time_range,
+            strategy=strategy,
+            exclude_premium=exclude_premium,
+        ),
     )
 
     # populate track metadata

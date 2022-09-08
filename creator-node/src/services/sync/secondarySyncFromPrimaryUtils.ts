@@ -1,13 +1,15 @@
+import type Logger from 'bunyan'
 import type {
   ForceResyncConfig,
   ForceResyncSigningData,
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
 
+import { getContentNodeInfoFromSpId } from '../ContentNodeInfoManager'
+
 const _ = require('lodash')
 
 const { logger: genericLogger } = require('../../logging')
-const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
 const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
 
 const asyncRetry = require('../../utils/asyncRetry')
@@ -43,7 +45,9 @@ const shouldForceResync = async (
 
   const { signatureData, wallet, forceResync } = forceResyncConfig
 
-  const logger = logContext ? genericLogger.child(logContext) : genericLogger
+  const logger: Logger = logContext
+    ? genericLogger.child(logContext)
+    : genericLogger
 
   logger.debug(
     `Checking shouldForceResync: wallet=${wallet} forceResync=${forceResync}`
@@ -69,14 +73,15 @@ const shouldForceResync = async (
 
   try {
     // Get the delegate wallet from the primary of the observed user
-    const userPrimaryId = await asyncRetry({
+    const userPrimaryId: number = await asyncRetry({
       asyncFn: async () => {
         return (await libs.User.getUsers(1, 0, null, wallet))[0].primary_id
       },
       logLabel: 'shouldForceResync'
     })
-    const { delegateOwnerWallet: actualPrimaryWallet } =
-      ContentNodeInfoManager.getContentNodeInfoFromSpId(userPrimaryId)
+    const primaryInfo = await getContentNodeInfoFromSpId(userPrimaryId, logger)
+    if (primaryInfo === undefined) return false
+    const { delegateOwnerWallet: actualPrimaryWallet } = primaryInfo
 
     logger.debug(
       `shouldForceResync wallets actual: ${actualPrimaryWallet} recovered: ${recoveredPrimaryWallet}`
@@ -88,7 +93,7 @@ const shouldForceResync = async (
     )
   } catch (e: any) {
     logger.error(
-      `shouldForceResync Could not verify primary delegate owner key: ${e.message}`
+      `shouldForceResync Could not verify primary delegate owner key: ${e.message}: ${e.stack}`
     )
   }
 

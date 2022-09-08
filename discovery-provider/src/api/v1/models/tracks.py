@@ -70,6 +70,12 @@ field_visibility = ns.model(
         "remixes": fields.Boolean,
     },
 )
+premium_conditions = ns.model(
+    "premium_conditions",
+    {
+        "nft-collection": fields.String,
+    },
+)
 track = ns.model(
     "Track",
     {
@@ -125,6 +131,8 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
+        "is_premium": fields.Boolean,
+        "premium_conditions": fields.Nested(premium_conditions),
     },
 )
 

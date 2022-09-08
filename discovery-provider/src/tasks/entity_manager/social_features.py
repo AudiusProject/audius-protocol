@@ -3,12 +3,10 @@ from typing import Union
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
-from src.tasks.entity_manager.utils import (
-    Action,
-    EntityType,
-    ManageEntityParameters,
-    get_record_key,
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
 )
+from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 
 action_to_record_type = {
     Action.FOLLOW: EntityType.FOLLOW,
@@ -19,8 +17,16 @@ action_to_record_type = {
     Action.UNREPOST: EntityType.REPOST,
 }
 
-create_actions = {Action.FOLLOW, Action.SAVE, Action.REPOST}
-delete_actions = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
+create_social_action_types = {Action.FOLLOW, Action.SAVE, Action.REPOST}
+delete_social_action_types = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
+
+premium_content_validation_actions = {
+    Action.SAVE,
+    Action.UNSAVE,
+    Action.REPOST,
+    Action.UNREPOST,
+}
+premium_content_validation_entities = {EntityType.TRACK}
 
 
 def create_social_record(params: ManageEntityParameters):
@@ -78,54 +84,45 @@ def delete_social_record(params):
 
     validate_social_feature(params)
 
-    entity_key = get_record_key(params.user_id, params.entity_type, params.entity_id)
-    record_type = action_to_record_type[params.action]
-
-    if entity_key in params.existing_records[record_type]:
-        existing_entity = params.existing_records[record_type][entity_key]
-
-    if entity_key in params.new_records[params.entity_type]:
-        existing_entity = params.new_records[params.entity_type][entity_key][-1]
-
     deleted_record = None
     if params.action == Action.UNFOLLOW:
         deleted_record = Follow(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
-            follower_user_id=existing_entity.follower_user_id,
-            followee_user_id=existing_entity.followee_user_id,
-            is_current=existing_entity.is_current,
-            is_delete=existing_entity.is_delete,
-            created_at=existing_entity.created_at,
+            follower_user_id=params.user_id,
+            followee_user_id=params.entity_id,
+            is_current=True,
+            is_delete=True,
+            created_at=params.block_datetime,
             txhash=params.txhash,
         )
     elif params.action == Action.UNSAVE:
         deleted_record = Save(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
-            user_id=existing_entity.user_id,
-            save_item_id=existing_entity.save_item_id,
-            save_type=existing_entity.save_type,
-            is_current=existing_entity.is_current,
-            is_delete=existing_entity.is_delete,
-            created_at=existing_entity.created_at,
+            created_at=params.block_datetime,
             txhash=params.txhash,
+            user_id=params.user_id,
+            save_item_id=params.entity_id,
+            save_type=params.entity_type.lower(),
+            is_current=True,
+            is_delete=True,
         )
     elif params.action == Action.UNREPOST:
         deleted_record = Repost(
             blockhash=params.event_blockhash,
             blocknumber=params.block_number,
-            user_id=existing_entity.user_id,
-            repost_item_id=existing_entity.repost_item_id,
-            repost_type=existing_entity.repost_type,
-            is_current=existing_entity.is_current,
-            is_delete=existing_entity.is_delete,
-            created_at=existing_entity.created_at,
+            created_at=params.block_datetime,
             txhash=params.txhash,
+            user_id=params.user_id,
+            repost_item_id=params.entity_id,
+            repost_type=params.entity_type.lower(),
+            is_current=True,
+            is_delete=True,
         )
 
     if deleted_record:
-        deleted_record.is_delete = True
+        record_type = action_to_record_type[params.action]
         params.add_social_feature_record(
             params.user_id,
             params.entity_type,
@@ -150,33 +147,21 @@ def validate_social_feature(params: ManageEntityParameters):
         if params.user_id == params.entity_id:
             raise Exception("User cannot follow themself")
 
-
-def copy_follow_record(
-    old_follow: Follow, block_number: int, event_blockhash: str, txhash: str
-):
-    return Follow(
-        blockhash=event_blockhash,
-        blocknumber=block_number,
-        follower_user_id=old_follow.follower_user_id,
-        followee_user_id=old_follow.followee_user_id,
-        is_current=old_follow.is_current,
-        is_delete=old_follow.is_delete,
-        created_at=old_follow.created_at,
-        txhash=txhash,
-    )
+    if should_check_entity_access(params.action, params.entity_type):
+        premium_content_access = premium_content_access_checker.check_access(
+            user_id=params.user_id,
+            premium_content_id=params.entity_id,
+            premium_content_type="track",
+            premium_content_entity=params.existing_records[params.entity_type][
+                params.entity_id
+            ],
+        )
+        if not premium_content_access["does_user_have_access"]:
+            raise Exception("User has no access to entity")
 
 
-def copy_save_record(
-    existing_entity: Save, block_number: int, event_blockhash: str, txhash: str
-):
-    return Save(
-        blockhash=event_blockhash,
-        blocknumber=block_number,
-        user_id=existing_entity.user_id,
-        save_item_id=existing_entity.save_item_id,
-        save_type=existing_entity.save_type,
-        is_current=existing_entity.is_current,
-        is_delete=existing_entity.is_delete,
-        created_at=existing_entity.created_at,
-        txhash=txhash,
+def should_check_entity_access(action: Action, entity_type: EntityType):
+    return (
+        action in premium_content_validation_actions
+        and entity_type in premium_content_validation_entities
     )

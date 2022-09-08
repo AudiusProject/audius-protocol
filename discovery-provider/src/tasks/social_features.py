@@ -9,6 +9,9 @@ from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
+)
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
@@ -205,10 +208,33 @@ def add_track_repost(
         )
     )
 
+    premium_content_access_args = []
+    for event in new_track_repost_events:
+        premium_content_access_args.append(
+            {
+                "user_id": event["args"]._userId,
+                "premium_content_id": event["args"]._trackId,
+                "premium_content_type": "track",
+            }
+        )
+    premium_content_access = premium_content_access_checker.check_access_for_batch(
+        session, premium_content_access_args
+    )
+
     for event in new_track_repost_events:
         event_args = event["args"]
         repost_user_id = event_args._userId
         repost_track_id = event_args._trackId
+
+        does_user_have_track_access = (
+            repost_user_id in premium_content_access["track"]
+            and repost_track_id in premium_content_access["track"][repost_user_id]
+            and premium_content_access["track"][repost_user_id][repost_track_id][
+                "does_user_have_access"
+            ]
+        )
+        if not does_user_have_track_access:
+            continue
 
         if (repost_user_id in track_repost_state_changes) and (
             repost_track_id in track_repost_state_changes[repost_user_id]
@@ -251,10 +277,33 @@ def delete_track_repost(
         )
     )
 
+    premium_content_access_args = []
+    for event in new_repost_events:
+        premium_content_access_args.append(
+            {
+                "user_id": event["args"]._userId,
+                "premium_content_id": event["args"]._trackId,
+                "premium_content_type": "track",
+            }
+        )
+    premium_content_access = premium_content_access_checker.check_access_for_batch(
+        session, premium_content_access_args
+    )
+
     for event in new_repost_events:
         event_args = event["args"]
         repost_user_id = event_args._userId
         repost_track_id = event_args._trackId
+
+        does_user_have_track_access = (
+            repost_user_id in premium_content_access["track"]
+            and repost_track_id in premium_content_access["track"][repost_user_id]
+            and premium_content_access["track"][repost_user_id][repost_track_id][
+                "does_user_have_access"
+            ]
+        )
+        if not does_user_have_track_access:
+            continue
 
         if (repost_user_id in track_repost_state_changes) and (
             repost_track_id in track_repost_state_changes[repost_user_id]

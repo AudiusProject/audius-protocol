@@ -7,7 +7,7 @@
  * the new way of importing/exporting
  */
 import { strToReplicaSet } from './strToReplicaSet'
-import { timeout, getRandomInt, verifySignature } from './utils'
+import { timeout, getRandomInt, verifySignature, stringifyMap } from './utils'
 import {
   validateMetadata,
   validateAssociatedWallets
@@ -46,7 +46,8 @@ export {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
-  strToReplicaSet
+  strToReplicaSet,
+  stringifyMap
 }
 
 module.exports = {
@@ -65,6 +66,7 @@ module.exports = {
   validateAssociatedWallets,
   validateMetadata,
   strToReplicaSet,
+  stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID
 }

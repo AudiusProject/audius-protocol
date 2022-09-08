@@ -19,3 +19,7 @@ export async function timeout(ms: number, log = true) {
 export function getRandomInt(max: number) {
   return Math.floor(Math.random() * max)
 }
+
+export function stringifyMap(map: Record<any, any>) {
+  return JSON.stringify(Array.from(map.entries()))
+}
