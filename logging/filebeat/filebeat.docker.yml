@@ -47,6 +47,8 @@ filebeat.autodiscover:
           condition.or:
             - contains:
                 docker.container.image: "dn1_web-server"
+            - contains:
+                docker.container.image: "discovery-provider"
         - config:
             - type: container
               paths:
@@ -106,6 +108,8 @@ filebeat.autodiscover:
           condition.or:
             - contains:
                 docker.container.image: "audius-identity-service_identity-service"
+            - contains:
+                docker.container.image: "identity-service"
         - config:
             - type: container
               paths:
@@ -167,9 +171,13 @@ filebeat.autodiscover:
             - contains:
                 docker.container.image: "postgres"
             - contains:
+                docker.container.image: "elasticsearch"
+            - contains:
                 docker.container.image: "solana-programs"
             - contains:
                 docker.container.image: "ganache"
+            - contains:
+                docker.container.image: "autoheal"
         - config:
             - type: container
               paths:
@@ -183,9 +191,13 @@ filebeat.autodiscover:
             - not.contains:
                 docker.container.image: "dn1_web-server"
             - not.contains:
+                docker.container.image: "discovery-provider"
+            - not.contains:
                 docker.container.image: "creator-node"
             - not.equals:
                 docker.container.image: "audius-identity-service_identity-service"
+            - not.equals:
+                docker.container.image: "identity-service"
             - not.contains:
                 docker.container.image: "beat"
             - not.contains:
@@ -193,9 +205,13 @@ filebeat.autodiscover:
             - not.contains:
                 docker.container.image: "postgres"
             - not.contains:
+                docker.container.image: "elasticsearch"
+            - not.contains:
                 docker.container.image: "solana-programs"
             - not.contains:
                 docker.container.image: "ganache"
+            - not.contains:
+                docker.container.image: "autoheal"
 
 cloud.id: "${ELASTIC_CLOUD_ID}"
 output.elasticsearch:
@@ -207,15 +223,25 @@ output.elasticsearch:
         - regexp:
             container.name: dn._web-server_.
         - regexp:
+            container.name: discovery-provider
+        - regexp:
             container.name: cn._creator-node_.
         - regexp:
+            container.name: creator-node
+        - regexp:
             container.name: audius-identity-service_identity-service_.
+        - regexp:
+            container.name: identity-service
     - index: "filebeat-${CURRENT_INDEX_VERSION}-db-%{[agent.version]}-%{+yyyy.MM.dd}"
       when.or:
         - regexp:
             container.name: .*redis.*
         - regexp:
             container.name: .*discovery-provider-db.*
+        - regexp:
+            container.name: postgres
+        - regexp:
+            container.name: elasticsearch
     - index: "filebeat-${CURRENT_INDEX_VERSION}-beats-%{[agent.version]}-%{+yyyy.MM.dd}"
       when.or:
         - equals:

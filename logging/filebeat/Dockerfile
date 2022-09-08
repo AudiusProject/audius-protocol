@@ -22,3 +22,7 @@ RUN ELASTIC_ENDPOINT=$(echo ${ELASTIC_ENDPOINT} | base64 -d) \
     && chown root /usr/share/filebeat/filebeat.yml \
     && chmod go-w /usr/share/filebeat/filebeat.yml
 USER filebeat
+
+COPY start.sh /start.sh
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
+CMD ["/start.sh"]
