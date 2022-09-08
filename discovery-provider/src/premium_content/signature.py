@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TypedDict, cast
 
 from src.api_helpers import generate_signature
-from src.premium_content.types import PremiumContentType
+from src.premium_content.premium_content_types import PremiumContentType
 
 
 class PremiumContentSignatureData(TypedDict):

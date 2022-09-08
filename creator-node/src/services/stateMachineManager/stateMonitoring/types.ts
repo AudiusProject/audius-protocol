@@ -43,7 +43,6 @@ export type FetchCNodeEndpointToSpIdMapJobParams = {
 }
 export type FetchCNodeEndpointToSpIdMapJobReturnValue = {
   cNodeEndpointToSpIdMap: any
-  errorMsg: string
 }
 
 // Monitor State job
@@ -81,5 +80,5 @@ export type FindReplicaSetUpdateJobParams = {
   parentSpanContext?: SpanContext
 }
 export type FindReplicaSetUpdatesJobReturnValue = {
-  cNodeEndpointToSpIdMap: CNodeEndpointToSpIdMap
+  cNodeEndpointToSpIdMap: string
 }

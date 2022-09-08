@@ -13,6 +13,7 @@ import {
   writeStreamToFileSystem,
   _streamFileToDiskHelper,
   runShellCommand,
+  stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID
 } from './legacyUtils'
@@ -37,7 +38,8 @@ export {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
-  strToReplicaSet
+  strToReplicaSet,
+  stringifyMap
 }
 
 module.exports = {
@@ -56,6 +58,7 @@ module.exports = {
   validateAssociatedWallets,
   validateMetadata,
   strToReplicaSet,
+  stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID
 }
