@@ -1,17 +1,20 @@
+/**
+ * Util functions for fetching+updating the redis cache of info about content nodes.
+ * Maintains a bidirectional mappings of SP ID <--> chain info (endpoint and delegateOwnerWallet).
+ * TODO: Rename this to SpInfoManager and cache Discovery Nodes
+ */
+
 import type Logger from 'bunyan'
 
 import _ from 'lodash'
 
 import initAudiusLibs from './initAudiusLibs'
-import { logger as defaultLogger } from '../logging'
 import defaultRedisClient from '../redis'
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 
-// TODO: Make this into SpInfoManager and cache DNs too
-
 async function updateContentNodeChainInfo(
-  logger = defaultLogger,
+  logger: Logger,
   redisClient = defaultRedisClient,
   ethContracts?: EthContracts
 ) {
@@ -25,10 +28,12 @@ async function updateContentNodeChainInfo(
         _.pick(cn, ['endpoint', 'delegateOwnerWallet'])
       ])
     )
-    redisClient.set(
-      SP_ID_TO_CHAIN_INFO_MAP_KEY,
-      JSON.stringify(Array.from(spIdToChainInfoFromChain.entries()))
-    )
+    if (spIdToChainInfoFromChain.size > 0) {
+      redisClient.set(
+        SP_ID_TO_CHAIN_INFO_MAP_KEY,
+        JSON.stringify(Array.from(spIdToChainInfoFromChain.entries()))
+      )
+    }
   } catch (e: any) {
     logger.error(
       `Failed to fetch content nodes from chain and update mapping: ${e.message}`
@@ -37,7 +42,7 @@ async function updateContentNodeChainInfo(
 }
 
 async function getMapOfSpIdToChainInfo(
-  logger = defaultLogger,
+  logger: Logger,
   redisClient = defaultRedisClient
 ): Promise<Map<number, ContentNodeFromChain>> {
   try {
@@ -57,7 +62,7 @@ async function getMapOfSpIdToChainInfo(
 }
 
 async function getMapOfCNodeEndpointToSpId(
-  logger = defaultLogger,
+  logger: Logger,
   redisClient = defaultRedisClient
 ) {
   const spIdToChainInfo: Map<number, ContentNodeFromChain> =
@@ -71,7 +76,7 @@ async function getMapOfCNodeEndpointToSpId(
 
 async function getSpIdFromEndpoint(
   endpoint: string,
-  logger = defaultLogger,
+  logger: Logger,
   redisClient = defaultRedisClient
 ): Promise<number | undefined> {
   const cNodeEndpointToSpIdMap: Map<string, number> =
@@ -81,7 +86,7 @@ async function getSpIdFromEndpoint(
 
 async function getContentNodeInfoFromSpId(
   spId: number,
-  logger = defaultLogger,
+  logger: Logger,
   redisClient = defaultRedisClient
 ): Promise<ContentNodeFromChain | undefined> {
   const map = await getMapOfSpIdToChainInfo(logger, redisClient)
