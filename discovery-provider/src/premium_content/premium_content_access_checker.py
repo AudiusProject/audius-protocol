@@ -5,7 +5,7 @@ from typing import Dict, List, TypedDict, cast
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track import Track
 from src.premium_content.helpers import does_user_have_nft_collection
-from src.premium_content.types import PremiumContentType
+from src.premium_content.premium_content_types import PremiumContentType
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
