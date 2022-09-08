@@ -50,11 +50,18 @@ module.exports = (async () => {
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
       sourceExts: [...sourceExts, 'svg', 'cjs'],
-      nodeModulesPaths: [path.resolve(__dirname, 'node_modules')],
       extraNodeModules: {
         ...require('node-libs-react-native'),
         // Alias for 'src' to allow for absolute paths
         app: path.resolve(__dirname, 'src'),
+
+        // The following imports are needed for @audius/common
+        // and audius-client to compile correctly
+        'react-redux': resolveModule('react-redux'),
+        'react-native-svg': resolveModule('react-native-svg'),
+        'react-native': resolveModule('react-native'),
+        react: resolveModule('react'),
+
         // Aliases for 'audius-client' to allow for absolute paths
         ...getClientAliases(),
 
