@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   HCaptchaStatus,
   audioRewardsPageSelectors,
+  audioRewardsPageActions,
   modalsActions,
   modalsSelectors
 } from '@audius/common'
@@ -11,10 +12,10 @@ import type { NativeSyntheticEvent } from 'react-native'
 import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { MessageType } from 'app/message/types'
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors
 const { getHCaptchaStatus } = audioRewardsPageSelectors
+const { updateHCaptchaScore } = audioRewardsPageActions
 
 type HCaptchaMessage = {
   data: string
@@ -87,11 +88,7 @@ const HCaptchaModal = () => {
           if (['cancel', 'error', 'expired'].includes(code)) {
             handleClose()
           } else {
-            dispatch({
-              type: MessageType.UPDATE_HCAPTCHA_SCORE,
-              token: code,
-              isAction: true
-            })
+            dispatch(updateHCaptchaScore({ token: code }))
           }
         }
       }

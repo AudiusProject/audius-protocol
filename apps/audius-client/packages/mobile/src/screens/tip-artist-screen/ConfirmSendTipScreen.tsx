@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import { Button, TextButton } from 'app/components/core'
-import loadingSpinner from 'app/components/loading-spinner'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -93,7 +93,7 @@ export const ConfirmSendTipScreen = ({
         size='large'
         title={messages.confirm}
         onPress={handleConfirm}
-        icon={inProgress ? loadingSpinner : IconCheck}
+        icon={inProgress ? LoadingSpinner : IconCheck}
         disabled={inProgress}
         iconPosition='right'
         fullWidth

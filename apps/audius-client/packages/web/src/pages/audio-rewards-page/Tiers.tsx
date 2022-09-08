@@ -6,7 +6,8 @@ import {
   accountSelectors,
   badgeTiers,
   getTierNumber,
-  vipDiscordModalActions
+  vipDiscordModalActions,
+  musicConfettiActions
 } from '@audius/common'
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
@@ -17,7 +18,6 @@ import IconBronzeBadge from 'assets/img/tokenBadgeBronze108@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
-import { show } from 'components/music-confetti/store/slice'
 import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelectTierInfo } from 'hooks/wallet'
@@ -25,6 +25,7 @@ import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import styles from './Tiers.module.css'
+const { show } = musicConfettiActions
 const { pressDiscord } = vipDiscordModalActions
 const getAccountUser = accountSelectors.getAccountUser
 

@@ -1,3 +1,4 @@
+import { Cognito } from 'services/cognito'
 import { SolanaClient } from 'services/solana-client'
 
 import { AnalyticsEvent, LineupState, Track } from '../models'
@@ -48,4 +49,5 @@ export type CommonStoreContext = {
     setTag: (key: string, value: string) => void
     configureScope: (fn: (scope: { setUser: any }) => void) => void
   }
+  cognito: Cognito
 }

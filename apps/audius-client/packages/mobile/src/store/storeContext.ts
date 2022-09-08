@@ -8,6 +8,7 @@ import * as analytics from 'app/services/analytics'
 import { audioPlayer } from 'app/services/audio-player'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { cognito } from 'app/services/cognito'
 import { env } from 'app/services/env'
 import { explore } from 'app/services/explore'
 import { fingerprintClient } from 'app/services/fingerprint'
@@ -39,5 +40,6 @@ export const storeContext: CommonStoreContext = {
   }),
   sentry: Sentry,
   // Shim in main, but defined in native-reloaded branch
-  audioPlayer
+  audioPlayer,
+  cognito
 }
