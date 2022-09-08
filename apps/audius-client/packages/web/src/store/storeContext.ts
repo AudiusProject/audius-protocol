@@ -12,6 +12,7 @@ import { fingerprintClient } from 'services/fingerprint'
 import { localStorage } from 'services/local-storage'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { trackDownload } from 'services/track-download'
 import { walletClient } from 'services/wallet-client'
 import { isElectron } from 'utils/clientUtil'
 
@@ -40,5 +41,6 @@ export const storeContext: CommonStoreContext = {
     metadataProgramId: process.env.REACT_APP_METADATA_PROGRAM_ID
   }),
   sentry: Sentry,
-  cognito
+  cognito,
+  trackDownload
 }

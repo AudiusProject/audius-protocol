@@ -20,8 +20,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
-import { useSelector } from 'common/hooks/useSelector'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { FAVORITING_USERS_ROUTE, REPOSTING_USERS_ROUTE } from 'utils/route'
 
 import { Screen, VirtualizedScrollView } from 'app/components/core'
