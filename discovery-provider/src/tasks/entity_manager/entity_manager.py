@@ -21,9 +21,9 @@ from src.tasks.entity_manager.playlist import (
 )
 from src.tasks.entity_manager.social_features import (
     action_to_record_type,
-    create_actions,
+    create_social_action_types,
     create_social_record,
-    delete_actions,
+    delete_social_action_types,
     delete_social_record,
 )
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
@@ -148,11 +148,13 @@ def entity_manager_update(
                     ):
                         delete_track(params)
                     elif (
-                        params.action in create_actions and ENABLE_DEVELOPMENT_FEATURES
+                        params.action in create_social_action_types
+                        and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         create_social_record(params)
                     elif (
-                        params.action in delete_actions and ENABLE_DEVELOPMENT_FEATURES
+                        params.action in delete_social_action_types
+                        and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_social_record(params)
                 except Exception as e:
@@ -230,7 +232,8 @@ def collect_entities_to_fetch(
             # Query follow operations as needed
             if action in action_to_record_type.keys():
                 record_type = action_to_record_type[action]
-                entities_to_fetch[record_type].add((user_id, entity_type, entity_id))
+                entity_key = get_record_key(user_id, entity_type, entity_id)
+                entities_to_fetch[record_type].add(entity_key)
 
     return entities_to_fetch
 
