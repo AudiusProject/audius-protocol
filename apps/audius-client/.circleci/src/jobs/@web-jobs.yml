@@ -78,26 +78,6 @@ web-build-staging:
         build-directory: packages/web/build-staging
         build-name: build-staging
 
-web-build-ipfs-staging:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/node:14.18
-  resource_class: xlarge
-  steps:
-    - web-build:
-        build-type: ipfs-stage
-        build-directory: packages/web/build-ipfs-staging
-        build-name: build-ipfs-staging
-    - run:
-        name: zip build-ipfs-staging
-        command: |
-          cd packages/web
-          zip -r build-ipfs-staging.zip ./build-ipfs-staging
-    - persist_to_workspace:
-        root: ./
-        paths:
-          - packages/web/build-ipfs-staging.zip
-
 web-test-staging:
   working_directory: ~/
   docker:
@@ -147,26 +127,6 @@ web-build-production:
         build-directory: packages/web/build-production
         build-name: build-production
 
-web-build-ipfs-production:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/node:14.18
-  resource_class: xlarge
-  steps:
-    - web-build:
-        build-type: ipfs-prod
-        build-directory: packages/web/build-ipfs-production
-        build-name: build-ipfs-production
-    - run:
-        name: zip build
-        command: |
-          cd packages/web
-          zip -r build-ipfs-production.zip ./build-ipfs-production
-    - persist_to_workspace:
-        root: ./
-        paths:
-          - packages/web/build-ipfs-production.zip
-
 web-deploy-demo:
   working_directory: ~/audius-client
   docker:
@@ -211,39 +171,6 @@ web-deploy-staging-cloudflare:
         environment: staging
         copy-robots: false
     - web-deploy-sourcemaps-s3
-
-web-deploy-ipfs-staging:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/python:2.7-jessie
-  steps:
-    - web-deploy-ipfs:
-        build-type: staging
-
-web-update-staging-ga-ipfs-build:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/node:14.18
-  steps:
-    - web-update-ga-ipfs-build:
-        build-type: stage
-
-web-publish-staging-build-cids:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/python:2.7-jessie
-  steps:
-    - web-publish-build-cids:
-        build-type: staging
-
-web-update-ipfs-staging-records:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/node:14.18
-  steps:
-    - web-update-ipfs-records:
-        dns-name: _dnslink.ipfs.staging.audius.co
-        dns-id: '${CLOUDFLARE_STAGE_SITE_IPFS_DNS_ID}'
 
 web-deploy-release-candidate:
   working_directory: ~/audius-client
@@ -290,39 +217,6 @@ web-deploy-production-cloudflare:
         build-type: production
         environment: production
         copy-robots: true
-
-web-deploy-ipfs-production:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/python:2.7-jessie
-  steps:
-    - web-deploy-ipfs:
-        build-type: production
-
-web-update-production-ga-ipfs-build:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/node:14.18
-  steps:
-    - web-update-ga-ipfs-build:
-        build-type: prod
-
-web-publish-production-build-cids:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/python:2.7-jessie
-  steps:
-    - web-publish-build-cids:
-        build-type: production
-
-web-update-ipfs-production-records:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/node:14.18
-  steps:
-    - web-update-ipfs-records:
-        dns-name: _dnslink.ipfs.audius.co
-        dns-id: '${CLOUDFLARE_PROD_SITE_IPFS_DNS_ID}'
 
 web-deploy-sentry-sourcemaps:
   working_directory: ~/audius-client
