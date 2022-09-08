@@ -15,6 +15,6 @@ const slice = createSlice({
   }
 })
 
-export const { update } = slice.actions
+export const actions = slice.actions
 
 export default slice.reducer

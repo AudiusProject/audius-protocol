@@ -25,6 +25,7 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
+import { actions as playlistLibraryActions } from 'common/store/playlist-library/slice'
 import {
   AUDIO_NFT_PLAYLIST,
   SMART_COLLECTION_MAP
@@ -35,7 +36,6 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
-import { update } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { audioNftPlaylistPage, getPathname, playlistPage } from 'utils/route'
 
@@ -46,6 +46,7 @@ import { PlaylistNavItem, PlaylistNavLink } from './PlaylistNavItem'
 const { saveSmartCollection } = collectionsSocialActions
 const { getPlaylistUpdates } = notificationsSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
+const { update } = playlistLibraryActions
 const {
   getAccountCollectibles,
   getAccountNavigationPlaylists,

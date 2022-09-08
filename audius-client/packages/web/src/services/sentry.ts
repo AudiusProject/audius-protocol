@@ -1,4 +1,3 @@
-import { User } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import { CaptureConsole } from '@sentry/integrations'
 
@@ -56,28 +55,5 @@ export const initializeSentry = () => {
 
       return event
     }
-  })
-}
-
-type Traits = {
-  isVerified: boolean
-  trackCount: number
-}
-
-/**
- * Sets the sentry user so that alerts are tied to a user
- * @param user
- * @param traits an object of any key-value traits to associate with the user
- */
-export const setSentryUser = (user: User, traits: Traits) => {
-  if (traits.isVerified) {
-    Sentry.setTag('isVerified', `${traits.isVerified}`)
-  }
-  Sentry.configureScope((currentScope) => {
-    currentScope.setUser({
-      id: `${user.user_id}`,
-      username: user.handle,
-      ...traits
-    })
   })
 }
