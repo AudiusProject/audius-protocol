@@ -37,6 +37,7 @@ import { File } from './api/File'
 import { ServiceProvider } from './api/ServiceProvider'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
+import { EntityManager } from './api/entityManager'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -132,9 +133,10 @@ export class AudiusLibs {
     web3Provider: string,
     // network chain id
     networkId: string,
-
     // wallet address to force use instead of the first wallet on the provided web3
-    walletOverride: Nullable<string> = null
+    walletOverride: Nullable<string> = null,
+    // entity manager address
+    entityManagerAddress: Nullable<string> = null
   ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
@@ -143,6 +145,7 @@ export class AudiusLibs {
     const wallets = await web3Instance.eth.getAccounts()
     return {
       registryAddress,
+      entityManagerAddress,
       useExternalWeb3: true,
       externalWeb3Config: {
         web3: web3Instance,
@@ -324,6 +327,7 @@ export class AudiusLibs {
   File: Nullable<File>
   Rewards: Nullable<Rewards>
   Reactions: Nullable<Reactions>
+  EntityManager: Nullable<EntityManager>
 
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
@@ -396,6 +400,7 @@ export class AudiusLibs {
     this.File = null
     this.Rewards = null
     this.Reactions = null
+    this.EntityManager = null
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
@@ -494,6 +499,7 @@ export class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config.registryAddress,
+        this.web3Config.entityManagerAddress,
         this.isServer,
         this.logger
       )
@@ -574,6 +580,7 @@ export class AudiusLibs {
     this.File = new File(this.User, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
     this.Reactions = new Reactions(...services)
+    this.EntityManager = new EntityManager(...services)
   }
 }
 
@@ -581,3 +588,4 @@ export { SolanaUtils }
 
 export { Utils } from './utils'
 export { SanityChecks } from './sanityChecks'
+export { RewardsAttester } from './services/solana'
