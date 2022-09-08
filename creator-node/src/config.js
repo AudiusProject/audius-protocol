@@ -731,6 +731,18 @@ const config = convict({
     format: Boolean,
     env: 'findCIDInNetworkEnabled',
     default: true
+  },
+  otelTracingEnabled: {
+    doc: 'enable OpenTelemetry tracing',
+    format: Boolean,
+    env: 'otelTracingEnabled',
+    default: true
+  },
+  otelCollectorUrl: {
+    doc: 'the url for the OpenTelemetry collector',
+    format: String,
+    env: 'otelCollectorUrl',
+    default: ''
   }
   /**
    * unsupported options at the moment
