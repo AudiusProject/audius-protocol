@@ -2318,6 +2318,13 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
               0 /* numRetries */
             )
           }
+        },
+        '../ContentNodeInfoManager': {
+          getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+            primary: NODES.CN1,
+            secondary1: NODES.CN2,
+            secondary2: NODES.CN3
+          })
         }
       }
     )
