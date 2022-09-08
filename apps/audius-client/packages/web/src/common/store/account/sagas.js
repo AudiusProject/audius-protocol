@@ -92,7 +92,7 @@ function* recordIPIfNotRecent(handle) {
 
 // Tasks to be run on account successfully fetched, e.g.
 // recording metrics, setting user data
-function* onFetchAccount(account) {
+function* onFetchAccount(account, isSignUp = false) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const isNativeMobile = yield getContext('isNativeMobile')
   if (account && account.handle) {
@@ -127,7 +127,9 @@ function* onFetchAccount(account) {
   yield fork(addPlaylistsNotInLibrary)
 
   const feePayerOverride = yield select(getFeePayer)
-  yield call(createUserBankIfNeeded, feePayerOverride)
+  if (!isSignUp) {
+    yield call(createUserBankIfNeeded, feePayerOverride)
+  }
 
   // Repair users from flare-101 that were impacted and lost connected wallets
   // TODO: this should be removed after sufficient time has passed or users have gotten
@@ -172,16 +174,12 @@ function* onFetchAccount(account) {
   }
 }
 
-export function* fetchAccountAsync(action) {
+export function* fetchAccountAsync({ fromSource = false, isSignUp = false }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
   const localStorage = yield getContext('localStorage')
   const isNativeMobile = yield getContext('isNativeMobile')
 
-  let fromSource = false
-  if (action) {
-    fromSource = action.fromSource
-  }
   yield put(accountActions.fetchAccountRequested())
 
   if (!fromSource) {
@@ -258,7 +256,7 @@ export function* fetchAccountAsync(action) {
 
   // Cache the account and fire the onFetch callback. We're done.
   yield call(cacheAccount, account)
-  yield call(onFetchAccount, account)
+  yield call(onFetchAccount, account, isSignUp)
 }
 
 function* cacheAccount(account) {
