@@ -16,7 +16,6 @@ import searchBar from 'common/store/search-bar/reducer'
 import serviceSelection from 'common/store/service-selection/slice'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
-import musicConfetti from 'components/music-confetti/store/slice'
 import passwordReset from 'components/password-reset/store/reducer'
 import remixSettingsModal from 'components/remix-settings-modal/store/slice'
 import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/reducers'
@@ -80,7 +79,6 @@ const createRootReducer = (routeHistory: History) =>
         embedModal,
         firstUploadModal,
         mobileKeyboard,
-        musicConfetti,
         remixSettingsModal,
         scrollLock,
         setAsArtistPickConfirmation,

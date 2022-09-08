@@ -10,7 +10,8 @@ import {
   ClaimStatus,
   CognitoFlowStatus,
   audioRewardsPageSelectors,
-  getAAOErrorEmojis
+  getAAOErrorEmojis,
+  musicConfettiActions
 } from '@audius/common'
 import {
   Button,
@@ -29,7 +30,6 @@ import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidation
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { show as showConfetti } from 'components/music-confetti/store/slice'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -45,6 +45,7 @@ import PurpleBox from '../PurpleBox'
 
 import styles from './ChallengeRewards.module.css'
 import ModalDrawer from './ModalDrawer'
+const { show: showConfetti } = musicConfettiActions
 const {
   getCognitoFlowStatus,
   getAAOErrorCode,
