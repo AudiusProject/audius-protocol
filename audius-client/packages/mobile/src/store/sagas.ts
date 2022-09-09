@@ -7,7 +7,6 @@ import {
   vipDiscordModalSagas
 } from '@audius/common'
 import analyticsSagas from 'audius-client/src/common/store/analytics/sagas'
-import accountSagas from 'common/store/account/sagas'
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import backendSagas, { setupBackend } from 'common/store/backend/sagas'
 import collectionsSagas from 'common/store/cache/collections/sagas'
@@ -52,6 +51,7 @@ import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import { all, fork } from 'typed-redux-saga'
 
+import accountSagas from './account/sagas'
 import initKeyboardEvents from './keyboard/sagas'
 import notificationsSagas from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
