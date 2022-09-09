@@ -1070,14 +1070,7 @@ jobs:
       - run:
           name: Test VPN Connection
           command: |
-            eval `ssh-agent`
-            sleep 2
-            ls -alh ~/.ssh/id_rsa_*
-            ssh-add ~/.ssh/id_rsa_*
-
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
-            cd ~/audius-ssh
-            cat ~/.ssh/config
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
 
             hostname
