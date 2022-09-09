@@ -1020,6 +1020,7 @@ workflows:
           name: check-vpn
           context:
             - GCP2
+            - slack-secrets
       - test-libs:
           name: test-libs
       - docker-build-and-push:
