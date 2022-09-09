@@ -9,9 +9,8 @@ import {
   trendingPageSelectors,
   trendingPageActions
 } from '@audius/common'
-import { useSelector } from 'audius-client/src/utils/reducer'
 import { FlatList, Keyboard, View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { TextInput, Button } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
