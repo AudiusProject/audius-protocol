@@ -981,20 +981,20 @@ jobs:
     machine:
       image: ubuntu-2004:202201-02
     steps:
-      - checkout
-      # - setup_remote_docker
+      - add_ssh_keys:
+          fingerprints:
+            - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
       - run:
           name: Install OpenVPN
           command: |
             sudo apt-get update
             sudo apt-get install openvpn openvpn-systemd-resolved
-
       - run:
           name: Check IP before VPN connection
           command: |
             ip a
             echo "Public IP before VPN connection is $(curl checkip.amazonaws.com)"
-
       - run:
           name: VPN Setup
           background: true
@@ -1042,7 +1042,6 @@ jobs:
             done
 
             "${vpn_command[@]}" > /tmp/openvpn.log
-
       - run:
           name: Wait for the connection to be established and check IP
           command: |
@@ -1059,23 +1058,27 @@ jobs:
               printf "\nVPN connected\n"
               printf "\nPublic IP is now %s\n" "$(curl -s http://checkip.amazonaws.com)"
             fi
-      - add_ssh_keys:
-          fingerprints:
-            - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
-            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
       - slack-basic:
           channel: C03STD3UXMG
           event: always
           slack_mentions_user: "@joaquin"
       - run:
-          name: Test VPN Connection
+          name: Setup SSH Config
           command: |
+            git clone git@github.com:AudiusProject/audius-tooling.git ~/audius-tooling
+            git clone git@github.com:AudiusProject/audius-protocol.git ~/audius-protocol
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
+
+            cd ~/audius-tooling
+            git checkout jc-inf-195
 
             hostname
             ssh -T git@github.com || true
             ssh stage-load-test-blocks "hostname"
+
+            export PROTOCOL_DIR=~/audius-protocol
+            ./deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN}
       - slack-fail:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
@@ -1098,8 +1101,8 @@ workflows:
       - check-vpn:
           name: check-vpn
           context:
-            - GCP2
             - slack-secrets
+            - gh-tokens
       - test-libs:
           name: test-libs
       - docker-build-and-push:
