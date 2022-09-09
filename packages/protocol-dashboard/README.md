@@ -4,7 +4,6 @@
 Audius Service Provider Dashboard allows users to register content nodes and discovery providers, 
 view their registered services & which ones are out date, and explore all audius services.
 
-
 ## Running the Application
 The application requires ethereum contracts.
 You can run `npm run start:stage` which will use the contracts that are on the staging environment.
