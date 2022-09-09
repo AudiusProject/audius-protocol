@@ -218,7 +218,7 @@ commands:
             pwd "$PROTOCOL_DIR"
             ls -la "$PROTOCOL_DIR"
             cd "$PROTOCOL_DIR/service-commands/"
-            # npm install --unsafe-perm
+            npm install --unsafe-perm
 
             # add IP to firewall
             CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
@@ -230,13 +230,6 @@ commands:
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME $A_SETUP_ARGS --spot-instance || true
 
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-
-            eval `ssh-agent`
-            sleep 2
-            ls -alh ~/.ssh/id_rsa_*
-            ssh-add ~/.ssh/id_rsa_*
-            ssh -A -T git@github.com || true
-            ssh -A ubuntu@18.220.56.46 "hostname"
 
             # Run interactive command on remotebox
             ssh -o "StrictHostKeyChecking no" -o IdentitiesOnly=yes -i ~/.ssh/google_compute_engine -t ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
@@ -961,36 +954,60 @@ jobs:
             docker push audius/<< parameters.repo >>:$IMAGE_TAG
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
+  # check-vpn:
+  #   docker:
+  #     - image: audius/circleci-gcloud-bake:latest
+  #       auth:
+  #         username: $DOCKERHUB_USERNAME
+  #         password: $DOCKERHUB_PASS
+    # steps:
+    #   - checkout
+    #   - add_ssh_keys:
+    #       fingerprints:
+    #         - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
+    #         - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+      # - run-on-gcp:
+      #     command-name: Test VPN
+      #     instance-name: test-vpn
+      #     command: |
+      #       # cd /home/ubuntu/audius-protocol
+      #       # git pull
+      #       # git checkout $CIRCLE_BRANCH
+      #       hostname
+      #       ssh -A -T git@github.com
+      #       ssh -A ubuntu@18.220.56.46 "hostname"
+
   check-vpn:
     docker:
-      - image: audius/circleci-gcloud-bake:latest
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASS
+      - image: cimg/base:2022.09
     steps:
       - checkout
+      # - setup_remote_docker
       - add_ssh_keys:
           fingerprints:
             - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
             - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
-      - run-on-gcp:
-          command-name: Test VPN
-          instance-name: test-vpn
-          interactive-command: |
-            hostname
-            # eval `ssh-agent`
-            # sleep 2
-            # ssh-add ~/.ssh/id_rsa*
-            # ssh -A -T git@github.com
-            # ssh -A ubuntu@18.220.56.46 "hostname"
+      - slack-basic:
+          channel: C03STD3UXMG
+          event: always
+          slack_mentions_user: << parameters.slack_mentions_user >>
+      - run:
+          name: Test VPN Connection
           command: |
-            # cd /home/ubuntu/audius-protocol
-            # git pull
-            # git checkout $CIRCLE_BRANCH
-            hostname
-            ssh -A -T git@github.com
-            ssh -A ubuntu@18.220.56.46 "hostname"
+            eval `ssh-agent`
+            sleep 2
+            ls -alh ~/.ssh/id_rsa_*
+            ssh-add ~/.ssh/id_rsa_*
 
+            hostname
+            ssh -A -T git@github.com || true
+            ssh -A ubuntu@18.220.56.46 "hostname"
+      - slack-fail:
+          channel: C03STD3UXMG
+          slack_mentions_user: << parameters.slack_mentions_user >>
+      - slack-success:
+          channel: C03STD3UXMG
+          slack_mentions_user: << parameters.slack_mentions_user >>
 workflows:
   # test, build and push all commits
   test-build-and-push:
