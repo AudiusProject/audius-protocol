@@ -14,10 +14,11 @@ import {
   cacheUsersSelectors,
   cacheActions,
   notificationsActions as notificationActions,
-  removeFromPlaylistLibrary,
   getContext,
   collectionsSocialActions as socialActions,
-  waitForAccount
+  waitForAccount,
+  playlistLibraryActions,
+  playlistLibraryHelpers
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -27,16 +28,16 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { actions as playlistLibraryActions } from 'common/store/playlist-library/slice'
 import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
 import { share } from 'utils/share'
 
 import watchCollectionErrors from './errorSagas'
+const { update: updatePlaylistLibrary } = playlistLibraryActions
+const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 
 const { getPlaylistLibrary, getUserId } = accountSelectors
-const { update: updatePlaylistLibrary } = playlistLibraryActions
 
 /* REPOST COLLECTION */
 

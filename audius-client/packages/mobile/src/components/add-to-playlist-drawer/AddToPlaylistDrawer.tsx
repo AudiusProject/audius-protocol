@@ -9,6 +9,7 @@ import {
 } from '@audius/common'
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import Button, { ButtonType } from 'app/components/button'
@@ -16,8 +17,6 @@ import { Card } from 'app/components/card'
 import { CardList } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { ToastContext } from 'app/components/toast/ToastContext'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles, shadow } from 'app/styles'
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
@@ -47,11 +46,11 @@ const useStyles = makeStyles(() => ({
 export const AddToPlaylistDrawer = () => {
   const styles = useStyles()
   const { toast } = useContext(ToastContext)
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const { onClose } = useDrawerState('AddToPlaylist')
-  const trackId = useSelectorWeb(getTrackId)
-  const trackTitle = useSelectorWeb(getTrackTitle)
-  const user = useSelectorWeb(getAccountWithOwnPlaylists)
+  const trackId = useSelector(getTrackId)
+  const trackTitle = useSelector(getTrackTitle)
+  const user = useSelector(getAccountWithOwnPlaylists)
   const [isDrawerGestureSupported, setIsDrawerGestureSupported] = useState(true)
 
   if (!user || !trackId || !trackTitle) {
@@ -65,10 +64,10 @@ export const AddToPlaylistDrawer = () => {
       is_private: false
     })
     const tempId = getTempPlaylistId()
-    dispatchWeb(
+    dispatch(
       createPlaylist(tempId, metadata, CreatePlaylistSource.FROM_TRACK, trackId)
     )
-    dispatchWeb(addTrackToPlaylist(trackId!, tempId))
+    dispatch(addTrackToPlaylist(trackId!, tempId))
     toast({ content: messages.createdToast })
     onClose()
   }
@@ -113,7 +112,7 @@ export const AddToPlaylistDrawer = () => {
               secondaryText={user.name}
               onPress={() => {
                 toast({ content: messages.addedToast })
-                dispatchWeb(addTrackToPlaylist(trackId!, item.playlist_id))
+                dispatch(addTrackToPlaylist(trackId!, item.playlist_id))
                 onClose()
               }}
               user={user}

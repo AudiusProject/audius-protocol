@@ -29,7 +29,6 @@ import { albumPage, playlistPage } from 'audius-client/src/utils/route'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
@@ -92,7 +91,6 @@ const CollectionTileComponent = ({
   ...lineupTileProps
 }: CollectionTileProps) => {
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const currentUserId = useSelector(getUserId)
   const currentTrack = useSelector((state: CommonState) => {
@@ -214,22 +212,22 @@ const CollectionTileComponent = ({
       return
     }
     if (has_current_user_saved) {
-      dispatchWeb(unsaveCollection(playlist_id, FavoriteSource.TILE))
+      dispatch(unsaveCollection(playlist_id, FavoriteSource.TILE))
     } else {
-      dispatchWeb(saveCollection(playlist_id, FavoriteSource.TILE))
+      dispatch(saveCollection(playlist_id, FavoriteSource.TILE))
     }
-  }, [playlist_id, dispatchWeb, has_current_user_saved])
+  }, [playlist_id, dispatch, has_current_user_saved])
 
   const handlePressRepost = useCallback(() => {
     if (playlist_id === undefined) {
       return
     }
     if (has_current_user_reposted) {
-      dispatchWeb(undoRepostCollection(playlist_id, RepostSource.TILE))
+      dispatch(undoRepostCollection(playlist_id, RepostSource.TILE))
     } else {
-      dispatchWeb(repostCollection(playlist_id, RepostSource.TILE))
+      dispatch(repostCollection(playlist_id, RepostSource.TILE))
     }
-  }, [playlist_id, dispatchWeb, has_current_user_reposted])
+  }, [playlist_id, dispatch, has_current_user_reposted])
 
   return (
     <LineupTile

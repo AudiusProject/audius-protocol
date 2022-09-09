@@ -101,7 +101,7 @@ export const TrackScreenDownloadButtons = ({
 }: TrackScreenDownloadButtonsProps) => {
   const dispatch = useDispatch()
 
-  const onDownload = useCallback(
+  const handleDownload = useCallback(
     (id: ID, cid: CID, category?: string, parentTrackId?: ID) => {
       const { creator_node_endpoint } = user
       if (!creator_node_endpoint) {
@@ -122,7 +122,7 @@ export const TrackScreenDownloadButtons = ({
 
   const buttons = useDownloadTrackButtons({
     trackId,
-    onDownload,
+    onDownload: handleDownload,
     isOwner,
     following,
     useSelector

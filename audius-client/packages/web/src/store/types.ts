@@ -60,7 +60,6 @@ export type AppState = CommonState & {
   reachability: ReachabilityState
   // Account
   passwordReset: PasswordResetState
-  playlistLibrary: ReturnType<typeof PlaylistLibraryReducer>
 
   // UI
   dragndrop: DragNDropState
