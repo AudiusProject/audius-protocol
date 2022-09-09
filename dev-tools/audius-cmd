@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
+set -e
+
 if [[ "$PROTOCOL_DIR" != "" ]]; then
 	cd $PROTOCOL_DIR
 fi
 
-docker compose run --rm audius-cmd node src/index.mjs "$@"
+docker compose exec audius-cmd rm -rf local-storage
+docker compose exec audius-cmd node src/index.mjs "$@"
