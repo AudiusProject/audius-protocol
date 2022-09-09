@@ -1,6 +1,7 @@
 import {
   castSagas,
   remoteConfigSagas as remoteConfig,
+  deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   vipDiscordModalSagas
@@ -129,6 +130,7 @@ export default function* rootSaga() {
     ...smartCollectionPageSagas(),
     ...overflowMenuSagas(),
     ...deactivateAccountSagas(),
+    ...deletePlaylistConfirmationModalSagas(),
     ...shareModalSagas(),
     ...vipDiscordModalSagas(),
     ...themeSagas(),
