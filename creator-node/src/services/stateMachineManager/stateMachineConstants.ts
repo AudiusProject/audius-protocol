@@ -29,7 +29,7 @@ export const FIND_REPLICA_SET_UPDATES_BATCH_SIZE = 500
 export const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
 
 // Retry delay (in millis) between requests while monitoring a sync
-export const SYNC_MONITORING_RETRY_DELAY_MS = 15_000
+export const SYNC_MONITORING_RETRY_DELAY_MS = 5_000
 
 // Max number of attempts to select new replica set in reconfig
 export const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 20
