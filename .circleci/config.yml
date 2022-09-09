@@ -978,8 +978,8 @@ jobs:
       #       ssh -A ubuntu@18.220.56.46 "hostname"
 
   check-vpn:
-    docker:
-      - image: cimg/base:2022.09
+    machine:
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       # - setup_remote_docker
