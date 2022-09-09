@@ -1074,6 +1074,8 @@ jobs:
             cd ~/audius-tooling
             git checkout jc-inf-195
 
+            cat /tmp/openvpn.log
+
             hostname
             ssh -T git@github.com || true
             ssh stage-load-test-blocks "hostname"
