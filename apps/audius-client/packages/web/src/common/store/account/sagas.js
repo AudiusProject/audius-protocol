@@ -24,7 +24,6 @@ import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
-import { setSentryUser } from 'services/sentry'
 
 import disconnectedWallets from './disconnected_wallet_fix.json'
 import mobileSagas, { setHasSignedInOnMobile } from './mobileSagas'

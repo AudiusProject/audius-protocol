@@ -21,7 +21,6 @@ import {
 import { RouterState } from 'connected-react-router'
 
 import signOnReducer from 'common/store/pages/signon/reducer'
-import PlaylistLibraryReducer from 'common/store/playlist-library/slice'
 import SearchBarState from 'common/store/search-bar/types'
 import ServiceSelectionReducer from 'common/store/service-selection/slice'
 import { EmbedModalState } from 'components/embed-modal/store/types'

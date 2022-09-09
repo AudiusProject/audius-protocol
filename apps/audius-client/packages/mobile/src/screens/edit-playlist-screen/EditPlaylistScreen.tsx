@@ -16,7 +16,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { FormScreen } from 'app/components/form-screen'
 import { TrackList } from 'app/components/track-list'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { makeStyles } from 'app/styles'
 
 import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
