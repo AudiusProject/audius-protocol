@@ -1078,7 +1078,7 @@ jobs:
             ssh stage-load-test-blocks "hostname"
 
             export PROTOCOL_DIR=~/audius-protocol
-            ./deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN}
+            ./deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -P
       - slack-fail:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
