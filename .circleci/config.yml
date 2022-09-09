@@ -1075,9 +1075,13 @@ jobs:
             ls -alh ~/.ssh/id_rsa_*
             ssh-add ~/.ssh/id_rsa_*
 
+            git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
+            cd ~/audius-ssh
+            ./install.sh
+
             hostname
-            ssh -A -T git@github.com || true
-            ssh -A ubuntu@18.220.56.46 "hostname"
+            ssh -T git@github.com || true
+            ssh stage-load-test-blocks "hostname"
       - slack-fail:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
