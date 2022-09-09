@@ -1077,6 +1077,8 @@ jobs:
             hostname
             ssh -T git@github.com || true
             ssh stage-load-test-blocks "hostname"
+            ls ~/.ssh/
+            ssh ubuntu@34.122.95.138 "hostname"
 
             export PROTOCOL_DIR=~/audius-protocol
             ./deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -P
