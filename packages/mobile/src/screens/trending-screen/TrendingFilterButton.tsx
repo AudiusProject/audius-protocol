@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
 import { Genre, trendingPageSelectors, modalsActions } from '@audius/common'
-import { useSelector } from 'audius-client/src/utils/reducer'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { HeaderButton } from 'app/components/header'
 
