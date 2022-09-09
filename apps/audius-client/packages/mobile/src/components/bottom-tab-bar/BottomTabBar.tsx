@@ -11,7 +11,6 @@ import { useDispatch } from 'react-redux'
 
 import { FULL_DRAWER_HEIGHT } from 'app/components/drawer'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
-import { MessageType } from 'app/message/types'
 import { makeStyles } from 'app/styles'
 
 import { BottomTabBarButton } from './BottomTabBarButton'
@@ -81,14 +80,6 @@ export const BottomTabBar = ({
     [dispatch]
   )
 
-  const scrollToTop = useCallback(
-    () =>
-      dispatch({
-        type: MessageType.SCROLL_TO_TOP
-      }),
-    [dispatch]
-  )
-
   const navigate = useCallback(
     (route: NavigationRoute, isFocused) => {
       setIsNavigating(true)
@@ -100,10 +91,6 @@ export const BottomTabBar = ({
 
       const performNavigation = () => {
         setIsNavigating(false)
-        // Web navigation
-        if (isFocused) {
-          scrollToTop()
-        }
 
         resetExploreTab()
 
@@ -121,7 +108,7 @@ export const BottomTabBar = ({
       // new screen starts rendering
       setTimeout(performNavigation, 50)
     },
-    [navigation, resetExploreTab, scrollToTop]
+    [navigation, resetExploreTab]
   )
 
   const handleLongPress = useCallback(() => {

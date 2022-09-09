@@ -1,9 +1,5 @@
 import { AnalyticsEvent, Nullable, BooleanKeys } from '@audius/common'
 
-import {
-  SetAnalyticsUser,
-  TrackAnalyticsEvent
-} from 'services/native-mobile-interface/analytics'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import packageInfo from '../../../package.json'
@@ -12,7 +8,6 @@ import * as amplitude from './amplitude'
 import * as segment from './segment'
 const { version } = packageInfo
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 
 let resolveCallback: Nullable<(value?: any) => void> = null
@@ -74,15 +69,10 @@ export const track = async (
     }
 
     // TODO: This can be removed when the the web layer is removed from mobile
-    if (NATIVE_MOBILE) {
-      const message = new TrackAnalyticsEvent(eventName, propertiesWithContext)
-      message.send()
-    } else {
-      await didInit
-      if (useAmplitude)
-        return amplitude.track(eventName, propertiesWithContext, callback)
-      return segment.track(eventName, propertiesWithContext, {}, callback)
-    }
+    await didInit
+    if (useAmplitude)
+      return amplitude.track(eventName, propertiesWithContext, callback)
+    return segment.track(eventName, propertiesWithContext, {}, callback)
   } catch (err) {
     console.error(err)
   }
@@ -108,14 +98,9 @@ export const identify = async (
       )
     }
 
-    if (NATIVE_MOBILE) {
-      const message = new SetAnalyticsUser(handle, traits)
-      message.send()
-    } else {
-      await didInit
-      if (useAmplitude) return amplitude.identify(handle, traits, callback)
-      return segment.identify(handle, traits, options, callback)
-    }
+    await didInit
+    if (useAmplitude) return amplitude.identify(handle, traits, callback)
+    return segment.identify(handle, traits, options, callback)
   } catch (err) {
     console.error(err)
   }

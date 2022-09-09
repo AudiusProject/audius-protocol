@@ -2,9 +2,7 @@ import { Suspense, useState, useEffect, useCallback, lazy } from 'react'
 
 import { useAsync } from 'react-use'
 
-import { setupMobileLogging } from 'services/Logging'
 import { localStorage } from 'services/local-storage'
-import { BackendDidSetup } from 'services/native-mobile-interface/lifecycle'
 import { useIsMobile, isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
@@ -48,16 +46,6 @@ const Root = () => {
   }, [])
 
   const setReady = useCallback(() => setDappReady(true), [])
-
-  useEffect(() => {
-    if (dappReady || connectivityFailure) {
-      new BackendDidSetup().send()
-    }
-  }, [connectivityFailure, dappReady])
-
-  useEffect(() => {
-    setupMobileLogging()
-  }, [])
 
   const [shouldShowPopover, setShouldShowPopover] = useState(true)
 

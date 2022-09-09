@@ -4,7 +4,6 @@ import { takeEvery, put, call } from 'redux-saga/effects'
 
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { FetchAccountFailed } from 'services/native-mobile-interface/lifecycle'
-import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { MessageType } from 'services/native-mobile-interface/types'
 import { SIGN_UP_PAGE, SIGN_IN_PAGE, doesMatchRoute } from 'utils/route'
 
@@ -49,9 +48,7 @@ function* watchAccountRecovery() {
       // If it's not the same account,
       // reload webview to reload libs
       // with the new entropy
-      if (!isSameAccount) {
-        new ReloadMessage().send()
-      } else {
+      if (isSameAccount) {
         yield put(setNeedsAccountRecovery())
       }
     }

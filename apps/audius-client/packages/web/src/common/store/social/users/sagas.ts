@@ -19,7 +19,6 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { profilePage } from 'utils/route'
-import { share } from 'utils/share'
 
 import errorSagas from './errorSagas'
 const { getUsers, getUser } = cacheUsersSelectors
@@ -255,6 +254,7 @@ export function* watchShareUser() {
       if (!user) return
 
       const link = profilePage(user.handle)
+      const share = yield* getContext('share')
       share(link, user.name)
 
       const event = make(Name.SHARE, {

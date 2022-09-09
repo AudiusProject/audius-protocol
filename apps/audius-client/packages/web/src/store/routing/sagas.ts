@@ -1,33 +1,6 @@
-import { accountSelectors } from '@audius/common'
-import {
-  LOCATION_CHANGE,
-  push as pushRoute,
-  goBack
-} from 'connected-react-router'
-import { take, takeEvery, select, put } from 'redux-saga/effects'
+import { LOCATION_CHANGE } from 'connected-react-router'
+import { take } from 'redux-saga/effects'
 
-import {
-  OnFirstPage,
-  NotOnFirstPage,
-  ChangedPage
-} from 'services/native-mobile-interface/lifecycle'
-import { MessageType } from 'services/native-mobile-interface/types'
-import {
-  SIGN_IN_PAGE,
-  SIGN_UP_PAGE,
-  FEED_PAGE,
-  TRENDING_PAGE,
-  EXPLORE_PAGE,
-  FAVORITES_PAGE,
-  profilePage,
-  getPathname
-} from 'utils/route'
-
-import mobileSagas from './mobileSagas'
-import { getLocationPathname } from './selectors'
-const getUserHandle = accountSelectors.getUserHandle
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 enum LocationAction {
   PUSH = 'PUSH',
   POP = 'POP',
@@ -51,51 +24,12 @@ function* trackLocation() {
     } else if (action === LocationAction.PUSH) {
       ;(window as any).locationHistory.push(location)
     }
-
-    if (NATIVE_MOBILE) {
-      // Set page change
-      new ChangedPage(location).send()
-
-      // Set first page actions
-      const historyLength = (window as any).locationHistory.length
-      const firstPageRoutes = [SIGN_IN_PAGE, SIGN_UP_PAGE, FEED_PAGE]
-      if (firstPageRoutes.includes(getPathname(location)) && !location.search) {
-        // If native mobile, the sign in / sign up page should not offer a back btn option
-        const message = new OnFirstPage()
-        message.send()
-      } else if (historyLength <= 1) {
-        const message = new OnFirstPage()
-        message.send()
-      } else {
-        const message = new NotOnFirstPage()
-        message.send()
-      }
-    }
   }
 }
 
-function* handleHardwareBack() {
-  yield takeEvery(MessageType.GO_BACK, function* () {
-    const pathname: string = yield select(getLocationPathname)
-    const homeRoute = FEED_PAGE
-    // Bottom Bar routes excluding the home route
-    const bottomBarRoutes = [TRENDING_PAGE, EXPLORE_PAGE, FAVORITES_PAGE]
-    const handle: string = yield select(getUserHandle)
-    if (handle) bottomBarRoutes.push(profilePage(handle))
-    if (pathname === homeRoute) {
-    } else if (bottomBarRoutes.includes(pathname)) {
-      yield put(pushRoute(homeRoute))
-      const message = new OnFirstPage()
-      message.send()
-    } else {
-      yield put(goBack())
-    }
-  })
-}
-
 const sagas = () => {
-  const sagas = [trackLocation, handleHardwareBack]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
+  const sagas = [trackLocation]
+  return sagas
 }
 
 export default sagas
