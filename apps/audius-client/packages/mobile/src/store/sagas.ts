@@ -40,6 +40,7 @@ import searchBarSagas from 'common/store/search-bar/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
+import reactionSagas from 'common/store/ui/reactions/sagas'
 import favoritePageSagas from 'common/store/user-list/favorites/sagas'
 import followersPageSagas from 'common/store/user-list/followers/sagas'
 import followingPageSagas from 'common/store/user-list/following/sagas'
@@ -107,6 +108,7 @@ export default function* rootSaga() {
     ...trendingUndergroundSagas(),
     ...savedSagas(),
     ...profileSagas(),
+    ...reactionSagas(),
     ...socialSagas(),
     ...favoritePageSagas(),
     ...followersPageSagas(),
