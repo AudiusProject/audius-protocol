@@ -73,7 +73,6 @@ type SignInProps = {
   onSubmitSignIn: (email: string, password: string) => void
   onEmailChange: (email: string) => void
   onPasswordChange: (password: string) => void
-  onAllowNotifications: () => void
   isLoading: boolean
   didSucceed: boolean
 }
@@ -213,8 +212,7 @@ const SignIn = ({
   onPasswordChange,
   isLoading,
   didSucceed,
-  hasAccount,
-  onAllowNotifications
+  hasAccount
 }: SignInProps) => {
   const { setStackReset } = useContext(RouterContext)
   const signInError = password.error
@@ -229,12 +227,6 @@ const SignIn = ({
     setStackReset(true)
     onSubmitSignIn(email.value, password.value)
   }, [onSubmitSignIn, email, password, setStackReset])
-
-  useEffect(() => {
-    if (didSucceed) {
-      onAllowNotifications()
-    }
-  }, [didSucceed, onAllowNotifications])
 
   return (
     <div className={styles.topContainer}>
@@ -313,7 +305,6 @@ export const InitialPage = ({
   onSubmitSignIn,
   onViewSignUp,
   onEmailSubmitted,
-  onAllowNotifications,
   hasAccount
 }: InitialPageProps) => {
   const topAreaRef = useRef<HTMLDivElement>(null)
@@ -346,7 +337,6 @@ export const InitialPage = ({
               onSubmitSignIn={onSubmitSignIn}
               onPasswordChange={onPasswordChange}
               onEmailChange={onEmailChange}
-              onAllowNotifications={onAllowNotifications}
               onViewSignUp={onViewSignUp}
             />
           ) : (

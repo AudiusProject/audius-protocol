@@ -45,5 +45,5 @@ export const storeContext: CommonStoreContext = {
   audioPlayer,
   cognito,
   trackDownload,
-  share: (url, message) => share({ url, message })
+  share: (url: string, message?: string) => share({ url, message })
 }
