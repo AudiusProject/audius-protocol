@@ -1077,8 +1077,8 @@ jobs:
             hostname
             ssh -T git@github.com || true
             ssh stage-load-test-blocks "hostname"
-            cp ~/.ssh/id_rsa_d128d45ecad9bb7006dae0f0007cd4a3 ~/.ssh/google_compute_engine
-            cp ~/.ssh/id_rsa_df1ae39b57582434fbaac1b20becc842 ~/.ssh/audius_infrastructure
+            # cp ~/.ssh/id_rsa_d128d45ecad9bb7006dae0f0007cd4a3 ~/.ssh/google_compute_engine
+            # cp ~/.ssh/id_rsa_df1ae39b57582434fbaac1b20becc842 ~/.ssh/audius_infrastructure
             ssh ubuntu@34.122.95.138 "hostname"
 
             export PROTOCOL_DIR=~/audius-protocol
