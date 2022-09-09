@@ -46,6 +46,10 @@ import trendingUnderground from './pages/trending-underground/slice'
 import trending from './pages/trending/reducer'
 import { TrendingPageState } from './pages/trending/types'
 import player, { PlayerState } from './player/slice'
+import {
+  playlistLibraryReducer,
+  PlaylistLibraryState
+} from './playlist-library'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
@@ -128,6 +132,9 @@ export const reducers = () => ({
 
   // Cast
   cast,
+
+  // Playlist Library
+  playlistLibrary: playlistLibraryReducer,
 
   // UI
   ui: combineReducers({
@@ -224,6 +231,9 @@ export type CommonState = {
 
   // Cast
   cast: ReturnType<typeof cast>
+
+  // Playlist library
+  playlistLibrary: PlaylistLibraryState
 
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>

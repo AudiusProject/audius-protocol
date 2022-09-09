@@ -4,9 +4,9 @@ import {
   FavoriteSource,
   accountSelectors,
   smartCollectionPageSelectors,
-  findInPlaylistLibrary,
   collectionsSocialActions,
-  smartCollectionPageActions
+  smartCollectionPageActions,
+  playlistLibraryHelpers
 } from '@audius/common'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -16,6 +16,7 @@ import { VirtualizedScrollView } from 'app/components/core'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
 import type { SmartCollection } from 'app/screens/explore-screen/smartCollections'
 import { makeStyles } from 'app/styles'
+const { findInPlaylistLibrary } = playlistLibraryHelpers
 
 const { saveSmartCollection, unsaveSmartCollection } = collectionsSocialActions
 const { getCollection } = smartCollectionPageSelectors

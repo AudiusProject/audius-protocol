@@ -9,13 +9,10 @@ import {
   accountSelectors,
   AccountCollection,
   cacheActions,
-  containsTempPlaylist,
-  extractTempPlaylistsFromLibrary,
-  getPlaylistsNotInLibrary,
-  removePlaylistLibraryDuplicates,
-  replaceTempWithResolvedPlaylists,
   waitForAccount,
-  waitForValue
+  waitForValue,
+  playlistLibraryHelpers,
+  playlistLibraryActions
 } from '@audius/common'
 import {
   all,
@@ -31,9 +28,14 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { getResult } from 'common/store/confirmer/selectors'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 
-import { actions } from './slice'
-
-const { update } = actions
+const { update } = playlistLibraryActions
+const {
+  containsTempPlaylist,
+  extractTempPlaylistsFromLibrary,
+  getPlaylistsNotInLibrary,
+  removePlaylistLibraryDuplicates,
+  replaceTempWithResolvedPlaylists
+} = playlistLibraryHelpers
 
 const { getAccountNavigationPlaylists, getAccountUser, getPlaylistLibrary } =
   accountSelectors
