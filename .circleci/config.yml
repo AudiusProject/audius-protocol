@@ -990,7 +990,7 @@ jobs:
       - slack-basic:
           channel: C03STD3UXMG
           event: always
-          slack_mentions_user: << parameters.slack_mentions_user >>
+          slack_mentions_user: "@joaquin"
       - run:
           name: Test VPN Connection
           command: |
@@ -1004,10 +1004,10 @@ jobs:
             ssh -A ubuntu@18.220.56.46 "hostname"
       - slack-fail:
           channel: C03STD3UXMG
-          slack_mentions_user: << parameters.slack_mentions_user >>
+          slack_mentions_user: "@joaquin"
       - slack-success:
           channel: C03STD3UXMG
-          slack_mentions_user: << parameters.slack_mentions_user >>
+          slack_mentions_user: "@joaquin"
 workflows:
   # test, build and push all commits
   test-build-and-push:
