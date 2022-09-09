@@ -5,5 +5,4 @@ if [[ "$PROTOCOL_DIR" != "" ]]; then
 	cd $PROTOCOL_DIR
 fi
 
-docker compose exec audius-cmd rm -rf local-storage
 docker compose exec audius-cmd node src/index.mjs "$@"
