@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
 
+import { User } from 'models'
 import { Nullable } from 'utils/typeUtils'
 
 import { ID } from '../../models/Identifiers'
@@ -138,7 +139,11 @@ const slice = createSlice({
     showPushNotificationConfirmation: () => {},
     resetAccount: () => {
       return initialState
-    }
+    },
+    signedIn: (
+      _state,
+      _action: PayloadAction<{ account: User; isSignUp: boolean }>
+    ) => {}
   }
 })
 
@@ -165,7 +170,8 @@ export const {
   instagramLogin,
   twitterLogin,
   showPushNotificationConfirmation,
-  resetAccount
+  resetAccount,
+  signedIn
 } = slice.actions
 
 export const reducer = slice.reducer
