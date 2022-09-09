@@ -12,6 +12,8 @@ import { processAndCacheCollections } from 'common/store/cache/collections/utils
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
+import tracksSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
+
 const getUserId = accountSelectors.getUserId
 
 export function* getTagSearchResults(tag, kind, limit, offset) {
@@ -57,7 +59,13 @@ export function* fetchSearchPageTags(action) {
     results.users = results.users.map(({ user_id: id }) => id)
     results.tracks = results.tracks.map(({ track_id: id }) => id)
     yield put(searchPageActions.fetchSearchPageTagsSucceeded(results, tag))
-    yield put(tracksLineupActions.fetchLineupMetadatas(0, 10))
+    yield put(
+      tracksLineupActions.fetchLineupMetadatas(0, 10, false, {
+        category: action.kind,
+        query: tag,
+        isTagSearch: true
+      })
+    )
   } else {
     yield put(searchPageActions.fetchSearchPageTagsFailed())
   }
@@ -110,7 +118,13 @@ function* fetchSearchPageResults(action) {
         action.searchText
       )
     )
-    yield put(tracksLineupActions.fetchLineupMetadatas(0, 10))
+    yield put(
+      tracksLineupActions.fetchLineupMetadatas(0, 10, false, {
+        category: action.searchKind,
+        query: action.searchText,
+        isTagSearch: false
+      })
+    )
   } else {
     yield put(searchPageActions.fetchSearchPageResultsFailed())
   }
@@ -132,7 +146,7 @@ function* watchFetchSearchPageResults() {
 
 export default function sagas() {
   return [
-    // TODO(nkang): Put track sagas back here when ready for mobile
+    ...tracksSagas(),
     watchFetchSearchPageResults,
     watchFetchSearchPageTags
   ]

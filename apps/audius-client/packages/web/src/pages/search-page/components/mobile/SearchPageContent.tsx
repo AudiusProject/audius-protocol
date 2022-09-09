@@ -7,7 +7,8 @@ import {
   LineupState,
   Status,
   User,
-  searchResultsPageTracksLineupActions as tracksActions
+  searchResultsPageTracksLineupActions as tracksActions,
+  trimToAlphaNumeric
 } from '@audius/common'
 import cn from 'classnames'
 import { matchPath } from 'react-router'
@@ -32,6 +33,7 @@ import NavContext, {
   RightPreset
 } from 'components/nav/store/context'
 import useTabs from 'hooks/useTabs/useTabs'
+import { getCategory } from 'pages/search-page/helpers'
 import { getLocationPathname } from 'store/routing/selectors'
 import { useSelector } from 'utils/reducer'
 import {
@@ -169,7 +171,13 @@ const TracksSearchPage = ({
             buffering={buffering}
             scrollParent={containerRef}
             loadMore={(offset: number, limit: number) =>
-              dispatch(tracksActions.fetchLineupMetadatas(offset, limit))
+              dispatch(
+                tracksActions.fetchLineupMetadatas(offset, limit, false, {
+                  category: getCategory(),
+                  query: trimToAlphaNumeric(searchText),
+                  isTagSearch
+                })
+              )
             }
             playTrack={(uid: UID) => dispatch(tracksActions.play(uid))}
             pauseTrack={() => dispatch(tracksActions.pause())}

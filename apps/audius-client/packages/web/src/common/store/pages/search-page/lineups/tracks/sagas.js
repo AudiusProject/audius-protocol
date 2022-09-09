@@ -4,42 +4,37 @@ import {
   SearchKind,
   searchResultsPageTracksLineupActions as tracksActions
 } from '@audius/common'
-import { select, all, call } from 'redux-saga/effects'
+import { select, all, call, getContext } from 'redux-saga/effects'
 
-import { LineupSagas } from 'common/store/lineup/sagas'
+import { LineupSagas, isMobile } from 'common/store/lineup/sagas'
 import {
   getSearchResults,
   getTagSearchResults
 } from 'common/store/pages/search-page/sagas'
-import {
-  getCategory,
-  getQuery,
-  isTagSearch,
-  getSearchTag
-} from 'pages/search-page/helpers'
-import { isMobile } from 'utils/clientUtil'
+
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
   searchResultsPageSelectors
 const { getTracks } = cacheTracksSelectors
 
-function* getSearchPageResultsTracks({ offset, limit, payload }) {
-  const category = getCategory()
-
-  if (category === SearchKind.TRACKS || isMobile()) {
+function* getSearchPageResultsTracks({
+  offset,
+  limit,
+  payload: { category, query, isTagSearch }
+}) {
+  const isNativeMobile = yield getContext('isNativeMobile')
+  if (category === SearchKind.TRACKS || isNativeMobile || isMobile()) {
     // If we are on the tracks sub-page of search or mobile, which we should paginate on
     let results
-    if (isTagSearch()) {
-      const tag = getSearchTag()
+    if (isTagSearch) {
       const { tracks } = yield call(
         getTagSearchResults,
-        tag,
+        query,
         category,
         limit,
         offset
       )
       results = tracks
     } else {
-      const query = getQuery()
       const { tracks } = yield call(
         getSearchResults,
         query,
