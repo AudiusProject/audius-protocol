@@ -983,6 +983,82 @@ jobs:
     steps:
       - checkout
       # - setup_remote_docker
+      - run:
+          name: Install OpenVPN
+          command: |
+            sudo apt-get update
+            sudo apt-get install openvpn openvpn-systemd-resolved
+
+      - run:
+          name: Check IP before VPN connection
+          command: |
+            ip a
+            echo "Public IP before VPN connection is $(curl checkip.amazonaws.com)"
+
+      - run:
+          name: VPN Setup
+          background: true
+          command: |
+            echo $VPN_CLIENT_CONFIG | base64 --decode > /tmp/config.ovpn
+
+            if grep -q auth-user-pass /tmp/config.ovpn; then
+              if [ -z "${VPN_USER:-}" ] || [ -z "${VPN_PASSWORD:-}" ]; then
+                echo "Your VPN client is configured with a user-locked profile. Make sure to set the VPN_USER and VPN_PASSWORD environment variables"
+                exit 1
+              else
+                printf "$VPN_USER\\n$VPN_PASSWORD" > /tmp/vpn.login
+              fi
+            fi
+
+            vpn_command=(sudo openvpn
+              --config /tmp/config.ovpn
+              --route 169.254.0.0 255.255.0.0 net_gateway
+              --script-security 2
+              --up /etc/openvpn/update-systemd-resolved --up-restart
+              --down /etc/openvpn/update-systemd-resolved --down-pre
+              --dhcp-option DOMAIN-ROUTE .)
+
+            if grep -q auth-user-pass /tmp/config.ovpn; then
+              vpn_command+=(--auth-user-pass /tmp/vpn.login)
+            fi
+
+            ET_phone_home=$(ss -Hnto state established '( sport = :ssh )' | head -n1 | awk '{ split($4, a, ":"); print a[1] }')
+            echo $ET_phone_home
+
+            if [ -n "$ET_phone_home" ]; then
+              vpn_command+=(--route $ET_phone_home 255.255.255.255 net_gateway)
+            fi
+
+            for IP in $(host runner.circleci.com | awk '{ print $4; }')
+              do
+                vpn_command+=(--route $IP 255.255.255.255 net_gateway)
+                echo $IP
+            done
+
+            for SYS_RES_DNS in $(systemd-resolve --status | grep 'DNS Servers'|awk '{print $3}')
+              do
+                vpn_command+=(--route $SYS_RES_DNS 255.255.255.255 net_gateway)
+                echo $SYS_RES_DNS
+            done
+
+            "${vpn_command[@]}" > /tmp/openvpn.log
+
+      - run:
+          name: Wait for the connection to be established and check IP
+          command: |
+            counter=1
+            until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 5 ]; do
+              ((counter++))
+              echo "Attempting to connect to VPN server..."
+              sleep 1;
+            done
+
+            if [ ! -f /tmp/openvpn.log ] || (! grep -iq "Initialization Sequence Completed" /tmp/openvpn.log); then
+              printf "\nUnable to establish connection within the allocated time ---> Giving up.\n"
+            else
+              printf "\nVPN connected\n"
+              printf "\nPublic IP is now %s\n" "$(curl -s http://checkip.amazonaws.com)"
+            fi
       - add_ssh_keys:
           fingerprints:
             - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
@@ -1008,6 +1084,11 @@ jobs:
       - slack-success:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
+      - run:
+          name: Disconnect from OpenVPN
+          command: |
+            sudo killall openvpn || true
+          when: always
 workflows:
   # test, build and push all commits
   test-build-and-push:
