@@ -21,7 +21,6 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
-import { actions as playlistLibraryActions } from 'common/store/playlist-library/slice'
 import {
   AUDIO_NFT_PLAYLIST,
   SMART_COLLECTION_MAP
@@ -51,7 +50,6 @@ const {
 const { saveSmartCollection } = collectionsSocialActions
 const { getPlaylistUpdates } = notificationsSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { update } = playlistLibraryActions
 const {
   getAccountCollectibles,
   getAccountNavigationPlaylists,
