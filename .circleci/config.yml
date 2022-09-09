@@ -1078,9 +1078,7 @@ jobs:
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
             cd ~/audius-ssh
             cat ~/.ssh/config
-            rm ~/.ssh/config
-            sed -e '7d' ~/audius-ssh/ssh_config
-            cat ~/audius-ssh/ssh_config >> ~/.ssh/config
+            sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
 
             hostname
             ssh -T git@github.com || true
