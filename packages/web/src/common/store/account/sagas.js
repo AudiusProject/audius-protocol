@@ -23,10 +23,8 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
-import { SignedIn } from 'services/native-mobile-interface/lifecycle'
 
 import disconnectedWallets from './disconnected_wallet_fix.json'
-import mobileSagas, { setHasSignedInOnMobile } from './mobileSagas'
 
 const { getFeePayer } = solanaSelectors
 const { fetchProfile } = profilePageActions
@@ -42,6 +40,7 @@ const {
 } = accountSelectors
 
 const {
+  signedIn,
   unsubscribeBrowserPushNotifications,
   showPushNotificationConfirmation,
   fetchAccountSucceeded,
@@ -53,8 +52,6 @@ const {
   fetchSavedPlaylists,
   addAccountPlaylist
 } = accountActions
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const IP_STORAGE_KEY = 'user-ip-timestamp'
 
@@ -98,7 +95,7 @@ function* recordIPIfNotRecent(handle) {
 
 // Tasks to be run on account successfully fetched, e.g.
 // recording metrics, setting user data
-function* onFetchAccount(account, isSignUp = false) {
+function* onSignedIn({ payload: { account, isSignUp = false } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const analytics = yield getContext('analytics')
   const sentry = yield getContext('sentry')
@@ -115,10 +112,6 @@ function* onFetchAccount(account, isSignUp = false) {
   yield put(showPushNotificationConfirmation())
 
   yield fork(audiusBackendInstance.updateUserLocationTimezone)
-  if (NATIVE_MOBILE) {
-    yield fork(setHasSignedInOnMobile, account)
-    new SignedIn(account).send()
-  }
 
   // Fetch the profile so we get everything we need to populate
   // the left nav / other site-wide metadata.
@@ -249,9 +242,9 @@ export function* fetchAccountAsync({ fromSource = false, isSignUp = false }) {
 
   yield call(recordIPIfNotRecent, account.handle)
 
-  // Cache the account and fire the onFetch callback. We're done.
+  // Cache the account and put the signedIn action. We're done.
   yield call(cacheAccount, account)
-  yield call(onFetchAccount, account, isSignUp)
+  yield put(signedIn({ account, isSignUp }))
 }
 
 function* cacheAccount(account) {
@@ -379,6 +372,10 @@ function* watchFetchAccount() {
   yield takeEvery(fetchAccount.type, fetchAccountAsync)
 }
 
+function* watchSignedIn() {
+  yield takeEvery(signedIn.type, onSignedIn)
+}
+
 function* watchTwitterLogin() {
   yield takeEvery(twitterLogin.type, associateTwitterAccount)
 }
@@ -400,13 +397,13 @@ function* watchAddAccountPlaylist() {
 }
 
 export default function sagas() {
-  const sagas = [
+  return [
     watchFetchAccount,
+    watchSignedIn,
     watchTwitterLogin,
     watchInstagramLogin,
     watchFetchSavedAlbums,
     watchFetchSavedPlaylists,
     watchAddAccountPlaylist
   ]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
 }
