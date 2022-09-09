@@ -1077,6 +1077,8 @@ jobs:
 
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
             cd ~/audius-ssh
+            cat ~/.ssh/config
+            rm ~/.ssh/config
             ln -s ~/audius-ssh/ssh_config ~/.ssh/config
 
             hostname
