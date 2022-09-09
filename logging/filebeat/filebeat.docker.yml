@@ -176,8 +176,6 @@ filebeat.autodiscover:
                 docker.container.image: "solana-programs"
             - contains:
                 docker.container.image: "ganache"
-            - contains:
-                docker.container.image: "autoheal"
         - config:
             - type: container
               paths:
@@ -210,8 +208,6 @@ filebeat.autodiscover:
                 docker.container.image: "solana-programs"
             - not.contains:
                 docker.container.image: "ganache"
-            - not.contains:
-                docker.container.image: "autoheal"
 
 cloud.id: "${ELASTIC_CLOUD_ID}"
 output.elasticsearch:
