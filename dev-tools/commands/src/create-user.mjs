@@ -1,11 +1,9 @@
 import { randomBytes } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 
 import chalk from "chalk";
 import { program } from "commander";
 
-import { ACCOUNTS_PATH, initializeAudiusLibs } from "./utils.mjs";
+import { initializeAudiusLibs } from "./utils.mjs";
 
 program.command("create-user")
   .description("Create a new user")
@@ -14,8 +12,9 @@ program.command("create-user")
   .option("-e, --email <email>", "The email for the new user (chosen randomly if not specified)")
   .action(async (handle, { password, email }) => {
     const audiusLibs = await initializeAudiusLibs();
+    await audiusLibs.Account.logout();
 
-    const rand = randomBytes(2).toString("hex").padStart(4, '0').toUpperCase();
+    const rand = randomBytes(2).toString("hex").padStart(4, "0").toUpperCase();
 
     email = email || `audius-cmd+${rand}@audius.co`;
 
@@ -34,11 +33,7 @@ program.command("create-user")
     };
 
     try {
-      const response = await audiusLibs.Account.signUp(
-        email,
-        password,
-        metadata,
-      );
+      const response = await audiusLibs.Account.signUp(email, password, metadata);
 
       if (response.error) {
         program.error(chalk.red(response.error));
@@ -49,10 +44,9 @@ program.command("create-user")
       console.log(chalk.yellow.bold("Email:    "), email);
       console.log(chalk.yellow.bold("Password: "), password);
 
-      await mkdir(ACCOUNTS_PATH, { recursive: true });
-      await writeFile(
-        path.join(ACCOUNTS_PATH, metadata.handle),
-        audiusLibs.web3Manager.ownerWallet.privateKey.toString("hex"),
+      audiusLibs.localStorage.setItem(
+        `handle-${metadata.handle}`,
+        audiusLibs.localStorage.getItem("hedgehog-entropy-key"),
       );
     } catch (err) {
       program.error(err.message);

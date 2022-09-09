@@ -12,10 +12,8 @@
     "@audius/sdk": "file:../../libs",
     "@solana/spl-token": "^0.2.0",
     "@solana/web3.js": "^1.50.1",
-    "axios": "^0.27.2",
     "bn.js": "^5.2.1",
     "chalk": "^5.0.1",
-    "commander": "^9.4.0",
-    "ethereumjs-wallet": "^1.0.2"
+    "commander": "^9.4.0"
   }
 }

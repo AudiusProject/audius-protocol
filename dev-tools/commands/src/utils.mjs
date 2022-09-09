@@ -1,15 +1,7 @@
-import { readFile } from "fs/promises";
-import path from "path";
-
-import { libs as AudiusLibs, sdk as AudiusSdk } from "@audius/sdk";
+import { Utils as AudiusUtils, sdk as AudiusSdk, libs as AudiusLibs } from "@audius/sdk";
 import { PublicKey } from "@solana/web3.js";
-import { default as axios } from "axios";
-import pkg from 'ethereumjs-wallet';
-const { default: EthereumWallet } = pkg;
 
-export const ACCOUNTS_PATH = "/tmp/accounts";
-
-export const initializeAudiusLibs = async (poaWeb3PrivateKey) => {
+export const initializeAudiusLibs = async (handle) => {
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
       process.env.ETH_TOKEN_ADDRESS,
@@ -20,7 +12,6 @@ export const initializeAudiusLibs = async (poaWeb3PrivateKey) => {
     web3Config: AudiusLibs.configInternalWeb3(
       process.env.POA_REGISTRY_ADDRESS,
       process.env.POA_PROVIDER_URL,
-      poaWeb3PrivateKey,
     ),
     solanaWeb3Config: AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: process.env.SOLANA_ENDPOINT,
@@ -47,64 +38,59 @@ export const initializeAudiusLibs = async (poaWeb3PrivateKey) => {
 
   await audiusLibs.init();
 
+  if (handle) {
+    audiusLibs.localStorage.setItem(
+      "hedgehog-entropy-key",
+      audiusLibs.localStorage.getItem(`handle-${handle}`),
+    );
+  }
+
   return audiusLibs;
 };
 
+let audiusSdk;
 export const initializeAudiusSdk = async () => {
-  return AudiusSdk({
-    appName: "audius-cmd",
-    ethWeb3Config: AudiusLibs.configEthWeb3(
-      process.env.ETH_TOKEN_ADDRESS,
-      process.env.ETH_REGISTRY_ADDRESS,
-      process.env.ETH_PROVIDER_URL,
-      process.env.ETH_OWNER_WALLET,
-    ),
-    web3Config: AudiusLibs.configInternalWeb3(
-      process.env.POA_REGISTRY_ADDRESS,
-      process.env.POA_PROVIDER_URL,
-      poaWeb3PrivateKey,
-    ),
-    discoveryProviderConfig: {},
-    identityServiceConfig: AudiusLibs.configIdentityService(
-      process.env.IDENTITY_SERVICE_URL,
-    ),
-  });
-};
-
-export const parseSolanaTokenAddress = async (account) => {
-    let address;
-    if (account.startsWith("@")) { // handle
-      try {
-        ({ data: { data: { spl_wallet: address } } } = await axios.get(
-          `users/handle/${account.slice(1)}`,
-          { baseURL: "http://discovery-provider:5000/v1" },
-        ));
-      } catch (err) {
-        throw new Error(`Could not find user with handle ${account}`);
-      }
-    } else if (account.length < 32) { // user id
-      try {
-        ({ data: { data: { spl_wallet: address } } } = await axios.get(
-          `users/${account}`,
-          { baseURL: "http://discovery-provider:5000/v1" },
-        ));
-      } catch (err) {
-        throw new Error(`Could not find user with user id ${account}`);
-      }
-    } else { // solana token address
-      address = account;
-    }
-
-    return new PublicKey(address);
-};
-
-export const parsePOAOwnerWallet = async (account) => {
-  let fromPrivateKey;
-  if (account.startsWith("0x")) { // private key
-    fromPrivateKey = from;
-  } else { // handle
-    fromPrivateKey = await readFile(path.join(ACCOUNTS_PATH, account), "utf8");
+  if (!audiusSdk) {
+    audiusSdk = AudiusSdk({
+      appName: 'audius-cmd',
+      discoveryProviderConfig: {},
+      ethWeb3Config: AudiusLibs.configEthWeb3(
+        process.env.ETH_TOKEN_ADDRESS,
+        process.env.ETH_REGISTRY_ADDRESS,
+        process.env.ETH_PROVIDER_URL,
+        process.env.ETH_OWNER_WALLET,
+      ),
+      identityServiceConfig: AudiusLibs.configIdentityService(
+        process.env.IDENTITY_SERVICE_URL,
+      ),
+      web3Config: AudiusLibs.configInternalWeb3(
+        process.env.POA_REGISTRY_ADDRESS,
+        process.env.POA_PROVIDER_URL,
+      ),
+    });
   }
 
-  return new EthereumWallet(Buffer.from(fromPrivateKey, "hex"));
+  return audiusSdk;
+};
+
+export const parseUserId = async (arg) => {
+  if (arg.startsWith('@')) { // @handle
+    const audiusSdk = await initializeAudiusSdk();
+    const { id } = await audiusSdk.users.getUserByHandle({ handle: arg.slice(1) });
+    return AudiusUtils.decodeHashId(id);
+  } else if (arg.startsWith('#')) { // #userId
+    return Number(arg.slice(1));
+  } else { // encoded user id
+    return AudiusUtils.decodeHashId(arg);
+  }
+};
+
+export const parseSplWallet = async (arg) => {
+  if (arg.startsWith('@') || arg.startsWith('#') || (arg.length < 32)) { // not splWallet
+    const audiusSdk = await initializeAudiusSdk();
+    const { spl_wallet } = await audiusSdk.users.getUser({ id: AudiusUtils.encodeHashId(await parseUserId(arg)) });
+    return new PublicKey(spl_wallet);
+  } else { // splWallet
+    return new PublicKey(arg);
+  }
 };
