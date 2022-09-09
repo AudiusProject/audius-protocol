@@ -17,7 +17,6 @@ import {
 import { profilePage } from 'audius-client/src/utils/route'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
@@ -36,7 +35,6 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
 
@@ -68,7 +66,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.SHARE]: () =>
       dispatch(shareTrack(id, ShareSource.OVERFLOW)),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
-      dispatchWeb(openAddToPlaylistModal(id, title)),
+      dispatch(openAddToPlaylistModal(id, title)),
     [OverflowAction.VIEW_TRACK_PAGE]: () => {
       closeNowPlayingDrawer()
       navigation.navigate({

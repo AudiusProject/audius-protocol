@@ -7,6 +7,7 @@ import {
 } from '@audius/common'
 import analyticsSagas from 'audius-client/src/common/store/analytics/sagas'
 import accountSagas from 'common/store/account/sagas'
+import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import backendSagas, { setupBackend } from 'common/store/backend/sagas'
 import collectionsSagas from 'common/store/cache/collections/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
@@ -30,6 +31,7 @@ import trendingPlaylistSagas from 'common/store/pages/trending-playlists/sagas'
 import trendingUndergroundSagas from 'common/store/pages/trending-underground/sagas'
 import trendingPageSagas from 'common/store/pages/trending/sagas'
 import playerSagas from 'common/store/player/sagas'
+import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
@@ -59,14 +61,18 @@ export default function* rootSaga() {
   yield* fork(setupBackend)
   yield* fork(setupTheme)
   const sagas = [
-    // config
+    // Config
     ...backendSagas(),
     ...analyticsSagas(),
-    ...accountSagas(),
-    ...recoveryEmailSagas(),
     ...confirmerSagas(),
     ...searchBarSagas(),
     ...searchResultsSagas(),
+
+    // Account
+
+    ...accountSagas(),
+    ...recoveryEmailSagas(),
+    ...playlistLibrarySagas(),
 
     // Cache
     ...coreCacheSagas(),
@@ -118,6 +124,7 @@ export default function* rootSaga() {
     ...castSagas(),
 
     // Application
+    ...addToPlaylistSagas(),
     ...changePasswordSagas(),
     ...smartCollectionPageSagas(),
     ...overflowMenuSagas(),
