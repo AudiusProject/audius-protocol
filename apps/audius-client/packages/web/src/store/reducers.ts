@@ -53,7 +53,6 @@ const createRootReducer = (routeHistory: History) =>
 
     // Account
     passwordReset,
-    playlistLibrary,
 
     // UI Functions
     dragndrop,

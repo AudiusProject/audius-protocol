@@ -7,9 +7,9 @@ import {
   cacheUsersSelectors,
   cacheReducer,
   cacheUsersActions as userActions,
-  removePlaylistLibraryTempPlaylists,
   waitForValue,
-  waitForAccount
+  waitForAccount,
+  playlistLibraryHelpers
 } from '@audius/common'
 import { mergeWith } from 'lodash'
 import {
@@ -31,6 +31,7 @@ import {
 import { fetchServicesFailed } from 'common/store/service-selection/slice'
 
 import { pruneBlobValues, reformat } from './utils'
+const { removePlaylistLibraryTempPlaylists } = playlistLibraryHelpers
 const { mergeCustomizer } = cacheReducer
 const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getAccountUser, getUserId } = accountSelectors
