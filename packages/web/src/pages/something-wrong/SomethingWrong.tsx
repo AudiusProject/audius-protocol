@@ -7,14 +7,11 @@ import { useDispatch } from 'react-redux'
 import { useLastLocation } from 'react-router-last-location'
 
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
-import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { useIsMobile } from 'utils/clientUtil'
 import { HOME_PAGE, ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import styles from './SomethingWrong.module.css'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const messages = {
   body1: 'We’re experiencing heavy load!',
@@ -34,9 +31,7 @@ export const SomethingWrong = () => {
     !lastRoutePathname || INVALID_BACK_PAGES.has(lastRoutePathname)
 
   const handleClickRetry = useCallback(() => {
-    if (NATIVE_MOBILE) {
-      new ReloadMessage().send()
-    } else if (shouldGoToHomePage) {
+    if (shouldGoToHomePage) {
       dispatch(replace(HOME_PAGE))
     } else {
       dispatch(goBack())

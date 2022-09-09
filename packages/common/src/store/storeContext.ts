@@ -1,16 +1,15 @@
-import { TrackDownload } from 'services'
-import { Cognito } from 'services/cognito'
-import { SolanaClient } from 'services/solana-client'
-
 import { AnalyticsEvent, LineupState, Track } from '../models'
 import { AudioPlayer } from '../services/audio-player'
 import { AudiusAPIClient } from '../services/audius-api-client'
 import { AudiusBackend } from '../services/audius-backend'
+import { Cognito } from '../services/cognito'
 import { Env } from '../services/env'
 import { Explore } from '../services/explore'
 import { FingerprintClient } from '../services/fingerprint'
 import { LocalStorage } from '../services/local-storage'
 import { FeatureFlags, RemoteConfigInstance } from '../services/remote-config'
+import { SolanaClient } from '../services/solana-client'
+import { TrackDownload } from '../services/track-download'
 import { WalletClient } from '../services/wallet-client'
 
 import { CommonState } from './reducers'
@@ -52,4 +51,5 @@ export type CommonStoreContext = {
   }
   cognito: Cognito
   trackDownload: TrackDownload
+  share: (url: string, message?: string) => Promise<void> | void
 }

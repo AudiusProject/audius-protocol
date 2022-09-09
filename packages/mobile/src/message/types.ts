@@ -45,10 +45,6 @@ export enum MessageType {
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
 
-  // Action dispatchers
-  PUSH_ROUTE = 'action/push-route',
-  SCROLL_TO_TOP = 'action/scroll-to-top',
-
   // OAuth
   REQUEST_TWITTER_AUTH = 'request-twitter-auth',
   REQUEST_TWITTER_AUTH_SUCCEEDED = 'request-twitter-auth-succeeded',

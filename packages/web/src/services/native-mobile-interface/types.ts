@@ -6,12 +6,6 @@ export enum MessageType {
   RELOAD = 'reload',
   ACCOUNT_RECOVERY = 'account-recovery',
 
-  // Cast
-  AIRPLAY = 'airplay',
-  IS_CASTING = 'action/is-casting',
-
-  SHOW_GOOGLE_CAST_PICKER = 'show-google-cast-picker',
-
   // Sign-On
   SUBMIT_SIGNIN = 'submit-signin',
   SIGN_IN_FAILURE = 'sign-in-failure',
@@ -48,11 +42,6 @@ export enum MessageType {
 
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
-
-  // Action dispatchers
-  PUSH_ROUTE = 'action/push-route',
-  POP_ROUTE = 'action/pop-route',
-  SCROLL_TO_TOP = 'action/scroll-to-top',
 
   // OAuth
   REQUEST_TWITTER_AUTH = 'request-twitter-auth',

@@ -3,12 +3,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useInstanceVar } from '@audius/common'
 import { config, useSpring } from 'react-spring'
 
-import {
-  EnablePullToRefreshMessage,
-  DisablePullToRefreshMessage
-} from 'services/native-mobile-interface/android/pulltorefresh'
-import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
-
 type UseHasReachedTopPointProps = {
   fetchContent: () => void
   callback?: () => void
@@ -59,8 +53,6 @@ export const useHasReachedTopPoint = ({
 
     if (!hasReachedTopPoint && scrollY < cutoff && lastTouchDownY < 50) {
       setHasReachedTopPoint(true)
-      const message = new HapticFeedbackMessage()
-      message.send()
     }
   }, [
     hasReachedTopPoint,
@@ -122,30 +114,4 @@ export const useHasReachedTopPoint = ({
   ])
 
   return [hasReachedTopPoint, springProps, touchDown]
-}
-
-export const useAndroidPullToRefresh = (fetchContent: () => void) => {
-  const [toggle, setToggle] = useState(false)
-  const [getMessageId, setMessageId] = useInstanceVar<string | null>(null)
-
-  useEffect(() => {
-    const asyncEffect = async () => {
-      const message = new EnablePullToRefreshMessage(getMessageId() !== null)
-      message.send()
-      const resp = await message.receive()
-      if (resp.id) {
-        setMessageId(resp.id)
-      }
-      fetchContent()
-      setToggle(!toggle)
-    }
-    asyncEffect()
-  }, [fetchContent, toggle, setToggle, getMessageId, setMessageId])
-
-  // Destroy on unmount
-  useEffect(() => {
-    return () => {
-      new DisablePullToRefreshMessage(getMessageId()).send()
-    }
-  }, [getMessageId])
 }

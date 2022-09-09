@@ -41,7 +41,6 @@ import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
 import EditTrackModalState from './application/ui/editTrackModal/types'
-import { MobileKeyboardState } from './application/ui/mobileKeyboard/types'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { UserListModalState } from './application/ui/userListModal/types'
@@ -77,7 +76,6 @@ export type AppState = CommonState & {
       editTrackModal: EditTrackModalState
       embedModal: EmbedModalState
       firstUploadModal: FirstUploadModalState
-      mobileKeyboard: MobileKeyboardState
       remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
       scrollLock: ScrollLockState
       setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
