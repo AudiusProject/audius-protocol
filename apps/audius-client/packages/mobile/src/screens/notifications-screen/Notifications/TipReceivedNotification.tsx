@@ -13,12 +13,11 @@ import type {
   ReactionTypes
 } from '@audius/common'
 import { Image, View } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -53,7 +52,7 @@ const messages = {
 }
 
 const useSetReaction = (tipTxSignature: string) => {
-  const dispatch = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const setReactionValue = useCallback(
     (reaction: Nullable<ReactionTypes>) => {
