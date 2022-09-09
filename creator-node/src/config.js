@@ -464,7 +464,7 @@ const config = convict({
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',
     env: 'fetchCNodeEndpointToSpIdMapIntervalMs',
-    default: 3_600_000 // 1hr
+    default: 600_000 // 10m
   },
   stateMonitoringQueueRateLimitInterval: {
     doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval monitor-state jobs will run',
@@ -636,12 +636,6 @@ const config = convict({
     env: 'maxManualSyncMonitoringDurationInMs',
     default: 45000 // 45 sec (prod default)
   },
-  syncRequestMaxUserFailureCountBeforeSkip: {
-    doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
-    format: 'nat',
-    env: 'syncRequestMaxUserFailureCountBeforeSkip',
-    default: 10
-  },
   skippedCIDsRetryQueueJobIntervalMs: {
     doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',
     format: 'nat',
@@ -737,6 +731,18 @@ const config = convict({
     format: Boolean,
     env: 'findCIDInNetworkEnabled',
     default: true
+  },
+  otelTracingEnabled: {
+    doc: 'enable OpenTelemetry tracing',
+    format: Boolean,
+    env: 'otelTracingEnabled',
+    default: true
+  },
+  otelCollectorUrl: {
+    doc: 'the url for the OpenTelemetry collector',
+    format: String,
+    env: 'otelCollectorUrl',
+    default: ''
   }
   /**
    * unsupported options at the moment

@@ -10,8 +10,10 @@ const {
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
-const { validateMetadata } = require('../utils/index')
+const {
+  validateStateForImageDirCIDAndReturnFileUUID,
+  validateMetadata
+} = require('../utils')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,

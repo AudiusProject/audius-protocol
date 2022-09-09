@@ -54,9 +54,9 @@ def test_populate_track_metadata(app):
     with db.scoped_session() as session:
         track_ids = [1, 2, 3]
         tracks = [
-            {"track_id": 1},
-            {"track_id": 2},
-            {"track_id": 3},
+            {"track_id": 1, "is_premium": False},
+            {"track_id": 2, "is_premium": False},
+            {"track_id": 3, "is_premium": False},
         ]
 
         tracks = populate_track_metadata(session, track_ids, tracks, None)
@@ -78,7 +78,11 @@ def test_populate_track_metadata(app):
         assert tracks[2][response_name_constants.play_count] == 0
 
         curr_track_ids = [1, 2, 3]
-        curr_tracks = [{"track_id": 1}, {"track_id": 2}, {"track_id": 3}]
+        curr_tracks = [
+            {"track_id": 1, "is_premium": False},
+            {"track_id": 2, "is_premium": False},
+            {"track_id": 3, "is_premium": False},
+        ]
 
         tracks = populate_track_metadata(session, curr_track_ids, curr_tracks, 1)
         assert len(tracks) == 3

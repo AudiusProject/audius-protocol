@@ -60,17 +60,21 @@ describe('test findReplicaSetUpdates job processor', function () {
     }
   ]
 
-  const DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP = {
-    [primary]: primarySpID,
-    [secondary1]: secondary1SpID,
-    [secondary2]: secondary2SpID
-  }
+  const DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP = new Map(
+    Object.entries({
+      [primary]: primarySpID,
+      [secondary1]: secondary1SpID,
+      [secondary2]: secondary2SpID
+    })
+  )
 
-  const CNODE_ENDOINT_TO_SP_ID_MAP_WHERE_SECONDARY1_MISMATCHES = {
-    [primary]: primarySpID,
-    [secondary1]: secondary1SpID + 100,
-    [secondary2]: secondary2SpID
-  }
+  const CNODE_ENDOINT_TO_SP_ID_MAP_WHERE_SECONDARY1_MISMATCHES = new Map(
+    Object.entries({
+      [primary]: primarySpID,
+      [secondary1]: secondary1SpID + 100,
+      [secondary2]: secondary2SpID
+    })
+  )
 
   const DEFAULT_REPLICA_TO_USER_INFO_MAP = {
     [primary]: {
@@ -104,8 +108,8 @@ describe('test findReplicaSetUpdates job processor', function () {
         '../CNodeHealthManager': {
           isPrimaryHealthy: isPrimaryHealthyStub
         },
-        '../ContentNodeInfoManager': {
-          getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
+        '../../ContentNodeInfoManager': {
+          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
         }
       }
     )
@@ -119,7 +123,7 @@ describe('test findReplicaSetUpdates job processor', function () {
   }) {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
-      .returns(cNodeEndpointToSpIdMap)
+      .resolves(cNodeEndpointToSpIdMap)
     const isPrimaryHealthyStub = sandbox
       .stub()
       .resolves(isPrimaryHealthyInExtraHealthCheck)
@@ -146,8 +150,14 @@ describe('test findReplicaSetUpdates job processor', function () {
     const jobOutput = await runJobProcessor(jobProcessorArgs)
 
     expect(jobOutput.cNodeEndpointToSpIdMap).to.deep.equal(
-      jobProcessorArgs?.cNodeEndpointToSpIdMap ||
-        DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
+      JSON.stringify(
+        Array.from(
+          (
+            jobProcessorArgs?.cNodeEndpointToSpIdMap ||
+            DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
+          ).entries()
+        )
+      )
     )
 
     if (expectedUnhealthyReplicas?.length) {
