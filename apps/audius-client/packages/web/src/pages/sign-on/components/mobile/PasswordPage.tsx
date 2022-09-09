@@ -5,13 +5,10 @@ import cn from 'classnames'
 
 import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/status-message/StatusMessage'
-import { OpenLinkMessage } from 'services/native-mobile-interface/linking'
 import { commonPasswordCheck } from 'utils/commonPasswordCheck'
-import { TERMS_OF_SERVICE, PRIVACY_POLICY, BASE_URL } from 'utils/route'
+import { TERMS_OF_SERVICE, PRIVACY_POLICY } from 'utils/route'
 
 import styles from './PasswordPage.module.css'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const messages = {
   header: 'Create A Password That Is Secure And Easy To Remember!',
@@ -193,21 +190,13 @@ const PasswordPage = ({
   }, [fulfillsRequirements, onPasswordChange, password, onNextPage])
 
   onTermsOfServiceClick = () => {
-    if (NATIVE_MOBILE) {
-      new OpenLinkMessage(`${BASE_URL}${TERMS_OF_SERVICE}`).send()
-    } else {
-      const win = window.open(TERMS_OF_SERVICE, '_blank') as Window
-      win.focus()
-    }
+    const win = window.open(TERMS_OF_SERVICE, '_blank') as Window
+    win.focus()
   }
 
   onPrivacyPolicyClick = () => {
-    if (NATIVE_MOBILE) {
-      new OpenLinkMessage(`${BASE_URL}${PRIVACY_POLICY}`).send()
-    } else {
-      const win = window.open(PRIVACY_POLICY, '_blank') as Window
-      win.focus()
-    }
+    const win = window.open(PRIVACY_POLICY, '_blank') as Window
+    win.focus()
   }
 
   const pwdChecks = [

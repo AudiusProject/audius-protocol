@@ -7,12 +7,9 @@ import { animated } from 'react-spring'
 
 import iconRefreshPull from 'assets/animations/iconRefreshPull.json'
 import iconRefreshSpin from 'assets/animations/iconRefreshSpin.json'
-import { getIsIOS } from 'utils/browser'
 
 import styles from './PullToRefresh.module.css'
-import { useHasReachedTopPoint, useAndroidPullToRefresh } from './hooks'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+import { useHasReachedTopPoint } from './hooks'
 
 // Translate the pull arrow by a fraction of the scroll offset for parallax effect
 const interpTransform = (y: number) => `translate3d(0, ${y / 8}px, 0)`
@@ -36,7 +33,7 @@ type PullToRefreshProps = {
  * A pull-to-refresh component that wraps any component and allows it to
  * be refreshed on overflow-top pulling.
  */
-const InlinePullToRefresh = memo(
+const PullToRefresh = memo(
   ({
     fetchContent,
     shouldPad = true,
@@ -120,19 +117,5 @@ const InlinePullToRefresh = memo(
     )
   }
 )
-
-const AndroidPullToRefresh = memo(
-  ({ fetchContent, children }: PullToRefreshProps) => {
-    useAndroidPullToRefresh(fetchContent)
-
-    return <>{children}</>
-  }
-)
-
-const PullToRefresh = (props: PullToRefreshProps) => {
-  const Pull =
-    getIsIOS() || !NATIVE_MOBILE ? InlinePullToRefresh : AndroidPullToRefresh
-  return <Pull {...props} />
-}
 
 export default PullToRefresh

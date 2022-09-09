@@ -4,8 +4,6 @@ import { ID, CoverArtSizes } from '@audius/common'
 import cn from 'classnames'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
-import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
-
 import TrackListItem from './ConnectedTrackListItem'
 import styles from './TrackList.module.css'
 import { TrackItemAction } from './TrackListItem'
@@ -70,14 +68,6 @@ const TrackList = ({
     },
     [onReorder]
   )
-  const onDragStart = () => {
-    const message = new HapticFeedbackMessage()
-    message.send()
-  }
-  const onDragUpdate = () => {
-    const message = new HapticFeedbackMessage()
-    message.send()
-  }
 
   // The dividers above and belove the active track should be hidden
   const activeIndex = tracks.findIndex((track) => track.isActive)
@@ -162,13 +152,9 @@ const TrackList = ({
       })}
     >
       {isReorderable ? (
-        <DragDropContext
-          onDragEnd={onDragEnd}
-          onDragStart={onDragStart}
-          onDragUpdate={onDragUpdate}
-        >
+        <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId='track-list-droppable' type='TRACK'>
-            {(provided: any, snapshot: any) => (
+            {(provided: any) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
                 {renderedTracks}
               </div>

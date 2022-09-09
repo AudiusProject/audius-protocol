@@ -22,10 +22,6 @@
   height: 36px !important;
 }
 
-.activeButton path {
-  fill: var(--primary) !important;
-}
-
 .disabledButton path {
   fill: var(--neutral-light-6) !important;
 }
@@ -76,10 +72,4 @@
 
 .icon path {
   fill: var(--neutral);
-}
-
-.iconCast svg {
-  margin-top: 1px;
-  width: 26px !important;
-  height: 26px !important;
 }

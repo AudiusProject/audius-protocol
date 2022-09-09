@@ -1,5 +1,3 @@
-import { useState, useEffect } from 'react'
-
 import appIcon from 'assets/img/appIcon.png'
 import { ReactComponent as IconCareers } from 'assets/img/iconCareers.svg'
 import { ReactComponent as IconContact } from 'assets/img/iconContact.svg'
@@ -10,7 +8,6 @@ import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
 import Page from 'components/page/Page'
-import { GetVersion } from 'services/native-mobile-interface/version'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 
 import packageInfo from '../../../../../package.json'
@@ -19,9 +16,7 @@ import styles from './AboutSettingsPage.module.css'
 import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
 
-const { version } = packageInfo
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+const { version: appVersion } = packageInfo
 
 const links = {
   discord: 'https://discordapp.com/invite/yNUg2e2',
@@ -47,26 +42,7 @@ const messages = {
   copyright: COPYRIGHT_TEXT
 }
 
-/** Gets the latest app or dapp version */
-const useAppVersion = (): string => {
-  const [appVersion, setAppVersion] = useState(NATIVE_MOBILE ? '0' : version)
-
-  useEffect(() => {
-    if (NATIVE_MOBILE) {
-      const getVersionMessage = new GetVersion()
-      getVersionMessage.send()
-      getVersionMessage.receive().then(({ version }) => {
-        setAppVersion(version)
-      })
-    }
-  }, [])
-
-  return appVersion
-}
-
 const AboutSettingsPage = (props: SettingsPageProps) => {
-  const appVersion = useAppVersion()
-
   const openLink = (link: string) => {
     window.open(link, '_blank')
   }

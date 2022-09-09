@@ -25,7 +25,6 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { share } from 'utils/share'
 
 import watchTrackErrors from './errorSagas'
 const { updateOptimisticListenStreak } = audioRewardsPageActions
@@ -685,6 +684,7 @@ function* watchShareTrack() {
       if (!user) return
 
       const link = track.permalink
+      const share = yield* getContext('share')
       share(link, formatShareText(track.title, user.name))
 
       const event = make(Name.SHARE, {

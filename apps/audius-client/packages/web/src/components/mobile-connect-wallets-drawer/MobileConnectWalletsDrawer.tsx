@@ -1,7 +1,5 @@
 import { useModalState } from 'common/hooks/useModalState'
 import Drawer from 'components/drawer/Drawer'
-import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
-import { useSelector } from 'utils/reducer'
 
 import styles from './MobileConnectWalletsDrawer.module.css'
 
@@ -12,11 +10,10 @@ const messages = {
 }
 
 const MobileConnectWalletsDrawer = ({ onClose }: { onClose: () => void }) => {
-  const keyboardVisible = useSelector(getKeyboardVisibility)
   const [isOpen] = useModalState('MobileConnectWalletsDrawer')
 
   return (
-    <Drawer isOpen={isOpen} keyboardVisible={keyboardVisible} onClose={onClose}>
+    <Drawer isOpen={isOpen} onClose={onClose}>
       <div className={styles.drawer}>
         <div className={styles.top}>
           <div className={styles.title}>{messages.title}</div>
