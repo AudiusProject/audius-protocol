@@ -19,6 +19,7 @@ import {
 } from 'app/services/remote-config'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
+import share from 'app/utils/share'
 
 export const storeContext: CommonStoreContext = {
   getLocalStorageItem: async (key) => AsyncStorage.getItem(key),
@@ -43,5 +44,6 @@ export const storeContext: CommonStoreContext = {
   // Shim in main, but defined in native-reloaded branch
   audioPlayer,
   cognito,
-  trackDownload
+  trackDownload,
+  share: (url, message) => share({ url, message })
 }

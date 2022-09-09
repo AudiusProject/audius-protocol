@@ -9,8 +9,7 @@ import {
   trendingPageSelectors
 } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
-import { useSelector } from 'audius-client/src/utils/reducer'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'
 import type { LineupProps } from 'app/components/lineup/types'
