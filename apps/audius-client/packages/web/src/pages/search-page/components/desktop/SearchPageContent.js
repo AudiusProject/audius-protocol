@@ -3,7 +3,9 @@ import { Component } from 'react'
 import {
   Status,
   formatCount,
-  searchResultsPageTracksLineupActions as tracksActions
+  searchResultsPageTracksLineupActions as tracksActions,
+  trimToAlphaNumeric,
+  SearchKind
 } from '@audius/common'
 import { Redirect } from 'react-router'
 
@@ -332,7 +334,11 @@ class SearchPageContent extends Component {
               scrollParent={this.props.containerRef}
               loadMore={(offset, limit) =>
                 this.props.dispatch(
-                  tracksActions.fetchLineupMetadatas(offset, limit)
+                  tracksActions.fetchLineupMetadatas(offset, limit, false, {
+                    category: searchResultsCategory,
+                    query: trimToAlphaNumeric(searchText),
+                    isTagSearch
+                  })
                 )
               }
               playTrack={(uid) => this.props.dispatch(tracksActions.play(uid))}
@@ -415,7 +421,11 @@ class SearchPageContent extends Component {
                 }
                 loadMore={(offset, limit) =>
                   this.props.dispatch(
-                    tracksActions.fetchLineupMetadatas(offset, limit)
+                    tracksActions.fetchLineupMetadatas(offset, limit, false, {
+                      category: SearchKind.ALL,
+                      query: trimToAlphaNumeric(searchText),
+                      isTagSearch
+                    })
                   )
                 }
                 playTrack={(uid) =>
