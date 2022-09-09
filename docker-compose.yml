@@ -169,6 +169,7 @@ services:
 
   audius-cmd:
     build: dev-tools/commands
+    command: sleep infinity
     environment:
       ETH_TOKEN_ADDRESS: "${ETH_TOKEN_ADDRESS}"
       ETH_REGISTRY_ADDRESS: "${ETH_REGISTRY_ADDRESS}"
@@ -196,8 +197,6 @@ services:
       build-audius-libs:
         condition: service_started
     logging: *default-logging
-    profiles:
-      - audius-cmd
 
   # identity-service
 
