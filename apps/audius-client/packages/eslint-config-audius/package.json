@@ -44,5 +44,8 @@
   },
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-client/issues"
+  },
+  "dependencies": {
+    "@audius/sdk": "1.0.4"
   }
 }

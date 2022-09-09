@@ -97,7 +97,7 @@
     "dist"
   ],
   "dependencies": {
-    "@audius/sdk": "1.0.2",
+    "@audius/sdk": "1.0.4",
     "@juggle/resize-observer": "3.3.1",
     "react-perfect-scrollbar": "1.5.8",
     "react-use": "15.3.8",
