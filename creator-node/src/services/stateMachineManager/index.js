@@ -12,7 +12,7 @@ const {
   FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
 } = require('./stateMachineConstants')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
-const ContentNodeInfoManager = require('./ContentNodeInfoManager')
+const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -24,10 +24,8 @@ class StateMachineManager {
 
     await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
 
-    // Initialize class immediately since bull jobs are run on cadence even on deploy
-    await ContentNodeInfoManager.updateContentNodeChainInfo(
-      audiusLibs.ethContracts
-    )
+    // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
+    await updateContentNodeChainInfo(baseLogger, redis, audiusLibs.ethContracts)
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()

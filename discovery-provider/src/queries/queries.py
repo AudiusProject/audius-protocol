@@ -187,6 +187,7 @@ def get_feed_route():
         )
     user_id = get_current_user_id()
     args["user_id"] = user_id
+    args["exclude_premium"] = True
     feed_results = get_feed(args)
     return api_helpers.success_response(feed_results)
 
