@@ -1109,6 +1109,7 @@ workflows:
           context:
             - slack-secrets
             - gh-tokens
+            - open-vpn
       - test-libs:
           name: test-libs
       - docker-build-and-push:
