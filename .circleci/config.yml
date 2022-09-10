@@ -1046,7 +1046,7 @@ jobs:
       - run:
           name: Wait for the connection to be established and check IP
           command: |
-            counter=1
+            counter=10
             until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 5 ]; do
               ((counter++))
               echo "Attempting to connect to VPN server..."
