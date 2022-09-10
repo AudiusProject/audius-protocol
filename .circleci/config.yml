@@ -1076,7 +1076,7 @@ jobs:
 
             cd ~/audius-protocol
             set -x
-            python3 -m pip install click==8.1.3
+            python3 -m pip install -r .circleci/triggers/requirements.txt
             ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -P
       - slack-fail:
           channel: C03STD3UXMG
