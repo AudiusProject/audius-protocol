@@ -1007,7 +1007,7 @@ jobs:
                 echo "Your VPN client is configured with a user-locked profile. Make sure to set the VPN_USER and VPN_PASSWORD environment variables"
                 exit 1
               else
-                printf "$VPN_USER\\n$VPN_PASSWORD" > /tmp/vpn.login
+                echo -e "${VPN_USER}\\n${VPN_PASSWORD}" > /tmp/vpn.login
               fi
             fi
 
