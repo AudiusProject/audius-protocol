@@ -1066,7 +1066,6 @@ jobs:
       - run:
           name: Setup SSH Config
           command: |
-            set -x
             git clone git@github.com:AudiusProject/audius-tooling.git ~/audius-tooling
             git clone git@github.com:AudiusProject/audius-protocol.git ~/audius-protocol
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
@@ -1075,6 +1074,7 @@ jobs:
             cd ~/audius-tooling
             git checkout jc-inf-195
 
+            set -x
             export PROTOCOL_DIR=~/audius-protocol
             ./deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -P
       - slack-fail:
