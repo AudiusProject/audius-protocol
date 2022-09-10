@@ -1047,7 +1047,7 @@ jobs:
           name: Wait for the connection to be established and check IP
           command: |
             counter=1
-            until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 10 ]; do
+            until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 15 ]; do
               ((counter++))
               echo "Attempting to connect to VPN server..."
               sleep 1;
@@ -1055,6 +1055,7 @@ jobs:
 
             if [ ! -f /tmp/openvpn.log ] || (! grep -iq "Initialization Sequence Completed" /tmp/openvpn.log); then
               printf "\nUnable to establish connection within the allocated time ---> Giving up.\n"
+              exit 1
             else
               printf "\nVPN connected\n"
               printf "\nPublic IP is now %s\n" "$(curl -s http://checkip.amazonaws.com)"
@@ -1077,7 +1078,7 @@ jobs:
             cd ~/audius-protocol
             set -x
             python3 -m pip install -r .circleci/triggers/requirements.txt
-            ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -P
+            ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN}
       - slack-fail:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
