@@ -1074,8 +1074,10 @@ jobs:
             cd ~/audius-tooling
             git checkout jc-inf-195
 
-            set -x
+            cd ~/audius-tooling
+            pip3 install -r requirements.txt
             cd ~/audius-protocol
+            set -x
             ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -P
       - slack-fail:
           channel: C03STD3UXMG
