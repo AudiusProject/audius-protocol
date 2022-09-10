@@ -1084,7 +1084,7 @@ jobs:
             ssh ubuntu@34.122.95.138 "hostname"
 
             export PROTOCOL_DIR=~/audius-protocol
-            ./deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -P
+            ./deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN}
       - slack-fail:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
