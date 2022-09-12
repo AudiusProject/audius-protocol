@@ -68,7 +68,7 @@ export const ConfirmSendTipScreen = ({
 
   useEffect(() => {
     if (sendStatus === 'SUCCESS') {
-      navigation.navigate({ native: { screen: 'TipSent' } })
+      navigation.navigate('TipSent')
     }
   }, [sendStatus, navigation])
 

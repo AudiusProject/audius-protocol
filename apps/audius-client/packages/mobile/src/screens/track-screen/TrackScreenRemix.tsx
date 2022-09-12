@@ -131,15 +131,11 @@ const TrackScreenRemixComponent = ({
   })
 
   const handlePressTrack = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Track', params: { id: track_id } }
-    })
+    navigation.push('Track', { id: track_id })
   }, [navigation, track_id])
 
   const handlePressArtist = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Profile', params: { handle } }
-    })
+    navigation.push('Profile', { handle })
   }, [handle, navigation])
 
   const images = (

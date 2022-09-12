@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { accountActions, accountSelectors } from '@audius/common'
-import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -63,7 +62,6 @@ export const AlbumsTab = () => {
             scrollEnabled={false}
             collection={userAlbums ?? []}
             style={{ marginVertical: 12 }}
-            fromPage={FAVORITES_PAGE}
           />
         </>
       )}

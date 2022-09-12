@@ -83,12 +83,7 @@ const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
   const onPress = useCallback(() => {
     dispatch(updateQuery(text))
     if (text.startsWith('#')) {
-      navigation.push({
-        native: {
-          screen: 'TagSearch',
-          params: { query: text }
-        }
-      })
+      navigation.push('TagSearch', { query: text })
     } else {
       dispatch(fetchSearch(text))
     }

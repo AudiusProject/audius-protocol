@@ -1,14 +1,9 @@
 import { useCallback } from 'react'
 
-import {
-  CreatePlaylistSource,
-  accountSelectors,
-  cacheCollectionsActions
-} from '@audius/common'
-import { playlistPage } from 'audius-client/src/utils/route'
+import { CreatePlaylistSource, cacheCollectionsActions } from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import { FormScreen } from 'app/components/form-screen'
@@ -19,7 +14,6 @@ import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
 import { PlaylistImageInput } from './PlaylistImageInput'
 import { PlaylistNameInput } from './PlaylistNameInput'
 const { createPlaylist } = cacheCollectionsActions
-const { getUserHandle } = accountSelectors
 
 const messages = {
   title: 'Create Playlist',
@@ -60,7 +54,6 @@ const initialErrors = {
 }
 
 export const CreatePlaylistScreen = () => {
-  const handle = useSelector(getUserHandle) ?? ''
   const { toast } = useToast()
 
   const dispatch = useDispatch()
@@ -71,16 +64,10 @@ export const CreatePlaylistScreen = () => {
       dispatch(
         createPlaylist(tempId, values, CreatePlaylistSource.FAVORITES_PAGE)
       )
-      navigation.replace({
-        native: {
-          screen: 'Collection',
-          params: { id: parseInt(tempId.toString(), 10) }
-        },
-        web: { route: playlistPage(handle, values.playlist_name, tempId) }
-      })
+      navigation.replace('Collection', { id: parseInt(tempId.toString(), 10) })
       toast({ content: messages.playlistCreatedToast })
     },
-    [dispatch, navigation, handle, toast]
+    [dispatch, navigation, toast]
   )
 
   return (

@@ -15,11 +15,7 @@ export const PlaylistsTab = () => {
 
   return (
     <SearchResultsTab noResults={playlists.length === 0}>
-      <CollectionList
-        listKey='search-playlists'
-        collection={playlists}
-        fromPage='search'
-      />
+      <CollectionList listKey='search-playlists' collection={playlists} />
     </SearchResultsTab>
   )
 }

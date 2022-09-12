@@ -5,6 +5,7 @@ import { useCallback } from 'react'
 // on settings page and it doesn't necessarily make sense in common
 import { settingsPageActions, PushNotificationSetting } from '@audius/common'
 import { StyleSheet, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import IconCoSign from 'app/assets/images/iconCoSign.svg'
 import IconFollow from 'app/assets/images/iconFollow.svg'

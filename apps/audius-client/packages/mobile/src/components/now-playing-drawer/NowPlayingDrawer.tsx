@@ -212,10 +212,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
     if (!user) {
       return
     }
-    navigation.push({
-      native: { screen: 'Profile', params: { handle: user.handle } },
-      web: { route: `/${user.handle}` }
-    })
+    navigation.push('Profile', { handle: user.handle })
     handleDrawerCloseFromSwipe()
   }, [handleDrawerCloseFromSwipe, navigation, user])
 
@@ -223,10 +220,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
     if (!track) {
       return
     }
-    navigation.push({
-      native: { screen: 'Track', params: { id: track.track_id } },
-      web: { route: track.permalink }
-    })
+    navigation.push('Track', { id: track.track_id })
     handleDrawerCloseFromSwipe()
   }, [handleDrawerCloseFromSwipe, navigation, track])
 

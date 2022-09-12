@@ -59,14 +59,9 @@ export const RemixCosignNotification = (
 
   const handlePress = useCallback(() => {
     if (childTrack) {
-      navigation.navigate({
-        native: {
-          screen: 'Track',
-          params: { id: childTrack.track_id, fromNotifications: true }
-        },
-        web: {
-          route: getTrackRoute(childTrack)
-        }
+      navigation.navigate('Track', {
+        id: childTrack.track_id,
+        fromNotifications: true
       })
     }
   }, [childTrack, navigation])

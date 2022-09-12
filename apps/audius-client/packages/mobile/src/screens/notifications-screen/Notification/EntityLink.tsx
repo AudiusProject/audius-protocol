@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import type { EntityType } from '@audius/common'
 
 import { Text } from 'app/components/core'
-import { getCollectionRoute, getTrackRoute } from 'app/utils/routes'
 
 import { useDrawerNavigation } from '../useDrawerNavigation'
 
@@ -17,22 +16,14 @@ export const EntityLink = (props: EntityLinkProps) => {
 
   const onPress = useCallback(() => {
     if ('track_id' in entity) {
-      navigation.navigate({
-        native: {
-          screen: 'Track',
-          params: { id: entity.track_id, fromNotifications: true }
-        },
-        web: { route: getTrackRoute(entity) }
+      navigation.navigate('Track', {
+        id: entity.track_id,
+        fromNotifications: true
       })
     } else if (entity.user) {
-      const { user } = entity
-
-      navigation.navigate({
-        native: {
-          screen: 'Collection',
-          params: { id: entity.playlist_id, fromNotifications: true }
-        },
-        web: { route: getCollectionRoute({ ...entity, user }) }
+      navigation.navigate('Collection', {
+        id: entity.playlist_id,
+        fromNotifications: true
       })
     }
   }, [entity, navigation])

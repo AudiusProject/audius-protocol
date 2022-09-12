@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import type { User } from '@audius/common'
-import { profilePage } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -53,10 +52,7 @@ export const ReceiverDetails = ({ receiver }: ReceiverDetailsProps) => {
   const navigation = useNavigation()
 
   const goToReceiverProfile = useCallback(() => {
-    navigation.navigate({
-      native: { screen: 'Profile', params: { handle: receiver.handle } },
-      web: { route: profilePage(receiver.handle) }
-    })
+    navigation.navigate('Profile', { handle: receiver.handle })
   }, [navigation, receiver])
 
   return (

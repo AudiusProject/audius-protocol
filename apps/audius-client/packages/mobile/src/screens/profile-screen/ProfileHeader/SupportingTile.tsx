@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import type { Supporting } from '@audius/common'
 import { WidthSizes, cacheUsersSelectors } from '@audius/common'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
-import { profilePage } from 'audius-client/src/utils/route'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -104,10 +103,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
 
   const handlePress = useCallback(() => {
     if (handle) {
-      navigation.push({
-        native: { screen: 'Profile', params: { handle } },
-        web: { route: profilePage(handle) }
-      })
+      navigation.push('Profile', { handle })
     }
   }, [navigation, handle])
 

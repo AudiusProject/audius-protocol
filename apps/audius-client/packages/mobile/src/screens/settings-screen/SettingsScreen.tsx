@@ -45,24 +45,15 @@ export const SettingsScreen = () => {
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePressHistory = useCallback(() => {
-    navigation.push({
-      native: { screen: 'ListeningHistoryScreen' },
-      web: { route: '/history' }
-    })
+    navigation.push('ListeningHistoryScreen')
   }, [navigation])
 
   const handlePressNotifications = useCallback(() => {
-    navigation.push({
-      native: { screen: 'NotificationSettingsScreen' },
-      web: { route: '/settings/notifications' }
-    })
+    navigation.push('NotificationSettingsScreen')
   }, [navigation])
 
   const handlePressAbout = useCallback(() => {
-    navigation.push({
-      native: { screen: 'AboutScreen' },
-      web: { route: '/settings/about' }
-    })
+    navigation.push('AboutScreen')
   }, [navigation])
 
   return (

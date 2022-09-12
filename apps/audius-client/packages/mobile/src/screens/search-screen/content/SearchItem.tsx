@@ -15,11 +15,6 @@ import type {
   SearchUser,
   SectionHeader
 } from 'app/store/search/types'
-import {
-  getTrackRoute,
-  getUserRoute,
-  getCollectionRoute
-} from 'app/utils/routes'
 import { useColor, useTheme } from 'app/utils/theme'
 
 const styles = StyleSheet.create({
@@ -92,15 +87,7 @@ const UserSearchResult = ({ isLast, item: user }: UserSearchResultProps) => {
 
   const handlePress = useCallback(() => {
     appendSearchItem(user.name)
-    const userRoute = getUserRoute(user)
-    navigation.push({
-      native: {
-        screen: 'Profile',
-        params: { handle: user.handle }
-      },
-      // TODO(nkang): Delete when ready (RN-reloaded)
-      web: { route: userRoute, fromPage: 'search' }
-    })
+    navigation.push('Profile', { handle: user.handle })
   }, [user, navigation, appendSearchItem])
 
   return (
@@ -128,15 +115,7 @@ const TrackSearchResult = ({ isLast, item: track }: TrackSearchResultProps) => {
 
   const handlePress = useCallback(() => {
     appendSearchItem(track.title)
-    const trackRoute = getTrackRoute(track)
-    navigation.push({
-      native: {
-        screen: 'Track',
-        params: { id: track.track_id, searchTrack: track }
-      },
-      // TODO(nkang): Delete when ready (RN-reloaded)
-      web: { route: trackRoute, fromPage: 'search' }
-    })
+    navigation.push('Track', { id: track.track_id, searchTrack: track })
   }, [track, navigation, appendSearchItem])
 
   return (
@@ -176,14 +155,9 @@ const PlaylistSearchResult = ({
 
   const handlePress = useCallback(() => {
     appendSearchItem(playlist.playlist_name)
-    const collectionRoute = getCollectionRoute(playlist as any)
-    navigation.push({
-      native: {
-        screen: 'Collection',
-        params: { id: playlist.playlist_id, searchCollection: playlist }
-      },
-      // TODO(nkang): Delete when ready (RN-reloaded)
-      web: { route: collectionRoute, fromPage: 'search' }
+    navigation.push('Collection', {
+      id: playlist.playlist_id,
+      searchCollection: playlist
     })
   }, [playlist, navigation, appendSearchItem])
 
@@ -221,14 +195,9 @@ const AlbumSearchResult = ({ isLast, item: album }: AlbumSearchResultProps) => {
 
   const handlePress = useCallback(() => {
     appendSearchItem(album.playlist_name)
-    const collectionRoute = getCollectionRoute(album as any)
-    navigation.push({
-      native: {
-        screen: 'Collection',
-        params: { id: album.playlist_id, searchCollection: album }
-      },
-      // TODO(nkang): Delete when ready (RN-reloaded)
-      web: { route: collectionRoute, fromPage: 'search' }
+    navigation.push('Collection', {
+      id: album.playlist_id,
+      searchCollection: album
     })
   }, [album, navigation, appendSearchItem])
 

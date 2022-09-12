@@ -6,7 +6,6 @@ import type { StyleProp, ViewStyle } from 'react-native'
 import { Card } from 'app/components/card'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { formatCount } from 'app/utils/format'
-import { getCollectionRoute } from 'app/utils/routes'
 
 const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
   const savesText = saves === 1 ? 'Favorite' : 'Favorites'
@@ -16,26 +15,14 @@ const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
 
 type CollectionCardProps = {
   collection: UserCollection
-  /**
-   * Optional source page that establishes the `fromPage` for web-routes.
-   */
-  fromPage?: string
   style?: StyleProp<ViewStyle>
 }
 
-export const CollectionCard = ({
-  collection,
-  fromPage,
-  style
-}: CollectionCardProps) => {
+export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
   const navigation = useNavigation()
   const handlePress = useCallback(() => {
-    const collectionRoute = getCollectionRoute(collection)
-    navigation.push({
-      native: { screen: 'Collection', params: { id: collection.playlist_id } },
-      web: { route: collectionRoute, fromPage }
-    })
-  }, [navigation, collection, fromPage])
+    navigation.push('Collection', { id: collection.playlist_id })
+  }, [navigation, collection])
 
   return (
     <Card

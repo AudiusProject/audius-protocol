@@ -1,5 +1,4 @@
 import { explorePageSelectors } from '@audius/common'
-import { EXPLORE_PAGE } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 
 import { ArtistCard } from 'app/components/artist-card'
@@ -19,9 +18,7 @@ export const ArtistsTab = () => {
     <CardList
       ListHeaderComponent={<TabInfo header={messages.infoHeader} />}
       data={profiles}
-      renderItem={({ item }) => (
-        <ArtistCard artist={item} fromPage={EXPLORE_PAGE} />
-      )}
+      renderItem={({ item }) => <ArtistCard artist={item} />}
     />
   )
 }
