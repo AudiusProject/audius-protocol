@@ -16,7 +16,8 @@ import {
   cacheActions,
   waitForAccount,
   dataURLtoFile,
-  getContext
+  getContext,
+  audioRewardsPageActions
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import {
@@ -46,6 +47,7 @@ const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { getAccountUser, getUserId } = accountSelectors
+const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 
 /** Counts instances of trackId in a playlist. */
 const countTrackIds = (playlistContents, trackId) => {
@@ -476,6 +478,7 @@ function* addTrackToPlaylistAsync(action) {
   yield put(
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )
+  yield put(setOptimisticChallengeCompleted({ challengeId: 'first-playlist' }))
 }
 
 function* confirmAddTrackToPlaylist(
