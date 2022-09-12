@@ -14,22 +14,15 @@ const formatProfileCardSecondaryText = (followers: number) => {
 
 type ArtistCardProps = {
   artist: User
-  /**
-   * Optional source page that establishes the `fromPage` for web-routes.
-   */
-  fromPage?: string
   style?: StyleProp<ViewStyle>
 }
 
-export const ArtistCard = ({ artist, fromPage, style }: ArtistCardProps) => {
+export const ArtistCard = ({ artist, style }: ArtistCardProps) => {
   const { handle } = artist
   const navigation = useNavigation()
   const handlePress = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Profile', params: { handle } },
-      web: { route: handle, fromPage }
-    })
-  }, [navigation, handle, fromPage])
+    navigation.push('Profile', { handle })
+  }, [navigation, handle])
 
   return (
     <Card

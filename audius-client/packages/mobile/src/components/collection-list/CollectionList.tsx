@@ -11,17 +11,14 @@ type ListProps = Omit<
 
 type CollectionListProps = {
   collection: UserCollection[]
-  fromPage?: string
 } & ListProps
 
 export const CollectionList = (props: CollectionListProps) => {
-  const { collection, fromPage, ...other } = props
+  const { collection, ...other } = props
   return (
     <CardList
       data={collection}
-      renderItem={({ item }) => (
-        <CollectionCard collection={item} fromPage={fromPage} />
-      )}
+      renderItem={({ item }) => <CollectionCard collection={item} />}
       {...other}
     />
   )

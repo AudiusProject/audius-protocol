@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
 import { accountActions, accountSelectors } from '@audius/common'
-import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -51,7 +50,7 @@ export const PlaylistsTab = () => {
     .map((playlist) => ({ ...playlist, user }))
 
   const handleNavigateToNewPlaylist = useCallback(() => {
-    navigation.push({ native: { screen: 'CreatePlaylist' } })
+    navigation.push('CreatePlaylist')
   }, [navigation])
 
   return (
@@ -74,7 +73,6 @@ export const PlaylistsTab = () => {
         listKey='favorites-playlists'
         scrollEnabled={false}
         collection={userPlaylists ?? []}
-        fromPage={FAVORITES_PAGE}
       />
     </VirtualizedScrollView>
   )

@@ -129,10 +129,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
 
   const handlePressArtist = useCallback(
     (artist) => () => {
-      navigation.push({
-        native: { screen: 'Profile', params: { handle: artist.handle } },
-        web: { route: `/${artist.handle}` }
-      })
+      navigation.push('Profile', { handle: artist.handle })
     },
     [navigation]
   )

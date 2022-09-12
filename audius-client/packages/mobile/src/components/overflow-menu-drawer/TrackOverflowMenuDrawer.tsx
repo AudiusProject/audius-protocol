@@ -12,9 +12,6 @@ import {
   OverflowAction,
   mobileOverflowMenuUISelectors
 } from '@audius/common'
-// Importing directly from audius-client for now, this will be removed
-// when the profile page is implemented in RN
-import { profilePage } from 'audius-client/src/utils/route'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -47,7 +44,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   if (!track || !user) {
     return null
   }
-  const { owner_id, title, permalink } = track
+  const { owner_id, title } = track
   const { handle } = user
 
   if (!id || !owner_id || !handle || !title) {
@@ -69,17 +66,11 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       dispatch(openAddToPlaylistModal(id, title)),
     [OverflowAction.VIEW_TRACK_PAGE]: () => {
       closeNowPlayingDrawer()
-      navigation.navigate({
-        native: { screen: 'Track', params: { id } },
-        web: { route: permalink }
-      })
+      navigation.navigate('Track', { id })
     },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       closeNowPlayingDrawer()
-      navigation.navigate({
-        native: { screen: 'Profile', params: { handle } },
-        web: { route: profilePage(handle) }
-      })
+      navigation.navigate('Profile', { handle })
     },
     [OverflowAction.FOLLOW_ARTIST]: () =>
       dispatch(followUser(owner_id, FollowSource.OVERFLOW)),

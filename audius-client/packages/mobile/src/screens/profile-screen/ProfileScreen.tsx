@@ -95,17 +95,11 @@ export const ProfileScreen = () => {
   }, [status])
 
   const handlePressSettings = useCallback(() => {
-    navigation.push({
-      native: { screen: 'SettingsScreen' },
-      web: { route: '/settings' }
-    })
+    navigation.push('SettingsScreen')
   }, [navigation])
 
   const handlePressAudio = useCallback(() => {
-    navigation.push({
-      native: { screen: 'AudioScreen' },
-      web: { route: '/audio ' }
-    })
+    navigation.push('AudioScreen')
   }, [navigation])
 
   const handlePressShare = useCallback(() => {

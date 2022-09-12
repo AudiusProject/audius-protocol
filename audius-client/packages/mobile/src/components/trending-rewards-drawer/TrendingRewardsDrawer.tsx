@@ -7,11 +7,6 @@ import {
   audioRewardsPageActions,
   audioRewardsPageSelectors
 } from '@audius/common'
-import {
-  TRENDING_PAGE,
-  TRENDING_PLAYLISTS_PAGE,
-  TRENDING_UNDERGROUND_PAGE
-} from 'audius-client/src/utils/route'
 import type { ImageStyle } from 'react-native'
 import { Image, ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -58,24 +53,9 @@ const messages = {
 }
 
 const TRENDING_PAGES = {
-  tracks: {
-    native: { screen: 'trending' as const },
-    web: { route: TRENDING_PAGE }
-  },
-  playlists: {
-    native: {
-      screen: 'explore' as const,
-      params: { screen: 'TrendingPlaylists' as const }
-    },
-    web: { route: TRENDING_PLAYLISTS_PAGE }
-  },
-  underground: {
-    native: {
-      screen: 'explore' as const,
-      params: { screen: 'TrendingUnderground' as const }
-    },
-    web: { route: TRENDING_UNDERGROUND_PAGE }
-  }
+  tracks: ['trending'] as const,
+  playlists: ['explore', { screen: 'TrendingPlaylists' as const }] as const,
+  underground: ['explore', { screen: 'TrendingUnderground' as const }] as const
 }
 
 const textMap = {
@@ -210,8 +190,8 @@ export const TrendingRewardsDrawer = () => {
   ]
 
   const handleGoToTrending = useCallback(() => {
-    const navConfig = TRENDING_PAGES[modalType]
-    navigation.navigate(navConfig)
+    const [screen, params] = TRENDING_PAGES[modalType]
+    navigation.navigate(screen, params)
     onClose()
   }, [modalType, navigation, onClose])
 

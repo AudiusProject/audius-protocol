@@ -12,13 +12,6 @@ import {
   OverflowAction,
   mobileOverflowMenuUISelectors
 } from '@audius/common'
-// Importing directly from audius-client for now, this will be removed
-// when the profile page is implemented in RN
-import {
-  profilePage,
-  playlistPage,
-  albumPage
-} from 'audius-client/src/utils/route'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -75,27 +68,13 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.SHARE]: () =>
       dispatch(shareCollection(id, ShareSource.OVERFLOW)),
     [OverflowAction.VIEW_ALBUM_PAGE]: () => {
-      navigation.navigate({
-        native: { screen: 'Collection', params: { id } },
-        web: {
-          route: (is_album ? albumPage : playlistPage)(
-            handle,
-            playlist_name,
-            id
-          )
-        }
-      })
+      navigation.navigate('Collection', { id })
     },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
-      navigation.navigate({
-        native: { screen: 'Profile', params: { handle } },
-        web: { route: profilePage(handle) }
-      })
+      navigation.navigate('Profile', { handle })
     },
     [OverflowAction.EDIT_PLAYLIST]: () => {
-      navigation.navigate({
-        native: { screen: 'EditPlaylist', params: { id } }
-      })
+      navigation.navigate('EditPlaylist', { id })
       dispatch(openEditPlaylist(id))
     },
     [OverflowAction.DELETE_PLAYLIST]: () =>

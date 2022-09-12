@@ -102,12 +102,7 @@ export const TopSupporters = () => {
   })
 
   const handlePress = useCallback(() => {
-    navigation.push({
-      native: {
-        screen: 'TopSupporters',
-        params: { userId: user_id, source: 'profile' }
-      }
-    })
+    navigation.push('TopSupporters', { userId: user_id, source: 'profile' })
   }, [navigation, user_id])
 
   useLoadingAnimation(() => rankedSupporters.length > 0, rankedSupporters)

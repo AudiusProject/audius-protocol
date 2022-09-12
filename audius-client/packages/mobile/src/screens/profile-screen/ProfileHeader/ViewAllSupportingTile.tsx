@@ -73,9 +73,7 @@ export const ViewAllSupportingTile = () => {
   })
 
   const handlePress = useCallback(() => {
-    navigation.push({
-      native: { screen: 'SupportingUsers', params: { userId: user_id } }
-    })
+    navigation.push('SupportingUsers', { userId: user_id })
   }, [navigation, user_id])
 
   return (

@@ -24,10 +24,6 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
-import {
-  FAVORITING_USERS_ROUTE,
-  REPOSTING_USERS_ROUTE
-} from 'audius-client/src/utils/route'
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -41,7 +37,6 @@ import { make, track as record } from 'app/services/analytics'
 import type { SearchTrack, SearchUser } from 'app/store/search/types'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
-import { getTagSearchRoute } from 'app/utils/routes'
 import { useThemeColors } from 'app/utils/theme'
 
 import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
@@ -210,36 +205,20 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressFavorites = useCallback(() => {
     dispatch(setFavorite(track_id, FavoriteType.TRACK))
-    navigation.push({
-      native: {
-        screen: 'Favorited',
-        params: { id: track_id, favoriteType: FavoriteType.TRACK }
-      },
-      web: { route: FAVORITING_USERS_ROUTE }
+    navigation.push('Favorited', {
+      id: track_id,
+      favoriteType: FavoriteType.TRACK
     })
   }, [dispatch, track_id, navigation])
 
   const handlePressReposts = useCallback(() => {
     dispatch(setRepost(track_id, RepostType.TRACK))
-    navigation.push({
-      native: {
-        screen: 'Reposts',
-        params: { id: track_id, repostType: RepostType.TRACK }
-      },
-      web: { route: REPOSTING_USERS_ROUTE }
-    })
+    navigation.push('Reposts', { id: track_id, repostType: RepostType.TRACK })
   }, [dispatch, track_id, navigation])
 
   const handlePressTag = useCallback(
     (tag: string) => {
-      const route = getTagSearchRoute(tag)
-      navigation.push({
-        native: {
-          screen: 'TagSearch',
-          params: { query: tag }
-        },
-        web: { route, fromPage: 'search' }
-      })
+      navigation.push('TagSearch', { query: tag })
     },
     [navigation]
   )

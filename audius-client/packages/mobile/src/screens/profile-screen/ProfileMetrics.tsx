@@ -70,18 +70,12 @@ export const ProfileMetrics = () => {
 
   const handlePressFollowers = useCallback(() => {
     dispatch(setFollowers(user_id))
-    navigation.push({
-      native: { screen: 'Followers', params: { userId: user_id } },
-      web: { route: '/followers', fromPage: 'profile' }
-    })
+    navigation.push('Followers', { userId: user_id })
   }, [dispatch, user_id, navigation])
 
   const handlePressFollowing = useCallback(() => {
     dispatch(setFollowing(user_id))
-    navigation.push({
-      native: { screen: 'Following', params: { userId: user_id } },
-      web: { route: '/following', fromPage: 'profile' }
-    })
+    navigation.push('Following', { userId: user_id })
   }, [dispatch, user_id, navigation])
 
   return (

@@ -8,10 +8,7 @@ import type {
   RepostNotification
 } from '@audius/common'
 import { notificationsUserListActions } from '@audius/common'
-import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { useDispatch } from 'react-redux'
-
-import { getUserRoute } from 'app/utils/routes'
 
 import { useDrawerNavigation } from '../useDrawerNavigation'
 const { setNotificationId } = notificationsUserListActions
@@ -33,28 +30,16 @@ export const useSocialActionHandler = (
   return useCallback(() => {
     if (isMultiUser) {
       dispatch(setNotificationId(id))
-      navigation.navigate({
-        native: {
-          screen: 'NotificationUsers',
-          params: {
-            id,
-            notificationType: type,
-            count: userIds.length,
-            fromNotifications: true
-          }
-        },
-        web: {
-          route: `/notification/${id}/users`,
-          fromPage: NOTIFICATION_PAGE
-        }
+      navigation.navigate('NotificationUsers', {
+        id,
+        notificationType: type,
+        count: userIds.length,
+        fromNotifications: true
       })
     } else if (firstUser) {
-      navigation.navigate({
-        native: {
-          screen: 'Profile',
-          params: { handle: firstUser.handle, fromNotifications: true }
-        },
-        web: { route: getUserRoute(firstUser), fromPage: NOTIFICATION_PAGE }
+      navigation.navigate('Profile', {
+        handle: firstUser.handle,
+        fromNotifications: true
       })
     }
   }, [isMultiUser, id, type, userIds, dispatch, navigation, firstUser])

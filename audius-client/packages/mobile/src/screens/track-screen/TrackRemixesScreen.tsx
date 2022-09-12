@@ -80,9 +80,7 @@ export const TrackRemixesScreen = () => {
     if (!track) {
       return
     }
-    navigation.push({
-      native: { screen: 'Track', params: { id: trackId } }
-    })
+    navigation.push('Track', { id: trackId })
   }
 
   const handlePressArtistName = () => {
@@ -90,9 +88,7 @@ export const TrackRemixesScreen = () => {
       return
     }
 
-    navigation.push({
-      native: { screen: 'Profile', params: { handle: user.handle } }
-    })
+    navigation.push('Profile', { handle: user.handle })
   }
 
   const loadMore = useCallback(

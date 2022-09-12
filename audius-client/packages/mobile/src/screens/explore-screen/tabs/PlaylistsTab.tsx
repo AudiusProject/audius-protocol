@@ -1,5 +1,4 @@
 import { explorePageSelectors } from '@audius/common'
-import { EXPLORE_PAGE } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -18,7 +17,6 @@ export const PlaylistsTab = () => {
     <CollectionList
       ListHeaderComponent={<TabInfo header={messages.infoHeader} />}
       collection={playlists}
-      fromPage={EXPLORE_PAGE}
     />
   )
 }
