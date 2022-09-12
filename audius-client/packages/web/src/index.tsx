@@ -1,6 +1,8 @@
+/* eslint-disable import/order */
 import { setupTracing } from './tracer'
 setupTracing()
 
+// eslint-disable-next-line import/first
 import ReactDOM from 'react-dom'
 import { render } from 'react-nil'
 
