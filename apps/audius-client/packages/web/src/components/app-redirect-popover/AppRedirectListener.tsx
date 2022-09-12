@@ -17,7 +17,6 @@ import {
 type AppRedirectListenerProps = ReturnType<typeof mapDispatchToProps>
 
 const EMBED_HASH = '#embed'
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 /**
  * `AppRedirectListener` listens to redirects from the `AppRedirectPopover`.
@@ -49,15 +48,13 @@ const AppRedirectListener = ({ goToRoute }: AppRedirectListenerProps) => {
       return
     }
 
-    if (!NATIVE_MOBILE) {
-      const os = getMobileOS()
-      if (os === MobileOS.IOS) {
-        window.location.href = IOS_APP_STORE_LINK
-      } else if (os === MobileOS.ANDROID) {
-        window.location.href = ANDROID_PLAY_STORE_LINK
-      } else {
-        window.location.href = IOS_WEBSITE_STORE_LINK
-      }
+    const os = getMobileOS()
+    if (os === MobileOS.IOS) {
+      window.location.href = IOS_APP_STORE_LINK
+    } else if (os === MobileOS.ANDROID) {
+      window.location.href = ANDROID_PLAY_STORE_LINK
+    } else {
+      window.location.href = IOS_WEBSITE_STORE_LINK
     }
   }, [pathname, goToRoute])
 

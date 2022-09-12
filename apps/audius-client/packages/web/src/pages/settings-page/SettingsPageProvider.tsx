@@ -5,9 +5,6 @@ import {
   Theme,
   accountSelectors,
   InstagramProfile,
-  castSelectors,
-  CastMethod,
-  castActions,
   settingsPageSelectors,
   BrowserNotificationSetting,
   EmailFrequency,
@@ -54,8 +51,6 @@ const {
   getPushNotificationSettings,
   getEmailFrequency
 } = settingsPageSelectors
-const { updateMethod } = castActions
-const { getMethod: getCastMethod } = castSelectors
 
 const {
   getAccountVerified,
@@ -170,13 +165,11 @@ class SettingsPage extends PureComponent<
       pushNotificationSettings,
       getNotificationSettings,
       getPushNotificationSettings,
-      castMethod,
       onTwitterLogin,
       onInstagramLogin,
       toggleNotificationSetting,
       togglePushNotificationSetting,
       updateEmailFrequency,
-      updateCastMethod,
       goToRoute,
       goBack,
       recordSignOut,
@@ -220,11 +213,7 @@ class SettingsPage extends PureComponent<
       signOut
     }
 
-    const mobileProps = {
-      subPage,
-      castMethod,
-      updateCastMethod
-    }
+    const mobileProps = { subPage }
 
     return <this.props.children {...childProps} {...mobileProps} />
   }
@@ -246,7 +235,6 @@ function makeMapStateToProps() {
       emailFrequency: getEmailFrequency(state),
       notificationSettings: getBrowserNotificationSettings(state),
       pushNotificationSettings: getPushNotificationSettings(state),
-      castMethod: getCastMethod(state),
       tier: getTier(state, { userId }).tier
     }
   }
@@ -298,9 +286,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(settingPageActions.updateEmailFrequency(frequency)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     goBack: () => dispatch(goBack()),
-    updateCastMethod: (castMethod: CastMethod) => {
-      dispatch(updateMethod({ method: castMethod }))
-    },
     recordThemeChange: (themeSettings: string) => {
       const theme =
         themeSettings === Theme.DEFAULT

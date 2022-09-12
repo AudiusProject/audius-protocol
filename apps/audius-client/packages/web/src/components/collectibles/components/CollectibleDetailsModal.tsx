@@ -54,8 +54,6 @@ const { setCollectible } = collectibleDetailsUIActions
 const { getCollectibleDetails, getCollectible } = collectibleDetailsUISelectors
 const getAccountUser = accountSelectors.getAccountUser
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const MODEL_VIEWER_SCRIPT_URL =
   'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js'
 
@@ -418,7 +416,7 @@ const CollectibleDetailsModal = ({
       </Modal>
 
       <Drawer
-        isOpen={isModalOpen && isMobile && !NATIVE_MOBILE}
+        isOpen={isModalOpen && isMobile}
         onClose={handleClose}
         isFullscreen
       >

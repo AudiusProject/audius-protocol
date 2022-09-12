@@ -16,9 +16,6 @@ import {
   RequestTwitterAuthSuccessMessage
 } from 'services/native-mobile-interface/oauth'
 
-import mobileSagas from './mobileSagas'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const IDENTITY_SERVICE = process.env.REACT_APP_IDENTITY_SERVICE
 const INSTAGRAM_APP_ID = process.env.REACT_APP_INSTAGRAM_APP_ID
 const INSTAGRAM_REDIRECT_URL =
@@ -296,8 +293,7 @@ function* watchInstagramAuth() {
 }
 
 const sagas = () => {
-  const sagas = [watchTwitterAuth, watchInstagramAuth]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
+  return [watchTwitterAuth, watchInstagramAuth]
 }
 
 export default sagas

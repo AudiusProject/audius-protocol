@@ -6,8 +6,6 @@ import { getLocationPathname } from 'store/routing/selectors'
 
 import { isElectron } from './clientUtil'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 /**
  * Starts a polling daemon that triggers an action once every delay period if the tab/app is in the foreground/focus
  * @param action The action to "fire" when poll triggers
@@ -50,22 +48,6 @@ export function* foregroundPollingDaemon(
 }
 
 function createVisibilityChangeChannel() {
-  if (NATIVE_MOBILE) {
-    return eventChannel((emitter) => {
-      // The focus and visibitychange events are wonky on native mobile webviews,
-      // so poll for visiblity change instead
-      let lastHidden = true
-      const interval = setInterval(() => {
-        if (!document.hidden && lastHidden) {
-          emitter(true)
-        }
-        lastHidden = document.hidden
-      }, 500)
-      return () => {
-        clearInterval(interval)
-      }
-    })
-  }
   return eventChannel((emitter) => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {

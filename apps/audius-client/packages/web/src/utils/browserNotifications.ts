@@ -35,22 +35,15 @@ declare global {
  *
  */
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const basename = process.env.PUBLIC_URL
 
 const fcmWebPushPublicKey = process.env.REACT_APP_FCM_PUSH_PUBLIC_KEY as string
 const safariWebPushID = process.env.REACT_APP_SAFARI_WEB_PUSH_ID
 const applicationServerPublicKey = fcmWebPushPublicKey
 export const isPushManagerAvailable =
-  !isElectron() &&
-  !NATIVE_MOBILE &&
-  'serviceWorker' in navigator &&
-  'PushManager' in window
+  !isElectron() && 'serviceWorker' in navigator && 'PushManager' in window
 export const isSafariPushAvailable =
-  !isElectron() &&
-  !NATIVE_MOBILE &&
-  'safari' in window &&
-  'pushNotification' in window.safari
+  !isElectron() && 'safari' in window && 'pushNotification' in window.safari
 export const isBrowserPushAvailable =
   isPushManagerAvailable || isSafariPushAvailable
 

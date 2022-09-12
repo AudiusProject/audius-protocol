@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import type { Maybe } from '@audius/common'
+import type { Maybe, CommonState } from '@audius/common'
 import {
   IntKeys,
   StringKeys,
@@ -48,7 +48,9 @@ export const ChallengeRewardsDrawerProvider = () => {
   const dispatch = useDispatch()
   const { onClose } = useDrawerState(MODAL_NAME)
   const modalType = useSelector(getChallengeRewardsModalType)
-  const userChallenges = useSelector(getOptimisticUserChallenges)
+  const userChallenges = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, true)
+  )
 
   const handleClose = useCallback(() => {
     dispatch(resetAndCancelClaimReward())

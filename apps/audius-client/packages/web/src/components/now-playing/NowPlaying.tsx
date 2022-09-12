@@ -64,8 +64,6 @@ const { next, pause, play, previous, repeat, shuffle } = queueActions
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 type OwnProps = {
   onClose: () => void
 }
@@ -361,11 +359,7 @@ const NowPlaying = g(
     const darkMode = isDarkMode()
 
     return (
-      <div
-        className={cn(styles.nowPlaying, {
-          [styles.native]: NATIVE_MOBILE
-        })}
-      >
+      <div className={styles.nowPlaying}>
         <div className={styles.header}>
           <div className={styles.caretContainer} onClick={onClose}>
             <IconCaret className={styles.iconCaret} />

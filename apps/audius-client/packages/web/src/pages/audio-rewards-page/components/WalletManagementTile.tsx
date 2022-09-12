@@ -44,7 +44,6 @@ const messages = {
   hideAdvanced: 'Hide Advanced',
   advancedOptions: 'Advanced Options'
 }
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const { precalculateSwapFees } = buyAudioActions
 
@@ -125,7 +124,7 @@ const AdvancedWalletActions = () => {
           leftIcon={<IconSettings className={styles.iconStyle} />}
           minWidth={200}
         />
-        {mobile && !IS_NATIVE_MOBILE && (
+        {mobile && (
           <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
         )}
       </div>
