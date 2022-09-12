@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     appliedRules: {
       type: DataTypes.JSONB,
-      allowNull: true,
+      allowNull: true
     },
     isEmailDeliverable: {
       type: DataTypes.BOOLEAN,

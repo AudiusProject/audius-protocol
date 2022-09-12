@@ -8,7 +8,6 @@ const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const models = require('../models')
 const { getIP } = require('../utils/antiAbuse')
 
-
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
   // method sig has come from sender address as well

@@ -51,7 +51,6 @@ const getAbuseData = async (handle, reqIP) => {
   return { blockedFromRelay, blockedFromNotifications, rules, appliedRules }
 }
 
-
 const detectAbuse = async (user, reqIP) => {
   let blockedFromRelay = false
   let blockedFromNotifications = false

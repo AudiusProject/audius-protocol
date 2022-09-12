@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
@@ -17,7 +17,7 @@ module.exports = {
 
       await queryInterface.addColumn('Users', 'appliedRules', {
         type: Sequelize.JSONB,
-        allowNull: true,
+        allowNull: true
       }, { transaction })
 
       await queryInterface.sequelize.query(
@@ -51,9 +51,9 @@ module.exports = {
       await queryInterface.addColumn(
         'Users',
         'isAbusiveErrorCode', {
-          type: Sequelize.STRING,
+          type: Sequelize.STRING
         }
       )
     })
   }
-};
+}
