@@ -5,6 +5,7 @@ import { SquareSizes, WidthSizes, profilePageActions } from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconDonate from 'app/assets/images/iconDonate.svg'
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
@@ -13,8 +14,6 @@ import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { FormTextInput, FormImageInput } from 'app/components/core'
 import { FormScreen } from 'app/components/form-screen'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import { makeStyles } from 'app/styles'
@@ -106,8 +105,8 @@ const EditProfileForm = (props: FormikProps<ProfileValues>) => {
 }
 
 export const EditProfileScreen = () => {
-  const { profile } = useSelectorWeb(getProfile)
-  const dispatchWeb = useDispatchWeb()
+  const { profile } = useSelector(getProfile)
+  const dispatch = useDispatch()
 
   const coverPhoto = useUserCoverPhoto({
     id: profile?.user_id ?? null,
@@ -138,9 +137,9 @@ export const EditProfileScreen = () => {
       if (profile_picture.file) {
         newProfile.updatedProfilePicture = profile_picture
       }
-      dispatchWeb(updateProfile(newProfile as UserMetadata))
+      dispatch(updateProfile(newProfile as UserMetadata))
     },
-    [dispatchWeb, profile]
+    [dispatch, profile]
   )
 
   if (!profile) return null
