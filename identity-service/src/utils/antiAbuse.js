@@ -45,10 +45,10 @@ const getAbuseData = async (handle, reqIP) => {
   })
 
   const { data: rules } = res
-  const appliedRules = rules.filter(r => r.trigger && r.action !== 'pass').map(r => r.rule)
+  const appliedRules = rules.filter(r => r.trigger && r.action === 'fail').map(r => r.rule)
   const blockedFromRelay = appliedRules.some(r => blockRelayAbuseErrorCodes.has(r))
   const blockedFromNotifications = appliedRules.some(r => blockNotificationsErrorCodes.has(r))
-  return { blockedFromRelay, blockedFromNotifications, rules, appliedRules }
+  return { blockedFromRelay, blockedFromNotifications, appliedRules }
 }
 
 const detectAbuse = async (user, reqIP) => {
