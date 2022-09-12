@@ -7,7 +7,8 @@ import {
   badgeTiers,
   getTierNumber,
   vipDiscordModalActions,
-  musicConfettiActions
+  musicConfettiActions,
+  useSelectTierInfo
 } from '@audius/common'
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
@@ -20,7 +21,6 @@ import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
 import { BadgeTierText } from 'components/user-badges/ProfilePageBadge'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useSelectTierInfo } from 'hooks/wallet'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 

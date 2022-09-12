@@ -16,7 +16,6 @@ import IconRepost from 'app/assets/images/iconRepost.svg'
 import { Button, GradientText } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { ThemeColors } from 'app/hooks/useThemedStyles'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -118,7 +117,7 @@ const createStyles = (themeColors: ThemeColors) =>
   })
 
 export const EnablePushNotificationsDrawer = () => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const { onClose } = useDrawer('EnablePushNotifications')
   const styles = useThemedStyles(createStyles)
   const {
@@ -129,11 +128,11 @@ export const EnablePushNotificationsDrawer = () => {
   } = useThemeColors()
 
   const enablePushNotifications = useCallback(() => {
-    dispatchWeb(
+    dispatch(
       togglePushNotificationSetting(PushNotificationSetting.MobilePush, true)
     )
     onClose()
-  }, [dispatchWeb, onClose])
+  }, [dispatch, onClose])
 
   return (
     <NativeDrawer drawerName='EnablePushNotifications'>

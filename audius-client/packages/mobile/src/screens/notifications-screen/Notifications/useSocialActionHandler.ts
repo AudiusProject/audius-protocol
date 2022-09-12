@@ -9,8 +9,8 @@ import type {
 } from '@audius/common'
 import { notificationsUserListActions } from '@audius/common'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
+import { useDispatch } from 'react-redux'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { getUserRoute } from 'app/utils/routes'
 
 import { useDrawerNavigation } from '../useDrawerNavigation'
@@ -27,12 +27,12 @@ export const useSocialActionHandler = (
   const { id, type, userIds } = notification
   const firstUser = users?.[0]
   const isMultiUser = userIds.length > 1
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const navigation = useDrawerNavigation()
 
   return useCallback(() => {
     if (isMultiUser) {
-      dispatchWeb(setNotificationId(id))
+      dispatch(setNotificationId(id))
       navigation.navigate({
         native: {
           screen: 'NotificationUsers',
@@ -57,5 +57,5 @@ export const useSocialActionHandler = (
         web: { route: getUserRoute(firstUser), fromPage: NOTIFICATION_PAGE }
       })
     }
-  }, [isMultiUser, id, type, userIds, dispatchWeb, navigation, firstUser])
+  }, [isMultiUser, id, type, userIds, dispatch, navigation, firstUser])
 }
