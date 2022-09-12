@@ -6,7 +6,6 @@ import {
   cacheTracksSelectors,
   cacheUsersSelectors
 } from '@audius/common'
-import { profilePage } from 'audius-client/src/utils/route'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -115,7 +114,7 @@ const TrackScreenRemixComponent = ({
 }: TrackScreenRemixComponentProps) => {
   const styles = useStyles()
 
-  const { _co_sign, permalink, track_id } = track
+  const { _co_sign, track_id } = track
   const { name, handle } = user
   const navigation = useNavigation()
 
@@ -133,15 +132,13 @@ const TrackScreenRemixComponent = ({
 
   const handlePressTrack = useCallback(() => {
     navigation.push({
-      native: { screen: 'Track', params: { id: track_id } },
-      web: { route: permalink }
+      native: { screen: 'Track', params: { id: track_id } }
     })
-  }, [navigation, permalink, track_id])
+  }, [navigation, track_id])
 
   const handlePressArtist = useCallback(() => {
     navigation.push({
-      native: { screen: 'Profile', params: { handle } },
-      web: { route: profilePage(handle) }
+      native: { screen: 'Profile', params: { handle } }
     })
   }, [handle, navigation])
 
