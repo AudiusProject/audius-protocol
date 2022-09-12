@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux'
 
-import { ID } from 'models'
-
+import { ID } from '../models'
 import { CommonState, makeGetTierAndVerifiedForUser } from '../store'
 
 const getTierAndVerifiedForUser = makeGetTierAndVerifiedForUser()
