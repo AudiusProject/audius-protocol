@@ -69,11 +69,11 @@ class StateMachineManager {
       },
       [QUEUE_NAMES.RECURRING_SYNC]: {
         queue: recurringSyncQueue,
-        maxWaitingJobs: 10000
+        maxWaitingJobs: 100000
       },
       [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
         queue: updateReplicaSetQueue,
-        maxWaitingJobs: 1000
+        maxWaitingJobs: 10000
       },
       [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
         queue: recoverOrphanedDataQueue,

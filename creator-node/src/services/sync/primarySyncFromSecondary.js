@@ -18,7 +18,7 @@ const {
 } = require('../stateMachineManager/stateMachineConstants')
 
 const DEFAULT_LOG_CONTEXT = {}
-const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
+const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 1000
 const {
   LOCAL_DB_ENTRIES_SET_KEY_PREFIX,
   FETCHED_ENTRIES_SET_KEY_PREFIX,
