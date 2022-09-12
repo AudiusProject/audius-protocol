@@ -16,7 +16,7 @@ import {
   UserNameLink,
   ProfilePicture
 } from '../Notification'
-import { getEntityRoute, getEntityScreen } from '../Notification/utils'
+import { getEntityScreen } from '../Notification/utils'
 import { useDrawerNavigation } from '../useDrawerNavigation'
 const { getNotificationEntities } = notificationsSelectors
 
@@ -43,10 +43,8 @@ export const AddTrackToPlaylistNotification = (
 
   const handlePress = useCallback(() => {
     if (playlist) {
-      navigation.navigate({
-        native: getEntityScreen(playlist),
-        web: { route: getEntityRoute(playlist) }
-      })
+      const [screen, params] = getEntityScreen(playlist)
+      navigation.navigate(screen, params)
     }
   }, [playlist, navigation])
 

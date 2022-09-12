@@ -106,16 +106,11 @@ export const useAppScreenOptions = (
   }, [dispatch, drawerHelpers])
 
   const handlePressHome = useCallback(() => {
-    navigation.navigate({
-      native: { screen: 'trending' },
-      web: { route: 'trending' }
-    })
+    navigation.navigate('trending')
   }, [navigation])
 
   const handlePressSearch = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Search' }
-    })
+    navigation.push('Search')
   }, [navigation])
 
   const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)

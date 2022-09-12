@@ -86,10 +86,7 @@ export const UserListItem = (props: UserListItemProps) => {
   )
 
   const handlePress = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Profile', params: { handle } },
-      web: { route: handle }
-    })
+    navigation.push('Profile', { handle })
   }, [navigation, handle])
 
   return (

@@ -60,7 +60,7 @@ export const SupporterDethronedNotification = (
 
   const handlePress = useCallback(() => {
     dispatch(beginTip({ user: supportedUser, source: 'dethroned' }))
-    navigation.navigate({ native: { screen: 'TipArtist' } })
+    navigation.navigate('TipArtist')
   }, [dispatch, supportedUser, navigation])
 
   const handleShare = useCallback(

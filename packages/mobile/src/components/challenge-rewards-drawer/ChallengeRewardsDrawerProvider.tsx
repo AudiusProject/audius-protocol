@@ -88,7 +88,8 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   const handleNavigation = useCallback(() => {
     if (config.buttonInfo?.navigation) {
-      navigate(config.buttonInfo.navigation)
+      const { screen, params } = config.buttonInfo.navigation
+      navigate(screen, params)
       handleClose()
     }
   }, [navigate, config, handleClose])

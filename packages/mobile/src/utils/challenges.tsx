@@ -1,10 +1,4 @@
 import type { ChallengeRewardID, TrendingRewardID } from '@audius/common'
-import {
-  ACCOUNT_VERIFICATION_SETTINGS_PAGE,
-  TRENDING_PAGE,
-  EXPLORE_HEAVY_ROTATION_PAGE,
-  FAVORITES_PAGE
-} from 'audius-client/src/utils/route'
 import type { ImageSourcePropType } from 'react-native'
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
@@ -123,11 +117,8 @@ export type ChallengeConfig = {
   isVerifiedChallenge?: boolean
   buttonInfo?: {
     navigation?: {
-      native: {
-        screen: keyof ChallengesParamList
-        params?: ChallengesParamList[keyof ChallengesParamList]
-      }
-      web: { route: string }
+      screen: keyof ChallengesParamList
+      params?: ChallengesParamList[keyof ChallengesParamList]
     }
     label: string
     renderIcon?: (color: string) => React.ReactElement
@@ -145,8 +136,7 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     buttonInfo: {
       label: challenges.connectVerifiedButton,
       navigation: {
-        native: { screen: 'AccountVerificationScreen' },
-        web: { route: ACCOUNT_VERIFICATION_SETTINGS_PAGE }
+        screen: 'AccountVerificationScreen'
       },
       renderIcon: (color) => <IconCheck fill={color} />,
       iconPosition: 'right'
@@ -161,8 +151,7 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     buttonInfo: {
       label: challenges.listenStreakButton,
       navigation: {
-        native: { screen: 'trending' },
-        web: { route: TRENDING_PAGE }
+        screen: 'trending'
       },
       renderIcon: (color) => <IconArrow fill={color} />,
       iconPosition: 'right'
@@ -236,8 +225,8 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     buttonInfo: {
       label: challenges.sendFirstTipButton,
       navigation: {
-        native: { screen: 'explore', params: { screen: 'HeavyRotation' } },
-        web: { route: EXPLORE_HEAVY_ROTATION_PAGE }
+        screen: 'explore',
+        params: { screen: 'HeavyRotation' }
       }
     }
   },
@@ -250,8 +239,7 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     buttonInfo: {
       label: challenges.firstPlaylistButton,
       navigation: {
-        native: { screen: 'favorites' },
-        web: { route: FAVORITES_PAGE }
+        screen: 'favorites'
       }
     }
   }

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Status, accountSelectors } from '@audius/common'
-import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { getHandleField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
 import { EditingStatus } from 'common/store/pages/signon/types'
@@ -29,8 +28,7 @@ import {
 } from 'app/store/oauth/selectors'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import { getUserRoute } from 'app/utils/routes'
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
 
 const messages = {
   title: 'Verification',
@@ -266,11 +264,8 @@ export const AccountVerificationScreen = () => {
 
   const goBacktoProfile = useCallback(() => {
     if (!handle) return
-    navigation.navigate({
-      native: { screen: 'Profile', params: { handle } },
-      web: { route: getUserRoute(accountUser), fromPage: NOTIFICATION_PAGE }
-    })
-  }, [accountUser, handle, navigation])
+    navigation.navigate('Profile', { handle })
+  }, [handle, navigation])
 
   if (!accountUser) return null
 

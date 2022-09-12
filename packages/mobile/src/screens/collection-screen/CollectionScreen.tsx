@@ -21,7 +21,6 @@ import {
   favoritesUserListActions
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
-import { FAVORITING_USERS_ROUTE, REPOSTING_USERS_ROUTE } from 'utils/route'
 
 import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
@@ -199,23 +198,17 @@ const CollectionScreenComponent = ({
 
   const handlePressFavorites = useCallback(() => {
     dispatch(setFavorite(playlist_id, FavoriteType.PLAYLIST))
-    navigation.push({
-      native: {
-        screen: 'Favorited',
-        params: { id: playlist_id, favoriteType: FavoriteType.PLAYLIST }
-      },
-      web: { route: FAVORITING_USERS_ROUTE }
+    navigation.push('Favorited', {
+      id: playlist_id,
+      favoriteType: FavoriteType.PLAYLIST
     })
   }, [dispatch, playlist_id, navigation])
 
   const handlePressReposts = useCallback(() => {
     dispatch(setRepost(playlist_id, RepostType.COLLECTION))
-    navigation.push({
-      native: {
-        screen: 'Reposts',
-        params: { id: playlist_id, repostType: RepostType.COLLECTION }
-      },
-      web: { route: REPOSTING_USERS_ROUTE }
+    navigation.push('Reposts', {
+      id: playlist_id,
+      repostType: RepostType.COLLECTION
     })
   }, [dispatch, playlist_id, navigation])
 

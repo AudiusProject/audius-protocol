@@ -13,17 +13,7 @@ export type ContextualParams = { fromNotifications?: boolean }
 type UseNavigationConfig<
   ParamList extends ParamListBase,
   RouteName extends keyof ParamList
-> = {
-  native: {
-    screen: RouteName
-    params?: ParamList[RouteName] & ContextualParams
-  }
-  web?: {
-    route: string
-    fromPage?: string
-    fromNativeNotifications?: string
-  }
-}
+> = [screen: RouteName, params?: ParamList[RouteName] & ContextualParams]
 
 export const useNavigation = <
   ParamList extends ParamListBase = AppTabScreenParamList
@@ -39,10 +29,10 @@ export const useNavigation = <
   const performNavigation = useCallback(
     (method) =>
       <RouteName extends keyof ParamList>(
-        config: UseNavigationConfig<ParamList, RouteName>
+        ...config: UseNavigationConfig<ParamList, RouteName>
       ) => {
-        const { native } = config
-        method(native.screen, native.params)
+        const [screen, params] = config
+        method(screen, params)
       },
     []
   )

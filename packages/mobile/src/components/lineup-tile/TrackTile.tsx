@@ -78,7 +78,6 @@ const TrackTileComponent = ({
     is_unlisted,
     has_current_user_reposted,
     has_current_user_saved,
-    permalink,
     play_count,
     title,
     track_id
@@ -112,11 +111,8 @@ const TrackTileComponent = ({
   )
 
   const handlePressTitle = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Track', params: { id: track_id } },
-      web: { route: permalink }
-    })
-  }, [navigation, permalink, track_id])
+    navigation.push('Track', { id: track_id })
+  }, [navigation, track_id])
 
   const handlePressOverflow = useCallback(() => {
     if (track_id === undefined) {

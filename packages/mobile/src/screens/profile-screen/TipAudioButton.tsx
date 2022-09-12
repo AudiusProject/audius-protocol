@@ -29,7 +29,7 @@ export const TipAudioButton = () => {
 
   const handlePress = useCallback(() => {
     dispatch(beginTip({ user: profile, source: 'profile' }))
-    navigation.navigate({ native: { screen: 'TipArtist' } })
+    navigation.navigate('TipArtist')
   }, [dispatch, profile, navigation])
 
   const styles = useStyles()

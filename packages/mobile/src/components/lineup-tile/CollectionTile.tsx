@@ -25,7 +25,6 @@ import {
   shareModalUIActions,
   RepostType
 } from '@audius/common'
-import { albumPage, playlistPage } from 'audius-client/src/utils/route'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
@@ -120,16 +119,6 @@ const CollectionTileComponent = ({
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const routeWeb = useMemo(() => {
-    return collection.is_album
-      ? albumPage(user.handle, collection.playlist_name, collection.playlist_id)
-      : playlistPage(
-          user.handle,
-          collection.playlist_name,
-          collection.playlist_id
-        )
-  }, [collection, user])
-
   const handlePress = useCallback(
     ({ isPlaying }) => {
       if (!tracks.length) return
@@ -146,11 +135,8 @@ const CollectionTileComponent = ({
   )
 
   const handlePressTitle = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Collection', params: { id: playlist_id } },
-      web: { route: routeWeb }
-    })
-  }, [playlist_id, routeWeb, navigation])
+    navigation.push('Collection', { id: playlist_id })
+  }, [playlist_id, navigation])
 
   const duration = useMemo(() => {
     return tracks.reduce(

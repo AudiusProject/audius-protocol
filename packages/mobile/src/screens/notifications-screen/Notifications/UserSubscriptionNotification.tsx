@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common'
 import { notificationsSelectors, Entity } from '@audius/common'
-import { profilePage } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -17,7 +16,7 @@ import {
   UserNameLink,
   ProfilePicture
 } from '../Notification'
-import { getEntityRoute, getEntityScreen } from '../Notification/utils'
+import { getEntityScreen } from '../Notification/utils'
 import { useDrawerNavigation } from '../useDrawerNavigation'
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
@@ -48,23 +47,16 @@ export const UserSubscriptionNotification = (
   const handlePress = useCallback(() => {
     if (entityType === Entity.Track && !isSingleUpload) {
       if (user) {
-        navigation.navigate({
-          native: {
-            screen: 'Profile',
-            params: { handle: user.handle, fromNotifications: true }
-          },
-          web: {
-            route: profilePage(user.handle)
-          }
+        navigation.navigate('Profile', {
+          handle: user.handle,
+          fromNotifications: true
         })
       }
     } else {
       if (entities) {
         const [entity] = entities
-        navigation.navigate({
-          native: getEntityScreen(entity),
-          web: { route: getEntityRoute(entity) }
-        })
+        const [screen, params] = getEntityScreen(entity)
+        navigation.navigate(screen, params)
       }
     }
   }, [entityType, isSingleUpload, navigation, user, entities])
