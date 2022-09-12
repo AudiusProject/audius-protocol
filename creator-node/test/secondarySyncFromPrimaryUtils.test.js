@@ -5,11 +5,8 @@ import proxyquire from 'proxyquire'
 
 describe('test secondarySyncFromPrimaryUtils', function () {
   const mockedLibs = {
-    User: {
-      getUsers: () => {
-        return [{ primary_id: 1 }]
-      }
-    }
+    contracts: { UserReplicaSetManagerClient: null },
+    User: { getUsers: null }
   }
   const mockLogContext = { context: 'test' }
 
@@ -72,7 +69,10 @@ describe('test secondarySyncFromPrimaryUtils', function () {
           }
         },
         '../ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: async () => {
+          getReplicaSetEndpointsByWallet: async () => {
+            return { primary: 'primary' }
+          },
+          getContentNodeInfoFromEndpoint: async () => {
             return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
           }
         }
@@ -102,7 +102,10 @@ describe('test secondarySyncFromPrimaryUtils', function () {
       '../src/services/sync/secondarySyncFromPrimaryUtils',
       {
         '../ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: async () => {
+          getReplicaSetEndpointsByWallet: async () => {
+            return { primary: 'primary' }
+          },
+          getContentNodeInfoFromEndpoint: async () => {
             return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
           }
         }
@@ -159,7 +162,10 @@ describe('test secondarySyncFromPrimaryUtils', function () {
           }
         },
         '../ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: async () => {
+          getReplicaSetEndpointsByWallet: async () => {
+            return { primary: 'primary' }
+          },
+          getContentNodeInfoFromEndpoint: async () => {
             return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
           }
         }
@@ -197,7 +203,10 @@ describe('test secondarySyncFromPrimaryUtils', function () {
           }
         },
         '../ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: async () => {
+          getReplicaSetEndpointsByWallet: async () => {
+            return { primary: 'primary' }
+          },
+          getContentNodeInfoFromEndpoint: async () => {
             return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
           }
         }

@@ -103,8 +103,23 @@ async function getContentNodeInfoFromSpId(
   logger: Logger,
   redisClient = defaultRedisClient
 ): Promise<ContentNodeFromChain | undefined> {
-  const map = await getMapOfSpIdToChainInfo(logger, redisClient)
-  return map.get(spId)
+  const spIdToChainInfoMap = await getMapOfSpIdToChainInfo(logger, redisClient)
+  return spIdToChainInfoMap.get(spId)
+}
+
+async function getContentNodeInfoFromEndpoint(
+  endpoint: string,
+  logger: Logger,
+  redisClient = defaultRedisClient
+): Promise<ContentNodeFromChain | undefined> {
+  const endpointToSpIdMap = await getMapOfCNodeEndpointToSpId(
+    logger,
+    redisClient
+  )
+  const spId = endpointToSpIdMap.get(endpoint)
+  if (spId === undefined) return undefined
+  const cNodeInfo = await getContentNodeInfoFromSpId(spId, logger, redisClient)
+  return cNodeInfo
 }
 
 export type ReplicaSetSpIds = {
@@ -395,6 +410,7 @@ export {
   getMapOfCNodeEndpointToSpId,
   getSpIdFromEndpoint,
   getContentNodeInfoFromSpId,
+  getContentNodeInfoFromEndpoint,
   getReplicaSetEndpointsByWallet,
   getReplicaSetEndpointsByUserId,
   getReplicaSetSpIdsByUserId,
@@ -407,6 +423,7 @@ module.exports = {
   getMapOfCNodeEndpointToSpId,
   getSpIdFromEndpoint,
   getContentNodeInfoFromSpId,
+  getContentNodeInfoFromEndpoint,
   getReplicaSetEndpointsByWallet,
   getReplicaSetEndpointsByUserId,
   getReplicaSetSpIdsByUserId,

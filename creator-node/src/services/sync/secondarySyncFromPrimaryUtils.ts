@@ -5,7 +5,10 @@ import type {
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
 
-import { getContentNodeInfoFromSpId } from '../ContentNodeInfoManager'
+import {
+  getContentNodeInfoFromEndpoint,
+  getReplicaSetEndpointsByWallet
+} from '../ContentNodeInfoManager'
 
 const _ = require('lodash')
 
@@ -73,13 +76,16 @@ const shouldForceResync = async (
 
   try {
     // Get the delegate wallet from the primary of the observed user
-    const userPrimaryId: number = await asyncRetry({
-      asyncFn: async () => {
-        return (await libs.User.getUsers(1, 0, null, wallet))[0].primary_id
-      },
-      logLabel: 'shouldForceResync'
+    const replicaSetEndpoints = await getReplicaSetEndpointsByWallet({
+      userReplicaSetManagerClient: libs.contracts.UserReplicaSetManagerClient,
+      wallet,
+      parentLogger: logger,
+      getUsers: libs.User.getUsers
     })
-    const primaryInfo = await getContentNodeInfoFromSpId(userPrimaryId, logger)
+    const primaryInfo = await getContentNodeInfoFromEndpoint(
+      replicaSetEndpoints.primary!,
+      logger
+    )
     if (primaryInfo === undefined) return false
     const { delegateOwnerWallet: actualPrimaryWallet } = primaryInfo
 
