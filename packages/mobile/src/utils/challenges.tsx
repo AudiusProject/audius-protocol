@@ -97,12 +97,12 @@ export const challenges = {
   sendFirstTipProgressLabel: 'Not Earned',
   sendFirstTipButton: 'Find Someone To Tip',
 
+  // First Playlist
   firstPlaylistTitle: 'Create Your First Playlist',
-  firstPlaylistDescription: 'Create your first playlist & add a track to it',
-  firstPlaylistShortDescription:
-    'Create your first playlist & add a track to it',
+  firstPlaylistDescription: 'Create a playlist and add a track to it',
+  firstPlaylistShortDescription: 'Create a playlist and add a track to it',
   firstPlaylistProgressLabel: 'Not Earned',
-  firstPlaylistButton: 'Create a Playlist'
+  firstPlaylistButton: 'Discover Some Tracks'
 }
 
 export type ChallengesParamList = {
