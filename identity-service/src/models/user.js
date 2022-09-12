@@ -40,15 +40,19 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false
     },
-    isAbusive: {
+    isBlockedFromRelay: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
     },
-    isAbusiveErrorCode: {
-      type: DataTypes.STRING,
+    isBlockedFromNotifications: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    appliedRules: {
+      type: DataTypes.JSONB,
       allowNull: true,
-      defaultValue: null
     },
     isEmailDeliverable: {
       type: DataTypes.BOOLEAN,

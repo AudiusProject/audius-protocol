@@ -8,7 +8,6 @@ const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const models = require('../models')
 const { getIP } = require('../utils/antiAbuse')
 
-const blockRelayAbuseErrorCodes = new Set(['0', '8', '9', '10'])
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
@@ -20,7 +19,7 @@ module.exports = function (app) {
     // TODO: Use auth middleware to derive this
     const user = await models.User.findOne({
       where: { walletAddress: body.senderAddress },
-      attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isAbusive', 'isAbusiveErrorCode']
+      attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isBlockedFromRelay', 'appliedRules']
     })
 
     let optimizelyClient
@@ -37,8 +36,7 @@ module.exports = function (app) {
     if (
       blockAbuseOnRelay &&
       user &&
-      user.isAbusiveErrorCode &&
-      blockRelayAbuseErrorCodes.has(user.isAbusiveErrorCode)
+      user.isBlockedFromRelay
     ) {
       // allow previously abusive users to redeem themselves for next relays
       if (detectAbuseOnRelay) {
@@ -47,7 +45,7 @@ module.exports = function (app) {
       }
 
       return errorResponseForbidden(
-        `Forbidden ${user.isAbusiveErrorCode}`
+        `Forbidden ${user.appliedRules}`
       )
     }
 

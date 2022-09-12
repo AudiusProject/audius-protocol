@@ -459,11 +459,11 @@ async function filterOutAbusiveUsers (notifications) {
     where: {
       blockchainUserId: { [ models.Sequelize.Op.in ]: allUserIds }
     },
-    attributes: ['blockchainUserId', 'isAbusive']
+    attributes: ['blockchainUserId', 'isBlockedFromNotifications']
   })
   const usersAbuseMap = {}
   users.forEach(user => {
-    usersAbuseMap[user.blockchainUserId] = user.isAbusive
+    usersAbuseMap[user.blockchainUserId] = user.isBlockedFromNotifications
   })
   const result = notifications.filter(notification => {
     const isInitiatorAbusive = usersAbuseMap[notification.initiator.toString()]
