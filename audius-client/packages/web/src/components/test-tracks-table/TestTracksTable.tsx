@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import { formatCount, formatSeconds } from '@audius/common'
 import cn from 'classnames'
@@ -18,6 +18,7 @@ import {
 } from 'components/test-table'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
+import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TestTracksTable.module.css'
 
@@ -222,6 +223,7 @@ export const TestTracksTable = ({
     return moment(track.dateListened).format('M/D/YY')
   }, [])
 
+  const favoriteButtonRef = useRef<HTMLDivElement>(null)
   const renderFavoriteButtonCell = useCallback(
     (cellInfo) => {
       const track = cellInfo.row.original
@@ -233,15 +235,12 @@ export const TestTracksTable = ({
         <Tooltip
           text={track.has_current_user_saved ? 'Unfavorite' : 'Favorite'}
         >
-          <div>
+          <div ref={favoriteButtonRef}>
             <TableFavoriteButton
               className={cn(styles.tableActionButton, {
                 [styles.active]: track.has_current_user_saved
               })}
-              onClick={(e: any) => {
-                e.stopPropagation()
-                onClickFavorite?.(track)
-              }}
+              onClick={() => onClickFavorite?.(track)}
               favorited={track.has_current_user_saved}
             />
           </div>
@@ -251,6 +250,7 @@ export const TestTracksTable = ({
     [onClickFavorite, userId]
   )
 
+  const repostButtonRef = useRef<HTMLDivElement>(null)
   const renderRepostButtonCell = useCallback(
     (cellInfo) => {
       const track = cellInfo.row.original
@@ -259,15 +259,12 @@ export const TestTracksTable = ({
       const isOwner = track.owner_id === userId
       return isOwner ? null : (
         <Tooltip text={track.has_current_user_reposted ? 'Unrepost' : 'Repost'}>
-          <div>
+          <div ref={repostButtonRef}>
             <TableRepostButton
               className={cn(styles.tableActionButton, {
                 [styles.active]: track.has_current_user_reposted
               })}
-              onClick={(e: any) => {
-                e.stopPropagation()
-                onClickRepost?.(track)
-              }}
+              onClick={() => onClickRepost?.(track)}
               reposted={track.has_current_user_reposted}
             />
           </div>
@@ -277,33 +274,33 @@ export const TestTracksTable = ({
     [onClickRepost, userId]
   )
 
+  const overflowMenuRef = useRef<HTMLDivElement>(null)
   const renderOverflowMenuCell = useCallback(
     (cellInfo) => {
       const track = cellInfo.row.original
       const deleted = track.is_delete || !!track.user.is_deactivated
       return (
-        <OverflowMenuButton
-          className={styles.tableActionButton}
-          onClick={(e: any) => {
-            e.stopPropagation()
-          }}
-          isDeleted={deleted}
-          onRemove={onClickRemove}
-          removeText={removeText}
-          handle={track.handle}
-          trackId={track.track_id}
-          uid={track.uid}
-          date={track.date}
-          isFavorited={track.has_current_user_saved}
-          isOwner={track.owner_id === userId}
-          isOwnerDeactivated={!!track.user.is_deactivated}
-          isArtistPick={track.user._artist_pick === track.track_id}
-          index={cellInfo.row.index}
-          trackTitle={track.name}
-          albumId={null}
-          albumName={null}
-          trackPermalink={track.permalink}
-        />
+        <div ref={overflowMenuRef}>
+          <OverflowMenuButton
+            className={styles.tableActionButton}
+            isDeleted={deleted}
+            onRemove={onClickRemove}
+            removeText={removeText}
+            handle={track.handle}
+            trackId={track.track_id}
+            uid={track.uid}
+            date={track.date}
+            isFavorited={track.has_current_user_saved}
+            isOwner={track.owner_id === userId}
+            isOwnerDeactivated={!!track.user.is_deactivated}
+            isArtistPick={track.user._artist_pick === track.track_id}
+            index={cellInfo.row.index}
+            trackTitle={track.name}
+            albumId={null}
+            albumName={null}
+            trackPermalink={track.permalink}
+          />
+        </div>
       )
     },
     [onClickRemove, removeText, userId]
@@ -440,10 +437,16 @@ export const TestTracksTable = ({
   )
 
   const handleClickRow = useCallback(
-    (rowInfo, index: number) => {
+    (e, rowInfo, index: number) => {
       const track = rowInfo.original
       const deleted = track.is_delete || track.user?.is_deactivated
-      if (deleted) return
+      const clickedActionButton = [
+        favoriteButtonRef,
+        repostButtonRef,
+        overflowMenuRef
+      ].some((ref) => isDescendantElementOf(e?.target, ref.current))
+
+      if (deleted || clickedActionButton) return
       onClickRow?.(track, index)
     },
     [onClickRow]
