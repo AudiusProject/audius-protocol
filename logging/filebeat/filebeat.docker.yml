@@ -49,6 +49,8 @@ filebeat.autodiscover:
                 docker.container.image: "dn1_web-server"
             - contains:
                 docker.container.image: "discovery-provider"
+            - contains:
+                docker.container.image: "indexer"
         - config:
             - type: container
               paths:
@@ -195,6 +197,8 @@ filebeat.autodiscover:
             - not.contains:
                 docker.container.image: "discovery-provider"
             - not.contains:
+                docker.container.image: "indexer"
+            - not.contains:
                 docker.container.image: "creator-node"
             - not.equals:
                 docker.container.image: "audius-identity-service_identity-service"
@@ -228,6 +232,8 @@ output.elasticsearch:
             container.name: dn._web-server_.
         - regexp:
             container.name: discovery-provider
+        - regexp:
+            container.name: indexer
         - regexp:
             container.name: cn._creator-node_.
         - regexp:
