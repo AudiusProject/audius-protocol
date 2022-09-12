@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from 'react'
 
 import { useInstanceVar, nowPlayingUIActions } from '@audius/common'
-import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
@@ -13,8 +12,6 @@ import MobilePlayBar from 'components/play-bar/mobile/PlayBar'
 import NowPlaying from './NowPlaying'
 import styles from './NowPlayingDrawer.module.css'
 const { setIsOpen: _setIsNowPlayingOpen } = nowPlayingUIActions
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const DEFAULT_HEIGHT = window.innerHeight
 
@@ -372,9 +369,7 @@ const NowPlayingDrawer = ({
   return (
     <>
       <animated.div
-        className={cn(styles.drawer, {
-          [styles.native]: NATIVE_MOBILE
-        })}
+        className={styles.drawer}
         id='now-playing-drawer'
         {...bind()}
         style={{

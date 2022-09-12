@@ -18,13 +18,9 @@
 
 /* Fixes positioning on android chrome */
 @supports (-webkit-appearance: none) {
-  .nowPlaying:not(.native) {
+  .nowPlaying {
     max-height: calc(100vh - 56px);
   }
-}
-
-.nowPlaying.native {
-  height: 100vh;
 }
 
 .header {

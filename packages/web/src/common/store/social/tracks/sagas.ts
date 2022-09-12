@@ -33,8 +33,6 @@ const { getTrack, getTracks } = cacheTracksSelectors
 
 const { getUserId, getUserHandle } = accountSelectors
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 /* REPOST TRACK */
 export function* watchRepostTrack() {
   yield* takeEvery(socialActions.REPOST_TRACK, repostTrackAsync)
@@ -585,7 +583,8 @@ export function* watchRecordListen() {
   yield* takeEvery(
     socialActions.RECORD_LISTEN,
     function* (action: ReturnType<typeof socialActions.recordListen>) {
-      if (NATIVE_MOBILE) return
+      const isNativeMobile = yield* getContext('isNativeMobile')
+      if (isNativeMobile) return
       console.debug('Listen recorded for track', action.trackId)
 
       yield* waitForAccount()

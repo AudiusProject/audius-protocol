@@ -8,8 +8,6 @@ import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
 import Dapp from './app'
 
-const REACT_APP_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const NoConnectivityPage = lazy(
   () => import('components/no-connectivity-page/NoConnectivityPage')
 )
@@ -50,12 +48,7 @@ const Root = () => {
   const [shouldShowPopover, setShouldShowPopover] = useState(true)
 
   const shouldRedirectToApp = foundUser && !isPublicSiteSubRoute()
-  if (
-    renderPublicSite &&
-    !clientIsElectron &&
-    !REACT_APP_NATIVE_MOBILE &&
-    !shouldRedirectToApp
-  ) {
+  if (renderPublicSite && !clientIsElectron && !shouldRedirectToApp) {
     return (
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <PublicSite

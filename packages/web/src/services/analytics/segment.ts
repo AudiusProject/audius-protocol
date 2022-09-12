@@ -7,20 +7,11 @@ import {
 } from 'utils/clientUtil'
 // Segment Analytics
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 export const getSource = () => {
   const mobileOS = getMobileOS()
   const isMobile = getIsMobile()
   const isElectron = getIsElectron()
-  if (NATIVE_MOBILE) {
-    if (mobileOS === MobileOS.ANDROID) {
-      return 'Android App'
-    } else if (mobileOS === MobileOS.IOS) {
-      return 'iOS App'
-    }
-    return 'Unknown App'
-  } else if (isMobile) {
+  if (isMobile) {
     if (mobileOS === MobileOS.ANDROID) {
       return 'Android Web'
     } else if (mobileOS === MobileOS.IOS) {

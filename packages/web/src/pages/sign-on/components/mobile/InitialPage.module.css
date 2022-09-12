@@ -17,11 +17,6 @@
   box-shadow: 0 2px 25px -5px rgba(17, 17, 34, 0.5);
 }
 
-.native .topSection {
-  height: 58vh;
-  min-height: 420px;
-}
-
 .topSectionTransition {
   position: absolute;
   top: 0;
@@ -61,11 +56,6 @@
   .bottomContainer {
     padding-bottom: 120px;
   }
-}
-
-.native .bottomContainer {
-  padding-bottom: 0px;
-  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
 }
 
 /*  */

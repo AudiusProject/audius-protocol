@@ -10,7 +10,6 @@ import {
   searchResultsPageTracksLineupActions as tracksActions,
   trimToAlphaNumeric
 } from '@audius/common'
-import cn from 'classnames'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
 
@@ -45,8 +44,6 @@ import {
 } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 type SearchPageContentProps = {
   tracks: LineupState<{}>
@@ -318,17 +315,9 @@ const SearchPageContent = (props: SearchPageContentProps) => {
   // Set nav header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {
-    // If native, add the ability to navigate back to the native search
-    if (NATIVE_MOBILE) {
-      setLeft(LeftPreset.BACK)
-      setCenter(CenterPreset.LOGO)
-      setRight(null)
-    } else {
-      // If non-native mobile, show the notification and search icons
-      setLeft(LeftPreset.NOTIFICATION)
-      setCenter(CenterPreset.LOGO)
-      setRight(RightPreset.SEARCH)
-    }
+    setLeft(LeftPreset.NOTIFICATION)
+    setCenter(CenterPreset.LOGO)
+    setRight(RightPreset.SEARCH)
   }, [setLeft, setCenter, setRight])
 
   const record = useRecord()
@@ -435,13 +424,7 @@ const SearchPageContent = (props: SearchPageContentProps) => {
           className={styles.header}
           title={isTagSearch ? messages.tagSearchTitle : messages.title}
         />
-        <div
-          className={cn(styles.tabBar, {
-            [styles.nativeTabBar]: NATIVE_MOBILE
-          })}
-        >
-          {tabs}
-        </div>
+        <div className={styles.tabBar}>{tabs}</div>
       </>
     )
   }, [setHeader, tabs, pathname, isTagSearch])

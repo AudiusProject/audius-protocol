@@ -6,8 +6,6 @@ import Drawer from 'components/drawer/Drawer'
 
 import styles from './MobileUploadDrawer.module.css'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const messages = {
   start: 'Start Uploading',
   visit: 'Visit audius.co from a desktop browser',
@@ -24,7 +22,7 @@ const MobileUploadDrawer = () => {
   }, [setIsOpen])
 
   return (
-    <Drawer isOpen={!NATIVE_MOBILE && isOpen} onClose={handleClose}>
+    <Drawer isOpen={isOpen} onClose={handleClose}>
       <div className={styles.drawer}>
         <div className={styles.top}>
           <div className={styles.cta}>

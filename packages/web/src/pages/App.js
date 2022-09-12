@@ -192,7 +192,6 @@ const ConnectedMusicConfetti = lazyWithPreload(
   0
 )
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 export const MAIN_CONTENT_ID = 'mainContent'
 
 const includeSearch = (search) => {
@@ -353,9 +352,7 @@ class App extends Component {
       if (prevProps.accountStatus === Status.LOADING) {
         this.pushWithToken(TRENDING_PAGE)
         // If native mobile, a saga watches for fetch account failure to push route
-        if (!NATIVE_MOBILE) {
-          this.props.openSignOn(true, SignOnPages.SIGNIN)
-        }
+        this.props.openSignOn(true, SignOnPages.SIGNIN)
         this.props.updateRouteOnSignUpCompletion(this.state.entryRoute)
       } else {
         this.pushWithToken(TRENDING_PAGE)
@@ -1007,7 +1004,7 @@ class App extends Component {
         {/* Mobile-only */}
         {isMobileClient && <ConnectedReachabilityBar />}
 
-        {shouldShowPopover && isMobileClient && !NATIVE_MOBILE && (
+        {shouldShowPopover && isMobileClient && (
           <AppRedirectPopover
             enablePopover={isReady}
             incrementScroll={incrementScroll}

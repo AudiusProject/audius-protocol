@@ -26,8 +26,6 @@ import styles from './ShareSoundToTikTokModal.module.css'
 const { getStatus, getTrack } = shareSoundToTiktokModalSelectors
 const { authenticated, setStatus, share } = shareSoundToTiktokModalActions
 
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 enum FileRequirementError {
   MIN_LENGTH,
   MAX_LENGTH
@@ -151,24 +149,22 @@ const ShareSoundToTikTokModal = () => {
   }
 
   return mobile ? (
-    !IS_NATIVE_MOBILE ? (
-      <Drawer onClose={handleClose} isOpen={isOpen}>
-        <div className={cn(styles.modalContent, styles.mobile)}>
-          <div className={cn(styles.modalHeader, styles.mobile)}>
-            <div className={cn(styles.titleContainer, styles.mobile)}>
-              <IconTikTok />
-              <div>{messages.title}</div>
-            </div>
+    <Drawer onClose={handleClose} isOpen={isOpen}>
+      <div className={cn(styles.modalContent, styles.mobile)}>
+        <div className={cn(styles.modalHeader, styles.mobile)}>
+          <div className={cn(styles.titleContainer, styles.mobile)}>
+            <IconTikTok />
+            <div>{messages.title}</div>
           </div>
-          {renderMessage()}
-          {status === ShareSoundToTiktokModalStatus.SHARE_STARTED ? (
-            <LoadingSpinner />
-          ) : (
-            renderButton()
-          )}
         </div>
-      </Drawer>
-    ) : null
+        {renderMessage()}
+        {status === ShareSoundToTiktokModalStatus.SHARE_STARTED ? (
+          <LoadingSpinner />
+        ) : (
+          renderButton()
+        )}
+      </div>
+    </Drawer>
   ) : (
     <Modal
       allowScroll={false}
