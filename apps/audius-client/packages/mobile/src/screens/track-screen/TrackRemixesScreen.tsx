@@ -1,19 +1,25 @@
+import { useCallback, useEffect } from 'react'
+
 import {
   pluralize,
   lineupSelectors,
   remixesPageLineupActions as tracksActions,
-  remixesPageSelectors
+  remixesPageSelectors,
+  remixesPageActions
 } from '@audius/common'
 import { Text, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { Lineup } from 'app/components/lineup'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
+
 const { getTrack, getUser, getLineup, getCount } = remixesPageSelectors
+const { fetchTrack, reset } = remixesPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
 
 const getRemixesTracksLineup = makeGetLineupMetadatas(getLineup)
@@ -47,20 +53,35 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const TrackRemixesScreen = () => {
   const navigation = useNavigation()
-  const lineup = useSelectorWeb(getRemixesTracksLineup)
-  const count = useSelectorWeb(getCount)
-  const track = useSelectorWeb(getTrack)
-  const user = useSelectorWeb(getUser)
+  const lineup = useSelector(getRemixesTracksLineup)
+  const count = useSelector(getCount)
+  const track = useSelector(getTrack)
+  const user = useSelector(getUser)
+  const dispatch = useDispatch()
 
   const styles = useStyles()
+  const { params } = useRoute<'TrackRemixes'>()
+
+  const trackId = params.id
+  useEffect(() => {
+    dispatch(fetchTrack({ id: trackId }))
+    dispatch(
+      tracksActions.fetchLineupMetadatas(0, 10, false, {
+        trackId: trackId ?? null
+      })
+    )
+    return function cleanup() {
+      dispatch(reset())
+      dispatch(tracksActions.reset())
+    }
+  }, [dispatch, trackId])
 
   const handlePressTrack = () => {
     if (!track) {
       return
     }
     navigation.push({
-      native: { screen: 'Track', params: { id: track.track_id } },
-      web: { route: track.permalink }
+      native: { screen: 'Track', params: { id: trackId } }
     })
   }
 
@@ -70,10 +91,20 @@ export const TrackRemixesScreen = () => {
     }
 
     navigation.push({
-      native: { screen: 'Profile', params: { handle: user.handle } },
-      web: { route: `/${user.handle}` }
+      native: { screen: 'Profile', params: { handle: user.handle } }
     })
   }
+
+  const loadMore = useCallback(
+    (offset: number, limit: number, overwrite: boolean) => {
+      dispatch(
+        tracksActions.fetchLineupMetadatas(offset, limit, overwrite, {
+          trackId: trackId ?? null
+        })
+      )
+    },
+    [dispatch, trackId]
+  )
 
   const remixesText = pluralize(messages.remix, count, 'es', !count)
   const remixesCountText = `${count || ''} ${remixesText} ${messages.of}`
@@ -83,7 +114,7 @@ export const TrackRemixesScreen = () => {
       <Header text={messages.header} />
       <Lineup
         lineup={lineup}
-        fetchPayload={{ trackId: track?.track_id }}
+        loadMore={loadMore}
         header={
           track && user ? (
             <View style={styles.header}>
