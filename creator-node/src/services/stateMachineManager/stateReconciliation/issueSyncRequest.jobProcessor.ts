@@ -69,7 +69,7 @@ type HandleIssueSyncReqParams = {
 }
 type HandleIssueSyncReqResult = {
   result: string
-  error?: any
+  error?: { message: string }
   syncReqsToEnqueue: IssueSyncRequestJobParams[]
   additionalSync?: IssueSyncRequestJobParams
 }
@@ -262,7 +262,9 @@ async function _handleIssueSyncRequest({
     if (syncCorrectnessError) {
       return {
         result: 'failure_sync_correctness',
-        error: `${logMsgString}: ${syncCorrectnessError}`,
+        error: {
+          message: `${logMsgString}: ${syncCorrectnessError}`
+        },
         syncReqsToEnqueue
       }
     }
@@ -275,7 +277,9 @@ async function _handleIssueSyncRequest({
     if (error) {
       return {
         result: 'failure_primary_sync_from_secondary',
-        error: `${logMsgString}: ${error.message}`,
+        error: {
+          message: `${logMsgString}: ${error.message}`
+        },
         syncReqsToEnqueue
       }
     }
