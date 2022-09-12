@@ -50,7 +50,7 @@ function* watchUpdatePushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
     actions.TOGGLE_PUSH_NOTIFICATION_SETTING,
-    async function* (action: actions.TogglePushNotificationSetting) {
+    function* (action: actions.TogglePushNotificationSetting) {
       let isOn = action.isOn
 
       try {

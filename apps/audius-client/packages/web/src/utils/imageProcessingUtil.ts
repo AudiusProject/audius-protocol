@@ -18,11 +18,11 @@ export const ALLOWED_IMAGE_FILE_TYPES = [
 ]
 
 export const resizeImage = async (
-  imageFile,
+  imageFile: File,
   maxWidth = 1000,
   square = true,
   key = ''
-) => {
+): Promise<File> => {
   if (!ALLOWED_IMAGE_FILE_TYPES.includes(imageFile.type)) {
     throw new Error('invalid file type')
   }
@@ -32,17 +32,17 @@ export const resizeImage = async (
   return worker.getResult()
 }
 
-export const averageRgb = async (imageUrl, chunkSize = 100) => {
+export const averageRgb = async (imageUrl: string, chunkSize = 100) => {
   averageRgbWorker.call({ imageUrl, chunkSize }, imageUrl)
   return averageRgbWorker.getResult(imageUrl)
 }
 
-export const dominantColor = async (imageUrl) => {
+export const dominantColor = async (imageUrl: string) => {
   dominantColorWorker.call({ imageUrl }, imageUrl)
   return dominantColorWorker.getResult(imageUrl)
 }
 
-export const gifPreview = async (imageUrl) => {
+export const gifPreview = async (imageUrl: string) => {
   gifPreviewWorker.call({ imageUrl }, imageUrl)
   return gifPreviewWorker.getResult(imageUrl)
 }

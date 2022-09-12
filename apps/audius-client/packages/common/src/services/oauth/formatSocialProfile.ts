@@ -1,13 +1,17 @@
-import { InstagramProfile, TwitterProfile } from '@audius/common'
-
-import { resizeImage } from 'utils/imageProcessingUtil'
-
-const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION
+import { InstagramProfile, TwitterProfile } from 'store/account/types'
 
 export const MAX_HANDLE_LENGTH = 16
 export const MAX_DISPLAY_NAME_LENGTH = 32
 
-export const formatTwitterProfile = async (twitterProfile: TwitterProfile) => {
+export const formatTwitterProfile = async (
+  twitterProfile: TwitterProfile,
+  resizeImage: (
+    image: File,
+    maxWidth?: number,
+    square?: boolean,
+    key?: string
+  ) => Promise<File>
+) => {
   const profileUrl = twitterProfile.profile_image_url_https.replace(
     /_(normal|bigger|mini)/g,
     ''
@@ -27,7 +31,7 @@ export const formatTwitterProfile = async (twitterProfile: TwitterProfile) => {
     const bannerArtworkFile = new File([bannerImageBlob], 'Artwork', {
       type: 'image/webp'
     })
-    bannerFile = await resizeImage(bannerArtworkFile, 2000, /* square= */ false)
+    bannerFile = await resizeImage(bannerArtworkFile, 2000, false)
     bannerUrl = URL.createObjectURL(bannerFile)
   }
   // Truncate to MAX_HANDLE_LENGTH characters because we don't support longer handles.
@@ -57,12 +61,19 @@ export const formatTwitterProfile = async (twitterProfile: TwitterProfile) => {
 }
 
 export const formatInstagramProfile = async (
-  instagramProfile: InstagramProfile
+  instagramProfile: InstagramProfile,
+  generalAdmission: string,
+  resizeImage: (
+    image: File,
+    maxWidth?: number,
+    square?: boolean,
+    key?: string
+  ) => Promise<File>
 ) => {
   let profileImage
   if (instagramProfile.profile_pic_url_hd) {
     try {
-      const profileUrl = `${GENERAL_ADMISSION}/proxy/simple?url=${encodeURIComponent(
+      const profileUrl = `${generalAdmission}/proxy/simple?url=${encodeURIComponent(
         instagramProfile.profile_pic_url_hd
       )}`
       const imageBlob = await fetch(profileUrl).then((r) => r.blob())
