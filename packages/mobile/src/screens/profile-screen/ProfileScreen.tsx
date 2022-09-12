@@ -6,7 +6,9 @@ import {
   accountSelectors,
   profilePageSelectors,
   profilePageActions,
-  shareModalUIActions
+  shareModalUIActions,
+  profilePageTracksLineupActions as tracksActions,
+  profilePageFeedLineupActions as feedActions
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
 import { Animated, View } from 'react-native'
@@ -28,7 +30,9 @@ import { ProfileHeader } from './ProfileHeader'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { useSelectProfile } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { fetchProfile: fetchProfileAction } = profilePageActions
+const { fetchProfile: fetchProfileAction, resetProfile } = profilePageActions
+const { reset: resetTracks } = tracksActions
+const { reset: resetFeed } = feedActions
 const { getProfileStatus } = profilePageSelectors
 const getUserId = accountSelectors.getUserId
 
@@ -69,7 +73,13 @@ export const ProfileScreen = () => {
 
   useEffect(() => {
     fetchProfile()
-  }, [fetchProfile])
+
+    return () => {
+      dispatch(resetProfile())
+      dispatch(resetTracks())
+      dispatch(resetFeed())
+    }
+  }, [dispatch, fetchProfile])
 
   const handleRefresh = useCallback(() => {
     if (profile) {
