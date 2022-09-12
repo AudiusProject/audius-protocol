@@ -120,7 +120,9 @@ async function issueSyncRequest({
   })
   if (errorResp) {
     error = errorResp
-    logger.error(error.message)
+    logger.error(
+      `Issuing sync request error: ${error.message}. Prometheus result: ${result}`
+    )
   }
 
   // Enqueue a new sync request if one needs to be enqueued and we haven't retried too many times yet
@@ -260,7 +262,7 @@ async function _handleIssueSyncRequest({
     if (syncCorrectnessError) {
       return {
         result: 'failure_sync_correctness',
-        error: syncCorrectnessError,
+        error: `${logMsgString}: ${syncCorrectnessError}`,
         syncReqsToEnqueue
       }
     }
@@ -273,7 +275,7 @@ async function _handleIssueSyncRequest({
     if (error) {
       return {
         result: 'failure_primary_sync_from_secondary',
-        error,
+        error: `${logMsgString}: ${error}`,
         syncReqsToEnqueue
       }
     }
