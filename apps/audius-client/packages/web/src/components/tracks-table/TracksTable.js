@@ -1,4 +1,4 @@
-import { Component } from 'react'
+import { createRef, Component } from 'react'
 
 import { formatCount, formatSeconds } from '@audius/common'
 import Table from 'antd/lib/table'
@@ -22,6 +22,7 @@ import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
 import TablePlayButton from 'components/tracks-table/TablePlayButton'
 import TableRepostButton from 'components/tracks-table/TableRepostButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { isDescendantElementOf } from 'utils/domUtils'
 import { fullTrackPage } from 'utils/route'
 
 import styles from './TracksTable.module.css'
@@ -39,25 +40,27 @@ export const alphaSortFn = function (a, b, aKey, bKey) {
   return a.toLowerCase() > b.toLowerCase() ? 1 : -1
 }
 
-const favoriteButtonCell = (val, record, props) => {
+const favoriteButtonCell = (val, record, props, storeActionButtonRefs) => {
   const deleted = record.is_delete || !!record.user?.is_deactivated
   const isOwner = record.owner_id === props.userId
   if (deleted || isOwner) return null
+
+  const favoriteButtonRef = createRef()
+  storeActionButtonRefs(record.key, favoriteButtonRef)
   return (
-    <Tooltip text={record.has_current_user_saved ? 'Unfavorite' : 'Favorite'}>
-      <span>
-        <TableFavoriteButton
-          className={cn(styles.favoriteButtonFormatting, {
-            [styles.deleted]: deleted
-          })}
-          onClick={(e) => {
-            e.stopPropagation()
-            props.onClickFavorite(record)
-          }}
-          favorited={record.has_current_user_saved}
-        />
-      </span>
-    </Tooltip>
+    <div ref={favoriteButtonRef}>
+      <Tooltip text={record.has_current_user_saved ? 'Unfavorite' : 'Favorite'}>
+        <span>
+          <TableFavoriteButton
+            className={cn(styles.favoriteButtonFormatting, {
+              [styles.deleted]: deleted
+            })}
+            onClick={() => props.onClickFavorite(record)}
+            favorited={record.has_current_user_saved}
+          />
+        </span>
+      </Tooltip>
+    </div>
   )
 }
 
@@ -103,18 +106,19 @@ const artistNameCell = (val, record, props) => {
   )
 }
 
-const repostButtonCell = (val, record, props) => {
+const repostButtonCell = (val, record, props, storeActionButtonRefs) => {
   const deleted = record.is_delete || record.user?.is_deactivated
   if (deleted) return null
-  const isOwner = record.owner_id === props.userId
-  return isOwner ? null : (
+  if (record.owner_id === props.userId) return null
+
+  const repostButtonRef = createRef()
+  storeActionButtonRefs(record.key, repostButtonRef)
+
+  return (
     <Tooltip text={record.has_current_user_reposted ? 'Unrepost' : 'Repost'}>
-      <div>
+      <div ref={repostButtonRef}>
         <TableRepostButton
-          onClick={(e) => {
-            e.stopPropagation()
-            props.onClickRepost(record)
-          }}
+          onClick={() => props.onClickRepost(record)}
           reposted={record.has_current_user_reposted}
         />
       </div>
@@ -122,31 +126,39 @@ const repostButtonCell = (val, record, props) => {
   )
 }
 
-const optionsButtonCell = (val, record, index, props) => {
+const optionsButtonCell = (
+  val,
+  record,
+  index,
+  props,
+  storeActionButtonRefs
+) => {
   const deleted = record.is_delete || !!record.user.is_deactivated
+  const optionsButtonRef = createRef()
+  storeActionButtonRefs(record.key, optionsButtonRef)
+
   return (
-    <TableOptionsButton
-      className={styles.optionsButtonFormatting}
-      onClick={(e) => {
-        e.stopPropagation()
-      }}
-      isDeleted={deleted}
-      onRemove={props.onClickRemove}
-      removeText={props.removeText}
-      handle={val.handle}
-      trackId={val.track_id}
-      uid={val.uid}
-      date={val.date}
-      isFavorited={val.has_current_user_saved}
-      isOwner={record.owner_id === props.userId}
-      isOwnerDeactivated={!!record.user.is_deactivated}
-      isArtistPick={val.user._artist_pick === val.track_id}
-      index={index}
-      trackTitle={val.name}
-      albumId={null}
-      albumName={null}
-      trackPermalink={val.permalink}
-    />
+    <div ref={optionsButtonRef}>
+      <TableOptionsButton
+        className={styles.optionsButtonFormatting}
+        isDeleted={deleted}
+        onRemove={props.onClickRemove}
+        removeText={props.removeText}
+        handle={val.handle}
+        trackId={val.track_id}
+        uid={val.uid}
+        date={val.date}
+        isFavorited={val.has_current_user_saved}
+        isOwner={record.owner_id === props.userId}
+        isOwnerDeactivated={!!record.user.is_deactivated}
+        isArtistPick={val.user._artist_pick === val.track_id}
+        index={index}
+        trackTitle={val.name}
+        albumId={null}
+        albumName={null}
+        trackPermalink={val.permalink}
+      />
+    </div>
   )
 }
 
@@ -294,6 +306,11 @@ const minWidthReducedColumns = columnsToDrop.reduce(
 )
 
 class TracksTable extends Component {
+  constructor(props) {
+    super(props)
+    this.storeActionButtonRefs = this.storeActionButtonRefs.bind(this)
+  }
+
   state = {
     limit: this.props.limit,
     hasRendered: false,
@@ -307,12 +324,18 @@ class TracksTable extends Component {
 
   tableRef = null
 
+  actionButtonRefs = {}
+
   componentDidMount() {
     window.addEventListener('resize', this.checkDropColumn)
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.checkDropColumn)
+  }
+
+  storeActionButtonRefs = (key, ref) => {
+    this.actionButtonRefs[key] = ref
   }
 
   onSetTableRef = (ref) => {
@@ -421,7 +444,12 @@ class TracksTable extends Component {
             loading || record.is_delete || record.user?.is_deactivated ? (
               <div />
             ) : (
-              favoriteButtonCell(val, record, this.props)
+              favoriteButtonCell(
+                val,
+                record,
+                this.props,
+                this.storeActionButtonRefs
+              )
             )
         },
         {
@@ -476,7 +504,16 @@ class TracksTable extends Component {
           key: 'repostButton',
           className: 'colRepostButton',
           render: (val, record) =>
-            loading ? <div /> : repostButtonCell(val, record, this.props)
+            loading ? (
+              <div />
+            ) : (
+              repostButtonCell(
+                val,
+                record,
+                this.props,
+                this.storeActionButtonRefs
+              )
+            )
         },
         {
           title: '',
@@ -486,7 +523,13 @@ class TracksTable extends Component {
             loading ? (
               <div />
             ) : (
-              optionsButtonCell(val, record, index, this.props)
+              optionsButtonCell(
+                val,
+                record,
+                index,
+                this.props,
+                this.storeActionButtonRefs
+              )
             )
         }
       ].filter(Boolean)
@@ -595,11 +638,16 @@ class TracksTable extends Component {
             fixed
             onRow={(record, rowIndex) => ({
               index: rowIndex,
-              onClick: () => {
+              onClick: ((actionButtonRefs, e) => {
                 const deleted = record.is_delete || record.user?.is_deactivated
-                if (deleted) return
+
+                const clickedActionButton = Object.values(
+                  actionButtonRefs
+                ).some((ref) => isDescendantElementOf(e?.target, ref.current))
+
+                if (deleted || clickedActionButton) return
                 onClickRow(record, rowIndex)
-              }
+              }).bind(this, this.actionButtonRefs)
             })}
             locale={
               loading
