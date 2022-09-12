@@ -138,7 +138,6 @@ const makeColumns = (account: User, isUnlisted: boolean) => {
             isDeleted={record.is_delete}
             includeEdit={false}
             handle={account.handle}
-            onClick={(e: any) => e.stopPropagation()}
             trackId={val.track_id}
             isFavorited={val.has_current_user_saved}
             isOwner
