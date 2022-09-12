@@ -488,7 +488,7 @@ const config = convict({
     doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
-    default: 0
+    default: 1
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -554,13 +554,13 @@ const config = convict({
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 30
+    default: 50
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 15
+    default: 25
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
