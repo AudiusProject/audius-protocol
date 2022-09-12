@@ -51,5 +51,7 @@ export type CommonStoreContext = {
   }
   cognito: Cognito
   trackDownload: TrackDownload
+  instagramAppId?: string
+  instagramRedirectUrl?: string
   share: (url: string, message?: string) => Promise<void> | void
 }

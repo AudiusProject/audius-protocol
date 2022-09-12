@@ -13,7 +13,8 @@ import {
   solanaSelectors,
   usersSocialActions as socialActions,
   waitForAccount,
-  getContext
+  getContext,
+  MAX_HANDLE_LENGTH
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import {
@@ -38,7 +39,6 @@ import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import { MAX_HANDLE_LENGTH } from 'pages/sign-on/utils/formatSocialProfile'
 import { getCityAndRegion } from 'services/Location'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'

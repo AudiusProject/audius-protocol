@@ -1,6 +1,7 @@
 import { Component } from 'react'
 
 import PropTypes from 'prop-types'
+
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 

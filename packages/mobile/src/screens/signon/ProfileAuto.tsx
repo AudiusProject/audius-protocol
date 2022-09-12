@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import * as oauthActions from 'common/store/oauth/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getEmailField,
@@ -27,7 +26,7 @@ import IconVerified from 'app/assets/images/iconVerified.svg'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { track, make } from 'app/services/analytics'
-import * as oauthActionsLegacy from 'app/store/oauth/actions'
+import * as oauthActions from 'app/store/oauth/actions'
 import {
   getInstagramError,
   getInstagramInfo,
@@ -400,7 +399,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
 
   const onTwitterPress = () => {
     setIsLoading(true)
-    dispatch(oauthActionsLegacy.setTwitterError(null))
+    dispatch(oauthActions.setTwitterError(null))
     dispatch(oauthActions.twitterAuth())
     track(
       make({
@@ -412,7 +411,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
 
   const onInstagramPress = () => {
     setIsLoading(true)
-    dispatch(oauthActionsLegacy.setInstagramError(null))
+    dispatch(oauthActions.setInstagramError(null))
     dispatch(oauthActions.instagramAuth())
     track(
       make({

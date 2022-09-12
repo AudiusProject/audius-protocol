@@ -7,4 +7,6 @@ export type Env = {
   ENVIRONMENT?: Environment
   ORACLE_ETH_ADDRESSES?: string
   SUGGESTED_FOLLOW_HANDLES: string
+  GENERAL_ADMISSION?: string
+  IDENTITY_SERVICE?: string
 }

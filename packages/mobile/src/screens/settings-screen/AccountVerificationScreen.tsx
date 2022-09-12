@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Status, accountSelectors } from '@audius/common'
+import * as signOnActions from 'common/store/pages/signon/actions'
 import { getHandleField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
 import { EditingStatus } from 'common/store/pages/signon/types'
@@ -17,7 +18,6 @@ import { StatusMessage } from 'app/components/status-message'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { MessageType } from 'app/message'
 import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import {
@@ -138,13 +138,7 @@ export const AccountVerificationScreen = () => {
       const handle = type === 'twitter' ? profile.screen_name : profile.username
       const verified =
         type === 'twitter' ? profile.verified : profile.is_verified
-      dispatch({
-        type: MessageType.SIGN_UP_VALIDATE_HANDLE,
-        handle,
-        verified,
-        isAction: true,
-        onValidate: null
-      })
+      dispatch(signOnActions.validateHandle(handle, verified))
     },
     [dispatch, twitterInfo, instagramInfo]
   )
@@ -234,10 +228,7 @@ export const AccountVerificationScreen = () => {
     if (!handle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setTwitterError(null))
-    dispatch({
-      type: MessageType.REQUEST_TWITTER_AUTH,
-      isAction: true
-    })
+    dispatch(oauthActions.twitterAuth())
     track(
       make({
         eventName: EventNames.SETTINGS_START_TWITTER_OAUTH,
@@ -250,10 +241,7 @@ export const AccountVerificationScreen = () => {
     if (!handle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setInstagramError(null))
-    dispatch({
-      type: MessageType.REQUEST_INSTAGRAM_AUTH,
-      isAction: true
-    })
+    dispatch(oauthActions.instagramAuth())
     track(
       make({
         eventName: EventNames.SETTINGS_START_INSTAGRAM_OAUTH,

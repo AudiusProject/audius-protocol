@@ -1,17 +1,17 @@
 import { Component } from 'react'
 
+import { formatInstagramProfile, formatTwitterProfile } from '@audius/common'
 import cn from 'classnames'
 
 import BackButton from 'components/back-button/BackButton'
 import ProfileForm from 'pages/sign-on/components/ProfileForm'
 import DesktopTwitterOverlay from 'pages/sign-on/components/desktop/TwitterOverlay'
 import MobileTwitterOverlay from 'pages/sign-on/components/mobile/TwitterOverlay'
-import {
-  formatInstagramProfile,
-  formatTwitterProfile
-} from 'pages/sign-on/utils/formatSocialProfile'
+import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
+
+const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You'
@@ -61,7 +61,7 @@ export class ProfilePage extends Component {
     const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
     try {
       const { profile, profileImage, profileBanner, requiresUserReview } =
-        await formatTwitterProfile(twitterProfile)
+        await formatTwitterProfile(twitterProfile, resizeImage)
 
       this.props.validateHandle(
         profile.screen_name,
@@ -94,7 +94,11 @@ export class ProfilePage extends Component {
   onInstagramLogin = async (uuid, instagramProfile) => {
     try {
       const { profile, profileImage, requiresUserReview } =
-        await formatInstagramProfile(instagramProfile)
+        await formatInstagramProfile(
+          instagramProfile,
+          GENERAL_ADMISSION,
+          resizeImage
+        )
       this.props.validateHandle(
         profile.username,
         profile.is_verified,
