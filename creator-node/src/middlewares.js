@@ -19,7 +19,8 @@ const {
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
 const { instrumentTracing, tracing } = require('./tracer')
 const {
-  getReplicaSetSpIdsByUserId
+  getReplicaSetSpIdsByUserId,
+  replicaSetSpIdsToEndpoints
 } = require('./services/ContentNodeInfoManager')
 
 /**
@@ -166,27 +167,12 @@ async function ensurePrimaryMiddleware(req, res, next) {
   req.session.nodeIsPrimary = true
 
   /**
-   * Convert replicaSetSpIDs to replicaSetEndpoints for later consumption (do not error on failure)
    * Currently `req.session.creatorNodeEndpoints` is only used by `issueAndWaitForSecondarySyncRequests()`
    * There is a possibility of failing to retrieve endpoints for each spID, so the consumer of req.session.creatorNodeEndpoints must perform null checks
    */
-  // TODO: Make this use ContentNodeInfoManager
-  const allRegisteredCNodes = await utils.getAllRegisteredCNodes(libs, logger)
-  const replicaSetEndpoints = Object.values(replicaSetSpIDs).map(
-    (replicaSpID) => {
-      if (replicaSpID === selfSpID) {
-        return nodeConfig.get('creatorNodeEndpoint')
-      }
-      // Get endpoint from registeredCNode matching current replicaSpID
-      const replicaSetInfo = allRegisteredCNodes.filter(
-        (CNodeInfo) => CNodeInfo.spID === replicaSpID
-      )[0]
-      if (replicaSetInfo && replicaSetInfo.endpoint) {
-        return replicaSetInfo.endpoint
-      }
-    }
+  req.session.creatorNodeEndpoints = await replicaSetSpIdsToEndpoints(
+    replicaSetSpIDs
   )
-  req.session.creatorNodeEndpoints = replicaSetEndpoints.filter(Boolean)
 
   req.logger.info(
     `${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${

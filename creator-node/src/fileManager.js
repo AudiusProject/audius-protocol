@@ -219,7 +219,6 @@ async function fetchFileFromNetworkAndWriteToDisk({
       path,
       multihash,
       logger,
-      libs,
       /** trackId */ null,
       /** excludeList */ targetGateways
     )

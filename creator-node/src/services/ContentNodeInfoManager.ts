@@ -47,6 +47,14 @@ async function updateContentNodeChainInfo(
   }
 }
 
+async function getAllRegisteredCNodes(
+  logger: Logger,
+  redisClient = defaultRedisClient
+) {
+  const spIdToCNodeMap = await getMapOfSpIdToChainInfo(logger, redisClient)
+  return Array.from(spIdToCNodeMap.values())
+}
+
 async function getMapOfSpIdToChainInfo(
   logger: Logger,
   redisClient = defaultRedisClient
@@ -286,7 +294,7 @@ export type ReplicaSetEndpoints = {
   secondary1?: string
   secondary2?: string
 }
-export type GetReplicaSetEndpointsParams = {
+export type GetReplicaSetEndpointsByWalletParams = {
   userReplicaSetManagerClient: UserReplicaSetManagerClient
   wallet: string
   parentLogger: Logger
@@ -296,21 +304,49 @@ export type GetReplicaSetEndpointsParams = {
     idsArray: null,
     wallet: string
   ) => Promise<{ user_id: number }[]>
-  getMapOfSpIdToChainInfo?: () => Promise<Map<number, ContentNodeFromChain>>
 }
 async function getReplicaSetEndpointsByWallet({
   userReplicaSetManagerClient,
   wallet,
   parentLogger,
   getUsers
-}: GetReplicaSetEndpointsParams): Promise<ReplicaSetEndpoints> {
+}: GetReplicaSetEndpointsByWalletParams): Promise<ReplicaSetEndpoints> {
   const user: { user_id: number } = (await getUsers(1, 0, null, wallet))[0]
-  const replicaSetSpIds = await getReplicaSetSpIdsByUserId({
+  const replicaSetEndpoints = await getReplicaSetEndpointsByUserId({
     userReplicaSetManagerClient,
     userId: user.user_id,
     parentLogger
   })
-  const spIdToChainInfoMap = await getMapOfSpIdToChainInfo(parentLogger)
+  return replicaSetEndpoints
+}
+
+export type GetReplicaSetEndpointsByUserIdParams = {
+  userReplicaSetManagerClient: UserReplicaSetManagerClient
+  userId: number
+  parentLogger: Logger
+}
+async function getReplicaSetEndpointsByUserId({
+  userReplicaSetManagerClient,
+  userId,
+  parentLogger
+}: GetReplicaSetEndpointsByUserIdParams): Promise<ReplicaSetEndpoints> {
+  const replicaSetSpIds = await getReplicaSetSpIdsByUserId({
+    userReplicaSetManagerClient,
+    userId,
+    parentLogger
+  })
+  const replicaSetEndpoints = await replicaSetSpIdsToEndpoints(
+    replicaSetSpIds,
+    parentLogger
+  )
+  return replicaSetEndpoints
+}
+
+async function replicaSetSpIdsToEndpoints(
+  replicaSetSpIds: ReplicaSetSpIds,
+  logger: Logger
+): Promise<ReplicaSetEndpoints> {
+  const spIdToChainInfoMap = await getMapOfSpIdToChainInfo(logger)
   return {
     primary: replicaSetSpIds.primaryId
       ? spIdToChainInfoMap.get(replicaSetSpIds.primaryId!)?.endpoint
@@ -353,20 +389,26 @@ export type ContentNodeFromChain = {
   delegateOwnerWallet: string
 }
 export {
+  getAllRegisteredCNodes,
   updateContentNodeChainInfo,
   getMapOfSpIdToChainInfo,
   getMapOfCNodeEndpointToSpId,
   getSpIdFromEndpoint,
   getContentNodeInfoFromSpId,
   getReplicaSetEndpointsByWallet,
-  getReplicaSetSpIdsByUserId
+  getReplicaSetEndpointsByUserId,
+  getReplicaSetSpIdsByUserId,
+  replicaSetSpIdsToEndpoints
 }
 module.exports = {
+  getAllRegisteredCNodes,
   updateContentNodeChainInfo,
   getMapOfSpIdToChainInfo,
   getMapOfCNodeEndpointToSpId,
   getSpIdFromEndpoint,
   getContentNodeInfoFromSpId,
   getReplicaSetEndpointsByWallet,
-  getReplicaSetSpIdsByUserId
+  getReplicaSetEndpointsByUserId,
+  getReplicaSetSpIdsByUserId,
+  replicaSetSpIdsToEndpoints
 }

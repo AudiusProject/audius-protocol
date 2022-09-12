@@ -3,6 +3,9 @@ const Bull = require('bull')
 const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
+const {
+  getAllRegisteredCNodes
+} = require('../../services/ContentNodeInfoManager')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
@@ -91,7 +94,7 @@ class SkippedCIDsRetryQueue {
       order: [['createdAt', 'DESC']]
     })
 
-    let registeredGateways = await utils.getAllRegisteredCNodes(libs)
+    let registeredGateways = await getAllRegisteredCNodes(logger)
     registeredGateways = registeredGateways.map((nodeInfo) => nodeInfo.endpoint)
 
     // Intentionally run sequentially to minimize node load

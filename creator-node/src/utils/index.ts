@@ -24,10 +24,7 @@ import {
   _streamFileToDiskHelper
 } from './fsUtils'
 import { runShellCommand } from './runShellCommand'
-import {
-  currentNodeShouldHandleTranscode,
-  getAllRegisteredCNodes
-} from './contentNodeUtils'
+import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
 
 export {
   timeout,
@@ -36,7 +33,6 @@ export {
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
   findCIDInNetwork,
-  getAllRegisteredCNodes,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
@@ -54,7 +50,6 @@ module.exports = {
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
   findCIDInNetwork,
-  getAllRegisteredCNodes,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
