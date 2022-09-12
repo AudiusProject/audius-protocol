@@ -4,14 +4,14 @@ import {
   accountSelectors,
   Name,
   themeActions,
-  themeSelectors
+  themeSelectors,
+  useSelectTierInfo
 } from '@audius/common'
 import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
 
 import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
 import { SegmentedControl } from 'app/components/core'
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { make, track } from 'app/services/analytics'
 import { Theme } from 'app/utils/theme'
 

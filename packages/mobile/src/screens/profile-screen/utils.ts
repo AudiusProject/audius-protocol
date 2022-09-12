@@ -1,7 +1,5 @@
-import { badgeTiers } from '@audius/common'
+import { badgeTiers, useSelectTierInfo } from '@audius/common'
 import { useSelector } from 'react-redux'
-
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 
 import { MIN_COLLECTIBLES_TIER } from './constants'
 import { getIsOwner, useSelectProfile } from './selectors'

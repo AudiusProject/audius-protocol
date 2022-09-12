@@ -15,7 +15,8 @@ import {
   accountSelectors,
   badgeTiers,
   collectibleDetailsUISelectors,
-  collectibleDetailsUIActions
+  collectibleDetailsUIActions,
+  useSelectTierInfo
 } from '@audius/common'
 import {
   Button,
@@ -41,7 +42,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useScript } from 'hooks/useScript'
-import { useSelectTierInfo } from 'hooks/wallet'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { useIsMobile } from 'utils/clientUtil'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'

@@ -1,10 +1,10 @@
 import type { ComponentType } from 'react'
 import { Fragment, useMemo } from 'react'
 
+import { useSelectTierInfo } from '@audius/common'
 import { View } from 'react-native'
 
 import { Divider } from 'app/components/core'
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { makeStyles } from 'app/styles/makeStyles'
 
 import { useSelectProfile } from '../selectors'

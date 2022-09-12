@@ -13,7 +13,8 @@ import {
   ProfileUser,
   ProfilePageTabs,
   profilePageFeedLineupActions as feedActions,
-  badgeTiers
+  badgeTiers,
+  useSelectTierInfo
 } from '@audius/common'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
@@ -34,7 +35,6 @@ import ConnectedProfileCompletionHeroCard from 'components/profile-progress/Conn
 import StatBanner from 'components/stat-banner/StatBanner'
 import UploadChip from 'components/upload/UploadChip'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
-import { useSelectTierInfo } from 'hooks/wallet'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
 import {

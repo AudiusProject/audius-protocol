@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
-import { modalsActions } from '@audius/common'
+import { modalsActions, useSelectTierInfo } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { IconAudioBadge, TierText } from 'app/components/audio-rewards'
 import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
 import { Tile, Text } from 'app/components/core'
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { makeStyles } from 'app/styles/makeStyles'
 
 import { useSelectProfile } from '../selectors'
