@@ -1,3 +1,5 @@
+/* eslint-disable import/order */
+/* eslint-disable import/first */
 import { setupTracing } from './tracer'
 setupTracing()
 
