@@ -32,10 +32,7 @@ export const AccountSettingsRow = () => {
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePress = useCallback(() => {
-    navigation.push({
-      native: { screen: 'AccountSettingsScreen' },
-      web: { route: '/settings/account' }
-    })
+    navigation.push('AccountSettingsScreen')
   }, [navigation])
 
   if (!accountUser) return null

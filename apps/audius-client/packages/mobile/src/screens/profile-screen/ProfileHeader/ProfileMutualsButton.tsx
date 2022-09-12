@@ -36,9 +36,7 @@ export const ProfileMutualsButton = () => {
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.navigate({
-      native: { screen: 'Mutuals', params: { userId: user_id } }
-    })
+    navigation.navigate('Mutuals', { userId: user_id })
   }, [navigation, user_id])
 
   return (

@@ -97,17 +97,11 @@ export const AccountSettingsScreen = () => {
   }, [recoveryEmailStatus, toast])
 
   const handlePressVerification = useCallback(() => {
-    navigation.push({
-      native: { screen: 'AccountVerificationScreen' },
-      web: { route: '/settings/account/verification' }
-    })
+    navigation.push('AccountVerificationScreen')
   }, [navigation])
 
   const handlePressChangePassword = useCallback(() => {
-    navigation.push({
-      native: { screen: 'ChangePasswordScreen' },
-      web: { route: '/settings/change-password' }
-    })
+    navigation.push('ChangePasswordScreen')
   }, [navigation])
 
   const openSignOutDrawer = useCallback(() => {

@@ -17,9 +17,7 @@ export const ProfilesTab = () => {
     <SearchResultsTab noResults={users.length === 0}>
       <CardList
         data={users}
-        renderItem={({ item }) => (
-          <ArtistCard artist={item} fromPage='search' />
-        )}
+        renderItem={({ item }) => <ArtistCard artist={item} />}
       />
     </SearchResultsTab>
   )

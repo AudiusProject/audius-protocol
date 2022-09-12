@@ -6,7 +6,6 @@ import {
   trackPageActions,
   trackPageSelectors
 } from '@audius/common'
-import { trackRemixesPage } from 'audius-client/src/utils/route'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -87,13 +86,7 @@ export const TrackScreen = () => {
     if (!remixParentTrack) {
       return
     }
-    navigation.push({
-      native: {
-        screen: 'TrackRemixes',
-        params: { id: remixParentTrack.track_id }
-      },
-      web: { route: trackRemixesPage(remixParentTrack.permalink) }
-    })
+    navigation.push('TrackRemixes', { id: remixParentTrack.track_id })
   }
 
   const remixParentTrackId = track.remix_of?.tracks?.[0]?.parent_track_id

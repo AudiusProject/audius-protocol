@@ -6,10 +6,6 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
-import {
-  FAVORITING_USERS_ROUTE,
-  REPOSTING_USERS_ROUTE
-} from 'audius-client/src/utils/route'
 import { View, Pressable, StyleSheet } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -106,21 +102,12 @@ export const LineupTileStats = ({
 
   const handlePressFavorites = useCallback(() => {
     dispatch(setFavorite(id, favoriteType))
-    navigation.push({
-      native: { screen: 'Favorited', params: { id, favoriteType } },
-      web: { route: FAVORITING_USERS_ROUTE }
-    })
+    navigation.push('Favorited', { id, favoriteType })
   }, [dispatch, id, navigation, favoriteType])
 
   const handlePressReposts = useCallback(() => {
     dispatch(setRepost(id, repostType))
-    navigation.push({
-      native: {
-        screen: 'Reposts',
-        params: { id, repostType }
-      },
-      web: { route: REPOSTING_USERS_ROUTE }
-    })
+    navigation.push('Reposts', { id, repostType })
   }, [dispatch, id, navigation, repostType])
 
   return (

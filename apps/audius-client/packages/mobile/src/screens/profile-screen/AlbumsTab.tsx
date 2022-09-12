@@ -17,7 +17,6 @@ export const AlbumsTab = () => {
       collection={albums}
       emptyListText={emptyListText}
       disableTopTabScroll
-      fromPage='profile'
       showsVerticalScrollIndicator={false}
     />
   )

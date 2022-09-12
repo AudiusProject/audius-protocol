@@ -108,7 +108,7 @@ export const SendTipScreen = () => {
 
   const handleSendTip = useCallback(() => {
     dispatch(sendTip({ amount: tipAmount }))
-    navigation.navigate({ native: { screen: 'ConfirmTip' } })
+    navigation.navigate('ConfirmTip')
   }, [dispatch, tipAmount, navigation])
 
   useFocusEffect(

@@ -45,12 +45,7 @@ export const SearchBar = () => {
 
   const handleSubmit = useCallback(() => {
     if (query.startsWith('#')) {
-      navigation.push({
-        native: {
-          screen: 'TagSearch',
-          params: { query }
-        }
-      })
+      navigation.push('TagSearch', { query })
     }
   }, [query, navigation])
 

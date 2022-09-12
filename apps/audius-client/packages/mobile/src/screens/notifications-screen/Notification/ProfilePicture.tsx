@@ -1,12 +1,10 @@
 import { useCallback } from 'react'
 
-import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { TouchableOpacity } from 'react-native'
 
 import type { ProfilePictureProps as ProfilePictureBaseProps } from 'app/components/user'
 import { ProfilePicture as ProfilePictureBase } from 'app/components/user'
 import { makeStyles } from 'app/styles'
-import { getUserRoute } from 'app/utils/routes'
 
 import { useDrawerNavigation } from '../useDrawerNavigation'
 
@@ -40,12 +38,9 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   const navigation = useDrawerNavigation()
 
   const handlePress = useCallback(() => {
-    navigation[navigationType]({
-      native: {
-        screen: 'Profile',
-        params: { handle: profile.handle, fromNotifications: true }
-      },
-      web: { route: getUserRoute(profile), fromPage: NOTIFICATION_PAGE }
+    navigation[navigationType]('Profile', {
+      handle: profile.handle,
+      fromNotifications: true
     })
   }, [navigation, navigationType, profile])
 

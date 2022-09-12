@@ -26,12 +26,7 @@ export const SeeMoreResultsButton = () => {
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.push({
-      native: {
-        screen: 'SearchResults',
-        params: { query: searchResultQuery }
-      }
-    })
+    navigation.push('SearchResults', { query: searchResultQuery })
   }, [navigation, searchResultQuery])
 
   return (
