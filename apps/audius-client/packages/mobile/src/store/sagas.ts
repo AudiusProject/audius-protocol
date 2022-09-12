@@ -22,6 +22,7 @@ import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreColle
 import explorePageSagas from 'common/store/pages/explore/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import historySagas from 'common/store/pages/history/sagas'
+import remixesSagas from 'common/store/pages/remixes-page/sagas'
 import savedSagas from 'common/store/pages/saved/sagas'
 import searchResultsSagas from 'common/store/pages/search-page/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
@@ -125,6 +126,7 @@ export default function* rootSaga() {
 
     // Cast
     ...castSagas(),
+    ...remixesSagas(),
 
     // Application
     ...addToPlaylistSagas(),

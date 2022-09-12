@@ -4,13 +4,13 @@ import {
   remixesPageActions,
   remixesPageSelectors,
   getContext,
-  waitForAccount
+  waitForAccount,
+  CommonState
 } from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { AppState } from 'store/types'
 const { getTrackId, getLineup } = remixesPageSelectors
 const { setCount } = remixesPageActions
 const getUserId = accountSelectors.getUserId
@@ -44,7 +44,7 @@ function* getTracks({
   return processedTracks
 }
 
-const sourceSelector = (state: AppState) =>
+const sourceSelector = (state: CommonState) =>
   `${tracksActions.prefix}:${getTrackId(state)}`
 
 class TracksSagas extends LineupSagas {
