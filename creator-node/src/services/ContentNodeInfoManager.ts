@@ -295,7 +295,7 @@ export type GetReplicaSetEndpointsParams = {
     offset: number,
     idsArray: null,
     wallet: string
-  ) => Promise<{ user_id: number }>
+  ) => Promise<{ user_id: number }[]>
   getMapOfSpIdToChainInfo?: () => Promise<Map<number, ContentNodeFromChain>>
 }
 async function getReplicaSetEndpointsByWallet({
@@ -304,7 +304,7 @@ async function getReplicaSetEndpointsByWallet({
   parentLogger,
   getUsers
 }: GetReplicaSetEndpointsParams): Promise<ReplicaSetEndpoints> {
-  const user: { user_id: number } = await getUsers(1, 0, null, wallet)
+  const user: { user_id: number } = (await getUsers(1, 0, null, wallet))[0]
   const replicaSetSpIds = await getReplicaSetSpIdsByUserId({
     userReplicaSetManagerClient,
     userId: user.user_id,
