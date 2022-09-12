@@ -147,15 +147,9 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_track(params)
-                    elif (
-                        params.action in create_social_action_types
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
+                    elif params.action in create_social_action_types:
                         create_social_record(params)
-                    elif (
-                        params.action in delete_social_action_types
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
+                    elif params.action in delete_social_action_types:
                         delete_social_record(params)
                 except Exception as e:
                     # swallow exception to keep indexing
