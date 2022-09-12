@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
-import { ID, BadgeTier, modalsActions } from '@audius/common'
+import { ID, BadgeTier, modalsActions, useSelectTierInfo } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
-import { useSelectTierInfo } from 'hooks/wallet'
 
 import styles from './ProfilePageBadge.module.css'
 const { setVisibility } = modalsActions

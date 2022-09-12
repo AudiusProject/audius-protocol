@@ -8,7 +8,8 @@ import {
   formatWei,
   accountSelectors,
   challengesSelectors,
-  walletSelectors
+  walletSelectors,
+  useSelectTierInfo
 } from '@audius/common'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -19,7 +20,6 @@ import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useSelectTierInfo } from 'hooks/wallet'
 import { useSelector } from 'utils/reducer'
 import { AUDIO_PAGE } from 'utils/route'
 

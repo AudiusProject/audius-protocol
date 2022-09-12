@@ -1,26 +1,13 @@
 import {
-  ID,
   accountSelectors,
   profilePageSelectors,
-  makeGetTierAndVerifiedForUser
+  useSelectTierInfo
 } from '@audius/common'
+import { useSelector } from 'react-redux'
 
-import { useSelector } from 'utils/reducer'
 const { getProfileUser } = profilePageSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
-const getTierAndVerifiedForUser = makeGetTierAndVerifiedForUser()
-
-/**
- * Wraps our reselect tier selector in useMemo and useSelector
- * to be safe for use in multiple components
- * @param userId
- */
-export const useSelectTierInfo = (userId: ID) => {
-  return useSelector((state) => {
-    return getTierAndVerifiedForUser(state, { userId })
-  })
-}
 /**
  * Gets the tier for the current profile page, falling back
  * to the current user tier if no such page exists.

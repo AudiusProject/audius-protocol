@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors, useSelectTierInfo } from '@audius/common'
 import type { Animated } from 'react-native'
 import { LayoutAnimation, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { Divider } from 'app/components/core'
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { makeStyles } from 'app/styles'
 
 import { ArtistRecommendations } from '../ArtistRecommendations'

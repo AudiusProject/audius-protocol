@@ -11,7 +11,7 @@ import {
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'
 import { Dimensions, StyleSheet, View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { SectionList } from 'app/components/core'
 import {
@@ -20,7 +20,6 @@ import {
   LineupTileSkeleton
 } from 'app/components/lineup-tile'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
 
 import { FeedTipTile } from '../feed-tip-tile/FeedTipTile'
@@ -148,7 +147,7 @@ export const Lineup = ({
   limit = Infinity,
   ...listProps
 }: LineupProps) => {
-  const showTip = useSelectorWeb(getShowTip)
+  const showTip = useSelector(getShowTip)
   const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)

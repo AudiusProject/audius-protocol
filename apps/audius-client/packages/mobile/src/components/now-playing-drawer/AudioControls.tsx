@@ -2,14 +2,13 @@ import { useCallback } from 'react'
 
 import { queueActions, queueSelectors, RepeatMode } from '@audius/common'
 import { Animated, View, StyleSheet } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconNext from 'app/assets/images/iconNext.svg'
 import IconPodcastBack from 'app/assets/images/iconPodcastBack.svg'
 import IconPodcastForward from 'app/assets/images/iconPodcastForward.svg'
 import IconPrev from 'app/assets/images/iconPrev.svg'
 import { IconButton } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 
@@ -58,7 +57,7 @@ export const AudioControls = ({
   onPrevious,
   isPodcast = false
 }: AudioControlsProps) => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const styles = useThemedStyles(createStyles)
 
@@ -78,8 +77,8 @@ export const AudioControls = ({
     } else {
       enable = true
     }
-    dispatchWeb(shuffle({ enable }))
-  }, [dispatchWeb, shuffleEnabled])
+    dispatch(shuffle({ enable }))
+  }, [dispatch, shuffleEnabled])
 
   const onPressRepeat = useCallback(() => {
     let mode: RepeatMode
@@ -97,8 +96,8 @@ export const AudioControls = ({
         // To appease ts - shouldn't actually hit this.
         mode = RepeatMode.ALL
     }
-    dispatchWeb(repeat({ mode }))
-  }, [dispatchWeb, repeatMode])
+    dispatch(repeat({ mode }))
+  }, [dispatch, repeatMode])
 
   const renderRepeatButton = () => {
     return (

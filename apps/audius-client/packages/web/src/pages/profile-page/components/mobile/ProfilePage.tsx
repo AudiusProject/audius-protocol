@@ -13,7 +13,8 @@ import {
   ProfileUser,
   profilePageTracksLineupActions as tracksActions,
   profilePageFeedLineupActions as feedActions,
-  badgeTiers
+  badgeTiers,
+  useSelectTierInfo
 } from '@audius/common'
 import cn from 'classnames'
 
@@ -38,7 +39,6 @@ import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useAsyncPoll from 'hooks/useAsyncPoll'
 import useTabs from 'hooks/useTabs/useTabs'
-import { useSelectTierInfo } from 'hooks/wallet'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { albumPage, playlistPage, fullProfilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
