@@ -39,8 +39,6 @@ const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
 const { getAccountUser, getUserId, getUserHandle } = accountSelectors
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 function* fetchRepostInfo(entries) {
   const userIds = []
   entries.forEach((entry) => {
@@ -122,7 +120,8 @@ function* watchAdd() {
             }))
         )
       )
-      if (!NATIVE_MOBILE) {
+      const isNativeMobile = yield getContext('isNativeMobile')
+      if (!isNativeMobile) {
         yield fork(fetchRepostInfo, action.entries)
         yield fork(fetchFirstSegments, action.entries)
       }

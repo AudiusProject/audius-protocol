@@ -6,10 +6,8 @@ import cn from 'classnames'
 
 import { getIGUserUrl } from 'common/store/pages/signon/sagas'
 import 'url-search-params-polyfill'
-import { RequestInstagramAuthMessage } from 'services/native-mobile-interface/oauth'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const HOSTNAME = process.env.REACT_APP_PUBLIC_HOSTNAME
 const INSTAGRAM_APP_ID = process.env.REACT_APP_INSTAGRAM_APP_ID
 const INSTAGRAM_REDIRECT_URL =
@@ -219,23 +217,7 @@ const InstagramAuth = ({
     }
   }, [openPopup, polling, onFailure])
 
-  const onNativeVerification = useCallback(async () => {
-    try {
-      if (onClick) onClick()
-      const message = new RequestInstagramAuthMessage(INSTAGRAM_AUTHORIZE_URL)
-      message.send()
-      const response = await message.receive()
-      if (response.code) {
-        return await getProfile(response.code)
-      } else {
-        onFailure(new Error('Unable to retrieve information'))
-      }
-    } catch (error) {
-      onFailure(error)
-    }
-  }, [onClick, onFailure, getProfile])
-
-  const onButtonClick = useCallback(
+  const handleClick = useCallback(
     (e: MouseEvent) => {
       e.preventDefault()
       if (onClick) onClick()
@@ -248,7 +230,7 @@ const InstagramAuth = ({
 
   return (
     <div
-      onClick={NATIVE_MOBILE ? onNativeVerification : onButtonClick}
+      onClick={handleClick}
       style={style}
       className={cn({
         [className!]: !!className,

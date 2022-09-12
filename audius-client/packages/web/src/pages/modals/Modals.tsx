@@ -33,10 +33,6 @@ import { getClient } from 'utils/clientUtil'
 
 import { AppModal } from './AppModal'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-const NATIVE_NAVIGATION_ENABLED =
-  process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
-
 const appModalsMap = {
   Share: ShareModal,
   VipDiscord: VipDiscordModal
@@ -47,8 +43,6 @@ const appModals = Object.entries(appModalsMap) as [ModalTypes, ComponentType][]
 const Modals = () => {
   const client = getClient()
   const isMobileClient = client === Client.MOBILE
-
-  if (NATIVE_NAVIGATION_ENABLED) return null
 
   return (
     <>
@@ -67,9 +61,7 @@ const Modals = () => {
       <AudioBreakdownModal />
       <CollectibleDetailsModal />
 
-      {!NATIVE_MOBILE && client !== Client.ELECTRON && (
-        <BrowserPushConfirmationModal />
-      )}
+      {client !== Client.ELECTRON && <BrowserPushConfirmationModal />}
 
       {!isMobileClient && (
         <>
@@ -86,15 +78,15 @@ const Modals = () => {
 
       {isMobileClient && (
         <>
-          {!NATIVE_MOBILE && <ConnectedMobileOverflowModal />}
+          <ConnectedMobileOverflowModal />
           <UnfollowConfirmationModal />
           <DeletePlaylistConfirmationModal />
         </>
       )}
 
-      {!NATIVE_MOBILE && <TipAudioModal />}
-      {!NATIVE_MOBILE ? <BuyAudioModal /> : null}
-      {!NATIVE_MOBILE ? <TransactionDetailsModal /> : null}
+      <TipAudioModal />
+      <BuyAudioModal />
+      <TransactionDetailsModal />
     </>
   )
 }

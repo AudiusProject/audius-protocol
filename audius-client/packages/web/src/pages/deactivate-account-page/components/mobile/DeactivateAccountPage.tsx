@@ -16,8 +16,6 @@ import {
 
 import styles from './DeactivateAccountPage.module.css'
 
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const useMobileNavContext = () => {
   useMobileHeader({ title: messages.title })
   const { setLeft, setRight } = useContext(NavContext)!
@@ -49,18 +47,16 @@ export const DeactivateAccountPageMobile = ({
       hasDefaultHeader
     >
       {children}
-      {!IS_NATIVE_MOBILE && (
-        <ActionDrawer
-          isOpen={isConfirmationVisible}
-          onClose={closeConfirmation}
-          actions={[
-            { text: messages.buttonDeactivate, isDestructive: true },
-            { text: messages.buttonGoBack }
-          ]}
-          didSelectRow={onDrawerSelection}
-          renderTitle={DrawerTitle}
-        />
-      )}
+      <ActionDrawer
+        isOpen={isConfirmationVisible}
+        onClose={closeConfirmation}
+        actions={[
+          { text: messages.buttonDeactivate, isDestructive: true },
+          { text: messages.buttonGoBack }
+        ]}
+        didSelectRow={onDrawerSelection}
+        renderTitle={DrawerTitle}
+      />
     </MobilePageContainer>
   )
 }

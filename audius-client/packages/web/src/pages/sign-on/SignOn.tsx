@@ -19,8 +19,6 @@ import SignOnMobilePage from './components/mobile/SignOnPage'
 
 const getHasAccount = accountSelectors.getHasAccount
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 type OwnProps = {
   signIn: boolean
   initialPage: boolean
@@ -61,7 +59,7 @@ const SignOn = ({
     }
   }, [isInitialRender, hasAccount, location, fetchReferrer, replaceRoute])
 
-  return !NATIVE_MOBILE ? (
+  return (
     <SignOnProvider
       isMobile={isMobile}
       signIn={signIn}
@@ -70,7 +68,7 @@ const SignOn = ({
     >
       {content}
     </SignOnProvider>
-  ) : null
+  )
 }
 
 function mapStateToProps(state: AppState) {

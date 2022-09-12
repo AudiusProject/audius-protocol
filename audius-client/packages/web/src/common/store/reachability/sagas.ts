@@ -1,4 +1,8 @@
-import { reachabilityActions, reachabilitySelectors } from '@audius/common'
+import {
+  reachabilityActions,
+  reachabilitySelectors,
+  getContext
+} from '@audius/common'
 import { takeEvery, call, put, race, select, delay } from 'typed-redux-saga'
 
 import { MessageType, Message } from 'services/native-mobile-interface/types'
@@ -6,7 +10,6 @@ import { isMobile } from 'utils/clientUtil'
 const { getIsReachable } = reachabilitySelectors
 const { setUnreachable, setReachable } = reachabilityActions
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const REACHABILITY_URL = process.env.REACT_APP_REACHABILITY_URL
 
 // Property values borrowed from
@@ -63,7 +66,8 @@ function* updateReachability(isReachable: boolean) {
 }
 
 function* reachabilityPollingDaemon() {
-  if (NATIVE_MOBILE) {
+  const isNativeMobile = yield* getContext('isNativeMobile')
+  if (isNativeMobile) {
     // Native mobile: use the system connectivity checks
     console.log('polling')
     yield* takeEvery(

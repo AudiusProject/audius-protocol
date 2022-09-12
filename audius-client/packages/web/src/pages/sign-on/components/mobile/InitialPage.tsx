@@ -23,8 +23,6 @@ import { useDelayedEffect } from 'hooks/useDelayedEffect'
 
 import styles from './InitialPage.module.css'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const messages = {
   title: 'Sign Up For Audius',
   header1: 'Stream the music you love.',
@@ -320,11 +318,7 @@ export const InitialPage = ({
     })
   }, [topAreaRef, bottomLinkRef])
   return (
-    <div
-      className={cn(styles.container, {
-        [styles.native]: NATIVE_MOBILE
-      })}
-    >
+    <div className={styles.container}>
       <div className={styles.topSection}>
         <div className={styles.topSectionTransition} ref={topAreaRef}>
           {isSignIn ? (

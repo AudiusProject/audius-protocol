@@ -32,10 +32,6 @@
   z-index: 1;
 }
 
-.nativeTabBar {
-  top: 92px;
-}
-
 .spinner {
   height: 40px;
   width: 40px;

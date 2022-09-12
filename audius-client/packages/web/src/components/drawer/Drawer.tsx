@@ -11,8 +11,6 @@ import { usePortal } from 'hooks/usePortal'
 
 import styles from './Drawer.module.css'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 // Fraction of swipe up to fade (1 / FADE_FRACTION_DENOMINATOR)
 const FADE_FRACTION_DENOMINATOR = 2
 
@@ -298,10 +296,7 @@ const DraggableDrawer = ({
   return (
     <Portal>
       <animated.div
-        className={cn(styles.drawer, {
-          [styles.isOpen]: isOpen,
-          [styles.native]: NATIVE_MOBILE
-        })}
+        className={cn(styles.drawer, { [styles.isOpen]: isOpen })}
         {...bind()}
         style={{
           // @ts-ignore

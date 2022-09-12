@@ -4,7 +4,6 @@ import {
   ReactNode,
   useRef,
   useState,
-  useCallback,
   CSSProperties
 } from 'react'
 
@@ -16,18 +15,11 @@ import { getIsIOS } from 'utils/browser'
 import {
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
-  TRENDING_PAGE,
   NOTIFICATION_PAGE,
-  FEED_PAGE,
-  SAVED_PAGE,
-  EXPLORE_PAGE,
-  profilePage,
   getPathname
 } from 'utils/route'
 
 import { RouterContext, SlideDirection } from './RouterContextProvider'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const DISABLED_PAGES = new Set([SIGN_IN_PAGE, SIGN_UP_PAGE])
 
@@ -109,34 +101,10 @@ const AnimatedSwitch = ({
     }
   }, [stackReset, setStackReset, setAnimation, setIsStackResetting])
 
-  // If on android & navigating between the bottom bar route, do not animate
-  const isBaseRoute = useCallback(
-    (udpatedRoute: string) => {
-      if (getIsIOS() || !NATIVE_MOBILE) return false
-
-      const userProfilePage = handle ? profilePage(handle) : ''
-      const baseRoutes = [
-        TRENDING_PAGE,
-        FEED_PAGE,
-        SAVED_PAGE,
-        EXPLORE_PAGE,
-        userProfilePage
-      ]
-      return (
-        baseRoutes.includes(udpatedRoute) &&
-        baseRoutes.includes(getPathname(location))
-      )
-    },
-    [location, handle]
-  )
-
   // Go back a page
   useEffect(() => {
     window.onpopstate = (e: any) => {
-      if (
-        !getIsStackResetting() &&
-        !isBaseRoute(getPathname(e.target.location))
-      ) {
+      if (!getIsStackResetting()) {
         setAnimation(
           slideDirection === SlideDirection.FROM_LEFT
             ? slideInRightTransition
@@ -146,7 +114,7 @@ const AnimatedSwitch = ({
         setAnimation(noTransition)
       }
     }
-  }, [setAnimation, slideDirection, getIsStackResetting, isBaseRoute])
+  }, [setAnimation, slideDirection, getIsStackResetting])
 
   useEffect(() => {
     if (
