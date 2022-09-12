@@ -77,18 +77,9 @@ premium_conditions = ns.model(
         "nft-collection": fields.String,
     },
 )
-premium_content_signature_data = ns.model(
-    "premium_content_signature_data",
-    {
-        "premium_content_id": fields.Integer(required=True),
-        "premium_content_type": fields.String(required=True),
-        "user_wallet": fields.String(required=True),
-        "timestamp": fields.Integer(required=True),
-    },
-)
 premium_content_signature = ns.model(
     "premium_content_signature",
-    {"data": fields.Nested(premium_content_signature_data), "signature": fields.String},
+    {"data": fields.String, "signature": fields.String},
 )
 
 track = ns.model(
