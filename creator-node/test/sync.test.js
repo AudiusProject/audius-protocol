@@ -1332,10 +1332,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
 
       assert.deepStrictEqual(result, {
-        result: 'success'
+        result: 'abort_force_wipe_disabled'
       })
 
-      const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
+      await verifyLocalCNodeUserStateForUser(
         stringifiedDateFields(localCNodeUser) // NOT exportedCnodeUser
       )
     })

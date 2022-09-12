@@ -58,9 +58,7 @@ const handleSyncFromPrimary = async ({
     })
     if (userReplicaSet.primary !== creatorNodeEndpoint) {
       return {
-        error: new Error(
-          `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`
-        ),
+        abort: `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`,
         result: 'abort_current_node_is_not_user_primary'
       }
     }
@@ -89,22 +87,17 @@ const handleSyncFromPrimary = async ({
       // Ensure we never wipe the data of a primary
       if (thisContentNodeEndpoint === userReplicaSet.primary) {
         return {
-          error: new Error(
-            `Tried to wipe data of a primary. User replica set: ${JSON.stringify(
-              userReplicaSet
-            )}`
-          ),
+          abort: `Tried to wipe data of a primary. User replica set: ${JSON.stringify(
+            userReplicaSet
+          )}`,
           result: 'abort_current_node_is_not_user_primary'
         }
       }
 
       // Short circuit if wiping is disabled via env var
       if (!config.get('syncForceWipeEnabled')) {
-        logger.warn('Stopping sync early because syncForceWipeEnabled=false')
         return {
-          error: new Error(
-            'Stopping sync early because syncForceWipeEnabled=false'
-          ),
+          abort: 'Stopping sync early because syncForceWipeEnabled=false',
           result: 'abort_force_wipe_disabled'
         }
       }
@@ -151,9 +144,7 @@ const handleSyncFromPrimary = async ({
       thisContentNodeEndpoint !== userReplicaSet.secondary2
     ) {
       return {
-        error: new Error(
-          `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`
-        ),
+        abort: `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`,
         result: 'abort_current_node_is_not_user_secondary'
       }
     }
@@ -164,7 +155,7 @@ const handleSyncFromPrimary = async ({
      * Secondary requests export of new data by passing its current max clock value in the request.
      * Primary builds an export object of all data beginning from the next clock value.
      */
-    const { fetchedCNodeUser, error } = await fetchExportFromNode({
+    const { fetchedCNodeUser, error, abort } = await fetchExportFromNode({
       nodeEndpointToFetchFrom: creatorNodeEndpoint,
       wallet,
       clockRangeMin: localMaxClockVal + 1,
@@ -175,6 +166,13 @@ const handleSyncFromPrimary = async ({
       return {
         error: new Error(error.message),
         result: error.code
+      }
+    }
+
+    if (abort) {
+      return {
+        abort: abort.message,
+        result: abort.code
       }
     }
 
@@ -634,7 +632,7 @@ async function _secondarySyncFromPrimary({
 
   secondarySyncFromPrimaryLogger.info('begin nodesync', 'time', start)
 
-  const { error, result } = await handleSyncFromPrimary({
+  const { error, result, abort } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
     creatorNodeEndpoint,
@@ -657,6 +655,14 @@ async function _secondarySyncFromPrimary({
       }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
     )
     throw error
+  }
+
+  if (abort) {
+    secondarySyncFromPrimaryLogger.warn(
+      `Sync complete for wallet: ${wallet}. Status: Abort. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
+    )
   } else {
     secondarySyncFromPrimaryLogger.info(
       `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
