@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react'
 import { Fragment, useMemo } from 'react'
 
 import { useSelectTierInfo } from '@audius/common'
@@ -10,7 +9,6 @@ import { makeStyles } from 'app/styles/makeStyles'
 import { useSelectProfile } from '../selectors'
 
 import { ProfileTierTile } from './ProfileTierTile'
-import type { SocialLinkProps } from './SocialLink'
 import {
   InstagramSocialLink,
   TikTokSocialLink,
@@ -44,23 +42,20 @@ export const ProfileSocials = () => {
       'tiktok_handle'
     ])
 
-  const socialsCount = [twitter_handle, instagram_handle, tiktok_handle].filter(
-    Boolean
-  ).length
+  const socialLinks = useMemo(() => {
+    const links = [
+      [twitter_handle, TwitterSocialLink],
+      [instagram_handle, InstagramSocialLink],
+      [tiktok_handle, TikTokSocialLink]
+    ] as const
+    return links.filter(([handle]) => !(handle === null || handle === ''))
+  }, [twitter_handle, instagram_handle, tiktok_handle])
 
+  const socialsCount = socialLinks.length
   const stylesOptions = useMemo(() => ({ socialsCount }), [socialsCount])
   const styles = useStyles(stylesOptions)
 
   const { tier } = useSelectTierInfo(user_id)
-
-  const socialLinks: [
-    string | undefined,
-    ComponentType<Partial<SocialLinkProps>>
-  ][] = [
-    [twitter_handle, TwitterSocialLink],
-    [instagram_handle, InstagramSocialLink],
-    [tiktok_handle, TikTokSocialLink]
-  ]
 
   return (
     <View pointerEvents='box-none' style={styles.root}>
@@ -71,11 +66,9 @@ export const ProfileSocials = () => {
           tier !== 'none' && { justifyContent: 'center' }
         ]}
       >
-        {socialLinks.map(([handle, Link], index) => {
-          const link = <Link key={index} showText={socialsCount === 1} />
-          if (handle === null || handle === '') return null
-          if (socialsCount === 1) return link
-          if (index === socialsCount - 1) return link
+        {socialLinks.map(([, SocialLink], index) => {
+          const link = <SocialLink key={index} showText={socialsCount === 1} />
+          if (index === socialLinks.length - 1) return link
           return (
             <Fragment key={index}>
               {link}
