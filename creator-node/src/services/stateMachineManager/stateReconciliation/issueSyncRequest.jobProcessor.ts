@@ -275,7 +275,7 @@ async function _handleIssueSyncRequest({
     if (error) {
       return {
         result: 'failure_primary_sync_from_secondary',
-        error: `${logMsgString}: ${error}`,
+        error: `${logMsgString}: ${error.message}`,
         syncReqsToEnqueue
       }
     }
