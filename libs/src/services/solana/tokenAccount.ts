@@ -56,7 +56,13 @@ export async function getTokenAccountInfo({
     solanaTokenProgramKey,
     Keypair.generate()
   )
-  const info = await token.getAccountInfo(tokenAccountAddressKey)
+
+  // Fetch token info with 'processed commitment to get any recently changed amounts.
+  // NOTE: Our version of spl-token omits the second argument
+  // in the type definitions even though it's actually available,
+  // so we suppress error until we can upgrade.
+  // @ts-ignore
+  const info = await token.getAccountInfo(tokenAccountAddressKey, 'processed')
   return info
 }
 

@@ -136,7 +136,7 @@ describe('test src/utils.js', () => {
   })
 
   it("If cid is empty but shouldn't be, return false", async function () {
-    const UtilsWithMockFs = proxyquire('../src/utils/legacyUtils', {
+    const UtilsWithMockFs = proxyquire('../src/utils/cidUtils', {
       'fs-extra': {
         // Mock fs.stat() to return size of 0
         stat: async () => {
@@ -156,7 +156,7 @@ describe('test src/utils.js', () => {
   })
 
   it('If cid is not what is expected to be, return false', async function () {
-    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils/legacyUtils', {
+    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils/cidUtils', {
       'fs-extra': {
         // Mock fs.stat() to return size of 1 (non-empty)
         stat: async () => {
@@ -188,7 +188,7 @@ describe('test src/utils.js', () => {
   })
 
   it('If cid is what is expected to be, return true', async function () {
-    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils/legacyUtils', {
+    const UtilsWithMockFsAndMockLibs = proxyquire('../src/utils/cidUtils', {
       'fs-extra': {
         // Mock fs.stat() to return size of 1 (non-empty)
         stat: async () => {
