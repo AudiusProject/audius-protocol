@@ -26,9 +26,7 @@ import {
 } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 const { setTab } = explorePageActions
-const getUserHandle = accountSelectors.getUserHandle
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+const { getUserHandle } = accountSelectors
 
 type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
@@ -57,17 +55,6 @@ const ConnectedNavBar = ({
     // If the current route isn't what we memoized, check if it's a nav route
     // and update the current route if so
     if (navRoutes.has(currentRoute)) {
-      setNavRoute(currentRoute)
-    }
-
-    // If we are in native mobile and we entered the app via notification directly,
-    // update the current route to the current page so that none of the
-    // nav bar items are highlighted
-    if (
-      NATIVE_MOBILE &&
-      // @ts-ignore
-      history.location.state?.fromNativeNotifications
-    ) {
       setNavRoute(currentRoute)
     }
   }

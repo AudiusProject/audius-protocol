@@ -10,8 +10,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './SearchBar.module.css'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 interface SearchBarProps {
   className?: string
   iconClassname?: string
@@ -77,18 +75,16 @@ const SearchBar = ({
     onSearch(e.target.value)
   }
 
-  const onClick = () => {
-    if (!NATIVE_MOBILE) {
-      if (open) {
-        if (value.trimLeft() !== '') {
-          beginSearch()
-        } else {
-          onSearch('')
-          onClose()
-        }
+  const handleClick = () => {
+    if (open) {
+      if (value.trimLeft() !== '') {
+        beginSearch()
       } else {
-        onOpen()
+        onSearch('')
+        onClose()
       }
+    } else {
+      onOpen()
     }
   }
 
@@ -114,10 +110,8 @@ const SearchBar = ({
         {...(open ? {} : { disabled: true })}
       />
       <div
-        className={cn(styles.searchWrapper, iconClassname, {
-          [styles.native]: !!NATIVE_MOBILE
-        })}
-        onMouseDown={onClick}
+        className={cn(styles.searchWrapper, iconClassname)}
+        onMouseDown={handleClick}
       >
         <DetailIcon
           tooltipText={tooltipText}

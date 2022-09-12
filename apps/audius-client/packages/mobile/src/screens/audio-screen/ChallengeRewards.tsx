@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 
 import type {
   ChallengeRewardID,
-  ChallengeRewardsModalType
+  ChallengeRewardsModalType,
+  CommonState
 } from '@audius/common'
 import {
   removeNullable,
@@ -70,7 +71,9 @@ export const ChallengeRewards = () => {
 
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
-  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
+  const optimisticUserChallenges = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, true)
+  )
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
 
   // The referred challenge only needs a tile if the user was referred

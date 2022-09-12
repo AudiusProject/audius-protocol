@@ -45,8 +45,6 @@ const { makeGetTableMetadatas } = lineupSelectors
 
 const { getAccountWithSavedPlaylistsAndAlbums } = accountSelectors
 
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const messages = {
   title: 'Favorites',
   description: "View tracks that you've favorited"
@@ -87,9 +85,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   componentWillUnmount() {
-    if (!IS_NATIVE_MOBILE) {
-      this.props.resetSavedTracks()
-    }
+    this.props.resetSavedTracks()
   }
 
   componentDidUpdate() {

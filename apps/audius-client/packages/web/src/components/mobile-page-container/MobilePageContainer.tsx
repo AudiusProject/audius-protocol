@@ -49,14 +49,8 @@ const BOTTOM_BAR_HEIGHT = 49
 // bottom bars
 const BOTTOM_PADDING = 32
 
-// Need to account for extra spacing of the bottom
-// bar on native mobile
-const BOTTOM_PADDING_NATIVE_MOBILE_OFFSET = 32
-
 // Height of the bottom play bar in px
 const PLAY_BAR_HEIGHT = 48
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const safeAreaBottom = getSafeArea(SafeAreaDirection.BOTTOM)
 
@@ -106,8 +100,7 @@ const MobilePageContainer = ({
     BOTTOM_BAR_HEIGHT +
     BOTTOM_PADDING +
     safeAreaBottom +
-    (hasPlayBar ? PLAY_BAR_HEIGHT : 0) +
-    (NATIVE_MOBILE ? BOTTOM_PADDING_NATIVE_MOBILE_OFFSET : 0)
+    (hasPlayBar ? PLAY_BAR_HEIGHT : 0)
   }px`
   const style = { paddingBottom }
 

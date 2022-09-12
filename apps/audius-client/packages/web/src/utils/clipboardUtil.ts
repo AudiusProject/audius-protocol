@@ -1,6 +1,5 @@
 const PUBLIC_PROTOCOL = process.env.REACT_APP_PUBLIC_PROTOCOL
 const PUBLIC_HOSTNAME = process.env.REACT_APP_PUBLIC_HOSTNAME
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
@@ -37,7 +36,7 @@ export const getCopyableLink = (link: string) => {
   const protocol = window.location.protocol
   const hostname = window.location.host // host instead of hostname to work with ports besides 80
 
-  if (protocol !== 'audius:' && !NATIVE_MOBILE) {
+  if (protocol !== 'audius:') {
     return `${protocol}//${hostname}${link}`
   } else {
     return `${PUBLIC_PROTOCOL}//${PUBLIC_HOSTNAME}${link}`
@@ -52,4 +51,4 @@ export const copyLinkToClipboard = (link: string) => {
 }
 
 // @ts-ignore: Navigator's share exists on newer browsers
-export const isShareToastDisabled = !!navigator.share || !!NATIVE_MOBILE
+export const isShareToastDisabled = !!navigator.share

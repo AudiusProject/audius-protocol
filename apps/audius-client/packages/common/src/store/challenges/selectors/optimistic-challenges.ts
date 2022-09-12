@@ -15,7 +15,6 @@ import {
 import { CommonState } from '../../commonStore'
 
 import { getCompletionStages } from './profile-progress'
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 /**
  * Gets the state of a user challenge, with the most progress dominating
@@ -59,7 +58,7 @@ export const getOptimisticUserChallengeStepCounts = (state: CommonState) => {
 }
 /**
  * Converts a user challenge to an optimistic user challenge
- * @param challenge The original UserChallenge
+ * @param challenge
  * @param stepCountOverrides the overrides to apply to challenge step counts
  * @param userChallengesOverrides the overrides to apply to other challenge states (currently used for disbursement)
  * @returns the optimistic state of that challenge
@@ -70,7 +69,8 @@ const toOptimisticChallenge = (
   stepCountOverrides: Partial<Record<ChallengeRewardID, number>>,
   userChallengesOverrides: Partial<
     Record<ChallengeRewardID, Partial<UserChallenge>>
-  >
+  >,
+  isNativeMobile?: boolean
 ): OptimisticUserChallenge => {
   const currentStepCountOverride = stepCountOverrides[challenge.challenge_id]
   const userChallengeOverrides = userChallengesOverrides[challenge.challenge_id]
@@ -91,7 +91,7 @@ const toOptimisticChallenge = (
   // If we're on native mobile, we might not yet have the is_mobile user_event
   // on DN, so optimistically mark this challenge as complete so the client
   // can start claiming
-  if (challenge.challenge_id === 'mobile-install' && NATIVE_MOBILE) {
+  if (challenge.challenge_id === 'mobile-install' && isNativeMobile) {
     challengeOverridden.is_complete = true
   }
 
@@ -127,7 +127,10 @@ const toOptimisticChallenge = (
  * @param challenge The user challenge to get the optimistic state for
  * @returns the same challenge with state and current_step_count overridden as necessary
  */
-export const getOptimisticUserChallenges = (state: CommonState) => {
+export const getOptimisticUserChallenges = (
+  state: CommonState,
+  isNativeMobile?: boolean
+) => {
   const stepCountOverrides = getOptimisticUserChallengeStepCounts(state)
   const userChallengesOverrides = getUserChallengesOverrides(state)
   const userChallenges = getUserChallenges(state)
@@ -144,7 +147,8 @@ export const getOptimisticUserChallenges = (state: CommonState) => {
         challenge,
         undisbursedUserChallenges[challenge.challenge_id] || [],
         stepCountOverrides,
-        userChallengesOverrides
+        userChallengesOverrides,
+        isNativeMobile
       )
     )
     .reduce((map, challenge) => {

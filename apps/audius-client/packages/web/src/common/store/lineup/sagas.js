@@ -34,14 +34,10 @@ const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 // This is copied from web/src/utils since moving it to common would require
 // changing 90+ files. This will be ignored in RN-reloaded, since we check
 // isNativeMobile from storeContext first.
 export const isMobile = () => {
-  // If we are running with the mobile env flag set, short-circuit to `true`
-  if (IS_NATIVE_MOBILE) return true
   let check = false
   ;(function (a) {
     if (
