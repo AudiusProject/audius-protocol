@@ -554,7 +554,7 @@ const config = convict({
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 30
+    default: 50
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
