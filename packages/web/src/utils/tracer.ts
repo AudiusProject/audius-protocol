@@ -18,9 +18,8 @@ import { SemanticResourceAttributes as ResourceAttributesSC } from '@opentelemet
 
 const SERVICE_NAME = 'web-client'
 
-const TRACING_ENABLED = true
-const OTEL_COLLECTOR_URL =
-  'https://opentelemetry-collector.staging.audius.co/v1/traces'
+const TRACING_ENABLED = process.env.REACT_APP_OTEL_TRACING_ENABLED || false
+const OTEL_COLLECTOR_URL = process.env.REACT_APP_OTEL_COLLECTOR_URL || ''
 
 /**
  * Initializes a tracer for content node as well as registers instrumentions
