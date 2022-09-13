@@ -426,7 +426,7 @@ type GetUserSupporterArgs = {
 
 type AudiusAPIClientConfig = {
   audiusBackendInstance: AudiusBackend
-  audiusLibs?: AudiusLibs
+  getAudiusLibs: () => AudiusLibs
   overrideEndpoint?: string
   remoteConfigInstance: RemoteConfigInstance
   localStorage: LocalStorage
@@ -439,7 +439,7 @@ export class AudiusAPIClient {
   }
 
   audiusBackendInstance: AudiusBackend
-  audiusLibs?: AudiusLibs
+  getAudiusLibs: () => AudiusLibs
   overrideEndpoint?: string
   remoteConfigInstance: RemoteConfigInstance
   localStorage: LocalStorage
@@ -447,14 +447,14 @@ export class AudiusAPIClient {
 
   constructor({
     audiusBackendInstance,
-    audiusLibs,
+    getAudiusLibs,
     overrideEndpoint,
     remoteConfigInstance,
     localStorage,
     env
   }: AudiusAPIClientConfig) {
     this.audiusBackendInstance = audiusBackendInstance
-    this.audiusLibs = audiusLibs
+    this.getAudiusLibs = getAudiusLibs
     this.overrideEndpoint = overrideEndpoint
     this.remoteConfigInstance = remoteConfigInstance
     this.localStorage = localStorage
@@ -1513,11 +1513,10 @@ export class AudiusAPIClient {
     }, {})
 
     const formattedPath = this._formatPath(pathType, path)
-    const audiusLibs =
-      this.audiusLibs ??
-      (this.initializationState.type === 'libs' && window.audiusLibs)
-    if (audiusLibs) {
-      const data = await audiusLibs.discoveryProvider._makeRequest(
+    const audiusLibs = this.getAudiusLibs()
+
+    if (audiusLibs && this.initializationState.type === 'libs') {
+      const data = await audiusLibs.discoveryProvider?._makeRequest(
         {
           endpoint: formattedPath,
           queryParams: sanitizedParams,
