@@ -7,6 +7,7 @@ import {
   shareSoundToTiktokModalSelectors
 } from '@audius/common'
 import { StyleSheet, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconTikTok from 'app/assets/images/iconTikTok.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
@@ -15,7 +16,6 @@ import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { ThemeColors } from 'app/hooks/useThemedStyles'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
@@ -91,8 +91,8 @@ export const ShareToTikTokDrawer = () => {
 
   const dispatchWeb = useDispatchWeb()
 
-  const track = useSelectorWeb(getTrack)
-  const status = useSelectorWeb(getStatus)
+  const track = useSelector(getTrack)
+  const status = useSelector(getStatus)
 
   const withTikTokAuth = useTikTokAuth({
     onError: () =>
