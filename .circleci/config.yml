@@ -1085,6 +1085,8 @@ jobs:
       - slack-success:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
+      - store_artifacts:
+          path: /tmp/summary.txt
       - run:
           name: Disconnect from OpenVPN
           command: |
