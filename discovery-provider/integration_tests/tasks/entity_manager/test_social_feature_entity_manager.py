@@ -3,13 +3,11 @@ from typing import List
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
+from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
-from src.tasks.entity_manager.entity_manager import (
-    ENABLE_DEVELOPMENT_FEATURES,
-    entity_manager_update,
-)
+from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import EntityType
 from src.utils.db_session import get_db
 from web3 import Web3
@@ -20,9 +18,6 @@ logger = logging.getLogger(__name__)
 
 def test_index_valid_social_features(app, mocker):
     "Tests valid batch of social create/update/delete actions"
-    if not ENABLE_DEVELOPMENT_FEATURES:
-        logger.info("Skipping entity manager track testing")
-        return
 
     # setup db and mocked txs
     with app.app_context():
@@ -96,20 +91,6 @@ def test_index_valid_social_features(app, mocker):
                 )
             },
         ],
-        "RepostPlaylistTx3": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": 1,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Repost",
-                        "_metadata": "",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
         "UnrepostPlaylistTx3": [
             {
                 "args": AttributeDict(
@@ -118,6 +99,20 @@ def test_index_valid_social_features(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Unrepost",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "RepostPlaylistTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Repost",
                         "_metadata": "",
                         "_signer": "user1wallet",
                     }
@@ -148,6 +143,7 @@ def test_index_valid_social_features(app, mocker):
         ],
         "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
         "tracks": [{"track_id": 1}],
+        "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
         "playlists": [{"playlist_id": 1}],
     }
     populate_mock_db(db, entities)
@@ -204,16 +200,26 @@ def test_index_valid_social_features(app, mocker):
         # Verify repost
 
         all_reposts: List[Repost] = session.query(Repost).all()
-        assert len(all_reposts) == 2
+        assert len(all_reposts) == 3
 
         current_reposts: List[Repost] = (
             session.query(Repost).filter(Repost.is_current == True).all()
         )
         assert len(current_reposts) == 1
         current_repost = current_reposts[0]
-        assert current_repost.is_delete == True
+        assert current_repost.is_delete == False
         assert current_repost.repost_type == EntityType.PLAYLIST.value.lower()
         assert current_repost.repost_item_id == 1
+
+        # ensure session is flushed, invalidating old records before bulk saving
+        aggregate_playlists: List[aggregate_playlists] = (
+            session.query(AggregatePlaylist)
+            .filter(AggregatePlaylist.playlist_id == 1)
+            .all()
+        )
+        assert len(aggregate_playlists) == 1
+        aggregate_palylist = aggregate_playlists[0]
+        assert aggregate_palylist.repost_count == 1
 
 
 def test_index_invalid_social_features(app, mocker):
