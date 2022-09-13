@@ -55,61 +55,43 @@ mobile-init:
           - packages/mobile/.env.stage
           - packages/mobile/.env.prod
 
-mobile-build-production-web-app:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/node:14.18
-  resource_class: xlarge
-  steps:
-    - mobile-build-web-app:
-        build-type: "mobile-prod"
-
-mobile-build-staging-web-app:
-  working_directory: ~/audius-client
-  docker:
-    - image: circleci/node:14.18
-  resource_class: xlarge
-  steps:
-    - mobile-build-web-app:
-        build-type: "mobile-stage"
-
 mobile-build-upload-staging-ios:
   working_directory: ~/audius-client
   macos: # Run on osx so app can be created and signed.
-    xcode: "13.3.0"
+    xcode: '13.3.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
     - mobile-build-ios:
-        build-directory: "build-mobile-staging"
-        bundle-id: "co.audius.audiusmusic.bounce"
-        env: ".env.stage"
+        build-directory: 'build-mobile-staging'
+        bundle-id: 'co.audius.audiusmusic.bounce'
+        env: '.env.stage'
     - when:
         condition:
-          matches: { pattern: "^main$", value: << pipeline.git.branch >> }
+          matches: { pattern: '^main$', value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-ios:
-              bundle-id: "co.audius.audiusmusic.bounce"
+              bundle-id: 'co.audius.audiusmusic.bounce'
 
 mobile-build-upload-production-ios:
   working_directory: ~/audius-client
   macos: # Run on osx so app can be created and signed.
-    xcode: "13.3.0"
+    xcode: '13.3.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
     - mobile-build-ios:
-        build-directory: "build-mobile-production"
-        bundle-id: "co.audius.audiusmusic"
-        env: ".env.prod"
+        build-directory: 'build-mobile-production'
+        bundle-id: 'co.audius.audiusmusic'
+        env: '.env.prod'
     - when:
         condition:
-          matches: { pattern: "^release.*$", value: << pipeline.git.branch >> }
+          matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-ios:
-              bundle-id: "co.audius.audiusmusic"
+              bundle-id: 'co.audius.audiusmusic'
 
 mobile-build-upload-staging-android:
   working_directory: ~/audius-client
@@ -118,17 +100,17 @@ mobile-build-upload-staging-android:
     - image: circleci/android:api-30-node
   steps:
     - mobile-build-android:
-        build-directory: "build-mobile-staging"
-        build-type: "bundleBounceRelease"
-        bundle-id: "co.audius.app.bounce"
-        track: "alpha"
-        remote-directory: "audius-mobile-staging"
+        build-directory: 'build-mobile-staging'
+        build-type: 'bundleBounceRelease'
+        bundle-id: 'co.audius.app.bounce'
+        track: 'alpha'
+        remote-directory: 'audius-mobile-staging'
     - when:
         condition:
-          matches: { pattern: "^main$", value: << pipeline.git.branch >> }
+          matches: { pattern: '^main$', value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-android:
-              upload-type: "bounce"
+              upload-type: 'bounce'
 
 mobile-build-upload-production-android:
   working_directory: ~/audius-client
@@ -137,14 +119,14 @@ mobile-build-upload-production-android:
     - image: circleci/android:api-30-node
   steps:
     - mobile-build-android:
-        build-directory: "build-mobile-production"
-        build-type: "bundleRelease"
-        bundle-id: "co.audius.app"
-        track: "alpha"
-        remote-directory: "audius-mobile"
+        build-directory: 'build-mobile-production'
+        build-type: 'bundleRelease'
+        bundle-id: 'co.audius.app'
+        track: 'alpha'
+        remote-directory: 'audius-mobile'
     - when:
         condition:
-          matches: { pattern: "^release.*$", value: << pipeline.git.branch >> }
+          matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-android:
-              upload-type: "alpha"
+              upload-type: 'alpha'
