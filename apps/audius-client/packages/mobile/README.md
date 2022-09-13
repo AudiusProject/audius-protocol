@@ -125,14 +125,6 @@ adb logcat '*:V'
 
 ## Helpful
 
-- Sometimes the simulator app code won't update. You should disable caching in `settings/Network` of React Native Debugger.
-- If you feel like debugging the actual static app contained in the build, you can:
-
-```bash
-npm install -g serve --user
-serve -s web-app/Web.bundle/build -p 9000
-```
-
 - If your app is crashing after running for a second, or crashing on startup with no error message, it's probably an environment variable problem, and you should check to make sure you have them all. Debug using XCode.
 
 - Other commands and things:
