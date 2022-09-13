@@ -65,7 +65,13 @@ const detectAbuse = async (user, reqIP) => {
       // Write out the latest user IP to Identity DB - AAO will request it back
       await recordIP(reqIP, user.handle)
 
-      ;({ appliedRules, blockedFromRelay, blockedFromNotifications } = await getAbuseData(user.handle, reqIP))
+      // Perform abuse check conditional on environment
+      if (config.get('skipAbuseCheck')) {
+        logger.info(`Skipping abuse check for user ${user.handle}`)
+      } else {
+        ;({ appliedRules, blockedFromRelay, blockedFromNotifications } = await getAbuseData(user.handle, reqIP, shouldSkipAbuseCheck))
+      }
+
     } catch (e) {
       logger.warn(`antiAbuse: aao request failed ${e.message}`)
     }
