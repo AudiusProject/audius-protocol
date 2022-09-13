@@ -6,13 +6,13 @@ module.exports = {
       await queryInterface.addColumn('Users', 'isBlockedFromRelay', {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        default: false
+        defaultValue: false
       }, { transaction })
 
       await queryInterface.addColumn('Users', 'isBlockedFromNotifications', {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        default: false
+        defaultValue: false
       }, { transaction })
 
       await queryInterface.addColumn('Users', 'appliedRules', {
