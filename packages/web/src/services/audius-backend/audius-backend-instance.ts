@@ -12,6 +12,7 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { monitoringCallbacks } from 'services/serviceMonitoring'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron, isMobile } from 'utils/clientUtil'
+import { tracing } from 'utils/tracer'
 
 declare global {
   interface Window {
@@ -139,5 +140,6 @@ export const audiusBackendInstance = audiusBackend({
     solBridgeAddress: process.env.REACT_APP_SOL_BRIDGE_ADDRESS,
     solTokenBridgeAddress: process.env.REACT_APP_SOL_TOKEN_BRIDGE_ADDRESS,
     wormholeRpcHosts: process.env.REACT_APP_WORMHOLE_RPC_HOSTS
-  }
+  },
+  tracer: tracing.getTracer()
 })

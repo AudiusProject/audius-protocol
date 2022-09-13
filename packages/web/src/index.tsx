@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 /* eslint-disable import/first */
-import { setupTracing } from './tracer'
+import { setupTracing } from './utils/tracer'
 setupTracing()
 
 // eslint-disable-next-line import/first

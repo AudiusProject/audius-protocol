@@ -23,6 +23,7 @@
     "@opentelemetry/instrumentation-fetch": "^0.32.0",
     "@opentelemetry/instrumentation-user-interaction": "^0.31.0",
     "@opentelemetry/instrumentation-xml-http-request": "^0.32.0",
+    "@opentelemetry/resources": "^1.6.0",
     "@opentelemetry/sdk-trace-web": "^1.6.0",
     "@opentelemetry/semantic-conventions": "^1.6.0",
     "@optimizely/optimizely-sdk": "4.0.0",
