@@ -1,13 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
-import { explorePageActions, ExplorePageTabs } from '@audius/common'
 import type { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
-// eslint-disable-next-line import/no-unresolved
 import type { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
 import type { NavigationHelpers, ParamListBase } from '@react-navigation/native'
 import { Animated } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useDispatch } from 'react-redux'
 
 import { FULL_DRAWER_HEIGHT } from 'app/components/drawer'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
@@ -15,7 +12,6 @@ import { makeStyles } from 'app/styles'
 
 import { BottomTabBarButton } from './BottomTabBarButton'
 import { BOTTOM_BAR_HEIGHT } from './constants'
-const { setTab } = explorePageActions
 
 type NavigationRoute = RNBottomTabBarProps['state']['routes'][0]
 
@@ -66,49 +62,28 @@ export type BottomTabBarProps = RNBottomTabBarProps & {
   >
 }
 
-export const BottomTabBar = ({
-  state,
-  navigation,
-  translationAnim
-}: BottomTabBarProps & RNBottomTabBarProps) => {
+export const BottomTabBar = (props: BottomTabBarProps) => {
+  const { state, navigation, translationAnim } = props
   const styles = useStyles()
-  const [isNavigating, setIsNavigating] = useState(false)
-  const dispatch = useDispatch()
-
-  const resetExploreTab = useCallback(
-    () => dispatch(setTab({ tab: ExplorePageTabs.FOR_YOU })),
-    [dispatch]
-  )
 
   const navigate = useCallback(
     (route: NavigationRoute, isFocused) => {
-      setIsNavigating(true)
       const event = navigation.emit({
         type: 'tabPress',
         target: route.key,
         canPreventDefault: true
       })
 
-      const performNavigation = () => {
-        setIsNavigating(false)
-
-        resetExploreTab()
-
-        // Native navigation
-        if (!isFocused && !event.defaultPrevented) {
-          navigation.navigate(route.name)
-        } else if (isFocused) {
-          navigation.emit({
-            type: 'scrollToTop'
-          })
-        }
+      // Native navigation
+      if (!isFocused && !event.defaultPrevented) {
+        navigation.navigate(route.name)
+      } else if (isFocused) {
+        navigation.emit({
+          type: 'scrollToTop'
+        })
       }
-
-      // Slight delay to allow button to rerender before
-      // new screen starts rendering
-      setTimeout(performNavigation, 50)
     },
-    [navigation, resetExploreTab]
+    [navigation]
   )
 
   const handleLongPress = useCallback(() => {
@@ -116,15 +91,14 @@ export const BottomTabBar = ({
       type: 'scrollToTop'
     })
   }, [navigation])
+
   const insets = useSafeAreaInsets()
 
   const rootStyle = [
     styles.root,
     {
       transform: [
-        {
-          translateY: interpolatePostion(translationAnim, insets.bottom)
-        }
+        { translateY: interpolatePostion(translationAnim, insets.bottom) }
       ]
     }
   ]
@@ -137,7 +111,7 @@ export const BottomTabBar = ({
         pointerEvents='auto'
       >
         {state.routes.map((route, index) => {
-          const isFocused = !isNavigating && state.index === index
+          const isFocused = state.index === index
           const key = `${route.name}-button`
           return (
             <BottomTabBarButton
