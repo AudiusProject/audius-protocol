@@ -1068,7 +1068,6 @@ jobs:
             set -x
             ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN}
 
-            #format variable
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo 'export SLACK_DETAIL="'"${SLACK_DETAIL}"'"' >> "$BASH_ENV"
       - slack-fail:
