@@ -12,7 +12,7 @@ import {
 } from '@opentelemetry/sdk-trace-base'
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
 
-import { AudiusWebInstrumentation } from './sdkInstrumention'
+import { AudiusWebInstrumentation } from './sdkInstrumentation'
 
 const TRACING_ENABLED = true
 const OTEL_COLLECTOR_URL =
@@ -41,9 +41,9 @@ export const setupTracing = () => {
   registerInstrumentations({
     instrumentations: [
       // new UserInteractionInstrumentation(),
-      // new XMLHttpRequestInstrumentation(),
-      // new FetchInstrumentation(),
-      // new DocumentLoadInstrumentation()
+      //   new XMLHttpRequestInstrumentation(),
+      //   new FetchInstrumentation(),
+      //   new DocumentLoadInstrumentation(),
       new AudiusWebInstrumentation()
     ]
   })

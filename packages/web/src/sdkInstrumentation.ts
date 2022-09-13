@@ -1,11 +1,11 @@
-import type * as AudiusSdk from '@audius/sdk'
 // import { sdk } from '@audius/sdk'
 // import { Track } from '@audius/sdk/src/api/Track'
-import * as theGoods from '@audius/sdk'
-import { sdk, TracksApi } from '@audius/sdk'
-import { AudiusLibs } from '@audius/sdk/dist/legacy'
-import * as LEGACY from '@audius/sdk/dist/legacy'
-import * as native from '@audius/sdk/dist/native-libs'
+// import * as theGoods from '@audius/sdk'
+// import { sdk, TracksApi } from '@audius/sdk'
+// import { AudiusLibs } from '@audius/sdk/dist/legacy'
+// import * as LEGACY from '@audius/sdk/dist/legacy'
+// import * as native from '@audius/sdk/dist/native-libs'
+import * as common from '@audius/common'
 import { Span, SpanOptions } from '@opentelemetry/api'
 import {
   InstrumentationBase,
@@ -15,25 +15,47 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 
 const VERSION = '1.0.0'
 
-export class AudiusWebInstrumentation extends InstrumentationBase<
-  typeof AudiusSdk
-> {
+export class AudiusWebInstrumentation extends InstrumentationBase {
   constructor(config: InstrumentationConfig = {}) {
     super('AudiusWebInstrumentation', VERSION, config)
   }
 
-  private _patchUploadTrack() {
+  private _patchAudiusBackend() {
     return (original: any): any => {
       const plugin = this
-      return function patchOpen(this: Track, ...args: any[]): void {
-        const wrappedFunction = plugin.instrumentTracing({
-          fn: original,
-          context: this
-        })
-        return wrappedFunction(this, args)
+      return function patchAudiusBackend(this: any, ...args: any[]): void {
+        const returnValue = original(...args)
+        return {
+          ...returnValue,
+          uploadTrack: plugin.instrumentTracing({
+            fn: returnValue.uploadTrack,
+            context: this
+          }),
+          uploadTrackToCreatorNode: plugin.instrumentTracing({
+            fn: returnValue.uploadTrackToCreatorNode,
+            context: this
+          }),
+          fetchCID: plugin.instrumentTracing({
+            fn: returnValue.fetchCID,
+            context: this
+          })
+        }
       }
     }
   }
+
+  //   private _patchUploadTrack() {
+  //     return (original: any): any => {
+  //       const plugin = this
+  //       return function patchUploadTrack(this: any, ...args: any[]): void {
+  //         const wrappedFunction = plugin.instrumentTracing({
+  //           fn: original,
+  //           context: this
+  //         })
+  //         return wrappedFunction(this, args)
+  //       }
+  //     }
+  //   }
 
   /**
    * Higher-order function that adds opentelemetry tracing to a function.
@@ -67,6 +89,7 @@ export class AudiusWebInstrumentation extends InstrumentationBase<
   }) => {
     const that = this
     const objectContext = context || this
+    console.log('tracing')
 
     // build a wrapper around `fn` that accepts the same parameters and returns the same return type
     const wrapper = function (
@@ -74,6 +97,7 @@ export class AudiusWebInstrumentation extends InstrumentationBase<
     ): ReturnType<TFunction> {
       const spanName = name || fn.name
       const spanOptions = options || {}
+      console.log('RUNNING')
       return that.tracer.startActiveSpan(
         spanName,
         spanOptions,
@@ -122,15 +146,20 @@ export class AudiusWebInstrumentation extends InstrumentationBase<
 
   public enable() {
     console.log('ENABLING INSTRUMENTATION')
-    console.log('THE GOODS', JSON.stringify(theGoods))
-    console.log('sdk', JSON.stringify(sdk))
-    console.log('TracksApi', JSON.stringify(TracksApi))
-    // console.log('Track', JSON.stringify(Track))
-    console.log('AudiusLibs', JSON.stringify(AudiusLibs))
-    console.log('Legacy', JSON.stringify(LEGACY))
-    console.log('Native', JSON.stringify(native))
-    // this._wrap(Track!.prototype, 'uploadTrack', this._patchUploadTrack())
-    // console.log('SDK', JSON.stringify(Track))
+
+    console.log('common', common)
+    console.log('before', common.audiusBackend)
+    const patchedFunction = this._patchAudiusBackend()
+    console.log('patched', patchedFunction)
+    // this._wrap(common, 'audiusBackend', this._patchAudiusBackend())
+    // Object.defineProperty(common, 'audiusBackend', patchedFunction)
+    Object.defineProperty(common, 'audiusBackend', {
+      value: () => console.log('why')
+    })
+
+    // @ts-ignore
+    console.log('after', common.audiusBackend())
+    console.log('DONE')
   }
 
   public disable() {
