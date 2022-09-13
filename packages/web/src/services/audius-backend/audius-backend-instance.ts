@@ -1,5 +1,6 @@
 import { audiusBackend } from '@audius/common'
 import type { AudiusLibs } from '@audius/sdk'
+import { tracing } from 'tracer'
 
 import { track } from 'services/analytics'
 import {
@@ -139,5 +140,6 @@ export const audiusBackendInstance = audiusBackend({
     solBridgeAddress: process.env.REACT_APP_SOL_BRIDGE_ADDRESS,
     solTokenBridgeAddress: process.env.REACT_APP_SOL_TOKEN_BRIDGE_ADDRESS,
     wormholeRpcHosts: process.env.REACT_APP_WORMHOLE_RPC_HOSTS
-  }
+  },
+  tracer: tracing.getTracer()
 })
