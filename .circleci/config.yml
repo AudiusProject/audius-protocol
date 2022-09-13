@@ -54,7 +54,7 @@ commands:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": ".${SLACK_DETAIL}"
+                      "text": "${SLACK_DETAIL} "
                     }
                   ]
                 },
