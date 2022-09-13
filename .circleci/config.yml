@@ -1081,7 +1081,7 @@ jobs:
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
       - run:
-          name: Start Deployment
+          name: Perform Deployment
           command: |
             cd ~/audius-protocol
             set -x
@@ -1093,7 +1093,11 @@ jobs:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
       - store_artifacts:
-          path: /tmp/summary.txt
+          path: /tmp/summary.md
+          destination: summary.md
+      - store_artifacts:
+          path: /tmp/summary.json
+          destination: summary.json
       - run:
           name: Disconnect from OpenVPN
           command: |
