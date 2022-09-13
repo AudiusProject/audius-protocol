@@ -41,10 +41,8 @@ const handleSyncFromPrimary = async ({
     } catch (e) {
       tracing.recordException(e)
       return {
-        error: new Error(
-          `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
-        ),
-        result: 'failure_sync_in_progress'
+        abort: `Cannot change state of wallet ${wallet}. Node sync currently in progress`,
+        result: 'abort_sync_in_progress'
       }
     }
 
