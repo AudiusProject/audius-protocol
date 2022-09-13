@@ -1,7 +1,12 @@
 import { useCallback } from 'react'
 
 import type { UserMetadata } from '@audius/common'
-import { SquareSizes, WidthSizes, profilePageActions } from '@audius/common'
+import {
+  accountSelectors,
+  SquareSizes,
+  WidthSizes,
+  profilePageActions
+} from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
 import { View } from 'react-native'
@@ -18,9 +23,9 @@ import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import { makeStyles } from 'app/styles'
 
-import { getProfile } from '../profile-screen/selectors'
-
 import type { ProfileValues, UpdatedProfile } from './types'
+
+const { getAccountUser } = accountSelectors
 const { updateProfile } = profilePageActions
 
 const useStyles = makeStyles(({ palette }) => ({
@@ -105,7 +110,8 @@ const EditProfileForm = (props: FormikProps<ProfileValues>) => {
 }
 
 export const EditProfileScreen = () => {
-  const { profile } = useSelector(getProfile)
+  const profile = useSelector(getAccountUser)
+
   const dispatch = useDispatch()
 
   const coverPhoto = useUserCoverPhoto({
