@@ -1065,19 +1065,26 @@ jobs:
           event: always
           slack_mentions_user: "@joaquin"
       - run:
-          name: Setup SSH Config
+          name: Clone Repositories and Install Dependencies
           command: |
-            git clone git@github.com:AudiusProject/audius-tooling.git ~/audius-tooling
             git clone git@github.com:AudiusProject/audius-protocol.git ~/audius-protocol
-            git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
-            sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
+            git clone git@github.com:AudiusProject/audius-tooling.git ~/audius-tooling
 
             cd ~/audius-tooling
             git checkout jc-inf-195
 
             cd ~/audius-protocol
-            set -x
             python3 -m pip install -r .circleci/triggers/requirements.txt
+      - run:
+          name: Setup SSH Config
+          command: |
+            git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
+            sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
+      - run:
+          name: Start Deployment
+          command: |
+            cd ~/audius-protocol
+            set -x
             ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN}
       - slack-fail:
           channel: C03STD3UXMG
