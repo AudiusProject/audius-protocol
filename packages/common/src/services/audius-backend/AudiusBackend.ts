@@ -1,7 +1,6 @@
 import { IdentityAPI, DiscoveryAPI } from '@audius/sdk/dist/core'
 import type { HedgehogConfig } from '@audius/sdk/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk/dist/utils/localStorage'
-import type { Span, SpanOptions, Tracer } from '@opentelemetry/api'
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
@@ -163,89 +162,6 @@ const combineLists = <Entity extends Track | User>(
 
 const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
 
-/**
- * Higher-order function that adds opentelemetry tracing to a function.
- * This wrapper works for both sync and async functions
- *
- * @param {string?} param.name optional name to give to the span, defaults to the function name
- * @param {Object?} param.context optional object context to get wrapped, useful when wrapping non-static methods to classes
- * @param {TFunction} param.fn the generic function to instrument
- * @param {SpanOptions?} param.options objects to pass into the span
- * @returns the instrumented function
- * @throws rethrows any errors from the original fn
- *
- * Usage of this would look like
- * ```
- * const someFunction = instrumentTracing({ fn: _someFunction })
- * const result = someFunction(args))
- * // or
- * const result = await someFunction(args)
- * ```
- */
-const instrumentTracing = <TFunction extends (...args: any[]) => any>({
-  fn,
-  tracer,
-  name,
-  context,
-  options
-}: {
-  fn: TFunction
-  tracer: Tracer
-  name?: string
-  context?: Object
-  options?: SpanOptions
-}) => {
-  const objectContext = context || this
-
-  // build a wrapper around `fn` that accepts the same parameters and returns the same return type
-  const wrapper = function (
-    ...args: Parameters<TFunction>
-  ): ReturnType<TFunction> {
-    const spanName = name || fn.name
-    const spanOptions = options || {}
-    return tracer.startActiveSpan(spanName, spanOptions, (span: Span) => {
-      try {
-        console.log('ahhhhhhhhhhhhhhh')
-        span.setAttribute(SemanticAttributes.CODE_FUNCTION, fn.name)
-
-        // TODO add skip parameter to instrument testing function to NOT log certain args
-        // tracing.setSpanAttribute('args', JSON.stringify(args))
-        const result = fn.apply(objectContext, args)
-
-        // if `fn` is async, await the result
-        if (result && result.then) {
-          /**
-           * by handling promise like this, the caller to this wrapper
-           * can still use normal async/await syntax to `await` the result
-           * of this wrapper
-           * i.e. `const output = await instrumentTracing({ fn: _someFunction })(args)`
-           *
-           * based on this package: https://github.com/klny/function-wrapper/blob/master/src/wrapper.js#L25
-           */
-          return result.then((val: any) => {
-            span.end()
-            return val
-          })
-        }
-
-        span.end()
-
-        // re-return result from synchronous function
-        return result
-      } catch (e: any) {
-        span.recordException(e)
-        span.end()
-
-        // rethrow any errors
-        throw e
-      }
-    })
-  }
-  // copy function name
-  Object.defineProperty(wrapper, 'name', { value: fn.name })
-  return wrapper
-}
-
 type TransactionReceipt = { blockHash: string; blockNumber: number }
 
 let preloadImageTimer: Timer
@@ -340,7 +256,6 @@ type AudiusBackendParams = {
   web3ProviderUrls: Maybe<string[]>
   withEagerOption: WithEagerOption
   wormholeConfig: AudiusBackendWormholeConfig
-  tracer: Tracer
 }
 
 export const audiusBackend = ({
@@ -397,8 +312,7 @@ export const audiusBackend = ({
     solBridgeAddress,
     solTokenBridgeAddress,
     wormholeRpcHosts
-  },
-  tracer
+  }
 }: AudiusBackendParams) => {
   const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
 
@@ -3468,21 +3382,9 @@ export const audiusBackend = ({
     updateUserLocationTimezone,
     updateUserSubscription,
     upgradeToCreator,
-    uploadImage: instrumentTracing({
-      fn: uploadImage,
-      context: this,
-      tracer
-    }),
-    uploadTrack: instrumentTracing({
-      fn: uploadTrack,
-      context: this,
-      tracer
-    }),
-    uploadTrackToCreatorNode: instrumentTracing({
-      fn: uploadTrackToCreatorNode,
-      context: this,
-      tracer
-    }),
+    uploadImage,
+    uploadTrack,
+    uploadTrackToCreatorNode,
     userNodeUrl,
     validateTracksInPlaylist,
     waitForLibsInit,
