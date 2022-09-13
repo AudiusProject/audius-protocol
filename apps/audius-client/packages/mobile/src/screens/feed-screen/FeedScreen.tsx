@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
 import {
   Name,
@@ -6,7 +6,7 @@ import {
   feedPageLineupActions as feedActions,
   feedPageSelectors
 } from '@audius/common'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
@@ -29,9 +29,6 @@ export const FeedScreen = () => {
 
   const dispatch = useDispatch()
 
-  const feedLineup = useSelector(getFeedLineup)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
   const loadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
       dispatch(feedActions.fetchLineupMetadatas(offset, limit, overwrite))
@@ -40,32 +37,20 @@ export const FeedScreen = () => {
     [dispatch]
   )
 
-  useEffect(() => {
-    if (!feedLineup.isMetadataLoading) {
-      setIsRefreshing(false)
-    }
-  }, [feedLineup.isMetadataLoading])
-
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true)
-    dispatch(feedActions.refreshInView(true))
-  }, [dispatch])
-
   return (
     <Screen>
       <Header text={messages.header}>
         <FeedFilterButton />
       </Header>
       <Lineup
-        actions={feedActions}
-        delineate
-        lineup={feedLineup}
-        loadMore={loadMore}
-        refresh={handleRefresh}
-        refreshing={isRefreshing}
-        selfLoad
-        showsVerticalScrollIndicator={false}
         isFeed
+        pullToRefresh
+        delineate
+        selfLoad
+        actions={feedActions}
+        lineupSelector={getFeedLineup}
+        loadMore={loadMore}
+        showsVerticalScrollIndicator={false}
       />
     </Screen>
   )
