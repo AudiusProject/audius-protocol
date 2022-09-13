@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors, Status } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -10,7 +10,7 @@ import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import './CheckPage.module.css'
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser, getAccountStatus } = accountSelectors
 
 declare global {
   interface Window {
@@ -23,18 +23,24 @@ const COGNITO_TEMPLATE_ID = process.env.REACT_APP_COGNITO_TEMPLATE_ID
 
 const CheckPage = () => {
   const dispatch = useDispatch()
-  const user = useSelector(getAccountUser)
+  const account = useSelector(getAccountUser)
+  const accountStatus = useSelector(getAccountStatus)
   const scriptLoaded = useScript(COGNITO_SCRIPT_URL)
   const [didOpen, setDidOpen] = useState(false)
 
   useEffect(() => {
-    if (!user) {
+    if (accountStatus !== Status.LOADING && !account) {
       dispatch(pushRoute(SIGN_IN_PAGE))
     }
-  }, [user, dispatch])
+  }, [account, accountStatus, dispatch])
 
   useEffect(() => {
-    if (user && scriptLoaded && !didOpen) {
+    if (
+      accountStatus !== Status.LOADING &&
+      account &&
+      scriptLoaded &&
+      !didOpen
+    ) {
       setDidOpen(true)
       const run = async () => {
         let signature = null
@@ -51,7 +57,7 @@ const CheckPage = () => {
           publishableKey: COGNITO_KEY,
           templateId: COGNITO_TEMPLATE_ID,
           user: {
-            customerReference: user.handle,
+            customerReference: account.handle,
             signature
           }
         })
@@ -70,7 +76,7 @@ const CheckPage = () => {
       }
       run()
     }
-  }, [user, scriptLoaded, didOpen, dispatch])
+  }, [account, accountStatus, scriptLoaded, didOpen, dispatch])
 
   // This component need not render anything
   return null
