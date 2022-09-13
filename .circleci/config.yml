@@ -1070,7 +1070,7 @@ jobs:
 
             #format variable
             export SLACK_DETAIL=$(cat /tmp/summary.md)
-            echo 'export SLACK_DETAIL="hi mom"' >> "$BASH_ENV"
+            echo 'export SLACK_DETAIL="$(awk '{printf "%s\\n", $0}' /tmp/summary.md)"' >> "$BASH_ENV"
       - slack-fail:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
