@@ -6,7 +6,8 @@ import type {
   Kind,
   Lineup as LineupData,
   Maybe,
-  LineupBaseActions
+  LineupBaseActions,
+  CommonState
 } from '@audius/common'
 import type { SectionListProps } from 'react-native'
 
@@ -84,7 +85,12 @@ export type LineupProps = {
   /**
    * The Lineup object containing entries
    */
-  lineup: LineupData<LineupItem>
+  lineup?: LineupData<LineupItem>
+
+  /**
+   * The Lineup selector, allowing the lineup to select lineup itself
+   */
+  lineupSelector?: (state: CommonState) => LineupData<LineupItem>
 
   /**
    * Function called to load more entries
@@ -139,6 +145,10 @@ export type LineupProps = {
    * This helps prevent collisions with any in-flight loading from web-app
    */
   includeLineupStatus?: boolean
+  /**
+   * When `true`, add pull-to-refresh capability
+   */
+  pullToRefresh?: boolean
 } & Pick<
   SectionListProps<unknown>,
   'showsVerticalScrollIndicator' | 'ListEmptyComponent'
