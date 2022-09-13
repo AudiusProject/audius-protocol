@@ -4,10 +4,6 @@
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
-    "copy:local-production": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && cp -r ../web/build-mobile-production web-app/Web.bundle/build",
-    "copy:local-staging": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && cp -r ../web/build-mobile-staging web-app/Web.bundle/build",
-    "copy:remote-production": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && aws s3 sync s3://audius-mobile/build web-app/Web.bundle/build",
-    "copy:remote-staging": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && aws s3 sync s3://audius-mobile-staging/build web-app/Web.bundle/build",
     "android": "ENVFILE=.env.prod react-native run-android --variant=prodDebug",
     "android:bounce": "ENVFILE=.env.stage react-native run-android --variant=bounceDebug --appIdSuffix bounce",
     "android:dev": "ENVFILE=.env.dev react-native run-android --variant=prodDebug",

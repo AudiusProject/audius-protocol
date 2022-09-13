@@ -1,40 +1,19 @@
-# Build the web to be bundled with the mobile client
-mobile-build-web-app:
-  parameters:
-    build-type:
-      default: "mobile-prod"
-      type: string
-  steps:
-    - checkout
-    - attach_workspace:
-        at: ./
-    - run:
-        name: build
-        command: cd packages/web && CI=false npm run build:<<parameters.build-type>>
-    - persist_to_workspace:
-        root: ./
-        paths:
-          - packages/web
-
 # Build the ios app
 mobile-build-ios:
   parameters:
     build-directory:
-      default: "build-mobile-production"
+      default: 'build-mobile-production'
       type: string
     bundle-id:
-      default: "co.audius.audiusmusic"
+      default: 'co.audius.audiusmusic'
       type: string
     env:
-      default: ".env.prod"
+      default: '.env.prod'
       type: string
   steps:
     - checkout
     - attach_workspace:
         at: ./
-    - run:
-        name: Move Web App build
-        command: mkdir -p packages/mobile/web-app/Web.bundle/build && mv packages/web/<<parameters.build-directory>>/* packages/mobile/web-app/Web.bundle/build
     - run:
         name: update cocoapods
         command: sudo gem install cocoapods
@@ -74,7 +53,7 @@ mobile-build-ios:
 mobile-upload-ios:
   parameters:
     bundle-id:
-      default: "co.audius.audiusmusic"
+      default: 'co.audius.audiusmusic'
       type: string
   steps:
     - run:
@@ -85,27 +64,24 @@ mobile-upload-ios:
 mobile-build-android:
   parameters:
     build-directory:
-      default: "build-mobile-production"
+      default: 'build-mobile-production'
       type: string
     build-type:
-      default: "bundleRelease"
+      default: 'bundleRelease'
       type: string
     bundle-id:
-      default: "co.audius.app"
+      default: 'co.audius.app'
       type: string
     track:
-      default: "beta"
+      default: 'beta'
       type: string
     remote-directory:
-      default: "audius-mobile"
+      default: 'audius-mobile'
       type: string
   steps:
     - checkout
     - attach_workspace:
         at: ./
-    - run:
-        name: Move Web App build
-        command: mkdir -p packages/mobile/web-app/Web.bundle/build && mv packages/web/<<parameters.build-directory>>/* packages/mobile/web-app/Web.bundle/build
     - run:
         name: migrate support libraries for androidX packages
         command: |
@@ -144,7 +120,7 @@ mobile-build-android:
 mobile-upload-android:
   parameters:
     upload-type:
-      default: "prod"
+      default: 'prod'
       type: string
   steps:
     - run:
