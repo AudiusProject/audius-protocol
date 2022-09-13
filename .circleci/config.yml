@@ -26,6 +26,10 @@ commands:
         description: Markdown formatted Slack message
         type: string
         default: "Job started. :crossed_fingers:"
+      detail:
+        description: Markdown formatted Slack detail
+        type: string
+        default: ""
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
@@ -54,7 +58,7 @@ commands:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "${SLACK_DETAIL} "
+                      "text": "<< parameters.detail >> "
                     }
                   ]
                 },
@@ -113,6 +117,10 @@ commands:
         description: Markdown formatted Slack message
         type: string
         default: "Job Failed. :red_circle:"
+      detail:
+        description: Markdown formatted Slack detail
+        type: string
+        default: ""
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
@@ -123,6 +131,7 @@ commands:
           branch_pattern: << parameters.branch_pattern >>
           channel: << parameters.channel >>
           text: << parameters.text >>
+          detail: << parameters.detail >>
           slack_mentions_user: << parameters.slack_mentions_user >>
   slack-success:
     parameters:
@@ -142,6 +151,10 @@ commands:
         description: Markdown formatted Slack message
         type: string
         default: "Deployment Successful! :tada:"
+      detail:
+        description: Markdown formatted Slack detail
+        type: string
+        default: ""
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
@@ -152,6 +165,7 @@ commands:
           branch_pattern: << parameters.branch_pattern >>
           channel: << parameters.channel >>
           text: << parameters.text >>
+          detail: << parameters.detail >>
           slack_mentions_user: << parameters.slack_mentions_user >>
 
   diff-if-necessary:
@@ -1075,6 +1089,7 @@ jobs:
           slack_mentions_user: "@joaquin"
       - slack-success:
           channel: C03STD3UXMG
+          detail: ${SLACK_DETAIL}
           slack_mentions_user: "@joaquin"
       - store_artifacts:
           path: /tmp/summary.md
