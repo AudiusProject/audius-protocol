@@ -2,10 +2,10 @@ import type { BNWei } from '@audius/common'
 import { formatWei, walletSelectors } from '@audius/common'
 import BN from 'bn.js'
 import { Image, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import TokenBadgeNoTier from 'app/assets/images/tokenBadgeNoTier.png'
 import { Text } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 const { getAccountBalance } = walletSelectors
 
@@ -38,7 +38,7 @@ const messages = {
 }
 
 export const AvailableAudio = () => {
-  const accountBalance = useSelectorWeb(getAccountBalance) ?? new BN(0)
+  const accountBalance = useSelector(getAccountBalance) ?? new BN(0)
   const styles = useStyles()
 
   return (

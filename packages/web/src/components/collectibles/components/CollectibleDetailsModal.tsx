@@ -15,7 +15,8 @@ import {
   accountSelectors,
   badgeTiers,
   collectibleDetailsUISelectors,
-  collectibleDetailsUIActions
+  collectibleDetailsUIActions,
+  useSelectTierInfo
 } from '@audius/common'
 import {
   Button,
@@ -41,7 +42,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useScript } from 'hooks/useScript'
-import { useSelectTierInfo } from 'hooks/wallet'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { useIsMobile } from 'utils/clientUtil'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
@@ -53,8 +53,6 @@ import styles from './CollectiblesPage.module.css'
 const { setCollectible } = collectibleDetailsUIActions
 const { getCollectibleDetails, getCollectible } = collectibleDetailsUISelectors
 const getAccountUser = accountSelectors.getAccountUser
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const MODEL_VIEWER_SCRIPT_URL =
   'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js'
@@ -418,7 +416,7 @@ const CollectibleDetailsModal = ({
       </Modal>
 
       <Drawer
-        isOpen={isModalOpen && isMobile && !NATIVE_MOBILE}
+        isOpen={isModalOpen && isMobile}
         onClose={handleClose}
         isFullscreen
       >

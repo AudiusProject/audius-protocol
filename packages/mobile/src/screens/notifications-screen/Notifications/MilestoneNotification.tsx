@@ -7,17 +7,13 @@ import type {
   MilestoneNotification as MilestoneNotificationType
 } from '@audius/common'
 import { notificationsSelectors, Achievement } from '@audius/common'
-import {
-  fullProfilePage,
-  NOTIFICATION_PAGE
-} from 'audius-client/src/utils/route'
+import { fullProfilePage } from 'audius-client/src/utils/route'
+import { useSelector } from 'react-redux'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
-import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'
-import { getUserRoute } from 'app/utils/routes'
 
 import {
   EntityLink,
@@ -95,33 +91,25 @@ type MilestoneNotificationProps = {
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
   const { achievement } = notification
-  const entity = useSelectorWeb(
-    (state) => getNotificationEntity(state, notification),
-    isEqual
+  const entity = useSelector((state) =>
+    getNotificationEntity(state, notification)
   )
-  const user = useSelectorWeb((state) =>
-    getNotificationUser(state, notification)
-  )
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
   const navigation = useDrawerNavigation()
 
   const handlePress = useCallback(() => {
     if (achievement === Achievement.Followers) {
       if (user) {
-        navigation.navigate({
-          native: {
-            screen: 'Profile',
-            params: { handle: user.handle, fromNotifications: true }
-          },
-          web: { route: getUserRoute(user), fromPage: NOTIFICATION_PAGE }
+        navigation.navigate('Profile', {
+          handle: user.handle,
+          fromNotifications: true
         })
       }
     } else {
       if (entity) {
-        navigation.navigate({
-          native: getEntityScreen(entity),
-          web: { route: getEntityRoute(entity) }
-        })
+        const [screen, params] = getEntityScreen(entity)
+        navigation.navigate(screen, params)
       }
     }
   }, [achievement, user, navigation, entity])

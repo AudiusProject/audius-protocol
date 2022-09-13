@@ -7,13 +7,9 @@ import {
   audioRewardsPageActions,
   audioRewardsPageSelectors
 } from '@audius/common'
-import {
-  TRENDING_PAGE,
-  TRENDING_PLAYLISTS_PAGE,
-  TRENDING_UNDERGROUND_PAGE
-} from 'audius-client/src/utils/route'
 import type { ImageStyle } from 'react-native'
 import { Image, ScrollView, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'
@@ -25,10 +21,8 @@ import {
   Link
 } from 'app/components/core'
 import TweetEmbed from 'app/components/tweet-embed'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { AppScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
@@ -59,24 +53,9 @@ const messages = {
 }
 
 const TRENDING_PAGES = {
-  tracks: {
-    native: { screen: 'trending' as const },
-    web: { route: TRENDING_PAGE }
-  },
-  playlists: {
-    native: {
-      screen: 'explore' as const,
-      params: { screen: 'TrendingPlaylists' as const }
-    },
-    web: { route: TRENDING_PLAYLISTS_PAGE }
-  },
-  underground: {
-    native: {
-      screen: 'explore' as const,
-      params: { screen: 'TrendingUnderground' as const }
-    },
-    web: { route: TRENDING_UNDERGROUND_PAGE }
-  }
+  tracks: ['trending'] as const,
+  playlists: ['explore', { screen: 'TrendingPlaylists' as const }] as const,
+  underground: ['explore', { screen: 'TrendingUnderground' as const }] as const
 }
 
 const textMap = {
@@ -97,7 +76,7 @@ const textMap = {
   }
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+const useStyles = makeStyles(({ spacing, typography }) => ({
   content: {
     height: '100%',
     width: '100%',
@@ -159,8 +138,8 @@ const useRewardsType = (): [
   TrendingRewardsModalType,
   (type: TrendingRewardsModalType) => void
 ] => {
-  const dispatch = useDispatchWeb()
-  const rewardsType = useSelectorWeb(getTrendingRewardsModalType)
+  const dispatch = useDispatch()
+  const rewardsType = useSelector(getTrendingRewardsModalType)
   const setTrendingRewardsType = useCallback(
     (type: TrendingRewardsModalType) => {
       dispatch(setTrendingRewardsModalType({ modalType: type }))
@@ -211,8 +190,8 @@ export const TrendingRewardsDrawer = () => {
   ]
 
   const handleGoToTrending = useCallback(() => {
-    const navConfig = TRENDING_PAGES[modalType]
-    navigation.navigate(navConfig)
+    const [screen, params] = TRENDING_PAGES[modalType]
+    navigation.navigate(screen, params)
     onClose()
   }, [modalType, navigation, onClose])
 

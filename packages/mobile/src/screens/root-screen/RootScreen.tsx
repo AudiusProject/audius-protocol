@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { accountSelectors, Status } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 // eslint-disable-next-line import/no-unresolved
@@ -8,9 +9,11 @@ import type { NavigatorScreenParams } from '@react-navigation/native'
 import { useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Dimensions } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
+import useAppState from 'app/hooks/useAppState'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
+import PushNotifications from 'app/notifications'
 import type { AppScreenParamList } from 'app/screens/app-screen'
 import { AppScreen } from 'app/screens/app-screen'
 import {
@@ -19,12 +22,11 @@ import {
 } from 'app/screens/notifications-screen'
 import { SignOnScreen } from 'app/screens/signon'
 import { UpdateRequiredScreen } from 'app/screens/update-required-screen/UpdateRequiredScreen'
-import {
-  getDappLoaded,
-  getIsSignedIn,
-  getOnSignUp
-} from 'app/store/lifecycle/selectors'
-import { getAccountAvailable } from 'app/store/signon/selectors'
+import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
+
+import { SplashScreen } from '../splash-screen'
+
+const { getHasAccount, getAccountStatus } = accountSelectors
 
 export type RootScreenParamList = {
   signOn: undefined
@@ -106,6 +108,11 @@ const NotificationsDrawerContents = (
     state
   } = props
   const drawerNavigation = useNavigation()
+
+  useEffect(() => {
+    PushNotifications.setDrawerHelpers(drawerHelpers)
+  }, [drawerHelpers])
+
   return (
     <NotificationsDrawerNavigationContextProvider
       drawerHelpers={drawerHelpers}
@@ -124,51 +131,51 @@ const NotificationsDrawerContents = (
  * based on if the user is authed
  */
 export const RootScreen = () => {
-  const dappLoaded = useSelector(getDappLoaded)
-  const signedIn = useSelector(getIsSignedIn)
-  const onSignUp = useSelector(getOnSignUp)
-  const isAccountAvailable = useSelector(getAccountAvailable)
+  const dispatch = useDispatch()
+  const hasAccount = useSelector(getHasAccount)
+  const accountStatus = useSelector(getAccountStatus)
   const [disableGestures, setDisableGestures] = useState(false)
   const { updateRequired } = useUpdateRequired()
 
+  useAppState(
+    () => dispatch(enterForeground()),
+    () => dispatch(enterBackground())
+  )
+
   if (updateRequired) return <UpdateStack />
 
-  // This check is overly complicated and should probably just check `signedIn`.
-  // However, this allows the feed screen to load initially so that when the
-  // splash screen disappears there is already content (skeletons) on the screen
-  const isAuthed =
-    !dappLoaded ||
-    signedIn === null ||
-    (signedIn && !onSignUp) ||
-    isAccountAvailable
+  if (accountStatus === Status.LOADING) return <SplashScreen />
 
-  return isAuthed ? (
-    <Drawer.Navigator
-      // legacy implementation uses reanimated-v1
-      useLegacyImplementation={true}
-      detachInactiveScreens={false}
-      screenOptions={{
-        drawerType: 'slide',
-        headerShown: false,
-        drawerStyle: {
-          width: '100%'
-        },
-        swipeEdgeWidth: SCREEN_WIDTH,
-        gestureHandlerProps: {
-          enabled: !disableGestures
-        }
-      }}
-      drawerContent={(props) => (
-        <NotificationsDrawerContents
-          disableGestures={disableGestures}
-          setDisableGestures={setDisableGestures}
-          {...props}
-        />
-      )}
-    >
-      <Drawer.Screen name='App' component={MainStack} />
-    </Drawer.Navigator>
-  ) : (
-    <SignOnStack />
-  )
+  if (!hasAccount) return <SignOnStack />
+
+  if (hasAccount)
+    return (
+      <Drawer.Navigator
+        // legacy implementation uses reanimated-v1
+        useLegacyImplementation={true}
+        detachInactiveScreens={false}
+        screenOptions={{
+          drawerType: 'slide',
+          headerShown: false,
+          drawerStyle: {
+            width: '100%'
+          },
+          swipeEdgeWidth: SCREEN_WIDTH,
+          gestureHandlerProps: {
+            enabled: !disableGestures
+          }
+        }}
+        drawerContent={(props) => (
+          <NotificationsDrawerContents
+            disableGestures={disableGestures}
+            setDisableGestures={setDisableGestures}
+            {...props}
+          />
+        )}
+      >
+        <Drawer.Screen name='App' component={MainStack} />
+      </Drawer.Navigator>
+    )
+
+  return null
 }

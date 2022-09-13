@@ -341,10 +341,10 @@ class CollectionPage extends Component<
   fetchCollection = (pathname: string, forceFetch = false) => {
     const params = parseCollectionRoute(pathname)
     if (params) {
-      const { handle, collectionId } = params
+      const { collectionId } = params
       if (forceFetch || collectionId !== this.state.playlistId) {
         this.setState({ playlistId: collectionId as number })
-        this.props.fetchCollection(handle, collectionId as number)
+        this.props.fetchCollection(collectionId as number)
         this.props.fetchTracks()
       }
     }
@@ -829,8 +829,8 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchCollection: (handle: string | null, id: number) =>
-      dispatch(collectionActions.fetchCollection(handle, id)),
+    fetchCollection: (id: number) =>
+      dispatch(collectionActions.fetchCollection(id)),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
     resetCollection: (collectionUid: string, userUid: string) =>

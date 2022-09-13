@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import type { Maybe } from '@audius/common'
+import type { Maybe, CommonState } from '@audius/common'
 import {
   IntKeys,
   StringKeys,
@@ -10,11 +10,10 @@ import {
   audioRewardsPageSelectors,
   modalsActions
 } from '@audius/common'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { ChallengesParamList } from 'app/utils/challenges'
 import { challengesConfig } from 'app/utils/challenges'
 
@@ -46,18 +45,20 @@ const styles = {
 }
 
 export const ChallengeRewardsDrawerProvider = () => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const { onClose } = useDrawerState(MODAL_NAME)
-  const modalType = useSelectorWeb(getChallengeRewardsModalType)
-  const userChallenges = useSelectorWeb(getOptimisticUserChallenges, isEqual)
+  const modalType = useSelector(getChallengeRewardsModalType)
+  const userChallenges = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, true)
+  )
 
   const handleClose = useCallback(() => {
-    dispatchWeb(resetAndCancelClaimReward())
+    dispatch(resetAndCancelClaimReward())
     onClose()
-  }, [dispatchWeb, onClose])
+  }, [dispatch, onClose])
 
-  const claimStatus = useSelectorWeb(getClaimStatus)
-  const aaoErrorCode = useSelectorWeb(getAAOErrorCode)
+  const claimStatus = useSelector(getClaimStatus)
+  const aaoErrorCode = useSelector(getAAOErrorCode)
 
   const { toast } = useContext(ToastContext)
 
@@ -87,15 +88,16 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   const handleNavigation = useCallback(() => {
     if (config.buttonInfo?.navigation) {
-      navigate(config.buttonInfo.navigation)
+      const { screen, params } = config.buttonInfo.navigation
+      navigate(screen, params)
       handleClose()
     }
   }, [navigate, config, handleClose])
 
   const openUploadModal = useCallback(() => {
     handleClose()
-    dispatchWeb(setVisibility({ modal: 'MobileUpload', visible: true }))
-  }, [dispatchWeb, handleClose])
+    dispatch(setVisibility({ modal: 'MobileUpload', visible: true }))
+  }, [dispatch, handleClose])
 
   // Claim rewards button config
   const quorumSize = useRemoteVar(IntKeys.ATTESTATION_QUORUM_SIZE)
@@ -103,7 +105,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   const AAOEndpoint = useRemoteVar(StringKeys.ORACLE_ENDPOINT)
   const hasConfig = (oracleEthAddress && AAOEndpoint && quorumSize > 0) || true
   const onClaim = useCallback(() => {
-    dispatchWeb(
+    dispatch(
       claimChallengeReward({
         claim: {
           challengeId: modalType,
@@ -113,7 +115,7 @@ export const ChallengeRewardsDrawerProvider = () => {
         retryOnFailure: true
       })
     )
-  }, [dispatchWeb, modalType, challenge])
+  }, [dispatch, modalType, challenge])
 
   useEffect(() => {
     if (claimStatus === ClaimStatus.SUCCESS) {

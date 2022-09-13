@@ -3,10 +3,10 @@ import { useCallback, useState } from 'react'
 import type { User } from '@audius/common'
 import { tippingActions } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { Text, Button } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 const { beginTip } = tippingActions
@@ -48,13 +48,13 @@ type SendTipButtonProps = {
 export const SendTipButton = ({ receiver }: SendTipButtonProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const [isActive, setIsActive] = useState(false)
 
   const handlePress = useCallback(() => {
-    dispatchWeb(beginTip({ user: receiver, source: 'feed' }))
-    navigation.navigate({ native: { screen: 'TipArtist' } })
-  }, [dispatchWeb, receiver, navigation])
+    dispatch(beginTip({ user: receiver, source: 'feed' }))
+    navigation.navigate('TipArtist')
+  }, [dispatch, receiver, navigation])
 
   const handlePressIn = useCallback(() => {
     setIsActive(true)

@@ -11,12 +11,11 @@ import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
 import { isEqual } from 'lodash'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { FormScreen } from 'app/components/form-screen'
 import { TrackList } from 'app/components/track-list'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
@@ -105,9 +104,9 @@ const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
 }
 
 export const EditPlaylistScreen = () => {
-  const playlist = useSelectorWeb(getMetadata)
-  const dispatchWeb = useDispatchWeb()
-  const tracks = useSelectorWeb(getTracks)
+  const playlist = useSelector(getMetadata)
+  const dispatch = useDispatch()
+  const tracks = useSelector(getTracks)
 
   const coverArt = useCollectionCoverArt({
     id: playlist?.playlist_id,
@@ -119,25 +118,25 @@ export const EditPlaylistScreen = () => {
     (values: PlaylistValues) => {
       if (playlist) {
         values.removedTracks.forEach(({ trackId, timestamp }) => {
-          dispatchWeb(
+          dispatch(
             removeTrackFromPlaylist(trackId, playlist.playlist_id, timestamp)
           )
         })
         if (!isEqual(playlist?.playlist_contents.track_ids, values.track_ids)) {
-          dispatchWeb(
+          dispatch(
             orderPlaylist(
               playlist?.playlist_id,
               values.track_ids.map(({ track, time }) => ({ id: track, time }))
             )
           )
         }
-        dispatchWeb(
+        dispatch(
           editPlaylist(playlist.playlist_id, values as unknown as Collection)
         )
-        dispatchWeb(tracksActions.fetchLineupMetadatas())
+        dispatch(tracksActions.fetchLineupMetadatas())
       }
     },
-    [dispatchWeb, playlist]
+    [dispatch, playlist]
   )
 
   if (!playlist) return null

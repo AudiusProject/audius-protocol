@@ -1,24 +1,10 @@
 export enum MessageType {
   LOADED = 'loaded',
-  PLAY_TRACK = 'play-track',
-  PAUSE_TRACK = 'pause-track',
-  GET_POSITION = 'get-position',
-  SEEK_TRACK = 'seek-track',
-  SET_INFO = 'set-info',
-  PERSIST_QUEUE = 'persist-queue',
-  SET_REPEAT_MODE = 'set-repeat-mode',
-  SHUFFLE = 'shuffle',
 
   // Linking
   OPEN_LINK = 'open-link',
   RELOAD = 'reload',
   ACCOUNT_RECOVERY = 'account-recovery',
-
-  // Cast
-  AIRPLAY = 'airplay',
-  IS_CASTING = 'action/is-casting',
-
-  SHOW_GOOGLE_CAST_PICKER = 'show-google-cast-picker',
 
   // Sign-On
   SUBMIT_SIGNIN = 'submit-signin',
@@ -46,14 +32,6 @@ export enum MessageType {
   ENABLE_PUSH_NOTIFICATIONS_REMINDER = 'action/enable-push-notifications-reminder',
   PROMPT_PUSH_NOTIFICATION_REMINDER = 'prompt-push-notifications-reminder',
 
-  OPEN_NOTIFICATIONS = 'open-notifications',
-  FETCH_NOTIFICATIONS = 'fetch-notifications',
-  FETCH_NOTIFICATIONS_SUCCESS = 'fetch-notifications-success',
-  FETCH_NOTIFICATIONS_REPLACE = 'fetch-notifications-replace',
-  FETCH_NOTIFICATIONS_FAILURE = 'fetch-notifications-failure',
-  REFRESH_NOTIFICATIONS = 'refresh-notifications',
-  MARK_ALL_NOTIFICATIONS_AS_VIEWED = 'mark-all-notifications-as-viewed',
-
   // Search
   OPEN_SEARCH = 'open-search',
   UPDATE_SEARCH_QUERY = 'update-search-query',
@@ -64,14 +42,6 @@ export enum MessageType {
 
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
-
-  // Action dispatchers
-  SYNC_QUEUE = 'action/sync-queue',
-  SYNC_PLAYER = 'action/sync-player',
-  REQUEST_QUEUE_AUTOPLAY = 'action/request-queue-autoplay',
-  PUSH_ROUTE = 'action/push-route',
-  POP_ROUTE = 'action/pop-route',
-  SCROLL_TO_TOP = 'action/scroll-to-top',
 
   // OAuth
   REQUEST_TWITTER_AUTH = 'request-twitter-auth',
@@ -106,9 +76,6 @@ export enum MessageType {
   // Share
   SHARE_MESSAGE = 'share',
 
-  // Download
-  DOWNLOAD_TRACK = 'download-track',
-
   // Navigation
   ON_FIRST_PAGE = 'nav-on-first-page',
   NOT_ON_FIRST_PAGE = 'nav-not-on-first-page',
@@ -127,9 +94,6 @@ export enum MessageType {
   THEME_CHANGE = 'theme-change',
 
   SYNC_COMMON_STATE = 'sync-common-state',
-
-  // hCaptcha
-  UPDATE_HCAPTCHA_SCORE = 'update-hcaptcha-score',
 
   // Tipping
   FETCH_RECENT_TIPS = 'fetch-recent-tips',

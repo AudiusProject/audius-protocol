@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { Track, User } from '@audius/common'
 import {
+  playerSelectors,
   PlaybackSource,
   FavoriteSource,
   RepostSource,
@@ -18,17 +19,14 @@ import {
   shareModalUIActions,
   RepostType
 } from '@audius/common'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
-import type { AppState } from 'app/store'
-import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { LineupTile } from './LineupTile'
+const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
@@ -40,15 +38,9 @@ const getUserId = accountSelectors.getUserId
 export const TrackTile = (props: LineupItemProps) => {
   const { uid } = props
 
-  // Using isEqual as the equality function to prevent rerenders due to object references
-  // not being preserved when syncing redux state from client.
-  // This can be removed when no longer dependent on web client
-  const track = useSelectorWeb((state) => getTrack(state, { uid }), isEqual)
+  const track = useSelector((state) => getTrack(state, { uid }))
 
-  const user = useSelectorWeb(
-    (state) => getUserFromTrack(state, { uid }),
-    isEqual
-  )
+  const user = useSelector((state) => getUserFromTrack(state, { uid }))
 
   if (!track || !user) {
     console.warn('Track or user missing for TrackTile, preventing render')
@@ -73,12 +65,11 @@ const TrackTileComponent = ({
   user,
   ...lineupTileProps
 }: TrackTileProps) => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const navigation = useNavigation()
-  const currentUserId = useSelectorWeb(getUserId)
-  const isPlayingUid = useSelector(
-    (state: AppState) => getPlayingUid(state) === lineupTileProps.uid
-  )
+  const currentUserId = useSelector(getUserId)
+  const playingUid = useSelector(getUid)
+  const isPlayingUid = playingUid === lineupTileProps.uid
 
   const {
     _cover_art_sizes,
@@ -87,7 +78,6 @@ const TrackTileComponent = ({
     is_unlisted,
     has_current_user_reposted,
     has_current_user_saved,
-    permalink,
     play_count,
     title,
     track_id
@@ -121,11 +111,8 @@ const TrackTileComponent = ({
   )
 
   const handlePressTitle = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Track', params: { id: track_id } },
-      web: { route: permalink }
-    })
-  }, [navigation, permalink, track_id])
+    navigation.push('Track', { id: track_id })
+  }, [navigation, track_id])
 
   const handlePressOverflow = useCallback(() => {
     if (track_id === undefined) {
@@ -148,7 +135,7 @@ const TrackTileComponent = ({
       isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
-    dispatchWeb(
+    dispatch(
       openOverflowMenu({
         source: OverflowSource.TRACKS,
         id: track_id,
@@ -157,7 +144,7 @@ const TrackTileComponent = ({
     )
   }, [
     track_id,
-    dispatchWeb,
+    dispatch,
     has_current_user_reposted,
     has_current_user_saved,
     isOwner,
@@ -168,36 +155,36 @@ const TrackTileComponent = ({
     if (track_id === undefined) {
       return
     }
-    dispatchWeb(
+    dispatch(
       requestOpenShareModal({
         type: 'track',
         trackId: track_id,
         source: ShareSource.TILE
       })
     )
-  }, [dispatchWeb, track_id])
+  }, [dispatch, track_id])
 
   const handlePressSave = useCallback(() => {
     if (track_id === undefined) {
       return
     }
     if (has_current_user_saved) {
-      dispatchWeb(unsaveTrack(track_id, FavoriteSource.TILE))
+      dispatch(unsaveTrack(track_id, FavoriteSource.TILE))
     } else {
-      dispatchWeb(saveTrack(track_id, FavoriteSource.TILE))
+      dispatch(saveTrack(track_id, FavoriteSource.TILE))
     }
-  }, [track_id, dispatchWeb, has_current_user_saved])
+  }, [track_id, dispatch, has_current_user_saved])
 
   const handlePressRepost = useCallback(() => {
     if (track_id === undefined) {
       return
     }
     if (has_current_user_reposted) {
-      dispatchWeb(undoRepostTrack(track_id, RepostSource.TILE))
+      dispatch(undoRepostTrack(track_id, RepostSource.TILE))
     } else {
-      dispatchWeb(repostTrack(track_id, RepostSource.TILE))
+      dispatch(repostTrack(track_id, RepostSource.TILE))
     }
-  }, [track_id, dispatchWeb, has_current_user_reposted])
+  }, [track_id, dispatch, has_current_user_reposted])
 
   const hideShare = field_visibility?.share === false
   const hidePlays = field_visibility?.play_count === false

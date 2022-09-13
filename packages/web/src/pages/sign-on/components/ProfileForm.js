@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common'
+import {
+  imageProfilePicEmpty as profilePicEmpty,
+  MAX_DISPLAY_NAME_LENGTH,
+  MAX_HANDLE_LENGTH
+} from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -15,11 +19,6 @@ import StatusMessage from 'components/status-message/StatusMessage'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { resizeImage } from 'utils/imageProcessingUtil'
-
-import {
-  MAX_DISPLAY_NAME_LENGTH,
-  MAX_HANDLE_LENGTH
-} from '../utils/formatSocialProfile'
 
 import styles from './ProfileForm.module.css'
 

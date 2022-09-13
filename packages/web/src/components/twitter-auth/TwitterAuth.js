@@ -1,12 +1,9 @@
 import { Component } from 'react'
 
 import PropTypes from 'prop-types'
+
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'
-
-import { RequestTwitterAuthMessage } from 'services/native-mobile-interface/oauth'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 class TwitterLogin extends Component {
   constructor(props) {
@@ -134,39 +131,10 @@ class TwitterLogin extends Component {
     return <span>{this.props.text}</span>
   }
 
-  doNativeMobileAuth = async () => {
-    try {
-      if (this.props.onClick) this.props.onClick()
-      const tokenResp = await window.fetch(this.props.requestTokenUrl, {
-        method: 'POST',
-        credentials: this.props.credentials,
-        headers: this.getHeaders()
-      })
-      const tokenRespJson = await tokenResp.json()
-      let authenticationUrl = `https://api.twitter.com/oauth/authenticate?oauth_token=${tokenRespJson.oauth_token}&force_login=${this.props.forceLogin}`
-
-      if (this.props.screenName) {
-        authenticationUrl = `${authenticationUrl}&screen_name=${this.props.screenName}`
-      }
-
-      const message = new RequestTwitterAuthMessage(authenticationUrl)
-      message.send()
-      const response = await message.receive()
-      const { oauthVerifier, oauthToken } = response
-      if (oauthVerifier && oauthToken) {
-        return this.getOauthToken(oauthVerifier, oauthToken)
-      } else {
-        this.props.onFailure()
-      }
-    } catch (err) {
-      this.props.onFailure(err)
-    }
-  }
-
   render() {
     return (
       <div
-        onClick={NATIVE_MOBILE ? this.doNativeMobileAuth : this.onButtonClick}
+        onClick={this.onButtonClick}
         style={this.props.style}
         disabled={this.props.disabled}
         className={this.props.className}

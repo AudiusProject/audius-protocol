@@ -76,7 +76,7 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     link: () => EXPLORE_HEAVY_ROTATION_PAGE
   },
   firstPlaylist: {
-    label: 'Create a Playlist',
+    label: 'Discover Some Tracks',
     leftIcon: null,
     rightIcon: <IconArrow />,
     link: () => FAVORITES_PAGE
@@ -243,7 +243,8 @@ export const challengeRewardsConfig: Record<
     id: 'send-first-tip' as ChallengeRewardID,
     title: 'Send Your First Tip',
     icon: <i className='emoji large money-mouth-face' />,
-    description: (challenge) => `Earn ${challenge?.amount} $AUDIO`,
+    description: (challenge) =>
+      'Show some love to your favorite artist and send them a tip',
     fullDescription: () =>
       'Show some love to your favorite artist and send them a tip',
     progressLabel: 'Not Earned',
@@ -257,13 +258,13 @@ export const challengeRewardsConfig: Record<
   },
   'first-playlist': {
     id: 'first-playlist' as ChallengeRewardID,
-    title: 'Create Your First Playlist',
-    icon: <i className='emoji large sparkles' />,
-    description: (challenge) => `Earn ${challenge?.amount} $AUDIO`,
-    fullDescription: () => 'Create your first playlist & add a track to it',
+    title: 'Create a Playlist',
+    icon: <i className='emoji large treble-clef' />,
+    description: (challenge) => 'Create a playlist and add a track to it',
+    fullDescription: () => 'Create a playlist and add a track to it',
     progressLabel: 'Not Earned',
     amount: amounts['first-playlist'],
-    panelButtonText: 'Create a Playlist',
+    panelButtonText: 'Discover Some Tracks',
     modalButtonInfo: {
       incomplete: linkButtonMap.firstPlaylist,
       inProgress: linkButtonMap.firstPlaylist,

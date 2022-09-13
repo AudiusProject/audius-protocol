@@ -2,11 +2,11 @@ import { useCallback } from 'react'
 
 import { modalsActions } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Button } from 'app/components/core'
 import { MODAL_NAME } from 'app/components/mobile-upload-drawer'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 const { setVisibility } = modalsActions
@@ -26,12 +26,12 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 export const UploadTrackButton = () => {
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const { neutralLight2 } = useThemeColors()
 
   const handlePress = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: true }))
-  }, [dispatchWeb])
+    dispatch(setVisibility({ modal: MODAL_NAME, visible: true }))
+  }, [dispatch])
 
   return (
     <View pointerEvents='box-none' style={styles.root}>

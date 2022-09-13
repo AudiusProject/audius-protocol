@@ -1,7 +1,5 @@
-import { badgeTiers } from '@audius/common'
-
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { badgeTiers, useSelectTierInfo } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import { MIN_COLLECTIBLES_TIER } from './constants'
 import { getIsOwner, useSelectProfile } from './selectors'
@@ -31,7 +29,7 @@ export const useShouldShowCollectiblesTab = () => {
     'solanaCollectibleList',
     'collectibles'
   ])
-  const isOwner = useSelectorWeb(getIsOwner)
+  const isOwner = useSelector(getIsOwner)
   const { tierNumber } = useSelectTierInfo(user_id)
 
   const hasCollectiblesTierRequirement =

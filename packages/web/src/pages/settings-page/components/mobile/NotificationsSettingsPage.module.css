@@ -3,22 +3,3 @@
   width: 100%;
   user-select: none;
 }
-
-.toggleContainer {
-  display: inline-flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.bodyText {
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  line-height: 18px;
-  color: var(--neutral-light-4);
-  transition: color 0.17s ease-in-out;
-}
-
-.bodyText.isOn {
-  color: var(--neutral);
-}

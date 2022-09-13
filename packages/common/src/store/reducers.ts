@@ -2,7 +2,7 @@ import { combineReducers } from 'redux'
 
 import { Kind, Cache, Collection } from '../models'
 
-import accountSlice from './account/reducer'
+import accountSlice from './account/slice'
 import averageColorReducer from './average-color/slice'
 import collectionsReducer from './cache/collections/reducer'
 import { asCache } from './cache/reducer'
@@ -13,10 +13,17 @@ import { UsersCacheState } from './cache/users/types'
 import cast from './cast/slice'
 import changePasswordReducer from './change-password/slice'
 import { ChangePasswordState } from './change-password/types'
+import musicConfettiReducer, {
+  MusicConfettiState
+} from './music-confetti/slice'
 import notifications from './notifications/reducer'
 import audioRewardsSlice from './pages/audio-rewards/slice'
 import collection from './pages/collection/reducer'
 import { CollectionsPageState } from './pages/collection/types'
+import {
+  deactivateAccountReducer,
+  DeactivateAccountState
+} from './pages/deactivate-account'
 import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
 import explorePageReducer from './pages/explore/slice'
 import feed from './pages/feed/reducer'
@@ -39,9 +46,14 @@ import trendingUnderground from './pages/trending-underground/slice'
 import trending from './pages/trending/reducer'
 import { TrendingPageState } from './pages/trending/types'
 import player, { PlayerState } from './player/slice'
+import {
+  playlistLibraryReducer,
+  PlaylistLibraryState
+} from './playlist-library'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
+import { recoveryEmailReducer, RecoveryEmailState } from './recovery-email'
 import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
@@ -70,8 +82,7 @@ import shareModalReducer from './ui/share-modal/slice'
 import { ShareModalState } from './ui/share-modal/types'
 import shareSoundToTikTokModalReducer from './ui/share-sound-to-tiktok-modal/slice'
 import { ShareSoundToTikTokModalState } from './ui/share-sound-to-tiktok-modal/types'
-import theme from './ui/theme/reducer'
-import { ThemeState } from './ui/theme/types'
+import theme, { ThemeState } from './ui/theme/slice'
 import toastReducer from './ui/toast/slice'
 import transactionDetailsReducer from './ui/transaction-details/slice'
 import vipDiscordModalReducer from './ui/vip-discord-modal/slice'
@@ -122,6 +133,9 @@ export const reducers = () => ({
   // Cast
   cast,
 
+  // Playlist Library
+  playlistLibrary: playlistLibraryReducer,
+
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
@@ -135,6 +149,7 @@ export const reducers = () => ({
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     modals: modalsReducer,
+    musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
     reactions: reactionsReducer,
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
@@ -152,7 +167,8 @@ export const reducers = () => ({
       notifications: notificationsUserListReducer
     }),
     theme,
-    vipDiscordModal: vipDiscordModalReducer
+    vipDiscordModal: vipDiscordModalReducer,
+    recoveryEmail: recoveryEmailReducer
   }),
 
   // Pages
@@ -174,7 +190,8 @@ export const reducers = () => ({
     trendingUnderground,
     settings,
     notifications,
-    remixes
+    remixes,
+    deactivateAccount: deactivateAccountReducer
   }),
 
   // Solana
@@ -215,6 +232,9 @@ export type CommonState = {
   // Cast
   cast: ReturnType<typeof cast>
 
+  // Playlist library
+  playlistLibrary: PlaylistLibraryState
+
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>
     buyAudio: ReturnType<typeof buyAudioReducer>
@@ -226,6 +246,7 @@ export type CommonState = {
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
     mobileOverflowModal: MobileOverflowModalState
     modals: ModalsState
+    musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
@@ -244,6 +265,7 @@ export type CommonState = {
     }
     theme: ThemeState
     vipDiscordModal: VipDiscordModalState
+    recoveryEmail: RecoveryEmailState
   }
 
   pages: {
@@ -265,6 +287,7 @@ export type CommonState = {
     trendingUnderground: ReturnType<typeof trendingUnderground>
     notifications: ReturnType<typeof notifications>
     remixes: ReturnType<typeof remixes>
+    deactivateAccount: DeactivateAccountState
   }
 
   solana: ReturnType<typeof solanaReducer>

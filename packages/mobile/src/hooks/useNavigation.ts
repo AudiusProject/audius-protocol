@@ -8,24 +8,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 import type { AppTabScreenParamList } from 'app/screens/app-screen/AppTabScreen'
 
-import { usePushRouteWeb } from './usePushRouteWeb'
-
 export type ContextualParams = { fromNotifications?: boolean }
 
 type UseNavigationConfig<
   ParamList extends ParamListBase,
   RouteName extends keyof ParamList
-> = {
-  native: {
-    screen: RouteName
-    params?: ParamList[RouteName] & ContextualParams
-  }
-  web?: {
-    route: string
-    fromPage?: string
-    fromNativeNotifications?: string
-  }
-}
+> = [screen: RouteName, params?: ParamList[RouteName] & ContextualParams]
 
 export const useNavigation = <
   ParamList extends ParamListBase = AppTabScreenParamList
@@ -37,22 +25,16 @@ export const useNavigation = <
   const defaultNativeNavigation =
     useNavigationNative<NativeStackNavigationProp<ParamList>>()
   const nativeNavigation = customNativeNavigation || defaultNativeNavigation
-  const pushRouteWeb = usePushRouteWeb()
 
   const performNavigation = useCallback(
     (method) =>
       <RouteName extends keyof ParamList>(
-        config: UseNavigationConfig<ParamList, RouteName>
+        ...config: UseNavigationConfig<ParamList, RouteName>
       ) => {
-        const { native, web } = config
-        method(native.screen, native.params)
-        if (web) {
-          pushRouteWeb(web.route, web.fromPage, web.fromNativeNotifications)
-        }
+        const [screen, params] = config
+        method(screen, params)
       },
-    // eslint thinks ParamList is a variable
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pushRouteWeb]
+    []
   )
 
   return useMemo(

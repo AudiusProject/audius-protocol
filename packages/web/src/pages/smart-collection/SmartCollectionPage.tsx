@@ -5,7 +5,7 @@ import {
   accountSelectors,
   smartCollectionPageSelectors,
   smartCollectionPageActions,
-  findInPlaylistLibrary
+  playlistLibraryHelpers
 } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -14,7 +14,8 @@ import CollectionPage from 'pages/collection-page/CollectionPage'
 import { AppState } from 'store/types'
 const { fetchSmartCollection } = smartCollectionPageActions
 const { getCollection } = smartCollectionPageSelectors
-const getPlaylistLibrary = accountSelectors.getPlaylistLibrary
+const { getPlaylistLibrary } = accountSelectors
+const { findInPlaylistLibrary } = playlistLibraryHelpers
 
 type OwnProps = {
   variant: SmartCollectionVariant

@@ -21,21 +21,18 @@ import {
 import { RouterState } from 'connected-react-router'
 
 import signOnReducer from 'common/store/pages/signon/reducer'
+import SearchBarState from 'common/store/search-bar/types'
 import ServiceSelectionReducer from 'common/store/service-selection/slice'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
-import MusicConfetti from 'components/music-confetti/store/slice'
 import { PasswordResetState } from 'components/password-reset/store/types'
 import RemixSettingsModalReducer from 'components/remix-settings-modal/store/slice'
-import SearchBarState from 'components/search-bar/store/types'
 import { UnfollowConfirmationModalState } from 'components/unfollow-confirmation-modal/store/types'
 import ArtistDashboardState from 'pages/artist-dashboard-page/store/types'
-import { DeactivateAccountState } from 'pages/deactivate-account-page/store/slice'
 import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import { UploadPageState } from 'pages/upload-page/store/types'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
-import PlaylistLibraryReducer from 'store/playlist-library/slice'
 
 import { BackendState } from '../common/store/backend/types'
 import { ConfirmerState } from '../common/store/confirmer/types'
@@ -44,7 +41,6 @@ import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
 import EditTrackModalState from './application/ui/editTrackModal/types'
-import { MobileKeyboardState } from './application/ui/mobileKeyboard/types'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { UserListModalState } from './application/ui/userListModal/types'
@@ -52,14 +48,16 @@ import { DragNDropState } from './dragndrop/types'
 const averageColor = averageColorReducer
 
 export type AppState = CommonState & {
-  // Config
+  // These belong in CommonState but are here until we move them to the @audius/common package:
   backend: BackendState
   confirmer: ConfirmerState
-  reachability: ReachabilityState
+  searchBar: SearchBarState
+  signOn: ReturnType<typeof signOnReducer>
 
+  // Config
+  reachability: ReachabilityState
   // Account
   passwordReset: PasswordResetState
-  playlistLibrary: ReturnType<typeof PlaylistLibraryReducer>
 
   // UI
   dragndrop: DragNDropState
@@ -77,10 +75,7 @@ export type AppState = CommonState & {
       editFolderModal: EditFolderModalState
       editTrackModal: EditTrackModalState
       embedModal: EmbedModalState
-      deactivateAccount: DeactivateAccountState
       firstUploadModal: FirstUploadModalState
-      mobileKeyboard: MobileKeyboardState
-      musicConfetti: ReturnType<typeof MusicConfetti>
       remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
       scrollLock: ScrollLockState
       setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
@@ -104,9 +99,7 @@ export type AppState = CommonState & {
   // Pages
   upload: UploadPageState
   dashboard: ArtistDashboardState
-  signOn: ReturnType<typeof signOnReducer>
   history: HistoryPageState
-  searchBar: SearchBarState
   collection: CollectionsPageState
   notification: NotificationState
 

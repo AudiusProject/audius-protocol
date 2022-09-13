@@ -4,14 +4,38 @@ import {
   reactionsMap,
   reactionsUIActions,
   reactionsUISelectors,
-  getContext
+  getContext,
+  AudiusBackend,
+  getErrorMessage
 } from '@audius/common'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
-import { submitReaction } from 'services/audius-backend/Reactions'
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
   reactionsUIActions
 const { makeGetReactionForSignature } = reactionsUISelectors
+
+type SubmitReactionConfig = {
+  reactedTo: string
+  reactionValue: number
+  audiusBackend: AudiusBackend
+}
+
+type SubmitReactionResponse = { success: boolean; error: any }
+
+const submitReaction = async ({
+  reactedTo,
+  reactionValue,
+  audiusBackend
+}: SubmitReactionConfig): Promise<SubmitReactionResponse> => {
+  try {
+    const libs = await audiusBackend.getAudiusLibs()
+    return libs.Reactions.submitReaction({ reactedTo, reactionValue })
+  } catch (err) {
+    const errorMessage = getErrorMessage(err)
+    console.error(errorMessage)
+    return { success: false, error: errorMessage }
+  }
+}
 
 function* fetchReactionValuesAsync({
   payload
@@ -57,9 +81,12 @@ function* writeReactionValueAsync({
     })
   )
 
-  yield call(submitReaction, {
+  const audiusBackend = yield* getContext('audiusBackendInstance')
+
+  yield* call(submitReaction, {
     reactedTo: entityId,
-    reactionValue: newReactionValue ? reactionsMap[newReactionValue] : 0
+    reactionValue: newReactionValue ? reactionsMap[newReactionValue] : 0,
+    audiusBackend
   })
 }
 

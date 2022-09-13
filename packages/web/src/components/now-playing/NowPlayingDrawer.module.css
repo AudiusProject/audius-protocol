@@ -24,10 +24,6 @@
   }
 }
 
-.drawer.native {
-  height: 100vh;
-}
-
 .playBar {
   position: absolute;
   top: 0;

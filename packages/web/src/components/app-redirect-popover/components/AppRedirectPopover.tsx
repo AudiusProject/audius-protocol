@@ -10,8 +10,6 @@ import { APP_REDIRECT, getPathname, SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './AppRedirectPopover.module.css'
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const messages = {
   openInApp: 'Open in Audius App',
   notNow: 'Not Now'
@@ -100,7 +98,7 @@ const AppRedirectPopover = ({
     enablePopover && setTimeout(() => setAnimDelay(true), 500)
   }, [enablePopover])
 
-  const shouldShow = animDelay && !isDismissed && isMobile() && !NATIVE_MOBILE
+  const shouldShow = animDelay && !isDismissed && isMobile()
 
   useEffect(() => {
     shouldShow && incrementScroll()

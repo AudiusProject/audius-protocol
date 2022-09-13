@@ -1,6 +1,11 @@
 import { useState, useCallback, useRef, useContext } from 'react'
 
-import { RandomImage, accountSelectors, badgeTiers } from '@audius/common'
+import {
+  RandomImage,
+  accountSelectors,
+  badgeTiers,
+  useSelectTierInfo
+} from '@audius/common'
 import { Button, ButtonType, Popup } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -8,9 +13,8 @@ import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 import TabSlider from 'components/data-entry/TabSlider'
-import Dropzone from 'components/upload/Dropzone'
+import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
-import { useSelectTierInfo } from 'hooks/wallet'
 import { MainContentContext } from 'pages/MainContentContext'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import zIndex from 'utils/zIndex'
@@ -45,7 +49,7 @@ const DropzonePage = ({ error, onSelect }) => {
         className={styles.dropzone}
         iconClassName={styles.dropzoneIcon}
         allowMultiple={false}
-        onDrop={onDropzoneSelect}
+        onDropAccepted={onDropzoneSelect}
       />
       {error ? <InvalidFileType className={styles.invalidFileType} /> : null}
     </div>

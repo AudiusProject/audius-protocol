@@ -6,9 +6,9 @@ import type {
   RemixCreateNotification as RemixCreateNotificationType
 } from '@audius/common'
 import { notificationsSelectors } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
-import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
@@ -42,12 +42,9 @@ export const RemixCreateNotification = (
   const { notification } = props
   const { childTrackId, parentTrackId } = notification
   const navigation = useDrawerNavigation()
-  const user = useSelectorWeb((state) =>
-    getNotificationUser(state, notification)
-  )
-  const tracks = useSelectorWeb(
-    (state) => getNotificationEntities(state, notification),
-    isEqual
+  const user = useSelector((state) => getNotificationUser(state, notification))
+  const tracks = useSelector((state) =>
+    getNotificationEntities(state, notification)
   ) as EntityType[]
 
   const childTrack = tracks?.find(
@@ -63,14 +60,9 @@ export const RemixCreateNotification = (
 
   const handlePress = useCallback(() => {
     if (childTrack) {
-      navigation.navigate({
-        native: {
-          screen: 'Track',
-          params: { id: childTrack.track_id, fromNotifications: true }
-        },
-        web: {
-          route: getTrackRoute(childTrack)
-        }
+      navigation.navigate('Track', {
+        id: childTrack.track_id,
+        fromNotifications: true
       })
     }
   }, [childTrack, navigation])

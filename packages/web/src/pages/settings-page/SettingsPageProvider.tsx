@@ -5,9 +5,6 @@ import {
   Theme,
   accountSelectors,
   InstagramProfile,
-  castSelectors,
-  CastMethod,
-  castActions,
   settingsPageSelectors,
   BrowserNotificationSetting,
   EmailFrequency,
@@ -18,14 +15,15 @@ import {
   themeSelectors,
   themeActions,
   accountActions,
-  TwitterProfile
+  TwitterProfile,
+  signOutActions,
+  musicConfettiActions
 } from '@audius/common'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
-import { show } from 'components/music-confetti/store/slice'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { AppState } from 'store/types'
 import {
@@ -42,6 +40,9 @@ import {
   SettingsPageProps as MobileSettingsPageProps,
   SubPage
 } from './components/mobile/SettingsPage'
+const { show } = musicConfettiActions
+
+const { signOut } = signOutActions
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 const { setVisibility } = modalsActions
@@ -50,8 +51,6 @@ const {
   getPushNotificationSettings,
   getEmailFrequency
 } = settingsPageSelectors
-const { updateMethod } = castActions
-const { getMethod: getCastMethod } = castSelectors
 
 const {
   getAccountVerified,
@@ -166,19 +165,18 @@ class SettingsPage extends PureComponent<
       pushNotificationSettings,
       getNotificationSettings,
       getPushNotificationSettings,
-      castMethod,
       onTwitterLogin,
       onInstagramLogin,
       toggleNotificationSetting,
       togglePushNotificationSetting,
       updateEmailFrequency,
-      updateCastMethod,
       goToRoute,
       goBack,
       recordSignOut,
       recordAccountRecovery,
       recordDownloadDesktopApp,
-      tier
+      tier,
+      signOut
     } = this.props
 
     const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
@@ -211,14 +209,11 @@ class SettingsPage extends PureComponent<
       recordDownloadDesktopApp,
       goToRoute,
       goBack,
-      showMatrix
+      showMatrix,
+      signOut
     }
 
-    const mobileProps = {
-      subPage,
-      castMethod,
-      updateCastMethod
-    }
+    const mobileProps = { subPage }
 
     return <this.props.children {...childProps} {...mobileProps} />
   }
@@ -240,7 +235,6 @@ function makeMapStateToProps() {
       emailFrequency: getEmailFrequency(state),
       notificationSettings: getBrowserNotificationSettings(state),
       pushNotificationSettings: getPushNotificationSettings(state),
-      castMethod: getCastMethod(state),
       tier: getTier(state, { userId }).tier
     }
   }
@@ -248,7 +242,7 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    setTheme: (theme: any) => dispatch(setTheme(theme)),
+    setTheme: (theme: any) => dispatch(setTheme({ theme })),
     getNotificationSettings: () =>
       dispatch(settingPageActions.getNotificationSettings()),
     getPushNotificationSettings: () =>
@@ -292,9 +286,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(settingPageActions.updateEmailFrequency(frequency)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     goBack: () => dispatch(goBack()),
-    updateCastMethod: (castMethod: CastMethod) => {
-      dispatch(updateMethod({ method: castMethod }))
-    },
     recordThemeChange: (themeSettings: string) => {
       const theme =
         themeSettings === Theme.DEFAULT
@@ -323,6 +314,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     },
     showMatrixConfetti: () => {
       dispatch(show())
+    },
+    signOut: () => {
+      dispatch(signOut())
     }
   }
 }

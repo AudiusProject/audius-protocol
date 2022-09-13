@@ -1,17 +1,22 @@
 import { useState, useCallback, useEffect, KeyboardEvent } from 'react'
 
-import { AccountImage, InstagramProfile, TwitterProfile } from '@audius/common'
+import {
+  AccountImage,
+  InstagramProfile,
+  TwitterProfile,
+  formatInstagramProfile,
+  formatTwitterProfile
+} from '@audius/common'
 import cn from 'classnames'
 
 import { MAIN_CONTENT_ID } from 'pages/App'
 import ProfileForm from 'pages/sign-on/components/ProfileForm'
 import TwitterOverlay from 'pages/sign-on/components/mobile/TwitterOverlay'
-import {
-  formatInstagramProfile,
-  formatTwitterProfile
-} from 'pages/sign-on/utils/formatSocialProfile'
+import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
+
+const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION || ''
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You'
@@ -113,7 +118,7 @@ const ProfilePage = (props: ProfilePageProps) => {
     const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
     try {
       const { profile, profileImage, profileBanner, requiresUserReview } =
-        await formatTwitterProfile(twitterProfile)
+        await formatTwitterProfile(twitterProfile, resizeImage)
 
       validateHandle(
         profile.screen_name,
@@ -145,7 +150,11 @@ const ProfilePage = (props: ProfilePageProps) => {
   ) => {
     try {
       const { profile, profileImage, requiresUserReview } =
-        await formatInstagramProfile(instagramProfile)
+        await formatInstagramProfile(
+          instagramProfile,
+          GENERAL_ADMISSION,
+          resizeImage
+        )
       validateHandle(
         profile.username,
         profile.is_verified,

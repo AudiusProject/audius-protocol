@@ -1,9 +1,9 @@
 import { FollowSource } from '@audius/common'
 import { View, Text } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { FollowButton, FollowsYouChip } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
@@ -91,7 +91,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { name, handle, does_current_user_follow, does_follow_current_user } =
     profile
 
-  const isOwner = useSelectorWeb(getIsOwner)
+  const isOwner = useSelector(getIsOwner)
   const profileButton = isOwner ? (
     <EditProfileButton style={styles.followButton} />
   ) : (

@@ -22,7 +22,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 type UserListTitleProps = {
-  icon: ComponentType<SvgProps>
+  icon?: ComponentType<SvgProps>
   title: ReactNode
 }
 export const UserListTitle = (props: UserListTitleProps) => {
@@ -32,12 +32,14 @@ export const UserListTitle = (props: UserListTitleProps) => {
 
   return (
     <View style={styles.root}>
-      <Icon
-        style={styles.icon}
-        fill={neutralLight2}
-        height={spacing(6)}
-        width={spacing(6)}
-      />
+      {Icon ? (
+        <Icon
+          style={styles.icon}
+          fill={neutralLight2}
+          height={spacing(6)}
+          width={spacing(6)}
+        />
+      ) : null}
       <Text
         variant='h1'
         accessibilityRole='header'

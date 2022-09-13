@@ -20,7 +20,6 @@ import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecy
 import * as backendActions from './actions'
 import { watchBackendErrors } from './errorSagas'
 const { getIsReachable } = reachabilitySelectors
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const REACHABILITY_TIMEOUT_MS = 8 * 1000
 
@@ -47,8 +46,10 @@ export function* waitForBackendSetup() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function* awaitReachability() {
-  if (!NATIVE_MOBILE) return true
+  const isNativeMobile = yield* getContext('isNativeMobile')
+  if (!isNativeMobile) return true
   // Request network connection information.
   // If we don't ask the native layer for it, it's possible that we never receive
   // and update.
@@ -64,16 +65,16 @@ function* awaitReachability() {
 }
 
 export function* setupBackend() {
-  const establishedReachability = yield* call(awaitReachability)
-
+  // Reachability commented out for now until it is properly addressed
+  // const establishedReachability = yield* call(awaitReachability)
   // If we couldn't connect, show the error page
   // and just sit here waiting for reachability.
-  if (!establishedReachability) {
-    console.error('No internet connectivity')
-    yield* put(accountActions.fetchAccountNoInternet())
-    yield* take(reachabilityActions.SET_REACHABLE)
-    console.info('Reconnected')
-  }
+  // if (!establishedReachability) {
+  //   console.error('No internet connectivity')
+  //   yield* put(accountActions.fetchAccountNoInternet())
+  //   yield* take(reachabilityActions.SET_REACHABLE)
+  //   console.info('Reconnected')
+  // }
 
   const apiClient = yield* getContext('apiClient')
   const fingerprintClient = yield* getContext('fingerprintClient')

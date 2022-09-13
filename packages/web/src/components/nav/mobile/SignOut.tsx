@@ -1,18 +1,14 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common'
+import { Name, signOutActions } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { disablePushNotifications } from 'pages/settings-page/store/mobileSagas'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { localStorage } from 'services/local-storage'
-import { signOut } from 'utils/signOut'
 
 import styles from './SignOut.module.css'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+const { signOut } = signOutActions
 
 const messages = {
   nevermind: 'NEVERMIND',
@@ -25,19 +21,14 @@ const messages = {
 
 const SignOutPage = ({ onClickBack }: { onClickBack: () => void }) => {
   const record = useRecord()
+  const dispatch = useDispatch()
   const onSignOut = useCallback(async () => {
-    if (NATIVE_MOBILE) {
-      await disablePushNotifications(audiusBackendInstance)
-      record(make(Name.SETTINGS_LOG_OUT, {}))
-      await signOut(audiusBackendInstance, localStorage)
-    } else {
-      record(
-        make(Name.SETTINGS_LOG_OUT, {
-          callback: () => signOut(audiusBackendInstance, localStorage)
-        })
-      )
-    }
-  }, [record])
+    record(
+      make(Name.SETTINGS_LOG_OUT, {
+        callback: () => dispatch(signOut())
+      })
+    )
+  }, [record, dispatch])
 
   return (
     <div className={styles.signOut}>

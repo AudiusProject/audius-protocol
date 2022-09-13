@@ -59,7 +59,7 @@ type TestTableProps = {
   isVirtualized?: boolean
   loading?: boolean
   maxRowNum?: number
-  onClickRow?: (rowInfo: any, index: number) => void
+  onClickRow?: (e: MouseEvent, rowInfo: any, index: number) => void
   onReorder?: (source: number, destination: number) => void
   onSort?: (sortProps: {
     column: { sorter: (a: any, b: any) => number }
@@ -230,7 +230,7 @@ export const TestTable = ({
           )}
           {...props}
           key={key}
-          onClick={() => onClickRow?.(row, row.index)}
+          onClick={(e: MouseEvent) => onClickRow?.(e, row, row.index)}
         >
           {row.cells.map(renderCell)}
         </tr>

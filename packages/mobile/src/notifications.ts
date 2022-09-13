@@ -1,6 +1,5 @@
-import type { RefObject } from 'react'
-
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
 import type { PushNotificationPermissions } from 'react-native'
 import { Platform } from 'react-native'
 import Config from 'react-native-config'
@@ -8,9 +7,6 @@ import Config from 'react-native-config'
 import PushNotification from 'react-native-push-notification'
 
 import { track, make } from 'app/services/analytics'
-import { dispatch } from 'app/store'
-import { open } from 'app/store/notifications/actions'
-import type { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import { EventNames } from 'app/types/analytics'
 
 type Token = {
@@ -20,8 +16,6 @@ type Token = {
 
 // Set to true while the push notification service is registering with the os
 let isRegistering = false
-// Reference to hold the web ref to push routes to
-let webRef: RefObject<MessagePostingWebView>
 
 const getPlatformConfiguration = () => {
   if (Platform.OS === 'android') {
@@ -50,6 +44,7 @@ const getPlatformConfiguration = () => {
 class PushNotifications {
   lastId: number
   token: Token | null
+  drawerHelpers: DrawerNavigationHelpers | null
 
   // onNotification is a function passed in that is to be called when a
   // notification is to be emitted.
@@ -59,8 +54,8 @@ class PushNotifications {
     this.token = null
   }
 
-  setWebRef(w: RefObject<MessagePostingWebView>) {
-    webRef = w
+  setDrawerHelpers(helpers: DrawerNavigationHelpers) {
+    this.drawerHelpers = helpers
   }
 
   onNotification(notification: any) {
@@ -78,9 +73,7 @@ class PushNotifications {
         })
       )
 
-      if (!webRef || !webRef.current) return
-
-      dispatch(open())
+      this.drawerHelpers?.openDrawer()
     }
   }
 

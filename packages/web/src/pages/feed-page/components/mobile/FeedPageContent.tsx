@@ -24,8 +24,6 @@ import Filters from './FeedFilterButton'
 import FeedFilterDrawer from './FeedFilterDrawer'
 import styles from './FeedPageContent.module.css'
 
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const messages = {
   title: 'Your Feed'
 }
@@ -106,13 +104,11 @@ const FeedPageMobileContent = ({
       canonicalUrl={`${BASE_URL}${FEED_PAGE}`}
       hasDefaultHeader
     >
-      {IS_NATIVE_MOBILE ? null : (
-        <FeedFilterDrawer
-          isOpen={modalIsOpen}
-          onSelectFilter={handleSelectFilter}
-          onClose={() => setModalIsOpen(false)}
-        />
-      )}
+      <FeedFilterDrawer
+        isOpen={modalIsOpen}
+        onSelectFilter={handleSelectFilter}
+        onClose={() => setModalIsOpen(false)}
+      />
       <div
         className={cn(styles.lineupContainer, {
           [styles.playing]: !!lineupProps.playingUid

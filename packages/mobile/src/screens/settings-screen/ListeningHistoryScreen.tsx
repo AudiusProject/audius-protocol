@@ -2,6 +2,8 @@ import { useCallback } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
+  historyPageTracksLineupActions,
+  playerSelectors,
   Status,
   Name,
   PlaybackSource,
@@ -9,16 +11,15 @@ import {
   historyPageTracksLineupActions as tracksActions,
   historyPageSelectors
 } from '@audius/common'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { Screen, Tile, VirtualizedScrollView } from 'app/components/core'
 import { TrackList } from 'app/components/track-list'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
-import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
+const { getPlaying, getUid } = playerSelectors
 const { getHistoryTracksLineup } = historyPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
 
@@ -42,10 +43,15 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 export const ListeningHistoryScreen = () => {
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const isPlaying = useSelector(getPlaying)
-  const playingUid = useSelector(getPlayingUid)
-  const historyTracks = useSelectorWeb(getTracks)
+  const playingUid = useSelector(getUid)
+
+  useEffectOnce(() => {
+    dispatch(historyPageTracksLineupActions.fetchLineupMetadatas())
+  })
+
+  const historyTracks = useSelector(getTracks)
 
   const status = historyTracks.status
 
@@ -53,7 +59,7 @@ export const ListeningHistoryScreen = () => {
     (uid: UID, id: ID) => {
       const isTrackPlaying = uid === playingUid && isPlaying
       if (!isTrackPlaying) {
-        dispatchWeb(tracksActions.play(uid))
+        dispatch(tracksActions.play(uid))
         track(
           make({
             eventName: Name.PLAYBACK_PLAY,
@@ -62,7 +68,7 @@ export const ListeningHistoryScreen = () => {
           })
         )
       } else {
-        dispatchWeb(tracksActions.pause())
+        dispatch(tracksActions.pause())
         track(
           make({
             eventName: Name.PLAYBACK_PAUSE,
@@ -72,7 +78,7 @@ export const ListeningHistoryScreen = () => {
         )
       }
     },
-    [dispatchWeb, isPlaying, playingUid]
+    [dispatch, isPlaying, playingUid]
   )
 
   return (

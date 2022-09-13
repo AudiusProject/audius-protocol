@@ -7,9 +7,8 @@ import {
   OverflowAction,
   mobileOverflowMenuUISelectors
 } from '@audius/common'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { followUser, unfollowUser, shareUser } = usersSocialActions
 const { getUser } = cacheUsersSelectors
@@ -19,10 +18,10 @@ type Props = {
 }
 
 const ProfileOverflowMenuDrawer = ({ render }: Props) => {
-  const dispatchWeb = useDispatchWeb()
-  const { id: modalId } = useSelectorWeb(getMobileOverflowModal)
+  const dispatch = useDispatch()
+  const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
-  const user = useSelectorWeb((state: CommonState) => getUser(state, { id }))
+  const user = useSelector((state: CommonState) => getUser(state, { id }))
 
   if (!user) {
     return null
@@ -35,11 +34,10 @@ const ProfileOverflowMenuDrawer = ({ render }: Props) => {
 
   const callbacks = {
     [OverflowAction.FOLLOW]: () =>
-      dispatchWeb(followUser(id, FollowSource.OVERFLOW)),
+      dispatch(followUser(id, FollowSource.OVERFLOW)),
     [OverflowAction.UNFOLLOW]: () =>
-      dispatchWeb(unfollowUser(id, FollowSource.OVERFLOW)),
-    [OverflowAction.SHARE]: () =>
-      dispatchWeb(shareUser(id, ShareSource.OVERFLOW))
+      dispatch(unfollowUser(id, FollowSource.OVERFLOW)),
+    [OverflowAction.SHARE]: () => dispatch(shareUser(id, ShareSource.OVERFLOW))
   }
 
   return render(callbacks)

@@ -4,11 +4,11 @@ import type {
   TwitterProfile
 } from '@audius/common'
 
-import type { Message } from 'app/message'
-
 import type { Provider } from './reducer'
 import type { Credentials } from './types'
 
+export const REQUEST_TWITTER_AUTH = 'OAUTH/REQUEST_TWITTER_AUTH'
+export const REQUEST_INSTAGRAM_AUTH = 'OAUTH/REQUEST_INSTAGRAM_AUTH'
 export const OPEN_POPUP = 'OAUTH/OPEN_POPUP'
 export const REQUEST_NATIVE_OPEN_POPUP = 'OAUTH/REQUEST_NATIVE_OPEN_POPUP'
 export const SET_CREDENTIALS = 'OAUTH/SET_CREDENTIALS'
@@ -20,11 +20,14 @@ export const SET_INSTAGRAM_INFO = 'OAUTH/SET_INSTAGRAM_INFO'
 export const SET_INSTAGRAM_ERROR = 'OAUTH/SET_INSTAGRAM_ERROR'
 export const RESET_OAUTH_STATE = 'OAUTH/RESET_OAUTH_STATE'
 
-type OpenPopupAction = {
-  type: typeof OPEN_POPUP
-  message: Message
-  provider: Provider
+type RequestTwitterAuthAction = {
+  type: typeof REQUEST_TWITTER_AUTH
 }
+
+type RequestInstagramAuthAction = {
+  type: typeof REQUEST_INSTAGRAM_AUTH
+}
+
 export type RequestNativeOpenPopupAction = {
   type: typeof REQUEST_NATIVE_OPEN_POPUP
   resolve: (c: Credentials | PromiseLike<Credentials>) => void
@@ -75,7 +78,8 @@ type ResetOAuthStateAction = {
 }
 
 export type OAuthActions =
-  | OpenPopupAction
+  | RequestTwitterAuthAction
+  | RequestInstagramAuthAction
   | RequestNativeOpenPopupAction
   | SetCredentialsAction
   | NativeOpenPopupAction
@@ -86,14 +90,14 @@ export type OAuthActions =
   | SetInstagramErrorAction
   | ResetOAuthStateAction
 
-export const openPopup = (
-  message: Message,
-  provider: Provider
-): OpenPopupAction => ({
-  type: OPEN_POPUP,
-  message,
-  provider
-})
+export function twitterAuth() {
+  return { type: REQUEST_TWITTER_AUTH }
+}
+
+export function instagramAuth() {
+  return { type: REQUEST_INSTAGRAM_AUTH }
+}
+
 export const requestNativeOpenPopup = (
   resolve: (c: Credentials | PromiseLike<Credentials>) => void,
   reject: (e: Error) => void,
@@ -106,12 +110,14 @@ export const requestNativeOpenPopup = (
   url,
   provider
 })
+
 export const setCredentials = (
   credentials: Credentials
 ): SetCredentialsAction => ({
   type: SET_CREDENTIALS,
   credentials
 })
+
 export const nativeOpenPopup = (
   url: string,
   provider: Provider
@@ -120,6 +126,7 @@ export const nativeOpenPopup = (
   url,
   provider
 })
+
 export const closePopup = (): ClosePopupAction => ({
   type: CLOSE_POPUP
 })

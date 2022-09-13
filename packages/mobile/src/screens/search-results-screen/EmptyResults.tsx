@@ -1,9 +1,9 @@
+import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
 import type { TextStyle } from 'react-native'
 import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconSearch from 'app/assets/images/iconSearch.svg'
-import { getSearchQuery } from 'app/store/search/selectors'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -46,7 +46,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => {
 export const EmptyResults = () => {
   const styles = useStyles()
   const { neutral } = useThemeColors()
-  const searchQuery = useSelector(getSearchQuery)
+  const searchQuery = useSelector(getSearchBarText)
 
   return (
     <View style={styles.root}>

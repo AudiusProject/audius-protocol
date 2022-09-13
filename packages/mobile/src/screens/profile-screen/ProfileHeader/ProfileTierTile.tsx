@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
-import { modalsActions } from '@audius/common'
+import { modalsActions, useSelectTierInfo } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { IconAudioBadge, TierText } from 'app/components/audio-rewards'
 import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
 import { Tile, Text } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { makeStyles } from 'app/styles/makeStyles'
 
 import { useSelectProfile } from '../selectors'
@@ -57,11 +56,11 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
 
   const { tier, tierNumber } = useSelectTierInfo(profile.user_id)
 
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: true }))
-  }, [dispatchWeb])
+    dispatch(setVisibility({ modal: MODAL_NAME, visible: true }))
+  }, [dispatch])
 
   if (tier === 'none') return null
 

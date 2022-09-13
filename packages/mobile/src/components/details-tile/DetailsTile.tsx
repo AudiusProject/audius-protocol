@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { squashNewLines, accountSelectors } from '@audius/common'
 import type { ImageStyle } from 'react-native'
 import { TouchableOpacity, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
@@ -13,7 +14,6 @@ import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
@@ -187,7 +187,7 @@ export const DetailsTile = ({
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const currentUserId = useSelectorWeb(accountSelectors.getUserId)
+  const currentUserId = useSelector(accountSelectors.getUserId)
 
   const isOwner = user?.user_id === currentUserId
 
@@ -195,10 +195,7 @@ export const DetailsTile = ({
     if (!user) {
       return
     }
-    navigation.push({
-      native: { screen: 'Profile', params: { handle: user.handle } },
-      web: { route: `/${user.handle}` }
-    })
+    navigation.push('Profile', { handle: user.handle })
   }, [navigation, user])
 
   const detailLabels = details.filter(

@@ -1,7 +1,8 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
+  playerSelectors,
   Status,
   Name,
   PlaybackSource,
@@ -11,7 +12,7 @@ import {
   collectionPageSelectors
 } from '@audius/common'
 import { Text, View } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { DetailsTile } from 'app/components/details-tile'
 import type {
@@ -19,14 +20,12 @@ import type {
   DetailsTileProps
 } from 'app/components/details-tile/types'
 import { TrackList } from 'app/components/track-list'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
-import { getPlaying, getPlayingUid, getTrack } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
+const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 
 const messages = {
   album: 'Album',
@@ -82,8 +81,13 @@ export const CollectionScreenDetailsTile = ({
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
-  const tracksLineup = useSelectorWeb(getTracksLineup)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
+  }, [dispatch])
+
+  const tracksLineup = useSelector(getTracksLineup)
   const tracksLoading = tracksLineup.status === Status.LOADING
   const numTracks = tracksLineup.entries.length
 
@@ -112,9 +116,9 @@ export const CollectionScreenDetailsTile = ({
   }, [tracksLoading, numTracks, duration, extraDetails])
 
   const isPlaying = useSelector(getPlaying)
-  const playingUid = useSelector(getPlayingUid)
-  const playingTrack = useSelector(getTrack)
-  const trackId = playingTrack?.trackId
+  const playingUid = useSelector(getUid)
+  const playingTrack = useSelector(getCurrentTrack)
+  const trackId = playingTrack?.track_id
 
   const isQueued = tracksLineup.entries.some(
     (entry) => playingUid === entry.uid
@@ -122,31 +126,31 @@ export const CollectionScreenDetailsTile = ({
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {
-      dispatchWeb(tracksActions.pause())
+      dispatch(tracksActions.pause())
       recordPlay(trackId, false)
     } else if (!isPlaying && isQueued) {
-      dispatchWeb(tracksActions.play())
+      dispatch(tracksActions.play())
       recordPlay(trackId)
     } else if (tracksLineup.entries.length > 0) {
-      dispatchWeb(tracksActions.play(tracksLineup.entries[0].uid))
+      dispatch(tracksActions.play(tracksLineup.entries[0].uid))
       recordPlay(tracksLineup.entries[0].track_id)
     }
-  }, [dispatchWeb, isPlaying, trackId, tracksLineup, isQueued])
+  }, [dispatch, isPlaying, trackId, tracksLineup, isQueued])
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {
       if (isPlaying && playingUid === uid) {
-        dispatchWeb(tracksActions.pause())
+        dispatch(tracksActions.pause())
         recordPlay(id, false)
       } else if (playingUid !== uid) {
-        dispatchWeb(tracksActions.play(uid))
+        dispatch(tracksActions.play(uid))
         recordPlay(id)
       } else {
-        dispatchWeb(tracksActions.play())
+        dispatch(tracksActions.play())
         recordPlay(id)
       }
     },
-    [dispatchWeb, isPlaying, playingUid]
+    [dispatch, isPlaying, playingUid]
   )
 
   const headerText = useMemo(() => {

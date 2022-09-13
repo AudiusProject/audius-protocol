@@ -6,9 +6,9 @@ import {
   cacheTracksSelectors,
   cacheUsersSelectors
 } from '@audius/common'
-import { profilePage } from 'audius-client/src/utils/route'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
@@ -16,7 +16,6 @@ import { DynamicImage } from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import type { StylesProp } from 'app/styles'
@@ -85,11 +84,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 }))
 
 export const TrackScreenRemix = ({ id, ...props }: TrackScreenRemixProps) => {
-  const track = useSelectorWeb((state) => getTrack(state, { id }), isEqual)
-  const user = useSelectorWeb(
-    (state) => getUserFromTrack(state, { id }),
-    isEqual
-  )
+  const track = useSelector((state) => getTrack(state, { id }))
+  const user = useSelector((state) => getUserFromTrack(state, { id }))
 
   if (!track || !user) {
     console.warn(
@@ -118,7 +114,7 @@ const TrackScreenRemixComponent = ({
 }: TrackScreenRemixComponentProps) => {
   const styles = useStyles()
 
-  const { _co_sign, permalink, track_id } = track
+  const { _co_sign, track_id } = track
   const { name, handle } = user
   const navigation = useNavigation()
 
@@ -135,17 +131,11 @@ const TrackScreenRemixComponent = ({
   })
 
   const handlePressTrack = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Track', params: { id: track_id } },
-      web: { route: permalink }
-    })
-  }, [navigation, permalink, track_id])
+    navigation.push('Track', { id: track_id })
+  }, [navigation, track_id])
 
   const handlePressArtist = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Profile', params: { handle } },
-      web: { route: profilePage(handle) }
-    })
+    navigation.push('Profile', { handle })
   }, [handle, navigation])
 
   const images = (

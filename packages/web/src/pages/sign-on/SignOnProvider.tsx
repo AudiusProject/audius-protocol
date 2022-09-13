@@ -263,8 +263,6 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   }
 
   finishSignup = () => {
-    const { sendWelcomeEmail, fields } = this.props
-    sendWelcomeEmail(fields.name.value)
     // Remove the route hash if it's present
     if (this.hasRouteHash()) {
       this.removeRouteHash()
@@ -509,8 +507,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         signOnAction.setInstagramProfile(instagramId, profile, profileImage)
       ),
-    sendWelcomeEmail: (name: string) =>
-      dispatch(signOnAction.sendWelcomeEmail(name)),
     validateEmail: (email: string) =>
       dispatch(signOnAction.validateEmail(email)),
     validateHandle: (

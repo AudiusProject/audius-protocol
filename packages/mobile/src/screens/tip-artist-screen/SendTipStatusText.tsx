@@ -1,7 +1,6 @@
 import { tippingSelectors } from '@audius/common'
 import { View } from 'react-native'
-
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useSelector } from 'react-redux'
 
 import { DescriptionText } from './DescriptionText'
 const { getSendStatus } = tippingSelectors
@@ -15,7 +14,7 @@ const messages = {
 }
 
 export const SendTipStatusText = () => {
-  const sendStatus = useSelectorWeb(getSendStatus)
+  const sendStatus = useSelector(getSendStatus)
 
   if (sendStatus === 'CONFIRM')
     return <DescriptionText>{messages.disclaimer}</DescriptionText>

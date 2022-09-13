@@ -67,24 +67,24 @@ const tiles = [
   FEELING_LUCKY
 ]
 
+const tenTileLayout = {
+  halfTiles: [3, 4, 5, 6, 8, 9],
+  leftHalfTiles: [3, 5, 8]
+}
+
 export const ForYouTab = () => {
   const styles = useStyles()
 
-  const ref = useRef<ScrollViewElement>(null)
+  const scrollViewRef = useRef<ScrollViewElement>(null)
   useScrollToTop(() => {
-    ref.current?.scrollTo({
+    scrollViewRef.current?.scrollTo({
       y: 0,
       animated: true
     })
   })
 
-  const tenTileLayout = {
-    halfTiles: [3, 4, 5, 6, 8, 9],
-    leftHalfTiles: [3, 5, 8]
-  }
-
   return (
-    <ScrollView style={styles.tabContainer} ref={ref}>
+    <ScrollView style={styles.tabContainer} ref={scrollViewRef}>
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
         {tiles.map((tile, idx) => (

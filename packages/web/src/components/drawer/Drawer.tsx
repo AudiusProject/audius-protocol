@@ -8,17 +8,8 @@ import { useSpring, animated, useTransition } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
 import { usePortal } from 'hooks/usePortal'
-import {
-  EnablePullToRefreshMessage,
-  DisablePullToRefreshMessage
-} from 'services/native-mobile-interface/android/pulltorefresh'
 
 import styles from './Drawer.module.css'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
-// Hide the drawer when the keyboard is down
-const DRAWER_KEYBOARD_UP = 50
 
 // Fraction of swipe up to fade (1 / FADE_FRACTION_DENOMINATOR)
 const FADE_FRACTION_DENOMINATOR = 2
@@ -64,7 +55,6 @@ const interpY = (y: number) => `translate3d(0, ${y}px, 0)`
 export type DrawerProps = {
   isOpen: boolean
   children: ReactNode
-  keyboardVisible?: boolean
   shouldClose?: boolean
   onClose?: () => void
   isFullscreen?: boolean
@@ -73,7 +63,6 @@ export type DrawerProps = {
 const DraggableDrawer = ({
   isOpen,
   children,
-  keyboardVisible,
   shouldClose,
   onClose
 }: DrawerProps) => {
@@ -120,7 +109,6 @@ const DraggableDrawer = ({
 
   const open = useCallback(() => {
     setIsBackgroundVisible(true)
-    new DisablePullToRefreshMessage().send()
     setDrawerSlideProps({
       to: {
         y: -1 * getHeight()
@@ -152,7 +140,6 @@ const DraggableDrawer = ({
   ])
 
   const close = useCallback(() => {
-    new EnablePullToRefreshMessage(true).send()
     setDrawerSlideProps({
       to: {
         y: initialTranslation()
@@ -198,9 +185,9 @@ const DraggableDrawer = ({
   }, [shouldClose, close])
 
   useEffect(() => {
-    // Toggle drawer if isOpen and keyboard visibility toggles
+    // Toggle drawer if isOpen
     if (isOpen) {
-      const drawerY = keyboardVisible ? DRAWER_KEYBOARD_UP : -1 * getHeight()
+      const drawerY = -1 * getHeight()
       setDrawerSlideProps({
         to: {
           y: drawerY
@@ -209,7 +196,7 @@ const DraggableDrawer = ({
         config: fast
       })
     }
-  }, [isOpen, keyboardVisible, setDrawerSlideProps, getHeight])
+  }, [isOpen, setDrawerSlideProps, getHeight])
 
   const bind = useDrag(
     ({
@@ -309,10 +296,7 @@ const DraggableDrawer = ({
   return (
     <Portal>
       <animated.div
-        className={cn(styles.drawer, {
-          [styles.isOpen]: isOpen,
-          [styles.native]: NATIVE_MOBILE
-        })}
+        className={cn(styles.drawer, { [styles.isOpen]: isOpen })}
         {...bind()}
         style={{
           // @ts-ignore

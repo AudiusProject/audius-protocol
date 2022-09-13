@@ -11,7 +11,6 @@ import {
   Genre,
   accountSelectors,
   averageColorSelectors,
-  castSelectors,
   queueActions,
   RepeatMode,
   tracksSocialActions,
@@ -42,7 +41,6 @@ import { PlayButtonStatus } from 'components/play-bar/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
-import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import { AppState } from 'store/types'
 import {
   pushUniqueRoute as pushRoute,
@@ -63,11 +61,8 @@ const { open } = mobileOverflowMenuUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { next, pause, play, previous, repeat, shuffle } = queueActions
-const { getIsCasting, getMethod } = castSelectors
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 type OwnProps = {
   onClose: () => void
@@ -123,8 +118,6 @@ const NowPlaying = g(
     undoRepost,
     clickOverflow,
     goToRoute,
-    isCasting,
-    castMethod,
     dominantColors
   }) => {
     const { uid, track, user, collectible } = currentQueueItem
@@ -233,8 +226,6 @@ const NowPlaying = g(
     }
 
     const togglePlay = () => {
-      const message = new HapticFeedbackMessage()
-      message.send()
       if (isPlaying) {
         pause()
         record(
@@ -368,11 +359,7 @@ const NowPlaying = g(
     const darkMode = isDarkMode()
 
     return (
-      <div
-        className={cn(styles.nowPlaying, {
-          [styles.native]: NATIVE_MOBILE
-        })}
-      >
+      <div className={styles.nowPlaying}>
         <div className={styles.header}>
           <div className={styles.caretContainer} onClick={onClose}>
             <IconCaret className={styles.iconCaret} />
@@ -474,11 +461,9 @@ const NowPlaying = g(
         </div>
         <div className={styles.actions}>
           <ActionsBar
-            castMethod={castMethod}
             isOwner={currentUserId === owner_id}
             hasReposted={has_current_user_reposted}
             hasFavorited={has_current_user_saved}
-            isCasting={isCasting}
             isCollectible={!!collectible}
             onToggleRepost={toggleRepost}
             onToggleFavorite={toggleFavorite}
@@ -504,8 +489,6 @@ function makeMapStateToProps() {
       playCounter: getCounter(state),
       isPlaying: getPlaying(state),
       isBuffering: getBuffering(state),
-      isCasting: getIsCasting(state),
-      castMethod: getMethod(state),
       dominantColors: getDominantColorsByTrack(state, {
         track: currentQueueItem.track
       })

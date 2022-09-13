@@ -10,6 +10,7 @@ import scrypt from 'react-native-scrypt'
 import { track } from 'app/services/analytics'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
+import { env } from './env'
 import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
@@ -86,6 +87,7 @@ const createKey = async (encryptStr: string, ivHex: string) => {
  */
 export const audiusBackendInstance = audiusBackend({
   claimDistributionContractAddress: Config.CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+  env,
   ethOwnerWallet: Config.ETH_OWNER_WALLET,
   ethProviderUrls: (Config.ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: Config.ETH_REGISTRY_ADDRESS,
@@ -99,18 +101,15 @@ export const audiusBackendInstance = audiusBackend({
     registryAddress,
     entityManagerAddress,
     web3ProviderUrls
-  ) => {
-    const config = {
-      error: false,
-      web3Config: libs.configInternalWeb3(
-        registryAddress,
-        web3ProviderUrls,
-        undefined,
-        entityManagerAddress
-      )
-    }
-    return config
-  },
+  ) => ({
+    error: false,
+    web3Config: libs.configInternalWeb3(
+      registryAddress,
+      web3ProviderUrls,
+      undefined,
+      entityManagerAddress
+    )
+  }),
   hedgehogConfig: {
     createKey
   },
@@ -120,7 +119,7 @@ export const audiusBackendInstance = audiusBackend({
   legacyUserNodeUrl: Config.LEGACY_USER_NODE,
   localStorage: AsyncStorage,
   monitoringCallbacks,
-  nativeMobile: Config.NATIVE_MOBILE === 'true',
+  nativeMobile: true,
   onLibsInit: (libs) => {
     audiusLibs = libs
     libsInitEventEmitter.emit(LIBS_INITTED_EVENT)
@@ -163,5 +162,6 @@ export const audiusBackendInstance = audiusBackend({
     if (audiusLibs) {
       return normal(audiusLibs)(...args)
     }
-  }
+  },
+  disableImagePreload: true
 })

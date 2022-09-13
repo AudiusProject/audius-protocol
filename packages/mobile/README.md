@@ -31,20 +31,6 @@ npm run bundle:ios
 
 ### Android
 
-## Running against localhost
-
-To run against localhost, specify `URL_OVERRIDE` in the `.env` file you intend to use.
-
-```
-URL_OVERRIDE=http://localhost:3001
-```
-
-> The WebView will be pointed at the url contained in `URL_OVERRIDE`
-
-This URL should be a serving a mobile audius-client with either
-
-`npm run start:mobile-stage` or `npm run start:mobile-prod`
-
 ## Running against a local static build
 
 To run against a local staging or production build, build the client and copy the build into the mobile client:
@@ -138,14 +124,6 @@ adb logcat '*:V'
 - Sometimes the app will crash due a configuration error or something outside of the realm of JS and you won't get any helpful information from React Native. In those cases, it's time to break open XCode and run from there to pinpoint the issue.
 
 ## Helpful
-
-- Sometimes the simulator app code won't update. You should disable caching in `settings/Network` of React Native Debugger.
-- If you feel like debugging the actual static app contained in the build, you can:
-
-```bash
-npm install -g serve --user
-serve -s web-app/Web.bundle/build -p 9000
-```
 
 - If your app is crashing after running for a second, or crashing on startup with no error message, it's probably an environment variable problem, and you should check to make sure you have them all. Debug using XCode.
 

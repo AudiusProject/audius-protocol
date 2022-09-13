@@ -47,9 +47,7 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { UpdateTipsStorageMessage } from 'services/native-mobile-interface/tipping'
 
-import mobileSagas from './mobileSagas'
 import { updateTipsStorage } from './storageUtils'
 const { decreaseBalance } = walletActions
 const { getAccountBalance } = walletSelectors
@@ -81,7 +79,6 @@ const { update } = cacheActions
 const getAccountUser = accountSelectors.getAccountUser
 
 export const FEED_TIP_DISMISSAL_TIME_LIMIT = 30 * 24 * 60 * 60 * 1000 // 30 days
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* overrideSupportingForUser({
   amountBN,
@@ -204,8 +201,11 @@ function* overrideSupportersForUser({
 function* sendTipAsync() {
   const walletClient = yield* getContext('walletClient')
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
+  const isNativeMobile = yield* getContext('isNativeMobile')
   yield call(waitForRemoteConfig)
   yield* waitForAccount()
+
+  const device = isNativeMobile ? 'native' : 'web'
 
   const sender = yield* select(getAccountUser)
   if (!sender) {
@@ -237,7 +237,7 @@ function* sendTipAsync() {
         senderHandle: sender.handle,
         recipientHandle: recipient.handle,
         amount: weiToAudioString(weiBNAmount),
-        device: NATIVE_MOBILE ? 'native' : 'web',
+        device,
         source
       })
     )
@@ -272,7 +272,7 @@ function* sendTipAsync() {
         senderHandle: sender.handle,
         recipientHandle: recipient.handle,
         amount: weiToAudioString(weiBNAmount),
-        device: NATIVE_MOBILE ? 'native' : 'web',
+        device,
         source
       })
     )
@@ -309,7 +309,7 @@ function* sendTipAsync() {
         recipientHandle: recipient.handle,
         amount: weiToAudioString(weiBNAmount),
         error,
-        device: NATIVE_MOBILE ? 'native' : 'web',
+        device,
         source
       })
     )
@@ -649,12 +649,7 @@ function* fetchRecentTipsAsync(action: ReturnType<typeof fetchRecentTips>) {
   })
   const { tip: tipToDisplay, newStorage } = result ?? {}
   if (newStorage) {
-    if (NATIVE_MOBILE) {
-      const message = new UpdateTipsStorageMessage(newStorage)
-      message.send()
-    } else {
-      yield call(updateTipsStorage, newStorage, localStorage)
-    }
+    yield call(updateTipsStorage, newStorage, localStorage)
   }
   if (tipToDisplay) {
     const userIds = [
@@ -762,14 +757,13 @@ function* watchFetchUserSupporter() {
 }
 
 const sagas = () => {
-  const sagas = [
+  return [
     watchFetchSupportingForUser,
     watchRefreshSupport,
     watchConfirmSendTip,
     watchFetchRecentTips,
     watchFetchUserSupporter
   ]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
 }
 
 export default sagas

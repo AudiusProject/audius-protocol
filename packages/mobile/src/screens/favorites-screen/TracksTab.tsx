@@ -2,6 +2,8 @@ import { useCallback, useState } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
+  savedPageActions,
+  playerSelectors,
   Status,
   FavoriteSource,
   Name,
@@ -11,22 +13,22 @@ import {
   savedPageSelectors,
   tracksSocialActions
 } from '@audius/common'
-import { shallowEqual, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
 import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
-import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
+const { getPlaying, getUid } = playerSelectors
 const { saveTrack, unsaveTrack } = tracksSocialActions
 const { getSavedTracksLineup, getSavedTracksStatus } = savedPageSelectors
+const { fetchSaves } = savedPageActions
 const { makeGetTableMetadatas } = lineupSelectors
 
 const messages = {
@@ -55,13 +57,18 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 const getTracks = makeGetTableMetadatas(getSavedTracksLineup)
 
 export const TracksTab = () => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const styles = useStyles()
+
+  useEffectOnce(() => {
+    dispatch(fetchSaves())
+  })
+
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)
-  const playingUid = useSelector(getPlayingUid)
-  const savedTracksStatus = useSelectorWeb(getSavedTracksStatus)
-  const savedTracks = useSelectorWeb(getTracks, shallowEqual)
+  const playingUid = useSelector(getUid)
+  const savedTracksStatus = useSelector(getSavedTracksStatus)
+  const savedTracks = useSelector(getTracks, shallowEqual)
 
   const filterTrack = (track: TrackMetadata) => {
     const matchValue = filterValue.toLowerCase()
@@ -75,15 +82,15 @@ export const TracksTab = () => {
     (isSaved: boolean, trackId: ID) => {
       if (trackId === undefined) return
       const action = isSaved ? unsaveTrack : saveTrack
-      dispatchWeb(action(trackId, FavoriteSource.FAVORITES_PAGE))
+      dispatch(action(trackId, FavoriteSource.FAVORITES_PAGE))
     },
-    [dispatchWeb]
+    [dispatch]
   )
 
   const togglePlay = useCallback(
     (uid: UID, id: ID) => {
       if (uid !== playingUid || (uid === playingUid && !isPlaying)) {
-        dispatchWeb(tracksActions.play(uid))
+        dispatch(tracksActions.play(uid))
         track(
           make({
             eventName: Name.PLAYBACK_PLAY,
@@ -92,7 +99,7 @@ export const TracksTab = () => {
           })
         )
       } else if (uid === playingUid && isPlaying) {
-        dispatchWeb(tracksActions.pause())
+        dispatch(tracksActions.pause())
         track(
           make({
             eventName: Name.PLAYBACK_PAUSE,
@@ -102,7 +109,7 @@ export const TracksTab = () => {
         )
       }
     },
-    [dispatchWeb, isPlaying, playingUid]
+    [dispatch, isPlaying, playingUid]
   )
 
   return (

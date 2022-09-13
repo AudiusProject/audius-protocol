@@ -6,10 +6,9 @@ import type {
   TrendingTrackNotification as TrendingTrackNotificationType
 } from '@audius/common'
 import { notificationsSelectors } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { getTrackRoute } from 'app/utils/routes'
 
 import {
   EntityLink,
@@ -45,18 +44,14 @@ export const TrendingTrackNotification = (
   const { notification } = props
   const { rank } = notification
   const rankSuffix = getRankSuffix(rank)
-  const track = useSelectorWeb(
-    (state) => getNotificationEntity(state, notification),
-    isEqual
+  const track = useSelector((state) =>
+    getNotificationEntity(state, notification)
   ) as Nullable<TrackEntity>
   const navigation = useDrawerNavigation()
 
   const handlePress = useCallback(() => {
     if (track) {
-      navigation.navigate({
-        native: { screen: 'Track', params: { id: track.track_id } },
-        web: { route: getTrackRoute(track) }
-      })
+      navigation.navigate('Track', { id: track.track_id })
     }
   }, [navigation, track])
 

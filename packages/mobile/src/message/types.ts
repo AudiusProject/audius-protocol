@@ -1,16 +1,6 @@
-import type { Theme } from '@audius/common'
-import type { Dispatch } from 'redux'
-
-import type { AnalyticsMessage } from '../types/analytics'
-
 export enum MessageType {
   LOADED = 'loaded',
-  PLAY_TRACK = 'play-track',
-  PAUSE_TRACK = 'pause-track',
-  GET_POSITION = 'get-position',
-  SEEK_TRACK = 'seek-track',
   SET_INFO = 'set-info',
-  PERSIST_QUEUE = 'persist-queue',
   SET_REPEAT_MODE = 'set-repeat-mode',
   SHUFFLE = 'shuffle',
 
@@ -41,17 +31,8 @@ export enum MessageType {
   // Notifications
   ENABLE_PUSH_NOTIFICATIONS = 'enable-push-notifications',
   DISABLE_PUSH_NOTIFICATIONS = 'disable-push-notifications',
-  RESET_NOTIFICATIONS_BADGE_COUNT = 'reset-notifications-badge-count',
   ENABLE_PUSH_NOTIFICATIONS_REMINDER = 'action/enable-push-notifications-reminder',
   PROMPT_PUSH_NOTIFICATION_REMINDER = 'prompt-push-notifications-reminder',
-
-  OPEN_NOTIFICATIONS = 'open-notifications',
-  FETCH_NOTIFICATIONS = 'fetch-notifications',
-  FETCH_NOTIFICATIONS_SUCCESS = 'fetch-notifications-success',
-  FETCH_NOTIFICATIONS_REPLACE = 'fetch-notifications-replace',
-  FETCH_NOTIFICATIONS_FAILURE = 'fetch-notifications-failure',
-  REFRESH_NOTIFICATIONS = 'refresh-notifications',
-  MARK_ALL_NOTIFICATIONS_AS_VIEWED = 'mark-all-notifications-as-viewed',
 
   // Search
   OPEN_SEARCH = 'open-search',
@@ -63,13 +44,6 @@ export enum MessageType {
 
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
-
-  // Action dispatchers
-  SYNC_QUEUE = 'action/sync-queue',
-  SYNC_PLAYER = 'action/sync-player',
-  REQUEST_QUEUE_AUTOPLAY = 'action/request-queue-autoplay',
-  PUSH_ROUTE = 'action/push-route',
-  SCROLL_TO_TOP = 'action/scroll-to-top',
 
   // OAuth
   REQUEST_TWITTER_AUTH = 'request-twitter-auth',
@@ -107,9 +81,6 @@ export enum MessageType {
 
   SHARE = 'share',
 
-  // Download
-  DOWNLOAD_TRACK = 'download-track',
-
   // Analytics
   ANALYTICS_IDENTIFY = 'analytics-identify',
   ANALYTICS_TRACK = 'analytics-track',
@@ -123,38 +94,7 @@ export enum MessageType {
 
   SYNC_COMMON_STATE = 'sync-common-state',
 
-  // hCaptcha
-  UPDATE_HCAPTCHA_SCORE = 'update-hcaptcha-score',
-
   // Tipping
   FETCH_RECENT_TIPS = 'fetch-recent-tips',
   UPDATE_TIPS_STORAGE = 'update-tips-storage'
 }
-
-export type Message = {
-  type: string
-  [key: string]: any
-}
-
-export type MessageHandler = (args: {
-  // The message to handle
-  message: Message | AnalyticsMessage
-  // Used to dispatch an action to the redux store
-  dispatch: Dispatch
-  // Used to post a message back to the web client
-  postMessage: (message: Message) => void
-  // Used to reload the WebView
-  reload: () => void
-  // Used to set the theme. Specific because theme state is
-  // handled via the context API outside of the store to be able to
-  // theme the error boundary that renders if the store throws.
-  // Generally messages should make
-  // use of dispatch to talk to global state.
-  setTheme: (theme: Theme) => void
-}) => void
-
-export type MessageHandlers = {
-  [key in MessageType]: MessageHandler
-}
-
-export type MessageHandlersGetter = () => Partial<MessageHandlers>

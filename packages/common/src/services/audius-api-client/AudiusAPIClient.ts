@@ -83,6 +83,7 @@ const FULL_ENDPOINT_MAP = {
   topGenreUsers: '/users/genre/top',
   topArtists: '/users/top',
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
+  getTracks: () => `/tracks`,
   getTrackByHandleAndSlug: `/tracks`,
   getStems: (trackId: OpaqueID) => `/tracks/${trackId}/stems`,
   getRemixes: (trackId: OpaqueID) => `/tracks/${trackId}/remixes`,
@@ -117,6 +118,11 @@ export type GetTrackArgs = {
     urlTitle: string
     handle: string
   }
+}
+
+type GetTracksArgs = {
+  ids: ID[]
+  currentUserId: Nullable<ID>
 }
 
 type GetTrackByHandleAndSlugArgs = {
@@ -796,6 +802,26 @@ export class AudiusAPIClient {
     return adapted
   }
 
+  async getTracks({ ids, currentUserId }: GetTracksArgs) {
+    this._assertInitialized()
+    const encodedTrackIds = ids.map((id) => this._encodeOrThrow(id))
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      id: encodedTrackIds,
+      user_id: encodedCurrentUserId || undefined
+    }
+
+    const trackResponse: Nullable<APIResponse<APITrack[]>> =
+      await this._getResponse(FULL_ENDPOINT_MAP.getTracks(), params, true)
+    if (!trackResponse) {
+      return null
+    }
+    const adapted = trackResponse.data
+      .map((track) => adapter.makeTrack(track))
+      .filter(removeNullable)
+    return adapted
+  }
+
   async getTrackByHandleAndSlug({
     handle,
     slug,
@@ -943,8 +969,7 @@ export class AudiusAPIClient {
 
     let headers = {}
     if (encodedCurrentUserId && getUnlisted) {
-      const { data, signature } =
-        await this.audiusBackendInstance.signDiscoveryNodeRequest()
+      const { data, signature } = await this.audiusBackendInstance.signData()
       headers = {
         [AuthHeaders.Message]: data,
         [AuthHeaders.Signature]: signature

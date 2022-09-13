@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 
 import { accountSelectors } from '@audius/common'
 import { Text, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { ProfilePicture } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
@@ -28,14 +28,11 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 
 export const AccountSettingsRow = () => {
   const styles = useStyles()
-  const accountUser = useSelectorWeb(getAccountUser)
+  const accountUser = useSelector(getAccountUser)
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const handlePress = useCallback(() => {
-    navigation.push({
-      native: { screen: 'AccountSettingsScreen' },
-      web: { route: '/settings/account' }
-    })
+    navigation.push('AccountSettingsScreen')
   }, [navigation])
 
   if (!accountUser) return null

@@ -1,10 +1,10 @@
+import { useSelectTierInfo } from '@audius/common'
 import type { User } from '@audius/common'
 import type { ViewStyle, StyleProp, TextStyle } from 'react-native'
 import { StyleSheet, View, Text } from 'react-native'
 
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 
 type UserBadgesProps = {
   user: Pick<User, 'user_id' | 'name' | 'is_verified'>

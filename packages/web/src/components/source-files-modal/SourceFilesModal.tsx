@@ -19,7 +19,7 @@ import cn from 'classnames'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import Switch from 'components/switch/Switch'
-import Dropzone from 'components/upload/Dropzone'
+import { Dropzone } from 'components/upload/Dropzone'
 
 import styles from './SourceFilesModal.module.css'
 
@@ -232,7 +232,7 @@ const SourceFilesView = ({
           [styles.dropzoneDisabled]: atCapacity
         })}
         textAboveIcon={messages.sourceFiles}
-        onDrop={onAdd}
+        onDropAccepted={onAdd}
         type='stem'
         subtitle={atCapacity ? messages.maxCapacity : undefined}
         disableClick={atCapacity}

@@ -18,10 +18,7 @@ export const EmptyTab = ({ message }: EmptyTabProps) => {
   const navigation = useNavigation<AppScreenParamList>()
 
   const onPress = useCallback(() => {
-    navigation.navigate({
-      native: { screen: 'trending' },
-      web: { route: 'trending' }
-    })
+    navigation.navigate('trending')
   }, [navigation])
 
   return (

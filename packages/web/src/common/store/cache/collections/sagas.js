@@ -15,7 +15,9 @@ import {
   cacheUsersSelectors,
   cacheActions,
   waitForAccount,
-  dataURLtoFile
+  dataURLtoFile,
+  getContext,
+  audioRewardsPageActions
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import {
@@ -25,8 +27,7 @@ import {
   put,
   select,
   takeEvery,
-  takeLatest,
-  getContext
+  takeLatest
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
@@ -36,7 +37,6 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { reformat } from './utils'
 import {
@@ -47,6 +47,7 @@ const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { getAccountUser, getUserId } = accountSelectors
+const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 
 /** Counts instances of trackId in a playlist. */
 const countTrackIds = (playlistContents, trackId) => {
@@ -76,6 +77,7 @@ function* createPlaylistAsync(action) {
   yield waitForAccount()
   const userId = yield select(getUserId)
   const uid = action.playlistId
+  const getFeatureEnabled = yield getContext('getFeatureEnabled')
   const playlistEntityManagerIsEnabled =
     getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ?? false
   if (!userId) {
@@ -345,6 +347,7 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
+        const getFeatureEnabled = yield getContext('getFeatureEnabled')
         const playlistEntityManagerIsEnabled =
           getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ??
           false
@@ -475,6 +478,7 @@ function* addTrackToPlaylistAsync(action) {
   yield put(
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )
+  yield put(setOptimisticChallengeCompleted({ challengeId: 'first-playlist' }))
 }
 
 function* confirmAddTrackToPlaylist(
@@ -485,6 +489,8 @@ function* confirmAddTrackToPlaylist(
   playlist
 ) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield getContext('getFeatureEnabled')
+
   const playlistEntityManagerIsEnabled =
     getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ?? false
 
@@ -685,6 +691,8 @@ function* confirmRemoveTrackFromPlaylist(
   playlist
 ) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield getContext('getFeatureEnabled')
+
   const playlistEntityManagerIsEnabled =
     getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ?? false
 
@@ -836,6 +844,7 @@ function* confirmOrderPlaylist(userId, playlistId, trackIds, playlist) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
+        const getFeatureEnabled = yield getContext('getFeatureEnabled')
         // NOTE: In an attempt to fix playlists in a corrupted state, only attempt the order playlist tracks once,
         // if it fails, check if the playlist is in a corrupted state and if so fix it before re-attempting to order playlist
         const playlistEntityManagerIsEnabled =
@@ -960,6 +969,7 @@ function* confirmPublishPlaylist(userId, playlistId, playlist) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
+        const getFeatureEnabled = yield getContext('getFeatureEnabled')
         const playlistEntityManagerIsEnabled =
           getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ??
           false
@@ -1178,6 +1188,7 @@ function* confirmDeletePlaylist(userId, playlistId) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
+        const getFeatureEnabled = yield getContext('getFeatureEnabled')
         const playlistEntityManagerIsEnabled =
           getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ??
           false
@@ -1346,7 +1357,8 @@ function* watchFetchCoverArt() {
         )
       } catch (e) {
         console.error(
-          `Unable to fetch cover art for collection ${collectionId}`
+          `Unable to fetch cover art for collection ${collectionId}`,
+          e
         )
       } finally {
         inProgress.delete(key)

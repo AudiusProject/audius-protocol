@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Status, accountSelectors } from '@audius/common'
-import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
+import * as signOnActions from 'common/store/pages/signon/actions'
+import { getHandleField } from 'common/store/pages/signon/selectors'
+import type { EditableField } from 'common/store/pages/signon/types'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -14,10 +17,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { MessageType } from 'app/message'
 import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import {
@@ -26,11 +26,9 @@ import {
   getTwitterError,
   getTwitterInfo
 } from 'app/store/oauth/selectors'
-import { getHandleError, getHandleIsValid } from 'app/store/signon/selectors'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import { getUserRoute } from 'app/utils/routes'
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
 
 const messages = {
   title: 'Verification',
@@ -107,18 +105,17 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 export const AccountVerificationScreen = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
   const [didValidateHandle, setDidValidateHandle] = useState(false)
-  const accountUser = useSelectorWeb(getAccountUser)
+  const accountUser = useSelector(getAccountUser)
   const navigation = useNavigation()
   const twitterInfo = useSelector(getTwitterInfo)
   const twitterError = useSelector(getTwitterError)
   const instagramInfo = useSelector(getInstagramInfo)
   const instagramError = useSelector(getInstagramError)
-  const handleIsValid = useSelector(getHandleIsValid)
-  const handleError = useSelector(getHandleError)
+
+  const handleField: EditableField = useSelector(getHandleField)
 
   const name = accountUser?.name
   const handle = accountUser?.handle
@@ -141,15 +138,9 @@ export const AccountVerificationScreen = () => {
       const handle = type === 'twitter' ? profile.screen_name : profile.username
       const verified =
         type === 'twitter' ? profile.verified : profile.is_verified
-      dispatchWeb({
-        type: MessageType.SIGN_UP_VALIDATE_HANDLE,
-        handle,
-        verified,
-        isAction: true,
-        onValidate: null
-      })
+      dispatch(signOnActions.validateHandle(handle, verified))
     },
-    [dispatchWeb, twitterInfo, instagramInfo]
+    [dispatch, twitterInfo, instagramInfo]
   )
 
   const trackOAuthComplete = useCallback(
@@ -185,21 +176,20 @@ export const AccountVerificationScreen = () => {
 
   useEffect(() => {
     if (twitterInfo) {
-      if (!handleIsValid && !didValidateHandle) {
+      if (handleField.status !== EditingStatus.SUCCESS && !didValidateHandle) {
         validateHandle('twitter')
         setDidValidateHandle(true)
-      } else if (handleError || twitterInfo.requiresUserReview) {
+      } else if (handleField.error || twitterInfo.requiresUserReview) {
         trackOAuthComplete('twitter')
         setStatus('')
-      } else if (handleIsValid) {
+      } else if (handleField.status === EditingStatus.SUCCESS) {
         trackOAuthComplete('twitter')
         setStatus(Status.SUCCESS)
       }
     }
   }, [
     twitterInfo,
-    handleIsValid,
-    handleError,
+    handleField,
     didValidateHandle,
     validateHandle,
     trackOAuthComplete
@@ -211,21 +201,20 @@ export const AccountVerificationScreen = () => {
 
   useEffect(() => {
     if (instagramInfo) {
-      if (!handleIsValid && !didValidateHandle) {
+      if (handleField.status !== EditingStatus.SUCCESS && !didValidateHandle) {
         validateHandle('instagram')
         setDidValidateHandle(true)
-      } else if (handleError || instagramInfo.requiresUserReview) {
+      } else if (handleField.error || instagramInfo.requiresUserReview) {
         trackOAuthComplete('instagram')
         setStatus('')
-      } else if (handleIsValid) {
+      } else if (handleField.status === EditingStatus.SUCCESS) {
         trackOAuthComplete('instagram')
         setStatus(Status.SUCCESS)
       }
     }
   }, [
     instagramInfo,
-    handleIsValid,
-    handleError,
+    handleField,
     didValidateHandle,
     validateHandle,
     trackOAuthComplete
@@ -239,10 +228,7 @@ export const AccountVerificationScreen = () => {
     if (!handle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setTwitterError(null))
-    dispatchWeb({
-      type: MessageType.REQUEST_TWITTER_AUTH,
-      isAction: true
-    })
+    dispatch(oauthActions.twitterAuth())
     track(
       make({
         eventName: EventNames.SETTINGS_START_TWITTER_OAUTH,
@@ -255,10 +241,7 @@ export const AccountVerificationScreen = () => {
     if (!handle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setInstagramError(null))
-    dispatchWeb({
-      type: MessageType.REQUEST_INSTAGRAM_AUTH,
-      isAction: true
-    })
+    dispatch(oauthActions.instagramAuth())
     track(
       make({
         eventName: EventNames.SETTINGS_START_INSTAGRAM_OAUTH,
@@ -269,11 +252,8 @@ export const AccountVerificationScreen = () => {
 
   const goBacktoProfile = useCallback(() => {
     if (!handle) return
-    navigation.navigate({
-      native: { screen: 'Profile', params: { handle } },
-      web: { route: getUserRoute(accountUser), fromPage: NOTIFICATION_PAGE }
-    })
-  }, [accountUser, handle, navigation])
+    navigation.navigate('Profile', { handle })
+  }, [handle, navigation])
 
   if (!accountUser) return null
 

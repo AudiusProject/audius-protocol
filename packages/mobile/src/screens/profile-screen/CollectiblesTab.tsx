@@ -4,13 +4,13 @@ import { accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { FlatList as RNFlatList } from 'react-native'
 import { View, Text } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconShare from 'app/assets/images/iconShare.svg'
 import { Tile, GradientText, FlatList, Button } from 'app/components/core'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import UserBadges from 'app/components/user-badges'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { getCollectiblesRoute } from 'app/utils/routes'
 
@@ -69,8 +69,8 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const CollectiblesTab = () => {
   const styles = useStyles()
-  const { profile } = useSelectorWeb(getProfile)
-  const accountId = useSelectorWeb(getUserId)
+  const { profile } = useSelector(getProfile)
+  const accountId = useSelector(getUserId)
   const isOwner = profile?.user_id === accountId
   const { toast } = useContext(ToastContext)
   const ref = useRef<RNFlatList>(null)

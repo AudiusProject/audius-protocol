@@ -27,7 +27,6 @@ import type { SmartCollectionScreen } from '../smartCollections'
 type ColorTileProps = {
   style?: StyleProp<ViewStyle>
   title: string
-  link: string
   screen: MoodScreen | CollectionScreen | SmartCollectionScreen
   description?: string
   gradientColors?: string[]
@@ -125,7 +124,6 @@ const createStyles = (themeColors: ThemeColors) =>
 export const ColorTile = ({
   style,
   title,
-  link,
   screen,
   description,
   gradientColors = [],
@@ -146,12 +144,9 @@ export const ColorTile = ({
 
   const handlePress = useCallback(() => {
     if (screen) {
-      navigation.push({
-        native: { screen },
-        web: { route: link }
-      })
+      navigation.push(screen)
     }
-  }, [navigation, screen, link])
+  }, [navigation, screen])
 
   return (
     <Animated.View

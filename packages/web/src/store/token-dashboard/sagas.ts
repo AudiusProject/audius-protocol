@@ -34,6 +34,7 @@ import { WalletLinkProvider } from 'walletlink'
 import { upgradeToCreator } from 'common/store/cache/users/sagas'
 import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
+import commonTokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
 import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
@@ -54,7 +55,6 @@ const {
 } = walletActions
 const { getSendData, getAssociatedWallets } = tokenDashboardPageSelectors
 const {
-  fetchAssociatedWallets,
   connectNewWallet,
   removeWallet: removeWalletAction,
   pressSend,
@@ -63,7 +63,6 @@ const {
   confirmSend,
   setIsConnectingWallet,
   setWalletAddedConfirmed,
-  setAssociatedWallets,
   confirmRemoveWallet,
   updateWalletError,
   preloadWalletProviders
@@ -131,81 +130,6 @@ function* confirmSendAsync() {
     }
   }
   yield* put(setModalState({ modalState: sentState }))
-}
-
-function* fetchEthWalletInfo(wallets: string[]) {
-  const walletClient = yield* getContext('walletClient')
-  const ethWalletBalances = yield* call(
-    [walletClient, 'getEthWalletBalances'],
-    wallets
-  )
-
-  const collectiblesMap = yield* call(fetchOpenSeaAssetsForWallets, wallets)
-
-  const collectibleCounts = wallets.map(
-    (wallet) => collectiblesMap[wallet]?.length ?? 0
-  )
-
-  return wallets.map((_, idx) => ({
-    ...ethWalletBalances[idx],
-    collectibleCount: collectibleCounts[idx]
-  }))
-}
-
-function* fetchSplWalletInfo(wallets: string[]) {
-  const walletClient = yield* getContext('walletClient')
-  const splWalletBalances = yield* call(
-    [walletClient, 'getSolWalletBalances'],
-    wallets
-  )
-
-  const collectiblesMap = yield* call(
-    fetchSolanaCollectiblesForWallets,
-    wallets
-  )
-
-  const collectibleCounts = wallets.map(
-    (wallet) => collectiblesMap[wallet]?.length ?? 0
-  )
-
-  return wallets.map((_, idx) => ({
-    ...splWalletBalances[idx],
-    collectibleCount: collectibleCounts[idx]
-  }))
-}
-
-function* fetchAccountAssociatedWallets() {
-  const apiClient = yield* getContext('apiClient')
-  yield* waitForAccount()
-  const accountUserId = yield* select(getUserId)
-  if (!accountUserId) return
-  const associatedWallets = yield* call(
-    [apiClient, apiClient.getAssociatedWallets],
-    {
-      userID: accountUserId
-    }
-  )
-  if (!associatedWallets) {
-    return
-  }
-  const ethWalletBalances = yield* fetchEthWalletInfo(associatedWallets.wallets)
-
-  const splWalletBalances = yield* fetchSplWalletInfo(
-    associatedWallets.sol_wallets ?? []
-  )
-
-  yield* put(
-    setAssociatedWallets({
-      associatedWallets: ethWalletBalances,
-      chain: Chain.Eth
-    })
-  )
-  yield* put(
-    setAssociatedWallets({
-      associatedWallets: splWalletBalances,
-      chain: Chain.Sol
-    })
-  )
 }
 
 function* getAccountMetadataCID(): Generator<any, Nullable<string>, any> {
@@ -832,10 +756,6 @@ function* watchConfirmSend() {
   yield* takeLatest(confirmSend.type, confirmSendAsync)
 }
 
-function* watchGetAssociatedWallets() {
-  yield* takeLatest(fetchAssociatedWallets.type, fetchAccountAssociatedWallets)
-}
-
 function* watchConnectNewWallet() {
   yield* takeLatest(connectNewWallet.type, connectWallet)
 }
@@ -850,9 +770,9 @@ function* watchRemoveWallet() {
 
 const sagas = () => {
   return [
+    ...commonTokenDashboardSagas(),
     watchPressSend,
     watchConfirmSend,
-    watchGetAssociatedWallets,
     watchConnectNewWallet,
     watchRemoveWallet,
     watchPreloadWalletProviders

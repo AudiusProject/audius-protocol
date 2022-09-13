@@ -14,6 +14,8 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron, isMobile } from 'utils/clientUtil'
 import { tracing } from 'utils/tracer'
 
+import { env } from '../env'
+
 declare global {
   interface Window {
     audiusLibs: any
@@ -26,17 +28,13 @@ declare global {
 export const audiusBackendInstance = audiusBackend({
   claimDistributionContractAddress:
     process.env.REACT_APP_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+  env,
   ethOwnerWallet: process.env.REACT_APP_ETH_OWNER_WALLET,
   ethProviderUrls: (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: process.env.REACT_APP_ETH_REGISTRY_ADDRESS,
   ethTokenAddress: process.env.REACT_APP_ETH_TOKEN_ADDRESS,
   getFeatureEnabled,
-  getHostUrl: () => {
-    const nativeMobile = process.env.REACT_APP_NATIVE_MOBILE === 'true'
-    return nativeMobile && process.env.REACT_APP_ENVIRONMENT === 'production'
-      ? `${process.env.REACT_APP_PUBLIC_PROTOCOL}//${process.env.REACT_APP_PUBLIC_HOSTNAME}`
-      : window.location.origin
-  },
+  getHostUrl: () => window.location.origin,
   getLibs: () => import('@audius/sdk/dist/legacy'),
   getWeb3Config: async (
     libs,
@@ -88,7 +86,7 @@ export const audiusBackendInstance = audiusBackend({
   isMobile: isMobile(),
   legacyUserNodeUrl: process.env.REACT_APP_LEGACY_USER_NODE,
   monitoringCallbacks,
-  nativeMobile: process.env.REACT_APP_NATIVE_MOBILE === 'true',
+  nativeMobile: false,
   onLibsInit: (libs: AudiusLibs) => {
     window.audiusLibs = libs
     const event = new CustomEvent(LIBS_INITTED_EVENT)

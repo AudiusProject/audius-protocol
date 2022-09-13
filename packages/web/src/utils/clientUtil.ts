@@ -10,11 +10,7 @@ declare global {
   }
 }
 
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 export const isMobile = () => {
-  // If we are running with the mobile env flag set, short-circuit to `true`
-  if (IS_NATIVE_MOBILE) return true
   let check = false
   ;(function (a) {
     if (

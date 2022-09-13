@@ -3,17 +3,16 @@ import { useCallback } from 'react'
 import type { Supporting } from '@audius/common'
 import { WidthSizes, cacheUsersSelectors } from '@audius/common'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
-import { profilePage } from 'audius-client/src/utils/route'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
+import { useSelector } from 'react-redux'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { Text, Tile } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -88,7 +87,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
   const { secondary } = useThemeColors()
-  const user = useSelectorWeb((state) => {
+  const user = useSelector((state) => {
     return getUser(state, { id: supporting.receiver_id })
   })
   const { user_id, handle, name, _cover_photo_sizes } = user || {}
@@ -104,10 +103,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
 
   const handlePress = useCallback(() => {
     if (handle) {
-      navigation.push({
-        native: { screen: 'Profile', params: { handle } },
-        web: { route: profilePage(handle) }
-      })
+      navigation.push('Profile', { handle })
     }
   }, [navigation, handle])
 

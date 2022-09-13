@@ -33,10 +33,8 @@ import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import DownloadApp from 'services/download-app/DownloadApp'
-import { localStorage } from 'services/local-storage'
 import { isMobile, isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
-import { signOut } from 'utils/signOut'
 
 import packageInfo from '../../../../../package.json'
 
@@ -44,6 +42,7 @@ import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
+
 const { version } = packageInfo
 
 const SIGN_OUT_MODAL_TEXT = `
@@ -98,6 +97,7 @@ type OwnProps = {
   recordAccountRecovery: () => void
   recordDownloadDesktopApp: () => void
   showMatrix: boolean
+  signOut: () => void
 }
 
 export type SettingsPageProps = OwnProps
@@ -138,7 +138,9 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
   }
 
   onSignOut = () => {
-    this.props.recordSignOut(() => signOut(audiusBackendInstance, localStorage))
+    const { recordSignOut, signOut } = this.props
+
+    recordSignOut(signOut)
   }
 
   showEmailToast = async () => {

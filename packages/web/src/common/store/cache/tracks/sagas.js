@@ -33,14 +33,11 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import TrackDownload from 'services/audius-backend/TrackDownload'
 import { dominantColor } from 'utils/imageProcessingUtil'
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
 const { getAccountUser, getUserId, getUserHandle } = accountSelectors
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* fetchRepostInfo(entries) {
   const userIds = []
@@ -123,7 +120,8 @@ function* watchAdd() {
             }))
         )
       )
-      if (!NATIVE_MOBILE) {
+      const isNativeMobile = yield getContext('isNativeMobile')
+      if (!isNativeMobile) {
         yield fork(fetchRepostInfo, action.entries)
         yield fork(fetchFirstSegments, action.entries)
       }
@@ -477,6 +475,7 @@ function* watchFetchCoverArt() {
 
 function* watchCheckIsDownloadable() {
   yield takeLatest(trackActions.CHECK_IS_DOWNLOADABLE, function* (action) {
+    const trackDownload = yield getContext('trackDownload')
     const track = yield select(getTrack, { id: action.trackId })
     if (!track) return
 
@@ -485,7 +484,7 @@ function* watchCheckIsDownloadable() {
     if (!user.creator_node_endpoint) return
 
     const cid = yield call(
-      TrackDownload.checkIfDownloadAvailable,
+      [trackDownload, 'checkIfDownloadAvailable'],
       track.track_id,
       user.creator_node_endpoint
     )
@@ -511,7 +510,7 @@ function* watchCheckIsDownloadable() {
     const currentUserId = yield select(getUserId)
     if (currentUserId === user.user_id) {
       yield call(
-        TrackDownload.updateTrackDownloadCID,
+        [trackDownload, 'updateTrackDownloadCID'],
         track.track_id,
         track,
         cid

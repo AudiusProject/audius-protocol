@@ -1,13 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 
 import type { SvgProps } from 'react-native-svg'
-import {
-  EXPLORE_LET_THEM_DJ_PAGE,
-  EXPLORE_TOP_ALBUMS_PAGE,
-  exploreMoodPlaylistsPage,
-  TRENDING_PLAYLISTS_PAGE,
-  TRENDING_UNDERGROUND_PAGE
-} from 'utils/route'
 
 import EmojiDoveOfPeace from 'app/assets/images/emojis/dove-of-peace.png'
 import EmojiFire from 'app/assets/images/emojis/fire.png'
@@ -44,7 +37,6 @@ export type ExploreCollection = {
   shadowOpacity: number
   icon?: ComponentType<SvgProps>
   incentivized?: boolean // Whether we reward winners with $AUDIO
-  link: string
   screen: CollectionScreen | MoodScreen
 }
 
@@ -63,8 +55,7 @@ export const LET_THEM_DJ: ExploreCollection = {
   gradientAngle: 315,
   shadowColor: 'rgb(9,175,233)',
   shadowOpacity: 0.25,
-  icon: IconExploreDJ,
-  link: EXPLORE_LET_THEM_DJ_PAGE
+  icon: IconExploreDJ
 }
 
 export const TOP_ALBUMS: ExploreCollection = {
@@ -76,8 +67,7 @@ export const TOP_ALBUMS: ExploreCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(177,0,253)',
   shadowOpacity: 0.25,
-  icon: IconExploreTopAlbums,
-  link: EXPLORE_TOP_ALBUMS_PAGE
+  icon: IconExploreTopAlbums
 }
 
 export const TRENDING_PLAYLISTS: ExploreCollection = {
@@ -90,7 +80,6 @@ export const TRENDING_PLAYLISTS: ExploreCollection = {
   shadowColor: 'rgb(87,170,255)',
   shadowOpacity: 0.25,
   icon: IconExploreTopPlaylists,
-  link: TRENDING_PLAYLISTS_PAGE,
   incentivized: true
 }
 
@@ -105,7 +94,6 @@ export const TRENDING_UNDERGROUND: ExploreCollection = {
   shadowColor: 'rgb(242,87,255)',
   shadowOpacity: 0.25,
   icon: IconCassette,
-  link: TRENDING_UNDERGROUND_PAGE,
   incentivized: true
 }
 
@@ -119,7 +107,6 @@ export const CHILL_PLAYLISTS: ExploreMoodCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(237,144,255)',
   shadowOpacity: 0.25,
-  link: exploreMoodPlaylistsPage('chill'),
   moods: ['peaceful', 'easygoing', 'melancholy']
 }
 
@@ -132,7 +119,6 @@ export const PROVOKING_PLAYLISTS: ExploreMoodCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(115,225,179)',
   shadowOpacity: 0.25,
-  link: exploreMoodPlaylistsPage('provoking'),
   moods: ['sophisticated', 'brooding', 'serious', 'stirring']
 }
 
@@ -145,7 +131,6 @@ export const INTIMATE_PLAYLISTS: ExploreMoodCollection = {
   gradientAngle: 315,
   shadowColor: 'rgb(241,81,225)',
   shadowOpacity: 0.25,
-  link: exploreMoodPlaylistsPage('intimate'),
   moods: ['sentimental', 'romantic', 'yearning', 'sensual', 'tender']
 }
 
@@ -158,7 +143,6 @@ export const UPBEAT_PLAYLISTS: ExploreMoodCollection = {
   gradientAngle: 135,
   shadowColor: 'rgb(11,97,255)',
   shadowOpacity: 0.25,
-  link: exploreMoodPlaylistsPage('upbeat'),
   moods: ['upbeat', 'excited', 'energizing', 'empowering', 'cool']
 }
 
@@ -171,6 +155,5 @@ export const INTENSE_PLAYLISTS: ExploreMoodCollection = {
   gradientAngle: 315,
   shadowColor: 'rgb(250,173,124)',
   shadowOpacity: 0.25,
-  link: exploreMoodPlaylistsPage('intense'),
   moods: ['rowdy', 'fiery', 'defiant', 'aggressive', 'gritty']
 }

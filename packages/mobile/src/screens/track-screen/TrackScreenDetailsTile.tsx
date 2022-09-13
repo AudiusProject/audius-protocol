@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { UID, Track, User } from '@audius/common'
 import {
+  playerSelectors,
   FavoriteSource,
   RepostSource,
   ShareSource,
@@ -23,30 +24,23 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
-import {
-  FAVORITING_USERS_ROUTE,
-  REPOSTING_USERS_ROUTE
-} from 'audius-client/src/utils/route'
 import { Image, View } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { make, track as record } from 'app/services/analytics'
-import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import type { SearchTrack, SearchUser } from 'app/store/search/types'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
-import { getTagSearchRoute } from 'app/utils/routes'
 import { useThemeColors } from 'app/utils/theme'
 
 import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
+const { getPlaying, getUid } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -54,7 +48,7 @@ const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
 const { tracksActions } = trackPageLineupActions
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
 
 const messages = {
   track: 'track',
@@ -126,9 +120,9 @@ export const TrackScreenDetailsTile = ({
   const navigation = useNavigation()
   const { accentOrange } = useThemeColors()
 
-  const currentUserId = useSelectorWeb(getUserId)
-  const dispatchWeb = useDispatchWeb()
-  const playingUid = useSelector(getPlayingUid)
+  const currentUserId = useSelector(getUserId)
+  const dispatch = useDispatch()
+  const playingUid = useSelector(getUid)
   const isPlaying = useSelector(getPlaying)
   const isPlayingUid = playingUid === uid
 
@@ -198,49 +192,33 @@ export const TrackScreenDetailsTile = ({
     if (isLineupLoading) return
 
     if (isPlaying && isPlayingUid) {
-      dispatchWeb(tracksActions.pause())
+      dispatch(tracksActions.pause())
       recordPlay(track_id, false)
     } else if (!isPlayingUid) {
-      dispatchWeb(tracksActions.play(uid))
+      dispatch(tracksActions.play(uid))
       recordPlay(track_id)
     } else {
-      dispatchWeb(tracksActions.play())
+      dispatch(tracksActions.play())
       recordPlay(track_id)
     }
-  }, [track_id, uid, isPlayingUid, dispatchWeb, isPlaying, isLineupLoading])
+  }, [track_id, uid, isPlayingUid, dispatch, isPlaying, isLineupLoading])
 
   const handlePressFavorites = useCallback(() => {
-    dispatchWeb(setFavorite(track_id, FavoriteType.TRACK))
-    navigation.push({
-      native: {
-        screen: 'Favorited',
-        params: { id: track_id, favoriteType: FavoriteType.TRACK }
-      },
-      web: { route: FAVORITING_USERS_ROUTE }
+    dispatch(setFavorite(track_id, FavoriteType.TRACK))
+    navigation.push('Favorited', {
+      id: track_id,
+      favoriteType: FavoriteType.TRACK
     })
-  }, [dispatchWeb, track_id, navigation])
+  }, [dispatch, track_id, navigation])
 
   const handlePressReposts = useCallback(() => {
-    dispatchWeb(setRepost(track_id, RepostType.TRACK))
-    navigation.push({
-      native: {
-        screen: 'Reposts',
-        params: { id: track_id, repostType: RepostType.TRACK }
-      },
-      web: { route: REPOSTING_USERS_ROUTE }
-    })
-  }, [dispatchWeb, track_id, navigation])
+    dispatch(setRepost(track_id, RepostType.TRACK))
+    navigation.push('Reposts', { id: track_id, repostType: RepostType.TRACK })
+  }, [dispatch, track_id, navigation])
 
   const handlePressTag = useCallback(
     (tag: string) => {
-      const route = getTagSearchRoute(tag)
-      navigation.push({
-        native: {
-          screen: 'TagSearch',
-          params: { query: tag }
-        },
-        web: { route, fromPage: 'search' }
-      })
+      navigation.push('TagSearch', { query: tag })
     },
     [navigation]
   )
@@ -248,9 +226,9 @@ export const TrackScreenDetailsTile = ({
   const handlePressSave = () => {
     if (!isOwner) {
       if (has_current_user_saved) {
-        dispatchWeb(unsaveTrack(track_id, FavoriteSource.TRACK_PAGE))
+        dispatch(unsaveTrack(track_id, FavoriteSource.TRACK_PAGE))
       } else {
-        dispatchWeb(saveTrack(track_id, FavoriteSource.TRACK_PAGE))
+        dispatch(saveTrack(track_id, FavoriteSource.TRACK_PAGE))
       }
     }
   }
@@ -258,15 +236,15 @@ export const TrackScreenDetailsTile = ({
   const handlePressRepost = () => {
     if (!isOwner) {
       if (has_current_user_reposted) {
-        dispatchWeb(undoRepostTrack(track_id, RepostSource.TRACK_PAGE))
+        dispatch(undoRepostTrack(track_id, RepostSource.TRACK_PAGE))
       } else {
-        dispatchWeb(repostTrack(track_id, RepostSource.TRACK_PAGE))
+        dispatch(repostTrack(track_id, RepostSource.TRACK_PAGE))
       }
     }
   }
 
   const handlePressShare = () => {
-    dispatchWeb(
+    dispatch(
       requestOpenShareModal({
         type: 'track',
         trackId: track_id,
@@ -274,6 +252,7 @@ export const TrackScreenDetailsTile = ({
       })
     )
   }
+
   const handlePressOverflow = () => {
     const overflowActions = [
       isOwner || is_unlisted
@@ -293,7 +272,7 @@ export const TrackScreenDetailsTile = ({
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
-    dispatchWeb(
+    dispatch(
       openOverflowMenu({
         source: OverflowSource.TRACKS,
         id: track_id,

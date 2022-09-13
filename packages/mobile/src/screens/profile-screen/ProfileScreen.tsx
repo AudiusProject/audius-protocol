@@ -6,19 +6,21 @@ import {
   accountSelectors,
   profilePageSelectors,
   profilePageActions,
-  shareModalUIActions
+  shareModalUIActions,
+  profilePageTracksLineupActions as tracksActions,
+  profilePageFeedLineupActions as feedActions
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
+import { useFocusEffect } from '@react-navigation/native'
 import { Animated, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton, Screen } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
@@ -27,9 +29,9 @@ import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
-import { useSelectProfileRoot } from './selectors'
+import { useSelectProfile } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { fetchProfile } = profilePageActions
+const { fetchProfile: fetchProfileAction, resetProfile } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const getUserId = accountSelectors.getUserId
 
@@ -54,31 +56,57 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const ProfileScreen = () => {
   usePopToTopOnDrawerOpen()
   const styles = useStyles()
-  const profile = useSelectProfileRoot(['user_id', 'does_current_user_follow'])
-  const accountId = useSelectorWeb(getUserId)
-  const dispatchWeb = useDispatchWeb()
-  const status = useSelectorWeb(getProfileStatus)
+  const profile = useSelectProfile(['user_id', 'does_current_user_follow'])
+  const { handle, user_id } = profile
+  const accountId = useSelector(getUserId)
+  const dispatch = useDispatch()
+  const status = useSelector(getProfileStatus)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { neutralLight4, accentOrange } = useThemeColors()
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
+  const fetchProfile = useCallback(
+    () => dispatch(fetchProfileAction(handle, user_id, true, true, false)),
+    [dispatch, handle, user_id]
+  )
+
+  const clearProfile = useCallback(() => {
+    dispatch(resetProfile())
+    dispatch(tracksActions.reset())
+    dispatch(feedActions.reset())
+  }, [dispatch])
+
+  const handleLoadProfile = useCallback(() => {
+    fetchProfile()
+    return clearProfile
+  }, [fetchProfile, clearProfile])
+
+  useFocusEffect(handleLoadProfile)
+
+  const handleRefresh = useCallback(() => {
+    if (profile) {
+      setIsRefreshing(true)
+      fetchProfile()
+    }
+  }, [profile, fetchProfile])
+
+  useEffect(() => {
+    if (status === Status.SUCCESS) {
+      setIsRefreshing(false)
+    }
+  }, [status])
+
   const handlePressSettings = useCallback(() => {
-    navigation.push({
-      native: { screen: 'SettingsScreen' },
-      web: { route: '/settings' }
-    })
+    navigation.push('SettingsScreen')
   }, [navigation])
 
   const handlePressAudio = useCallback(() => {
-    navigation.push({
-      native: { screen: 'AudioScreen' },
-      web: { route: '/audio ' }
-    })
+    navigation.push('AudioScreen')
   }, [navigation])
 
   const handlePressShare = useCallback(() => {
     if (profile) {
-      dispatchWeb(
+      dispatch(
         requestOpenShareModal({
           type: 'profile',
           profileId: profile.user_id,
@@ -86,21 +114,7 @@ export const ProfileScreen = () => {
         })
       )
     }
-  }, [profile, dispatchWeb])
-
-  const handleRefresh = useCallback(() => {
-    if (profile) {
-      setIsRefreshing(true)
-      const { handle, user_id } = profile
-      dispatchWeb(fetchProfile(handle, user_id, true, true, false))
-    }
-  }, [profile, dispatchWeb])
-
-  useEffect(() => {
-    if (status === Status.SUCCESS) {
-      setIsRefreshing(false)
-    }
-  }, [status])
+  }, [profile, dispatch])
 
   const isOwner = profile?.user_id === accountId
 

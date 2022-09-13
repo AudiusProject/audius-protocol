@@ -1,26 +1,19 @@
 import { useCallback } from 'react'
 
-import {
-  CreatePlaylistSource,
-  accountSelectors,
-  cacheCollectionsActions
-} from '@audius/common'
-import { playlistPage } from 'audius-client/src/utils/route'
+import { CreatePlaylistSource, cacheCollectionsActions } from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
+import { useDispatch } from 'react-redux'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import { FormScreen } from 'app/components/form-screen'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useToast } from 'app/hooks/useToast'
 
 import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
 import { PlaylistImageInput } from './PlaylistImageInput'
 import { PlaylistNameInput } from './PlaylistNameInput'
 const { createPlaylist } = cacheCollectionsActions
-const getUserHandle = accountSelectors.getUserHandle
 
 const messages = {
   title: 'Create Playlist',
@@ -61,27 +54,20 @@ const initialErrors = {
 }
 
 export const CreatePlaylistScreen = () => {
-  const handle = useSelectorWeb(getUserHandle) ?? ''
   const { toast } = useToast()
 
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const handleSubmit = useCallback(
     (values: PlaylistValues) => {
       const tempId = getTempPlaylistId()
-      dispatchWeb(
+      dispatch(
         createPlaylist(tempId, values, CreatePlaylistSource.FAVORITES_PAGE)
       )
-      navigation.replace({
-        native: {
-          screen: 'Collection',
-          params: { id: parseInt(tempId.toString(), 10) }
-        },
-        web: { route: playlistPage(handle, values.playlist_name, tempId) }
-      })
+      navigation.replace('Collection', { id: parseInt(tempId.toString(), 10) })
       toast({ content: messages.playlistCreatedToast })
     },
-    [dispatchWeb, navigation, handle, toast]
+    [dispatch, navigation, toast]
   )
 
   return (

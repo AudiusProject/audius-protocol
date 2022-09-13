@@ -2,11 +2,10 @@ import { useCallback } from 'react'
 
 import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common'
 import { notificationsSelectors, Entity } from '@audius/common'
-import { profilePage } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconStars from 'app/assets/images/iconStars.svg'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import {
   NotificationHeader,
@@ -17,7 +16,7 @@ import {
   UserNameLink,
   ProfilePicture
 } from '../Notification'
-import { getEntityRoute, getEntityScreen } from '../Notification/utils'
+import { getEntityScreen } from '../Notification/utils'
 import { useDrawerNavigation } from '../useDrawerNavigation'
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
@@ -37,12 +36,9 @@ export const UserSubscriptionNotification = (
   const { notification } = props
   const { entityType } = notification
   const navigation = useDrawerNavigation()
-  const user = useSelectorWeb((state) =>
-    getNotificationUser(state, notification)
-  )
-  const entities = useSelectorWeb(
-    (state) => getNotificationEntities(state, notification),
-    isEqual
+  const user = useSelector((state) => getNotificationUser(state, notification))
+  const entities = useSelector((state) =>
+    getNotificationEntities(state, notification)
   )
 
   const uploadCount = entities?.length ?? 0
@@ -51,23 +47,16 @@ export const UserSubscriptionNotification = (
   const handlePress = useCallback(() => {
     if (entityType === Entity.Track && !isSingleUpload) {
       if (user) {
-        navigation.navigate({
-          native: {
-            screen: 'Profile',
-            params: { handle: user.handle, fromNotifications: true }
-          },
-          web: {
-            route: profilePage(user.handle)
-          }
+        navigation.navigate('Profile', {
+          handle: user.handle,
+          fromNotifications: true
         })
       }
     } else {
       if (entities) {
         const [entity] = entities
-        navigation.navigate({
-          native: getEntityScreen(entity),
-          web: { route: getEntityRoute(entity) }
-        })
+        const [screen, params] = getEntityScreen(entity)
+        navigation.navigate(screen, params)
       }
     }
   }, [entityType, isSingleUpload, navigation, user, entities])

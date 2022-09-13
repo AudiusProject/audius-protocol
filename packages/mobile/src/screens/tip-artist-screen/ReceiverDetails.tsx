@@ -2,14 +2,13 @@ import { useCallback } from 'react'
 
 import { tippingSelectors } from '@audius/common'
 import { Pressable, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
-import { getUserRoute } from 'app/utils/routes'
 const { getSendUser } = tippingSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -25,17 +24,14 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const ReceiverDetails = () => {
-  const receiver = useSelectorWeb(getSendUser)
+  const receiver = useSelector(getSendUser)
   const styles = useStyles()
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
     if (!receiver) return
     navigation.getParent()?.goBack()
-    navigation.navigate({
-      native: { screen: 'Profile', params: { handle: receiver?.handle } },
-      web: { route: getUserRoute(receiver) }
-    })
+    navigation.navigate('Profile', { handle: receiver?.handle })
   }, [receiver, navigation])
 
   if (!receiver) return null

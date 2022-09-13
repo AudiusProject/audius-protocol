@@ -6,16 +6,12 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
-import {
-  FAVORITING_USERS_ROUTE,
-  REPOSTING_USERS_ROUTE
-} from 'audius-client/src/utils/route'
 import { View, Pressable, StyleSheet } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import Text from 'app/components/text'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
@@ -99,29 +95,20 @@ export const LineupTileStats = ({
   const styles = useThemedStyles(createStyles)
   const trackTileStyles = useThemedStyles(createTrackTileStyles)
   const { neutralLight4 } = useThemeColors()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const navigation = useNavigation()
 
   const hasEngagement = Boolean(repostCount || saveCount)
 
   const handlePressFavorites = useCallback(() => {
-    dispatchWeb(setFavorite(id, favoriteType))
-    navigation.push({
-      native: { screen: 'Favorited', params: { id, favoriteType } },
-      web: { route: FAVORITING_USERS_ROUTE }
-    })
-  }, [dispatchWeb, id, navigation, favoriteType])
+    dispatch(setFavorite(id, favoriteType))
+    navigation.push('Favorited', { id, favoriteType })
+  }, [dispatch, id, navigation, favoriteType])
 
   const handlePressReposts = useCallback(() => {
-    dispatchWeb(setRepost(id, repostType))
-    navigation.push({
-      native: {
-        screen: 'Reposts',
-        params: { id, repostType }
-      },
-      web: { route: REPOSTING_USERS_ROUTE }
-    })
-  }, [dispatchWeb, id, navigation, repostType])
+    dispatch(setRepost(id, repostType))
+    navigation.push('Reposts', { id, repostType })
+  }, [dispatch, id, navigation, repostType])
 
   return (
     <View style={styles.stats}>

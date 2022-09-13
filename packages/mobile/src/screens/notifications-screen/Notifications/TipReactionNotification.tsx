@@ -7,10 +7,10 @@ import {
   getReactionFromRawValue
 } from '@audius/common'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import UserBadges from 'app/components/user-badges'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -76,10 +76,7 @@ export const TipReactionNotification = (
   const uiAmount = useUIAudio(amount)
   const styles = useStyles()
 
-  const user = useSelectorWeb(
-    (state) => getNotificationUser(state, notification),
-    isEqual
-  )
+  const user = useSelector((state) => getNotificationUser(state, notification))
 
   const handlePress = useGoToProfile(user)
 

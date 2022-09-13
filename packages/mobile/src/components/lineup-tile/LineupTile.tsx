@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors, playerSelectors } from '@audius/common'
 import { Animated, Easing } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import type { LineupTileProps } from 'app/components/lineup-tile/types'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { getPlaying } from 'app/store/audio/selectors'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import {
@@ -19,6 +17,7 @@ import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileStats } from './LineupTileStats'
 import { LineupTileTopRight } from './LineupTileTopRight'
 const getUserId = accountSelectors.getUserId
+const { getPlaying } = playerSelectors
 
 export const LineupTile = ({
   children,
@@ -57,7 +56,7 @@ export const LineupTile = ({
   } = item
   const { _artist_pick, name, user_id } = user
   const isPlaying = useSelector(getPlaying)
-  const currentUserId = useSelectorWeb(getUserId)
+  const currentUserId = useSelector(getUserId)
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
 

@@ -162,7 +162,7 @@ export const TestCollectiblesPlaylistTable = ({
   )
 
   const handleClickRow = useCallback(
-    (rowInfo, index: number) => {
+    (e, rowInfo, index: number) => {
       const collectible = rowInfo.original
       onClickRow?.(collectible, index)
     },

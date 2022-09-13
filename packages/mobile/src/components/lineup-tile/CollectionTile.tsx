@@ -4,9 +4,11 @@ import type {
   Collection,
   Track,
   User,
-  EnhancedCollectionTrack
+  EnhancedCollectionTrack,
+  CommonState
 } from '@audius/common'
 import {
+  playerSelectors,
   FavoriteSource,
   PlaybackSource,
   RepostSource,
@@ -23,19 +25,15 @@ import {
   shareModalUIActions,
   RepostType
 } from '@audius/common'
-import { albumPage, playlistPage } from 'audius-client/src/utils/route'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import type { AppState } from 'app/store'
-import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
 import type { LineupItemProps } from './types'
+const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const {
@@ -51,20 +49,11 @@ const getUserId = accountSelectors.getUserId
 export const CollectionTile = (props: LineupItemProps) => {
   const { uid } = props
 
-  const collection = useSelectorWeb(
-    (state) => getCollection(state, { uid }),
-    isEqual
-  )
+  const collection = useSelector((state) => getCollection(state, { uid }))
 
-  const tracks = useSelectorWeb(
-    (state) => getTracksFromCollection(state, { uid }),
-    isEqual
-  )
+  const tracks = useSelector((state) => getTracksFromCollection(state, { uid }))
 
-  const user = useSelectorWeb(
-    (state) => getUserFromCollection(state, { uid }),
-    isEqual
-  )
+  const user = useSelector((state) => getUserFromCollection(state, { uid }))
 
   if (!collection || !tracks || !user) {
     console.warn(
@@ -100,15 +89,15 @@ const CollectionTileComponent = ({
   user,
   ...lineupTileProps
 }: CollectionTileProps) => {
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const navigation = useNavigation()
-  const currentUserId = useSelectorWeb(getUserId)
-  const currentTrack = useSelector((state: AppState) => {
-    const uid = getPlayingUid(state)
+  const currentUserId = useSelector(getUserId)
+  const currentTrack = useSelector((state: CommonState) => {
+    const uid = getUid(state)
     return tracks.find((track) => track.uid === uid) ?? null
   })
-  const isPlayingUid = useSelector((state: AppState) => {
-    const uid = getPlayingUid(state)
+  const isPlayingUid = useSelector((state: CommonState) => {
+    const uid = getUid(state)
     return tracks.some((track) => track.uid === uid)
   })
 
@@ -130,16 +119,6 @@ const CollectionTileComponent = ({
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const routeWeb = useMemo(() => {
-    return collection.is_album
-      ? albumPage(user.handle, collection.playlist_name, collection.playlist_id)
-      : playlistPage(
-          user.handle,
-          collection.playlist_name,
-          collection.playlist_id
-        )
-  }, [collection, user])
-
   const handlePress = useCallback(
     ({ isPlaying }) => {
       if (!tracks.length) return
@@ -156,11 +135,8 @@ const CollectionTileComponent = ({
   )
 
   const handlePressTitle = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Collection', params: { id: playlist_id } },
-      web: { route: routeWeb }
-    })
-  }, [playlist_id, routeWeb, navigation])
+    navigation.push('Collection', { id: playlist_id })
+  }, [playlist_id, navigation])
 
   const duration = useMemo(() => {
     return tracks.reduce(
@@ -188,7 +164,7 @@ const CollectionTileComponent = ({
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 
-    dispatchWeb(
+    dispatch(
       openOverflowMenu({
         source: OverflowSource.COLLECTIONS,
         id: playlist_id,
@@ -197,7 +173,7 @@ const CollectionTileComponent = ({
     )
   }, [
     playlist_id,
-    dispatchWeb,
+    dispatch,
     isOwner,
     has_current_user_reposted,
     has_current_user_saved,
@@ -208,36 +184,36 @@ const CollectionTileComponent = ({
     if (playlist_id === undefined) {
       return
     }
-    dispatchWeb(
+    dispatch(
       requestOpenShareModal({
         type: 'collection',
         collectionId: playlist_id,
         source: ShareSource.TILE
       })
     )
-  }, [dispatchWeb, playlist_id])
+  }, [dispatch, playlist_id])
 
   const handlePressSave = useCallback(() => {
     if (playlist_id === undefined) {
       return
     }
     if (has_current_user_saved) {
-      dispatchWeb(unsaveCollection(playlist_id, FavoriteSource.TILE))
+      dispatch(unsaveCollection(playlist_id, FavoriteSource.TILE))
     } else {
-      dispatchWeb(saveCollection(playlist_id, FavoriteSource.TILE))
+      dispatch(saveCollection(playlist_id, FavoriteSource.TILE))
     }
-  }, [playlist_id, dispatchWeb, has_current_user_saved])
+  }, [playlist_id, dispatch, has_current_user_saved])
 
   const handlePressRepost = useCallback(() => {
     if (playlist_id === undefined) {
       return
     }
     if (has_current_user_reposted) {
-      dispatchWeb(undoRepostCollection(playlist_id, RepostSource.TILE))
+      dispatch(undoRepostCollection(playlist_id, RepostSource.TILE))
     } else {
-      dispatchWeb(repostCollection(playlist_id, RepostSource.TILE))
+      dispatch(repostCollection(playlist_id, RepostSource.TILE))
     }
-  }, [playlist_id, dispatchWeb, has_current_user_reposted])
+  }, [playlist_id, dispatch, has_current_user_reposted])
 
   return (
     <LineupTile

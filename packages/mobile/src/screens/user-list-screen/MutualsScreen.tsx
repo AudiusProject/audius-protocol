@@ -5,9 +5,9 @@ import {
   mutualsUserListSelectors,
   MUTUALS_USER_LIST_TAG
 } from '@audius/common'
+import { useDispatch } from 'react-redux'
 
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
@@ -22,11 +22,11 @@ const messages = {
 export const MutualsScreen = () => {
   const { params } = useProfileRoute<'Mutuals'>()
   const { userId } = params
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
   const handleSetMutals = useCallback(() => {
-    dispatchWeb(setMutuals(userId))
-  }, [dispatchWeb, userId])
+    dispatch(setMutuals(userId))
+  }, [dispatch, userId])
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconFollowing}>

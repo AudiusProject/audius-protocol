@@ -1,8 +1,8 @@
 import type { FollowNotification as FollowNotificationType } from '@audius/common'
 import { formatCount, notificationsSelectors } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import IconUser from 'app/assets/images/iconUser.svg'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import {
   NotificationHeader,
@@ -29,9 +29,8 @@ type FollowNotificationProps = {
 export const FollowNotification = (props: FollowNotificationProps) => {
   const { notification } = props
   const { userIds } = notification
-  const users = useSelectorWeb(
-    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
-    isEqual
+  const users = useSelector((state) =>
+    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
   )
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1

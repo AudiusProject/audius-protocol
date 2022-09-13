@@ -6,6 +6,7 @@ import {
   collectibleDetailsUISelectors
 } from '@audius/common'
 import { ScrollView, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconShare from 'app/assets/images/iconShare.svg'
 import LogoEth from 'app/assets/images/logoEth.svg'
@@ -13,7 +14,6 @@ import LogoSol from 'app/assets/images/logoSol.svg'
 import Button from 'app/components/button'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { getCollectiblesRoute } from 'app/utils/routes'
 import share from 'app/utils/share'
@@ -93,9 +93,9 @@ const getHostname = (url: string) => {
 
 export const CollectibleDetailsDrawer = () => {
   const styles = useStyles()
-  const collectible = useSelectorWeb(getCollectible)
-  const ownerId = useSelectorWeb(getCollectibleOwnerId)
-  const owner = useSelectorWeb((state) => getUser(state, { id: ownerId }))
+  const collectible = useSelector(getCollectible)
+  const ownerId = useSelector(getCollectibleOwnerId)
+  const owner = useSelector((state) => getUser(state, { id: ownerId }))
 
   const formattedLink = useMemo(() => {
     const url = collectible?.externalLink

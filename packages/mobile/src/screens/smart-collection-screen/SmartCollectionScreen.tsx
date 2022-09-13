@@ -1,24 +1,27 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   FavoriteSource,
   accountSelectors,
   smartCollectionPageSelectors,
-  findInPlaylistLibrary,
-  collectionsSocialActions
+  collectionsSocialActions,
+  smartCollectionPageActions,
+  playlistLibraryHelpers
 } from '@audius/common'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { VirtualizedScrollView } from 'app/components/core'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
-import type { SmartCollection as SmartCollectionsmartCollection } from 'app/screens/explore-screen/smartCollections'
+import type { SmartCollection } from 'app/screens/explore-screen/smartCollections'
 import { makeStyles } from 'app/styles'
+const { findInPlaylistLibrary } = playlistLibraryHelpers
+
 const { saveSmartCollection, unsaveSmartCollection } = collectionsSocialActions
 const { getCollection } = smartCollectionPageSelectors
 const getPlaylistLibrary = accountSelectors.getPlaylistLibrary
+const { fetchSmartCollection } = smartCollectionPageActions
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -33,26 +36,30 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type SmartCollectionScreenProps = {
-  smartCollection: SmartCollectionsmartCollection
+  smartCollection: SmartCollection
 }
 
 /**
  * `SmartCollectionScreen` displays the details of a smart collection
  */
-export const SmartCollectionScreen = ({
-  smartCollection
-}: SmartCollectionScreenProps) => {
+export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
+  const { smartCollection } = props
+  const { variant } = smartCollection
   const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
 
-  const collection = useSelectorWeb((state) =>
+  useEffect(() => {
+    dispatch(fetchSmartCollection({ variant }))
+  }, [dispatch, variant])
+
+  const collection = useSelector((state) =>
     getCollection(state, { variant: smartCollection.variant })
   )
 
   const playlistName = collection?.playlist_name ?? smartCollection.title
   const description = collection?.description ?? smartCollection.description
 
-  const playlistLibrary = useSelectorWeb(getPlaylistLibrary)
+  const playlistLibrary = useSelector(getPlaylistLibrary)
 
   const isSaved = playlistLibrary
     ? !!findInPlaylistLibrary(playlistLibrary, smartCollection.variant)
@@ -60,21 +67,21 @@ export const SmartCollectionScreen = ({
 
   const handlePressSave = useCallback(() => {
     if (collection?.has_current_user_saved) {
-      dispatchWeb(
+      dispatch(
         unsaveSmartCollection(
           smartCollection.variant,
           FavoriteSource.COLLECTION_PAGE
         )
       )
     } else {
-      dispatchWeb(
+      dispatch(
         saveSmartCollection(
           smartCollection.variant,
           FavoriteSource.COLLECTION_PAGE
         )
       )
     }
-  }, [collection, smartCollection, dispatchWeb])
+  }, [collection, smartCollection, dispatch])
 
   const renderImage = () => {
     const Icon = smartCollection.icon

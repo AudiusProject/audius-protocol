@@ -7,7 +7,6 @@ import {
   SourceMapDevToolPlugin
 } from 'webpack'
 
-const isNative = process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
 const isProd = process.env.NODE_ENV === 'production'
 
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
@@ -95,12 +94,8 @@ export default {
           },
           alias: {
             ...config.resolve?.alias,
-            ...(isNative
-              ? { react: 'react16' }
-              : {
-                  react: path.resolve('./node_modules/react'),
-                  'react-dom': path.resolve('./node_modules/react-dom')
-                })
+            react: path.resolve('./node_modules/react'),
+            'react-dom': path.resolve('./node_modules/react-dom')
           }
         },
         ignoreWarnings: [

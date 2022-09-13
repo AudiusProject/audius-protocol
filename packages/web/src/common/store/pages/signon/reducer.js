@@ -1,4 +1,3 @@
-import { getIsIOS } from 'utils/browser'
 import { isMobile } from 'utils/clientUtil'
 import { FEED_PAGE } from 'utils/route'
 
@@ -37,8 +36,6 @@ import {
   SET_REFERRER
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const createTextField = () => ({
   value: '',
@@ -114,10 +111,8 @@ const actionsMap = {
         newPage = Pages.FOLLOW
         break
       case Pages.FOLLOW: {
-        if (!NATIVE_MOBILE && !isMobile()) {
+        if (!isMobile()) {
           newPage = Pages.APP_CTA
-        } else if (NATIVE_MOBILE && getIsIOS()) {
-          newPage = Pages.NOTIFICATION_SETTINGS
         } else {
           newPage = Pages.LOADING
         }

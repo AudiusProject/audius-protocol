@@ -79,10 +79,7 @@ export const LineupTileMetadata = ({
   const { primary } = useThemeColors()
 
   const handleArtistPress = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Profile', params: { handle: user.handle } },
-      web: { route: `/${user.handle}` }
-    })
+    navigation.push('Profile', { handle: user.handle })
   }, [navigation, user])
 
   return (

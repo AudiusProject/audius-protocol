@@ -13,7 +13,7 @@ import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/re
 const { PREFIX, tracksActions } = trackPageLineupActions
 const { getLineup, getSourceSelector: sourceSelector } = trackPageSelectors
 const { getTrack } = cacheTracksSelectors
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
 
 function* getTracks({
   payload,

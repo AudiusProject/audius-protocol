@@ -1,12 +1,12 @@
 import { vipDiscordModalSelectors } from '@audius/common'
 import { AUDIUS_DISCORD_LINK } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconDiscord from 'app/assets/images/iconDiscord.svg'
 import { CopyTextTile } from 'app/components/copy-text-tile'
 import { Text, Button } from 'app/components/core'
 import Drawer, { useDrawerState } from 'app/components/drawer'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 const { getDiscordCode } = vipDiscordModalSelectors
 
@@ -39,7 +39,7 @@ export const VipDiscordDrawer = () => {
   const styles = useStyles()
   const { isOpen, onClose } = useDrawerState('VipDiscord')
 
-  const discordCode = useSelectorWeb(getDiscordCode)
+  const discordCode = useSelector(getDiscordCode)
 
   return (
     <Drawer

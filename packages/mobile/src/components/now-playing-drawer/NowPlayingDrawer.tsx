@@ -2,9 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   Genre,
-  cacheTracksSelectors,
   cacheUsersSelectors,
-  queueActions
+  queueActions,
+  playerSelectors,
+  playerActions
 } from '@audius/common'
 import type {
   Animated,
@@ -22,15 +23,8 @@ import Drawer, {
 } from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
 import { useAndroidNavigationBarHeight } from 'app/hooks/useAndroidNavigationBarHeight'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { SEEK, seek } from 'app/store/audio/actions'
-import {
-  getPlaying,
-  getTrack as getNativeTrack
-} from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 
 import { ActionsBar } from './ActionsBar'
@@ -41,9 +35,11 @@ import { PlayBar } from './PlayBar'
 import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
 import { PLAY_BAR_HEIGHT } from './constants'
+const { seek } = playerActions
+
+const { getPlaying, getCurrentTrack } = playerSelectors
 const { next, previous } = queueActions
 const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
 
 const STATUS_BAR_FADE_CUTOFF = 0.6
 const SKIP_DURATION_SEC = 15
@@ -88,7 +84,6 @@ type NowPlayingDrawerProps = {
 
 const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWeb()
   const insets = useSafeAreaInsets()
   const androidNavigationBarHeight = useAndroidNavigationBarHeight()
   const staticTopInset = useRef(insets.top)
@@ -167,18 +162,13 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
 
   const [isGestureEnabled, setIsGestureEnabled] = useState(true)
 
-  // TODO: As we move away from the audio store slice in mobile-client
-  // in favor of player/queue selectors in common, getNativeTrack calls
-  // should be replaced
-  const trackInfo = useSelector(getNativeTrack)
-  const track = useSelectorWeb((state) =>
-    getTrack(state, trackInfo ? { id: trackInfo.trackId } : {})
-  )
-  const user = useSelectorWeb((state) =>
+  const track = useSelector(getCurrentTrack)
+
+  const user = useSelector((state) =>
     getUser(state, track ? { id: track.owner_id } : {})
   )
 
-  const trackId = trackInfo?.trackId
+  const trackId = track?.track_id
   const [mediaKey, setMediaKey] = useState(0)
   useEffect(() => {
     setMediaKey((mediaKey) => mediaKey + 1)
@@ -189,28 +179,26 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
       if (global.progress) {
         const { currentTime } = global.progress
         const newPosition = currentTime + SKIP_DURATION_SEC
-        dispatch(
-          seek({ type: SEEK, seconds: Math.min(track.duration, newPosition) })
-        )
+        dispatch(seek({ seconds: Math.min(track.duration, newPosition) }))
       }
     } else {
-      dispatchWeb(next({ skip: true }))
+      dispatch(next({ skip: true }))
       setMediaKey((mediaKey) => mediaKey + 1)
     }
-  }, [dispatch, dispatchWeb, setMediaKey, track])
+  }, [dispatch, setMediaKey, track])
 
   const onPrevious = useCallback(() => {
     if (track?.genre === Genre.PODCASTS) {
       if (global.progress) {
         const { currentTime } = global.progress
         const newPosition = currentTime - SKIP_DURATION_SEC
-        dispatch(seek({ type: SEEK, seconds: Math.max(0, newPosition) }))
+        dispatch(seek({ seconds: Math.max(0, newPosition) }))
       }
     } else {
-      dispatchWeb(previous())
+      dispatch(previous())
       setMediaKey((mediaKey) => mediaKey + 1)
     }
-  }, [dispatch, dispatchWeb, setMediaKey, track])
+  }, [dispatch, setMediaKey, track])
 
   const onPressScrubberIn = useCallback(() => {
     setIsGestureEnabled(false)
@@ -224,10 +212,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
     if (!user) {
       return
     }
-    navigation.push({
-      native: { screen: 'Profile', params: { handle: user.handle } },
-      web: { route: `/${user.handle}` }
-    })
+    navigation.push('Profile', { handle: user.handle })
     handleDrawerCloseFromSwipe()
   }, [handleDrawerCloseFromSwipe, navigation, user])
 
@@ -235,10 +220,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
     if (!track) {
       return
     }
-    navigation.push({
-      native: { screen: 'Track', params: { id: track.track_id } },
-      web: { route: track.permalink }
-    })
+    navigation.push('Track', { id: track.track_id })
     handleDrawerCloseFromSwipe()
   }, [handleDrawerCloseFromSwipe, navigation, track])
 

@@ -11,13 +11,9 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   notificationsSelectors,
-  addPlaylistToFolder,
-  containsTempPlaylist,
-  findInPlaylistLibrary,
-  getPlaylistsNotInLibrary,
-  isInsideFolder,
-  reorderPlaylistLibrary,
-  collectionsSocialActions
+  collectionsSocialActions,
+  playlistLibraryActions,
+  playlistLibraryHelpers
 } from '@audius/common'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
@@ -35,7 +31,6 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
-import { update } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { audioNftPlaylistPage, getPathname, playlistPage } from 'utils/route'
 
@@ -43,6 +38,15 @@ import navColumnStyles from './NavColumn.module.css'
 import { PlaylistFolderNavItem } from './PlaylistFolderNavItem'
 import styles from './PlaylistLibrary.module.css'
 import { PlaylistNavItem, PlaylistNavLink } from './PlaylistNavItem'
+const { update } = playlistLibraryActions
+const {
+  addPlaylistToFolder,
+  containsTempPlaylist,
+  findInPlaylistLibrary,
+  getPlaylistsNotInLibrary,
+  isInsideFolder,
+  reorderPlaylistLibrary
+} = playlistLibraryHelpers
 const { saveSmartCollection } = collectionsSocialActions
 const { getPlaylistUpdates } = notificationsSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions

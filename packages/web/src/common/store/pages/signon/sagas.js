@@ -12,7 +12,9 @@ import {
   collectionsSocialActions,
   solanaSelectors,
   usersSocialActions as socialActions,
-  waitForAccount
+  waitForAccount,
+  getContext,
+  MAX_HANDLE_LENGTH
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import {
@@ -20,7 +22,6 @@ import {
   call,
   delay,
   fork,
-  getContext,
   put,
   race,
   select,
@@ -38,7 +39,6 @@ import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import { MAX_HANDLE_LENGTH } from 'pages/sign-on/utils/formatSocialProfile'
 import { getCityAndRegion } from 'services/Location'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
@@ -48,7 +48,6 @@ import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
-import mobileSagas from './mobileSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 import { checkHandle } from './verifiedChecker'
@@ -60,10 +59,7 @@ const getAccountUser = accountSelectors.getAccountUser
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
 const IS_STAGING = process.env.REACT_APP_ENVIRONMENT === 'staging'
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
-const SUGGESTED_FOLLOW_USER_HANDLE_URL =
-  process.env.REACT_APP_SUGGESTED_FOLLOW_HANDLES
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
 
 // Route to fetch instagram user data w/ the username
@@ -87,8 +83,11 @@ if (IS_PRODUCTION) {
   defaultFollowUserIds = new Set([1964])
 }
 
-export const fetchSuggestedFollowUserIds = async () => {
-  return fetch(SUGGESTED_FOLLOW_USER_HANDLE_URL).then((d) => d.json())
+export function* fetchSuggestedFollowUserIds() {
+  const env = yield getContext('env')
+  const res = yield call(fetch, env.SUGGESTED_FOLLOW_HANDLES)
+  const json = yield res.json()
+  return json
 }
 
 const followArtistCategoryGenreMappings = {
@@ -278,6 +277,7 @@ function* checkEmail(action) {
       yield put(signOnActions.goToPage(Pages.SIGNIN))
       // let mobile client know that email is in use
       yield put(signOnActions.validateEmailSucceeded(false))
+      yield call(action.onUnavailable)
     } else {
       const trackEvent = make(Name.CREATE_ACCOUNT_COMPLETE_EMAIL, {
         emailAddress: action.email
@@ -285,6 +285,7 @@ function* checkEmail(action) {
       yield put(trackEvent)
       yield put(signOnActions.validateEmailSucceeded(true))
       yield put(signOnActions.goToPage(Pages.PASSWORD))
+      yield call(action.onAvailable)
     }
   } catch (err) {
     yield put(signOnActions.validateEmailFailed(err.message))
@@ -427,7 +428,8 @@ function* signUp() {
       },
       function* () {
         yield put(signOnActions.signUpSucceeded())
-        yield call(fetchAccountAsync)
+        yield put(signOnActions.sendWelcomeEmail(name))
+        yield call(fetchAccountAsync, { isSignUp: true })
       },
       function* ({ timeout }) {
         if (timeout) {
@@ -711,5 +713,5 @@ export default function sagas() {
     watchSignOnError,
     watchSendWelcomeEmail
   ]
-  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
+  return sagas
 }

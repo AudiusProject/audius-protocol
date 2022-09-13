@@ -1,24 +1,23 @@
-import { searchResultsPageSelectors } from '@audius/common'
+import { SearchKind, searchResultsPageSelectors } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import { ArtistCard } from 'app/components/artist-card'
 import { CardList } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { SearchResultsTab } from './SearchResultsTab'
+import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
 const { makeGetSearchArtists } = searchResultsPageSelectors
 
 const getSearchUsers = makeGetSearchArtists()
 
 export const ProfilesTab = () => {
-  const users = useSelectorWeb(getSearchUsers)
-
+  const users = useSelector(getSearchUsers)
+  useFetchTabResultsEffect(SearchKind.USERS)
   return (
     <SearchResultsTab noResults={users.length === 0}>
       <CardList
         data={users}
-        renderItem={({ item }) => (
-          <ArtistCard artist={item} fromPage='search' />
-        )}
+        renderItem={({ item }) => <ArtistCard artist={item} />}
       />
     </SearchResultsTab>
   )

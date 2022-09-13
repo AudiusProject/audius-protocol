@@ -1,18 +1,19 @@
 import { useEffect, useMemo } from 'react'
 
 import { useIsFocused } from '@react-navigation/native'
+import { fetchSearch } from 'audius-client/src/common/store/search-bar/actions'
+import { useDispatch } from 'react-redux'
 
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
 import { Screen, Tag } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { TabNavigator, tabScreen } from 'app/components/top-tab-bar'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
-import { MessageType } from 'app/message'
 import { makeStyles } from 'app/styles'
 
 import { SearchFocusContext } from './SearchFocusContext'
+import { SearchQueryContext } from './SearchQueryContext'
 import { ProfilesTab } from './tabs/ProfilesTab'
 import { TracksTab } from './tabs/TracksTab'
 
@@ -38,16 +39,17 @@ export const TagSearchScreen = () => {
   const styles = useStyles()
   const isFocused = useIsFocused()
   const focusContext = useMemo(() => ({ isFocused }), [isFocused])
-  const dispatchWeb = useDispatchWeb()
+  const dispatch = useDispatch()
   const { params } = useRoute<'TagSearch'>()
   const { query } = params
+  const searchQueryContext = useMemo(
+    () => ({ isTagSearch: true, query }),
+    [query]
+  )
 
   useEffect(() => {
-    dispatchWeb({
-      type: MessageType.UPDATE_SEARCH_QUERY,
-      query
-    })
-  }, [dispatchWeb, query])
+    dispatch(fetchSearch(query))
+  }, [dispatch, query])
 
   const tracksScreen = tabScreen({
     name: 'Tracks',
@@ -67,10 +69,12 @@ export const TagSearchScreen = () => {
         <Tag style={styles.tag}>{query.replace(/^#/, '')}</Tag>
       </Header>
       <SearchFocusContext.Provider value={focusContext}>
-        <TabNavigator initialScreenName='Tracks'>
-          {tracksScreen}
-          {profilesScreen}
-        </TabNavigator>
+        <SearchQueryContext.Provider value={searchQueryContext}>
+          <TabNavigator initialScreenName='Tracks'>
+            {tracksScreen}
+            {profilesScreen}
+          </TabNavigator>
+        </SearchQueryContext.Provider>
       </SearchFocusContext.Provider>
     </Screen>
   )

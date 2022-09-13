@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 import { useContext, useEffect, useState } from 'react'
 
 import { Status, searchResultsPageSelectors } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import { WithLoader } from 'app/components/with-loader/WithLoader'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyResults } from '../EmptyResults'
 import { SearchFocusContext } from '../SearchFocusContext'
@@ -19,7 +19,7 @@ type SearchResultsTabProps = {
 export const SearchResultsTab = (props: SearchResultsTabProps) => {
   const { children, noResults, status } = props
   const { isFocused } = useContext(SearchFocusContext)
-  const searchStatus = useSelectorWeb(getSearchStatus)
+  const searchStatus = useSelector(getSearchStatus)
   const [isRefreshing, setIsRefreshing] = useState(true)
 
   useEffect(() => {

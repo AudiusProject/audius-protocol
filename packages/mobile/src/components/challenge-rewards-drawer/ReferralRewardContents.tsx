@@ -1,8 +1,7 @@
 import React from 'react'
 
 import { accountSelectors } from '@audius/common'
-
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useSelector } from 'react-redux'
 
 import { ReferralLinkCopyButton } from './ReferralLinkCopyButton'
 import { TwitterShareButton } from './TwitterShareButton'
@@ -12,7 +11,7 @@ export const ReferralRewardContents = ({
 }: {
   isVerified: boolean
 }) => {
-  const handle = useSelectorWeb(accountSelectors.getUserHandle)
+  const handle = useSelector(accountSelectors.getUserHandle)
   const inviteUrl = `audius.co/signup?ref=${handle}`
 
   return (

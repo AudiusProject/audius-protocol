@@ -14,10 +14,11 @@ import {
   cacheUsersSelectors,
   cacheActions,
   notificationsActions as notificationActions,
-  removeFromPlaylistLibrary,
   getContext,
   collectionsSocialActions as socialActions,
-  waitForAccount
+  waitForAccount,
+  playlistLibraryActions,
+  playlistLibraryHelpers
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -27,11 +28,11 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
-import { share } from 'utils/share'
 
 import watchCollectionErrors from './errorSagas'
+const { update: updatePlaylistLibrary } = playlistLibraryActions
+const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 
@@ -546,6 +547,8 @@ export function* watchShareCollection() {
             collection.playlist_name,
             collection.playlist_id
           )
+
+      const share = yield* getContext('share')
       share(link, formatShareText(collection.playlist_name, user.name))
 
       const event = make(Name.SHARE, {
@@ -567,6 +570,7 @@ export function* watchShareAudioNftPlaylist() {
       const user = yield* select(getUser, { handle })
 
       const link = audioNftPlaylistPage(handle)
+      const share = yield* getContext('share')
       share(link, formatShareText('Audio NFT Playlist', user?.name ?? handle))
 
       const event = make(Name.SHARE, {

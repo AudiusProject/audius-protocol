@@ -11,6 +11,7 @@ import {
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'
 import { Dimensions, StyleSheet, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { SectionList } from 'app/components/core'
 import {
@@ -18,9 +19,7 @@ import {
   TrackTile,
   LineupTileSkeleton
 } from 'app/components/lineup-tile'
-import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/services/analytics'
 
 import { FeedTipTile } from '../feed-tip-tile/FeedTipTile'
@@ -35,6 +34,14 @@ import type {
 } from './types'
 import { LineupVariant } from './types'
 const { getShowTip } = tippingSelectors
+
+type TogglePlayConfig = {
+  uid: UID
+  id: ID
+  source: PlaybackSource
+  isPlayingUid: boolean
+  isPlaying: boolean
+}
 
 // The max number of tiles to load
 const MAX_TILES_COUNT = 1000
@@ -140,8 +147,8 @@ export const Lineup = ({
   limit = Infinity,
   ...listProps
 }: LineupProps) => {
-  const showTip = useSelectorWeb(getShowTip)
-  const dispatchWeb = useDispatchWeb()
+  const showTip = useSelector(getShowTip)
+  const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
   useScrollToTop(() => {
@@ -187,7 +194,7 @@ export const Lineup = ({
     if (shouldLoadMore) {
       const itemLoadCount = itemCounts.initial + page * itemCounts.loadMore
 
-      dispatchWeb(actions.setPage(page + 1))
+      dispatch(actions.setPage(page + 1))
 
       const limit =
         Math.min(itemLoadCount, Math.max(countOrDefault, itemCounts.minimum)) -
@@ -196,7 +203,7 @@ export const Lineup = ({
       if (loadMore) {
         loadMore(offset, limit, page === 0)
       } else {
-        dispatchWeb(
+        dispatch(
           actions.fetchLineupMetadatas(offset, limit, page === 0, fetchPayload)
         )
       }
@@ -204,7 +211,7 @@ export const Lineup = ({
   }, [
     actions,
     countOrDefault,
-    dispatchWeb,
+    dispatch,
     fetchPayload,
     includeLineupStatus,
     itemCounts,
@@ -229,45 +236,28 @@ export const Lineup = ({
   }, [handleLoadMore, selfLoad, lineup])
 
   const togglePlay = useCallback(
-    ({
-      uid,
-      id,
-      source,
-      isPlayingUid,
-      isPlaying
-    }: {
-      uid: UID
-      id: ID
-      source: PlaybackSource
-      isPlayingUid: boolean
-      isPlaying: boolean
-    }) => {
-      // setImmediate prevents this cpu-intensive callback from firing until
-      // the lineup-tile press animation finishes. This may not be needed when
-      // we remove the web-view.
-      setImmediate(() => {
-        if (!isPlayingUid || !isPlaying) {
-          dispatchWeb(actions.play(uid))
-          track(
-            make({
-              eventName: Name.PLAYBACK_PLAY,
-              id: `${id}`,
-              source: source || PlaybackSource.TRACK_TILE
-            })
-          )
-        } else {
-          dispatchWeb(actions.pause())
-          track(
-            make({
-              eventName: Name.PLAYBACK_PAUSE,
-              id: `${id}`,
-              source: source || PlaybackSource.TRACK_TILE
-            })
-          )
-        }
-      })
+    ({ uid, id, source, isPlayingUid, isPlaying }: TogglePlayConfig) => {
+      if (!isPlayingUid || !isPlaying) {
+        dispatch(actions.play(uid))
+        track(
+          make({
+            eventName: Name.PLAYBACK_PLAY,
+            id: `${id}`,
+            source: source || PlaybackSource.TRACK_TILE
+          })
+        )
+      } else {
+        dispatch(actions.pause())
+        track(
+          make({
+            eventName: Name.PLAYBACK_PAUSE,
+            id: `${id}`,
+            source: source || PlaybackSource.TRACK_TILE
+          })
+        )
+      }
     },
-    [actions, dispatchWeb]
+    [actions, dispatch]
   )
 
   const getLineupTileComponent = (item: LineupItem) => {

@@ -17,7 +17,6 @@
 		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
 		717F36E82733C73F0017511F /* AvenirNextLTPro-DemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 717F36E72733C73F0017511F /* AvenirNextLTPro-DemiBold.otf */; };
 		838AABE023CE3813004B2DA3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */; };
-		83D3A5322399E3290084E702 /* Web.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 83D3A5312399E3290084E702 /* Web.bundle */; };
 		83F7359F23C55C2D0040A4C5 /* AirplayViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */; };
 		83F735A523C64C950040A4C5 /* AirplayEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F735A423C64C950040A4C5 /* AirplayEvent.m */; };
 		83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
@@ -46,7 +45,6 @@
 		6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Regular.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
 		717F36E72733C73F0017511F /* AvenirNextLTPro-DemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "AvenirNextLTPro-DemiBold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-DemiBold.otf"; sourceTree = "<group>"; };
 		838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		83D3A5312399E3290084E702 /* Web.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = Web.bundle; path = "../web-app/Web.bundle"; sourceTree = "<group>"; };
 		83E8F64123F6101600817622 /* libRNAnalytics.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNAnalytics.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayViewManager.m; sourceTree = "<group>"; };
 		83F735A423C64C950040A4C5 /* AirplayEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayEvent.m; sourceTree = "<group>"; };
@@ -98,7 +96,6 @@
 			children = (
 				838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */,
 				A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */,
-				83D3A5312399E3290084E702 /* Web.bundle */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -261,7 +258,6 @@
 			files = (
 				717F36E82733C73F0017511F /* AvenirNextLTPro-DemiBold.otf in Resources */,
 				83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */,
-				83D3A5322399E3290084E702 /* Web.bundle in Resources */,
 				838AABE023CE3813004B2DA3 /* GoogleService-Info.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
@@ -290,7 +286,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/scripts/bundleReactNative.sh";
+			shellScript = "${SRCROOT}/scripts/bundleReactNative.sh\n";
 		};
 		18A5B1D0CA1543ABB2DC5C65 /* Upload Debug Symbols to Sentry */ = {
 			isa = PBXShellScriptBuildPhase;

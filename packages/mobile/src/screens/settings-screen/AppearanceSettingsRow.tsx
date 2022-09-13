@@ -1,20 +1,27 @@
-import { useContext } from 'react'
+import { useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import {
+  accountSelectors,
+  Name,
+  themeActions,
+  themeSelectors,
+  useSelectTierInfo
+} from '@audius/common'
 import Config from 'react-native-config'
+import { useDispatch, useSelector } from 'react-redux'
 
 import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
 import { SegmentedControl } from 'app/components/core'
-import { ThemeContext } from 'app/components/theme/ThemeContext'
-import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { make, track } from 'app/services/analytics'
 import { Theme } from 'app/utils/theme'
 
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
+const { setTheme } = themeActions
+const { getTheme } = themeSelectors
 
 const isStaging = Config.ENVIRONMENT === 'staging'
 
@@ -29,8 +36,9 @@ const messages = {
 }
 
 export const AppearanceSettingsRow = () => {
-  const { theme, setTheme } = useContext(ThemeContext)
-  const accountId = useSelectorWeb(getUserId)
+  const theme = useSelector(getTheme)
+  const accountId = useSelector(getUserId)
+  const dispatch = useDispatch()
 
   const { tier } = useSelectTierInfo(accountId ?? 0)
 
@@ -44,6 +52,23 @@ export const AppearanceSettingsRow = () => {
     appearanceOptions.push({ key: Theme.MATRIX, text: messages.matrix })
   }
 
+  const handleSetTheme = useCallback(
+    (theme: Theme) => {
+      dispatch(setTheme({ theme }))
+
+      const recordedTheme =
+        theme === Theme.DEFAULT ? 'light' : theme.toLocaleLowerCase()
+
+      const trackEvent = make({
+        eventName: Name.SETTINGS_CHANGE_THEME,
+        mode: recordedTheme as 'dark' | 'light' | 'matrix' | 'auto'
+      })
+
+      track(trackEvent)
+    },
+    [dispatch]
+  )
+
   return (
     <SettingsRow>
       <SettingsRowLabel label={messages.appearance} iconSource={Appearance} />
@@ -54,8 +79,8 @@ export const AppearanceSettingsRow = () => {
         <SegmentedControl
           fullWidth
           options={appearanceOptions}
-          defaultSelected={theme}
-          onSelectOption={setTheme}
+          defaultSelected={theme ?? Theme.DEFAULT}
+          onSelectOption={handleSetTheme}
         />
       </SettingsRowContent>
     </SettingsRow>

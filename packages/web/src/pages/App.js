@@ -70,7 +70,6 @@ import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage
 import TrendingUndergroundPage from 'pages/trending-underground/TrendingUndergroundPage'
 import UploadType from 'pages/upload-page/components/uploadType'
 import Visualizer from 'pages/visualizer/Visualizer'
-import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
 import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
@@ -193,7 +192,6 @@ const ConnectedMusicConfetti = lazyWithPreload(
   0
 )
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 export const MAIN_CONTENT_ID = 'mainContent'
 
 const includeSearch = (search) => {
@@ -354,9 +352,7 @@ class App extends Component {
       if (prevProps.accountStatus === Status.LOADING) {
         this.pushWithToken(TRENDING_PAGE)
         // If native mobile, a saga watches for fetch account failure to push route
-        if (!NATIVE_MOBILE) {
-          this.props.openSignOn(true, SignOnPages.SIGNIN)
-        }
+        this.props.openSignOn(true, SignOnPages.SIGNIN)
         this.props.updateRouteOnSignUpCompletion(this.state.entryRoute)
       } else {
         this.pushWithToken(TRENDING_PAGE)
@@ -409,15 +405,6 @@ class App extends Component {
     // Set local theme
     if (this.props.theme === null) {
       this.props.setTheme(getSystemTheme() || Theme.DEFAULT)
-    }
-
-    // If we're on native mobile, dispatch
-    // a message to the native layer so it can properly
-    // set it's status bar color.
-    if (NATIVE_MOBILE) {
-      const theme = this.props.theme || Theme.DEFAULT
-      const themeMessage = new ThemeChangeMessage(theme)
-      themeMessage.send()
     }
   }
 
@@ -1017,7 +1004,7 @@ class App extends Component {
         {/* Mobile-only */}
         {isMobileClient && <ConnectedReachabilityBar />}
 
-        {shouldShowPopover && isMobileClient && !NATIVE_MOBILE && (
+        {shouldShowPopover && isMobileClient && (
           <AppRedirectPopover
             enablePopover={isReady}
             incrementScroll={incrementScroll}
@@ -1042,7 +1029,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  setTheme: (theme) => dispatch(setTheme(theme)),
+  setTheme: (theme) => dispatch(setTheme({ theme })),
   updateRouteOnSignUpCompletion: (route) =>
     dispatch(updateRouteOnSignUpCompletion(route)),
   openSignOn: (signIn = true, page = null, fields = {}) =>

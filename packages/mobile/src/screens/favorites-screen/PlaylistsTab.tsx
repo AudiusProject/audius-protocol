@@ -1,19 +1,21 @@
 import { useCallback, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
-import { FAVORITES_PAGE } from 'audius-client/src/utils/route'
+import { accountActions, accountSelectors } from '@audius/common'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView, Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import type { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScreen'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
 import type { ExtendedCollection } from './types'
-const getAccountWithPlaylists = accountSelectors.getAccountWithPlaylists
+
+const { getAccountWithPlaylists } = accountSelectors
+const { fetchSavedPlaylists } = accountActions
 
 const messages = {
   emptyTabText: "You haven't favorited any playlists yet.",
@@ -23,7 +25,12 @@ const messages = {
 export const PlaylistsTab = () => {
   const navigation = useNavigation<FavoritesTabScreenParamList>()
   const [filterValue, setFilterValue] = useState('')
-  const user = useSelectorWeb(getAccountWithPlaylists)
+  const user = useSelector(getAccountWithPlaylists)
+  const dispatch = useDispatch()
+
+  useEffectOnce(() => {
+    dispatch(fetchSavedPlaylists())
+  })
 
   const matchesFilter = (playlist: ExtendedCollection) => {
     const matchValue = filterValue.toLowerCase()
@@ -43,7 +50,7 @@ export const PlaylistsTab = () => {
     .map((playlist) => ({ ...playlist, user }))
 
   const handleNavigateToNewPlaylist = useCallback(() => {
-    navigation.push({ native: { screen: 'CreatePlaylist' } })
+    navigation.push('CreatePlaylist')
   }, [navigation])
 
   return (
@@ -66,7 +73,6 @@ export const PlaylistsTab = () => {
         listKey='favorites-playlists'
         scrollEnabled={false}
         collection={userPlaylists ?? []}
-        fromPage={FAVORITES_PAGE}
       />
     </VirtualizedScrollView>
   )

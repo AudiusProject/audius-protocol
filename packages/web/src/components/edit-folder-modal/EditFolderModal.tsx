@@ -4,8 +4,8 @@ import {
   Name,
   PlaylistLibraryFolder,
   accountSelectors,
-  removePlaylistFolderInLibrary,
-  renamePlaylistFolderInLibrary
+  playlistLibraryActions,
+  playlistLibraryHelpers
 } from '@audius/common'
 import {
   IconFolder,
@@ -22,12 +22,14 @@ import FolderForm from 'components/create-playlist/FolderForm'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import { getFolderId } from 'store/application/ui/editFolderModal/selectors'
 import { setFolderId } from 'store/application/ui/editFolderModal/slice'
-import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { zIndex } from 'utils/zIndex'
 
 import styles from './EditFolderModal.module.css'
-const getPlaylistLibrary = accountSelectors.getPlaylistLibrary
+const { update: updatePlaylistLibrary } = playlistLibraryActions
+const { removePlaylistFolderInLibrary, renamePlaylistFolderInLibrary } =
+  playlistLibraryHelpers
+const { getPlaylistLibrary } = accountSelectors
 
 const messages = {
   editFolderModalTitle: 'Edit Folder',

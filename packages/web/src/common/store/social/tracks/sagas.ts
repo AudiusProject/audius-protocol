@@ -25,8 +25,6 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import TrackDownload from 'services/audius-backend/TrackDownload'
-import { share } from 'utils/share'
 
 import watchTrackErrors from './errorSagas'
 const { updateOptimisticListenStreak } = audioRewardsPageActions
@@ -34,8 +32,6 @@ const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 
 const { getUserId, getUserHandle } = accountSelectors
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 /* REPOST TRACK */
 export function* watchRepostTrack() {
@@ -587,7 +583,8 @@ export function* watchRecordListen() {
   yield* takeEvery(
     socialActions.RECORD_LISTEN,
     function* (action: ReturnType<typeof socialActions.recordListen>) {
-      if (NATIVE_MOBILE) return
+      const isNativeMobile = yield* getContext('isNativeMobile')
+      if (isNativeMobile) return
       console.debug('Listen recorded for track', action.trackId)
 
       yield* waitForAccount()
@@ -615,6 +612,7 @@ function* watchDownloadTrack() {
   yield* takeEvery(
     socialActions.DOWNLOAD_TRACK,
     function* (action: ReturnType<typeof socialActions.downloadTrack>) {
+      const trackDownload = yield* getContext('trackDownload')
       yield* call(waitForBackendSetup)
 
       // Check if there is a logged in account and if not,
@@ -660,21 +658,12 @@ function* watchDownloadTrack() {
         .split(',')
         .map((endpoint) => `${endpoint}/ipfs/`)
 
-      if (NATIVE_MOBILE) {
-        yield* call(
-          TrackDownload.downloadTrackMobile,
-          action.cid,
-          endpoints,
-          filename
-        )
-      } else {
-        yield* call(
-          TrackDownload.downloadTrack,
-          action.cid,
-          endpoints,
-          filename
-        )
-      }
+      yield* call(
+        [trackDownload, 'downloadTrack'],
+        action.cid,
+        endpoints,
+        filename
+      )
     }
   )
 }
@@ -694,6 +683,7 @@ function* watchShareTrack() {
       if (!user) return
 
       const link = track.permalink
+      const share = yield* getContext('share')
       share(link, formatShareText(track.title, user.name))
 
       const event = make(Name.SHARE, {

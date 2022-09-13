@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { useContext } from 'react'
 
 import { accountSelectors } from '@audius/common'
 import type { LinkingOptions } from '@react-navigation/native'
@@ -7,30 +6,25 @@ import {
   getStateFromPath,
   NavigationContainer as RNNavigationContainer
 } from '@react-navigation/native'
+import { useSelector } from 'react-redux'
 
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { RootScreenParamList } from 'app/screens/root-screen/RootScreen'
-
-import { ThemeContext } from '../theme/ThemeContext'
+import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
 
-type Props = {
+type NavigationContainerProps = {
   children: ReactNode
 }
 /**
  * NavigationContainer contains the react-navigation context
  * and configures linking
  */
-const NavigationContainer = ({ children }: Props) => {
-  const { theme, isSystemDarkMode } = useContext(ThemeContext)
-  const pushRouteWeb = usePushRouteWeb()
-  const account = useSelectorWeb(getAccountUser)
-
-  const navigationTheme =
-    theme === 'auto' ? (isSystemDarkMode ? 'dark' : 'default') : theme
+const NavigationContainer = (props: NavigationContainerProps) => {
+  const { children } = props
+  const theme = useThemeVariant()
+  const account = useSelector(getAccountUser)
 
   const linking: LinkingOptions<RootScreenParamList> = {
     prefixes: [
@@ -131,8 +125,6 @@ const NavigationContainer = ({ children }: Props) => {
         path = '/trending'
       }
 
-      pushRouteWeb(path, undefined, false)
-
       if (path.match(`^/${account?.handle}(/|$)`)) {
         // If the path is the current user and set path as `/profile`
         path = path.replace(`/${account?.handle}`, '/profile')
@@ -159,10 +151,7 @@ const NavigationContainer = ({ children }: Props) => {
   }
 
   return (
-    <RNNavigationContainer
-      linking={linking}
-      theme={navigationThemes[navigationTheme]}
-    >
+    <RNNavigationContainer linking={linking} theme={navigationThemes[theme]}>
       {children}
     </RNNavigationContainer>
   )

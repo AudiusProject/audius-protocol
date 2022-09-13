@@ -1,23 +1,21 @@
-import { searchResultsPageSelectors } from '@audius/common'
+import { SearchKind, searchResultsPageSelectors } from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list/CollectionList'
-import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
 
 import { SearchResultsTab } from './SearchResultsTab'
+import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
 const { makeGetSearchPlaylists } = searchResultsPageSelectors
 
 const getSearchPlaylists = makeGetSearchPlaylists()
 
 export const PlaylistsTab = () => {
-  const playlists = useSelectorWeb(getSearchPlaylists, isEqual)
+  const playlists = useSelector(getSearchPlaylists)
+  useFetchTabResultsEffect(SearchKind.PLAYLISTS)
 
   return (
     <SearchResultsTab noResults={playlists.length === 0}>
-      <CollectionList
-        listKey='search-playlists'
-        collection={playlists}
-        fromPage='search'
-      />
+      <CollectionList listKey='search-playlists' collection={playlists} />
     </SearchResultsTab>
   )
 }

@@ -6,9 +6,8 @@ export const FETCH_COLLECTION_FAILED = 'FETCH_COLLECTION_FAILED'
 export const RESET_COLLECTION = 'RESET_COLLECTION'
 export const SET_SMART_COLLECTION = 'SET_SMART_COLLECTION'
 
-export const fetchCollection = (handle: string | null, id: number) => ({
+export const fetchCollection = (id: number) => ({
   type: FETCH_COLLECTION,
-  handle,
   id
 })
 

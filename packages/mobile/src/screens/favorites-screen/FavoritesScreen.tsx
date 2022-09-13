@@ -28,7 +28,7 @@ const favoritesScreens = [
   }
 ]
 
-const FavoritesScreen = () => {
+export const FavoritesScreen = () => {
   usePopToTopOnDrawerOpen()
 
   return (
@@ -38,5 +38,3 @@ const FavoritesScreen = () => {
     </Screen>
   )
 }
-
-export default FavoritesScreen

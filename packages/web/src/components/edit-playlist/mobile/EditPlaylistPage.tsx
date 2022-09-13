@@ -44,8 +44,6 @@ const { createPlaylist, editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
 const getAccountUser = accountSelectors.getAccountUser
 
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 const messages = {
   createPlaylist: 'Create Playlist',
   editPlaylist: 'Edit Playlist',
@@ -411,10 +409,7 @@ const EditPlaylistPage = g(
                 maxLength={256}
               />
             </Grouping>
-            {/** Don't render tracklist on native mobile. Errors
-             * get thrown because of the null renderer
-             */}
-            {!IS_NATIVE_MOBILE && trackList && trackList.length > 0 && (
+            {trackList && trackList.length > 0 && (
               <Grouping>
                 <TrackList
                   tracks={trackList}

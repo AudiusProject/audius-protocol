@@ -35,7 +35,6 @@
     "babel.config.js",
     "metro.config.js",
     "jest.config.js",
-    "./android/*",
-    "./web-app/*"
+    "./android/*"
   ]
 }

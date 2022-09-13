@@ -7,11 +7,8 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 import Tooltip from 'components/tooltip/Tooltip'
-import { OpenSearchMessage } from 'services/native-mobile-interface/search'
 
 import styles from './SearchBar.module.css'
-
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 interface SearchBarProps {
   className?: string
@@ -78,20 +75,16 @@ const SearchBar = ({
     onSearch(e.target.value)
   }
 
-  const onClick = () => {
-    if (NATIVE_MOBILE) {
-      new OpenSearchMessage({ reset: true }).send()
-    } else {
-      if (open) {
-        if (value.trimLeft() !== '') {
-          beginSearch()
-        } else {
-          onSearch('')
-          onClose()
-        }
+  const handleClick = () => {
+    if (open) {
+      if (value.trimLeft() !== '') {
+        beginSearch()
       } else {
-        onOpen()
+        onSearch('')
+        onClose()
       }
+    } else {
+      onOpen()
     }
   }
 
@@ -117,10 +110,8 @@ const SearchBar = ({
         {...(open ? {} : { disabled: true })}
       />
       <div
-        className={cn(styles.searchWrapper, iconClassname, {
-          [styles.native]: !!NATIVE_MOBILE
-        })}
-        onMouseDown={onClick}
+        className={cn(styles.searchWrapper, iconClassname)}
+        onMouseDown={handleClick}
       >
         <DetailIcon
           tooltipText={tooltipText}

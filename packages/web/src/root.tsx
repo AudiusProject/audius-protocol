@@ -2,15 +2,11 @@ import { Suspense, useState, useEffect, useCallback, lazy } from 'react'
 
 import { useAsync } from 'react-use'
 
-import { setupMobileLogging } from 'services/Logging'
 import { localStorage } from 'services/local-storage'
-import { BackendDidSetup } from 'services/native-mobile-interface/lifecycle'
 import { useIsMobile, isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
 import Dapp from './app'
-
-const REACT_APP_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const NoConnectivityPage = lazy(
   () => import('components/no-connectivity-page/NoConnectivityPage')
@@ -49,25 +45,10 @@ const Root = () => {
 
   const setReady = useCallback(() => setDappReady(true), [])
 
-  useEffect(() => {
-    if (dappReady || connectivityFailure) {
-      new BackendDidSetup().send()
-    }
-  }, [connectivityFailure, dappReady])
-
-  useEffect(() => {
-    setupMobileLogging()
-  }, [])
-
   const [shouldShowPopover, setShouldShowPopover] = useState(true)
 
   const shouldRedirectToApp = foundUser && !isPublicSiteSubRoute()
-  if (
-    renderPublicSite &&
-    !clientIsElectron &&
-    !REACT_APP_NATIVE_MOBILE &&
-    !shouldRedirectToApp
-  ) {
+  if (renderPublicSite && !clientIsElectron && !shouldRedirectToApp) {
     return (
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <PublicSite

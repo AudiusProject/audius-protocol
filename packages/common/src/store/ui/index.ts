@@ -79,10 +79,8 @@ export {
 export * from './share-sound-to-tiktok-modal/types'
 export * as shareSoundToTiktokModalSelectors from './share-sound-to-tiktok-modal/selectors'
 
-export { default as themeReducer } from './theme/reducer'
-export * as themeActions from './theme/actions'
+export { default as themeReducer, actions as themeActions } from './theme/slice'
 export * as themeSelectors from './theme/selectors'
-export * from './theme/types'
 
 export { default as toastReducer, actions as toastActions } from './toast/slice'
 export * from './toast/types'

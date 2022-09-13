@@ -16,6 +16,7 @@ import {
   View,
   Animated
 } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import IconInfo from 'app/assets/images/iconInfo.svg'
@@ -25,7 +26,6 @@ import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import type { ThemeColors } from 'app/hooks/useThemedStyles'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import share from 'app/utils/share'
@@ -183,11 +183,11 @@ const messages = {
 export const AudioBreakdownDrawer = () => {
   const styles = useThemedStyles(createStyles)
 
-  const accountBalance = (useSelectorWeb(getAccountBalance, (a, b) =>
+  const accountBalance = (useSelector(getAccountBalance, (a, b) =>
     Boolean(a && b && a.eq(b))
   ) ?? new BN('0')) as BNWei
 
-  const associatedWallets = useSelectorWeb(getAssociatedWallets, isEqual)
+  const associatedWallets = useSelector(getAssociatedWallets)
   const { connectedEthWallets: ethWallets, connectedSolWallets: solWallets } =
     associatedWallets ?? {
       ethWallets: null,
