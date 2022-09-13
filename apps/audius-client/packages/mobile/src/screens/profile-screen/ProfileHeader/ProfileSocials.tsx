@@ -1,7 +1,7 @@
-import { Fragment, useMemo } from 'react'
+import { Fragment, useLayoutEffect, useMemo, useRef } from 'react'
 
 import { useSelectTierInfo } from '@audius/common'
-import { View } from 'react-native'
+import { View, Animated } from 'react-native'
 
 import { Divider } from 'app/components/core'
 import { makeStyles } from 'app/styles/makeStyles'
@@ -51,19 +51,36 @@ export const ProfileSocials = () => {
     return links.filter(([handle]) => !(handle === null || handle === ''))
   }, [twitter_handle, instagram_handle, tiktok_handle])
 
-  const socialsCount = socialLinks.length
+  const socialsCount = useMemo(() => {
+    return socialLinks.filter(([handle]) => !!handle).length
+  }, [socialLinks])
+
   const stylesOptions = useMemo(() => ({ socialsCount }), [socialsCount])
   const styles = useStyles(stylesOptions)
 
   const { tier } = useSelectTierInfo(user_id)
 
+  // Need to start opacity at 1 so skeleton is visible.
+  const opacity = useRef(new Animated.Value(1)).current
+  useLayoutEffect(() => {
+    if (socialsCount > 0) {
+      opacity.setValue(0.2)
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true
+      }).start()
+    }
+  }, [opacity, socialsCount])
+
   return (
     <View pointerEvents='box-none' style={styles.root}>
       <ProfileTierTile interactive={false} />
-      <View
+      <Animated.View
         style={[
           styles.socials,
-          tier !== 'none' && { justifyContent: 'center' }
+          tier !== 'none' && { justifyContent: 'center' },
+          { opacity }
         ]}
       >
         {socialLinks.map(([, SocialLink], index) => {
@@ -76,7 +93,7 @@ export const ProfileSocials = () => {
             </Fragment>
           )
         })}
-      </View>
+      </Animated.View>
     </View>
   )
 }
