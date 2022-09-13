@@ -12,7 +12,8 @@ import {
   tippingSelectors,
   tippingActions,
   walletSelectors,
-  getTierAndNumberForBalance
+  getTierAndNumberForBalance,
+  useGetFirstOrTopSupporter
 } from '@audius/common'
 import { Format, IconTrophy, TokenValueInput } from '@audius/stems'
 import BN from 'bn.js'
@@ -23,7 +24,6 @@ import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCir
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import Tooltip from 'components/tooltip/Tooltip'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
-import { useGetFirstOrTopSupporter } from 'hooks/useGetFirstOrTopSupporter'
 import ButtonWithArrow from 'pages/audio-rewards-page/components/ButtonWithArrow'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
