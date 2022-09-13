@@ -188,12 +188,12 @@ commands:
       #     channel: << parameters.channel >>
       #     text: << parameters.text >>
       #     slack_mentions_user: << parameters.slack_mentions_user >>
-      # - slack-success:
-      #     event: << parameters.event >>
-      #     branch_pattern: << parameters.branch_pattern >>
-      #     channel: << parameters.channel >>
-      #     text: << parameters.text >>
-      #     slack_mentions_user: << parameters.slack_mentions_user >>
+      - slack-success:
+          event: << parameters.event >>
+          branch_pattern: << parameters.branch_pattern >>
+          channel: << parameters.channel >>
+          text: << parameters.text >>
+          slack_mentions_user: << parameters.slack_mentions_user >>
 
   diff-if-necessary:
     parameters:
