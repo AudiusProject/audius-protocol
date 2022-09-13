@@ -27,7 +27,7 @@ export const useSelectProfileRoot = (deps: Array<keyof User>) => {
       isAccountUser ? getAccountUser(state) : getProfileUser(state, params),
     (a, b) => deps.every((arg) => isEqual(a?.[arg], b?.[arg]))
   )
-  return profile as User
+  return profile
 }
 
 /*

@@ -21,6 +21,7 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
+import { useRoute } from 'app/hooks/useRoute'
 import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
@@ -29,7 +30,7 @@ import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
-import { useSelectProfile } from './selectors'
+import { useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { fetchProfile: fetchProfileAction, resetProfile } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
@@ -56,8 +57,13 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const ProfileScreen = () => {
   usePopToTopOnDrawerOpen()
   const styles = useStyles()
-  const profile = useSelectProfile(['user_id', 'does_current_user_follow'])
-  const { handle, user_id } = profile
+  const { params } = useRoute<'Profile'>()
+  const profile = useSelectProfileRoot([
+    'user_id',
+    'handle',
+    'does_current_user_follow'
+  ])
+  const handle = params.handle ?? profile?.handle
   const accountId = useSelector(getUserId)
   const dispatch = useDispatch()
   const status = useSelector(getProfileStatus)
@@ -65,10 +71,9 @@ export const ProfileScreen = () => {
   const { neutralLight4, accentOrange } = useThemeColors()
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
-  const fetchProfile = useCallback(
-    () => dispatch(fetchProfileAction(handle, user_id, true, true, false)),
-    [dispatch, handle, user_id]
-  )
+  const fetchProfile = useCallback(() => {
+    dispatch(fetchProfileAction(handle, null, true, true, false))
+  }, [dispatch, handle])
 
   const clearProfile = useCallback(() => {
     dispatch(resetProfile())
