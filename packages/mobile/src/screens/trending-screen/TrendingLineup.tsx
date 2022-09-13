@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   Name,
@@ -9,7 +9,7 @@ import {
   trendingPageSelectors
 } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'
 import type { LineupProps } from 'app/components/lineup/types'
@@ -56,8 +56,6 @@ type TrendingLineupProps = BaseLineupProps & {
 
 export const TrendingLineup = (props: TrendingLineupProps) => {
   const { timeRange, ...other } = props
-  const trendingLineup = useSelector(selectorsMap[timeRange])
-  const [isRefreshing, setIsRefreshing] = useState(false)
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const trendingActions = actionsMap[timeRange]
@@ -71,17 +69,6 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
     return tabPressListener
   }, [navigation, dispatch, timeRange])
 
-  useEffect(() => {
-    if (!trendingLineup.isMetadataLoading) {
-      setIsRefreshing(false)
-    }
-  }, [trendingLineup])
-
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true)
-    dispatch(trendingActions.refreshInView(true))
-  }, [dispatch, trendingActions])
-
   const handleLoadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
       dispatch(trendingActions.fetchLineupMetadatas(offset, limit, overwrite))
@@ -93,12 +80,11 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
   return (
     <Lineup
       isTrending
-      lineup={trendingLineup}
-      actions={trendingActions}
-      refresh={handleRefresh}
-      refreshing={isRefreshing}
-      loadMore={handleLoadMore}
       selfLoad
+      pullToRefresh
+      lineupSelector={selectorsMap[timeRange]}
+      actions={trendingActions}
+      loadMore={handleLoadMore}
       {...other}
     />
   )

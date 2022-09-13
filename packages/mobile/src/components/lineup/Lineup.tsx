@@ -8,6 +8,7 @@ import {
   Status,
   tippingSelectors
 } from '@audius/common'
+import { useFocusEffect } from '@react-navigation/native'
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'
 import { Dimensions, StyleSheet, View } from 'react-native'
@@ -102,6 +103,8 @@ const useItemCounts = (variant: LineupVariant) =>
     [variant]
   )
 
+const fallbackLineupSelector = (() => {}) as any
+
 const styles = StyleSheet.create({
   root: {
     flex: 1
@@ -133,11 +136,13 @@ export const Lineup = ({
   isFeed,
   leadingElementId,
   leadingElementDelineator,
-  lineup,
+  lineup: lineupProp,
+  lineupSelector = fallbackLineupSelector,
   loadMore,
+  pullToRefresh,
   rankIconCount = 0,
-  refresh,
-  refreshing,
+  refresh: refreshProp,
+  refreshing: refreshingProp,
   showLeadingElementArtistPick = true,
   start = 0,
   variant = LineupVariant.MAIN,
@@ -151,6 +156,17 @@ export const Lineup = ({
   const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
+  const selectedLineup = useSelector(lineupSelector)
+  const lineup = selectedLineup ?? lineupProp
+  const { status } = lineup
+  const refreshing = refreshingProp ?? status === Status.LOADING
+
+  const handleRefresh = useCallback(() => {
+    dispatch(actions.refreshInView(true))
+  }, [dispatch, actions])
+
+  const refresh = refreshProp ?? handleRefresh
+
   useScrollToTop(() => {
     ref.current?.scrollToLocation({
       sectionIndex: 0,
@@ -158,6 +174,13 @@ export const Lineup = ({
       animated: true
     })
   }, disableTopTabScroll)
+
+  const handleInView = useCallback(() => {
+    dispatch(actions.setInView(true))
+    return () => dispatch(actions.setInView(false))
+  }, [dispatch, actions])
+
+  useFocusEffect(handleInView)
 
   const itemCounts = useItemCounts(variant)
 
@@ -433,18 +456,20 @@ export const Lineup = ({
     [isPastLoadThreshold]
   )
 
+  const pullToRefreshProps =
+    pullToRefresh || refreshProp ? { onRefresh: refresh, refreshing } : {}
+
   return (
     <View style={styles.root}>
       <SectionList
         {...listProps}
+        {...pullToRefreshProps}
         ref={ref}
         onScroll={handleScroll}
         ListHeaderComponent={header}
         ListFooterComponent={<View style={{ height: 16 }} />}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
-        onRefresh={refresh}
-        refreshing={refreshing}
         sections={sections}
         stickySectionHeadersEnabled={false}
         keyExtractor={(item, index) => `${item?.id}  ${index}`}

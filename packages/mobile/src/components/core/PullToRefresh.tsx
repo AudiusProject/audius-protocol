@@ -18,9 +18,7 @@ import { attachToScroll } from 'app/utils/animation'
 import { colorize } from 'app/utils/colorizeLottie'
 import { useThemeColors } from 'app/utils/theme'
 
-const RESET_ICON_TIMEOUT_MS = 500
 const PULL_DISTANCE = 75
-const DEBOUNCE_TIME_MS = 1000
 
 const useStyles = (topOffset: number) =>
   makeStyles(() => ({
@@ -58,7 +56,6 @@ type UseOverflowHandlersConfig = {
 /**
  * A helper hook to get desired pull to refresh behavior.
  * 1. Momentum scrolling does not trigger pull to refresh
- * 2. Pull to refresh has a minimum debounce time
  */
 export const useOverflowHandlers = ({
   isRefreshing,
@@ -69,17 +66,8 @@ export const useOverflowHandlers = ({
   const scrollAnim = useRef(new Animated.Value(0)).current
 
   const [isMomentumScroll, setIsMomentumScroll] = useState(false)
-  const [isDebouncing, setIsDebouncing] = useState(false)
 
   const wasRefreshing = usePrevious(isRefreshing)
-
-  const handleRefresh = useCallback(() => {
-    onRefresh?.()
-    setIsDebouncing(true)
-    setTimeout(() => {
-      setIsDebouncing(false)
-    }, DEBOUNCE_TIME_MS)
-  }, [onRefresh])
 
   const scrollTo = useCallback(
     (y: number) => {
@@ -94,10 +82,10 @@ export const useOverflowHandlers = ({
   )
 
   useEffect(() => {
-    if (!isRefreshing && !isDebouncing && wasRefreshing) {
+    if (!isRefreshing && wasRefreshing) {
       scrollTo(0)
     }
-  }, [isRefreshing, isDebouncing, wasRefreshing, scrollTo])
+  }, [isRefreshing, wasRefreshing, scrollTo])
 
   const onScrollBeginDrag = useCallback(() => {
     setIsMomentumScroll(false)
@@ -113,9 +101,9 @@ export const useOverflowHandlers = ({
   const handleScroll = attachToScroll(scrollAnim, { listener: onScroll })
 
   return {
-    isRefreshing: onRefresh ? isRefreshing || isDebouncing : undefined,
+    isRefreshing: onRefresh ? Boolean(isRefreshing) : undefined,
     isRefreshDisabled: isMomentumScroll,
-    handleRefresh: onRefresh ? handleRefresh : undefined,
+    handleRefresh: onRefresh,
     scrollAnim,
     handleScroll,
     onScrollBeginDrag,
@@ -209,20 +197,13 @@ export const PullToRefresh = ({
     if (!isRefreshing) {
       hitTop.current = false
       setDidHitTop(false)
-      // Reset animation after a timeout so there's enough time
-      // to reset the scroll with the spinner animation showing.
-      const timeoutId = setTimeout(() => {
-        setShouldShowSpinner(false)
-        animationRef.current?.reset()
-      }, RESET_ICON_TIMEOUT_MS)
-
-      return () => {
-        clearTimeout(timeoutId)
-      }
+      setShouldShowSpinner(false)
+      animationRef.current?.reset()
     }
   }, [isRefreshing, hitTop])
 
   const listenerRef = useRef<string>()
+
   useEffect(() => {
     listenerRef.current = scrollAnim?.addListener(
       ({ value }: { value: number }) => {
