@@ -8,8 +8,7 @@ import { remoteConfigInstance } from '../remote-config'
 export const apiClient = new AudiusAPIClient({
   audiusBackendInstance,
   remoteConfigInstance,
-  // @ts-ignore
-  audiusLibs,
+  getAudiusLibs: () => audiusLibs,
   localStorage,
   env
 })
