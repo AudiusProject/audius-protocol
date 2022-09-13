@@ -182,12 +182,12 @@ commands:
       - store_artifacts:
           path: /tmp/summary.json
           destination: summary.json
-      # - slack-fail:
-      #     event: << parameters.event >>
-      #     branch_pattern: << parameters.branch_pattern >>
-      #     channel: << parameters.channel >>
-      #     text: << parameters.text >>
-      #     slack_mentions_user: << parameters.slack_mentions_user >>
+      - slack-fail:
+          event: << parameters.event >>
+          branch_pattern: << parameters.branch_pattern >>
+          channel: << parameters.channel >>
+          text: << parameters.text >>
+          slack_mentions_user: << parameters.slack_mentions_user >>
       - slack-success:
           event: << parameters.event >>
           branch_pattern: << parameters.branch_pattern >>
