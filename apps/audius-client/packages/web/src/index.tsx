@@ -1,5 +1,4 @@
 import ReactDOM from 'react-dom'
-import { render } from 'react-nil'
 
 import './index.css'
 
@@ -8,11 +7,4 @@ import './index.css'
 // when running in dev mode.
 import Root from './root'
 
-const NATIVE_NAVIGATION_ENABLED =
-  process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
-
-if (NATIVE_NAVIGATION_ENABLED) {
-  render(<Root />)
-} else {
-  ReactDOM.render(<Root />, document.getElementById('root'))
-}
+ReactDOM.render(<Root />, document.getElementById('root'))
