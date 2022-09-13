@@ -7,10 +7,10 @@ import {
   tippingSelectors,
   tippingActions,
   walletSelectors,
-  walletActions
+  walletActions,
+  useGetFirstOrTopSupporter
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
-import { useGetFirstOrTopSupporter } from 'audius-client/src/hooks/useGetFirstOrTopSupporter'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
