@@ -153,47 +153,6 @@ commands:
           channel: << parameters.channel >>
           text: << parameters.text >>
           slack_mentions_user: << parameters.slack_mentions_user >>
-  slack-deploy:
-    parameters:
-      event:
-        description: when this notification will fire. options are fail, pass, always.
-        type: string
-        default: pass
-      branch_pattern:
-        description: branch_pattern arg for slack/notify
-        type: string
-        default: .+
-      channel:
-        description: Slack channel to send message to
-        type: string
-        default: $SLACK_DEFAULT_CHANNEL
-      text:
-        description: Markdown formatted Slack message
-        type: string
-        default: "Deployment Successful! :tada:"
-      slack_mentions_user:
-        description: Used for CircleCI @mentions
-        type: string
-        default: ""
-    steps:
-      - store_artifacts:
-          path: /tmp/summary.md
-          destination: summary.md
-      - store_artifacts:
-          path: /tmp/summary.json
-          destination: summary.json
-      - slack-fail:
-          event: << parameters.event >>
-          branch_pattern: << parameters.branch_pattern >>
-          channel: << parameters.channel >>
-          text: << parameters.text >>
-          slack_mentions_user: << parameters.slack_mentions_user >>
-      # - slack-success:
-      #     event: << parameters.event >>
-      #     branch_pattern: << parameters.branch_pattern >>
-      #     channel: << parameters.channel >>
-      #     text: << parameters.text >>
-      #     slack_mentions_user: << parameters.slack_mentions_user >>
 
   diff-if-necessary:
     parameters:
@@ -1107,12 +1066,23 @@ jobs:
           command: |
             cd ~/audius-protocol
             set -x
-            ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN}
+            # ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN}
 
+            #format variable
             export SLACK_DETAIL=$(cat /tmp/summary.md)
-      - slack-deploy:
+            echo 'export SLACK_DETAIL="hi mom"' >> "$BASH_ENV"
+      - slack-fail:
           channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
+      - slack-success:
+          channel: C03STD3UXMG
+          slack_mentions_user: "@joaquin"
+      - store_artifacts:
+          path: /tmp/summary.md
+          destination: summary.md
+      - store_artifacts:
+          path: /tmp/summary.json
+          destination: summary.json
       - run:
           name: Disconnect from OpenVPN
           command: |
