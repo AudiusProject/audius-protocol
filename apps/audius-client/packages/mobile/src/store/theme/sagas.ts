@@ -5,6 +5,7 @@ import { eventEmitter, initialMode } from 'react-native-dark-mode'
 import { put, call, spawn, takeEvery, select } from 'typed-redux-saga'
 
 import { localStorage } from 'app/services/local-storage'
+import { handleThemeChange } from 'app/utils/theme'
 const { setTheme, setSystemAppearance } = themeActions
 const { getSystemAppearance } = themeSelectors
 
@@ -41,6 +42,7 @@ function* watchSystemAppearanceChange() {
 
 function* setThemeAsync(action: PayloadAction<{ theme: Theme }>) {
   const { theme } = action.payload
+  handleThemeChange(theme)
 
   yield* call([localStorage, 'setItem'], 'theme', theme)
 }
