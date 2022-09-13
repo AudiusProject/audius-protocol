@@ -1,6 +1,4 @@
-// @ts-nocheck
-// TODO(nkang) - convert to TS
-import { LineupActions } from '../../../../../store/lineup/actions'
+import { LineupActions } from '../../../../lineup/actions'
 
 export const PREFIX = 'PROFILE_TRACKS'
 
