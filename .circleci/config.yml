@@ -1056,7 +1056,7 @@ jobs:
               printf "\nPublic IP is now %s\n" "$(curl -s http://checkip.amazonaws.com)"
             fi
       - slack-basic:
-          # channel: C03STD3UXMG
+          channel: C03STD3UXMG
           event: always
           slack_mentions_user: "@joaquin"
       - run:
@@ -1080,15 +1080,15 @@ jobs:
           command: |
             cd ~/audius-protocol
             set -x
-            ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -s discovery -f
+            ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -s discovery,identity -f -d
 
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
       - slack-fail:
-          # channel: C03STD3UXMG
+          channel: C03STD3UXMG
           slack_mentions_user: "@joaquin"
       - slack-success:
-          # channel: C03STD3UXMG
+          channel: C03STD3UXMG
           detail: ${SLACK_DETAIL}
           slack_mentions_user: "@joaquin"
       - store_artifacts:
