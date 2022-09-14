@@ -56,6 +56,7 @@ function* watchUpdatePushNotificationSettings() {
       try {
         if (action.notificationType === PushNotificationSetting.MobilePush) {
           if (isOn) {
+            yield* call([PushNotifications, 'requestPermission'])
             const { token, os } = yield* call([PushNotifications, 'getToken'])
             // Enabling push notifications should enable all of the notification types
             const newSettings = { ...initialState.pushNotifications }

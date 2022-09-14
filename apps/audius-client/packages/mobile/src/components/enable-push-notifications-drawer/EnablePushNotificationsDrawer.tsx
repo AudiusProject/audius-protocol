@@ -1,8 +1,5 @@
 import { useCallback } from 'react'
 
-// Importing directly from audius-client temporarily until
-// settings page is migrated because we still need push notification logic to work
-// on settings page and it doesn't necessarily make sense in common
 import { settingsPageActions, PushNotificationSetting } from '@audius/common'
 import { StyleSheet, View } from 'react-native'
 import { useDispatch } from 'react-redux'
