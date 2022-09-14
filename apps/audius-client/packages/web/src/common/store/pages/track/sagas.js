@@ -136,7 +136,6 @@ function* getRestOfLineup(permalink, ownerHandle) {
 function* watchFetchTrack() {
   yield takeEvery(trackPageActions.FETCH_TRACK, function* (action) {
     const { trackId, handle, slug, canBeUnlisted } = action
-    const permalink = `/${handle}/${slug}`
     try {
       let track
       if (!trackId) {
@@ -171,7 +170,11 @@ function* watchFetchTrack() {
         // Add hero track to lineup early so that we can play it ASAP
         // (instead of waiting for the entire lineup to load)
         yield call(addTrackToLineup, track)
-        yield fork(getRestOfLineup, permalink, handle)
+        yield fork(
+          getRestOfLineup,
+          track.permalink,
+          handle || track.permalink.split('/')?.[1]
+        )
         yield fork(getTrackRanks, track.track_id)
         yield put(trackPageActions.fetchTrackSucceeded(track.track_id))
       }
