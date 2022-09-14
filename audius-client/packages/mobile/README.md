@@ -15,7 +15,7 @@ cp .env.stage.tmpl .env.stage
 cp .env.prod.tmpl .env.prod
 ```
 
-### iOS
+### Extra iOS Setup
 
 ```bash
 # install cocoapods
@@ -24,50 +24,9 @@ sudo gem install cocoapods
 cd ios
 pod install
 cd ..
-
-# Create main.jsbundle
-npm run bundle:ios
 ```
 
-### Android
-
-## Running against a local static build
-
-To run against a local staging or production build, build the client and copy the build into the mobile client:
-
-```bash
-# staging
-
-# audius-client
-npm run build:mobile-stage
-
-# audius-mobile-client
-npm run copy:local-staging
-
-# production
-
-# audius-client
-npm run build:mobile-prod
-
-# audius-mobile-client
-npm run copy:local-production
-```
-
-## Running against a remote static build
-
-To run against a remote staging or production build, pull a the latest dapp from s3:
-
-> Make sure you have s3 creds set up and the aws cli installed.
-
-```bash
-# staging
-npm run copy:remote-staging
-
-# production
-npm run copy:remote-production
-```
-
-## iOS
+## Running iOS
 
 ```bash
 # Run a simulator using a prod configuration
@@ -83,7 +42,7 @@ npm run ios:device "Raymond's iPhone"
 xcrun xctrace list devices
 ```
 
-## Android
+## Running Android
 
 ```bash
 # Run a simulator using a prod configuration
