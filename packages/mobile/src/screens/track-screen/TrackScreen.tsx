@@ -17,7 +17,7 @@ import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { TrackScreenMainContent } from './TrackScreenMainContent'
-const { fetchTrack } = trackPageActions
+const { fetchTrack, resetTrackPage } = trackPageActions
 const { tracksActions } = trackPageLineupActions
 const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -58,10 +58,6 @@ export const TrackScreen = () => {
   // params is incorrectly typed and can sometimes be undefined
   const { searchTrack, id } = params ?? {}
 
-  useEffect(() => {
-    dispatch(fetchTrack(id, undefined, undefined, true))
-  }, [dispatch, id])
-
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
   const track = cachedTrack ?? searchTrack
@@ -74,6 +70,14 @@ export const TrackScreen = () => {
 
   const lineup = useSelector(getMoreByArtistLineup)
   const remixParentTrack = useSelector(getRemixParentTrack)
+  const trackUserExists = user != null
+  useEffect(() => {
+    dispatch(fetchTrack(id, undefined, user?.handle, true))
+    return () => {
+      dispatch(resetTrackPage())
+      dispatch(tracksActions.reset())
+    }
+  }, [dispatch, id, trackUserExists, user?.handle])
 
   if (!track || !user) {
     console.warn(

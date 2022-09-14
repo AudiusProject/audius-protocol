@@ -60,7 +60,8 @@ const actionsMap = {
   [RESET](state, action) {
     return {
       ...state,
-      ...initialState
+      ...initialState,
+      tracks: tracksLineupReducer(undefined, action)
     }
   }
 }
