@@ -1,3 +1,9 @@
+/* eslint-disable import/order */
+/* eslint-disable import/first */
+import { setupTracing } from './utils/tracer'
+setupTracing()
+
+// eslint-disable-next-line import/first
 import ReactDOM from 'react-dom'
 
 import './index.css'
