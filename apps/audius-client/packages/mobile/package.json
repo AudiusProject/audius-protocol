@@ -42,7 +42,7 @@
     "@react-native-clipboard/clipboard": "1.9.0",
     "@react-native-community/blur": "3.6.0",
     "@react-native-community/hooks": "2.8.1",
-    "@react-native-community/netinfo": "5.9.10",
+    "@react-native-community/netinfo": "9.3.0",
     "@react-native-community/push-notification-ios": "1.10.1",
     "@react-native-firebase/analytics": "14.5.1",
     "@react-native-firebase/app": "14.5.1",

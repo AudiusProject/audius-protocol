@@ -1,12 +1,8 @@
-import {
-  reachabilityActions,
-  reachabilitySelectors,
-  getContext
-} from '@audius/common'
-import { takeEvery, call, put, race, select, delay } from 'typed-redux-saga'
+import { reachabilityActions, reachabilitySelectors } from '@audius/common'
+import { call, delay, put, race, select } from 'typed-redux-saga'
 
-import { MessageType, Message } from 'services/native-mobile-interface/types'
-import { isMobile } from 'utils/clientUtil'
+import { isMobileWeb } from 'common/utils/isMobileWeb'
+
 const { getIsReachable } = reachabilitySelectors
 const { setUnreachable, setReachable } = reachabilityActions
 
@@ -65,38 +61,26 @@ function* updateReachability(isReachable: boolean) {
   }
 }
 
+// Note: We don't have an equivalent saga in native mobile because the reachability state is updated via the event listener
+// registered in packages/mobile/utils/connectivity.ts
 function* reachabilityPollingDaemon() {
-  const isNativeMobile = yield* getContext('isNativeMobile')
-  if (isNativeMobile) {
-    // Native mobile: use the system connectivity checks
-    console.log('polling')
-    yield* takeEvery(
-      MessageType.IS_NETWORK_CONNECTED,
-      function* (action: Message) {
-        const { isConnected } = action
+  // Web/Desktop: poll for connectivity
+  if (!isMobileWeb()) {
+    // TODO: Remove this check when we have build out reachability UI for desktop.
+    yield* put(setReachable())
+    return
+  }
 
-        yield* call(updateReachability, isConnected)
-      }
+  let failures = 0
+  while (true) {
+    const isReachable = yield* call(ping)
+    if (!isReachable) failures += 1
+    if (isReachable) failures = 0
+    yield* call(updateReachability, failures < 2)
+
+    yield* delay(
+      isReachable ? REACHABILITY_LONG_TIMEOUT : REACHABILITY_SHORT_TIMEOUT
     )
-  } else {
-    // Web/Desktop: poll for connectivity
-    if (!isMobile()) {
-      // TODO: Remove this check when we have build out reachability UI for desktop.
-      yield* put(setReachable())
-      return
-    }
-
-    let failures = 0
-    while (true) {
-      const isReachable = yield* call(ping)
-      if (!isReachable) failures += 1
-      if (isReachable) failures = 0
-      yield* call(updateReachability, failures < 2)
-
-      yield* delay(
-        isReachable ? REACHABILITY_LONG_TIMEOUT : REACHABILITY_SHORT_TIMEOUT
-      )
-    }
   }
 }
 

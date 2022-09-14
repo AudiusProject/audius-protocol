@@ -1,5 +1,8 @@
+import { reachabilityActions } from '@audius/common'
 import type { NetInfoState } from '@react-native-community/netinfo'
 import NetInfo from '@react-native-community/netinfo'
+
+import { dispatch } from './../store/store'
 
 export const checkConnectivity = (netInfo: NetInfoState | null) => {
   if (!netInfo) return true
@@ -16,4 +19,10 @@ export const checkConnectivity = (netInfo: NetInfoState | null) => {
 export const Connectivity: { netInfo: NetInfoState | null } = { netInfo: null }
 NetInfo.addEventListener((state: NetInfoState) => {
   Connectivity.netInfo = state
+  const newValue = checkConnectivity(state)
+  if (!newValue) {
+    dispatch(reachabilityActions.setUnreachable())
+  } else {
+    dispatch(reachabilityActions.setReachable())
+  }
 })

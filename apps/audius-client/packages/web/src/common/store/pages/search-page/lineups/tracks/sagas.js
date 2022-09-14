@@ -6,11 +6,12 @@ import {
 } from '@audius/common'
 import { select, all, call, getContext } from 'redux-saga/effects'
 
-import { LineupSagas, isMobile } from 'common/store/lineup/sagas'
+import { LineupSagas } from 'common/store/lineup/sagas'
 import {
   getSearchResults,
   getTagSearchResults
 } from 'common/store/pages/search-page/sagas'
+import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
   searchResultsPageSelectors
@@ -22,7 +23,7 @@ function* getSearchPageResultsTracks({
   payload: { category, query, isTagSearch }
 }) {
   const isNativeMobile = yield getContext('isNativeMobile')
-  if (category === SearchKind.TRACKS || isNativeMobile || isMobile()) {
+  if (category === SearchKind.TRACKS || isNativeMobile || isMobileWeb()) {
     // If we are on the tracks sub-page of search or mobile, which we should paginate on
     let results
     if (isTagSearch) {
