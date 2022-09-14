@@ -184,7 +184,8 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
 
     // Don't publish events for deactivated users
     const isReceiverDeactivated = metadata.users[userId] && metadata.users[userId].is_deactivated
-    const isInitiatorAbusive = initiatorMap[initiatorUserId] && initiatorMap[initiatorUserId].isBlockedFromNotifications
+    const initiatingUser = initiatorMap[initiatorUserId]
+    const isInitiatorAbusive = initiatorMap[initiatorUserId] && (initiatingUser.isBlockedFromRelay || initiatingUser.isBlockedFromNotifications)
     if (isReceiverDeactivated) {
       continue
     }
