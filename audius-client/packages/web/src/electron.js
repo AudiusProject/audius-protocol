@@ -468,6 +468,7 @@ ipcMain.on('quit', (event, arg) => {
   app.exit(0)
 })
 
+// We have finished downloading the electron update
 autoUpdater.on('update-downloaded', (info) => {
   console.log('update-downloaded', info)
   canUpdate = true
@@ -475,6 +476,7 @@ autoUpdater.on('update-downloaded', (info) => {
   if (mainWindow) mainWindow.webContents.send('updateDownloaded', info)
 })
 
+// We have discovered that there is an available electron update
 autoUpdater.on('update-available', (info) => {
   console.log('update-available', info)
   info.currentVersion = autoUpdater.currentVersion.version
