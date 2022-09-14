@@ -743,6 +743,12 @@ const config = convict({
     format: String,
     env: 'otelCollectorUrl',
     default: ''
+  },
+  reconfigSPIdBlacklistString: {
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` string[] config',
+    format: String,
+    env: 'reconfigSPIdBlocklistString',
+    default: ''
   }
   /**
    * unsupported options at the moment
@@ -795,6 +801,17 @@ if (fs.existsSync(pathTo('contract-config.json'))) {
     dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
+
+// Set reconfigSPIdBlacklist based off of reconfigSPIdBlacklistString
+config.set(
+  'reconfigSPIdBlacklist',
+  config.get('reconfigSPIdBlacklistString') === ''
+    ? []
+    : config
+        .get('reconfigSPIdBlacklistString')
+        .split(',')
+        .filter((e) => e)
+)
 
 // Perform validation and error any properties are not present on schema
 config.validate()

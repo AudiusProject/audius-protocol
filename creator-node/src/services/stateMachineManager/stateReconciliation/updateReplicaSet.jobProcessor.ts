@@ -36,6 +36,10 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
   : null
 
+const RECONFIG_SP_IDS_BLACKLIST_SET = new Set(
+  config.get('reconfigSPIdBlacklist')
+)
+
 /**
  * Updates replica sets of a user who has one or more unhealthy nodes as their primary or secondaries.
  *
@@ -474,8 +478,11 @@ const _selectRandomReplicaSetNodes = async (
 
   const newReplicaNodesSet = new Set<string>()
 
+  const spInfoMap = await getMapOfCNodeEndpointToSpId(logger)
   const viablePotentialReplicas = healthyNodes.filter(
-    (node) => !healthyReplicaSet.has(node)
+    (node) =>
+      !healthyReplicaSet.has(node) &&
+      !RECONFIG_SP_IDS_BLACKLIST_SET.has(spInfoMap.get(node))
   )
 
   let selectNewReplicaSetAttemptCounter = 0
