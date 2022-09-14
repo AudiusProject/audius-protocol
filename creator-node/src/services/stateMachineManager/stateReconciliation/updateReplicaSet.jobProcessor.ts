@@ -643,7 +643,15 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
       }
+    } catch (e: any) {
+      throw new Error(
+        `[_issueUpdateReplicaSetOp] Could not initialize libs ${
+          Date.now() - startTimeMs
+        }ms - Error ${e.message}`
+      )
+    }
 
+    try {
       const oldPrimarySpId = cNodeEndpointToSpIdMap.get(primary)
       const oldSecondary1SpId = cNodeEndpointToSpIdMap.get(secondary1)
       const oldSecondary2SpId = cNodeEndpointToSpIdMap.get(secondary2)
