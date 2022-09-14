@@ -811,6 +811,7 @@ config.set(
         .get('reconfigSPIdBlacklistString')
         .split(',')
         .filter((e) => e)
+        .map((e) => parseInt(e))
 )
 
 // Perform validation and error any properties are not present on schema
