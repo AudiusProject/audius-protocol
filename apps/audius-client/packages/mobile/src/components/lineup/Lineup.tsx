@@ -156,14 +156,21 @@ export const Lineup = ({
   const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
+  const [refreshing, setRefreshing] = useState(refreshingProp)
   const selectedLineup = useSelector(lineupSelector)
   const lineup = selectedLineup ?? lineupProp
   const { status } = lineup
-  const refreshing = refreshingProp ?? status === Status.LOADING
 
   const handleRefresh = useCallback(() => {
+    setRefreshing(true)
     dispatch(actions.refreshInView(true))
   }, [dispatch, actions])
+
+  useEffect(() => {
+    if (status !== Status.LOADING) {
+      setRefreshing(false)
+    }
+  }, [status])
 
   const refresh = refreshProp ?? handleRefresh
 
