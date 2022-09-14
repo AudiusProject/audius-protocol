@@ -419,7 +419,7 @@ const config = convict({
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
     env: 'snapbackHighestReconfigMode',
-    default: 'ONE_SECONDARY'
+    default: 'PRIMARY_AND_OR_SECONDARIES'
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
