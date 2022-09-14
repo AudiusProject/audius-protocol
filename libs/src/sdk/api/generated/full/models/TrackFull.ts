@@ -44,6 +44,12 @@ import {
     PremiumConditionsToJSON,
 } from './PremiumConditions';
 import {
+    PremiumContentSignature,
+    PremiumContentSignatureFromJSON,
+    PremiumContentSignatureFromJSONTyped,
+    PremiumContentSignatureToJSON,
+} from './PremiumContentSignature';
+import {
     Repost,
     RepostFromJSON,
     RepostFromJSONTyped,
@@ -332,5 +338,11 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     premium_conditions?: PremiumConditions;
+    /**
+     * 
+     * @type {PremiumContentSignature}
+     * @memberof TrackFull
+     */
+    premium_content_signature?: PremiumContentSignature;
 }
 
