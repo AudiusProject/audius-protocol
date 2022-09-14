@@ -63,7 +63,10 @@ export const ProfileScreen = () => {
     'handle',
     'does_current_user_follow'
   ])
-  const handle = params.handle ?? profile?.handle
+  const handle =
+    params.handle && params.handle !== 'accountUser'
+      ? params.handle
+      : profile?.handle
   const accountId = useSelector(getUserId)
   const dispatch = useDispatch()
   const status = useSelector(getProfileStatus)
