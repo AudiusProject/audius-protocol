@@ -40,6 +40,10 @@ const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
+const {
+  premiumContentMiddleware
+} = require('../middlewares/premiumContent/premiumContentMiddleware')
+
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
@@ -116,8 +120,16 @@ const streamFromFileSystem = async (
       )
     }
 
-    // Set the CID cache-control so that client caches the response for 30 days
-    res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    // If content is NOT premium, set the CID cache-control so that client caches the response for 30 days.
+    // Otherwise, set cache-control to no-cache.
+    if (req.premiumContent && req.premiumContent.isPremium) {
+      req.logger.info(
+        'Setting the no-cache cache-control response header for premium content.'
+      )
+      res.setHeader('cache-control', 'no-cache')
+    } else {
+      res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    }
 
     await new Promise((resolve, reject) => {
       fileStream
@@ -749,13 +761,18 @@ router.post(
  * Serve data hosted by creator node and create download route using query string pattern
  * `...?filename=<file_name.mp3>`.
  * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
+ *
+ * This route uses the premium content middleware to check if content requested is premium.
+ * If so, the middleware ensures that the user does have access to the content before
+ * proceeding to the getCID logic that returns the premium content.
+ *
  * @param req
  * @param req.query
  * @param {string} req.query.filename filename to set as the content-disposition header
  * @dev This route does not handle responses by design, so we can pipe the response to client.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:CID', '/content/:CID'], getCID)
+router.get(['/ipfs/:CID', '/content/:CID'], premiumContentMiddleware, getCID)
 
 /**
  * Serve images hosted by content node.

@@ -4,13 +4,10 @@ import {
   errorResponseForbidden,
   errorResponseBadRequest
 } from '../../apiHelpers'
-import { recoverWallet } from '../../apiSigning'
 import { NextFunction, Request, Response } from 'express'
-import { isPremiumContentMatch } from '../../premiumContent/helpers'
-import { PremiumContentType } from '../../premiumContent/types'
-import { getRegisteredDiscoveryNodes } from '../../utils/getRegisteredDiscoveryNodes'
+import { PremiumContentAccessError } from '../../premiumContent/types'
+import { checkAccess } from '../../premiumContent/helpers'
 import type Logger from 'bunyan'
-import { Redis } from 'ioredis'
 
 /**
  * Middleware to validate requests to get premium content.
@@ -31,70 +28,66 @@ export const premiumContentMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const {
-      signedDataFromDiscoveryNode,
-      signatureFromDiscoveryNode,
-      signedDataFromUser,
-      signatureFromUser
-    } = req.headers
-
-    if (
-      !signedDataFromDiscoveryNode ||
-      !signatureFromDiscoveryNode ||
-      !signedDataFromUser ||
-      !signatureFromUser
-    ) {
+    const cid = req.params && req.params.CID
+    if (!cid) {
       return sendResponse(
         req,
         res,
-        errorResponseBadRequest('Missing request headers.')
+        errorResponseBadRequest(`Invalid request, no CID provided.`)
       )
     }
 
+    // @ts-ignore
+    const premiumContentHeaders = req.headers['x-premium-content'] as string
+    const libs = req.app.get('audiusLibs')
+    const redis = req.app.get('redisClient')
     const logger = (req as any).logger as Logger
 
-    const discoveryNodeWallet = recoverWallet(
-      signedDataFromDiscoveryNode,
-      signatureFromDiscoveryNode
+    // @ts-ignore
+    const { doesUserHaveAccess, trackId, isPremium, error } = await checkAccess(
+      { cid, premiumContentHeaders, libs, logger, redis }
     )
-    const isRegisteredDN = await isRegisteredDiscoveryNode({
-      wallet: discoveryNodeWallet,
-      libs: req.app.get('audiusLibs'),
-      logger,
-      redis: req.app.get('redisClient')
-    })
-    if (!isRegisteredDN) {
-      return sendResponse(
-        req,
-        res,
-        errorResponseForbidden(
-          'Failed discovery node signature validation for premium content.'
-        )
-      )
+    if (doesUserHaveAccess) {
+      // Set premium content track id and 'premium-ness' so that next middleware or
+      // request handler does not need to make trips to the database to get this info.
+      // We need the info because if the content is premium, then we need to set
+      // the cache-control response header to no-cache so that nginx does not cache it.
+      // @ts-ignore
+      req.premiumContent = {
+        trackId,
+        isPremium
+      }
+      next()
+      return
+    } else {
+      switch (error) {
+        case PremiumContentAccessError.MISSING_HEADERS:
+          return sendResponse(
+            req,
+            res,
+            errorResponseForbidden(
+              'Missing request headers for premium content.'
+            )
+          )
+        case PremiumContentAccessError.INVALID_DISCOVERY_NODE:
+          return sendResponse(
+            req,
+            res,
+            errorResponseForbidden(
+              'Failed discovery node signature validation for premium content.'
+            )
+          )
+        case PremiumContentAccessError.FAILED_MATCH:
+        default:
+          return sendResponse(
+            req,
+            res,
+            errorResponseForbidden(
+              'Failed match verification for premium content.'
+            )
+          )
+      }
     }
-
-    const { premiumContentId, premiumContentType } = req.params
-
-    const userWallet = recoverWallet(signedDataFromUser, signatureFromUser)
-    const signedDataFromDiscoveryNodeObj = JSON.parse(
-      signedDataFromDiscoveryNode as string
-    )
-    const isMatch = isPremiumContentMatch({
-      signedDataFromDiscoveryNode: signedDataFromDiscoveryNodeObj,
-      userWallet,
-      premiumContentId: parseInt(premiumContentId),
-      premiumContentType: premiumContentType as PremiumContentType,
-      logger
-    })
-    if (!isMatch) {
-      return sendResponse(
-        req,
-        res,
-        errorResponseForbidden('Failed match verification for premium content.')
-      )
-    }
-
-    next()
   } catch (e) {
     const error = `Could not validate premium content access: ${
       (e as Error).message
@@ -102,25 +95,4 @@ export const premiumContentMiddleware = async (
     console.error(`${error}.\nError: ${JSON.stringify(e, null, 2)}`)
     return sendResponse(req, res, errorResponseServerError(error))
   }
-}
-
-async function isRegisteredDiscoveryNode({
-  wallet,
-  libs,
-  logger,
-  redis
-}: {
-  wallet: string
-  libs: any
-  logger: Logger
-  redis: Redis
-}) {
-  const allRegisteredDiscoveryNodes = await getRegisteredDiscoveryNodes({
-    libs,
-    logger,
-    redis
-  })
-  return allRegisteredDiscoveryNodes.some(
-    (node) => node.delegateOwnerWallet === wallet
-  )
 }
