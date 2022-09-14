@@ -700,7 +700,7 @@ const _issueUpdateReplicaSetOp = async (
       throw new Error(
         `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${
           Date.now() - startTimeMs
-        }ms - Error ${e.message}. Stack: ${e.stack}`
+        }ms - Error ${e.message}`
       )
     }
 
