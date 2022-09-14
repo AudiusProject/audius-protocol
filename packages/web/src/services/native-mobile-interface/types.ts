@@ -55,8 +55,6 @@ export enum MessageType {
   // Lifecycle
   ENTER_FOREGROUND = 'action/enter-foreground',
   BACKEND_SETUP = 'backend-setup',
-  REQUEST_NETWORK_CONNECTED = 'request-network-connected',
-  IS_NETWORK_CONNECTED = 'is-network-connected',
   FETCH_ACCOUNT_FAILED = 'fetch_account_failed',
   SIGNED_IN = 'signed-in',
   SIGNED_OUT = 'signed-out',
