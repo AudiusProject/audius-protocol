@@ -1,22 +1,35 @@
 import { useCallback } from 'react'
 
+import { accountSelectors } from '@audius/common'
 import { checkNotifications, RESULTS } from 'react-native-permissions'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import type { Dispatch } from 'redux'
 
 import useSessionCount from 'app/hooks/useSessionCount'
 import { setVisibility } from 'app/store/drawers/slice'
+const getHasAccount = accountSelectors.getHasAccount
 
 const REMINDER_EVERY_N_SESSIONS = 10
 
-type OwnProps = {
-  isSignedIn: boolean
+export const NotificationReminder = () => {
+  const hasAccount = useSelector(getHasAccount)
+  if (hasAccount) {
+    return <NotificationReminderInternal />
+  }
+  return null
 }
 
-const NotificationReminderWrapper = ({ isSignedIn }: OwnProps) => {
-  if (isSignedIn) {
-    return <NotificationReminder />
-  }
+const NotificationReminderInternal = () => {
+  const dispatch = useDispatch()
+
+  // Sets up reminders to turn on push notifications
+  const reminder = useCallback(() => {
+    remindUserToTurnOnNotifications(dispatch)
+  }, [dispatch])
+
+  useSessionCount(reminder, REMINDER_EVERY_N_SESSIONS)
+
+  // No UI component
   return null
 }
 
@@ -56,19 +69,3 @@ export const remindUserToTurnOnNotifications = (dispatch: Dispatch) => {
       console.error(error)
     })
 }
-
-const NotificationReminder = () => {
-  const dispatch = useDispatch()
-
-  // Sets up reminders to turn on push notifications
-  const reminder = useCallback(() => {
-    remindUserToTurnOnNotifications(dispatch)
-  }, [dispatch])
-
-  useSessionCount(reminder, REMINDER_EVERY_N_SESSIONS)
-
-  // No UI component
-  return null
-}
-
-export default NotificationReminderWrapper

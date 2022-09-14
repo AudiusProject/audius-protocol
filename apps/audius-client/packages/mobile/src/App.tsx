@@ -17,6 +17,7 @@ import { store } from 'app/store'
 
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
+import { NotificationReminder } from './components/notification-reminder/NotificationReminder'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -56,6 +57,7 @@ const App = () => {
                 <Modals />
                 <Audio />
                 <OAuth />
+                <NotificationReminder />
               </NavigationContainer>
             </ErrorBoundary>
           </ToastContextProvider>
