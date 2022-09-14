@@ -218,7 +218,6 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         # because of the filtering out of premium tracks
         if not should_apply_limit_early:
             tracks = tracks[:UNDERGROUND_TRENDING_LENGTH]
-            track_ids = [track["track_id"] for track in tracks]
 
         return (tracks, track_ids)
 

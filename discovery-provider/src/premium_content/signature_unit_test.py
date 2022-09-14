@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 from src.api_helpers import recover_wallet
@@ -21,21 +20,18 @@ def test_signature():
             "user_wallet": user_wallet,
         }
     )
-    signature = result["signature"]
-    signature_data = result["data"]
-    signature_data_obj = json.loads(signature_data)
 
     after_ms = int(datetime.utcnow().timestamp() * 1000)
 
-    assert signature_data_obj["premium_content_id"] == premium_content_id
-    assert signature_data_obj["premium_content_type"] == premium_content_type
-    assert signature_data_obj["user_wallet"] == user_wallet
-    assert before_ms <= signature_data_obj["timestamp"] <= after_ms
-    assert len(signature) == 132
+    assert result["data"]["premium_content_id"] == premium_content_id
+    assert result["data"]["premium_content_type"] == premium_content_type
+    assert result["data"]["user_wallet"] == user_wallet
+    assert before_ms <= result["data"]["timestamp"] <= after_ms
+    assert len(result["signature"]) == 132
 
     discovery_node_wallet = recover_wallet(
-        json.loads(signature_data),
-        signature,
+        result["data"],
+        result["signature"],
     )
 
     assert discovery_node_wallet == shared_config["delegate"]["owner_wallet"]

@@ -70,7 +70,6 @@ def generate_unpopulated_trending(
     # because of the filtering out of premium tracks
     if not should_apply_limit_early:
         tracks = tracks[:limit]
-        track_ids = [track["track_id"] for track in tracks]
 
     return (tracks, track_ids)
 
@@ -130,7 +129,6 @@ def generate_unpopulated_trending_from_mat_views(
     # because of the filtering out of premium tracks
     if not should_apply_limit_early:
         tracks = tracks[:limit]
-        track_ids = [track["track_id"] for track in tracks]
 
     return (tracks, track_ids)
 
