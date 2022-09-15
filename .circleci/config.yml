@@ -975,6 +975,27 @@ jobs:
   deploy-to-staging:
     machine:
       image: ubuntu-2004:202201-02
+    parameters:
+      git_tag:
+        description: Git_tag to deploy. Latest commit on `master` otherwise.
+        type: string
+        default: ""
+      environment:
+        description: "Options: staging"
+        type: string
+        default: "staging"
+      services:
+        description: "Options: all|discovery|creator|identity"
+        type: string
+        default: "all"
+      hosts:
+        description: "Optional options: stage-creator-X|stage-discovery-X|stage-identity|stage-user-metadata"
+        type: string
+        default: ""
+      params:
+        description: "Additional parameters for deploy-ci.py"
+        type: string
+        default: ""
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -1080,7 +1101,15 @@ jobs:
           command: |
             cd ~/audius-protocol
             set -x
-            ~/audius-tooling/deploy-ci.py -u ${GH_USER} -g ${GH_TOKEN} -s discovery -f -d
+            ~/audius-tooling/deploy-ci.py \
+              --github-user ${GH_USER} \
+              --github-token ${GH_TOKEN} \
+              --git-tag "<< parameters.git_tag >>" \
+              --environment "<< parameters.environment >>" \
+              --services "<< parameters.services >>" \
+              --hosts "<< parameters.hosts >>" \
+              << parameters.params >> \
+              --force --dry-run
 
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
@@ -1112,6 +1141,8 @@ workflows:
     jobs:
       - deploy-to-staging:
           name: deploy-to-staging
+          services: discovery
+          params: --force --dry-run
           context:
             - slack-secrets
             - gh-tokens
@@ -1119,6 +1150,16 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
+      - deploy-to-staging:
+          type: approval
+          name: deploy-to-staging
+          services: discovery
+          git_tag: ${CIRCLE_SHA1}
+          params: --force --dry-run
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
       - test-libs:
           name: test-libs
       - docker-build-and-push:
