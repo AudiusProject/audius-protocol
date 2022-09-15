@@ -1114,21 +1114,42 @@ jobs:
           command: |
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
+      - when:
+        condition: << parameters.host >>
+        steps:
+          - run:
+              name: Perform Deployment
+              command: |
+                cd ~/audius-protocol
+                set -x
+                ~/audius-tooling/deploy-ci.py \
+                  --github-user ${GH_USER} \
+                  --github-token ${GH_TOKEN} \
+                  --git-tag "<< parameters.git_tag >>" \
+                  --environment "<< parameters.environment >>" \
+                  --services "<< parameters.service >>" \
+                  --hosts "<< parameters.host >>" \
+                  << parameters.params >> \
+                  --force --dry-run
+      - unless:
+        condition: << parameters.host >>
+        steps:
+          - run:
+              name: Perform Deployment
+              command: |
+                cd ~/audius-protocol
+                set -x
+                ~/audius-tooling/deploy-ci.py \
+                  --github-user ${GH_USER} \
+                  --github-token ${GH_TOKEN} \
+                  --git-tag "<< parameters.git_tag >>" \
+                  --environment "<< parameters.environment >>" \
+                  --services "<< parameters.service >>" \
+                  << parameters.params >> \
+                  --force --dry-run
       - run:
-          name: Perform Deployment
+          name: Set Slack Detail from /tmp/summary.md
           command: |
-            cd ~/audius-protocol
-            set -x
-            ~/audius-tooling/deploy-ci.py \
-              --github-user ${GH_USER} \
-              --github-token ${GH_TOKEN} \
-              --git-tag "<< parameters.git_tag >>" \
-              --environment "<< parameters.environment >>" \
-              --services "<< parameters.service >>" \
-              --hosts "<< parameters.host >>" \
-              << parameters.params >> \
-              --force --dry-run
-
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
       - slack-fail:
