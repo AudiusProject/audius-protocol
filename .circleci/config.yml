@@ -277,17 +277,17 @@ parameters:
     default: false
 
 jobs:
-  null:
+  noop:
     docker:
       - image: scratch
     steps:
       - run: echo
   build:
-    null
+    noop
   built:
-    null
+    noop
   test:
-    null
+    noop
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -1153,7 +1153,7 @@ workflows:
          - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
       - build
-      - built
+      - built:
           requires:
             - build-creator-node
             - build-discovery-provider
