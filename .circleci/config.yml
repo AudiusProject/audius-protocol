@@ -277,6 +277,13 @@ parameters:
     default: false
 
 jobs:
+  build:
+    docker:
+      - image: scratch
+    steps:
+      - run: echo
+  test:
+    build
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -1141,6 +1148,8 @@ workflows:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
+      - build
+      - test
       - deploy-to-staging:
           name: deploy-to-staging-from-master
           service: discovery
@@ -1207,18 +1216,24 @@ workflows:
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
+          requires:
+            - build
 
       - test-discovery-provider:
           name: test-discovery-provider
       - docker-build-and-push-updated:
           name: build-discovery-provider
           repo: discovery-provider
+          requires:
+            - build
 
       - test-identity-service:
           name: test-identity-service
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
+          requires:
+            - build
 
       - test-solana-programs:
           name: test-solana-programs
