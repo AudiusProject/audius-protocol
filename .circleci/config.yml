@@ -1143,7 +1143,7 @@ workflows:
     jobs:
       - deploy-to-staging:
           name: deploy-to-staging-from-master
-          services: discovery
+          service: discovery
           params: --force --dry-run
           context:
             - slack-secrets
