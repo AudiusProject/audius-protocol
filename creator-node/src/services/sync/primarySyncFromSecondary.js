@@ -140,7 +140,7 @@ async function _primarySyncFromSecondary({
 
       if (error) {
         decisionTree.recordStage({
-          name: `fetchExportFromSecondary() Error`,
+          name: 'fetchExportFromSecondary() Error',
           data: { error: error.message }
         })
 
@@ -152,7 +152,7 @@ async function _primarySyncFromSecondary({
 
       if (abort) {
         decisionTree.recordStage({
-          name: `fetchExportFromSecondary() Abort`,
+          name: 'fetchExportFromSecondary() Abort',
           data: { abort: abort.message }
         })
 
