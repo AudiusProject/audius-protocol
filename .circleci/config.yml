@@ -1154,7 +1154,7 @@ workflows:
               only: /(^master$)/
       - deploy-to-staging:
           type: approval
-          name: deploy-to-staging-from-branch-<< matrix.service >>-<< matrix.host >>
+          name: deploy-<< matrix.service >>-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force --dry-run
           context:
