@@ -29,10 +29,10 @@ function tracerMixin(klass) {
   const origFunc = klass.prototype.createChildLogger
   klass.prototype.createChildLogger = function () {
     const childLogger = origFunc.apply(this, arguments)
-    const logDebug = klass.prototype.debug
-    const logInfo = klass.prototype.info
-    const logWarn = klass.prototype.warn
-    const logError = klass.prototype.error
+    const logDebug = childLogger.debug
+    const logInfo = childLogger.info
+    const logWarn = childLogger.warn
+    const logError = childLogger.error
     klass.prototype.debug = function () {
       tracing.debug(...arguments)
       logDebug.apply(childLogger, arguments)
@@ -49,6 +49,8 @@ function tracerMixin(klass) {
       tracing.error(...arguments)
       logError(childLogger, arguments)
     }
+
+    return childLogger
   }
 }
 
