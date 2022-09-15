@@ -293,6 +293,8 @@ jobs:
     noop
   verified:
     noop
+  deploy-prod:
+    noop
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -1198,6 +1200,10 @@ workflows:
             - test-sdk
             - test-solana-programs
             - test-solana-programs-anchor
+      - deploy-prod:
+          type: approval
+          requires:
+            - force-deploy-master-all
       - deploy-to-staging:
           name: deploy-master
           service: discovery
