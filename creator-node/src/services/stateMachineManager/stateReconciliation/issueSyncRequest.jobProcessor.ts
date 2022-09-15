@@ -247,15 +247,15 @@ async function _handleIssueSyncRequest({
         ensurePrimary: false
       })
 
-    const syncCorrectnessError = _ensureSyncsEnqueuedToCorrectNodes(
+    const syncCorrectnessAbort = _ensureSyncsEnqueuedToCorrectNodes(
       userReplicaSet,
       syncMode,
       syncRequestParameters.baseURL
     )
-    if (syncCorrectnessError) {
+    if (syncCorrectnessAbort) {
       return {
-        result: 'failure_sync_correctness',
-        error: `${logMsgString}: ${syncCorrectnessError}`,
+        result: 'abort_sync_correctness',
+        abort: `${logMsgString}: ${syncCorrectnessAbort}`,
         syncReqsToEnqueue
       }
     }
@@ -587,7 +587,7 @@ const _ensureSyncsEnqueuedToCorrectNodes = (
     )}`
   }
 
-  return ''
+  return null
 }
 
 module.exports = async (
