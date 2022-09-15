@@ -31,3 +31,13 @@ export const MultipleMusicalNotesIcon = () => <img
         alt='Multiple Musical Notes Icon' 
         src='https://download.audius.co/static-resources/email/multiple-musical-notes.png'
     />
+export const MoneyMouthFaceIcon = () => <img
+        style={iconStyles}
+        alt='Money Face Icon' 
+        src='https://download.audius.co/static-resources/email/money-mouth-face.png'
+    />
+export const TrebleClef = () => <img
+        style={iconStyles}
+        alt='Treble Clef Icon' 
+        src='https://download.audius.co/static-resources/email/treble-clef.png'
+    />
