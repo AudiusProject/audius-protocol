@@ -1164,6 +1164,17 @@ workflows:
             - build-discovery-provider
             - build-identity-service
       - verified
+          requires:
+            - test-contracts
+            - test-creator-node
+            - test-discovery-provider
+            - test-eth-contracts
+            - test-identity-service
+            - test-libs
+            - test-mad-dog-e2e
+            - test-sdk
+            - test-solana-programs
+            - test-solana-programs-anchor
       - deploy-to-staging:
           name: deploy-to-staging-from-master
           service: discovery
