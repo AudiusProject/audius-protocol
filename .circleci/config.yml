@@ -1163,7 +1163,7 @@ workflows:
             - build-creator-node
             - build-discovery-provider
             - build-identity-service
-      - verified
+      - verified:
           requires:
             - test-contracts
             - test-creator-node
