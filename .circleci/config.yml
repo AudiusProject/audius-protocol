@@ -1101,10 +1101,6 @@ jobs:
               printf "\nVPN connected\n"
               printf "\nPublic IP is now %s\n" "$(curl -s http://checkip.amazonaws.com)"
             fi
-      - slack-basic:
-          channel: C03STD3UXMG
-          event: always
-          slack_mentions_user: "@joaquin"
       - run:
           name: Clone Repositories and Install Dependencies
           command: |
@@ -1122,6 +1118,10 @@ jobs:
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
             # `AddKeysToAgent yes` is os-x only
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
+      - slack-basic:
+          channel: C03STD3UXMG
+          event: always
+          slack_mentions_user: "@joaquin"
       - when:
           condition: << parameters.host >>
           steps:
