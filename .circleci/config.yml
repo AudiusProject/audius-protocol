@@ -1213,20 +1213,6 @@ workflows:
           #   - built
       - deploy-to-staging:
           type: approval
-          name: force-deploy-master
-          params: --force
-          context:
-            - slack-secrets
-            - gh-tokens
-            - open-vpn
-          filters:
-            branches:
-              # only: /(^master|release-.*$)/
-              ignore: /(^master|release-.*$)/
-          requires:
-            - deploy-master
-      - deploy-to-staging:
-          type: approval
           name: force-deploy-master-<< matrix.service >>
           params: --force
           context:
