@@ -275,6 +275,12 @@ parameters:
   full_ci:
     type: boolean
     default: false
+  staging_hosts:
+    type: enum
+    enum: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+  services:
+    type: enum
+    enum: [all, discovery, creator, identity]
 
 jobs:
   noop:
@@ -1004,7 +1010,7 @@ jobs:
       service:
         description: Target service
         type: enum
-        enum: [all, discovery, creator, identity]
+        enum: << pipeline.parameters.services >>
         default: "all"
       host:
         description: "Optional options: stage-creator-X|stage-discovery-X|stage-identity|stage-user-metadata"
@@ -1212,8 +1218,8 @@ workflows:
           # requires:
           #   - built
       - deploy-to-staging:
+          type: approval
           name: force-deploy-master
-          service: discovery
           params: --force
           context:
             - slack-secrets
@@ -1223,6 +1229,40 @@ workflows:
             branches:
               # only: /(^master|release-.*$)/
               ignore: /(^master|release-.*$)/
+          requires:
+            - deploy-master
+      - deploy-to-staging:
+          type: approval
+          name: force-deploy-master-<< matrix.service >>
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              # only: /(^master|release-.*$)/
+              ignore: /(^master|release-.*$)/
+          matrix:
+            parameters:
+              service: << pipeline.parameters.services >>
+          requires:
+            - deploy-master
+      - deploy-to-staging:
+          type: approval
+          name: force-deploy-master-<< matrix.host >>
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              # only: /(^master|release-.*$)/
+              ignore: /(^master|release-.*$)/
+          matrix:
+            parameters:
+              host: << pipeline.parameters.staging_hosts >>
           requires:
             - deploy-master
       - deploy-to-staging:
@@ -1239,7 +1279,7 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              service: ["all", "discovery", "creator", "identity"]
+              service: << pipeline.parameters.services >>
           requires:
             - built
       - deploy-to-staging:
@@ -1256,7 +1296,7 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: << pipeline.parameters.staging_hosts >>
           requires:
             - built
       - test-libs:
