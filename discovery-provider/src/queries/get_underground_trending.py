@@ -202,7 +202,7 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         # tracks we return later may be smaller than the limit.
         # If we don't limit it here, we limit it later after getting the
         # unpopulated tracks.
-        should_apply_limit_early = not SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
+        should_apply_limit_early = True  # not SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
         if should_apply_limit_early:
             sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
 
@@ -218,6 +218,7 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         # because of the filtering out of premium tracks
         if not should_apply_limit_early:
             tracks = tracks[:UNDERGROUND_TRENDING_LENGTH]
+            track_ids = [track["track_id"] for track in tracks]
 
         return (tracks, track_ids)
 
