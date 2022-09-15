@@ -1270,16 +1270,20 @@ workflows:
           requires:
             - force-deploy-master-<< matrix.host >>-approval
       # Deploy to prod (for release branches, after deploying to staging)
-      - deploy:
-          name: deploy-prod
+      - noop:
+          name: deploy-prod-approval
           type: approval
-          environment: prod
           filters:
             branches:
               # only: /(^release-.*$)/
               ignore: /(^release-.*$)/
           requires:
             - force-deploy-master-all
+      - deploy:
+          name: deploy-prod
+          environment: prod
+          requires:
+            - deploy-prod-approval
 
       # Deploy branch to staging (by service)
       - noop:
