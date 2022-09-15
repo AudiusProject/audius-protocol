@@ -1229,7 +1229,7 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              service: [all, discovery, creator]
+              service: [all, discovery, creator, identity]
           requires:
             - deploy-master
       - deploy:
@@ -1241,7 +1241,7 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              service: [all, discovery, creator]
+              service: [all, discovery, creator, identity]
           requires:
             - force-deploy-master-<< matrix.service >>-approval
       # Force deploy `master` to staging (by host)
@@ -1290,7 +1290,7 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              service: [all, discovery, creator]
+              service: [all, discovery, creator, identity]
           requires:
             - built
       - deploy:
@@ -1303,7 +1303,7 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              service: [all, discovery, creator]
+              service: [all, discovery, creator, identity]
           requires:
             - deploy-branch-<< matrix.service >>-approval
       # Deploy branch to staging (by host)
