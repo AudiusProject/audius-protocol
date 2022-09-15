@@ -1129,7 +1129,8 @@ jobs:
                     --environment "<< parameters.environment >>" \
                     --services "<< parameters.service >>" \
                     --hosts "<< parameters.host >>" \
-                    << parameters.params >>
+                    << parameters.params >> \
+                    --dry-run
       - unless:
           condition: << parameters.host >>
           steps:
@@ -1144,7 +1145,8 @@ jobs:
                     --git-tag "<< parameters.git_tag >>" \
                     --environment "<< parameters.environment >>" \
                     --services "<< parameters.service >>" \
-                    << parameters.params >>
+                    << parameters.params >> \
+                    --dry-run
       - run:
           name: Set Slack Detail from /tmp/summary.md
           command: |
@@ -1199,7 +1201,6 @@ workflows:
       - deploy-to-staging:
           name: deploy-master
           service: discovery
-          params: --force --dry-run
           context:
             - slack-secrets
             - gh-tokens
@@ -1208,11 +1209,13 @@ workflows:
             branches:
               # only: /(^master$)/
               ignore: /(^master$)/
+          requires:
+            - built
       - deploy-to-staging:
           type: approval
           name: deploy-branch-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
-          params: --force --dry-run
+          params: --force
           context:
             - slack-secrets
             - gh-tokens
@@ -1229,7 +1232,7 @@ workflows:
           type: approval
           name: deploy-branch-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
-          params: --force --dry-run
+          params: --force
           context:
             - slack-secrets
             - gh-tokens
