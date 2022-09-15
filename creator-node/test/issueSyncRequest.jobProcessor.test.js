@@ -235,7 +235,7 @@ describe('test issueSyncRequest job processor', function () {
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(logger.error).to.have.been.calledOnceWithExactly(
-      expectedErrorMessage
+      `Issuing sync request error: ${expectedErrorMessage}. Prometheus result: failure_secondary_failure_count_threshold_met`
     )
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
@@ -561,6 +561,8 @@ describe('test issueSyncRequest job processor', function () {
         )
       })
 
+      const expectedErrorMessage = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${wallet} | Secondary: ${secondary}: ${primarySyncFromSecondaryError.message}`
+
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
         getSecondaryUserSyncFailureCountForTodayStub,
@@ -575,10 +577,9 @@ describe('test issueSyncRequest job processor', function () {
         syncMode,
         syncRequestParameters
       })
-      expect(result).to.have.deep.property(
-        'error',
-        primarySyncFromSecondaryError
-      )
+      expect(result).to.have.deep.property('error', {
+        message: expectedErrorMessage
+      })
       expect(result).to.have.deep.property('jobsToEnqueue', {
         [QUEUE_NAMES.MANUAL_SYNC]: [],
         [QUEUE_NAMES.RECURRING_SYNC]: []

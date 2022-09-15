@@ -232,13 +232,13 @@ commands:
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
 
             # Run interactive command on remotebox
-            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -t ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+            ssh -o "StrictHostKeyChecking no" -o IdentitiesOnly=yes -i ~/.ssh/google_compute_engine -t ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               << parameters.interactive-command >>
               exit;
             EOF
 
             # Run command on remote box
-            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+            ssh -o "StrictHostKeyChecking no" -o IdentitiesOnly=yes -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               << parameters.command >>
               exit;
             EOF

@@ -1168,15 +1168,16 @@ describe('Test secondarySyncFromPrimary()', async function () {
           }
         }
       )
-      return expect(
-        secondarySyncFromPrimaryMock({
-          serviceRegistry: serviceRegistryMock,
-          wallet: userWallets[0],
-          creatorNodeEndpoint: MOCK_CN3
-        })
-      ).to.eventually.be.rejectedWith(
-        `Node being synced from is not primary. Node being synced from: http://mock-cn3.audius.co Primary: http://mock-cn1.audius.co`
-      )
+
+      const result = await secondarySyncFromPrimaryMock({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: MOCK_CN3
+      })
+
+      assert.deepStrictEqual(result, {
+        result: 'abort_current_node_is_not_user_primary'
+      })
     })
 
     it('Syncs correctly when cnodeUser data already exists locally', async function () {
@@ -1367,10 +1368,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
 
       assert.deepStrictEqual(result, {
-        result: 'success'
+        result: 'abort_force_wipe_disabled'
       })
 
-      const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
+      await verifyLocalCNodeUserStateForUser(
         stringifiedDateFields(localCNodeUser) // NOT exportedCnodeUser
       )
     })
