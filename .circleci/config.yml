@@ -275,12 +275,6 @@ parameters:
   full_ci:
     type: boolean
     default: false
-  staging_hosts:
-    type: enum
-    enum: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
-  services:
-    type: enum
-    enum: [all, discovery, creator, identity]
 
 jobs:
   noop:
@@ -1010,7 +1004,7 @@ jobs:
       service:
         description: Target service
         type: enum
-        enum: << pipeline.parameters.services >>
+        enum: [all, discovery, creator, identity]
         default: "all"
       host:
         description: "Optional options: stage-creator-X|stage-discovery-X|stage-identity|stage-user-metadata"
@@ -1245,7 +1239,7 @@ workflows:
               ignore: /(^master|release-.*$)/
           matrix:
             parameters:
-              service: << pipeline.parameters.services >>
+              service: [all, discovery, creator, identity]
           requires:
             - deploy-master
       - deploy-to-staging:
@@ -1262,7 +1256,7 @@ workflows:
               ignore: /(^master|release-.*$)/
           matrix:
             parameters:
-              host: << pipeline.parameters.staging_hosts >>
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
             - deploy-master
       - deploy-to-staging:
@@ -1279,7 +1273,7 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              service: << pipeline.parameters.services >>
+              service: [all, discovery, creator, identity]
           requires:
             - built
       - deploy-to-staging:
@@ -1296,7 +1290,7 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              host: << pipeline.parameters.staging_hosts >>
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
             - built
       - test-libs:
