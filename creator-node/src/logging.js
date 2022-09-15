@@ -42,19 +42,19 @@ const logWarn = bunyan.prototype.warn
 const logError = bunyan.prototype.error
 bunyan.prototype.debug = function () {
   tracing.debug(...arguments)
-  logDebug.apply(this, arguments)
+  logDebug.apply(logger, arguments)
 }
 bunyan.prototype.info = function () {
   tracing.info(...arguments)
-  logInfo.apply(this, arguments)
+  logInfo.apply(logger, arguments)
 }
 bunyan.prototype.warn = function () {
   tracing.warn(...arguments)
-  logWarn.apply(this, arguments)
+  logWarn.apply(logger, arguments)
 }
 bunyan.prototype.error = function () {
   tracing.error(...arguments)
-  logError(this, arguments)
+  logError(logger, arguments)
 }
 logger.info('Loglevel set to:', logLevel)
 
