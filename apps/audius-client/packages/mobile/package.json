@@ -73,6 +73,7 @@
     "node-libs-react-native": "1.2.1",
     "numeral": "2.0.6",
     "path-dirname": "1.0.2",
+    "proxy-memoize": "1.2.0",
     "query-string": "7.0.1",
     "react": "17.0.2",
     "react-native": "0.66.3",
