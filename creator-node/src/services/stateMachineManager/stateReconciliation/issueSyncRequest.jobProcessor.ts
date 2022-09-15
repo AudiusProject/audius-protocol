@@ -69,7 +69,8 @@ type HandleIssueSyncReqParams = {
 }
 type HandleIssueSyncReqResult = {
   result: string
-  error?: { message: string }
+  error?: string
+  abort?: string
   syncReqsToEnqueue: IssueSyncRequestJobParams[]
   additionalSync?: IssueSyncRequestJobParams
 }
@@ -103,25 +104,19 @@ async function issueSyncRequest({
     [QUEUE_NAMES.RECURRING_SYNC]: []
   }
   let metricsToRecord = []
-  let error: any = {}
 
   const startTimeMs = Date.now()
 
-  const {
-    syncReqsToEnqueue,
-    additionalSync,
-    result,
-    error: errorResp
-  } = await _handleIssueSyncRequest({
-    syncType,
-    syncMode,
-    syncRequestParameters,
-    logger
-  })
-  if (errorResp) {
-    error = errorResp
+  const { syncReqsToEnqueue, additionalSync, result, error } =
+    await _handleIssueSyncRequest({
+      syncType,
+      syncMode,
+      syncRequestParameters,
+      logger
+    })
+  if (error) {
     logger.error(
-      `Issuing sync request error: ${error.message}. Prometheus result: ${result}`
+      `Issuing sync request error: ${error}. Prometheus result: ${result}`
     )
   }
 
@@ -217,9 +212,7 @@ async function _handleIssueSyncRequest({
   ) {
     return {
       result: 'failure_secondary_failure_count_threshold_met',
-      error: {
-        message: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
-      },
+      error: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`,
       syncReqsToEnqueue
     }
   }
@@ -262,24 +255,28 @@ async function _handleIssueSyncRequest({
     if (syncCorrectnessError) {
       return {
         result: 'failure_sync_correctness',
-        error: {
-          message: `${logMsgString}: ${syncCorrectnessError}`
-        },
+        error: `${logMsgString}: ${syncCorrectnessError}`,
         syncReqsToEnqueue
       }
     }
 
-    const error = await primarySyncFromSecondary({
+    const { error, abort, result } = await primarySyncFromSecondary({
       wallet: userWallet,
       secondary: secondaryEndpoint
     })
 
     if (error) {
       return {
-        result: 'failure_primary_sync_from_secondary',
-        error: {
-          message: `${logMsgString}: ${error.message}`
-        },
+        result,
+        error: `${logMsgString}: ${error}`,
+        syncReqsToEnqueue
+      }
+    }
+
+    if (abort) {
+      return {
+        result,
+        abort: `${logMsgString}: ${abort}`,
         syncReqsToEnqueue
       }
     }
@@ -355,9 +352,7 @@ async function _handleIssueSyncRequest({
 
     return {
       result: 'failure_issue_sync_request',
-      error: {
-        message: `${logMsgString} || Error issuing sync request: ${e.message}`
-      },
+      error: `${logMsgString} || Error issuing sync request: ${e.message}`,
       syncReqsToEnqueue,
       additionalSync
     }

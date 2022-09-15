@@ -84,13 +84,33 @@ async function _primarySyncFromSecondary({
     })
     decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
-    // Error if this node is not primary for user
+    // Abort if this node is not primary for user
     if (userReplicaSet.primary !== selfEndpoint) {
       decisionTree.recordStage({
-        name: 'Error - Node is not primary for user',
+        name: 'Abort - Node is not primary for user',
         data: { userReplicaSet }
       })
-      throw new Error(`Node is not primary for user`)
+
+      return {
+        abort: 'Node is not primary for user',
+        result: 'abort_current_node_is_not_user_primary'
+      }
+    }
+
+    // Also abort if the input secondary is not part of the user's secondaries
+    if (
+      userReplicaSet.secondary1 !== secondary ||
+      userReplicaSet.secondary2 !== secondary
+    ) {
+      decisionTree.recordStage({
+        name: 'Abort - Node is not secondary for user',
+        data: { userReplicaSet, requestedSecondary: secondary }
+      })
+
+      return {
+        abort: 'Node is not secondary for user',
+        result: 'abort_current_node_is_not_user_secondary'
+      }
     }
 
     // Use the user's non-empty secondaries as gateways to try
@@ -109,7 +129,7 @@ async function _primarySyncFromSecondary({
         log: true
       })
 
-      const { fetchedCNodeUser, error } = await fetchExportFromNode({
+      const { fetchedCNodeUser, error, abort } = await fetchExportFromNode({
         nodeEndpointToFetchFrom: secondary,
         wallet,
         clockRangeMin: exportClockRangeMin,
@@ -117,12 +137,29 @@ async function _primarySyncFromSecondary({
         logger,
         forceExport: true
       })
-      if (!_.isEmpty(error)) {
+
+      if (error) {
         decisionTree.recordStage({
-          name: 'fetchExportFromSecondary() Error',
-          data: { errorMsg: error.message }
+          name: `fetchExportFromSecondary() Error`,
+          data: { error: error.message }
         })
-        throw new Error(error.message)
+
+        return {
+          error: error.message,
+          result: error.code
+        }
+      }
+
+      if (abort) {
+        decisionTree.recordStage({
+          name: `fetchExportFromSecondary() Abort`,
+          data: { abort: abort.message }
+        })
+
+        return {
+          abort: abort.message,
+          result: abort.code
+        }
       }
 
       const { localClockMax: fetchedLocalClockMax, requestedClockRangeMax } =
@@ -167,7 +204,11 @@ async function _primarySyncFromSecondary({
           name: 'saveFilesToDisk() Error',
           data: { errorMsg: e.message }
         })
-        throw e
+
+        return {
+          error: `Error - Failed to save files to disk: ${e.message}`,
+          result: 'failure_save_files_to_disk'
+        }
       }
 
       // Save all entries from export to DB
@@ -187,7 +228,11 @@ async function _primarySyncFromSecondary({
           name: 'saveEntriesToDB() Error',
           data: { errorMsg: e.message }
         })
-        throw e
+
+        return {
+          error: `Error - Failed to save entries to DB: ${e.message}`,
+          result: 'failure_save_entries_to_db'
+        }
       }
 
       /**
@@ -225,7 +270,11 @@ async function _primarySyncFromSecondary({
   } catch (e) {
     tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
-    return e
+
+    return {
+      error: `Error - Primary sync from secondary failed: ${e.message}`,
+      result: 'failure_primary_sync_from_secondary'
+    }
   } finally {
     await WalletWriteLock.release(wallet)
 
