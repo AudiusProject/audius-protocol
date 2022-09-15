@@ -271,13 +271,16 @@ function* checkEmail(action) {
     yield put(signOnActions.validateEmailFailed('characters'))
     return
   }
+
   try {
     const inUse = yield call(audiusBackendInstance.emailInUse, action.email)
     if (inUse) {
       yield put(signOnActions.goToPage(Pages.SIGNIN))
       // let mobile client know that email is in use
       yield put(signOnActions.validateEmailSucceeded(false))
-      yield call(action.onUnavailable)
+      if (action.onUnavailable) {
+        yield call(action.onUnavailable)
+      }
     } else {
       const trackEvent = make(Name.CREATE_ACCOUNT_COMPLETE_EMAIL, {
         emailAddress: action.email
@@ -285,11 +288,15 @@ function* checkEmail(action) {
       yield put(trackEvent)
       yield put(signOnActions.validateEmailSucceeded(true))
       yield put(signOnActions.goToPage(Pages.PASSWORD))
-      yield call(action.onAvailable)
+      if (action.onAvailable) {
+        yield call(action.onAvailable)
+      }
     }
   } catch (err) {
     yield put(signOnActions.validateEmailFailed(err.message))
-    yield call(action.onError)
+    if (action.onError) {
+      yield call(action.onError)
+    }
   }
 }
 
