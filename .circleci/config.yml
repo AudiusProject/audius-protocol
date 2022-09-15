@@ -279,7 +279,7 @@ parameters:
 jobs:
   noop:
     docker:
-      - image: scratch
+      - image: alpine
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
