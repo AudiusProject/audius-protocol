@@ -133,6 +133,7 @@ type DiscoveryAPIParams<Endpoint extends DiscoveryEndpoint> = SnakeKeysToCamel<
 let AudiusLibs: any = null
 export let BackendUtils: any = null
 let SanityChecks: any = null
+let RewardsAttester: any = null
 let SolanaUtils: any = null
 
 let audiusLibs: any = null
@@ -636,6 +637,7 @@ export const audiusBackend = ({
     BackendUtils = libsModule.Utils
     SanityChecks = libsModule.SanityChecks
     SolanaUtils = libsModule.SolanaUtils
+    RewardsAttester = libsModule.RewardsAttester
     // initialize libs
     let libsError: Nullable<string> = null
     const { web3Config } = await getWeb3Config(
@@ -3198,8 +3200,7 @@ export const audiusBackend = ({
       })
 
       const encodedUserId = encodeHashId(userId)
-
-      const attester = new AudiusLibs.RewardsAttester({
+      const attester = new RewardsAttester({
         libs: audiusLibs,
         parallelization,
         quorumSize,
