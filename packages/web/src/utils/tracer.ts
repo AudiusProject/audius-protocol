@@ -8,18 +8,14 @@ import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch'
 import { UserInteractionInstrumentation } from '@opentelemetry/instrumentation-user-interaction'
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request'
 import { Resource } from '@opentelemetry/resources'
-import {
-  BatchSpanProcessor,
-  SimpleSpanProcessor,
-  ConsoleSpanExporter
-} from '@opentelemetry/sdk-trace-base'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
 import { SemanticResourceAttributes as ResourceAttributesSC } from '@opentelemetry/semantic-conventions'
 
 const SERVICE_NAME = 'web-client'
 
 const TRACING_ENABLED = process.env.REACT_APP_OTEL_TRACING_ENABLED || false
-const OTEL_COLLECTOR_URL = process.env.REACT_APP_OTEL_COLLECTOR_URL || ''
+const OTEL_COLLECTOR_URL = process.env.REACT_APP_OTEL_COLLECTOR_URL || undefined
 
 /**
  * Initializes a tracer for content node as well as registers instrumentions
@@ -46,11 +42,13 @@ export const setupTracing = () => {
       [ResourceAttributesSC.SERVICE_NAME]: SERVICE_NAME
     })
   })
-  const exporter = new OTLPTraceExporter({
-    url: OTEL_COLLECTOR_URL
-  })
-  provider.addSpanProcessor(new BatchSpanProcessor(exporter))
-  provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()))
+
+  if (OTEL_COLLECTOR_URL !== undefined && OTEL_COLLECTOR_URL !== null) {
+    const exporter = new OTLPTraceExporter({
+      url: OTEL_COLLECTOR_URL
+    })
+    provider.addSpanProcessor(new BatchSpanProcessor(exporter))
+  }
 
   provider.register({
     // Changing default contextManager to use ZoneContextManager - supports asynchronous operations - optional
