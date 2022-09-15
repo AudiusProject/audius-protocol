@@ -1211,9 +1211,18 @@ workflows:
               ignore: /(^master|release-.*$)/
           # requires:
           #   - built
-      - deploy-master:
+      - deploy-to-staging:
           name: force-deploy-master
+          service: discovery
           params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              # only: /(^master|release-.*$)/
+              ignore: /(^master|release-.*$)/
           requires:
             - deploy-master
       - deploy-to-staging:
