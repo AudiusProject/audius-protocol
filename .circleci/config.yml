@@ -280,6 +280,9 @@ jobs:
   noop:
     docker:
       - image: scratch
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - run: echo
   build:
