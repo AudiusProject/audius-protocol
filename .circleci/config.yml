@@ -1126,8 +1126,7 @@ jobs:
                     --environment "<< parameters.environment >>" \
                     --services "<< parameters.service >>" \
                     --hosts "<< parameters.host >>" \
-                    << parameters.params >> \
-                    --dry-run
+                    << parameters.params >>
       - unless:
           condition: << parameters.host >>
           steps:
@@ -1142,8 +1141,7 @@ jobs:
                     --git-tag "<< parameters.git_tag >>" \
                     --environment "<< parameters.environment >>" \
                     --services "<< parameters.service >>" \
-                    << parameters.params >> \
-                    --dry-run
+                    << parameters.params >>
       - run:
           name: Set Slack Detail from /tmp/summary.md
           command: |
