@@ -76,7 +76,7 @@ if [[ "$devMode" == "true" ]]; then
         npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     fi
 else
-    node build/src/index.js | tee >(logger)
+    node --max-old-space-size=4096 build/src/index.js | tee >(logger)
 fi
 
 wait
