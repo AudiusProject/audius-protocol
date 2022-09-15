@@ -283,6 +283,10 @@ jobs:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
+    parameters:
+      description:
+        type: string
+        default: ""
     steps:
       - run: echo
   build:
@@ -1017,8 +1021,11 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
+            # ~/.ssh/audius_infrastructure
             - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
+            # github.com
             - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+            # ~/.ssh/google_compute_engine
             - "d1:28:d4:5e:ca:d9:bb:70:06:da:e0:f0:00:7c:d4:a3"
       - run:
           name: Install OpenVPN
@@ -1113,6 +1120,7 @@ jobs:
           name: Setup SSH Config
           command: |
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
+            # `AddKeysToAgent yes` is os-x only
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
       - when:
           condition: << parameters.host >>
@@ -1177,16 +1185,20 @@ workflows:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
-      - build
+      - build:
+          description: Fan-out holder
       - built:
+          description: Fan-in holder
           requires:
             - build-creator-node
             - build-discovery-provider
             - build-identity-service
             - build-libs
             - verified
-      - tests
+      - tests:
+          description: Fan-out holder
       - verified:
+          description: Fan-in holder
           requires:
             - test-contracts
             - test-creator-node
@@ -1199,6 +1211,7 @@ workflows:
             - test-solana-programs
             - test-solana-programs-anchor
       - deploy:
+          description: Auto-deploy to staging
           type: approval
           name: deploy-master
           service: discovery
@@ -1213,6 +1226,7 @@ workflows:
           # requires:
           #   - built
       - deploy:
+          description: Force deploy to staging (by service)
           type: approval
           name: force-deploy-master-<< matrix.service >>
           params: --force
@@ -1230,6 +1244,7 @@ workflows:
           requires:
             - deploy-master
       - deploy:
+          description: Force deploy to staging (by host)
           type: approval
           name: force-deploy-master-<< matrix.host >>
           params: --force
@@ -1247,6 +1262,7 @@ workflows:
           requires:
             - deploy-master
       - deploy:
+          description: Force deploy to staging (by host)
           type: approval
           name: deploy-prod
           environment: prod
