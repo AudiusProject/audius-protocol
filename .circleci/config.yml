@@ -1162,6 +1162,7 @@ workflows:
             - build-creator-node
             - build-discovery-provider
             - build-identity-service
+            - build-libs
             - verified
       - tests
       - verified:
