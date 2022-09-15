@@ -2,6 +2,7 @@ const bunyan = require('bunyan')
 const shortid = require('shortid')
 
 const config = require('./config')
+const { tracing } = require('./tracer')
 
 // taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-347801909
 // since there is no official support for string-based "level" values
@@ -35,6 +36,26 @@ const logger = bunyan.createLogger({
     }
   ]
 })
+const logDebug = bunyan.prototype.debug
+const logInfo = bunyan.prototype.info
+const logWarn = bunyan.prototype.warn
+const logError = bunyan.prototype.error
+bunyan.prototype.debug = function () {
+  tracing.debug(...arguments)
+  logDebug.apply(this, arguments)
+}
+bunyan.prototype.info = function () {
+  tracing.info(...arguments)
+  logInfo.apply(this, arguments)
+}
+bunyan.prototype.warn = function () {
+  tracing.warn(...arguments)
+  logWarn.apply(this, arguments)
+}
+bunyan.prototype.error = function () {
+  tracing.error(...arguments)
+  logError(this, arguments)
+}
 logger.info('Loglevel set to:', logLevel)
 
 /**
