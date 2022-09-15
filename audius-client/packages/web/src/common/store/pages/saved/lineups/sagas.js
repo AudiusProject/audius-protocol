@@ -26,7 +26,7 @@ const PREFIX = savedTracksActions.prefix
 
 function* getTracks() {
   const savedTracks = yield select(getSaves)
-  const savedTrackIds = savedTracks.map((save) => save.save_item_id)
+  const savedTrackIds = savedTracks.map((save) => save.save_item_id ?? null)
   const savedTrackTimestamps = savedTracks.reduce((map, save) => {
     map[save.save_item_id] = save.created_at
     return map
@@ -48,7 +48,9 @@ function* getTracks() {
   }
 
   if (allSavedTrackIds.length > 0) {
-    const tracks = yield call(retrieveTracks, { trackIds: allSavedTrackIds })
+    const tracks = yield call(retrieveTracks, {
+      trackIds: allSavedTrackIds.filter((id) => id !== null)
+    })
     const tracksMap = tracks.reduce((map, track) => {
       // If the track hasn't confirmed save from the backend, pretend it is for the client.
       if (!track.has_current_user_saved) {
@@ -60,14 +62,16 @@ function* getTracks() {
       map[track.track_id] = track
       return map
     }, {})
-    return allSavedTrackIds.map((id) => tracksMap[id])
+    return allSavedTrackIds.map((id) =>
+      id ? tracksMap[id] : { kind: Kind.EMPTY }
+    )
   }
   return []
 }
 
 const keepDateSaved = (entry) => ({
   uid: entry.uid,
-  kind: entry.track_id ? Kind.TRACKS : Kind.COLLECTIONS,
+  kind: entry.kind ?? (entry.track_id ? Kind.TRACKS : Kind.COLLECTIONS),
   id: entry.track_id || entry.playlist_id,
   dateSaved: entry.dateSaved
 })

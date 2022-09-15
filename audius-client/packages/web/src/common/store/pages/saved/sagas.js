@@ -26,21 +26,43 @@ function* fetchTracksLineup() {
 
 function* watchFetchSaves() {
   const apiClient = yield getContext('apiClient')
-  yield takeLatest(actions.FETCH_SAVES, function* () {
+  let currentQuery = ''
+  let currentSortMethod = ''
+  let currentSortDirection = ''
+
+  yield takeLatest(actions.FETCH_SAVES, function* (props) {
     const account = yield call(waitForValue, getAccountUser)
     const userId = account.user_id
-    const limit = account.track_save_count
+    const offset = props.offset ?? 0
+    const limit = props.limit ?? account.track_save_count
+    const query = props.query ?? ''
+    const sortMethod = props.sortMethod ?? ''
+    const sortDirection = props.sortDirection ?? ''
     const saves = yield select(getSaves)
+
+    const isSameParams =
+      query === currentQuery &&
+      currentSortDirection === sortDirection &&
+      currentSortMethod === sortMethod
+
     // Don't refetch saves in the same session
-    if (saves && saves.length) {
+    if (saves && saves.length && isSameParams) {
       yield fork(fetchTracksLineup)
     } else {
       try {
+        currentQuery = query
+        currentSortDirection = sortDirection
+        currentSortMethod = sortMethod
+        yield put(actions.fetchSavesRequested())
+
         const savedTracks = yield apiClient.getFavoritedTracks({
           currentUserId: userId,
           profileUserId: userId,
-          offset: 0,
-          limit
+          offset,
+          limit,
+          query,
+          sortMethod,
+          sortDirection
         })
         const tracks = savedTracks.map((save) => save.track)
 
@@ -50,8 +72,14 @@ function* watchFetchSaves() {
           created_at: save.timestamp,
           save_item_id: save.track.track_id
         }))
-        yield put(actions.fetchSavesSucceeded(saves))
 
+        const fullSaves = Array(account.track_save_count)
+          .fill(0)
+          .map((_) => ({}))
+
+        fullSaves.splice(offset, saves.length, ...saves)
+
+        yield put(actions.fetchSavesSucceeded(fullSaves))
         yield fork(fetchTracksLineup)
       } catch (e) {
         yield put(actions.fetchSavesFailed())
@@ -60,6 +88,44 @@ function* watchFetchSaves() {
   })
 }
 
+function* watchFetchMoreSaves() {
+  const apiClient = yield getContext('apiClient')
+  yield takeLatest(actions.FETCH_MORE_SAVES, function* (props) {
+    const account = yield call(waitForValue, getAccountUser)
+    const userId = account.user_id
+    const offset = props.offset ?? 0
+    const limit = props.limit ?? account.track_save_count
+    const query = props.query ?? ''
+    const sortMethod = props.sortMethod ?? ''
+    const sortDirection = props.sortDirection ?? ''
+
+    try {
+      const savedTracks = yield apiClient.getFavoritedTracks({
+        currentUserId: userId,
+        profileUserId: userId,
+        offset,
+        limit,
+        query,
+        sortMethod,
+        sortDirection
+      })
+      const tracks = savedTracks.map((save) => save.track)
+
+      yield processAndCacheTracks(tracks)
+
+      const saves = savedTracks.map((save) => ({
+        created_at: save.timestamp,
+        save_item_id: save.track.track_id
+      }))
+      yield put(actions.fetchMoreSavesSucceeded(saves, offset))
+
+      yield fork(fetchTracksLineup)
+    } catch (e) {
+      yield put(actions.fetchMoreSavesFailed())
+    }
+  })
+}
+
 export default function sagas() {
-  return [...tracksSagas(), watchFetchSaves]
+  return [...tracksSagas(), watchFetchSaves, watchFetchMoreSaves]
 }
