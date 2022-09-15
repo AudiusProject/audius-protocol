@@ -1108,8 +1108,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
         {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
           },
           '../ContentNodeInfoManager': {
             getReplicaSetEndpointsByWallet: sinon.stub().resolves({
@@ -1156,8 +1161,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
         {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
           },
           '../ContentNodeInfoManager': {
             getReplicaSetEndpointsByWallet: sinon.stub().resolves({
@@ -1213,8 +1223,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
         {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
           },
           '../ContentNodeInfoManager': {
             getReplicaSetEndpointsByWallet: sinon.stub().resolves({
@@ -1279,15 +1294,15 @@ describe('Test secondarySyncFromPrimary()', async function () {
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
           './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
             shouldForceResync: async () => {
               return true
             }
-          },
-          '../../config': config,
-          '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
           },
           '../ContentNodeInfoManager': {
             getReplicaSetEndpointsByWallet: sinon.stub().resolves({
@@ -1339,15 +1354,15 @@ describe('Test secondarySyncFromPrimary()', async function () {
       const secondarySyncFromPrimaryMock = proxyquire(
         '../src/services/sync/secondarySyncFromPrimary',
         {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
           './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
             shouldForceResync: async () => {
               return true
             }
-          },
-          '../../config': config,
-          '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
           },
           '../ContentNodeInfoManager': {
             getReplicaSetEndpointsByWallet: sinon.stub().resolves({
@@ -1421,8 +1436,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
         '../src/services/sync/secondarySyncFromPrimary',
         {
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
           },
           '../../fileManager': {
             saveFileForMultihashToFS: async function (

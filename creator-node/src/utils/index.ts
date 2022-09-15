@@ -6,7 +6,13 @@
  * typed, we'll remove the commonjs export syntax and just use
  * the new way of importing/exporting
  */
-import { timeout, getRandomInt, verifySignature, stringifyMap } from './utils'
+import {
+  timeout,
+  getRandomInt,
+  verifySignature,
+  stringifyMap,
+  isFqdn
+} from './utils'
 import {
   validateMetadata,
   validateAssociatedWallets
@@ -27,6 +33,7 @@ import { runShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
 
 export {
+  isFqdn,
   timeout,
   getRandomInt,
   verifySignature,
@@ -44,6 +51,7 @@ export {
 }
 
 module.exports = {
+  isFqdn,
   timeout,
   getRandomInt,
   verifySignature,

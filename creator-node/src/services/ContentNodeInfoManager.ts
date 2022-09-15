@@ -31,7 +31,7 @@ async function updateContentNodeChainInfo(
     const spIdToChainInfoFromChain = new Map(
       contentNodesFromLibs.map((cn) => [
         cn.spID,
-        _.pick(cn, ['endpoint', 'delegateOwnerWallet'])
+        _.pick(cn, ['endpoint', 'owner', 'delegateOwnerWallet'])
       ])
     )
     if (spIdToChainInfoFromChain.size > 0) {
@@ -401,6 +401,7 @@ export type LibsServiceProvider = {
 }
 export type ContentNodeFromChain = {
   endpoint: string
+  owner: string
   delegateOwnerWallet: string
 }
 export {

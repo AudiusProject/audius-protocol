@@ -9,7 +9,6 @@ const {
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
-const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
@@ -22,6 +21,7 @@ const {
   getReplicaSetSpIdsByUserId,
   replicaSetSpIdsToEndpoints
 } = require('./services/ContentNodeInfoManager')
+const { isFqdn } = require('./utils')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -335,7 +335,7 @@ async function _issueAndWaitForSecondarySyncRequests(
 
     let [primary, ...secondaries] = req.session.creatorNodeEndpoints
     secondaries = secondaries.filter(
-      (secondary) => !!secondary && _isFQDN(secondary)
+      (secondary) => !!secondary && isFqdn(secondary)
     )
 
     if (primary !== config.get('creatorNodeEndpoint')) {
@@ -442,64 +442,6 @@ const issueAndWaitForSecondarySyncRequests = instrumentTracing({
   }
 })
 
-/**
- * Retrieves current FQDN registered on-chain with node's owner wallet
- *
- * @notice TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
- *    services has been registered, and we can't register the service unless the service starts up.
- *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
- */
-async function getOwnEndpoint({ libs }) {
-  const creatorNodeEndpoint = config.get('creatorNodeEndpoint')
-
-  if (!creatorNodeEndpoint) {
-    throw new Error('Must provide either creatorNodeEndpoint config var.')
-  }
-
-  const spId =
-    await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
-      creatorNodeEndpoint
-    )
-
-  if (!spId) {
-    throw new Error('Cannot get spId for node')
-  }
-
-  const spInfo =
-    await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
-      'content-node',
-      spId
-    )
-
-  // Confirm on-chain endpoint exists and is valid FQDN
-  // Error condition is met if any of the following are true
-  // - No spInfo returned from chain
-  // - Configured spOwnerWallet does not match on chain spOwnerWallet
-  // - Configured delegateOwnerWallet does not match on chain delegateOwnerWallet
-  // - Endpoint returned from chain but is an invalid FQDN, preventing successful operations
-  // - Endpoint returned from chain does not match configured endpoint
-  if (
-    !spInfo ||
-    !spInfo.hasOwnProperty('endpoint') ||
-    spInfo.owner.toLowerCase() !== config.get('spOwnerWallet').toLowerCase() ||
-    spInfo.delegateOwnerWallet.toLowerCase() !==
-      config.get('delegateOwnerWallet').toLowerCase() ||
-    (spInfo.endpoint && !_isFQDN(spInfo.endpoint)) ||
-    spInfo.endpoint !== creatorNodeEndpoint
-  ) {
-    throw new Error(
-      `Cannot getOwnEndpoint for node. Returned from chain=${JSON.stringify(
-        spInfo
-      )}, configs=(creatorNodeEndpoint=${config.get(
-        'creatorNodeEndpoint'
-      )}, spOwnerWallet=${config.get(
-        'spOwnerWallet'
-      )}, delegateOwnerWallet=${config.get('delegateOwnerWallet')})`
-    )
-  }
-  return spInfo.endpoint
-}
-
 async function ensureValidSPMiddleware(req, res, next) {
   try {
     const { timestamp, signature, spID } = req.query
@@ -526,20 +468,10 @@ async function ensureValidSPMiddleware(req, res, next) {
   next()
 }
 
-// Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
-function _isFQDN(url) {
-  if (config.get('creatorNodeIsDebug')) return true
-  const FQDN = new RegExp(
-    /(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm
-  )
-  return FQDN.test(url)
-}
-
 module.exports = {
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   ensureValidSPMiddleware,
-  issueAndWaitForSecondarySyncRequests,
-  getOwnEndpoint
+  issueAndWaitForSecondarySyncRequests
 }
