@@ -1118,7 +1118,7 @@ workflows:
             - open-vpn
           filters:
             branches:
-              only: /(^jc-inf-194$)/
+              only: /(^master$)/
       - test-libs:
           name: test-libs
       - docker-build-and-push:
