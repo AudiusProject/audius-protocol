@@ -981,19 +981,21 @@ jobs:
         type: string
         default: ""
       environment:
-        description: "Options: staging"
-        type: string
+        description: Target environment
+        type: enum
+        enum: [staging]
         default: "staging"
       services:
-        description: "Options: all|discovery|creator|identity"
-        type: string
+        description: Target services
+        type: enum
+        enum: [all, discovery, creator, identity]
         default: "all"
       hosts:
         description: "Optional options: stage-creator-X|stage-discovery-X|stage-identity|stage-user-metadata"
         type: string
         default: ""
       params:
-        description: "Additional parameters for deploy-ci.py"
+        description: Additional parameters for deploy-ci.py
         type: string
         default: ""
     steps:
