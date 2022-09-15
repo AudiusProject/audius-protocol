@@ -293,8 +293,6 @@ jobs:
     noop
   verified:
     noop
-  deploy-prod:
-    noop
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -990,7 +988,7 @@ jobs:
             docker push audius/<< parameters.repo >>:$IMAGE_TAG
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
-  deploy-to-staging:
+  deploy:
     machine:
       image: ubuntu-2004:202201-02
     parameters:
@@ -1001,7 +999,7 @@ jobs:
       environment:
         description: Target environment
         type: enum
-        enum: [staging]
+        enum: [staging, prod]
         default: "staging"
       service:
         description: Target service
@@ -1200,15 +1198,17 @@ workflows:
             - test-sdk
             - test-solana-programs
             - test-solana-programs-anchor
-      - deploy-prod:
+      - deploy:
           type: approval
+          name: deploy-prod
+          environment: prod
           filters:
             branches:
               # only: /(^release-.*$)/
               ignore: /(^release-.*$)/
           requires:
             - force-deploy-master-all
-      - deploy-to-staging:
+      - deploy:
           name: deploy-master
           service: discovery
           context:
@@ -1221,7 +1221,7 @@ workflows:
               ignore: /(^master|release-.*$)/
           # requires:
           #   - built
-      - deploy-to-staging:
+      - deploy:
           type: approval
           name: force-deploy-master-<< matrix.service >>
           params: --force
@@ -1238,7 +1238,7 @@ workflows:
               service: [all, discovery, creator, identity]
           requires:
             - deploy-master
-      - deploy-to-staging:
+      - deploy:
           type: approval
           name: force-deploy-master-<< matrix.host >>
           params: --force
@@ -1255,7 +1255,7 @@ workflows:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
             - deploy-master
-      - deploy-to-staging:
+      - deploy:
           type: approval
           name: deploy-branch-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
@@ -1272,7 +1272,7 @@ workflows:
               service: [all, discovery, creator, identity]
           requires:
             - built
-      - deploy-to-staging:
+      - deploy:
           type: approval
           name: deploy-branch-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
