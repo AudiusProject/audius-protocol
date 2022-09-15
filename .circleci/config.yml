@@ -1154,7 +1154,7 @@ workflows:
               only: /(^master$)/
       - deploy-to-staging:
           type: approval
-          name: deploy-<< matrix.service >>-<< matrix.host >>
+          name: deploy-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force --dry-run
           context:
@@ -1167,6 +1167,20 @@ workflows:
           matrix:
             parameters:
               service: ["all", "discovery", "creator", "identity"]
+      - deploy-to-staging:
+          type: approval
+          name: deploy-<< matrix.host >>
+          git_tag: ${CIRCLE_SHA1}
+          params: --force --dry-run
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              ignore: /(^master$)/
+          matrix:
+            parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
       - test-libs:
           name: test-libs
