@@ -128,8 +128,6 @@ const HistoryPage = ({
             loading={tableLoading}
             playing={queuedAndPlaying}
             playingIndex={playingIndex}
-            maxRowNum={10}
-            isVirtualized
             defaultSorter={defaultSorter}
             {...trackTableActions}
           />

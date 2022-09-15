@@ -22,11 +22,6 @@ import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TestTracksTable.module.css'
 
-/* TODO:
-  - Will need to be updated to remove the client side sorting and add state (probably in the table component) to sort which column is being sorted on and in which direction
-  - Need to add the scroll logic to handle the paginated calls to the backend
-*/
-
 export type TracksTableColumn =
   | 'artistName'
   | 'date'
@@ -43,12 +38,12 @@ type TestTracksTableProps = {
   columns?: TracksTableColumn[]
   data: any[]
   defaultSorter?: (a: any, b: any) => number
+  fetchBatchSize?: number
+  fetchMoreTracks?: (offset: number, limit: number) => void
+  fetchThreshold?: number
   isVirtualized?: boolean
   isReorderable?: boolean
   loading?: boolean
-  // TODO: Need to add the rows and skeletons when the loadingRowCount is passed
-  // loadingRowCount?: number
-  maxRowNum?: number
   onClickArtistName?: (track: any) => void
   onClickFavorite?: (track: any) => void
   onClickRemove?: (
@@ -61,17 +56,15 @@ type TestTracksTableProps = {
   onClickRow?: (track: any, index: number) => void
   onClickTrackName?: (track: any) => void
   onReorderTracks?: (source: number, destination: number) => void
-  onSortTracks?: (sortProps: {
-    column: { sorter: (a: any, b: any) => number }
-    order: string
-  }) => void
+  onSortTracks?: (...props: any[]) => void
   playing?: boolean
   playingIndex?: number
   removeText?: string
+  scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   tableClassName?: string
+  totalRowCount?: number
   userId?: number | null
   wrapperClassName?: string
-  // TODO: Need to add onReorderTracks
 }
 
 const defaultColumns: TracksTableColumn[] = [
@@ -91,10 +84,11 @@ export const TestTracksTable = ({
   data,
   defaultSorter,
   isReorderable = false,
+  fetchBatchSize,
+  fetchMoreTracks,
+  fetchThreshold,
   isVirtualized = false,
   loading = false,
-  // loadingRowCount = 0,
-  maxRowNum = 20,
   onClickArtistName,
   onClickFavorite,
   onClickRemove,
@@ -106,7 +100,9 @@ export const TestTracksTable = ({
   playing = false,
   playingIndex = -1,
   removeText,
+  scrollRef,
   tableClassName,
+  totalRowCount,
   userId,
   wrapperClassName
 }: TestTracksTableProps) => {
@@ -455,7 +451,7 @@ export const TestTracksTable = ({
   const getRowClassName = useCallback(
     (rowIndex) => {
       const track = data[rowIndex]
-      const deleted = track.is_delete || !!track.user?.is_deactivated
+      const deleted = track?.is_delete || !!track?.user?.is_deactivated
       return cn(styles.tableRow, { [styles.disabled]: deleted })
     },
     [data]
@@ -467,15 +463,19 @@ export const TestTracksTable = ({
       columns={tableColumns}
       data={data}
       defaultSorter={defaultSorter}
+      fetchBatchSize={fetchBatchSize}
+      fetchMore={fetchMoreTracks}
+      fetchThreshold={fetchThreshold}
       getRowClassName={getRowClassName}
       isReorderable={isReorderable}
       isVirtualized={isVirtualized}
       loading={loading}
-      maxRowNum={maxRowNum}
       onClickRow={handleClickRow}
       onReorder={onReorderTracks}
       onSort={onSortTracks}
+      scrollRef={scrollRef}
       tableClassName={tableClassName}
+      totalRowCount={totalRowCount}
       wrapperClassName={wrapperClassName}
     />
   )

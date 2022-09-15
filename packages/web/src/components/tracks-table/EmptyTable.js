@@ -12,12 +12,14 @@ const EmptyTable = (props) => {
         </div>
         <div>{props.secondaryText}</div>
       </div>
-      <Button
-        className={styles.startListeningButton}
-        type={ButtonType.SECONDARY}
-        text={props.buttonLabel}
-        onClick={props.onClick}
-      />
+      {props.buttonLabel ? (
+        <Button
+          className={styles.startListeningButton}
+          type={ButtonType.SECONDARY}
+          text={props.buttonLabel}
+          onClick={props.onClick}
+        />
+      ) : null}
     </div>
   )
 }
