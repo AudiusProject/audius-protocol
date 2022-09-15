@@ -25,6 +25,34 @@ function RawStdOutWithLevelName() {
   }
 }
 
+function tracerMixin(klass) {
+  const origFunc = klass.prototype.createChildLogger
+  klass.prototype.createChildLogger = function () {
+    const childLogger = origFunc.apply(this, arguments)
+    const logDebug = klass.prototype.debug
+    const logInfo = klass.prototype.info
+    const logWarn = klass.prototype.warn
+    const logError = klass.prototype.error
+    klass.prototype.debug = function () {
+      tracing.debug(...arguments)
+      logDebug.apply(childLogger, arguments)
+    }
+    klass.prototype.info = function () {
+      tracing.info(...arguments)
+      logInfo.apply(childLogger, arguments)
+    }
+    klass.prototype.warn = function () {
+      tracing.warn(...arguments)
+      logWarn.apply(childLogger, arguments)
+    }
+    klass.prototype.error = function () {
+      tracing.error(...arguments)
+      logError(childLogger, arguments)
+    }
+  }
+}
+
+tracerMixin(bunyan)
 const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
@@ -36,26 +64,7 @@ const logger = bunyan.createLogger({
     }
   ]
 })
-const logDebug = bunyan.prototype.debug.bind(logger)
-const logInfo = bunyan.prototype.info.bind(logger)
-const logWarn = bunyan.prototype.warn.bind(logger)
-const logError = bunyan.prototype.error.bind(logger)
-bunyan.prototype.debug = function () {
-  tracing.debug(...arguments)
-  logDebug.apply(this, arguments)
-}
-bunyan.prototype.info = function () {
-  tracing.info(...arguments)
-  logInfo.apply(this, arguments)
-}
-bunyan.prototype.warn = function () {
-  tracing.warn(...arguments)
-  logWarn.apply(this, arguments)
-}
-bunyan.prototype.error = function () {
-  tracing.error(...arguments)
-  logError(this, arguments)
-}
+
 logger.info('Loglevel set to:', logLevel)
 
 /**
