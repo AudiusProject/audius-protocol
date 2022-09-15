@@ -985,12 +985,12 @@ jobs:
         type: enum
         enum: [staging]
         default: "staging"
-      services:
-        description: Target services
+      service:
+        description: Target service
         type: enum
         enum: [all, discovery, creator, identity]
         default: "all"
-      hosts:
+      host:
         description: "Optional options: stage-creator-X|stage-discovery-X|stage-identity|stage-user-metadata"
         type: string
         default: ""
@@ -1108,8 +1108,8 @@ jobs:
               --github-token ${GH_TOKEN} \
               --git-tag "<< parameters.git_tag >>" \
               --environment "<< parameters.environment >>" \
-              --services "<< parameters.services >>" \
-              --hosts "<< parameters.hosts >>" \
+              --services "<< parameters.service >>" \
+              --hosts "<< parameters.host >>" \
               << parameters.params >> \
               --force --dry-run
 
@@ -1154,7 +1154,7 @@ workflows:
               only: /(^master$)/
       - deploy-to-staging:
           type: approval
-          name: deploy-to-staging-from-branch
+          name: deploy-to-staging-from-branch-<< matrix.service >>-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force --dry-run
           context:
@@ -1166,8 +1166,8 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              # version: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
-              services: ["all", "discovery", "creator", "identity"]
+              service: ["all", "discovery", "creator", "identity"]
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
       - test-libs:
           name: test-libs
       - docker-build-and-push:
