@@ -277,13 +277,17 @@ parameters:
     default: false
 
 jobs:
-  build:
+  null:
     docker:
       - image: scratch
     steps:
       - run: echo
+  build:
+    null
+  built:
+    null
   test:
-    build
+    null
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -1149,6 +1153,11 @@ workflows:
          - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
       - build
+      - built
+          requires:
+            - build-creator-node
+            - build-discovery-provider
+            - build-identity-service
       - test
       - deploy-to-staging:
           name: deploy-to-staging-from-master
@@ -1177,9 +1186,7 @@ workflows:
             parameters:
               service: ["all", "discovery", "creator", "identity"]
           requires:
-            - build-creator-node
-            - build-discovery-provider
-            - build-identity-service
+            - built
       - deploy-to-staging:
           type: approval
           name: deploy-<< matrix.host >>
@@ -1196,9 +1203,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - build-creator-node
-            - build-discovery-provider
-            - build-identity-service
+            - built
       - test-libs:
           name: test-libs
       - docker-build-and-push:
