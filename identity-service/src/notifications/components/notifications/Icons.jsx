@@ -36,7 +36,7 @@ export const MoneyMouthFaceIcon = () => <img
         alt='Money Face Icon' 
         src='https://download.audius.co/static-resources/email/money-mouth-face.png'
     />
-export const TrebleClef = () => <img
+export const TrebleClefIcon = () => <img
         style={iconStyles}
         alt='Treble Clef Icon' 
         src='https://download.audius.co/static-resources/email/treble-clef.png'
