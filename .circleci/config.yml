@@ -1220,14 +1220,9 @@ workflows:
           requires:
             - deploy-master-approval
       # Force deploy `master` to staging (by service)
-      - deploy:
+      - noop:
+          name: force-deploy-master-<< matrix.service >>-approval
           type: approval
-          name: force-deploy-master-<< matrix.service >>
-          params: --force
-          context:
-            - slack-secrets
-            - gh-tokens
-            - open-vpn
           filters:
             branches:
               # only: /(^master$)/
@@ -1237,6 +1232,18 @@ workflows:
               service: [all, discovery, creator, identity]
           requires:
             - deploy-master
+      - deploy:
+          name: force-deploy-master-<< matrix.service >>
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          matrix:
+            parameters:
+              service: [all, discovery, creator, identity]
+          requires:
+            - force-deploy-master-<< matrix.service >>-approval
       # Force deploy `master` to staging (by host)
       - deploy:
           type: approval
