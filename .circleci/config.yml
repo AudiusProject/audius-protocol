@@ -1149,7 +1149,7 @@ workflows:
             - open-vpn
           filters:
             branches:
-              only: /(^jc-inf-194$)/
+              only: /(^master$)/
       - deploy-to-staging:
           type: approval
           name: deploy-to-staging-from-branch
@@ -1160,6 +1160,9 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+          filters:
+            branches:
+              ignore: /(^master$)/
       - test-libs:
           name: test-libs
       - docker-build-and-push:
