@@ -109,7 +109,7 @@ async function _primarySyncFromSecondary({
 
       return {
         abort: 'Node is not secondary for user',
-        result: 'abort_current_node_is_not_user_secondary'
+        result: 'abort_input_node_is_not_user_secondary'
       }
     }
 

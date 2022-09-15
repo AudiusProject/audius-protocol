@@ -115,7 +115,7 @@ export const METRIC_LABELS = Object.freeze({
       'success_secondary_partially_caught_up',
       'success_orphan_wiped',
       'abort_current_node_is_not_user_primary',
-      'abort_current_node_is_not_user_secondary',
+      'abort_input_node_is_not_user_secondary',
       'abort_user_does_not_exist_on_node',
       'abort_multiple_users_returned_from_export',
       'abort_missing_user_export_key_fields',
