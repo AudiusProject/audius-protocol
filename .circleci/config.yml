@@ -1178,7 +1178,7 @@ workflows:
             - test-solana-programs
             - test-solana-programs-anchor
       - deploy-to-staging:
-          name: deploy-to-staging-from-master
+          name: deploy-master
           service: discovery
           params: --force --dry-run
           context:
@@ -1187,10 +1187,11 @@ workflows:
             - open-vpn
           filters:
             branches:
-              only: /(^master$)/
+              # only: /(^master$)/
+              ignore: /(^master$)/
       - deploy-to-staging:
           type: approval
-          name: deploy-<< matrix.service >>
+          name: deploy-branch-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force --dry-run
           context:
@@ -1207,7 +1208,7 @@ workflows:
             - built
       - deploy-to-staging:
           type: approval
-          name: deploy-<< matrix.host >>
+          name: deploy-branch-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force --dry-run
           context:
