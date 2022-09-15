@@ -27,7 +27,7 @@ function RawStdOutWithLevelName() {
 
 function tracerMixin(klass) {
   const origFunc = klass.prototype.createChildLogger
-  klass.prototype.createChildLogger = function () {
+  klass.prototype.createLogger = function () {
     const childLogger = origFunc.apply(this, arguments)
     const logDebug = klass.prototype.debug
     const logInfo = klass.prototype.info
@@ -66,7 +66,6 @@ const logger = bunyan.createLogger({
     }
   ]
 })
-
 logger.info('Loglevel set to:', logLevel)
 
 /**
@@ -135,7 +134,29 @@ function loggingMiddleware(req, res, next) {
  * @returns {Object} child logger instance with defined options
  */
 function createChildLogger(logger, options = {}) {
-  return logger.child(options)
+  const childLogger = logger.child(options)
+  const logDebug = bunyan.prototype.debug
+  const logInfo = bunyan.prototype.info
+  const logWarn = bunyan.prototype.warn
+  const logError = bunyan.prototype.error
+  childLogger.debug = function () {
+    tracing.debug(...arguments)
+    logDebug.apply(childLogger, arguments)
+  }
+  childLogger.info = function () {
+    tracing.info(...arguments)
+    logInfo.apply(childLogger, arguments)
+  }
+  childLogger.warn = function () {
+    tracing.warn(...arguments)
+    logWarn.apply(childLogger, arguments)
+  }
+  childLogger.error = function () {
+    tracing.error(...arguments)
+    logError.apply(childLogger, arguments)
+  }
+
+  return childLogger
 }
 
 /**
