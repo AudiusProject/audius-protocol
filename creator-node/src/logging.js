@@ -28,29 +28,29 @@ function RawStdOutWithLevelName() {
 function tracerMixin(klass) {
   const origFunc = klass.prototype.createChildLogger
   klass.prototype.createLogger = function () {
-    const childLogger = origFunc.apply(this, arguments)
+    const theLogger = origFunc.apply(this, arguments)
     const logDebug = klass.prototype.debug
     const logInfo = klass.prototype.info
     const logWarn = klass.prototype.warn
     const logError = klass.prototype.error
-    childLogger.debug = function () {
+    theLogger.debug = function () {
       tracing.debug(...arguments)
-      logDebug.apply(childLogger, arguments)
+      logDebug.apply(theLogger, arguments)
     }
-    childLogger.info = function () {
+    theLogger.info = function () {
       tracing.info(...arguments)
-      logInfo.apply(childLogger, arguments)
+      logInfo.apply(theLogger, arguments)
     }
-    childLogger.warn = function () {
+    theLogger.warn = function () {
       tracing.warn(...arguments)
-      logWarn.apply(childLogger, arguments)
+      logWarn.apply(theLogger, arguments)
     }
-    childLogger.error = function () {
+    theLogger.error = function () {
       tracing.error(...arguments)
-      logError.apply(childLogger, arguments)
+      logError.apply(theLogger, arguments)
     }
 
-    return childLogger
+    return theLogger
   }
 }
 
