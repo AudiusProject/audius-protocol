@@ -20,9 +20,6 @@
   display: flex;
   flex-direction: column;
 }
-.animatedTable {
-  transition: all 0.18s ease-in-out;
-}
 
 .tableHead {
   position: relative;
@@ -99,7 +96,7 @@
 .tableRow.active {
   color: var(--primary);
 }
-.tableRow:hover {
+.tableRow:hover:not(.skeletonRow) {
   z-index: 1;
   box-shadow: 0 1px 0 0 var(--neutral-light-8),
     0 -1px 0 0 var(--neutral-light-8);
@@ -165,4 +162,28 @@
   height: 32px;
   width: 32px;
   margin: 24px auto;
+}
+
+.draggableRow {
+  cursor: grab;
+}
+
+.droppable {
+  position: relative;
+}
+
+.droppable::after {
+  content: '';
+  position: absolute;
+  height: 3px;
+  left: 0;
+  right: 0;
+  top: 0;
+  background-color: var(--secondary);
+  opacity: 0;
+  z-index: 2;
+}
+
+.droppableHover::after {
+  opacity: 1;
 }

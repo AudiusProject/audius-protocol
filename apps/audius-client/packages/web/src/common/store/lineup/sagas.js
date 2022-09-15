@@ -324,7 +324,7 @@ function* updateQueueLineup(lineupPrefix, source, lineupEntries) {
     const toQueue = yield all(
       lineupEntries.map((e) => call(getToQueue, lineupPrefix, e))
     )
-    const flattenedQueue = flatten(toQueue)
+    const flattenedQueue = flatten(toQueue).filter((e) => Boolean(e))
     yield put(queueActions.add({ entries: flattenedQueue }))
   }
 }
@@ -344,7 +344,7 @@ function* play(lineupActions, lineupSelector, prefix, action) {
       const toQueue = yield all(
         lineup.entries.map((e) => call(getToQueue, lineup.prefix, e))
       )
-      const flattenedQueue = flatten(toQueue)
+      const flattenedQueue = flatten(toQueue).filter((e) => Boolean(e))
       yield put(queueActions.clear({}))
       yield put(queueActions.add({ entries: flattenedQueue }))
     }
@@ -453,7 +453,7 @@ function* refreshInView(lineupActions, lineupSelector, action) {
 
 const keepUidAndKind = (entry) => ({
   uid: entry.uid,
-  kind: entry.track_id ? Kind.TRACKS : Kind.COLLECTIONS,
+  kind: entry.kind ?? (entry.track_id ? Kind.TRACKS : Kind.COLLECTIONS),
   id: entry.track_id || entry.playlist_id
 })
 

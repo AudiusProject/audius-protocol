@@ -25,6 +25,7 @@ import {
   queueSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
+import { debounce, isEqual } from 'lodash'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -50,6 +51,16 @@ const messages = {
   description: "View tracks that you've favorited"
 }
 
+const sortMethodMap: Record<string, string> = {
+  title: 'title',
+  artist: 'artist_name',
+  created_at: 'release_date',
+  dateListened: 'last_listen_date',
+  time: 'length',
+  plays: 'plays',
+  repost_count: 'reposts'
+}
+
 type OwnProps = {
   children:
     | ComponentType<MobileSavedPageProps>
@@ -64,6 +75,8 @@ type SavedPageProps = OwnProps &
 type SavedPageState = {
   currentTab: ProfileTabs
   filterText: string
+  sortMethod: string
+  sortDirection: string
   initialOrder: UID[] | null
   reordering?: UID[] | null
   allowReordering?: boolean
@@ -72,12 +85,37 @@ type SavedPageState = {
 class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   state: SavedPageState = {
     filterText: '',
+    sortMethod: '',
+    sortDirection: '',
     initialOrder: null,
     currentTab: ProfileTabs.TRACKS
   }
 
+  handleFetchSavedTracks = debounce(() => {
+    this.props.fetchSavedTracks(
+      this.state.filterText,
+      this.state.sortMethod,
+      this.state.sortDirection
+    )
+  }, 300)
+
+  handleFetchMoreSavedTracks = (offset: number, limit: number) => {
+    const { filterText, sortMethod, sortDirection } = this.state
+    this.props.fetchMoreSavedTracks(
+      filterText,
+      sortMethod,
+      sortDirection,
+      offset,
+      limit
+    )
+  }
+
   componentDidMount() {
-    this.props.fetchSavedTracks()
+    this.props.fetchSavedTracks(
+      this.state.filterText,
+      this.state.sortMethod,
+      this.state.sortDirection
+    )
     this.props.fetchSavedAlbums()
     if (isMobile()) {
       this.props.fetchSavedPlaylists()
@@ -101,7 +139,14 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   onFilterChange = (e: any) => {
-    this.setState({ filterText: e.target.value })
+    this.setState({ filterText: e.target.value }, this.handleFetchSavedTracks)
+  }
+
+  onSortChange = (method: string, direction: string) => {
+    this.setState(
+      { sortMethod: sortMethodMap[method] ?? '', sortDirection: direction },
+      this.handleFetchSavedTracks
+    )
   }
 
   formatMetadata = (trackMetadatas: SavedPageTrack[]) => {
@@ -109,8 +154,8 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       ...entry,
       key: `${entry.title}_${entry.uid}_${i}`,
       name: entry.title,
-      artist: entry.user.name,
-      handle: entry.user.handle,
+      artist: entry.user?.name ?? '',
+      handle: entry.user?.handle ?? '',
       date: entry.dateSaved,
       time: entry.duration,
       plays: entry.play_count
@@ -137,17 +182,12 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   getFilteredData = (
     trackMetadatas: SavedPageTrack[]
   ): [SavedPageTrack[], number] => {
-    const filterText = this.state.filterText
     const { tracks } = this.props
     const playingUid = this.getPlayingUid()
     const playingIndex = tracks.entries.findIndex(
       ({ uid }: any) => uid === playingUid
     )
-    const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
-      (item) =>
-        item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
-        item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
-    )
+    const filteredMetadata = this.formatMetadata(trackMetadatas)
     const filteredIndex =
       playingIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
@@ -383,13 +423,13 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
 
       // Methods
       onFilterChange: this.onFilterChange,
+      onSortChange: this.onSortChange,
       formatMetadata: this.formatMetadata,
       getFilteredData: this.getFilteredData,
       onPlay: this.onPlay,
       onSortTracks: this.onSortTracks,
       onChangeTab: this.onChangeTab,
       formatCardSecondaryText: this.formatCardSecondaryText,
-      onReorderTracks: () => {},
       onClickRemove: null
     }
 
@@ -408,7 +448,8 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       onClickSave: this.onClickSave,
       onClickTrackName: this.onClickTrackName,
       onClickArtistName: this.onClickArtistName,
-      onClickRepost: this.onClickRepost
+      onClickRepost: this.onClickRepost,
+      fetchMoreTracks: this.handleFetchMoreSavedTracks
     }
 
     return (
@@ -418,13 +459,28 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 }
 
+type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
+type AccountData = ReturnType<typeof getAccountWithSavedPlaylistsAndAlbums>
+let tracksRef: LineupData
+let accountRef: AccountData
+
 function makeMapStateToProps() {
   const getLineupMetadatas = makeGetTableMetadatas(getSavedTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
+    const tracks = getLineupMetadatas(state)
+    const account = getAccountWithSavedPlaylistsAndAlbums(state)
+
+    if (!isEqual(tracksRef, tracks)) {
+      tracksRef = tracks
+    }
+    if (!isEqual(accountRef, account)) {
+      accountRef = account
+    }
+
     return {
-      account: getAccountWithSavedPlaylistsAndAlbums(state),
-      tracks: getLineupMetadatas(state),
+      account: accountRef,
+      tracks: tracksRef,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),
@@ -436,7 +492,32 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchSavedTracks: () => dispatch(saveActions.fetchSaves()),
+    fetchSavedTracks: (
+      query?: string,
+      sortMethod?: string,
+      sortDirection?: string,
+      offset?: number,
+      limit?: number
+    ) =>
+      dispatch(
+        saveActions.fetchSaves(query, sortMethod, sortDirection, offset, limit)
+      ),
+    fetchMoreSavedTracks: (
+      query?: string,
+      sortMethod?: string,
+      sortDirection?: string,
+      offset?: number,
+      limit?: number
+    ) =>
+      dispatch(
+        saveActions.fetchMoreSaves(
+          query,
+          sortMethod,
+          sortDirection,
+          offset,
+          limit
+        )
+      ),
     resetSavedTracks: () => dispatch(tracksActions.reset()),
     updateLineupOrder: (updatedOrderIndices: UID[]) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),

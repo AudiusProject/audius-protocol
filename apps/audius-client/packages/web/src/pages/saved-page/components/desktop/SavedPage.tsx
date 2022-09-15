@@ -1,3 +1,5 @@
+import { useContext } from 'react'
+
 import {
   ID,
   UID,
@@ -6,12 +8,14 @@ import {
   User,
   SavedPageTabs as ProfileTabs,
   TrackRecord,
+  savedPageSelectors,
   SavedPageTrack,
   SavedPageCollection,
   QueueItem,
   FeatureFlags
 } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
+import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
@@ -26,9 +30,12 @@ import TracksTable from 'components/tracks-table/TracksTable'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
+import { MainContentContext } from 'pages/MainContentContext'
 import { albumPage } from 'utils/route'
 
 import styles from './SavedPage.module.css'
+
+const { getInitialFetchStatus } = savedPageSelectors
 
 const messages = {
   filterPlaceholder: 'Filter Tracks'
@@ -38,11 +45,13 @@ export type SavedPageProps = {
   title: string
   description: string
   onFilterChange: (e: any) => void
+  onSortChange: (method: string, direction: string) => void
   isQueued: boolean
   playingUid: UID | null
   getFilteredData: (
     trackMetadatas: SavedPageTrack[]
   ) => [SavedPageTrack[], number]
+  fetchMoreTracks: (offset?: number, limit?: number) => void
   onClickRow: (record: TrackRecord) => void
   onClickSave: (record: TrackRecord) => void
   onClickTrackName: (record: TrackRecord) => void
@@ -84,9 +93,11 @@ const SavedPage = ({
   playing,
   currentTab,
   isQueued,
+  fetchMoreTracks,
   getFilteredData,
   onPlay,
   onFilterChange,
+  onSortChange,
   filterText,
   formatCardSecondaryText,
   onChangeTab,
@@ -99,13 +110,17 @@ const SavedPage = ({
   onSortTracks,
   onReorderTracks
 }: SavedPageProps) => {
+  const { mainContentRef } = useContext(MainContentContext)
   const { isEnabled: isNewTablesEnabled } = useFlag(FeatureFlags.NEW_TABLES)
+  const initFetch = useSelector(getInitialFetchStatus)
   const [dataSource, playingIndex] =
-    status === Status.SUCCESS ? getFilteredData(entries) : [[], -1]
+    status === Status.SUCCESS || entries.length
+      ? getFilteredData(entries)
+      : [[], -1]
   const { isLoading: isLoadingAlbums, setDidLoad: setDidLoadAlbums } =
     useOrderedLoad(account ? account.albums.length : 0)
   const isEmpty = entries.length === 0
-  const tracksLoading = status === Status.LOADING
+  const tracksLoading = status === Status.LOADING && isEmpty
   const queuedAndPlaying = playing && isQueued
 
   // Setup play button
@@ -216,21 +231,22 @@ const SavedPage = ({
         />
       ) : isNewTablesEnabled ? (
         <TestTracksTable
+          data={dataSource}
+          fetchMoreTracks={fetchMoreTracks}
+          isVirtualized
           key='favorites'
-          userId={account ? account.user_id : 0}
-          loading={tracksLoading}
-          maxRowNum={10}
+          loading={tracksLoading || initFetch}
+          onClickArtistName={onClickArtistName}
+          onClickFavorite={onClickSave}
+          onClickRepost={onClickRepost}
+          onClickRow={onClickRow}
+          onClickTrackName={onClickTrackName}
+          onSortTracks={onSortChange}
           playing={queuedAndPlaying}
           playingIndex={playingIndex}
-          data={dataSource}
-          onClickRow={onClickRow}
-          onClickFavorite={onClickSave}
-          onClickTrackName={onClickTrackName}
-          onClickArtistName={onClickArtistName}
-          onClickRepost={onClickRepost}
-          onSortTracks={onSortTracks}
-          // onReorderTracks={onReorderTracks}
-          // onClickRemove={onClickRemove}
+          scrollRef={mainContentRef}
+          totalRowCount={account?.track_save_count}
+          userId={account ? account.user_id : 0}
         />
       ) : (
         <div className={styles.tableWrapper}>

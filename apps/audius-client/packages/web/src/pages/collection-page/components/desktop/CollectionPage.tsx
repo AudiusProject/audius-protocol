@@ -284,7 +284,6 @@ const CollectionPage = ({
               <TableComponent
                 // @ts-ignore
                 columns={tracksTableColumns}
-                maxRowNum={8}
                 wrapperClassName={styles.tracksTableWrapper}
                 key={playlistName}
                 loading={isNftPlaylist ? tracksLoading : collectionLoading}
