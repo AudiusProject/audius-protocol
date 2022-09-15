@@ -1139,7 +1139,7 @@ workflows:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
-      - deploy-to-staging:
+      - deploy-to-staging-from-master:
           name: deploy-to-staging
           services: discovery
           params: --force --dry-run
@@ -1150,7 +1150,7 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
-      - deploy-to-staging:
+      - deploy-to-staging-from-branch:
           type: approval
           name: deploy-to-staging
           services: discovery
