@@ -193,9 +193,6 @@ const handleSyncFromPrimary = async ({
       )
       return {
         result: 'success_clocks_already_match'
-        // At this point runtime mean=522ms, max=1.9s
-        // But for result=success: mean=1.80s, max=10s and result=failure_db_transaction: mean=1.77s, max=10s
-        // TODO: Remove comments
       }
     }
 
@@ -393,6 +390,7 @@ const handleSyncFromPrimary = async ({
        *    but tracks cannot be created until metadata and cover art files have been created.
        */
 
+      const startSaveFilesDate = Date.now()
       const trackFiles = fetchedCNodeUser.files.filter((file) =>
         models.File.TrackTypes.includes(file.type)
       )
@@ -402,7 +400,6 @@ const handleSyncFromPrimary = async ({
       const numTotalFiles = trackFiles.length + nonTrackFiles.length
 
       const CIDsThatFailedSaveFileOp = new Set()
-      // TODO: Log timing of below for loops
 
       // Save all track files to disk in batches (to limit concurrent load)
       for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
@@ -492,9 +489,16 @@ const handleSyncFromPrimary = async ({
       }
       logger.info('Saved all non-track files to disk.')
 
+      const saveFilesDurationMs = Date.now() - startSaveFilesDate
+      logger = createChildLogger(logger, {
+        syncStepDurationSaveFiles: saveFilesDurationMs
+      })
+      logger.info(
+        'Sync step complete. Saved all track and non-track files to disk'
+      )
+
       /**
        * Write all records to DB
-       * TODO: Promise.all these ones and log timing
        */
 
       await models.ClockRecord.bulkCreate(
@@ -649,7 +653,7 @@ async function _secondarySyncFromPrimary({
 
   const start = Date.now()
 
-  const secondarySyncFromPrimaryLogger = createChildLogger(genericLogger, {
+  let secondarySyncFromPrimaryLogger = createChildLogger(genericLogger, {
     wallet,
     sync: 'secondarySyncFromPrimary',
     primary: creatorNodeEndpoint
@@ -670,6 +674,13 @@ async function _secondarySyncFromPrimary({
   metricEndTimerFn({ result, mode })
   tracing.setSpanAttribute('result', result)
   tracing.setSpanAttribute('mode', mode)
+
+  secondarySyncFromPrimaryLogger = createChildLogger(
+    secondarySyncFromPrimaryLogger,
+    {
+      syncAllStepsDuration: Date.now() - start
+    }
+  )
 
   if (error) {
     secondarySyncFromPrimaryLogger.error(
