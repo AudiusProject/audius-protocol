@@ -241,6 +241,9 @@ type GetProfileListArgs = {
   currentUserId: Nullable<ID>
   limit?: number
   offset?: number
+  query?: string
+  sortMethod?: string
+  sortDirection?: string
 }
 
 type GetTopArtistGenresArgs = {
@@ -994,7 +997,10 @@ export class AudiusAPIClient {
     profileUserId,
     currentUserId,
     limit,
-    offset
+    offset,
+    query,
+    sortMethod,
+    sortDirection
   }: GetProfileListArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1002,7 +1008,10 @@ export class AudiusAPIClient {
     const params = {
       user_id: encodedUserId || undefined,
       limit,
-      offset
+      offset,
+      ...(query && { query }),
+      ...(sortMethod && { sort_method: sortMethod }),
+      ...(sortDirection && { sort_direction: sortDirection })
     }
 
     const response: Nullable<APIResponse<APIActivity[]>> =
@@ -1357,14 +1366,16 @@ export class AudiusAPIClient {
   async getUserTrackHistory({
     currentUserId,
     userId,
-    limit
+    offset = 0,
+    limit = 100
   }: GetUserTrackHistoryArgs) {
     const encodedUserId = this._encodeOrThrow(userId)
     const encodedCurrentUserId = encodeHashId(currentUserId)
-    limit = limit || 100
     this._assertInitialized()
     const params = {
-      user_id: encodedCurrentUserId || undefined
+      user_id: encodedCurrentUserId || undefined,
+      limit,
+      offset
     }
 
     const response: Nullable<APIResponse<APIActivity[]>> =

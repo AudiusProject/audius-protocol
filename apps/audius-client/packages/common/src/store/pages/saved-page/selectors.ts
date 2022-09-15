@@ -8,6 +8,8 @@ export const getLocalSaves = (state: CommonState) =>
   state.pages.savedPage.localSaves
 export const getLocalSave = (state: CommonState, props: { id: ID }) =>
   state.pages.savedPage.localSaves[props.id]
+export const getInitialFetchStatus = (state: CommonState) =>
+  state.pages.savedPage.initialFetch
 
 export const getSavedTracksStatus = (state: CommonState) =>
   state.pages.savedPage.tracks.status

@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect'
 
+import { Kind } from 'models'
 import { getTracksByUid } from 'store/cache/tracks/selectors'
 import { getUsers } from 'store/cache/users/selectors'
 import { removeNullable } from 'utils/typeUtils'
@@ -39,6 +40,8 @@ export const makeGetTableMetadatas = <T, State>(
                 .map((repost) => ({ ...repost, user: users[repost.user_id] }))
                 .filter((repost) => !!repost.user)
             }
+          } else if (entry.kind === Kind.EMPTY) {
+            return { ...entry, owner_id: null }
           }
 
           deleted += 1
@@ -46,8 +49,12 @@ export const makeGetTableMetadatas = <T, State>(
         })
         .filter(removeNullable)
         .map((entry) => {
-          if (entry.owner_id in users)
-            return { ...entry, user: users[entry.owner_id] }
+          const ownerId = entry.owner_id
+          if (ownerId && ownerId in users) {
+            return { ...entry, user: users[ownerId] }
+          } else if (entry.kind === Kind.EMPTY) {
+            return entry
+          }
           deleted += 1
           return null
         })

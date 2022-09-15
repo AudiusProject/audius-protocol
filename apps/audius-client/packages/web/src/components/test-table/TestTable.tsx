@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
+import { ID, Kind } from '@audius/common'
 import cn from 'classnames'
+import { debounce } from 'lodash'
 import moment from 'moment'
-import {
-  DragDropContext,
-  Draggable as RbdDraggable,
-  Droppable as RbdDroppable
-} from 'react-beautiful-dnd'
 import {
   useTable,
   useSortBy,
@@ -14,13 +11,27 @@ import {
   useFlexLayout,
   Cell
 } from 'react-table'
-import { AutoSizer, List } from 'react-virtualized'
+import {
+  AutoSizer,
+  List,
+  InfiniteLoader,
+  WindowScroller
+} from 'react-virtualized'
 
 import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDownLine.svg'
 import { ReactComponent as IconCaretUp } from 'assets/img/iconCaretUpLine.svg'
+import Draggable from 'components/dragndrop/Draggable'
+import Droppable from 'components/dragndrop/Droppable'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import Skeleton from 'components/skeleton/Skeleton'
 
 import styles from './TestTable.module.css'
+
+// - Infinite scroll constants -
+// Fetch the next group of rows when the user scroll within X rows of the bottom
+const FETCH_THRESHOLD = 40
+// Number of rows to fetch in each batch
+const FETCH_BATCH_SIZE = 80
 
 // Column Sort Functions
 export const numericSorter = (accessor: string) => (rowA: any, rowB: any) => {
@@ -47,52 +58,51 @@ export const dateSorter = (accessor: string) => (rowA: any, rowB: any) => {
   return 0
 }
 
+const isEmptyRow = (row: any) => {
+  return Boolean(!row?.original?.uid || row?.original?.kind === Kind.EMPTY)
+}
+
 type TestTableProps = {
-  activeIndex: number
-  animateTransitions?: boolean
+  activeIndex?: number
   columns: any[]
   data: any[]
   defaultSorter?: (a: any, b: any) => number
+  fetchBatchSize?: number
+  fetchMore?: (offset: number, limit: number) => void
+  fetchThreshold?: number
   getRowClassName?: (rowIndex: number) => string
   isPaginated?: boolean
   isReorderable?: boolean
   isVirtualized?: boolean
   loading?: boolean
-  maxRowNum?: number
-  onClickRow?: (e: MouseEvent, rowInfo: any, index: number) => void
+  onClickRow?: (e: any, rowInfo: any, index: number) => void
   onReorder?: (source: number, destination: number) => void
-  onSort?: (sortProps: {
-    column: { sorter: (a: any, b: any) => number }
-    order: string
-  }) => void
+  onSort?: (...props: any[]) => void
+  scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   tableClassName?: string
+  totalRowCount?: number
   wrapperClassName?: string
 }
 
-/* TODO:
-  - Add drag and drop
-  - Figure out how we should handle the small screen issue
-    - Should we add horizontal scrolling with another wrapper or should we reduce the number of columns
-  - There is an issue where the columns will overflow to the right of the table if the user makes all of the columns the max width
-    - Need to find a way to prevent the columns from taking up more that the tables max width
-*/
-
 export const TestTable = ({
-  activeIndex,
-  animateTransitions = true,
+  activeIndex = -1,
   columns,
   data,
   defaultSorter,
+  fetchBatchSize = FETCH_BATCH_SIZE,
+  fetchMore,
+  fetchThreshold = FETCH_THRESHOLD,
   getRowClassName,
   isPaginated = false,
   isReorderable = false,
   isVirtualized = false,
   loading = false,
-  maxRowNum = 20,
   onClickRow,
   onReorder,
   onSort,
+  scrollRef,
   tableClassName,
+  totalRowCount = 9999,
   wrapperClassName
 }: TestTableProps) => {
   const defaultColumn = useMemo(
@@ -103,6 +113,10 @@ export const TestTable = ({
       maxWidth: 200
     }),
     []
+  )
+  const debouncedFetchMore = useMemo(
+    () => (fetchMore ? debounce(fetchMore, 0) : null),
+    [fetchMore]
   )
 
   const {
@@ -129,23 +143,36 @@ export const TestTable = ({
   // NOTE: react-table allows for multple sorters, but we are only checking the first here
   // - This can be updated if we need multiple sorters in the future
   const handleSortChange = useCallback(() => {
-    let sorter = null
-    let order = 'ascend'
+    if (isVirtualized) {
+      // Virtualized Table -> Pass back the selected column and direction for backend sorting
+      if (sortBy.length === 0) return onSort?.('', '')
 
-    if (sortBy.length === 0) {
-      // Use defaultSorter if sortBy array is empty
-      sorter = defaultSorter
-    } else {
-      // Use the sorter from the column
       const sortColumn = columns.find((c) => c.id === sortBy[0].id)
-      sorter = sortColumn?.sorter
-      order = sortBy[0]?.desc ? 'descend' : 'ascend'
-    }
+      const column = sortColumn.accessor
+      const order = sortBy[0]?.desc ? 'desc' : 'asc'
 
-    if (sorter) {
-      onSort?.({ column: { sorter }, order })
+      onSort?.(column, order)
+    } else {
+      // Non-virtualized table -> Pass back the sorter from the selected column for manual frontend sorting
+      let sorter = null
+      let sortColumn
+      let order = 'ascend'
+
+      if (sortBy.length === 0) {
+        // Use defaultSorter if sortBy array is empty
+        sorter = defaultSorter
+      } else {
+        // Use the sorter from the column
+        sortColumn = columns.find((c) => c.id === sortBy[0].id)
+        sorter = sortColumn?.sorter
+        order = sortBy[0]?.desc ? 'descend' : 'ascend'
+      }
+
+      if (sorter) {
+        onSort?.({ column: { sorter }, order })
+      }
     }
-  }, [columns, defaultSorter, onSort, sortBy])
+  }, [columns, defaultSorter, isVirtualized, onSort, sortBy])
 
   useEffect(handleSortChange, [handleSortChange, sortBy])
 
@@ -216,6 +243,19 @@ export const TestTable = ({
     []
   )
 
+  const renderSkeletonCell = useCallback(
+    (cell: Cell) => (
+      <td
+        className={cn(styles.tableCell)}
+        {...cell.getCellProps()}
+        key={`${cell.row.id}_skeletonCell_${cell.getCellProps().key}`}
+      >
+        <Skeleton />
+      </td>
+    ),
+    []
+  )
+
   const renderTableRow = useCallback(
     (row, key, props, className = '') => {
       return (
@@ -239,148 +279,199 @@ export const TestTable = ({
     [activeIndex, getRowClassName, onClickRow, renderCell]
   )
 
-  const renderDraggableTableRow = useCallback(
-    (row, key, props) => {
+  const renderSkeletonRow = useCallback(
+    (row, key, props, className = '') => {
       return (
-        <RbdDraggable
-          key={`row_${row.id}`}
-          draggableId={row.index.toString()}
-          index={row.index}
+        <tr
+          className={cn(
+            styles.tableRow,
+            styles.skeletonRow,
+            className,
+            getRowClassName?.(row.index),
+            {
+              [styles.active]: row.index === activeIndex
+            }
+          )}
+          {...props}
+          key={key}
         >
-          {(provided, snapshot) => {
-            return renderTableRow(
-              row,
-              key,
-              {
-                ...props,
-                ...provided.draggableProps,
-                ...provided.dragHandleProps,
-                ref: provided.innerRef
-              },
-              snapshot.isDragging ? styles.dragging : ''
-            )
-          }}
-        </RbdDraggable>
+          {row.cells.map(renderSkeletonCell)}
+        </tr>
       )
     },
-    [renderTableRow]
+    [activeIndex, getRowClassName, renderSkeletonCell]
+  )
+
+  const onDragEnd = useCallback(
+    ({ source, destination }) => {
+      if (source === destination) return
+      onReorder?.(source, source < destination ? destination - 1 : destination)
+    },
+    [onReorder]
+  )
+
+  const renderDraggableRow = useCallback(
+    (row, key, props, className = '') => {
+      return (
+        <Droppable
+          key={row.index}
+          className={styles.droppable}
+          hoverClassName={styles.droppableHover}
+          onDrop={(id: ID | string, draggingKind: string) => {
+            onDragEnd({ source: Number(id), destination: row.index })
+          }}
+          stopPropogationOnDrop={true}
+          acceptedKinds={['table-row']}
+        >
+          <Draggable id={row.id} text={row.original.title} kind='table-row'>
+            {renderTableRow(
+              row,
+              key,
+              props,
+              cn(styles.draggableRow, className)
+            )}
+          </Draggable>
+        </Droppable>
+      )
+    },
+    [onDragEnd, renderTableRow]
   )
 
   const renderRow = useCallback(
     ({ index, key, style }) => {
       const row = rows[index]
       prepareRow(row)
-      const render = isReorderable ? renderDraggableTableRow : renderTableRow
+
+      let render
+      if (isEmptyRow(row)) {
+        render = renderSkeletonRow
+      } else {
+        render = isReorderable ? renderDraggableRow : renderTableRow
+      }
       return render(row, key, { ...row.getRowProps({ style }) })
     },
-    [rows, prepareRow, isReorderable, renderDraggableTableRow, renderTableRow]
-  )
-
-  const renderRows = useCallback(() => {
-    return rows.map((row, i) => {
-      prepareRow(row)
-      const render = isReorderable ? renderDraggableTableRow : renderTableRow
-      return render(row, row.id, { ...row.getRowProps() })
-    })
-  }, [rows, prepareRow, isReorderable, renderDraggableTableRow, renderTableRow])
-
-  const renderVirtualizedRows = useCallback(() => {
-    return (
-      <AutoSizer disableHeight>
-        {({ width }) => (
-          <List
-            height={Math.min(rows.length, maxRowNum + 0.5) * 44}
-            width={width}
-            // NOTE: Needed for the list to respond to column resizing, don't delete!
-            onRowsRendered={() => {}}
-            overscanRowsCount={2}
-            rowCount={rows.length}
-            rowHeight={44}
-            rowRenderer={renderRow}
-            // onScroll={() => { console.log('scroll') }}
-          />
-        )}
-      </AutoSizer>
-    )
-  }, [maxRowNum, renderRow, rows.length])
-
-  const renderTableBody = useCallback(
-    (props = {}) => {
-      return (
-        <tbody
-          className={styles.tableBody}
-          style={{ maxHeight: (maxRowNum + 0.5) * 44 }}
-          {...getTableBodyProps()}
-          {...props}
-        >
-          {isVirtualized ? renderVirtualizedRows() : renderRows()}
-        </tbody>
-      )
-    },
     [
-      getTableBodyProps,
-      isVirtualized,
-      maxRowNum,
-      renderRows,
-      renderVirtualizedRows
+      rows,
+      prepareRow,
+      renderSkeletonRow,
+      isReorderable,
+      renderDraggableRow,
+      renderTableRow
     ]
   )
 
-  const onDragEnd = useCallback(
-    ({ source, destination }) => {
-      if (!source || !destination || !onReorder) {
-        return
-      }
-      if (
-        destination.droppableId === source.droppableId &&
-        destination.index === source.index
-      ) {
-        return
-      }
+  const renderRows = useCallback(() => {
+    return rows.map((row) => {
+      prepareRow(row)
+      const render = isReorderable ? renderDraggableRow : renderTableRow
+      return render(row, row.id, { ...row.getRowProps() })
+    })
+  }, [rows, prepareRow, isReorderable, renderDraggableRow, renderTableRow])
 
-      onReorder(source.index, destination.index)
+  // TODO: This is supposed to return a promise that resolves when the row data has been fetched.
+  // It currently does not, but there are no issues with this currently so will fix if issues pop up
+  const loadMoreRows = useCallback(
+    async ({ startIndex, stopIndex }) => {
+      if (!debouncedFetchMore) return null
+      const offset = startIndex
+      const limit = stopIndex - startIndex + 1
+      debouncedFetchMore(offset, limit)
+      return null
     },
-    [onReorder]
+    [debouncedFetchMore]
   )
 
-  const renderDraggableTableBody = useCallback(
-    (props = {}) => {
-      return (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <RbdDroppable droppableId='tracks-table-droppable' type='TABLE'>
-            {(provided) =>
-              renderTableBody({
-                ref: provided.innerRef,
-                ...provided.droppableProps,
-                ...props
-              })
-            }
-          </RbdDroppable>
-        </DragDropContext>
-      )
-    },
-    [onDragEnd, renderTableBody]
+  const isRowLoaded = useCallback(
+    ({ index }) => !isEmptyRow(rows[index]),
+    [rows]
   )
 
-  return (
-    <div className={cn(styles.tableWrapper, wrapperClassName)}>
-      <table
-        className={cn(styles.table, tableClassName, {
-          [styles.animatedTable]: animateTransitions
-        })}
-        {...getTableProps()}
+  const renderContent = () => {
+    return (
+      <div className={cn(styles.tableWrapper, wrapperClassName)}>
+        <table
+          className={cn(styles.table, tableClassName)}
+          {...getTableProps()}
+        >
+          <thead className={styles.tableHead}>{renderHeader()}</thead>
+          {loading ? (
+            <LoadingSpinner className={styles.loader} />
+          ) : (
+            <tbody className={styles.tableBody} {...getTableBodyProps()}>
+              {renderRows()}
+            </tbody>
+          )}
+        </table>
+        {isPaginated ? <p>Render the pagination controls here</p> : null}
+      </div>
+    )
+  }
+
+  const renderVirtualizedContent = () => {
+    return (
+      <InfiniteLoader
+        isRowLoaded={isRowLoaded}
+        loadMoreRows={loadMoreRows}
+        rowCount={totalRowCount}
+        threshold={fetchThreshold}
+        minimumBatchSize={fetchBatchSize}
       >
-        <thead className={styles.tableHead}>{renderHeader()}</thead>
-        {/* TODO: Need to confirm loading state with design */}
-        {loading ? (
-          <LoadingSpinner className={styles.loader} />
-        ) : isReorderable ? (
-          renderDraggableTableBody()
-        ) : (
-          renderTableBody()
+        {({ onRowsRendered, registerChild: registerListChild }) => (
+          <WindowScroller scrollElement={scrollRef?.current}>
+            {({
+              height,
+              registerChild,
+              isScrolling,
+              onChildScroll,
+              scrollTop
+            }) => (
+              <div className={cn(styles.tableWrapper, wrapperClassName)}>
+                <table
+                  className={cn(styles.table, tableClassName)}
+                  {...getTableProps()}
+                >
+                  <thead className={styles.tableHead}>{renderHeader()}</thead>
+                  {loading ? (
+                    <LoadingSpinner className={styles.loader} />
+                  ) : (
+                    <tbody
+                      className={styles.tableBody}
+                      {...getTableBodyProps()}
+                      ref={registerChild}
+                    >
+                      <AutoSizer disableHeight>
+                        {({ width }) => (
+                          <List
+                            autoHeight
+                            height={height}
+                            width={width}
+                            isScrolling={isScrolling}
+                            onScroll={onChildScroll}
+                            scrollTop={scrollTop}
+                            onRowsRendered={(info) => onRowsRendered(info)}
+                            ref={registerListChild}
+                            overscanRowsCount={2}
+                            rowCount={
+                              debouncedFetchMore ? totalRowCount : rows.length
+                            }
+                            rowHeight={44}
+                            rowRenderer={renderRow}
+                          />
+                        )}
+                      </AutoSizer>
+                    </tbody>
+                  )}
+                </table>
+                {isPaginated ? (
+                  <p>Render the pagination controls here</p>
+                ) : null}
+              </div>
+            )}
+          </WindowScroller>
         )}
-      </table>
-      {isPaginated ? <p>Render the pagination controls here</p> : null}
-    </div>
-  )
+      </InfiniteLoader>
+    )
+  }
+
+  return isVirtualized ? renderVirtualizedContent() : renderContent()
 }
