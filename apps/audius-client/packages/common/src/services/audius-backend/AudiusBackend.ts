@@ -2326,7 +2326,7 @@ export const audiusBackend = ({
       return emailExists
     } catch (error) {
       console.error(getErrorMessage(error))
-      return true
+      throw error
     }
   }
 

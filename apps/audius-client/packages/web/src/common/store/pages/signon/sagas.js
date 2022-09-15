@@ -289,6 +289,7 @@ function* checkEmail(action) {
     }
   } catch (err) {
     yield put(signOnActions.validateEmailFailed(err.message))
+    yield call(action.onError)
   }
 }
 

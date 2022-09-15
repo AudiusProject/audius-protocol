@@ -641,11 +641,18 @@ const SignOn = ({ navigation }: SignOnProps) => {
                   signOnActions.checkEmail(
                     email,
                     () => {
+                      // On available email, move to create password
                       navigation.replace('CreatePassword')
                       setIsWorking(false)
                     },
                     () => {
+                      // On unavailable email (e.g. user exists with that email),
+                      // Switch to the sign in form
                       switchForm()
+                      setIsWorking(false)
+                    },
+                    () => {
+                      // On any unknown error, do nothing, but let the user try again
                       setIsWorking(false)
                     }
                   )
