@@ -1202,6 +1202,10 @@ workflows:
             - test-solana-programs-anchor
       - deploy-prod:
           type: approval
+          filters:
+            branches:
+              # only: /(^release-.*$)/
+              ignore: /(^release-.*$)/
           requires:
             - force-deploy-master-all
       - deploy-to-staging:
