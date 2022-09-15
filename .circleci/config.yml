@@ -1149,7 +1149,7 @@ workflows:
             - open-vpn
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^jc-inf-194$)/
       - deploy-to-staging:
           type: approval
           name: deploy-to-staging-from-branch
