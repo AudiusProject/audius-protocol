@@ -17,3 +17,5 @@ export type Credentials = (
 ) & {
   error?: string
 }
+
+export const AUTH_RESPONSE_MESSAGE_TYPE = 'auth-response' as const

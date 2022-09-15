@@ -17,8 +17,7 @@ import {
   getMessageType
 } from 'app/store/oauth/selectors'
 import type { Credentials } from 'app/store/oauth/types'
-
-const AUTH_RESPONSE = 'auth-response'
+import { AUTH_RESPONSE_MESSAGE_TYPE } from 'app/store/oauth/types'
 
 const IDENTITY_SERVICE = Config.IDENTITY_SERVICE
 
@@ -27,7 +26,7 @@ const TWITTER_POLLER = `
   const exit = () => {
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
-        type: '${AUTH_RESPONSE}'
+        type: '${AUTH_RESPONSE_MESSAGE_TYPE}'
       })
     )
   }
@@ -47,7 +46,7 @@ const TWITTER_POLLER = `
 
           window.ReactNativeWebView.postMessage(
             JSON.stringify({
-              type: '${AUTH_RESPONSE}',
+              type: '${AUTH_RESPONSE_MESSAGE_TYPE}',
               oauthToken,
               oauthVerifier
             })
@@ -70,7 +69,7 @@ const INSTAGRAM_POLLER = `
   const exit = () => {
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
-        type: '${AUTH_RESPONSE}'
+        type: '${AUTH_RESPONSE_MESSAGE_TYPE}'
       })
     )
   }
@@ -88,7 +87,7 @@ const INSTAGRAM_POLLER = `
 
           window.ReactNativeWebView.postMessage(
             JSON.stringify({ 
-              type: '${AUTH_RESPONSE}',
+              type: '${AUTH_RESPONSE_MESSAGE_TYPE}',
               instagramCode
             })
           )
@@ -110,7 +109,7 @@ const TIKTOK_POLLER = `
   const exit = (error) => {
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
-        type: '${AUTH_RESPONSE}',
+        type: '${AUTH_RESPONSE_MESSAGE_TYPE}',
         error: error.message
       })
     )
@@ -144,7 +143,7 @@ const TIKTOK_POLLER = `
 
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
-        type: '${AUTH_RESPONSE}',
+        type: '${AUTH_RESPONSE_MESSAGE_TYPE}',
         accessToken: access_token,
         openId: open_id,
         expiresIn: expires_in
@@ -191,7 +190,7 @@ const OAuth = () => {
     if (event.nativeEvent.data) {
       const data = JSON.parse(event.nativeEvent.data)
 
-      if (data.type === AUTH_RESPONSE) {
+      if (data.type === AUTH_RESPONSE_MESSAGE_TYPE) {
         const payloadByProvider = {
           [Provider.TWITTER]: (message: any) =>
             message.oauthToken && message.oauthVerifier
@@ -218,7 +217,7 @@ const OAuth = () => {
                 }
         }
 
-        const isNativeOAuth = !messageType && !messageId
+        const isNativeOAuth = !messageType && !messageId // i.e. if the Oauth flow occured in a native app (e.g. the Tiktok app) instead of a webview
         const payload = payloadByProvider[provider as Provider](data)
 
         if (isNativeOAuth) {

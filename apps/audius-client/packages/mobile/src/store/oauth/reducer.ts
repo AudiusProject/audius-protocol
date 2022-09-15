@@ -1,5 +1,3 @@
-import type { MessageType } from 'app/message'
-
 import type { OAuthActions } from './actions'
 import {
   NATIVE_OPEN_POPUP,
@@ -10,6 +8,7 @@ import {
   SET_INSTAGRAM_ERROR,
   RESET_OAUTH_STATE
 } from './actions'
+import type { AUTH_RESPONSE_MESSAGE_TYPE } from './types'
 
 type TwitterInfo = {
   uuid: any
@@ -32,7 +31,7 @@ export type OAuthState = {
   isOpen: boolean
   // Incoming message id to reply back to with OAuth results
   messageId: string | null
-  messageType: MessageType | null
+  messageType: typeof AUTH_RESPONSE_MESSAGE_TYPE | null
   url: string | null
   provider: Provider | null
   twitterInfo: TwitterInfo | null
