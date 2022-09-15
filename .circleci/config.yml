@@ -286,7 +286,7 @@ jobs:
     noop
   built:
     noop
-  test:
+  tests:
     noop
   bake-gcp-dev-image:
     docker:
@@ -1145,8 +1145,7 @@ jobs:
             sudo killall openvpn || true
           when: always
 workflows:
-  # test, build and push all commits
-  test-build-and-push:
+  workflows:
     when:
       and:
          - not: << pipeline.parameters.full_ci >>
@@ -1158,7 +1157,7 @@ workflows:
             - build-creator-node
             - build-discovery-provider
             - build-identity-service
-      - test
+      - tests
       - deploy-to-staging:
           name: deploy-to-staging-from-master
           service: discovery
@@ -1206,18 +1205,26 @@ workflows:
             - built
       - test-libs:
           name: test-libs
+          requires:
+            - tests
       - docker-build-and-push:
           name: build-libs
           repo: libs
 
       - test-contracts:
           name: test-contracts
+          requires:
+            - tests
 
       - test-eth-contracts:
           name: test-eth-contracts
+          requires:
+            - tests
 
       - test-creator-node:
           name: test-creator-node
+          requires:
+            - tests
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
@@ -1226,6 +1233,8 @@ workflows:
 
       - test-discovery-provider:
           name: test-discovery-provider
+          requires:
+            - tests
       - docker-build-and-push-updated:
           name: build-discovery-provider
           repo: discovery-provider
@@ -1234,6 +1243,8 @@ workflows:
 
       - test-identity-service:
           name: test-identity-service
+          requires:
+            - tests
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
@@ -1242,17 +1253,25 @@ workflows:
 
       - test-solana-programs:
           name: test-solana-programs
+          requires:
+            - tests
       - test-solana-programs-anchor:
           name: test-solana-programs-anchor
+          requires:
+            - tests
 
       - test-mad-dog-e2e:
           context:
             - GCP2
           mad-dog-type: test
+          requires:
+            - tests
 
       - test-sdk:
           context:
             - GCP2
+          requires:
+            - tests
 
 
   # in order to trigger this job
