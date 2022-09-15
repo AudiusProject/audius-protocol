@@ -97,9 +97,10 @@ export function resetSignOn() {
 export function checkEmail(
   email: string,
   onAvailable?: () => void,
-  onUnavailable?: () => void
+  onUnavailable?: () => void,
+  onError?: () => void
 ) {
-  return { type: CHECK_EMAIL, email, onAvailable, onUnavailable }
+  return { type: CHECK_EMAIL, email, onAvailable, onUnavailable, onError }
 }
 
 /**
