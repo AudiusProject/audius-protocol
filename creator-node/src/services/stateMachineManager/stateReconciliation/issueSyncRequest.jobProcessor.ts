@@ -513,7 +513,9 @@ const _additionalSyncIsRequired = async (
     )
     outcome = 'success_secondary_caught_up'
     additionalSyncIsRequired = false
-    logger.info(`${logMsgString} || Sync completed in ${monitoringTimeMs}ms`)
+    logger.info(
+      `${logMsgString} || Sync completed in ${monitoringTimeMs}ms. Prometheus result: ${outcome}`
+    )
 
     // Secondary completed sync but is still behind primary since it was behind by more than max export range
     // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
@@ -526,7 +528,7 @@ const _additionalSyncIsRequired = async (
     additionalSyncIsRequired = true
     outcome = 'success_secondary_partially_caught_up'
     logger.info(
-      `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest.`
+      `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest. Prometheus result: ${outcome}`
     )
 
     // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
@@ -539,7 +541,7 @@ const _additionalSyncIsRequired = async (
     additionalSyncIsRequired = true
     outcome = 'failure_secondary_failed_to_progress'
     logger.error(
-      `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`
+      `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest. Prometheus result: ${outcome}`
     )
   }
 
