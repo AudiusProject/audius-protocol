@@ -1208,7 +1208,7 @@ workflows:
           name: deploy-master
           # service: discovery
           service: creator
-          host: stage-creator-6
+          host: stage-creator-4
           context:
             - slack-secrets
             - gh-tokens
