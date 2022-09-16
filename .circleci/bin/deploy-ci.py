@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-import logging
 import json
+import logging
 import time
-from os import getenv
 from pprint import pprint
 from subprocess import PIPE, Popen
 from threading import Thread
