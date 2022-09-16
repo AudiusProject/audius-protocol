@@ -44,9 +44,9 @@ export const ProfileSocials = () => {
 
   const socialLinks = useMemo(() => {
     const links = [
-      [twitter_handle, TwitterSocialLink],
-      [instagram_handle, InstagramSocialLink],
-      [tiktok_handle, TikTokSocialLink]
+      [twitter_handle, 'twitter', TwitterSocialLink],
+      [instagram_handle, 'instagram', InstagramSocialLink],
+      [tiktok_handle, 'tiktok', TikTokSocialLink]
     ] as const
     return links.filter(([handle]) => !(handle === null || handle === ''))
   }, [twitter_handle, instagram_handle, tiktok_handle])
@@ -83,13 +83,13 @@ export const ProfileSocials = () => {
           { opacity }
         ]}
       >
-        {socialLinks.map(([, SocialLink], index) => {
-          const link = <SocialLink key={index} showText={socialsCount === 1} />
-          if (index === socialLinks.length - 1) return link
+        {socialLinks.map(([, name, SocialLink], index) => {
           return (
-            <Fragment key={index}>
-              {link}
-              <Divider orientation='vertical' style={styles.divider} />
+            <Fragment key={name}>
+              <SocialLink showText={socialsCount === 1} />
+              {index === socialLinks.length - 1 ? null : (
+                <Divider orientation='vertical' style={styles.divider} />
+              )}
             </Fragment>
           )
         })}

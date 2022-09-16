@@ -1,7 +1,10 @@
 import type { ComponentType, ReactNode } from 'react'
-import { createContext } from 'react'
+import { useMemo, createContext } from 'react'
 
-import type { MaterialTopTabNavigationOptions } from '@react-navigation/material-top-tabs'
+import type {
+  MaterialTopTabBarProps,
+  MaterialTopTabNavigationOptions
+} from '@react-navigation/material-top-tabs'
 import type { Animated } from 'react-native'
 import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsible-tab-view'
 import type { SvgProps } from 'react-native-svg'
@@ -25,27 +28,32 @@ export const CollapsibleTabNavigatorContext =
     scrollY: undefined
   })
 
-export const CollapsibleTabNavigatorContextProvider = ({
-  sceneName,
-  refreshing,
-  onRefresh,
-  scrollY,
-  children
-}: {
+type CollapsibleTabNavigatorContextProviderProps = {
   sceneName: string
   refreshing?: boolean
   onRefresh?: () => void
   scrollY?: Animated.Value
   children: ReactNode
-}) => {
+}
+
+export const CollapsibleTabNavigatorContextProvider = (
+  props: CollapsibleTabNavigatorContextProviderProps
+) => {
+  const { sceneName, refreshing, onRefresh, scrollY, children } = props
+
+  const context = useMemo(
+    () => ({ sceneName, refreshing, onRefresh, scrollY }),
+    [sceneName, refreshing, onRefresh, scrollY]
+  )
+
   return (
-    <CollapsibleTabNavigatorContext.Provider
-      value={{ sceneName, refreshing, onRefresh, scrollY }}
-    >
+    <CollapsibleTabNavigatorContext.Provider value={context}>
       {children}
     </CollapsibleTabNavigatorContext.Provider>
   )
 }
+
+const tabBar = (props: MaterialTopTabBarProps) => <TopTabBar {...props} />
 
 type CollapsibleTabNavigatorProps = {
   /**
@@ -71,18 +79,17 @@ export const CollapsibleTabNavigator = ({
   children,
   screenOptions
 }: CollapsibleTabNavigatorProps) => {
+  const collapsibleOptions = useMemo(
+    () => ({ renderHeader, disableSnap: true, animatedValue }),
+    [renderHeader, animatedValue]
+  )
+
   return (
     <Tab.Navigator
-      collapsibleOptions={{
-        renderHeader,
-        disableSnap: true,
-        animatedValue
-      }}
+      collapsibleOptions={collapsibleOptions}
       initialRouteName={initialScreenName}
-      tabBar={(props) => <TopTabBar {...props} />}
-      screenOptions={{
-        ...screenOptions
-      }}
+      tabBar={tabBar}
+      screenOptions={screenOptions}
     >
       {children}
     </Tab.Navigator>

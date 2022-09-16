@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
 import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common'
-import { notificationsSelectors, Entity } from '@audius/common'
+import {
+  useProxySelector,
+  notificationsSelectors,
+  Entity
+} from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -37,8 +41,9 @@ export const UserSubscriptionNotification = (
   const { entityType } = notification
   const navigation = useDrawerNavigation()
   const user = useSelector((state) => getNotificationUser(state, notification))
-  const entities = useSelector((state) =>
-    getNotificationEntities(state, notification)
+  const entities = useProxySelector(
+    (state) => getNotificationEntities(state, notification),
+    [notification]
   )
 
   const uploadCount = entities?.length ?? 0

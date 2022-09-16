@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 
 import { accountSelectors, useSelectTierInfo } from '@audius/common'
 import type { Animated } from 'react-native'
@@ -43,8 +43,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 type ProfileHeaderProps = {
   scrollY: Animated.Value
 }
-
-export const ProfileHeader = (props: ProfileHeaderProps) => {
+// Memoized since material-top-tabs triggers unecessary rerenders
+export const ProfileHeader = memo((props: ProfileHeaderProps) => {
   const { scrollY } = props
   const styles = useStyles()
   const accountId = useSelector(getUserId)
@@ -140,4 +140,4 @@ export const ProfileHeader = (props: ProfileHeaderProps) => {
       </View>
     </>
   )
-}
+})
