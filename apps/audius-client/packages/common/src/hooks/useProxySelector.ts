@@ -1,9 +1,10 @@
 import type { DependencyList } from 'react'
 import { useCallback } from 'react'
 
-import type { CommonState } from '@audius/common'
 import memoize from 'proxy-memoize'
 import { useSelector } from 'react-redux'
+
+import type { CommonState } from '../store/commonStore'
 
 const createProxySelectorHook = <TState extends object = any>() => {
   const useProxySelector = <TReturnType>(

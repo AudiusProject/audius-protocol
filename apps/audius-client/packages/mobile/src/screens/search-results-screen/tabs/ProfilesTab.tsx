@@ -12,7 +12,9 @@ const getSearchUsers = makeGetSearchArtists()
 
 export const ProfilesTab = () => {
   const users = useSelector(getSearchUsers)
+
   useFetchTabResultsEffect(SearchKind.USERS)
+
   return (
     <SearchResultsTab noResults={users.length === 0}>
       <CardList

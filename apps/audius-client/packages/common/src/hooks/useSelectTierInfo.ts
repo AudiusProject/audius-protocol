@@ -1,17 +1,17 @@
-import { useSelector } from 'react-redux'
-
 import { ID } from '../models'
-import { CommonState, makeGetTierAndVerifiedForUser } from '../store'
+import { makeGetTierAndVerifiedForUser } from '../store'
+
+import { useProxySelector } from './useProxySelector'
 
 const getTierAndVerifiedForUser = makeGetTierAndVerifiedForUser()
 
 /**
  * Wraps our reselect tier selector in useMemo and useSelector
  * to be safe for use in multiple components
- * @param userId
  */
 export const useSelectTierInfo = (userId: ID) => {
-  return useSelector((state: CommonState) => {
-    return getTierAndVerifiedForUser(state, { userId })
-  })
+  return useProxySelector(
+    (state) => getTierAndVerifiedForUser(state, { userId }),
+    [userId]
+  )
 }
