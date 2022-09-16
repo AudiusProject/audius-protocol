@@ -1211,7 +1211,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - deploy-master-approval
+            - 🚧-master-approval
       # Force deploy `master` to staging (by service)
       - noop:
           name: force-deploy-master-<< matrix.service >>-approval
