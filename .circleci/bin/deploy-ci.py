@@ -79,7 +79,7 @@ def ssh(host, cmd, exit_on_error=RAISE, show_output=False, dry_run=False):
 def run_cmd(cmd, exit_on_error=RAISE, msg=None, show_output=False):
     """
     Execute a shell command and return stdout.
-    Exit or raise error on stderr.
+    Exit, raise error, or ignore on stderr.
     """
 
     # set the appropriate log level
@@ -98,15 +98,12 @@ def run_cmd(cmd, exit_on_error=RAISE, msg=None, show_output=False):
     if stdout:
         log(stdout)
 
-    # if stderr is present:
-    # * log stderr
-    # * either: exit(1) or raise RuntimeError
+    # log stderr
+    # or exit(1), raise error, or pass
     if stderr:
         logger.warning(stderr)
         if "Could not get object for" in stderr:
-            log(
-                "FIX: Run `git fetch` within your local audius-protocol repo, or the branch was deleted."
-            )
+            log("REASON: Branch was deleted.")
         if exit_on_error == RAISE:
             raise RuntimeError("Previous command had stderr output.")
         elif exit_on_error == EXIT_1:
@@ -179,10 +176,11 @@ def get_release_tag_by_host(snapshot, host, github_user, github_token):
             }
         )
 
-    # grab author, commit date, and url metadata from Github,
-    # when commits have been squased and branches have been merged and deleted
+    # grab author, commit date, and url metadata from Github
+    # ...when branches have been merged and deleted
     if branch == MISSING:
-        while True:
+        # retry 3 times, then continue (in case Github is down)
+        for _ in range(3):
             try:
                 r = requests.get(
                     f"https://api.github.com/repos/AudiusProject/audius-protocol/git/commits/{tag}",
@@ -194,19 +192,20 @@ def get_release_tag_by_host(snapshot, host, github_user, github_token):
                 )
             except:
                 continue
-            break
-        r = r.json()
-        snapshot.update(
-            {
-                host: {
-                    "author": r["author"]["name"],
-                    "branch": branch,
-                    "commit_date": r["author"]["date"],
-                    "tag": tag,
-                    "url": r["html_url"],
+
+            r = r.json()
+            snapshot.update(
+                {
+                    host: {
+                        "author": r["author"]["name"],
+                        "branch": branch,
+                        "commit_date": r["author"]["date"],
+                        "tag": tag,
+                        "url": r["html_url"],
+                    }
                 }
-            }
-        )
+            )
+            break
 
 
 def release_snapshot(deploy_list, parallel_mode, github_user, github_token):
@@ -232,7 +231,7 @@ def release_snapshot(deploy_list, parallel_mode, github_user, github_token):
         if not parallel_mode:
             thread.join(timeout=15)
             if thread.is_alive():
-                print("Timeout seen with Github API.")
+                print("Timeout likely seen with Github API.")
                 exit(1)
 
     # required for parallel_mode
@@ -240,7 +239,7 @@ def release_snapshot(deploy_list, parallel_mode, github_user, github_token):
     for thread in threads:
         thread.join(timeout=15)
         if thread.is_alive():
-            print("Timeout seen with Github API.")
+            print("Timeout likely seen with Github API.")
             exit(1)
 
     return snapshot
@@ -371,14 +370,12 @@ def format_artifacts(heading=None, hosts=None, release_summary=None):
     " /-P",
     show_default=True,
     default=True,
-    help="Run this script in parallel mode.",
 )
 @click.option(
     "-d",
     "--dry-run",
     is_flag=True,
     default=False,
-    help="Hold off on actual deploy",
 )
 def cli(
     github_user,
@@ -397,6 +394,7 @@ def cli(
     """
 
     if not git_tag:
+        # use the tip of `master`
         git_tag = run_cmd("git log -n 1 --pretty=format:%H master")
 
     # gather and display current release state, pre-deploy
@@ -466,7 +464,10 @@ def cli(
                 exit_on_error=IGNORE,
                 dry_run=dry_run,
             )
+
+            # command for production, coming soon
             # # ssh(host, "yes | audius-cli upgrade", show_output=True, dry_run=dry_run)
+
             release_summary["upgraded"].append(host)
         except:
             release_summary["failed"].append(host)
