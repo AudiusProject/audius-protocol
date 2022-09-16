@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { walletActions } from '@audius/common'
 import { useAppState } from '@react-native-community/hooks'
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
@@ -29,6 +30,9 @@ export type AppScreenParamList = {
 
 const Tab = createBottomTabNavigator()
 
+const screenOptions = { headerShown: false }
+const tabBar = (props: BottomTabBarProps) => <AppTabBar {...props} />
+
 export const AppScreen = () => {
   const dispatch = useDispatch()
   const appState = useAppState()
@@ -40,10 +44,7 @@ export const AppScreen = () => {
   }, [appState, dispatch])
 
   return (
-    <Tab.Navigator
-      tabBar={(props) => <AppTabBar {...props} />}
-      screenOptions={{ headerShown: false, unmountOnBlur: true }}
-    >
+    <Tab.Navigator tabBar={tabBar} screenOptions={screenOptions}>
       <Tab.Screen name='feed' component={FeedTabScreen} />
       <Tab.Screen name='trending' component={TrendingTabScreen} />
       <Tab.Screen name='explore' component={ExploreTabScreen} />
