@@ -121,6 +121,8 @@ export const METRIC_LABELS = Object.freeze({
       'abort_multiple_users_returned_from_export',
       'abort_missing_user_export_key_fields',
       'abort_mismatched_export_wallet',
+      'failure_content_node_endpoint_not_initialized',
+      'failure_audius_libs_not_initialized',
       'failure_export_wallet',
       'failure_save_files_to_disk',
       'failure_save_entries_to_db',

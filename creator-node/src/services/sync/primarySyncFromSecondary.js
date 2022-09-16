@@ -26,7 +26,7 @@ const {
 } = FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
 
 /**
- * Export data for user from secondary and save locally, until complete
+ * Export data for user from secondary or orpahned nodes and save locally, until complete
  * Should never error, instead return errorObj, else null
  */
 async function _primarySyncFromSecondary({
@@ -47,12 +47,19 @@ async function _primarySyncFromSecondary({
   })
   decisionTree.recordStage({ name: 'Begin', log: true })
 
+  let result
   try {
     const selfEndpoint = config.get('creatorNodeEndpoint')
 
     if (!selfEndpoint) {
       decisionTree.recordStage({ name: 'selfEndpoint missing', log: false })
-      throw new Error('selfEndpoint missing')
+
+      result = {
+        error: 'Content node endpoint not set on node',
+        result: 'failure_content_node_endpoint_not_initialized'
+      }
+
+      throw new Error(result.error)
     }
 
     let libs
@@ -66,7 +73,13 @@ async function _primarySyncFromSecondary({
         name: 'initAudiusLibs() Error',
         data: { errorMsg: e.message }
       })
-      throw new Error(`InitAudiusLibs Error - ${e.message}`)
+
+      result = {
+        error: `Could not initialize audiusLibs: ${e.message}`,
+        result: 'failure_audius_libs_not_initialized'
+      }
+
+      throw new Error(result.error)
     }
 
     await WalletWriteLock.acquire(
@@ -94,22 +107,6 @@ async function _primarySyncFromSecondary({
       return {
         abort: 'Node is not primary for user',
         result: 'abort_current_node_is_not_user_primary'
-      }
-    }
-
-    // Also abort if the input secondary is not part of the user's secondaries
-    if (
-      userReplicaSet.secondary1 !== secondary ||
-      userReplicaSet.secondary2 !== secondary
-    ) {
-      decisionTree.recordStage({
-        name: 'Abort - Node is not secondary for user',
-        data: { userReplicaSet, requestedSecondary: secondary }
-      })
-
-      return {
-        abort: 'Node is not secondary for user',
-        result: 'abort_input_node_is_not_user_secondary'
       }
     }
 
@@ -144,10 +141,12 @@ async function _primarySyncFromSecondary({
           data: { error: error.message }
         })
 
-        return {
+        result = {
           error: error.message,
           result: error.code
         }
+
+        throw new Error(result.error)
       }
 
       if (abort) {
@@ -205,10 +204,12 @@ async function _primarySyncFromSecondary({
           data: { errorMsg: e.message }
         })
 
-        return {
+        result = {
           error: `Error - Failed to save files to disk: ${e.message}`,
           result: 'failure_save_files_to_disk'
         }
+
+        throw new Error(result.error)
       }
 
       // Save all entries from export to DB
@@ -229,10 +230,12 @@ async function _primarySyncFromSecondary({
           data: { errorMsg: e.message }
         })
 
-        return {
+        result = {
           error: `Error - Failed to save entries to DB: ${e.message}`,
           result: 'failure_save_entries_to_db'
         }
+
+        throw new Error(result.error)
       }
 
       /**
@@ -271,8 +274,12 @@ async function _primarySyncFromSecondary({
     tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
 
+    if (result) {
+      return result
+    }
+
     return {
-      error: `Error - Primary sync from secondary failed: ${e.message}`,
+      error: `Error - Primary sync froma secondary failed: ${e.message}`,
       result: 'failure_primary_sync_from_secondary'
     }
   } finally {
