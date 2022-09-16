@@ -2,6 +2,7 @@ import type {
   ChallengeRewardID,
   ChallengeRewardNotification as ChallengeRewardNotificationType
 } from '@audius/common'
+import { Platform } from 'react-native'
 
 import IconAudius from 'app/assets/images/iconAudius.svg'
 
@@ -24,7 +25,7 @@ const messages = {
 
 const challengeInfoMap: Record<
   ChallengeRewardID,
-  { title: string; amount: number }
+  { title: string; amount: number; iosTitle?: string }
 > = {
   'profile-completion': {
     title: '✅️ Complete your Profile',
@@ -60,6 +61,8 @@ const challengeInfoMap: Record<
   },
   'send-first-tip': {
     title: '🤑 Send Your First Tip',
+    // NOTE: Send tip -> Send $AUDIO change
+    iosTitle: '🤑 Send Your First $AUDIO',
     amount: 2
   },
   'first-playlist': {
@@ -77,11 +80,13 @@ export const ChallengeRewardNotification = (
 ) => {
   const { notification } = props
   const { challengeId } = notification
-  const { title, amount } = challengeInfoMap[challengeId]
+  const { title, amount, iosTitle } = challengeInfoMap[challengeId]
   return (
     <NotificationTile notification={notification}>
       <NotificationHeader icon={IconAudius}>
-        <NotificationTitle>{title}</NotificationTitle>
+        <NotificationTitle>
+          {Platform.OS === 'ios' && iosTitle != null ? iosTitle : title}
+        </NotificationTitle>
       </NotificationHeader>
       <NotificationText>
         {messages.amountEarned(amount)}{' '}

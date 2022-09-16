@@ -1,4 +1,4 @@
-import { Text } from 'react-native'
+import { Platform, Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
@@ -6,7 +6,9 @@ import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 const messages = {
-  becomeFirstSupporter: 'Tip to become their first supporter'
+  becomeFirstSupporter: 'Tip to become their first supporter',
+  // NOTE: Send tip -> Send $AUDIO change
+  becomeFirstSupporterAlt: 'Send $AUDIO to become their first supporter' // iOS only
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -39,7 +41,11 @@ export const BecomeFirstSupporter = () => {
       colors={[pageHeaderGradientColor2, pageHeaderGradientColor1]}
     >
       <IconTrophy fill={white} width={16} height={16} />
-      <Text style={styles.text}>{messages.becomeFirstSupporter}</Text>
+      <Text style={styles.text}>
+        {Platform.OS === 'ios'
+          ? messages.becomeFirstSupporterAlt
+          : messages.becomeFirstSupporter}
+      </Text>
     </LinearGradient>
   )
 }

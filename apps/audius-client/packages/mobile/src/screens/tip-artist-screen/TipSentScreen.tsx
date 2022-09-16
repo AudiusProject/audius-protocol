@@ -6,6 +6,7 @@ import {
   tippingSelectors
 } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
+import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
@@ -27,10 +28,14 @@ const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: 'Tip Sent',
+  // NOTE: Send tip -> Send $AUDIO change
+  titleAlt: '$AUDIO Sent', // iOS only
   description: 'Share your support on Twitter!',
   done: 'Done',
   twitterCopyPrefix: 'I just tipped ',
-  twitterCopySuffix: ' $AUDIO on @AudiusProject #Audius #AUDIOTip'
+  twitterCopyPrefixAlt: 'I just sent ', // iOS only
+  twitterCopySuffix: ' $AUDIO on @AudiusProject #Audius #AUDIOTip',
+  twitterCopySuffixAlt: ' $AUDIO on @AudiusProject #Audius #AUDIO' // iOS only
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -59,7 +64,15 @@ export const TipSentScreen = () => {
       if (recipient.twitter_handle) {
         recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
       }
-      return `${messages.twitterCopyPrefix}${recipientAndAmount}${messages.twitterCopySuffix}`
+      return `${
+        Platform.OS === 'ios'
+          ? messages.twitterCopyPrefixAlt
+          : messages.twitterCopyPrefix
+      }${recipientAndAmount}${
+        Platform.OS === 'ios'
+          ? messages.twitterCopySuffixAlt
+          : messages.twitterCopySuffix
+      }`
     }
     return ''
   }
@@ -70,7 +83,7 @@ export const TipSentScreen = () => {
 
   return (
     <TipScreen
-      title={messages.title}
+      title={Platform.OS === 'ios' ? messages.titleAlt : messages.title}
       topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleClose} />}
     >
       <TipHeader status='sent' />
