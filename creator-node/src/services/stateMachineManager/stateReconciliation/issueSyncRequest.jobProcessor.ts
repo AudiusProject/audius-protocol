@@ -260,24 +260,28 @@ async function _handleIssueSyncRequest({
       }
     }
 
-    const { error, abort, result } = await primarySyncFromSecondary({
+    const response = await primarySyncFromSecondary({
       wallet: userWallet,
       secondary: secondaryEndpoint
     })
 
-    if (error) {
-      return {
-        result,
-        error: `${logMsgString}: ${error}`,
-        syncReqsToEnqueue
-      }
-    }
+    if (response) {
+      const { error, abort, result } = response
 
-    if (abort) {
-      return {
-        result,
-        abort: `${logMsgString}: ${abort}`,
-        syncReqsToEnqueue
+      if (error) {
+        return {
+          result,
+          error: `${logMsgString}: ${error}`,
+          syncReqsToEnqueue
+        }
+      }
+
+      if (abort) {
+        return {
+          result,
+          abort: `${logMsgString}: ${abort}`,
+          syncReqsToEnqueue
+        }
       }
     }
 
