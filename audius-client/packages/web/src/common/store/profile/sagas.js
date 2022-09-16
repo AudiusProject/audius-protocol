@@ -109,18 +109,18 @@ export function* fetchOpenSeaAssets(user) {
   ])
 
   const collectibleList = Object.values(collectiblesMap).flat()
-  if (!collectibleList.length) {
-    console.log('profile has no assets in OpenSea')
+  if (collectibleList.length !== 0) {
+    yield put(
+      cacheActions.update(Kind.USERS, [
+        {
+          id: user.user_id,
+          metadata: {
+            collectibleList
+          }
+        }
+      ])
+    )
   }
-
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: { collectibleList }
-      }
-    ])
-  )
 }
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
@@ -143,18 +143,16 @@ export function* fetchSolanaCollectibles(user) {
   )
 
   const solanaCollectibleList = Object.values(collectiblesMap).flat()
-  if (!solanaCollectibleList.length) {
-    console.log('profile has no Solana NFTs')
+  if (solanaCollectibleList.length !== 0) {
+    yield put(
+      cacheActions.update(Kind.USERS, [
+        {
+          id: user.user_id,
+          metadata: { solanaCollectibleList }
+        }
+      ])
+    )
   }
-
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: { solanaCollectibleList }
-      }
-    ])
-  )
 }
 
 function* fetchSupportersAndSupporting(userId) {

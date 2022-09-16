@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 
 import type { Notification } from '@audius/common'
 import {
+  useProxySelector,
   Status,
   notificationsSelectors,
   notificationsActions
@@ -102,7 +103,7 @@ const useIsViewable = () => {
 export const NotificationList = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const notifications = useSelector(getNotifications)
+  const notifications = useProxySelector(getNotifications, [])
   const status = useSelector(getNotificationStatus)
   const hasMore = useSelector(getNotificationHasMore)
   const [isRefreshing, setIsRefreshing] = useState(false)
