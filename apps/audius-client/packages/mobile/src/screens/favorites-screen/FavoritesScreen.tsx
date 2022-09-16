@@ -6,6 +6,8 @@ import { Header } from 'app/components/header'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 
+import { ScreenContent } from '../ScreenContent'
+
 import { AlbumsTab } from './AlbumsTab'
 import { PlaylistsTab } from './PlaylistsTab'
 import { TracksTab } from './TracksTab'
@@ -34,7 +36,9 @@ export const FavoritesScreen = () => {
   return (
     <Screen>
       <Header text='Favorites' />
-      <TopTabNavigator screens={favoritesScreens} />
+      <ScreenContent>
+        <TopTabNavigator screens={favoritesScreens} />
+      </ScreenContent>
     </Screen>
   )
 }

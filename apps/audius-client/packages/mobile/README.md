@@ -94,8 +94,16 @@ adb shell input keyevent 82
 ```
 
 ```
-# Busts the cache for RN
+# Busts the package cache for RN
 npm start -- --reset-cache
+```
+
+```
+# Clean build
+# first manually close all running instances of metro
+watchman watch-del-all
+npm start -- --reset-cache
+npm run ios:dev
 ```
 
 - Debugging Android webview: https://github.com/react-native-webview/react-native-webview/blob/master/docs/Debugging.md#android--chrome

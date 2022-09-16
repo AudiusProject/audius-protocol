@@ -412,7 +412,7 @@ PODS:
     - React-Core
   - react-native-music-control (1.4.0):
     - React-Core
-  - react-native-netinfo (5.9.10):
+  - react-native-netinfo (9.3.0):
     - React-Core
   - react-native-pager-view (5.4.6):
     - React-Core
@@ -866,7 +866,7 @@ SPEC CHECKSUMS:
   react-native-google-cast: 553c31d49840e2f357fde9a3dd0977fbe28d79ba
   react-native-image-picker: ae1202414bd5c37c00b2a701daa5b6194a06b7d9
   react-native-music-control: 0eef94942456152af21316afd53923e1dd6360b0
-  react-native-netinfo: 52cf0ee8342548a485e28f4b09e56b477567244d
+  react-native-netinfo: f473620bc118d6f44ce65669dd4810a7cfb36a7d
   react-native-pager-view: a9ba7d4218dcff32c0cdb41237c62fb487f013dd
   react-native-randombytes: 5fc412efe7b5c55b9002c0004d75fe5fabcaa507
   react-native-safe-area-context: 5cf05f49df9d17261e40e518481f2e334c6cd4b5
