@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { tippingActions } from '@audius/common'
+import { Platform } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
@@ -13,7 +14,10 @@ const { beginTip } = tippingActions
 
 const messages = {
   title: 'Tip $AUDIO',
-  label: 'Tip Audio tokens'
+  // NOTE: Send tip -> Send $AUDIO change
+  titleAlt: 'Send $AUDIO', // iOS only
+  label: 'Tip Audio tokens',
+  labelAlt: 'Send Audio tokens' // iOS only
 }
 
 const useStyles = makeStyles(() => ({
@@ -37,8 +41,10 @@ export const TipAudioButton = () => {
   return (
     <Button
       variant='primary'
-      accessibilityLabel={messages.label}
-      title={messages.title}
+      accessibilityLabel={
+        Platform.OS === 'ios' ? messages.labelAlt : messages.label
+      }
+      title={Platform.OS === 'ios' ? messages.titleAlt : messages.title}
       icon={IconGoldBadge}
       iconPosition='left'
       fullWidth

@@ -1,6 +1,6 @@
 import type { BNWei } from '@audius/common'
 import { formatWei } from '@audius/common'
-import { Text } from 'react-native'
+import { Platform, Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
@@ -9,6 +9,8 @@ import { useThemeColors } from 'app/utils/theme'
 
 const messages = {
   becomeTopSupporterPrefix: 'Tip ',
+  // NOTE: Send tip -> Send $AUDIO change
+  becomeTopSupporterPrefixAlt: 'Send ', // iOS only
   becomeTopSupporterSuffix: ' $AUDIO to become their top supporter'
 }
 
@@ -51,7 +53,9 @@ export const BecomeTopSupporter = ({
     >
       <IconTrophy fill={white} width={16} height={16} />
       <Text style={styles.text}>
-        {messages.becomeTopSupporterPrefix}
+        {Platform.OS === 'ios'
+          ? messages.becomeTopSupporterPrefixAlt
+          : messages.becomeTopSupporterPrefix}
         {formatWei(amountToTipToBecomeTopSupporter, true, 0)}
         {messages.becomeTopSupporterSuffix}
       </Text>

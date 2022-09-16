@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { SupportingRankUpNotification } from '@audius/common'
 import { notificationsSelectors } from '@audius/common'
+import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { make } from 'app/services/analytics'
@@ -17,8 +18,11 @@ const messages = {
   title: 'Top Supporter',
   supporterChange: "You're now their",
   supporter: 'Top Supporter',
-  twitterShare: (handle: string, rank: number) =>
-    `I'm now ${handle}'s #${rank} Top Supporter on @AudiusProject #Audius $AUDIO #AUDIOTip`
+  // NOTE: Send tip -> Send $AUDIO change
+  twitterShare: (handle: string, rank: number, ios: boolean) =>
+    `I'm now ${handle}'s #${rank} Top Supporter on @AudiusProject #Audius $AUDIO${
+      ios ? '' : ' #AUDIOTip'
+    }`
 }
 
 type TopSupportingNotificationProps = {
@@ -37,7 +41,11 @@ export const TopSupportingNotification = (
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
-      const shareText = messages.twitterShare(handle, rank)
+      const shareText = messages.twitterShare(
+        handle,
+        rank,
+        Platform.OS === 'ios'
+      )
       return {
         shareText,
         analytics: make({
