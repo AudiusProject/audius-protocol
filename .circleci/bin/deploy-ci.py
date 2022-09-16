@@ -412,11 +412,6 @@ def cli(
     )
     print_release_summary(release_summary)
 
-    # add future logic to avoid multiple parallel deployments
-    seconds = 1
-    print(f"Waiting {seconds} seconds for manual inspection of parallel jobs.")
-    time.sleep(seconds)
-
     # perform release on `upgradeable` hosts
     print("v" * 40)
     release_summary["upgraded"] = []

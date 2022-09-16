@@ -982,6 +982,7 @@ jobs:
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
   deploy:
+    # use a machine since you can't use OpenVPN from within a container
     machine:
       image: ubuntu-2004:202201-02
     parameters:
