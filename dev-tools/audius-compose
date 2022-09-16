@@ -10,7 +10,12 @@ import eth_account
 import solana.keypair
 
 
-def generate_env(protocol_dir, creator_node_replicas, discovery_provider_replicas):
+def generate_env(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
         config = json.load((protocol_dir / "dev-tools/config.json").open())
@@ -28,6 +33,12 @@ def generate_env(protocol_dir, creator_node_replicas, discovery_provider_replica
     env["DISCOVERY_NODE_VERSION"] = json.loads(
         (protocol_dir / "discovery-provider/.version.json").read_text(),
     )["version"]
+
+    env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
+    if elasticsearch_replicas:
+        env["ELASTICSEARCH_CONDITION"] = "service_healthy"
+    else:  # exists to prevent discovery provider from waiting for non-existent elasticsearch instances
+        env["ELASTICSEARCH_CONDITION"] = "service_started"
 
     for name, secret_key in config.get("solana-accounts", {}).items():
         keypair = solana.keypair.Keypair.from_secret_key(bytes(secret_key))
@@ -109,9 +120,20 @@ def cli(ctx, protocol_dir):
 @cli.command()
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
+@click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.pass_obj
-def build(protocol_dir, creator_node_replicas, discovery_provider_replicas):
-    generate_env(protocol_dir, creator_node_replicas, discovery_provider_replicas)
+def build(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+):
+    generate_env(
+        protocol_dir,
+        creator_node_replicas,
+        discovery_provider_replicas,
+        elasticsearch_replicas,
+    )
 
     subprocess.run(
         [
@@ -127,9 +149,20 @@ def build(protocol_dir, creator_node_replicas, discovery_provider_replicas):
 @cli.command()
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
+@click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.pass_obj
-def up(protocol_dir, creator_node_replicas, discovery_provider_replicas):
-    generate_env(protocol_dir, creator_node_replicas, discovery_provider_replicas)
+def up(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+):
+    generate_env(
+        protocol_dir,
+        creator_node_replicas,
+        discovery_provider_replicas,
+        elasticsearch_replicas,
+    )
 
     subprocess.run(
         [

@@ -311,7 +311,7 @@ services:
     logging: *default-logging
     deploy:
       mode: replicated
-      replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
+      replicas: "${ELASTICSEARCH_REPLICAS}"
 
   discovery-provider:
     build: discovery-provider
@@ -354,7 +354,7 @@ services:
       solana-test-validator:
         condition: service_healthy
       discovery-provider-elasticsearch:
-        condition: service_healthy
+        condition: "${ELASTICSEARCH_CONDITION}"
     logging: *default-logging
     deploy:
       mode: replicated
