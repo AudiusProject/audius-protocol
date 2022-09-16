@@ -747,7 +747,7 @@ const config = convict({
   reconfigSPIdBlacklistString: {
     doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config',
     format: String,
-    env: 'reconfigSPIdBlocklistString',
+    env: 'reconfigSPIdBlacklistString',
     default: ''
   }
   /**
