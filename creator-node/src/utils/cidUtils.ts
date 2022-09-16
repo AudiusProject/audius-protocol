@@ -67,7 +67,7 @@ export async function findCIDInNetwork(
 
     try {
       found = await asyncRetry({
-        asyncFn: async (bail: (e: Error) => void) => {
+        asyncFn: async (bail: (e: Error) => void, num: number) => {
           let response
           try {
             response = await axios({
@@ -98,9 +98,16 @@ export async function findCIDInNetwork(
               return
             }
 
-            throw new Error(
-              `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
-            )
+            if (num === numRetries + 1) {
+              // Final error thrown
+              throw new Error(
+                `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
+              )
+            } else {
+              throw new Error(
+                `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
+              )
+            }
           }
 
           if (!response || !response.data) {
