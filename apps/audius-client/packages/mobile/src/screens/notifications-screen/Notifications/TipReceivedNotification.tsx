@@ -12,7 +12,7 @@ import type {
   TipReceiveNotification,
   ReactionTypes
 } from '@audius/common'
-import { Image, View } from 'react-native'
+import { Image, Platform, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
@@ -41,14 +41,18 @@ const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'You Received a Tip!',
+  // NOTE: Send tip -> Send $AUDIO change
+  titleAlt: 'You Received $AUDIO!', // iOS only
   sent: 'sent you a tip of',
+  sentAlt: 'sent you', // iOS only
   audio: '$AUDIO',
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
-  twitterShare: (senderHandle: string, amount: number) =>
-    `Thanks ${senderHandle} for the ${formatNumberCommas(
-      amount
-    )} $AUDIO tip on @AudiusProject! #Audius #AUDIOTip`
+  // NOTE: Send tip -> Send $AUDIO change
+  twitterShare: (senderHandle: string, amount: number, ios: boolean) =>
+    `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
+      ios ? '$AUDIO' : '$AUDIO tip'
+    } on @AudiusProject! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
 }
 
 const useSetReaction = (tipTxSignature: string) => {
@@ -85,7 +89,11 @@ export const TipReceivedNotification = (
 
   const handleTwitterShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.twitterShare(senderHandle, uiAmount)
+      const shareText = messages.twitterShare(
+        senderHandle,
+        uiAmount,
+        Platform.OS === 'ios'
+      )
       return {
         shareText,
         analytics: make({
@@ -102,12 +110,15 @@ export const TipReceivedNotification = (
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconTip}>
-        <NotificationTitle>{messages.title}</NotificationTitle>
+        <NotificationTitle>
+          {Platform.OS === 'ios' ? messages.titleAlt : messages.title}
+        </NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
         <ProfilePicture profile={user} />
         <NotificationText>
-          <UserNameLink user={user} /> {messages.sent}{' '}
+          <UserNameLink user={user} />{' '}
+          {Platform.OS === 'ios' ? messages.sentAlt : messages.sent}{' '}
           <TipText value={uiAmount} />
         </NotificationText>
       </NotificationBody>
