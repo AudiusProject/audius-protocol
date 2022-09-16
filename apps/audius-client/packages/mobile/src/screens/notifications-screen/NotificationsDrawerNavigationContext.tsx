@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { createContext } from 'react'
+import { useMemo, createContext } from 'react'
 
 // eslint-disable-next-line import/no-unresolved
 import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
@@ -31,7 +31,30 @@ type ProviderProps = ContextType & {
 export const NotificationsDrawerNavigationContextProvider = (
   props: ProviderProps
 ) => {
-  const { children, ...other } = props
+  const {
+    children,
+    drawerHelpers,
+    drawerNavigation,
+    gesturesDisabled,
+    setGesturesDisabled,
+    state
+  } = props
+  const other = useMemo(
+    () => ({
+      drawerHelpers,
+      drawerNavigation,
+      gesturesDisabled,
+      setGesturesDisabled,
+      state
+    }),
+    [
+      drawerHelpers,
+      drawerNavigation,
+      gesturesDisabled,
+      setGesturesDisabled,
+      state
+    ]
+  )
   return (
     <NotificationsDrawerNavigationContext.Provider value={other}>
       {children}

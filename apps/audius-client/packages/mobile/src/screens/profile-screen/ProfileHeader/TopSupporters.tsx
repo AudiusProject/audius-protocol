@@ -1,10 +1,12 @@
 import { useCallback, useRef, useLayoutEffect } from 'react'
 
-import { cacheUsersSelectors, tippingSelectors } from '@audius/common'
-import type { ID, SupportersMapForUser, CommonState } from '@audius/common'
+import {
+  cacheUsersSelectors,
+  tippingSelectors,
+  useProxySelector
+} from '@audius/common'
 import { LayoutAnimation, Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { useSelector } from 'react-redux'
 
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
@@ -73,6 +75,25 @@ const useLoadingAnimation = (isDepLoaded: () => boolean, dependency: any) => {
   }, [dependency, isDepLoaded])
 }
 
+const useSelectTopSupporters = (userId: number) =>
+  useProxySelector(
+    (state) => {
+      const supporters = getOptimisticSupportersForUser(state, userId)
+      if (!supporters) return []
+
+      const topSupporterIds = Object.keys(supporters)
+        .sort((id1, id2) => supporters[id1].rank - supporters[id2].rank)
+        .map((id) => supporters[id])
+        .map((supporter) => supporter.sender_id)
+
+      const supporterUsers = getUsers(state, { ids: topSupporterIds })
+
+      const topSupporters = topSupporterIds.map((id) => supporterUsers[id])
+      return topSupporters
+    },
+    [userId]
+  )
+
 export const TopSupporters = () => {
   const styles = useStyles()
   const { secondary, neutral } = useThemeColors()
@@ -81,36 +102,19 @@ export const TopSupporters = () => {
     'user_id',
     'supporter_count'
   ])
-  const supportersForProfile: SupportersMapForUser =
-    useSelector((state: CommonState) =>
-      getOptimisticSupportersForUser(state, user_id)
-    ) || {}
 
-  const rankedSupporterIds = Object.keys(supportersForProfile)
-    .sort((k1, k2) => {
-      return (
-        supportersForProfile[k1 as unknown as ID].rank -
-        supportersForProfile[k2 as unknown as ID].rank
-      )
-    })
-    .map((k) => supportersForProfile[k as unknown as ID])
-    .map((s) => s.sender_id)
-
-  const rankedSupporters = useSelector((state) => {
-    const usersMap = getUsers(state, { ids: rankedSupporterIds })
-    return rankedSupporterIds.map((id) => usersMap[id]).filter(Boolean)
-  })
+  const topSupporters = useSelectTopSupporters(user_id)
 
   const handlePress = useCallback(() => {
     navigation.push('TopSupporters', { userId: user_id, source: 'profile' })
   }, [navigation, user_id])
 
-  useLoadingAnimation(() => rankedSupporters.length > 0, rankedSupporters)
+  useLoadingAnimation(() => topSupporters.length > 0, topSupporters)
 
-  return rankedSupporters.length ? (
+  return topSupporters.length ? (
     <TouchableOpacity style={styles.root} onPress={handlePress}>
       <ProfilePictureList
-        users={rankedSupporters}
+        users={topSupporters}
         totalUserCount={supporter_count}
         limit={MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS}
         style={styles.profilePictureList}

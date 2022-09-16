@@ -1,6 +1,9 @@
 import type { RepostNotification as RepostNotificationType } from '@audius/common'
-import { formatCount, notificationsSelectors } from '@audius/common'
-import { useSelector } from 'react-redux'
+import {
+  useProxySelector,
+  formatCount,
+  notificationsSelectors
+} from '@audius/common'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'
 
@@ -30,14 +33,16 @@ type RepostNotificationProps = {
 export const RepostNotification = (props: RepostNotificationProps) => {
   const { notification } = props
   const { userIds, entityType } = notification
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const users = useProxySelector(
+    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
+    [notification]
   )
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
-  const entity = useSelector((state) =>
-    getNotificationEntity(state, notification)
+  const entity = useProxySelector(
+    (state) => getNotificationEntity(state, notification),
+    [notification]
   )
 
   const handlePress = useSocialActionHandler(notification, users)

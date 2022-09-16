@@ -5,7 +5,8 @@ import {
   accountSelectors,
   cacheUsersSelectors,
   tippingSelectors,
-  tippingActions
+  tippingActions,
+  useProxySelector
 } from '@audius/common'
 import {
   dismissRecentTip,
@@ -62,18 +63,19 @@ export const FeedTipTile = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const account = useSelector(getAccountUser)
+
   const showTip = useSelector(getShowTip)
-  const tipToDisplay = useSelector(getTipToDisplay)
-  const tipperIds = tipToDisplay
-    ? [
-        tipToDisplay.sender_id,
-        tipToDisplay.receiver_id,
-        ...tipToDisplay.followee_supporter_ids
-      ]
-    : []
-  const usersMap = useSelector((state) =>
-    getUsers(state, { ids: tipToDisplay ? tipperIds : [] })
-  )
+
+  const { tipToDisplay, usersMap, tipperIds } = useProxySelector((state) => {
+    const tipToDisplay = getTipToDisplay(state)
+    if (!tipToDisplay) {
+      return { tipToDisplay: null, usersMap: {}, tipperIds: [] }
+    }
+    const { sender_id, receiver_id, followee_supporter_ids } = tipToDisplay
+    const tipperIds = [sender_id, receiver_id, ...followee_supporter_ids]
+    const usersMap = getUsers(state, { ids: tipperIds })
+    return { tipToDisplay, usersMap, tipperIds }
+  }, [])
 
   useAsync(async () => {
     const storage = await getRecentTipsStorage(localStorage)

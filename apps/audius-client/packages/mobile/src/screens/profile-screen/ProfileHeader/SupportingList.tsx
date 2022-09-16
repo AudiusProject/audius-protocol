@@ -1,16 +1,15 @@
 import { useMemo } from 'react'
 
-import type { CommonState, ID, Supporting } from '@audius/common'
+import type { ID, Supporting } from '@audius/common'
 import {
+  useProxySelector,
   stringWeiToBN,
   tippingSelectors,
   MAX_PROFILE_SUPPORTING_TILES
 } from '@audius/common'
 import { FlatList } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 import { useSelectProfile } from '../selectors'
 
@@ -24,7 +23,9 @@ type ViewAllData = { viewAll: true; supporting: Supporting[] }
 type SkeletonData = { loading: true }
 const skeletonData: SkeletonData[] = [{ loading: true }, { loading: true }]
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(({ spacing }) => ({
+  list: { marginHorizontal: spacing(-3) },
+  listContentContainer: { paddingHorizontal: spacing(2) },
   singleSupporterTile: {
     marginHorizontal: 0
   }
@@ -32,9 +33,13 @@ const useStyles = makeStyles(() => ({
 
 export const SupportingList = () => {
   const styles = useStyles()
-  const { user_id, supporting_count } = useSelectProfile(['user_id'])
-  const supportingForUser = useSelector((state: CommonState) =>
-    getOptimisticSupportingForUser(state, user_id)
+  const { user_id, supporting_count } = useSelectProfile([
+    'user_id',
+    'supporting_count'
+  ])
+  const supportingForUser = useProxySelector(
+    (state) => getOptimisticSupportingForUser(state, user_id),
+    [user_id]
   )
   const supportingIdsSorted = useMemo(() => {
     const ids = (
@@ -90,12 +95,8 @@ export const SupportingList = () => {
 
   return (
     <FlatList<Supporting | SkeletonData | ViewAllData>
-      style={{
-        marginHorizontal: spacing(-3)
-      }}
-      contentContainerStyle={{
-        paddingHorizontal: spacing(2)
-      }}
+      style={styles.list}
+      contentContainerStyle={styles.listContentContainer}
       horizontal
       showsHorizontalScrollIndicator={false}
       data={supportingListData}
