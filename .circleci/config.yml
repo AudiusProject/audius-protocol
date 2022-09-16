@@ -1016,10 +1016,10 @@ jobs:
           fingerprints:
             # ~/.ssh/audius_infrastructure
             - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
-            # github.com
-            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
             # ~/.ssh/google_compute_engine
             - "d1:28:d4:5e:ca:d9:bb:70:06:da:e0:f0:00:7c:d4:a3"
+            # github.com
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
       - run:
           name: Install OpenVPN
           command: |
@@ -1195,8 +1195,11 @@ workflows:
 
       # Auto-deploy `master` to staging
       - noop:
-          name: 🚧-master-🕹️
+          name: 🚧-🏠-🕹️
           type: approval
+          filters:
+            branches:
+              only: /(^master$)/
           requires:
             - built
       - deploy:
@@ -1210,10 +1213,10 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - 🚧-master-🕹️
+            - 🚧-🏠-🕹️
       # Force deploy `master` to staging (by service)
       - noop:
-          name: 💪-🚧-master-<< matrix.service >>-🕹️
+          name: 💪-🚧-🏠-<< matrix.service >>-🕹️
           type: approval
           filters:
             branches:
@@ -1224,7 +1227,7 @@ workflows:
           requires:
             - 🚧-master
       - deploy:
-          name: 💪-🚧-master-<< matrix.service >>
+          name: 💪-🚧-🏠-<< matrix.service >>
           params: --force
           context:
             - slack-secrets
@@ -1234,10 +1237,10 @@ workflows:
             parameters:
               service: [all, discovery, creator, identity]
           requires:
-            - 💪-🚧-master-<< matrix.service >>-🕹️
+            - 💪-🚧-🏠-<< matrix.service >>-🕹️
       # Force deploy `master` to staging (by host)
       - noop:
-          name: 💪-🚧-master-<< matrix.host >>-🕹️
+          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
           type: approval
           filters:
             branches:
@@ -1248,7 +1251,7 @@ workflows:
           requires:
             - 🚧-master
       - deploy:
-          name: 💪-🚧-master-<< matrix.host >>
+          name: 💪-🚧-🏠-<< matrix.host >>
           params: --force
           context:
             - slack-secrets
@@ -1258,11 +1261,11 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 💪-🚧-master-<< matrix.host >>-🕹️
+            - 💪-🚧-🏠-<< matrix.host >>-🕹️
 
       # Deploy branch to staging (by service)
       - noop:
-          name: 🚧-branch-<< matrix.service >>-🕹️
+          name: 🚧-🌿-<< matrix.service >>-🕹️
           type: approval
           filters:
             branches:
@@ -1273,7 +1276,7 @@ workflows:
           requires:
             - built
       - deploy:
-          name: 🚧-branch-<< matrix.service >>
+          name: 🚧-🌿-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1284,10 +1287,10 @@ workflows:
             parameters:
               service: [all, discovery, creator, identity]
           requires:
-            - 🚧-branch-<< matrix.service >>-🕹️
+            - 🚧-🌿-<< matrix.service >>-🕹️
       # Deploy branch to staging (by host)
       - noop:
-          name: 🚧-branch-<< matrix.host >>-🕹️
+          name: 🚧-🌿-<< matrix.host >>-🕹️
           type: approval
           filters:
             branches:
@@ -1298,7 +1301,7 @@ workflows:
           requires:
             - built
       - deploy:
-          name: 🚧-branch-<< matrix.host >>
+          name: 🚧-🌿-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1312,7 +1315,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-branch-<< matrix.host >>-🕹️
+            - 🚧-🌿-<< matrix.host >>-🕹️
       # Deploy to prod (for release branches, after deploying to staging)
       - noop:
           name: 🚧-prod-🕹️
@@ -1321,7 +1324,7 @@ workflows:
             branches:
               only: /(^release-.*$)/
           requires:
-            - 🚧-branch-all
+            - 🚧-🌿-all
       - deploy:
           name: 🚧-prod
           environment: prod
