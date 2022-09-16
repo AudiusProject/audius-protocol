@@ -134,7 +134,7 @@ const updateReplicaSetJobProcessor = async function ({
       const reconfigNodeBlacklist = new Set()
       RECONFIG_SP_IDS_BLACKLIST.forEach((spId) => {
         const info = spInfoMap.get(spId)
-        if (info) {
+        if (info?.endpoint) {
           reconfigNodeBlacklist.add(info.endpoint)
         }
       })

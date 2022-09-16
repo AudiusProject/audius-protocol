@@ -4,6 +4,7 @@ const fs = require('fs')
 const process = require('process')
 const path = require('path')
 const os = require('os')
+const _ = require('lodash')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -805,7 +806,7 @@ if (fs.existsSync(pathTo('contract-config.json'))) {
 // Set reconfigSPIdBlacklist based off of reconfigSPIdBlacklistString
 config.set(
   'reconfigSPIdBlacklist',
-  config.get('reconfigSPIdBlacklistString') === ''
+  _.isEmpty(config.get('reconfigSPIdBlacklistString'))
     ? []
     : config
         .get('reconfigSPIdBlacklistString')
