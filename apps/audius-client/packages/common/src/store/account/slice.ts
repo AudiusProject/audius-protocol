@@ -20,7 +20,7 @@ const initialState = {
   // Array of strings that are either smart collection identifiers or user-generated collection ids
   orderedPlaylists: [] as string[],
   userId: null as number | null,
-  status: Status.LOADING,
+  status: Status.IDLE,
   reason: null as Nullable<FailureReason>,
   hasFavoritedItem: false,
   connectivityFailure: false, // Did we fail from no internet connectivity?

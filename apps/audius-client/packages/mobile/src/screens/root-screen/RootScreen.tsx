@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { accountSelectors, Status } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 // eslint-disable-next-line import/no-unresolved
@@ -8,6 +8,7 @@ import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/types
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { Dimensions } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -26,7 +27,7 @@ import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { SplashScreen } from '../splash-screen'
 
-const { getHasAccount, getAccountStatus } = accountSelectors
+const { getHasAccount } = accountSelectors
 
 export type RootScreenParamList = {
   signOn: undefined
@@ -126,56 +127,65 @@ const NotificationsDrawerContents = (
   )
 }
 
+type RootScreenProps = {
+  isReadyToSetupBackend: boolean
+}
+
 /**
  * The top level navigator. Switches between sign on screens and main tab navigator
  * based on if the user is authed
  */
-export const RootScreen = () => {
+export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
   const dispatch = useDispatch()
   const hasAccount = useSelector(getHasAccount)
-  const accountStatus = useSelector(getAccountStatus)
   const [disableGestures, setDisableGestures] = useState(false)
   const { updateRequired } = useUpdateRequired()
+
+  useEffect(() => {
+    // Setup the backend when ready
+    if (isReadyToSetupBackend) {
+      dispatch(setupBackend())
+    }
+  }, [dispatch, isReadyToSetupBackend])
 
   useAppState(
     () => dispatch(enterForeground()),
     () => dispatch(enterBackground())
   )
 
-  if (updateRequired) return <UpdateStack />
-
-  if (accountStatus === Status.LOADING) return <SplashScreen />
-
-  if (!hasAccount) return <SignOnStack />
-
-  if (hasAccount)
-    return (
-      <Drawer.Navigator
-        // legacy implementation uses reanimated-v1
-        useLegacyImplementation={true}
-        detachInactiveScreens={false}
-        screenOptions={{
-          drawerType: 'slide',
-          headerShown: false,
-          drawerStyle: {
-            width: '100%'
-          },
-          swipeEdgeWidth: SCREEN_WIDTH,
-          gestureHandlerProps: {
-            enabled: !disableGestures
-          }
-        }}
-        drawerContent={(props) => (
-          <NotificationsDrawerContents
-            disableGestures={disableGestures}
-            setDisableGestures={setDisableGestures}
-            {...props}
-          />
-        )}
-      >
-        <Drawer.Screen name='App' component={MainStack} />
-      </Drawer.Navigator>
-    )
-
-  return null
+  return (
+    <>
+      <SplashScreen />
+      {updateRequired ? <UpdateStack /> : null}
+      {!hasAccount ? (
+        <SignOnStack />
+      ) : (
+        <Drawer.Navigator
+          // legacy implementation uses reanimated-v1
+          useLegacyImplementation={true}
+          detachInactiveScreens={false}
+          screenOptions={{
+            drawerType: 'slide',
+            headerShown: false,
+            drawerStyle: {
+              width: '100%'
+            },
+            swipeEdgeWidth: SCREEN_WIDTH,
+            gestureHandlerProps: {
+              enabled: !disableGestures
+            }
+          }}
+          drawerContent={(props) => (
+            <NotificationsDrawerContents
+              disableGestures={disableGestures}
+              setDisableGestures={setDisableGestures}
+              {...props}
+            />
+          )}
+        >
+          <Drawer.Screen name='App' component={MainStack} />
+        </Drawer.Navigator>
+      )}
+    </>
+  )
 }
