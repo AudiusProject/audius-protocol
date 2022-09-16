@@ -11,6 +11,8 @@ import { Header } from 'app/components/header'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 
+import { ScreenContent } from '../ScreenContent'
+
 import { ArtistsTab } from './tabs/ArtistsTab'
 import { ForYouTab } from './tabs/ForYouTab'
 import { MoodsTab } from './tabs/MoodsTab'
@@ -53,7 +55,9 @@ const ExploreScreen = () => {
   return (
     <Screen>
       <Header text='Explore' />
-      <TopTabNavigator screens={exploreScreens} />
+      <ScreenContent>
+        <TopTabNavigator screens={exploreScreens} />
+      </ScreenContent>
     </Screen>
   )
 }

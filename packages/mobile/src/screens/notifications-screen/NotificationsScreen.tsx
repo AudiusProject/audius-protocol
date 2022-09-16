@@ -8,6 +8,8 @@ import { usePrevious } from 'react-use'
 
 import { makeStyles } from 'app/styles'
 
+import { ScreenContent } from '../ScreenContent'
+
 import { NotificationList } from './NotificationList'
 import { TopBar } from './TopBar'
 const { markAllAsViewed } = notificationsActions
@@ -38,7 +40,9 @@ export const NotificationsScreen = memo(() => {
   return (
     <View style={styles.root}>
       <TopBar />
-      <NotificationList />
+      <ScreenContent>
+        <NotificationList />
+      </ScreenContent>
     </View>
   )
 })

@@ -14,6 +14,8 @@ import { Lineup } from 'app/components/lineup'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 import { make, track } from 'app/services/analytics'
 
+import { ScreenContent } from '../ScreenContent'
+
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -42,16 +44,18 @@ export const FeedScreen = () => {
       <Header text={messages.header}>
         <FeedFilterButton />
       </Header>
-      <Lineup
-        isFeed
-        pullToRefresh
-        delineate
-        selfLoad
-        actions={feedActions}
-        lineupSelector={getFeedLineup}
-        loadMore={loadMore}
-        showsVerticalScrollIndicator={false}
-      />
+      <ScreenContent>
+        <Lineup
+          isFeed
+          pullToRefresh
+          delineate
+          selfLoad
+          actions={feedActions}
+          lineupSelector={getFeedLineup}
+          loadMore={loadMore}
+          showsVerticalScrollIndicator={false}
+        />
+      </ScreenContent>
     </Screen>
   )
 }

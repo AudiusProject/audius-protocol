@@ -1,4 +1,4 @@
-import { FollowSource } from '@audius/common'
+import { FollowSource, reachabilitySelectors } from '@audius/common'
 import { View, Text } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -9,6 +9,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { EditProfileButton } from './EditProfileButton'
 import { SubscribeButton } from './SubscribeButton'
 import { getIsOwner, useIsProfileLoaded, useSelectProfile } from './selectors'
+const { getIsReachable } = reachabilitySelectors
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   username: {
@@ -79,6 +80,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { onFollow } = props
   const styles = useStyles()
   const isProfileLoaded = useIsProfileLoaded()
+  const isReachable = useSelector(getIsReachable)
 
   const profile = useSelectProfile([
     'user_id',
@@ -128,7 +130,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
         </View>
       </View>
       <View style={styles.actionButtons}>
-        {isProfileLoaded ? profileButton : null}
+        {isProfileLoaded && isReachable ? profileButton : null}
       </View>
     </View>
   )

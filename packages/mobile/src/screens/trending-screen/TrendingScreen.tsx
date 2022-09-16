@@ -10,6 +10,8 @@ import { Header } from 'app/components/header'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 
+import { ScreenContent } from '../ScreenContent'
+
 import { TrendingFilterButton } from './TrendingFilterButton'
 import { TrendingLineup } from './TrendingLineup'
 const { getTrendingGenre } = trendingPageSelectors
@@ -61,7 +63,9 @@ export const TrendingScreen = () => {
       <Header text='Trending'>
         <TrendingFilterButton />
       </Header>
-      <TopTabNavigator screens={trendingScreens} />
+      <ScreenContent>
+        <TopTabNavigator screens={trendingScreens} />
+      </ScreenContent>
     </Screen>
   )
 }

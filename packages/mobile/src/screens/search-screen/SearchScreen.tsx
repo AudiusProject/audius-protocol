@@ -11,6 +11,8 @@ import { Header } from 'app/components/header'
 import { getSearchQuery } from 'app/store/search/selectors'
 import { makeStyles } from 'app/styles'
 
+import { ScreenContent } from '../ScreenContent'
+
 import { SearchBar } from './SearchBar'
 import SearchHistory from './SearchHistory'
 import SearchResults from './SearchResults'
@@ -40,6 +42,7 @@ export const SearchScreen = () => {
   const searchQuery = useSelector(getSearchQuery)
   const searchResultQuery = useSelector(getSearchBarText)
   const searchState = useSelector(getSearch)
+
   const searchResults = pick(searchState, [
     'tracks',
     'users',
@@ -74,7 +77,7 @@ export const SearchScreen = () => {
       headerTitle={null}
     >
       <Header text='Search' />
-      {renderBody()}
+      <ScreenContent unboxed>{renderBody()}</ScreenContent>
     </Screen>
   )
 }
