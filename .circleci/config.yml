@@ -1195,7 +1195,7 @@ workflows:
 
       # Auto-deploy `master` to staging
       - noop:
-          name: deploy-master-approval
+          name: 🚧-master-approval
           type: approval
           requires:
             - built
