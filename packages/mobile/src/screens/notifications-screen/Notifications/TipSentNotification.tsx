@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import type { TipSendNotification } from '@audius/common'
 import { useUIAudio, notificationsSelectors } from '@audius/common'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconTip from 'app/assets/images/iconTip.svg'
@@ -25,10 +25,18 @@ const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Your Tip Was Sent!',
+  // NOTE: Send tip -> Send $AUDIO change
+  titleAlt: 'Your $AUDIO Was Sent!', // iOS only
   sent: 'You successfully sent a tip of',
+  sentAlt: 'You successfully sent', // iOS only
   to: 'to',
-  twitterShare: (senderHandle: string, uiAmount: number) =>
-    `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @AudiusProject #Audius #AUDIOTip`
+  // NOTE: Send tip -> Send $AUDIO changes
+  twitterShare: (senderHandle: string, uiAmount: number, ios: boolean) =>
+    `I just ${
+      ios ? 'tipped' : 'sent'
+    } ${senderHandle} ${uiAmount} $AUDIO on @AudiusProject #Audius ${
+      ios ? '$#AUDIO' : '#AUDIOTip'
+    }`
 }
 
 type TipSentNotificationProps = {
@@ -47,7 +55,11 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
 
   const handleTwitterShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.twitterShare(senderHandle, uiAmount)
+      const shareText = messages.twitterShare(
+        senderHandle,
+        uiAmount,
+        Platform.OS === 'ios'
+      )
       return {
         shareText,
         analytics: make({
@@ -64,7 +76,9 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconTip}>
-        <NotificationTitle>{messages.title}</NotificationTitle>
+        <NotificationTitle>
+          {Platform.OS === 'ios' ? messages.titleAlt : messages.title}
+        </NotificationTitle>
       </NotificationHeader>
       <View
         style={{
@@ -74,7 +88,8 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
       >
         <ProfilePicture profile={user} />
         <NotificationText style={{ flexShrink: 1 }}>
-          {messages.sent} <TipText value={uiAmount} /> {messages.to}{' '}
+          {Platform.OS === 'ios' ? messages.sentAlt : messages.sent}{' '}
+          <TipText value={uiAmount} /> {messages.to}{' '}
           <UserNameLink user={user} />
         </NotificationText>
       </View>

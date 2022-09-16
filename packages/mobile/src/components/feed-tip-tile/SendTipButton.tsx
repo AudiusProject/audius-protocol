@@ -2,17 +2,19 @@ import { useCallback, useState } from 'react'
 
 import type { User } from '@audius/common'
 import { tippingActions } from '@audius/common'
-import { View } from 'react-native'
+import { View, Platform } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { Text, Button } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
+
 const { beginTip } = tippingActions
 
 const messages = {
-  sendTipToPrefix: 'SEND TIP TO '
+  sendTipToPrefix: 'SEND TIP TO ',
+  sendAudioToPrefix: 'SEND $AUDIO TO ' // iOS only
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -72,7 +74,10 @@ export const SendTipButton = ({ receiver }: SendTipButtonProps) => {
             <Text
               style={[styles.sendTipButtonTitle, isActive && styles.textWhite]}
             >
-              {messages.sendTipToPrefix}
+              {/* NOTE: Send tip -> Send $AUDIO change */}
+              {Platform.OS === 'ios'
+                ? messages.sendAudioToPrefix
+                : messages.sendTipToPrefix}
             </Text>
             <Text
               style={[styles.buttonReceiverName, isActive && styles.textWhite]}

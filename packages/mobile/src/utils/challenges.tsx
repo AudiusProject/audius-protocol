@@ -1,5 +1,6 @@
 import type { ChallengeRewardID, TrendingRewardID } from '@audius/common'
 import type { ImageSourcePropType } from 'react-native'
+import { Platform } from 'react-native'
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import Headphone from 'app/assets/images/emojis/headphone.png'
@@ -84,12 +85,19 @@ export const challenges = {
 
   // Send First Tip
   sendFirstTipTitle: 'Send Your First Tip',
+  // NOTE: Send tip -> Send $AUDIO change
+  sendFirstTipTitleAlt: 'Send Your First $AUDIO', // iOS only
   sendFirstTipDescription:
     'Show some love to your favorite artist and send them a tip',
   sendFirstTipShortDescription:
     'Show some love to your favorite artist and send them a tip',
+  sendFirstTipDescriptionAlt:
+    'Show some love to your favorite artist and send them $AUDIO', // iOS only
+  sendFirstTipShortDescriptionAlt:
+    'Show some love to your favorite artist and send them $AUDIO', // iOS only
   sendFirstTipProgressLabel: 'Not Earned',
   sendFirstTipButton: 'Find Someone To Tip',
+  sendFirstTipButtonAlt: 'Find Someone To Send To', // iOS only
 
   // First Playlist
   firstPlaylistTitle: 'Create Your First Playlist',
@@ -218,12 +226,24 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
   },
   'send-first-tip': {
     icon: MoneyMouthFace,
-    title: challenges.sendFirstTipTitle,
-    description: challenges.sendFirstTipDescription,
-    shortDescription: challenges.sendFirstTipShortDescription,
+    title:
+      Platform.OS === 'ios'
+        ? challenges.sendFirstTipTitleAlt
+        : challenges.sendFirstTipTitle,
+    description:
+      Platform.OS === 'ios'
+        ? challenges.sendFirstTipDescriptionAlt
+        : challenges.sendFirstTipDescription,
+    shortDescription:
+      Platform.OS === 'ios'
+        ? challenges.sendFirstTipShortDescriptionAlt
+        : challenges.sendFirstTipShortDescription,
     progressLabel: challenges.sendFirstTipProgressLabel,
     buttonInfo: {
-      label: challenges.sendFirstTipButton,
+      label:
+        Platform.OS === 'ios'
+          ? challenges.sendFirstTipButtonAlt
+          : challenges.sendFirstTipButton,
       navigation: {
         screen: 'explore',
         params: { screen: 'HeavyRotation' }

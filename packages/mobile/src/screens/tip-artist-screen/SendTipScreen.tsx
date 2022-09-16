@@ -12,6 +12,7 @@ import {
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import BN from 'bn.js'
+import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
@@ -39,6 +40,8 @@ const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   sendTip: 'Send Tip',
+  // NOTE: Send tip -> Send $AUDIO change
+  sendAudio: 'Send $AUDIO', // iOS only
   insufficientBalance: 'Insufficient Balance'
 }
 
@@ -119,7 +122,7 @@ export const SendTipScreen = () => {
 
   return (
     <TipScreen
-      title={messages.sendTip}
+      title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
       topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleBack} />}
     >
       <ReceiverDetails />
@@ -136,7 +139,7 @@ export const SendTipScreen = () => {
       <Button
         variant='primary'
         size='large'
-        title={messages.sendTip}
+        title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
         onPress={handleSendTip}
         icon={IconArrow}
         iconPosition='right'
