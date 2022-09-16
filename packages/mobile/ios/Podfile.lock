@@ -126,6 +126,9 @@ PODS:
     - FlipperKit/Core
     - FlipperKit/FlipperKitNetworkPlugin
   - fmt (6.2.1)
+  - GCDWebServer (3.5.4):
+    - GCDWebServer/Core (= 3.5.4)
+  - GCDWebServer/Core (3.5.4)
   - glog (0.3.5)
   - google-cast-sdk-no-bluetooth (4.7.0):
     - google-cast-sdk-no-bluetooth/Core (= 4.7.0)
@@ -420,6 +423,9 @@ PODS:
     - React-Core
   - react-native-safe-area-context (3.3.2):
     - React-Core
+  - react-native-static-server (0.5.0):
+    - GCDWebServer (~> 3.0)
+    - React
   - react-native-version-number (0.3.6):
     - React
   - react-native-video (5.1.0-alpha2):
@@ -603,6 +609,7 @@ DEPENDENCIES:
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-static-server (from `../node_modules/react-native-static-server`)
   - react-native-version-number (from `../node_modules/react-native-version-number`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -659,6 +666,7 @@ SPEC REPOS:
     - Flipper-RSocket
     - FlipperKit
     - fmt
+    - GCDWebServer
     - google-cast-sdk-no-bluetooth
     - GoogleAppMeasurement
     - GoogleDataTransport
@@ -738,6 +746,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-randombytes"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-static-server:
+    :path: "../node_modules/react-native-static-server"
   react-native-version-number:
     :path: "../node_modules/react-native-version-number"
   react-native-video:
@@ -834,6 +844,7 @@ SPEC CHECKSUMS:
   Flipper-RSocket: d9d9ade67cbecf6ac10730304bf5607266dd2541
   FlipperKit: d8d346844eca5d9120c17d441a2f38596e8ed2b9
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
+  GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   glog: 5337263514dd6f09803962437687240c5dc39aa4
   google-cast-sdk-no-bluetooth: 5313156110d6e71fa336f6d742f1ee641e91fdca
   GoogleAppMeasurement: ae033c3aad67e68294369373056b4d74cc8ae0d6
@@ -870,6 +881,7 @@ SPEC CHECKSUMS:
   react-native-pager-view: a9ba7d4218dcff32c0cdb41237c62fb487f013dd
   react-native-randombytes: 5fc412efe7b5c55b9002c0004d75fe5fabcaa507
   react-native-safe-area-context: 5cf05f49df9d17261e40e518481f2e334c6cd4b5
+  react-native-static-server: 201b2a945a35096be3ae7f43e367c65bcbd61343
   react-native-version-number: 15563dc4145a94aabfc1faab2a9af10174a4204e
   react-native-video: 5673415bcb2e77e232decb11775c2a7fef60a615
   react-native-webview: cea67b82dd5fbdf0f5c821b4ca0ca0b01e954c0b

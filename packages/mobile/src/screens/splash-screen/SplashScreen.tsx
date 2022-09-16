@@ -1,21 +1,42 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 
+import { accountSelectors, Status } from '@audius/common'
 import LottieView from 'lottie-react-native'
 import { StyleSheet, Animated } from 'react-native'
+import { useSelector } from 'react-redux'
+
+const { getAccountStatus } = accountSelectors
 
 const SCALE_TO = 1.2
 const ANIM_DURATION_MS = 2000
 const LOTTIE_HEIGHT = 1350
 const BACKGROUND_COLOR = '#7E1BCC'
 
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: BACKGROUND_COLOR,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+})
+
 export const SplashScreen = () => {
   const [animationFinished, setAnimationFinished] = useState(false)
+  const accountStatus = useSelector(getAccountStatus)
 
   useEffect(() => {
-    if (animationRef.current) {
-      animationRef.current.play()
+    if (![Status.IDLE, Status.LOADING].includes(accountStatus)) {
+      if (animationRef.current) {
+        animationRef.current.play()
+      }
     }
-  })
+  }, [accountStatus])
 
   const [scaleAnim] = useState(new Animated.Value(1))
 
@@ -64,17 +85,3 @@ export const SplashScreen = () => {
     </Animated.View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: BACKGROUND_COLOR,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
-})
