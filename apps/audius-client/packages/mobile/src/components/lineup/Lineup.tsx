@@ -255,6 +255,7 @@ export const Lineup = ({
   // trigger another load
   useEffect(() => {
     if (isPastLoadThreshold && lineup.status !== Status.LOADING) {
+      setIsPastLoadThreshold(false)
       handleLoadMore()
     }
   }, [isPastLoadThreshold, lineup.status, handleLoadMore])
