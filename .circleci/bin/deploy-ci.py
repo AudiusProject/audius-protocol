@@ -2,7 +2,6 @@
 
 import json
 import logging
-import time
 from pprint import pprint
 from subprocess import PIPE, Popen
 from threading import Thread
