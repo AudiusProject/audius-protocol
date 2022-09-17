@@ -170,6 +170,22 @@ const additionalChallengeNotificaitons = [
     },
     slot: 112519147,
     type: 'ChallengeReward'
+  },
+  {
+    initiator: 1,
+    metadata: {
+      challenge_id: 'send-first-tip'
+    },
+    slot: 112519148,
+    type: 'ChallengeReward'
+  },
+  {
+    initiator: 1,
+    metadata: {
+      challenge_id: 'first-playlist'
+    },
+    slot: 112519149,
+    type: 'ChallengeReward'
   }
 ]
 
