@@ -41,6 +41,7 @@ const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
 const { promisify } = require('util')
+const { fetchSegment } = require('components/tracks/TrackTranscodeHandoffManager')
 
 const fsStat = promisify(fs.stat)
 
@@ -66,9 +67,7 @@ const streamFromFileSystem = async (
   try {
     if (checkExistence) {
       // If file cannot be found on disk, throw error
-      try {
-        await fs.promises.access(path)
-      } catch (e) {
+      if (!(await fs.pathExists(path))) {
         throw new Error(`File could not be found on disk, path=${path}`)
       }
     }
