@@ -1,4 +1,5 @@
 'use strict'
+
 const { setupTracing } = require('./tracer')
 setupTracing('content-node')
 
@@ -12,9 +13,11 @@ const { sequelize } = require('./models')
 const { runMigrations, clearRunningQueries } = require('./migrationManager')
 const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
+const redisClient = require('./redis')
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
+  // eslint-disable-next-line no-process-exit
   process.exit(1)
 }
 
@@ -116,6 +119,13 @@ const startApp = async () => {
 
   const appInfo = initializeApp(getPort(), serviceRegistry)
   logger.info('Initialized app and server')
+
+  // Clear all redis locks
+  try {
+    await redisClient.WalletWriteLock.clearWriteLocks()
+  } catch (e: any) {
+    logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
+  }
 
   // Initialize services that do not require the server, but do not need to be awaited.
   serviceRegistry.initServicesAsynchronously()

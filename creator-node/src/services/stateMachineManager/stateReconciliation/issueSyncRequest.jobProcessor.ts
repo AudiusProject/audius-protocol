@@ -12,7 +12,15 @@ import type {
   SyncRequestAxiosParams
 } from './types'
 
-import { QUEUE_NAMES } from '../stateMachineConstants'
+import { instrumentTracing, tracing } from '../../../tracer'
+import {
+  SYNC_MONITORING_RETRY_DELAY_MS,
+  SYNC_MODES,
+  SyncType,
+  QUEUE_NAMES,
+  MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
+  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
+} from '../stateMachineConstants'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
@@ -31,13 +39,7 @@ const {
   makeHistogramToRecord
 } = require('../stateMachineUtils')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
-const {
-  SYNC_MONITORING_RETRY_DELAY_MS,
-  SYNC_MODES,
-  SyncType,
-  MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
-  MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
-} = require('../stateMachineConstants')
+
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {
@@ -67,7 +69,8 @@ type HandleIssueSyncReqParams = {
 }
 type HandleIssueSyncReqResult = {
   result: string
-  error?: any
+  error?: string
+  abort?: string
   syncReqsToEnqueue: IssueSyncRequestJobParams[]
   additionalSync?: IssueSyncRequestJobParams
 }
@@ -87,7 +90,7 @@ type AdditionalSyncIsRequiredResponse = {
  * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
  * @param {number} [param.attemptNumber] optional number of times this job has been run. It will be a no-op if it exceeds MAX_ISSUE_SYNC_JOB_ATTEMPTS
  */
-module.exports = async function ({
+async function issueSyncRequest({
   syncType,
   syncMode,
   syncRequestParameters,
@@ -101,24 +104,20 @@ module.exports = async function ({
     [QUEUE_NAMES.RECURRING_SYNC]: []
   }
   let metricsToRecord = []
-  let error: any = {}
 
   const startTimeMs = Date.now()
 
-  const {
-    syncReqsToEnqueue,
-    additionalSync,
-    result,
-    error: errorResp
-  } = await _handleIssueSyncRequest({
-    syncType,
-    syncMode,
-    syncRequestParameters,
-    logger
-  })
-  if (errorResp) {
-    error = errorResp
-    logger.error(error.message)
+  const { syncReqsToEnqueue, additionalSync, result, error } =
+    await _handleIssueSyncRequest({
+      syncType,
+      syncMode,
+      syncRequestParameters,
+      logger
+    })
+  if (error) {
+    logger.error(
+      `Issuing sync request error: ${error}. Prometheus result: ${result}`
+    )
   }
 
   // Enqueue a new sync request if one needs to be enqueued and we haven't retried too many times yet
@@ -213,9 +212,7 @@ async function _handleIssueSyncRequest({
   ) {
     return {
       result: 'failure_secondary_failure_count_threshold_met',
-      error: {
-        message: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
-      },
+      error: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`,
       syncReqsToEnqueue
     }
   }
@@ -250,29 +247,41 @@ async function _handleIssueSyncRequest({
         ensurePrimary: false
       })
 
-    const syncCorrectnessError = _ensureSyncsEnqueuedToCorrectNodes(
+    const syncCorrectnessAbort = _ensureSyncsEnqueuedToCorrectNodes(
       userReplicaSet,
       syncMode,
       syncRequestParameters.baseURL
     )
-    if (syncCorrectnessError) {
+    if (syncCorrectnessAbort) {
       return {
-        result: 'failure_sync_correctness',
-        error: syncCorrectnessError,
+        result: 'abort_sync_correctness',
+        abort: `${logMsgString}: ${syncCorrectnessAbort}`,
         syncReqsToEnqueue
       }
     }
 
-    const error = await primarySyncFromSecondary({
+    const response = await primarySyncFromSecondary({
       wallet: userWallet,
       secondary: secondaryEndpoint
     })
 
-    if (error) {
-      return {
-        result: 'failure_primary_sync_from_secondary',
-        error,
-        syncReqsToEnqueue
+    if (response) {
+      const { error, abort, result } = response
+
+      if (error) {
+        return {
+          result,
+          error: `${logMsgString}: ${error}`,
+          syncReqsToEnqueue
+        }
+      }
+
+      if (abort) {
+        return {
+          result,
+          abort: `${logMsgString}: ${abort}`,
+          syncReqsToEnqueue
+        }
       }
     }
 
@@ -293,7 +302,8 @@ async function _handleIssueSyncRequest({
                 sync_type: SyncType.Recurring,
                 wallet: [userWallet]
               }
-            }
+            },
+            parentSpanContext: tracing.currentSpanContext()
           })
         })
     }
@@ -331,21 +341,22 @@ async function _handleIssueSyncRequest({
       await axios(syncRequestParameters)
     }
   } catch (e: any) {
+    tracing.recordException(e)
+
     // Retry a failed sync in all scenarios except recovering orphaned data
     let additionalSync
     if (syncMode !== SYNC_MODES.MergePrimaryThenWipeSecondary) {
       additionalSync = {
         syncType,
         syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-        syncRequestParameters
+        syncRequestParameters,
+        parentSpanContext: tracing.currentSpanContext()
       }
     }
 
     return {
       result: 'failure_issue_sync_request',
-      error: {
-        message: `${logMsgString} || Error issuing sync request: ${e.message}`
-      },
+      error: `${logMsgString} || Error issuing sync request: ${e.message}`,
       syncReqsToEnqueue,
       additionalSync
     }
@@ -365,6 +376,8 @@ async function _handleIssueSyncRequest({
       syncRequestParameters,
       logger
     )
+
+  tracing.info(outcome)
 
   return {
     result: outcome,
@@ -422,7 +435,7 @@ const _additionalSyncIsRequired = async (
   const startTimeMs = Date.now()
   const maxMonitoringTimeMs =
     startTimeMs +
-    (syncType === SyncType.MANUAL
+    (syncType === SyncType.Manual
       ? maxManualSyncMonitoringDurationInMs
       : maxSyncMonitoringDurationInMs)
 
@@ -473,6 +486,7 @@ const _additionalSyncIsRequired = async (
         break
       }
     } catch (e: any) {
+      tracing.recordException(e)
       logger.warn(`${logMsgString} || Error: ${e.message}`)
     }
 
@@ -503,7 +517,9 @@ const _additionalSyncIsRequired = async (
     )
     outcome = 'success_secondary_caught_up'
     additionalSyncIsRequired = false
-    logger.info(`${logMsgString} || Sync completed in ${monitoringTimeMs}ms`)
+    logger.info(
+      `${logMsgString} || Sync completed in ${monitoringTimeMs}ms. Prometheus result: ${outcome}`
+    )
 
     // Secondary completed sync but is still behind primary since it was behind by more than max export range
     // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
@@ -516,7 +532,7 @@ const _additionalSyncIsRequired = async (
     additionalSyncIsRequired = true
     outcome = 'success_secondary_partially_caught_up'
     logger.info(
-      `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest.`
+      `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest. Prometheus result: ${outcome}`
     )
 
     // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
@@ -529,7 +545,7 @@ const _additionalSyncIsRequired = async (
     additionalSyncIsRequired = true
     outcome = 'failure_secondary_failed_to_progress'
     logger.error(
-      `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`
+      `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest. Prometheus result: ${outcome}`
     )
   }
 
@@ -577,5 +593,29 @@ const _ensureSyncsEnqueuedToCorrectNodes = (
     )}`
   }
 
-  return ''
+  return null
+}
+
+module.exports = async (
+  params: DecoratedJobParams<IssueSyncRequestJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'issueSyncRequest.jobProcessor',
+    fn: issueSyncRequest,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
 }

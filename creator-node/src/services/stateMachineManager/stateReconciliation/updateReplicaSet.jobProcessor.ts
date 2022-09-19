@@ -14,6 +14,12 @@ import type {
 } from './types'
 import { makeHistogramToRecord } from '../stateMachineUtils'
 import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
+import { stringifyMap } from '../../../utils'
+import {
+  getMapOfCNodeEndpointToSpId,
+  getMapOfSpIdToChainInfo
+} from '../../ContentNodeInfoManager'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 const _ = require('lodash')
 
@@ -26,13 +32,14 @@ const {
   SYNC_MODES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
-const ContentNodeInfoManager = require('../ContentNodeInfoManager')
 const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const initAudiusLibs = require('../../initAudiusLibs')
 
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
   : null
+
+const RECONFIG_SP_IDS_BLACKLIST: number[] = config.get('reconfigSPIdBlacklist')
 
 /**
  * Updates replica sets of a user who has one or more unhealthy nodes as their primary or secondaries.
@@ -86,6 +93,7 @@ const updateReplicaSetJobProcessor = async function ({
   healthyNodes = await getCachedHealthyNodes()
   if (healthyNodes.length === 0) {
     try {
+      tracing.info('init AudiusLibs')
       audiusLibs = await initAudiusLibs({
         enableEthContracts: true,
         enableContracts: true,
@@ -94,6 +102,7 @@ const updateReplicaSetJobProcessor = async function ({
         logger
       })
     } catch (e: any) {
+      tracing.recordException(e)
       result = UpdateReplicaSetJobResult.FailureInitAudiusLibs
       errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
       logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
@@ -120,12 +129,24 @@ const updateReplicaSetJobProcessor = async function ({
     }
 
     try {
+      const spInfoMap = await getMapOfSpIdToChainInfo(logger)
+
+      const reconfigNodeBlacklist = new Set()
+      RECONFIG_SP_IDS_BLACKLIST.forEach((spId) => {
+        const info = spInfoMap.get(spId)
+        if (info?.endpoint) {
+          reconfigNodeBlacklist.add(info.endpoint)
+        }
+      })
+
       const { services: healthyServicesMap } =
         await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
           performSyncCheck: false,
           whitelist: reconfigNodeWhitelist,
+          blacklist: reconfigNodeBlacklist,
           log: true
         })
+
       healthyNodes = Object.keys(healthyServicesMap || {})
       if (healthyNodes.length === 0) {
         throw new Error(
@@ -134,6 +155,7 @@ const updateReplicaSetJobProcessor = async function ({
       }
       await cacheHealthyNodes(healthyNodes)
     } catch (e: any) {
+      tracing.recordException(e)
       result = UpdateReplicaSetJobResult.FailureFindHealthyNodes
       errorMsg = `Error finding healthy nodes to select - ${e.message}: ${e.stack}`
 
@@ -185,6 +207,7 @@ const updateReplicaSetJobProcessor = async function ({
           logger
         ))
     } catch (e: any) {
+      tracing.recordException(e)
       result = UpdateReplicaSetJobResult.FailureIssueUpdateReplicaSet
       logger.error(
         `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
@@ -194,6 +217,7 @@ const updateReplicaSetJobProcessor = async function ({
       errorMsg = e.toString()
     }
   } catch (e: any) {
+    tracing.recordException(e)
     result = UpdateReplicaSetJobResult.FailureDetermineNewReplicaSet
     logger.error(
       `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
@@ -590,28 +614,44 @@ const _issueUpdateReplicaSetOp = async (
       response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
       return response
     }
+    /**
+     * TODO: Remove this after rollout. This is an extra gating condition that only applies to primary reconfigs:
+     * ONLY issue reconfigs of primaries when the cause of the reconfig is that the primary endpoint was deregistered or changed.
+     */
+    const primaryExistsOnChain = await getMapOfCNodeEndpointToSpId(
+      logger
+    ).hasOwnProperty(primary)
+    const isPrimaryReconfig =
+      reconfigType === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES
+    const shouldSkipPrimaryReconfig = isPrimaryReconfig && primaryExistsOnChain
+    if (shouldSkipPrimaryReconfig) {
+      response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
+      return response
+    }
+
+    const cNodeEndpointToSpIdMap = await getMapOfCNodeEndpointToSpId(logger)
 
     // Create new array of replica set spIds and write to URSM
     for (const endpt of newReplicaSetEndpoints) {
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
-      if (!ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]) {
+      const spIdFromChain = cNodeEndpointToSpIdMap.get(endpt)
+      if (spIdFromChain === undefined) {
         response.result = UpdateReplicaSetJobResult.FailureNoValidSP
-        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
-          ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
+        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${stringifyMap(
+          cNodeEndpointToSpIdMap
         )} | endpt=${endpt}. Skipping reconfig.`
         logger.error(response.errorMsg)
         return response
       }
-      newReplicaSetSPIds.push(
-        ContentNodeInfoManager.getCNodeEndpointToSpIdMap()[endpt]
-      )
+      newReplicaSetSPIds.push(spIdFromChain)
     }
 
     // Submit chain tx to update replica set
     const startTimeMs = Date.now()
     try {
       if (!audiusLibs) {
+        tracing.info('init AudiusLibs')
         audiusLibs = await initAudiusLibs({
           enableEthContracts: false,
           enableContracts: true,
@@ -620,12 +660,18 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
       }
+    } catch (e: any) {
+      throw new Error(
+        `[_issueUpdateReplicaSetOp] Could not initialize libs ${
+          Date.now() - startTimeMs
+        }ms - Error ${e.message}`
+      )
+    }
 
-      const {
-        [primary]: oldPrimarySpId,
-        [secondary1]: oldSecondary1SpId,
-        [secondary2]: oldSecondary2SpId
-      } = ContentNodeInfoManager.getCNodeEndpointToSpIdMap()
+    try {
+      const oldPrimarySpId = cNodeEndpointToSpIdMap.get(primary)
+      const oldSecondary1SpId = cNodeEndpointToSpIdMap.get(secondary1)
+      const oldSecondary2SpId = cNodeEndpointToSpIdMap.get(secondary2)
 
       const { canReconfig, chainPrimarySpId, chainSecondarySpIds, error } =
         await _canReconfig({
@@ -737,9 +783,9 @@ const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
 
 type CanReconfigParams = {
   libs: any
-  oldPrimarySpId: number
-  oldSecondary1SpId: number
-  oldSecondary2SpId: number
+  oldPrimarySpId: number | undefined
+  oldSecondary1SpId: number | undefined
+  oldSecondary2SpId: number | undefined
   userId: number
   logger: Logger
 }
@@ -812,4 +858,26 @@ const _canReconfig = async ({
   }
 }
 
-module.exports = updateReplicaSetJobProcessor
+module.exports = async (
+  params: DecoratedJobParams<UpdateReplicaSetJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'updateReplicaSet.jobProcessor',
+    fn: updateReplicaSetJobProcessor,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
+}

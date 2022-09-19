@@ -18,7 +18,13 @@ import type { TQUEUE_NAMES } from './stateMachineConstants'
 
 import { Queue } from 'bull'
 
-export type QueueNameToQueueMap = Record<TQUEUE_NAMES, Queue>
+export type QueueNameToQueueMap = Record<
+  TQUEUE_NAMES,
+  {
+    queue: Queue
+    maxWaitingJobs: number
+  }
+>
 
 export type WalletsToSecondariesMapping = {
   [wallet: string]: string[]

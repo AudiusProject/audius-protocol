@@ -71,8 +71,8 @@ describe('test secondarySyncFromPrimaryUtils', function () {
             return '0xcorrectprimarywallet'
           }
         },
-        '../stateMachineManager/ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: () => {
+        '../ContentNodeInfoManager': {
+          getContentNodeInfoFromSpId: async () => {
             return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
           }
         }
@@ -101,8 +101,8 @@ describe('test secondarySyncFromPrimaryUtils', function () {
     const { shouldForceResync } = proxyquire(
       '../src/services/sync/secondarySyncFromPrimaryUtils',
       {
-        '../stateMachineManager/ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: () => {
+        '../ContentNodeInfoManager': {
+          getContentNodeInfoFromSpId: async () => {
             return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
           }
         }
@@ -158,8 +158,8 @@ describe('test secondarySyncFromPrimaryUtils', function () {
             return false
           }
         },
-        '../stateMachineManager/ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: () => {
+        '../ContentNodeInfoManager': {
+          getContentNodeInfoFromSpId: async () => {
             return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
           }
         }
@@ -196,8 +196,8 @@ describe('test secondarySyncFromPrimaryUtils', function () {
             return false
           }
         },
-        '../stateMachineManager/ContentNodeInfoManager': {
-          getContentNodeInfoFromSpId: () => {
+        '../ContentNodeInfoManager': {
+          getContentNodeInfoFromSpId: async () => {
             return { delegateOwnerWallet: '0xCorrectPrimaryWallet' }
           }
         }

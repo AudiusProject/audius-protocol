@@ -1,6 +1,5 @@
-from collections import defaultdict
-
-from src.queries.query_helpers import get_users_ids
+from src.queries.query_helpers import _populate_premium_track_metadata, get_users_ids
+from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_REPOSTS,
@@ -19,6 +18,7 @@ def get_feed_es(args, limit=10):
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
     load_orig = feed_filter in ["original", "all"]
+    exclude_premium = args.get("exclude_premium", False)
 
     mdsl = []
 
@@ -218,7 +218,7 @@ def get_feed_es(args, limit=10):
     item_keys = [i["item_key"] for i in sorted_feed]
 
     (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-        current_user_id, item_keys, limit * 20
+        current_user_id, item_keys
     )
 
     for item in sorted_feed:
@@ -229,6 +229,23 @@ def get_feed_es(args, limit=10):
         # but /feed still expects save_count
         if "favorite_count" in item:
             item["save_count"] = item["favorite_count"]
+
+    if exclude_premium:
+        # filter out premium tracks from the feed before populating metadata
+        sorted_feed = list(
+            filter(
+                lambda item: "track_id" not in item or not item["is_premium"],
+                sorted_feed,
+            )
+        )
+    else:
+        # batch populate premium track metadata
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
+            _populate_premium_track_metadata(
+                session, track_items, current_user["user_id"]
+            )
 
     # populate metadata + remove extra fields from items
     sorted_feed = [
@@ -255,7 +272,13 @@ def following_ids_terms_lookup(current_user_id, field):
     }
 
 
-def fetch_followed_saves_and_reposts(current_user_id, item_keys, limit):
+def fetch_followed_saves_and_reposts(current_user_id, item_keys):
+    follow_reposts = {k: [] for k in item_keys}
+    follow_saves = {k: [] for k in item_keys}
+
+    if not current_user_id or not item_keys:
+        return (follow_saves, follow_reposts)
+
     save_repost_query = {
         "query": {
             "bool": {
@@ -266,8 +289,18 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys, limit):
                 ]
             }
         },
-        "size": limit * 20,  # how much to overfetch?
+        "collapse": {
+            "field": "item_key",
+            "inner_hits": {
+                "name": "most_recent",
+                "size": 5,
+                "sort": [{"created_at": "desc"}],
+            },
+            "max_concurrent_group_searches": 4,
+        },
         "sort": {"created_at": "desc"},
+        "size": len(item_keys),
+        "_source": False,
     }
     mdsl = [
         {"index": ES_REPOSTS},
@@ -277,15 +310,17 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys, limit):
     ]
 
     founds = esclient.msearch(searches=mdsl)
-    (reposts, saves) = [pluck_hits(r) for r in founds["responses"]]
+    collapsed_reposts = founds["responses"][0]["hits"]["hits"]
+    collapsed_saves = founds["responses"][1]["hits"]["hits"]
 
-    follow_reposts = defaultdict(list)
-    follow_saves = defaultdict(list)
-
-    for r in reposts:
-        follow_reposts[r["item_key"]].append(r)
-    for s in saves:
-        follow_saves[s["item_key"]].append(s)
+    for group in collapsed_reposts:
+        reposts = pluck_hits(group["inner_hits"]["most_recent"])
+        item_key = reposts[0]["item_key"]
+        follow_reposts[item_key] = reposts
+    for group in collapsed_saves:
+        saves = pluck_hits(group["inner_hits"]["most_recent"])
+        item_key = saves[0]["item_key"]
+        follow_saves[item_key] = saves
 
     return (follow_saves, follow_reposts)
 

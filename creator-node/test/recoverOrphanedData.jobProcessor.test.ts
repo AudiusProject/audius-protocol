@@ -170,9 +170,16 @@ describe('test recoverOrphanedData job processor', function () {
       numUsersWithNodeInReplicaSet
     )
     expect(jobResults.numWalletsWithOrphanedData).to.equal(numOrphanedUsers)
+
     expect(jobResults.jobsToEnqueue)
       .to.have.nested.property(QUEUE_NAMES.RECOVER_ORPHANED_DATA)
-      .that.eqls([{ discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT }])
+      .that.eqls([
+        {
+          discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT,
+          parentSpanContext: undefined
+        }
+      ])
+
     expect(jobResults.metricsToRecord).to.eql([
       {
         metricName: 'audius_cn_recover_orphaned_data_wallet_counts',
@@ -201,6 +208,7 @@ describe('test recoverOrphanedData job processor', function () {
       orphanedUsers,
       pagination
     })
+
     const jobResults = await recoverOrphanedDataJobProcessorMock({
       discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT,
       logger: bunyan.createLogger({ name: 'test_logger' })

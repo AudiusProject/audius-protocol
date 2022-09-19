@@ -37,6 +37,8 @@ models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
 models/PlaylistFull.ts
 models/PlaylistLibrary.ts
+models/PremiumConditions.ts
+models/PremiumContentSignature.ts
 models/ProfilePicture.ts
 models/RelatedArtistResponseFull.ts
 models/RemixesResponse.ts

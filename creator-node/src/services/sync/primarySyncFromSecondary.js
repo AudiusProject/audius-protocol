@@ -11,7 +11,6 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const DecisionTree = require('../../utils/decisionTree')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { instrumentTracing, tracing } = require('../../tracer')
 const { fetchExportFromNode } = require('./syncUtil')
 const {
@@ -19,11 +18,7 @@ const {
 } = require('../stateMachineManager/stateMachineConstants')
 
 const DEFAULT_LOG_CONTEXT = {}
-const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
-const SyncRequestMaxUserFailureCountBeforeSkip = config.get(
-  'syncRequestMaxUserFailureCountBeforeSkip'
-)
-
+const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 1000
 const {
   LOCAL_DB_ENTRIES_SET_KEY_PREFIX,
   FETCHED_ENTRIES_SET_KEY_PREFIX,
@@ -31,7 +26,7 @@ const {
 } = FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
 
 /**
- * Export data for user from secondary and save locally, until complete
+ * Export data for user from secondary or orphaned nodes and save locally, until complete
  * Should never error, instead return errorObj, else null
  */
 async function _primarySyncFromSecondary({
@@ -52,12 +47,19 @@ async function _primarySyncFromSecondary({
   })
   decisionTree.recordStage({ name: 'Begin', log: true })
 
+  let result
   try {
     const selfEndpoint = config.get('creatorNodeEndpoint')
 
     if (!selfEndpoint) {
       decisionTree.recordStage({ name: 'selfEndpoint missing', log: false })
-      throw new Error('selfEndpoint missing')
+
+      result = {
+        error: 'Content node endpoint not set on node',
+        result: 'failure_content_node_endpoint_not_initialized'
+      }
+
+      throw new Error(result.error)
     }
 
     let libs
@@ -71,7 +73,13 @@ async function _primarySyncFromSecondary({
         name: 'initAudiusLibs() Error',
         data: { errorMsg: e.message }
       })
-      throw new Error(`InitAudiusLibs Error - ${e.message}`)
+
+      result = {
+        error: `Could not initialize audiusLibs: ${e.message}`,
+        result: 'failure_audius_libs_not_initialized'
+      }
+
+      throw new Error(result.error)
     }
 
     await WalletWriteLock.acquire(
@@ -89,13 +97,17 @@ async function _primarySyncFromSecondary({
     })
     decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
-    // Error if this node is not primary for user
+    // Abort if this node is not primary for user
     if (userReplicaSet.primary !== selfEndpoint) {
       decisionTree.recordStage({
-        name: 'Error - Node is not primary for user',
+        name: 'Abort - Node is not primary for user',
         data: { userReplicaSet }
       })
-      throw new Error(`Node is not primary for user`)
+
+      return {
+        abort: 'Node is not primary for user',
+        result: 'abort_current_node_is_not_user_primary'
+      }
     }
 
     // Use the user's non-empty secondaries as gateways to try
@@ -114,7 +126,7 @@ async function _primarySyncFromSecondary({
         log: true
       })
 
-      const { fetchedCNodeUser, error } = await fetchExportFromNode({
+      const { fetchedCNodeUser, error, abort } = await fetchExportFromNode({
         nodeEndpointToFetchFrom: secondary,
         wallet,
         clockRangeMin: exportClockRangeMin,
@@ -122,12 +134,31 @@ async function _primarySyncFromSecondary({
         logger,
         forceExport: true
       })
-      if (!_.isEmpty(error)) {
+
+      if (error) {
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Error',
-          data: { errorMsg: error.message }
+          data: { error: error.message }
         })
-        throw new Error(error.message)
+
+        result = {
+          error: error.message,
+          result: error.code
+        }
+
+        throw new Error(result.error)
+      }
+
+      if (abort) {
+        decisionTree.recordStage({
+          name: 'fetchExportFromSecondary() Abort',
+          data: { abort: abort.message }
+        })
+
+        return {
+          abort: abort.message,
+          result: abort.code
+        }
       }
 
       const { localClockMax: fetchedLocalClockMax, requestedClockRangeMax } =
@@ -172,7 +203,13 @@ async function _primarySyncFromSecondary({
           name: 'saveFilesToDisk() Error',
           data: { errorMsg: e.message }
         })
-        throw e
+
+        result = {
+          error: `Error - Failed to save files to disk: ${e.message}`,
+          result: 'failure_save_files_to_disk'
+        }
+
+        throw new Error(result.error)
       }
 
       // Save all entries from export to DB
@@ -192,7 +229,13 @@ async function _primarySyncFromSecondary({
           name: 'saveEntriesToDB() Error',
           data: { errorMsg: e.message }
         })
-        throw e
+
+        result = {
+          error: `Error - Failed to save entries to DB: ${e.message}`,
+          result: 'failure_save_entries_to_db'
+        }
+
+        throw new Error(result.error)
       }
 
       /**
@@ -230,7 +273,16 @@ async function _primarySyncFromSecondary({
   } catch (e) {
     tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
-    return e
+
+    if (result) {
+      return result
+    }
+
+    // If no error was caught above, then return generic error
+    return {
+      error: `Error - Primary sync from secondary failed: ${e.message}`,
+      result: 'failure_primary_sync_from_secondary'
+    }
   } finally {
     await WalletWriteLock.release(wallet)
 
@@ -344,32 +396,6 @@ async function saveFilesToDisk({ files, gatewaysToTry, wallet, libs, logger }) {
         }
       })
     )
-  }
-
-  /**
-   * Handle case where some CIDs were not successfully saved
-   * Reject whole operation until threshold reached, then proceed and mark those CIDs as skipped
-   */
-  if (CIDsThatFailedSaveFileOp.size > 0) {
-    const userSyncFailureCount =
-      await UserSyncFailureCountService.incrementFailureCount(wallet)
-
-    // Throw error if failure threshold not yet reached
-    if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
-      throw new Error(
-        `[saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Cannot proceed because UserSyncFailureCount = ${userSyncFailureCount} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    } else {
-      // If threshold reached, reset failure count and continue
-      await UserSyncFailureCountService.resetFailureCount(wallet)
-
-      logger.info(
-        `[saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Proceeding anyway because UserSyncFailureCount = ${userSyncFailureCount} reached SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    }
-  } else {
-    // Reset failure count if all CIDs were successfully saved
-    await UserSyncFailureCountService.resetFailureCount(wallet)
   }
 
   return CIDsThatFailedSaveFileOp

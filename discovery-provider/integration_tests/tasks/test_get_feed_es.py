@@ -71,9 +71,11 @@ def test_get_feed_es(app):
     assert len(search_res) == 8
 
     # test feed
-    feed_results = get_feed_es({"user_id": "1"})
-    assert feed_results[0]["playlist_id"] == 1
-    assert feed_results[0]["save_count"] == 1
+    with app.app_context():
+        feed_results = get_feed_es({"user_id": "1"})
+        assert feed_results[0]["playlist_id"] == 1
+        assert feed_results[0]["save_count"] == 1
+        assert len(feed_results[0]["followee_reposts"]) == 1
 
-    assert feed_results[1]["track_id"] == 1
-    assert feed_results[0]["save_count"] == 1
+        assert feed_results[1]["track_id"] == 1
+        assert feed_results[1]["save_count"] == 1

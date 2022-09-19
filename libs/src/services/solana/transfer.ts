@@ -9,7 +9,7 @@ import {
 } from '@solana/web3.js'
 import type BN from 'bn.js'
 import type { TransactionHandler } from './transactionHandler'
-import borsh from 'borsh'
+import { deserialize, serialize } from 'borsh'
 import { SolanaUtils } from './SolanaUtils'
 import secp256k1 from 'secp256k1'
 import { ClaimableProgramError } from './errors'
@@ -97,7 +97,7 @@ async function getAccountNonce({
     'confirmed'
   )
   if (accInfo.value) {
-    const nonceAccount = borsh.deserialize(
+    const nonceAccount = deserialize(
       NonceAccountSchema,
       NonceAccount,
       accInfo.value.data
@@ -256,7 +256,7 @@ export async function transferWAudioBalance({
     nonce
   })
 
-  const serializedInstructionData = borsh.serialize(
+  const serializedInstructionData = serialize(
     transferInstructionDataSchema,
     instructionData
   )

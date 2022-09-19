@@ -1,9 +1,9 @@
 const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
-const process = require('process')
 const path = require('path')
 const os = require('os')
+const _ = require('lodash')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -419,7 +419,7 @@ const config = convict({
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
     env: 'snapbackHighestReconfigMode',
-    default: 'ONE_SECONDARY'
+    default: 'PRIMARY_AND_OR_SECONDARIES'
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
@@ -464,7 +464,7 @@ const config = convict({
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',
     env: 'fetchCNodeEndpointToSpIdMapIntervalMs',
-    default: 3_600_000 // 1hr
+    default: 600_000 // 10m
   },
   stateMonitoringQueueRateLimitInterval: {
     doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval monitor-state jobs will run',
@@ -482,14 +482,13 @@ const config = convict({
     doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitInterval',
-    // default: 86_400_000 // 1day
-    default: 7_200_000 // 2hrs
+    default: 60_000 // 1m
   },
   recoverOrphanedDataQueueRateLimitJobsPerInterval: {
     doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
-    default: 0
+    default: 1
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -543,7 +542,7 @@ const config = convict({
     doc: 'Maximum number of users to process in each SnapbackSM job',
     format: 'nat',
     env: 'snapbackUsersPerJob',
-    default: 1000
+    default: 2000
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
@@ -555,13 +554,13 @@ const config = convict({
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 5
+    default: 50
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 3
+    default: 25
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
@@ -636,12 +635,6 @@ const config = convict({
     format: 'nat',
     env: 'maxManualSyncMonitoringDurationInMs',
     default: 45000 // 45 sec (prod default)
-  },
-  syncRequestMaxUserFailureCountBeforeSkip: {
-    doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
-    format: 'nat',
-    env: 'syncRequestMaxUserFailureCountBeforeSkip',
-    default: 10
   },
   skippedCIDsRetryQueueJobIntervalMs: {
     doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',
@@ -738,6 +731,24 @@ const config = convict({
     format: Boolean,
     env: 'findCIDInNetworkEnabled',
     default: true
+  },
+  otelTracingEnabled: {
+    doc: 'enable OpenTelemetry tracing',
+    format: Boolean,
+    env: 'otelTracingEnabled',
+    default: true
+  },
+  otelCollectorUrl: {
+    doc: 'the url for the OpenTelemetry collector',
+    format: String,
+    env: 'otelCollectorUrl',
+    default: ''
+  },
+  reconfigSPIdBlacklistString: {
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config',
+    format: String,
+    env: 'reconfigSPIdBlacklistString',
+    default: ''
   }
   /**
    * unsupported options at the moment
@@ -790,6 +801,18 @@ if (fs.existsSync(pathTo('contract-config.json'))) {
     dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
+
+// Set reconfigSPIdBlacklist based off of reconfigSPIdBlacklistString
+config.set(
+  'reconfigSPIdBlacklist',
+  _.isEmpty(config.get('reconfigSPIdBlacklistString'))
+    ? []
+    : config
+        .get('reconfigSPIdBlacklistString')
+        .split(',')
+        .filter((e) => e)
+        .map((e) => parseInt(e))
+)
 
 // Perform validation and error any properties are not present on schema
 config.validate()

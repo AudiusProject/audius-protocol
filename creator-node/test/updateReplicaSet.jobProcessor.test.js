@@ -77,7 +77,7 @@ describe('test updateReplicaSet job processor', function () {
   }) {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
-      .returns(cNodeEndpointToSpIdMap)
+      .resolves(new Map(Object.entries(cNodeEndpointToSpIdMap)))
     const updateReplicaSetStub = sandbox.stub().resolves()
     const autoSelectCreatorNodesStub = sandbox
       .stub()
@@ -111,8 +111,8 @@ describe('test updateReplicaSet job processor', function () {
           MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: maxSelectNewReplicaSetAttempts,
           QUEUE_NAMES
         },
-        '../ContentNodeInfoManager': {
-          getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
+        '../../ContentNodeInfoManager': {
+          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
         }
       }
     )

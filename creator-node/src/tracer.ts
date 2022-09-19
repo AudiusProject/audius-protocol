@@ -4,6 +4,7 @@ import type {
   SpanOptions,
   AttributeValue,
   Tracer
+  // eslint-disable-next-line node/no-extraneous-import
 } from '@opentelemetry/api'
 
 import { trace, context, SpanStatusCode } from '@opentelemetry/api'
@@ -18,12 +19,17 @@ import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 import config from './config'
 
 const SERVICE_NAME = 'content-node'
 const SPID = config.get('spID')
 const ENDPOINT = config.get('creatorNodeEndpoint')
+
+const TRACING_ENABLED = config.get('otelTracingEnabled')
+const COLLECTOR_URL = config.get('otelCollectorUrl')
 
 /**
  * Initializes a tracer for content node as well as registers instrumentions
@@ -39,6 +45,12 @@ const ENDPOINT = config.get('creatorNodeEndpoint')
  * ```
  */
 export const setupTracing = () => {
+  // If tracing isn't enabled, we don't set up the trace provider
+  // or register any instrumentations. This won't cause any errors
+  // as methods like `span.startActiveTrace()` or `tracing.recordException()`
+  // will just silently do nothing.
+  if (!TRACING_ENABLED) return
+
   /**
    * A Tracer Provider is a factory for Tracers.
    * A Tracer Provider is initialized once and its lifecycle matches the application’s lifecycle.
@@ -77,6 +89,12 @@ export const setupTracing = () => {
         // Adds a hook to logs that injects more span info
         // and the service name into logs
         logHook: (span, record) => {
+          // @ts-ignore
+          record['resource.span.name'] = span.name
+          // @ts-ignore
+          record['resource.span.links'] = span.links
+          // @ts-ignore
+          record['resource.span.attributed'] = span.attributes
           record['resource.service.name'] =
             provider.resource.attributes['service.name']
           record['resource.service.spid'] = SPID
@@ -85,6 +103,11 @@ export const setupTracing = () => {
       })
     ]
   })
+
+  const exporter = new OTLPTraceExporter({
+    url: COLLECTOR_URL
+  })
+  provider.addSpanProcessor(new BatchSpanProcessor(exporter))
 
   // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
   provider.register()
@@ -95,8 +118,9 @@ export const setupTracing = () => {
  * This wrapper works for both sync and async functions
  *
  * @param {string?} param.name optional name to give to the span, defaults to the function name
+ * @param {Object?} param.context optional object context to get wrapped, useful when wrapping non-static methods to classes
  * @param {TFunction} param.fn the generic function to instrument
- * @param {SpanOptions} param.options objects to pass into the span
+ * @param {SpanOptions?} param.options objects to pass into the span
  * @returns the instrumented function
  * @throws rethrows any errors from the original fn
  *
@@ -110,13 +134,17 @@ export const setupTracing = () => {
  */
 export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
   name,
+  context,
   fn,
   options
 }: {
   name?: string
+  context?: Object
   fn: TFunction
   options?: SpanOptions
 }) => {
+  const objectContext = context || this
+
   // build a wrapper around `fn` that accepts the same parameters and returns the same return type
   const wrapper = function (
     ...args: Parameters<TFunction>
@@ -133,7 +161,7 @@ export const instrumentTracing = <TFunction extends (...args: any[]) => any>({
 
           // TODO add skip parameter to instrument testing function to NOT log certain args
           // tracing.setSpanAttribute('args', JSON.stringify(args))
-          const result = fn.apply(this, args)
+          const result = fn.apply(objectContext, args)
 
           // if `fn` is async, await the result
           if (result && result.then) {

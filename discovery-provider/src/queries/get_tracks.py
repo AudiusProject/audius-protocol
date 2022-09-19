@@ -8,7 +8,6 @@ from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_route import TrackRoute
 from src.models.tracks.track_with_aggregates import TrackWithAggregates
 from src.models.users.user import User
-from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     SortDirection,
     SortMethod,
@@ -46,6 +45,7 @@ class GetTrackArgs(TypedDict):
 
     query: Optional[str]
     filter_deleted: bool
+    exclude_premium: bool
     routes: List[RouteArgs]
 
     # Optional sort method for the returned results
@@ -112,6 +112,10 @@ def _get_tracks(session, args):
         if filter_deleted:
             base_query = base_query.filter(TrackWithAggregates.is_delete == False)
 
+    # Allow filtering of premium tracks
+    if args.get("exclude_premium", False):
+        base_query = base_query.filter(TrackWithAggregates.is_premium == False)
+
     if "min_block_number" in args and args.get("min_block_number") is not None:
         min_block_number = args.get("min_block_number")
         base_query = base_query.filter(
@@ -134,7 +138,9 @@ def _get_tracks(session, args):
         if sort_method == SortMethod.title:
             base_query = base_query.order_by(sort_fn(TrackWithAggregates.title))
         elif sort_method == SortMethod.artist_name:
-            base_query = base_query.order_by(sort_fn(TrackWithAggregates.user.name))
+            base_query = base_query.join(
+                TrackWithAggregates.user, aliased=True
+            ).order_by(sort_fn(TrackWithAggregates.user.name))
         elif sort_method == SortMethod.release_date:
             base_query = base_query.order_by(
                 sort_fn(
@@ -244,22 +250,6 @@ def get_tracks(args: GetTrackArgs):
                 # If none of the handles were found, return empty lists
                 if not args["routes"]:
                     return ([], [])
-
-            can_use_shared_cache = (
-                "id" in args
-                and "min_block_number" not in args
-                and "sort" not in args
-                and "sort_method" not in args
-                and "user_id" not in args
-            )
-
-            if can_use_shared_cache:
-                should_filter_deleted = args.get("filter_deleted", False)
-                tracks = get_unpopulated_tracks(
-                    session, args["id"], should_filter_deleted
-                )
-                track_ids = list(map(lambda track: track["track_id"], tracks))
-                return (tracks, track_ids)
 
             (limit, offset) = get_pagination_vars()
             args["limit"] = limit

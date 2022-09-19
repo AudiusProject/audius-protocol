@@ -1,3 +1,6 @@
+// eslint-disable-next-line node/no-extraneous-import
+import type { SpanContext } from '@opentelemetry/api'
+
 export type SyncRequestAxiosData = {
   wallet: string[]
   creator_node_endpoint?: string
@@ -45,6 +48,7 @@ export type IssueSyncRequestJobParams = {
   syncMode: string
   syncRequestParameters: SyncRequestAxiosParams
   attemptNumber?: number
+  parentSpanContext?: SpanContext
 }
 export type IssueSyncRequestJobReturnValue = {
   error: any
@@ -76,6 +80,7 @@ export type UpdateReplicaSetJobParamsWithoutEnabledReconfigModes =
   UpdateReplicaSetUser & {
     unhealthyReplicas: string[]
     replicaToUserInfoMap: ReplicaToUserInfoMap
+    parentSpanContext?: SpanContext
   }
 export type UpdateReplicaSetJobParams =
   UpdateReplicaSetJobParamsWithoutEnabledReconfigModes & {
@@ -90,6 +95,7 @@ export type UpdateReplicaSetJobReturnValue = {
 
 // Recover orphaned data job
 export type RecoverOrphanedDataJobParams = {
+  parentSpanContext?: SpanContext
   discoveryNodeEndpoint: string
 }
 export type RecoverOrphanedDataJobReturnValue = {

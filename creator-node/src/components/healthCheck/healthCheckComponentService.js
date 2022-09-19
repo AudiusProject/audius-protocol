@@ -3,7 +3,7 @@ const versionInfo = require(path.join(process.cwd(), '.version.json'))
 const { Keypair } = require('@solana/web3.js')
 
 const config = require('../../config')
-const utils = require('../../utils.js')
+const utils = require('../../utils')
 const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu

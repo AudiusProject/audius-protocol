@@ -21,6 +21,7 @@ import {
   getUsersWithNullPrimaryClock,
   getUsersWithEntireReplicaSetInSpidSetCount,
   getUserCount,
+  getRunStartTime,
 } from "./queries";
 
 export const generateMetrics = async (run_id: number) => {
@@ -29,6 +30,8 @@ export const generateMetrics = async (run_id: number) => {
   console.log(`[${run_id}] generating metrics`);
 
   const endTimer = generatingMetricsDurationGauge.startTimer();
+
+  const runStartTime = await getRunStartTime(run_id);
 
   const userCount = await getUserCount(run_id);
 
@@ -69,6 +72,7 @@ export const generateMetrics = async (run_id: number) => {
 
   if (userCount > 0) {
     await publishSlackReport({
+      runStartTime: runStartTime.toString(),
       fullySyncedUsersCount:
         ((fullySyncedUsersCount / userCount) * 100).toFixed(2) + "%",
       partiallySyncedUsersCount:

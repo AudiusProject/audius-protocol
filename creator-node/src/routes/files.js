@@ -66,7 +66,7 @@ const streamFromFileSystem = async (
   try {
     if (checkExistence) {
       // If file cannot be found on disk, throw error
-      if (!fs.existsSync(path)) {
+      if (!(await fs.pathExists(path))) {
         throw new Error(`File could not be found on disk, path=${path}`)
       }
     }
@@ -553,7 +553,9 @@ const getDirCID = async (req, res) => {
     // CID is the file CID, parse it from the storagePath
     const CID = storagePath.split('/').slice(-1).join('')
     const libs = req.app.get('audiusLibs')
-    await findCIDInNetwork(storagePath, CID, req.logger, libs)
+    const found = await findCIDInNetwork(storagePath, CID, req.logger, libs)
+    if (!found) throw new Error(`CID=${CID} not found in network`)
+
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
     req.logger.error(

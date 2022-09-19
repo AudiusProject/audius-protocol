@@ -1,5 +1,4 @@
 const express = require('express')
-const { Buffer } = require('buffer')
 const fs = require('fs')
 const { promisify } = require('util')
 
@@ -11,8 +10,10 @@ const {
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
-const validateMetadata = require('../utils/validateAudiusUserMetadata')
+const {
+  validateStateForImageDirCIDAndReturnFileUUID,
+  validateMetadata
+} = require('../utils')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,

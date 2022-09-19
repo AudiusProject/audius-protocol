@@ -10,7 +10,6 @@ const {
 } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 const { instrumentTracing, tracing } = require('../../tracer')
 const { fetchExportFromNode } = require('./syncUtil')
@@ -22,92 +21,82 @@ const handleSyncFromPrimary = async ({
   forceResyncConfig,
   forceWipe,
   logContext,
+  secondarySyncFromPrimaryLogger,
   blockNumber = null
 }) => {
   const { nodeConfig, redis, libs } = serviceRegistry
   const FileSaveMaxConcurrency = nodeConfig.get(
     'nodeSyncFileSaveMaxConcurrency'
   )
-  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get(
-    'syncRequestMaxUserFailureCountBeforeSkip'
-  )
   const thisContentNodeEndpoint = nodeConfig.get('creatorNodeEndpoint')
 
-  const start = Date.now()
-
-  const logger = createChildLogger(genericLogger, {
-    wallet,
-    sync: 'secondarySyncFromPrimary',
-    primary: creatorNodeEndpoint
-  })
-  logger.info('begin nodesync', 'time', start)
+  const logger = secondarySyncFromPrimaryLogger
 
   try {
-    await redis.WalletWriteLock.acquire(
+    try {
+      await redis.WalletWriteLock.acquire(
+        wallet,
+        redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
+      )
+    } catch (e) {
+      tracing.recordException(e)
+      return {
+        abort: `Cannot change state of wallet ${wallet}. Node sync currently in progress`,
+        result: 'abort_sync_in_progress'
+      }
+    }
+
+    // Ensure this node is syncing from the user's primary
+    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+      libs,
+      logger,
       wallet,
-      redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
-    )
-  } catch (e) {
-    tracing.recordException(e)
-    return {
-      error: new Error(
-        `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
-      ),
-      result: 'failure_sync_in_progress'
+      blockNumber: null,
+      ensurePrimary: false
+    })
+    if (userReplicaSet.primary !== creatorNodeEndpoint) {
+      return {
+        abort: `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`,
+        result: 'abort_current_node_is_not_user_primary'
+      }
     }
-  }
 
-  // Ensure this node is syncing from the user's primary
-  const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-    libs,
-    logger,
-    wallet,
-    blockNumber: null,
-    ensurePrimary: false
-  })
-  if (userReplicaSet.primary !== creatorNodeEndpoint) {
-    throw new Error(
-      `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`
+    /**
+     * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
+     */
+    const forceResync = await shouldForceResync(
+      { libs, logContext },
+      forceResyncConfig
     )
-  }
-
-  /**
-   * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
-   */
-  const forceResync = await shouldForceResync(
-    { libs, logContext },
-    forceResyncConfig
-  )
-  const forceResyncQueryParam = forceResyncConfig?.forceResync
-  if (forceResyncQueryParam && !forceResync) {
-    return {
-      error: new Error(
-        `Cannot issue sync for wallet ${wallet} due to shouldForceResync() rejection`
-      ),
-      result: 'failure_force_resync_check'
+    const forceResyncQueryParam = forceResyncConfig?.forceResync
+    if (forceResyncQueryParam && !forceResync) {
+      return {
+        error: new Error(
+          `Cannot issue sync for wallet ${wallet} due to shouldForceResync() rejection`
+        ),
+        result: 'failure_force_resync_check'
+      }
     }
-  }
 
-  let returnValue = {}
-  try {
     let localMaxClockVal
     if (forceResync || forceWipe) {
       logger.warn(`Forcing ${forceResync ? 'resync' : 'wipe'}..`)
 
       // Ensure we never wipe the data of a primary
       if (thisContentNodeEndpoint === userReplicaSet.primary) {
-        throw new Error(
-          `Tried to wipe data of a primary. User replica set: ${JSON.stringify(
+        return {
+          abort: `Tried to wipe data of a primary. User replica set: ${JSON.stringify(
             userReplicaSet
-          )}`
-        )
+          )}`,
+          result: 'abort_current_node_is_not_user_primary'
+        }
       }
 
       // Short circuit if wiping is disabled via env var
       if (!config.get('syncForceWipeEnabled')) {
-        logger.warn('Stopping sync early because syncForceWipeEnabled=false')
         return {
-          result: 'success'
+          abort: 'Stopping sync early because syncForceWipeEnabled=false',
+          result: 'abort_force_wipe_disabled'
         }
       }
 
@@ -127,16 +116,15 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
-        returnValue = {
+        return {
           error: deleteError,
           result: 'failure_delete_db_data'
         }
-        throw returnValue.error
       }
 
       if (forceWipe) {
         return {
-          result: 'success'
+          result: 'success_force_wipe'
         }
       }
     } else {
@@ -153,9 +141,10 @@ const handleSyncFromPrimary = async ({
       thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
       thisContentNodeEndpoint !== userReplicaSet.secondary2
     ) {
-      throw new Error(
-        `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`
-      )
+      return {
+        abort: `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`,
+        result: 'abort_current_node_is_not_user_secondary'
+      }
     }
 
     /**
@@ -164,19 +153,26 @@ const handleSyncFromPrimary = async ({
      * Secondary requests export of new data by passing its current max clock value in the request.
      * Primary builds an export object of all data beginning from the next clock value.
      */
-    const { fetchedCNodeUser, error } = await fetchExportFromNode({
+    const { fetchedCNodeUser, error, abort } = await fetchExportFromNode({
       nodeEndpointToFetchFrom: creatorNodeEndpoint,
       wallet,
       clockRangeMin: localMaxClockVal + 1,
       selfEndpoint: thisContentNodeEndpoint,
       logger
     })
-    if (!_.isEmpty(error)) {
-      returnValue = {
+
+    if (error) {
+      return {
         error: new Error(error.message),
         result: error.code
       }
-      throw returnValue.error
+    }
+
+    if (abort) {
+      return {
+        abort: abort.message,
+        result: abort.code
+      }
     }
 
     const {
@@ -215,8 +211,15 @@ const handleSyncFromPrimary = async ({
     } catch (e) {
       tracing.recordException(e)
       logger.error(
-        `Couldn't filter out own endpoint from user's replica set to use use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
       )
+
+      return {
+        error: new Error(
+          `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        ),
+        result: 'failure_fetching_user_gateway'
+      }
     }
 
     /**
@@ -230,36 +233,37 @@ const handleSyncFromPrimary = async ({
 
     // Error if returned data is not within requested range
     if (fetchedLatestClockVal < localMaxClockVal) {
-      returnValue = {
+      return {
         error: new Error(
           `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
         ),
         result: 'failure_inconsistent_clock'
       }
-      throw returnValue.error
-    } else if (
+    }
+
+    if (
       localMaxClockVal !== -1 &&
       fetchedClockRecords[0] &&
       fetchedClockRecords[0].clock !== localMaxClockVal + 1
     ) {
-      returnValue = {
+      return {
         error: new Error(
           `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
         ),
         result: 'failure_import_not_contiguous'
       }
-      throw returnValue.error
-    } else if (
+    }
+
+    if (
       !_.isEmpty(fetchedClockRecords) &&
       maxClockRecordId !== fetchedLatestClockVal
     ) {
-      returnValue = {
+      return {
         error: new Error(
           `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
         ),
         result: 'failure_import_not_consistent'
       }
-      throw returnValue.error
     }
 
     // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
@@ -270,7 +274,7 @@ const handleSyncFromPrimary = async ({
      */
     try {
       logger.info(
-        `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`
+        `Beginning db updates for cnodeUser wallet ${fetchedWalletPublicKey}`
       )
 
       /**
@@ -319,14 +323,14 @@ const handleSyncFromPrimary = async ({
 
         // Error if update failed
         if (numRowsUpdated !== 1 || respObj.length !== 1) {
-          returnValue = {
+          return {
             error: new Error(
               `Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`
             ),
             result: 'failure_db_transaction'
           }
-          throw returnValue.error
         }
+
         cnodeUser = respObj[0]
       } else {
         logger.info(
@@ -464,45 +468,6 @@ const handleSyncFromPrimary = async ({
       logger.info('Saved all non-track files to disk.')
 
       /**
-       * Handle scenario where failed to retrieve/save > 0 CIDs
-       * Reject sync if number of failures for user is below threshold, else proceed and mark unretrieved files as skipped
-       */
-      const numCIDsThatFailedSaveFileOp = CIDsThatFailedSaveFileOp.size
-      if (numCIDsThatFailedSaveFileOp > 0) {
-        const userSyncFailureCount =
-          await UserSyncFailureCountService.incrementFailureCount(
-            fetchedWalletPublicKey
-          )
-
-        // Throw error if failure threshold not yet reached
-        if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
-          const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
-          logger.error(errorMsg)
-          returnValue = {
-            error: new Error(errorMsg),
-            result: 'failure_skip_threshold_not_reached'
-          }
-          throw returnValue.error
-
-          // If max failure threshold reached, continue with sync and reset failure count
-        } else {
-          // Reset falure count so subsequent user syncs will not always succeed & skip
-          await UserSyncFailureCountService.resetFailureCount(
-            fetchedWalletPublicKey
-          )
-
-          logger.info(
-            `User Sync continuing with ${numCIDsThatFailedSaveFileOp} skipped files, since SyncRequestMaxUserFailureCountBeforeSkip (${SyncRequestMaxUserFailureCountBeforeSkip}) reached.`
-          )
-        }
-      } else {
-        // Reset failure count if all files were successfully saved
-        await UserSyncFailureCountService.resetFailureCount(
-          fetchedWalletPublicKey
-        )
-      }
-
-      /**
        * Write all records to DB
        */
 
@@ -565,17 +530,13 @@ const handleSyncFromPrimary = async ({
       await transaction.commit()
 
       logger.info(
-        `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${numCIDsThatFailedSaveFileOp} skipped.`
+        `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
       // track that sync for this user was successful
       await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
 
-      logger.info(
-        `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
-          Date.now() - start
-        }. From endpoint ${creatorNodeEndpoint}.`
-      )
+      // for final log check the _secondarySyncFromPrimary function
 
       return { result: 'success' }
     } catch (e) {
@@ -584,9 +545,9 @@ const handleSyncFromPrimary = async ({
         e
       )
 
-      await transaction.rollback()
-
       try {
+        await transaction.rollback()
+
         const numRowsUpdated = await DBManager.fixInconsistentUser(
           fetchedCNodeUser.cnodeUserUUID
         )
@@ -595,34 +556,25 @@ const handleSyncFromPrimary = async ({
         )
       } catch (e) {
         logger.error(
-          `fixInconsistentUser() error for ${fetchedCNodeUser.cnodeUserUUID} - ${e.message}`
+          `rollback or fixInconsistentUser() error for ${fetchedCNodeUser.cnodeUserUUID} - ${e.message}`
         )
       }
 
-      return _.isEmpty(returnValue)
-        ? {
-            error: new Error(e),
-            result: 'failure_db_transaction'
-          }
-        : returnValue
+      return {
+        error: e,
+        result: 'failure_db_transaction'
+      }
     }
   } catch (e) {
     tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
-    logger.error(
-      `Sync complete for wallet: ${wallet}. Status: Error, message: ${
-        e.message
-      }. Duration sync: ${
-        Date.now() - start
-      }. From endpoint ${creatorNodeEndpoint}.`
-    )
 
-    return _.isEmpty(returnValue)
-      ? {
-          error: new Error(e),
-          result: 'failure_sync_secondary_from_primary'
-        }
-      : returnValue
+    // for final log check the _secondarySyncFromPrimary function
+
+    return {
+      error: e,
+      result: 'failure_sync_secondary_from_primary'
+    }
   } finally {
     try {
       await redis.WalletWriteLock.release(wallet)
@@ -669,21 +621,53 @@ async function _secondarySyncFromPrimary({
   if (forceResyncConfig?.forceResync) mode = 'force_resync'
   if (forceWipe) mode = 'force_wipe'
 
-  const { error, result } = await handleSyncFromPrimary({
+  const start = Date.now()
+
+  const secondarySyncFromPrimaryLogger = createChildLogger(genericLogger, {
+    wallet,
+    sync: 'secondarySyncFromPrimary',
+    primary: creatorNodeEndpoint
+  })
+
+  secondarySyncFromPrimaryLogger.info('begin nodesync', 'time', start)
+
+  const { error, result, abort } = await handleSyncFromPrimary({
     serviceRegistry,
     wallet,
     creatorNodeEndpoint,
     blockNumber,
     forceResyncConfig,
     forceWipe,
-    logContext
+    logContext,
+    secondarySyncFromPrimaryLogger
   })
   metricEndTimerFn({ result, mode })
   tracing.setSpanAttribute('result', result)
   tracing.setSpanAttribute('mode', mode)
 
   if (error) {
-    throw new Error(error)
+    secondarySyncFromPrimaryLogger.error(
+      `Sync complete for wallet: ${wallet}. Status: Error, message: ${
+        error.message
+      }. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
+    )
+    throw error
+  }
+
+  if (abort) {
+    secondarySyncFromPrimaryLogger.warn(
+      `Sync complete for wallet: ${wallet}. Status: Abort. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
+    )
+  } else {
+    secondarySyncFromPrimaryLogger.info(
+      `Sync complete for wallet: ${wallet}. Status: Success. Duration sync: ${
+        Date.now() - start
+      }. From endpoint ${creatorNodeEndpoint}. Prometheus result: ${result}`
+    )
   }
 
   return { result }

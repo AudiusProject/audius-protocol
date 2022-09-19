@@ -26,7 +26,15 @@ type FetchExportOutput = {
   fetchedCNodeUser?: any
   error?: {
     message: string
-    code: 'failure_export_wallet' | 'failure_malformed_export'
+    code: 'failure_export_wallet'
+  }
+  abort?: {
+    message: string
+    code:
+      | 'abort_user_does_not_exist_on_node'
+      | 'abort_multiple_users_returned_from_export'
+      | 'abort_missing_user_export_key_fields'
+      | 'abort_mismatched_export_wallet'
   }
 }
 
@@ -80,18 +88,18 @@ async function fetchExportFromNode({
   const { data: body } = exportResp
   if (!_.has(body, 'data.cnodeUsers') || _.isEmpty(body.data.cnodeUsers)) {
     return {
-      error: {
+      abort: {
         message: '"cnodeUsers" array is empty or missing from response body',
-        code: 'failure_malformed_export'
+        code: 'abort_user_does_not_exist_on_node'
       }
     }
   }
   const { cnodeUsers } = body.data
   if (Object.keys(cnodeUsers).length > 1) {
     return {
-      error: {
+      abort: {
         message: 'Multiple cnodeUsers returned from export',
-        code: 'failure_malformed_export'
+        code: 'abort_multiple_users_returned_from_export'
       }
     }
   }
@@ -105,10 +113,10 @@ async function fetchExportFromNode({
     !_.has(fetchedCNodeUser, ['clockInfo', 'requestedClockRangeMax'])
   ) {
     return {
-      error: {
+      abort: {
         message:
           'Required properties not found on CNodeUser in response object',
-        code: 'failure_malformed_export'
+        code: 'abort_missing_user_export_key_fields'
       }
     }
   }
@@ -116,14 +124,15 @@ async function fetchExportFromNode({
   // Validate wallet from cnodeUsers array matches the wallet we requested in the /export request
   if (wallet !== fetchedCNodeUser.walletPublicKey) {
     return {
-      error: {
+      abort: {
         message: `Returned data for walletPublicKey that was not requested: ${fetchedCNodeUser.walletPublicKey}`,
-        code: 'failure_malformed_export'
+        code: 'abort_mismatched_export_wallet'
       }
     }
   }
 
   logger.info('Export successful')
+
   return {
     fetchedCNodeUser
   }

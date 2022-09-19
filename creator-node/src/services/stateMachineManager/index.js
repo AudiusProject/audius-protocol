@@ -12,7 +12,7 @@ const {
   FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
 } = require('./stateMachineConstants')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
-const ContentNodeInfoManager = require('./ContentNodeInfoManager')
+const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -24,10 +24,8 @@ class StateMachineManager {
 
     await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
 
-    // Initialize class immediately since bull jobs are run on cadence even on deploy
-    await ContentNodeInfoManager.updateContentNodeChainInfo(
-      audiusLibs.ethContracts
-    )
+    // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
+    await updateContentNodeChainInfo(baseLogger, redis, audiusLibs.ethContracts)
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
@@ -53,15 +51,36 @@ class StateMachineManager {
 
     // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
     const queueNameToQueueMap = {
-      [QUEUE_NAMES.MONITOR_STATE]: monitorStateQueue,
-      [QUEUE_NAMES.FIND_SYNC_REQUESTS]: findSyncRequestsQueue,
-      [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: findReplicaSetUpdatesQueue,
-      [QUEUE_NAMES.MANUAL_SYNC]: manualSyncQueue,
-      [QUEUE_NAMES.RECURRING_SYNC]: recurringSyncQueue,
-      [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetQueue,
-      [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: recoverOrphanedDataQueue
+      [QUEUE_NAMES.MONITOR_STATE]: {
+        queue: monitorStateQueue,
+        maxWaitingJobs: 10
+      },
+      [QUEUE_NAMES.FIND_SYNC_REQUESTS]: {
+        queue: findSyncRequestsQueue,
+        maxWaitingJobs: 10
+      },
+      [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: {
+        queue: findReplicaSetUpdatesQueue,
+        maxWaitingJobs: 10
+      },
+      [QUEUE_NAMES.MANUAL_SYNC]: {
+        queue: manualSyncQueue,
+        maxWaitingJobs: 1000
+      },
+      [QUEUE_NAMES.RECURRING_SYNC]: {
+        queue: recurringSyncQueue,
+        maxWaitingJobs: 100000
+      },
+      [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
+        queue: updateReplicaSetQueue,
+        maxWaitingJobs: 10000
+      },
+      [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
+        queue: recoverOrphanedDataQueue,
+        maxWaitingJobs: 10
+      }
     }
-    for (const [queueName, queue] of Object.entries(queueNameToQueueMap)) {
+    for (const [queueName, { queue }] of Object.entries(queueNameToQueueMap)) {
       queue.on(
         'global:completed',
         makeOnCompleteCallback(

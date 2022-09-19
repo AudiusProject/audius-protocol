@@ -45,18 +45,24 @@ def test_reaction_notification(app):
             0
         ].group_id == "reaction:reaction_to:react_0:reaction_type:type:reaction_value:1:timestamp:" + now.strftime(
             "%Y-%m-%d %H:%M:%S.%f"
+        ).rstrip(
+            "0"
         )
         assert notifications[1].specifier == "2"
         assert notifications[
             1
         ].group_id == "reaction:reaction_to:react_1:reaction_type:type:reaction_value:1:timestamp:" + now.strftime(
             "%Y-%m-%d %H:%M:%S.%f"
+        ).rstrip(
+            "0"
         )
         assert notifications[2].specifier == "3"
         assert notifications[
             2
         ].group_id == "reaction:reaction_to:react_2:reaction_type:type:reaction_value:1:timestamp:" + now.strftime(
             "%Y-%m-%d %H:%M:%S.%f"
+        ).rstrip(
+            "0"
         )
         assert notifications[0].notification_group_id == None
         assert notifications[0].type == "reaction"
