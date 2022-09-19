@@ -18,7 +18,8 @@ export enum FeatureFlags {
   PLAYLIST_ENTITY_MANAGER_ENABLED = 'playlist_entity_manager_enabled',
   SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED = 'social_feature_entity_manager_enabled',
   NEW_TABLES = 'new_tables',
-  BUY_AUDIO_ENABLED = 'buy_audio_enabled'
+  BUY_AUDIO_ENABLED = 'buy_audio_enabled',
+  OFFLINE_MODE_ENABLED = 'offline_mode_enabled'
 }
 
 /**
@@ -43,5 +44,6 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED]: false,
   [FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED]: false,
   [FeatureFlags.NEW_TABLES]: false,
-  [FeatureFlags.BUY_AUDIO_ENABLED]: false
+  [FeatureFlags.BUY_AUDIO_ENABLED]: false,
+  [FeatureFlags.OFFLINE_MODE_ENABLED]: false
 }
