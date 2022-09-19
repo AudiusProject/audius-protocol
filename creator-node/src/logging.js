@@ -27,6 +27,7 @@ function RawStdOutWithLevelName() {
 
 function tracerMixin(klass) {
   const origFunc = klass.prototype.createLogger
+  const childProto = klass.prototype.child
   klass.prototype.createLogger = function () {
     const theLogger = origFunc.apply(this, arguments)
     const logDebug = klass.prototype.debug
@@ -51,6 +52,31 @@ function tracerMixin(klass) {
     }
 
     return theLogger
+  }
+  klass.prototype.child = function (options) {
+    const childLogger = childProto.apply(this, options)
+    const logDebug = bunyan.prototype.debug
+    const logInfo = bunyan.prototype.info
+    const logWarn = bunyan.prototype.warn
+    const logError = bunyan.prototype.error
+    childLogger.debug = function () {
+      tracing.debug(...arguments)
+      logDebug.apply(childLogger, arguments)
+    }
+    childLogger.info = function () {
+      tracing.info(...arguments)
+      logInfo.apply(childLogger, arguments)
+    }
+    childLogger.warn = function () {
+      tracing.warn(...arguments)
+      logWarn.apply(childLogger, arguments)
+    }
+    childLogger.error = function () {
+      tracing.error(...arguments)
+      logError.apply(childLogger, arguments)
+    }
+
+    return childLogger
   }
 }
 
@@ -134,29 +160,7 @@ function loggingMiddleware(req, res, next) {
  * @returns {Object} child logger instance with defined options
  */
 function createChildLogger(logger, options = {}) {
-  const childLogger = logger.child(options)
-  const logDebug = bunyan.prototype.debug
-  const logInfo = bunyan.prototype.info
-  const logWarn = bunyan.prototype.warn
-  const logError = bunyan.prototype.error
-  childLogger.debug = function () {
-    tracing.debug(...arguments)
-    logDebug.apply(childLogger, arguments)
-  }
-  childLogger.info = function () {
-    tracing.info(...arguments)
-    logInfo.apply(childLogger, arguments)
-  }
-  childLogger.warn = function () {
-    tracing.warn(...arguments)
-    logWarn.apply(childLogger, arguments)
-  }
-  childLogger.error = function () {
-    tracing.error(...arguments)
-    logError.apply(childLogger, arguments)
-  }
-
-  return childLogger
+  return logger.child(options)
 }
 
 /**
