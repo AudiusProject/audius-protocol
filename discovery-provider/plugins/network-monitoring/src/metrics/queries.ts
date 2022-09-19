@@ -42,7 +42,7 @@ export const getRunStartTime = async (run_id: number): Promise<Date> => {
         replacements: { run_id }
     })
 
-    const runStartTimeStr = runStartTimeResp[0] as string
+    const runStartTimeStr = (runStartTimeResp[0] as { created_at: string }).created_at as string
     const runStartTime = new Date(runStartTimeStr)
 
     return runStartTime
