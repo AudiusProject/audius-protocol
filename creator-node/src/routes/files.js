@@ -41,7 +41,6 @@ const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
 const { promisify } = require('util')
-const { fetchSegment } = require('components/tracks/TrackTranscodeHandoffManager')
 
 const fsStat = promisify(fs.stat)
 
