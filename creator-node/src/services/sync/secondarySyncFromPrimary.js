@@ -32,6 +32,7 @@ const handleSyncFromPrimary = async ({
 
   const logger = secondarySyncFromPrimaryLogger
 
+  let errorResponse, error
   try {
     try {
       await redis.WalletWriteLock.acquire(
@@ -57,10 +58,13 @@ const handleSyncFromPrimary = async ({
         ensurePrimary: false
       })
     } catch (e) {
-      return {
-        error: new Error(`Error fetching user replica set: ${e.message}`),
+      error = new Error(`Error fetching user replica set: ${e.message}`)
+      errorResponse = {
+        error,
         result: 'failure_fetching_user_replica_set'
       }
+
+      throw error
     }
 
     if (userReplicaSet.primary !== creatorNodeEndpoint) {
@@ -79,12 +83,15 @@ const handleSyncFromPrimary = async ({
     )
     const forceResyncQueryParam = forceResyncConfig?.forceResync
     if (forceResyncQueryParam && !forceResync) {
-      return {
-        error: new Error(
-          `Cannot issue sync for wallet ${wallet} due to shouldForceResync() rejection`
-        ),
+      error = new Error(
+        `Cannot issue sync for wallet ${wallet} due to shouldForceResync() rejection`
+      )
+      errorResponse = {
+        error,
         result: 'failure_force_resync_check'
       }
+
+      throw error
     }
 
     let localMaxClockVal
@@ -125,10 +132,13 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
-        return {
-          error: deleteError,
+        error = deleteError
+        errorResponse = {
+          error,
           result: 'failure_delete_db_data'
         }
+
+        throw error
       }
 
       if (forceWipe) {
@@ -162,7 +172,11 @@ const handleSyncFromPrimary = async ({
      * Secondary requests export of new data by passing its current max clock value in the request.
      * Primary builds an export object of all data beginning from the next clock value.
      */
-    const { fetchedCNodeUser, error, abort } = await fetchExportFromNode({
+    const {
+      fetchedCNodeUser,
+      error: fetchExportFromNodeErrorMessage,
+      abort
+    } = await fetchExportFromNode({
       nodeEndpointToFetchFrom: creatorNodeEndpoint,
       wallet,
       clockRangeMin: localMaxClockVal + 1,
@@ -170,11 +184,14 @@ const handleSyncFromPrimary = async ({
       logger
     })
 
-    if (error) {
-      return {
-        error: new Error(error.message),
+    if (fetchExportFromNodeErrorMessage) {
+      error = new Error(fetchExportFromNodeErrorMessage)
+      errorResponse = {
+        error,
         result: error.code
       }
+
+      throw error
     }
 
     if (abort) {
@@ -223,12 +240,15 @@ const handleSyncFromPrimary = async ({
         `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
       )
 
-      return {
-        error: new Error(
-          `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
-        ),
+      error = new Error(
+        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+      )
+      errorResponse = {
+        error,
         result: 'failure_fetching_user_gateway'
       }
+
+      throw error
     }
 
     /**
@@ -242,12 +262,16 @@ const handleSyncFromPrimary = async ({
 
     // Error if returned data is not within requested range
     if (fetchedLatestClockVal < localMaxClockVal) {
-      return {
-        error: new Error(
-          `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
-        ),
+      error = new Error(
+        `Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`
+      )
+
+      errorResponse = {
+        error,
         result: 'failure_inconsistent_clock'
       }
+
+      throw error
     }
 
     if (
@@ -255,24 +279,30 @@ const handleSyncFromPrimary = async ({
       fetchedClockRecords[0] &&
       fetchedClockRecords[0].clock !== localMaxClockVal + 1
     ) {
-      return {
-        error: new Error(
-          `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
-        ),
+      error = new Error(
+        `Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`
+      )
+      errorResponse = {
+        error,
         result: 'failure_import_not_contiguous'
       }
+
+      throw error
     }
 
     if (
       !_.isEmpty(fetchedClockRecords) &&
       maxClockRecordId !== fetchedLatestClockVal
     ) {
-      return {
-        error: new Error(
-          `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
-        ),
+      error = new Error(
+        `Cannot sync - imported data is not consistent. Imported max clock val = ${fetchedLatestClockVal} and imported max ClockRecord val ${maxClockRecordId}`
+      )
+      errorResponse = {
+        error,
         result: 'failure_import_not_consistent'
       }
+
+      throw error
     }
 
     // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
@@ -332,12 +362,15 @@ const handleSyncFromPrimary = async ({
 
         // Error if update failed
         if (numRowsUpdated !== 1 || respObj.length !== 1) {
-          return {
-            error: new Error(
-              `Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`
-            ),
+          error = new Error(
+            `Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`
+          )
+          errorResponse = {
+            error,
             result: 'failure_db_transaction'
           }
+
+          throw error
         }
 
         cnodeUser = respObj[0]
@@ -569,10 +602,13 @@ const handleSyncFromPrimary = async ({
         )
       }
 
-      return {
-        error: e,
+      error = e
+      errorResponse = {
+        error,
         result: 'failure_db_transaction'
       }
+
+      throw e
     }
   } catch (e) {
     tracing.recordException(e)
@@ -580,6 +616,11 @@ const handleSyncFromPrimary = async ({
 
     // for final log check the _secondarySyncFromPrimary function
 
+    if (errorResponse) {
+      return errorResponse
+    }
+
+    // If unexpected errors occur, default to general failure response
     return {
       error: e,
       result: 'failure_sync_secondary_from_primary'
