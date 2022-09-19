@@ -4,6 +4,8 @@ import type { Nullable } from '@audius/common'
 import * as Sentry from '@sentry/react-native'
 
 import { ToastContext } from './components/toast/ToastContext'
+import { make, track } from './services/analytics'
+import { EventNames } from './types/analytics'
 
 const ErrorToast = ({ error }: { error: Nullable<string> }) => {
   // Do nothing other than trigger a toast when error changes
@@ -29,6 +31,12 @@ class ErrorBoundary extends PureComponent {
       scope.setExtras(errorInfo)
       Sentry.captureException(error)
     })
+    track(
+      make({
+        eventName: EventNames.APP_ERROR,
+        message: error?.message
+      })
+    )
   }
 
   render() {
