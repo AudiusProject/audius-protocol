@@ -15,7 +15,10 @@ import type {
 import { makeHistogramToRecord } from '../stateMachineUtils'
 import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
 import { stringifyMap } from '../../../utils'
-import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
+import {
+  getMapOfCNodeEndpointToSpId,
+  getMapOfSpIdToChainInfo
+} from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
 
 const _ = require('lodash')
@@ -35,6 +38,8 @@ const initAudiusLibs = require('../../initAudiusLibs')
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
   : null
+
+const RECONFIG_SP_IDS_BLACKLIST: number[] = config.get('reconfigSPIdBlacklist')
 
 /**
  * Updates replica sets of a user who has one or more unhealthy nodes as their primary or secondaries.
@@ -124,12 +129,24 @@ const updateReplicaSetJobProcessor = async function ({
     }
 
     try {
+      const spInfoMap = await getMapOfSpIdToChainInfo(logger)
+
+      const reconfigNodeBlacklist = new Set()
+      RECONFIG_SP_IDS_BLACKLIST.forEach((spId) => {
+        const info = spInfoMap.get(spId)
+        if (info?.endpoint) {
+          reconfigNodeBlacklist.add(info.endpoint)
+        }
+      })
+
       const { services: healthyServicesMap } =
         await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
           performSyncCheck: false,
           whitelist: reconfigNodeWhitelist,
+          blacklist: reconfigNodeBlacklist,
           log: true
         })
+
       healthyNodes = Object.keys(healthyServicesMap || {})
       if (healthyNodes.length === 0) {
         throw new Error(
