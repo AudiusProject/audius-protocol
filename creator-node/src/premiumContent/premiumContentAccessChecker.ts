@@ -15,6 +15,12 @@ export interface AccessChecker {
 }
 
 export class PremiumContentAccessChecker implements AccessChecker {
+  /**
+   * Checks that all premium content headers are passed in.
+   * Checks that discovery node that generated signature is registered.
+   * Checks that signature is not too old.
+   * Checks that user requesting the content has access.
+   */
   async checkPremiumContentAccess({
     cid,
     premiumContentHeaders,

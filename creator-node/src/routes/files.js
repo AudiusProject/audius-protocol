@@ -120,12 +120,9 @@ const streamFromFileSystem = async (
       )
     }
 
-    // If content is NOT premium, set the CID cache-control so that client caches the response for 30 days.
-    // Otherwise, set cache-control to no-cache.
+    // If content is premium, set cache-control to no-cache.
+    // Otherwise, set the CID cache-control so that client caches the response for 30 days.
     if (req.premiumContent && req.premiumContent.isPremium) {
-      req.logger.info(
-        'Setting the no-cache cache-control response header for premium content.'
-      )
       res.setHeader('cache-control', 'no-cache')
     } else {
       res.setHeader('cache-control', 'public, max-age=2592000, immutable')
@@ -170,14 +167,6 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
  * 5. If not avail in CN network, respond with 400 server error
  */
 const getCID = async (req, res) => {
-  if (!(req.params && req.params.CID)) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(`Invalid request, no CID provided`)
-    )
-  }
-
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
