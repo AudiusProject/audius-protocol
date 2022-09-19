@@ -18,23 +18,6 @@
   text-transform: uppercase;
 }
 
-.customAmountInput {
-  padding: 16px;
-  color: var(--neutral);
-  background-color: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
-  font-size: var(--font-xl);
-  font-weight: var(--font-medium);
-}
-
-.customAmountLabel {
-  bottom: 17px;
-  right: 16px;
-  color: var(--neutral);
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
-}
-
 .amountPreviewContainer {
   display: flex;
   flex-direction: column;

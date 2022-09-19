@@ -15,7 +15,11 @@ import {
   getTierAndNumberForBalance,
   useGetFirstOrTopSupporter
 } from '@audius/common'
-import { Format, IconTrophy, TokenValueInput } from '@audius/stems'
+import {
+  IconTrophy,
+  TokenAmountInput,
+  TokenAmountInputChangeHandler
+} from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -43,7 +47,10 @@ const messages = {
   tooltip: '$AUDIO held in linked wallets cannot be used for tipping',
   becomeTopSupporterPrefix: 'Tip ',
   becomeTopSupporterSuffix: ' $AUDIO To Become Their Top Supporter',
-  becomeFirstSupporter: 'Tip To Become Their First Supporter'
+  becomeFirstSupporter: 'Tip To Become Their First Supporter',
+  inputLabel: 'Amount of audio to tip',
+  inputPlaceholder: 'Enter an amount',
+  inputTokenLabel: '$AUDIO'
 }
 
 export const SendTip = () => {
@@ -95,8 +102,8 @@ export const SendTip = () => {
     setIsDisabled(hasInsufficientBalance || tipAmountWei.lte(zeroWei))
   }, [hasInsufficientBalance, tipAmountWei])
 
-  const handleTipAmountChange = useCallback(
-    (value: string) => {
+  const handleTipAmountChange = useCallback<TokenAmountInputChangeHandler>(
+    (value) => {
       setTipAmount(value as StringAudio)
     },
     [setTipAmount]
@@ -165,15 +172,11 @@ export const SendTip = () => {
         ? renderBecomeTopSupporter()
         : null}
       <div className={styles.amountToSend}>
-        <TokenValueInput
-          className={styles.inputContainer}
-          rightLabelClassName={styles.rightLabel}
-          inputClassName={styles.input}
-          format={Format.INPUT}
-          placeholder={'Enter an amount'}
-          rightLabel={'$AUDIO'}
+        <TokenAmountInput
+          aria-label={messages.inputLabel}
+          placeholder={messages.inputPlaceholder}
+          tokenLabel={messages.inputTokenLabel}
           value={tipAmount}
-          isNumeric={true}
           isWhole={true}
           onChange={handleTipAmountChange}
         />
