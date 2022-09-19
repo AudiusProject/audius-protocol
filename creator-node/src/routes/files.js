@@ -66,7 +66,9 @@ const streamFromFileSystem = async (
   try {
     if (checkExistence) {
       // If file cannot be found on disk, throw error
-      if (!(await fs.promises.access(path))) {
+      try {
+        await fs.promises.access(path)
+      } catch (e) {
         throw new Error(`File could not be found on disk, path=${path}`)
       }
     }
