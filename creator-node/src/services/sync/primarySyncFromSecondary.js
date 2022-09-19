@@ -26,7 +26,7 @@ const {
 } = FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
 
 /**
- * Export data for user from secondary or orpahned nodes and save locally, until complete
+ * Export data for user from secondary or orphaned nodes and save locally, until complete
  * Should never error, instead return errorObj, else null
  */
 async function _primarySyncFromSecondary({
@@ -278,8 +278,9 @@ async function _primarySyncFromSecondary({
       return result
     }
 
+    // If no error was caught above, then return generic error
     return {
-      error: `Error - Primary sync froma secondary failed: ${e.message}`,
+      error: `Error - Primary sync from secondary failed: ${e.message}`,
       result: 'failure_primary_sync_from_secondary'
     }
   } finally {
