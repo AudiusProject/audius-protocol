@@ -2,7 +2,8 @@ import type { AllTrackingEvents as CommonTrackingEvents } from '@audius/common'
 import { Name as CommonEventNames } from '@audius/common'
 
 enum MobileEventNames {
-  NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification'
+  NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification',
+  APP_ERROR = 'App Unexpected Error'
 }
 
 export const EventNames = { ...CommonEventNames, ...MobileEventNames }
@@ -13,7 +14,12 @@ type NotificationsOpenPushNotification = {
   body?: string
 }
 
-type MobileTrackingEvents = NotificationsOpenPushNotification
+type AppError = {
+  eventName: MobileEventNames.APP_ERROR
+  message?: string
+}
+
+type MobileTrackingEvents = NotificationsOpenPushNotification | AppError
 
 export type AllEvents = CommonTrackingEvents | MobileTrackingEvents
 
