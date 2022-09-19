@@ -47,19 +47,19 @@ async function _primarySyncFromSecondary({
   })
   decisionTree.recordStage({ name: 'Begin', log: true })
 
-  let result
+  let errorResult
   try {
     const selfEndpoint = config.get('creatorNodeEndpoint')
 
     if (!selfEndpoint) {
       decisionTree.recordStage({ name: 'selfEndpoint missing', log: false })
 
-      result = {
+      errorResult = {
         error: 'Content node endpoint not set on node',
         result: 'failure_content_node_endpoint_not_initialized'
       }
 
-      throw new Error(result.error)
+      throw new Error(errorResult.error)
     }
 
     let libs
@@ -74,12 +74,12 @@ async function _primarySyncFromSecondary({
         data: { errorMsg: e.message }
       })
 
-      result = {
+      errorResult = {
         error: `Could not initialize audiusLibs: ${e.message}`,
         result: 'failure_audius_libs_not_initialized'
       }
 
-      throw new Error(result.error)
+      throw new Error(errorResult.error)
     }
 
     await WalletWriteLock.acquire(
@@ -98,10 +98,13 @@ async function _primarySyncFromSecondary({
         ensurePrimary: false
       })
     } catch (e) {
-      return {
-        error: new Error(`Error fetching user replica set: ${e.message}`),
+      error = `Error fetching user replica set: ${e.message}`
+      errorResult = {
+        error,
         result: 'failure_fetching_user_replica_set'
       }
+
+      throw new Error(error)
     }
 
     decisionTree.recordStage({
@@ -153,12 +156,12 @@ async function _primarySyncFromSecondary({
           data: { error: error.message }
         })
 
-        result = {
+        errorResult = {
           error: error.message,
           result: error.code
         }
 
-        throw new Error(result.error)
+        throw new Error(errorResult.error)
       }
 
       if (abort) {
@@ -216,12 +219,12 @@ async function _primarySyncFromSecondary({
           data: { errorMsg: e.message }
         })
 
-        result = {
+        errorResult = {
           error: `Error - Failed to save files to disk: ${e.message}`,
           result: 'failure_save_files_to_disk'
         }
 
-        throw new Error(result.error)
+        throw new Error(errorResult.error)
       }
 
       // Save all entries from export to DB
@@ -242,12 +245,12 @@ async function _primarySyncFromSecondary({
           data: { errorMsg: e.message }
         })
 
-        result = {
+        errorResult = {
           error: `Error - Failed to save entries to DB: ${e.message}`,
           result: 'failure_save_entries_to_db'
         }
 
-        throw new Error(result.error)
+        throw new Error(errorResult.error)
       }
 
       /**
@@ -286,8 +289,8 @@ async function _primarySyncFromSecondary({
     tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
 
-    if (result) {
-      return result
+    if (errorResult) {
+      return errorResult
     }
 
     // If no error was caught above, then return generic error
