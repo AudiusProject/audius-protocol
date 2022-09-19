@@ -26,6 +26,10 @@ commands:
         description: Markdown formatted Slack message
         type: string
         default: "Job started. :crossed_fingers:"
+      detail:
+        description: Markdown formatted Slack detail
+        type: string
+        default: ""
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
@@ -51,6 +55,10 @@ commands:
                     {
                       "type": "mrkdwn",
                       "text": "*Job*: ${CIRCLE_JOB}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "<< parameters.detail >> "
                     }
                   ]
                 },
@@ -109,6 +117,10 @@ commands:
         description: Markdown formatted Slack message
         type: string
         default: "Job Failed. :red_circle:"
+      detail:
+        description: Markdown formatted Slack detail
+        type: string
+        default: ""
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
@@ -119,6 +131,7 @@ commands:
           branch_pattern: << parameters.branch_pattern >>
           channel: << parameters.channel >>
           text: << parameters.text >>
+          detail: << parameters.detail >>
           slack_mentions_user: << parameters.slack_mentions_user >>
   slack-success:
     parameters:
@@ -138,6 +151,10 @@ commands:
         description: Markdown formatted Slack message
         type: string
         default: "Deployment Successful! :tada:"
+      detail:
+        description: Markdown formatted Slack detail
+        type: string
+        default: ""
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
@@ -148,6 +165,7 @@ commands:
           branch_pattern: << parameters.branch_pattern >>
           channel: << parameters.channel >>
           text: << parameters.text >>
+          detail: << parameters.detail >>
           slack_mentions_user: << parameters.slack_mentions_user >>
 
   diff-if-necessary:
@@ -259,6 +277,15 @@ parameters:
     default: false
 
 jobs:
+  noop:
+    docker:
+      - image: alpine
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - run: echo
+
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -954,57 +981,426 @@ jobs:
             docker push audius/<< parameters.repo >>:$IMAGE_TAG
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
+  deploy:
+    # use a machine since you can't use OpenVPN from within a container
+    machine:
+      image: ubuntu-2004:202201-02
+    parameters:
+      git_tag:
+        description: Git_tag to deploy. Latest commit on `master` otherwise.
+        type: string
+        default: ""
+      environment:
+        description: Target environment
+        type: enum
+        enum: [staging, prod]
+        default: "staging"
+      service:
+        description: Target service
+        type: enum
+        enum: [all, discovery, creator, identity]
+        default: "all"
+      host:
+        description: "Optional options: stage-creator-X|stage-discovery-X|stage-identity|stage-user-metadata"
+        type: string
+        default: ""
+      params:
+        description: Additional parameters for deploy-ci.py
+        type: string
+        default: ""
+    steps:
+      - slack-basic:
+          channel: C03STD3UXMG
+          event: always
+          slack_mentions_user: "@joaquin"
+      - add_ssh_keys:
+          fingerprints:
+            # ~/.ssh/audius_infrastructure
+            - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
+            # ~/.ssh/google_compute_engine
+            - "d1:28:d4:5e:ca:d9:bb:70:06:da:e0:f0:00:7c:d4:a3"
+            # github.com
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+      - run:
+          name: Install OpenVPN
+          command: |
+            sudo apt-get update
+            sudo apt-get install openvpn openvpn-systemd-resolved
+      - run:
+          name: Check IP before VPN connection
+          command: |
+            ip a
+            echo "Public IP before VPN connection is $(curl checkip.amazonaws.com)"
+      - run:
+          name: VPN Setup
+          background: true
+          command: |
+            echo $VPN_CLIENT_CONFIG | base64 --decode > /tmp/config.ovpn
+
+            if grep -q auth-user-pass /tmp/config.ovpn; then
+              if [ -z "${VPN_USER:-}" ] || [ -z "${VPN_PASSWORD:-}" ]; then
+                echo "Your VPN client is configured with a user-locked profile. Make sure to set the VPN_USER and VPN_PASSWORD environment variables"
+                exit 1
+              else
+                echo -e "${VPN_USER}\\n${VPN_PASSWORD}" > /tmp/vpn.login
+              fi
+            fi
+
+            vpn_command=(sudo openvpn
+              --config /tmp/config.ovpn
+              --route 169.254.0.0 255.255.0.0 net_gateway
+              --script-security 2
+              --up /etc/openvpn/update-systemd-resolved --up-restart
+              --down /etc/openvpn/update-systemd-resolved --down-pre
+              --dhcp-option DOMAIN-ROUTE .)
+
+            if grep -q auth-user-pass /tmp/config.ovpn; then
+              vpn_command+=(--auth-user-pass /tmp/vpn.login)
+            fi
+
+            ET_phone_home=$(ss -Hnto state established '( sport = :ssh )' | head -n1 | awk '{ split($4, a, ":"); print a[1] }')
+            echo $ET_phone_home
+
+            if [ -n "$ET_phone_home" ]; then
+              vpn_command+=(--route $ET_phone_home 255.255.255.255 net_gateway)
+            fi
+
+            for IP in $(host runner.circleci.com | awk '{ print $4; }')
+              do
+                vpn_command+=(--route $IP 255.255.255.255 net_gateway)
+                echo $IP
+            done
+
+            for SYS_RES_DNS in $(systemd-resolve --status | grep 'DNS Servers'|awk '{print $3}')
+              do
+                vpn_command+=(--route $SYS_RES_DNS 255.255.255.255 net_gateway)
+                echo $SYS_RES_DNS
+            done
+
+            "${vpn_command[@]}" > /tmp/openvpn.log
+      - run:
+          name: Wait for the connection to be established and check IP
+          command: |
+            counter=1
+            until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 15 ]; do
+              ((counter++))
+              echo "Attempting to connect to VPN server..."
+              sleep 1;
+            done
+
+            if [ ! -f /tmp/openvpn.log ] || (! grep -iq "Initialization Sequence Completed" /tmp/openvpn.log); then
+              printf "\nUnable to establish connection within the allocated time ---> Giving up.\n"
+              exit 1
+            else
+              printf "\nVPN connected\n"
+              printf "\nPublic IP is now %s\n" "$(curl -s http://checkip.amazonaws.com)"
+            fi
+      - run:
+          name: Clone Repositories and Install Dependencies
+          command: |
+            git clone git@github.com:AudiusProject/audius-protocol.git ~/audius-protocol
+            cd ~/audius-protocol
+            python3 -m pip install -r .circleci/triggers/requirements.txt
+      - run:
+          name: Setup SSH Config
+          command: |
+            git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
+            # `AddKeysToAgent yes` is os-x only
+            sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
+      - when:
+          condition: << parameters.host >>
+          steps:
+            - run:
+                name: Perform Deployment
+                command: |
+                  cd ~/audius-protocol
+                  set -x
+                  .circleci/bin/deploy-ci.py \
+                    --github-user ${GH_USER} \
+                    --github-token ${GH_TOKEN} \
+                    --git-tag "<< parameters.git_tag >>" \
+                    --environment "<< parameters.environment >>" \
+                    --services "<< parameters.service >>" \
+                    --hosts "<< parameters.host >>" \
+                    << parameters.params >>
+      - unless:
+          condition: << parameters.host >>
+          steps:
+            - run:
+                name: Perform Deployment
+                command: |
+                  cd ~/audius-protocol
+                  set -x
+                  .circleci/bin/deploy-ci.py \
+                    --github-user ${GH_USER} \
+                    --github-token ${GH_TOKEN} \
+                    --git-tag "<< parameters.git_tag >>" \
+                    --environment "<< parameters.environment >>" \
+                    --services "<< parameters.service >>" \
+                    << parameters.params >>
+      - run:
+          name: Set Slack Detail from /tmp/summary.md
+          command: |
+            export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
+            echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
+      - slack-fail:
+          channel: C03STD3UXMG
+          slack_mentions_user: "@joaquin"
+      - slack-success:
+          channel: C03STD3UXMG
+          detail: ${SLACK_DETAIL}
+          slack_mentions_user: "@joaquin"
+      - store_artifacts:
+          path: /tmp/summary.md
+          destination: summary.md
+      - store_artifacts:
+          path: /tmp/summary.json
+          destination: summary.json
+      - run:
+          name: Disconnect from OpenVPN
+          command: |
+            sudo killall openvpn || true
+          when: always
 workflows:
-  # test, build and push all commits
-  test-build-and-push:
+  workflows:
     when:
       and:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_commit >>
     jobs:
+      - noop:
+          name: build
+      - noop:
+          name: built
+          requires:
+            - build-creator-node
+            - build-discovery-provider
+            - build-identity-service
+            - build-libs
+            - verified
+      - noop:
+          name: tests
+      - noop:
+          name: verified
+          requires:
+            - test-contracts
+            - test-creator-node
+            - test-discovery-provider
+            - test-eth-contracts
+            - test-identity-service
+            - test-libs
+            - test-mad-dog-e2e
+            - test-sdk
+            - test-solana-programs
+            - test-solana-programs-anchor
+
+      # Auto-deploy `master` to staging
+      - noop:
+          name: 🚧-🏠-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - built
+      - deploy:
+          name: 🚧-master
+          service: all
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - 🚧-🏠-🕹️
+      # Force deploy `master` to staging (by service)
+      - noop:
+          name: 💪-🚧-🏠-<< matrix.service >>-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+          matrix:
+            parameters:
+              service: [all, discovery, creator, identity]
+          requires:
+            - 🚧-master
+      - deploy:
+          name: 💪-🚧-🏠-<< matrix.service >>
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          matrix:
+            parameters:
+              service: [all, discovery, creator, identity]
+          requires:
+            - 💪-🚧-🏠-<< matrix.service >>-🕹️
+      # Force deploy `master` to staging (by host)
+      - noop:
+          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          requires:
+            - 🚧-master
+      - deploy:
+          name: 💪-🚧-🏠-<< matrix.host >>
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          requires:
+            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+
+      # Deploy branch to staging (by service)
+      - noop:
+          name: 🚧-🌿-<< matrix.service >>-🕹️
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master$)/
+          matrix:
+            parameters:
+              service: [all, discovery, creator, identity]
+          requires:
+            - built
+      - deploy:
+          name: 🚧-🌿-<< matrix.service >>
+          git_tag: ${CIRCLE_SHA1}
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          matrix:
+            parameters:
+              service: [all, discovery, creator, identity]
+          requires:
+            - 🚧-🌿-<< matrix.service >>-🕹️
+      # Deploy branch to staging (by host)
+      - noop:
+          name: 🚧-🌿-<< matrix.host >>-🕹️
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          requires:
+            - built
+      - deploy:
+          name: 🚧-🌿-<< matrix.host >>
+          git_tag: ${CIRCLE_SHA1}
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              ignore: /(^master$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          requires:
+            - 🚧-🌿-<< matrix.host >>-🕹️
+      # Deploy to prod (for release branches, after deploying to staging)
+      - noop:
+          name: 🚧-prod-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - 🚧-🌿-all
+      - deploy:
+          name: 🚧-prod
+          environment: prod
+          requires:
+            - 🚧-prod-🕹️
+
       - test-libs:
           name: test-libs
+          requires:
+            - tests
       - docker-build-and-push:
           name: build-libs
           repo: libs
 
       - test-contracts:
           name: test-contracts
+          requires:
+            - tests
 
       - test-eth-contracts:
           name: test-eth-contracts
+          requires:
+            - tests
 
       - test-creator-node:
           name: test-creator-node
+          requires:
+            - tests
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
+          requires:
+            - build
 
       - test-discovery-provider:
           name: test-discovery-provider
+          requires:
+            - tests
       - docker-build-and-push-updated:
           name: build-discovery-provider
           repo: discovery-provider
+          requires:
+            - build
 
       - test-identity-service:
           name: test-identity-service
+          requires:
+            - tests
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
+          requires:
+            - build
 
       - test-solana-programs:
           name: test-solana-programs
+          requires:
+            - tests
       - test-solana-programs-anchor:
           name: test-solana-programs-anchor
+          requires:
+            - tests
 
       - test-mad-dog-e2e:
           context:
             - GCP2
           mad-dog-type: test
+          requires:
+            - tests
 
       - test-sdk:
           context:
             - GCP2
+          requires:
+            - tests
 
 
   # in order to trigger this job

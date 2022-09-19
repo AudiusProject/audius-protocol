@@ -10,12 +10,21 @@ import eth_account
 import solana.keypair
 
 
-def generate_env(protocol_dir, creator_node_replicas):
+def generate_env(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
         config = json.load((protocol_dir / "dev-tools/config.json").open())
 
     env = {}
+
+    env["CREATOR_NODE_REPLICAS"] = str(creator_node_replicas)
+
+    env["DISCOVERY_PROVIDER_REPLICAS"] = str(discovery_provider_replicas)
 
     env["CONTENT_NODE_VERSION"] = json.loads(
         (protocol_dir / "creator-node/.version.json").read_text(),
@@ -24,6 +33,12 @@ def generate_env(protocol_dir, creator_node_replicas):
     env["DISCOVERY_NODE_VERSION"] = json.loads(
         (protocol_dir / "discovery-provider/.version.json").read_text(),
     )["version"]
+
+    env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
+    if elasticsearch_replicas:
+        env["ELASTICSEARCH_CONDITION"] = "service_healthy"
+    else:  # exists to prevent discovery provider from waiting for non-existent elasticsearch instances
+        env["ELASTICSEARCH_CONDITION"] = "service_started"
 
     for name, secret_key in config.get("solana-accounts", {}).items():
         keypair = solana.keypair.Keypair.from_secret_key(bytes(secret_key))
@@ -104,9 +119,21 @@ def cli(ctx, protocol_dir):
 
 @cli.command()
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
+@click.option("-d", "--discovery-provider-replicas", default=3, type=int)
+@click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.pass_obj
-def build(protocol_dir, creator_node_replicas):
-    generate_env(protocol_dir, creator_node_replicas)
+def build(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+):
+    generate_env(
+        protocol_dir,
+        creator_node_replicas,
+        discovery_provider_replicas,
+        elasticsearch_replicas,
+    )
 
     subprocess.run(
         [
@@ -122,9 +149,20 @@ def build(protocol_dir, creator_node_replicas):
 @cli.command()
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
+@click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.pass_obj
-def up(protocol_dir, creator_node_replicas, discovery_provider_replicas):
-    generate_env(protocol_dir, creator_node_replicas)
+def up(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+):
+    generate_env(
+        protocol_dir,
+        creator_node_replicas,
+        discovery_provider_replicas,
+        elasticsearch_replicas,
+    )
 
     subprocess.run(
         [
@@ -134,10 +172,6 @@ def up(protocol_dir, creator_node_replicas, discovery_provider_replicas):
             protocol_dir,
             "up",
             "--build",
-            "--scale",
-            f"creator-node={creator_node_replicas}",
-            "--scale",
-            f"discovery-provider={discovery_provider_replicas}",
             "-d",
         ],
     )
@@ -212,7 +246,7 @@ def ps(protocol_dir):
 
     print(
         "CONTAINER ID".ljust(13),
-        "NAME".ljust(25),
+        "NAME".ljust(35),
         "STATUS".ljust(10),
         "PORTS",
     )
@@ -237,13 +271,15 @@ def ps(protocol_dir):
         if service["Service"] == "discovery-provider":
             name = f"{service['Service']}-{replica}"
             ports[5000 + replica - 1] = 5000
+        if service["Service"] == "discovery-provider-elasticsearch":
+            name = f"{service['Service']}-{replica}"
 
         ports = sorted(ports.items())
         ports = ", ".join(f"{target}->{published}" for target, published in ports)
 
         print(
             service["ID"][:12].ljust(13),
-            name.ljust(25),
+            name.ljust(35),
             status.ljust(10),
             ports,
         )
