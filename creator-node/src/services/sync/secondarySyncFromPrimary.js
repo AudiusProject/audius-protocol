@@ -47,13 +47,22 @@ const handleSyncFromPrimary = async ({
     }
 
     // Ensure this node is syncing from the user's primary
-    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
-      wallet,
-      blockNumber: null,
-      ensurePrimary: false
-    })
+    let userReplicaSet
+    try {
+      userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+        libs,
+        logger,
+        wallet,
+        blockNumber: null,
+        ensurePrimary: false
+      })
+    } catch (e) {
+      return {
+        error: new Error(`Error fetching user replica set: ${e.message}`),
+        result: 'failure_fetching_user_replica_set'
+      }
+    }
+
     if (userReplicaSet.primary !== creatorNodeEndpoint) {
       return {
         abort: `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`,

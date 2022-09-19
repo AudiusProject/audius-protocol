@@ -88,14 +88,26 @@ async function _primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
-      wallet,
-      blockNumber: null,
-      ensurePrimary: false
+    let userReplicaSet
+    try {
+      userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+        libs,
+        logger,
+        wallet,
+        blockNumber: null,
+        ensurePrimary: false
+      })
+    } catch (e) {
+      return {
+        error: new Error(`Error fetching user replica set: ${e.message}`),
+        result: 'failure_fetching_user_replica_set'
+      }
+    }
+
+    decisionTree.recordStage({
+      name: 'getUserReplicaSetEndpointsFromDiscovery() success',
+      log: true
     })
-    decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
     // Abort if this node is not primary for user
     if (userReplicaSet.primary !== selfEndpoint) {
