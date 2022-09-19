@@ -1,4 +1,4 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
 const { instrumentTracing, tracing } = require('../../tracer')
 
 const {
@@ -10,7 +10,6 @@ const {
 const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
-const LOCK_DURATION = 1000 * 60 * 5 // 5 minutes
 
 /**
  * SyncImmediateQueue - handles enqueuing and processing of immediate manual Sync jobs on secondary
@@ -29,56 +28,56 @@ class SyncImmediateQueue {
     this.redis = redis
     this.serviceRegistry = serviceRegistry
 
-    this.queue = new Bull('sync-immediate-processing-queue', {
-      redis: {
-        host: this.nodeConfig.get('redisHost'),
-        port: this.nodeConfig.get('redisPort')
-      },
+    const connection = {
+      host: nodeConfig.get('redisHost'),
+      port: nodeConfig.get('redisPort')
+    }
+    this.queue = new Queue('sync-immediate-processing-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: SYNC_QUEUE_HISTORY,
         removeOnFail: SYNC_QUEUE_HISTORY
-      },
-      settings: {
-        lockDuration: LOCK_DURATION,
-        // We never want to re-process stalled jobs
-        maxStalledCount: 0
       }
     })
 
-    const jobProcessorConcurrency = this.nodeConfig.get(
-      'syncQueueMaxConcurrency'
-    )
-    this.queue.process(jobProcessorConcurrency, async (job) => {
-      // Get the `parentSpanContext` from the job data
-      // so the job can reference what span enqueued it
-      const { parentSpanContext } = job.data
+    const worker = new Worker(
+      'sync-immediate-processing-queue',
+      async (job) => {
+        // Get the `parentSpanContext` from the job data
+        // so the job can reference what span enqueued it
+        const { parentSpanContext } = job.data
 
-      const untracedProcessTask = this.processTask
-      const processTask = instrumentTracing({
-        name: 'syncImmediateQueue.process',
-        fn: untracedProcessTask,
-        options: {
-          // if a parentSpanContext is provided
-          // reference it so the async queue job can remember
-          // who enqueued it
-          links: parentSpanContext
-            ? [
-                {
-                  context: parentSpanContext
-                }
-              ]
-            : [],
-          attributes: {
-            [tracing.CODE_FILEPATH]: __filename
+        const untracedProcessTask = this.processTask
+        const processTask = instrumentTracing({
+          name: 'syncImmediateQueue.process',
+          fn: untracedProcessTask,
+          options: {
+            // if a parentSpanContext is provided
+            // reference it so the async queue job can remember
+            // who enqueued it
+            links: parentSpanContext
+              ? [
+                  {
+                    context: parentSpanContext
+                  }
+                ]
+              : [],
+            attributes: {
+              [tracing.CODE_FILEPATH]: __filename
+            }
           }
-        }
-      })
+        })
 
-      // `processTask()` on longer has access to `this` after going through the tracing wrapper
-      // so to mitigate that, we're manually adding `this.serviceRegistry` to the job data
-      job.data = { ...job.data, serviceRegistry: this.serviceRegistry }
-      return await processTask(job)
-    })
+        // `processTask()` on longer has access to `this` after going through the tracing wrapper
+        // so to mitigate that, we're manually adding `this.serviceRegistry` to the job data
+        job.data = { ...job.data, serviceRegistry: this.serviceRegistry }
+        return await processTask(job)
+      },
+      {
+        connection,
+        concurrency: this.nodeConfig.get('syncQueueMaxConcurrency')
+      }
+    )
   }
 
   async processTask(job) {
@@ -123,7 +122,7 @@ class SyncImmediateQueue {
     logContext,
     parentSpanContext
   }) {
-    const job = await this.queue.add({
+    const job = await this.queue.add('process-sync-immediate', {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,

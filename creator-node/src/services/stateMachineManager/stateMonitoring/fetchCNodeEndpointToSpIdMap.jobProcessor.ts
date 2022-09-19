@@ -10,6 +10,7 @@ import {
   getMapOfSpIdToChainInfo
 } from '../../ContentNodeInfoManager'
 import { stringifyMap } from '../../../utils'
+import { QUEUE_NAMES } from '../stateMachineConstants'
 
 /**
  * Processes a job to update the cNodeEndpoint->spId map by reading the chain.
@@ -25,7 +26,10 @@ async function fetchCNodeEndpointToSpIdMap({
 > {
   await updateContentNodeChainInfo(logger)
   return {
-    cNodeEndpointToSpIdMap: stringifyMap(await getMapOfSpIdToChainInfo(logger))
+    cNodeEndpointToSpIdMap: stringifyMap(await getMapOfSpIdToChainInfo(logger)),
+    jobsToEnqueue: {
+      [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: [{}]
+    }
   }
 }
 

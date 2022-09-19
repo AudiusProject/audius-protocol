@@ -1,4 +1,4 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
 const Sequelize = require('sequelize')
 const sessionManager = require('../sessionManager')
 const config = require('../config')
@@ -21,11 +21,12 @@ class SessionExpirationQueue {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
     this.runInterval = RUN_INTERVAL
-    this.queue = new Bull('session-expiration-queue', {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('session-expiration-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: true
@@ -35,12 +36,11 @@ class SessionExpirationQueue {
     this.expireSessions = this.expireSessions.bind(this)
 
     // Clean up anything that might be still stuck in the queue on restart
-    this.queue.empty()
+    this.queue.drain()
 
-    this.queue.process(
+    const worker = new Worker(
       PROCESS_NAMES.expire_sessions,
-      /* concurrency */ 1,
-      async (job, done) => {
+      async (job) => {
         try {
           this.logStatus('Starting')
           let progress = 0
@@ -67,12 +67,13 @@ class SessionExpirationQueue {
             job.progress(progress)
             sessionsToDelete -= this.batchSize
           }
-          done(null, {})
+          return {}
         } catch (e) {
           this.logStatus(`Error ${e}`)
-          done(e)
+          return e
         }
-      }
+      },
+      { connection }
     )
   }
 
@@ -101,12 +102,12 @@ class SessionExpirationQueue {
   async start() {
     try {
       // Run the job immediately
-      await this.queue.add(PROCESS_NAMES.expire_sessions)
+      await this.queue.add(PROCESS_NAMES.expire_sessions, {})
 
       // Then enqueue the job to run on a regular interval
       setInterval(async () => {
         try {
-          await this.queue.add(PROCESS_NAMES.expire_sessions)
+          await this.queue.add(PROCESS_NAMES.expire_sessions, {})
         } catch (e) {
           this.logStatus('Failed to enqueue!')
         }

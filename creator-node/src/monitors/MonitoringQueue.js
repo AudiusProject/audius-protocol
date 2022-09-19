@@ -1,4 +1,4 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
 const redis = require('../redis')
 const config = require('../config')
 const { MONITORS, getMonitorRedisKey } = require('./monitors')
@@ -23,11 +23,12 @@ const MONITORING_QUEUE_HISTORY = 500
  */
 class MonitoringQueue {
   constructor() {
-    this.queue = new Bull('monitoring-queue', {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('monitoring-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: MONITORING_QUEUE_HISTORY,
         removeOnFail: MONITORING_QUEUE_HISTORY
@@ -35,14 +36,13 @@ class MonitoringQueue {
     })
 
     // Clean up anything that might be still stuck in the queue on restart
-    this.queue.empty()
+    this.queue.drain()
 
     this.seedInitialValues()
 
-    this.queue.process(
+    const worker = new Worker(
       PROCESS_NAMES.monitor,
-      /* concurrency */ 1,
-      async (_) => {
+      async (job) => {
         try {
           this.logStatus('Starting')
 
@@ -58,7 +58,8 @@ class MonitoringQueue {
         } catch (e) {
           this.logStatus(`Error ${e}`)
         }
-      }
+      },
+      { connection }
     )
   }
 
@@ -112,12 +113,12 @@ class MonitoringQueue {
   async start() {
     try {
       // Run the job immediately
-      await this.queue.add(PROCESS_NAMES.monitor)
+      await this.queue.add(PROCESS_NAMES.monitor, {})
 
       // Then enqueue the job to run on a regular interval
       setInterval(async () => {
         try {
-          await this.queue.add(PROCESS_NAMES.monitor)
+          await this.queue.add(PROCESS_NAMES.monitor, {})
         } catch (e) {
           this.logStatus('Failed to enqueue!')
         }
