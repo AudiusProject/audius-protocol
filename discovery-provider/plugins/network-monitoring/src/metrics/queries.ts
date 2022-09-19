@@ -30,6 +30,24 @@ export const getUserCount = async (run_id: number): Promise<number> => {
  * Core metrics
  */
 
+export const getRunStartTime = async (run_id: number): Promise<Date> => {
+    const runStartTimeResp: unknown[] = await sequelizeConn.query(`
+        SELECT created_at
+        FROM 
+            network_monitoring_index_blocks
+        WHERE
+            run_id = :run_id 
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id }
+    })
+
+    const runStartTimeStr = runStartTimeResp[0] as string
+    const runStartTime = new Date(runStartTimeStr)
+
+    return runStartTime
+}
+
 export const getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_node_spid: string, cid_count: number }[]> => {
 
     const cidsListResp = await sequelizeConn.query(`
