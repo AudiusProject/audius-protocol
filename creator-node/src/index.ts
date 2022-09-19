@@ -6,7 +6,6 @@ import type { LoDashStatic } from 'lodash'
 const cluster: Cluster = require('cluster')
 const { cpus }: { cpus: () => CpuInfo[] } = require('os')
 const _: LoDashStatic = require('lodash')
-const Bull = require('bull')
 
 const { setupTracing } = require('./tracer')
 setupTracing('content-node')
@@ -22,30 +21,6 @@ const { runMigrations, clearRunningQueries } = require('./migrationManager')
 const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
 const redisClient = require('./redis')
-
-// Make sure some logic is only performed by 1 worker not all
-if (cluster.worker?.id !== 1) {
-  logger.info(
-    `Disabling queues from running on worker ID=${cluster.worker?.id}`
-  )
-
-  // See https://github.com/OptimalBits/bull/blob/develop/lib/queue.js for queue functions to override
-
-  // Obliterating queues is one-time logic on startup
-  Bull.prototype.obliterate = async function (opts: any) {}
-  Bull.prototype.empty = function () {}
-  // Bull isn't quality enough to make workers not take the some jobs
-  Bull.prototype.process = function (
-    name: any,
-    concurrency: any,
-    handler: any
-  ) {}
-  Bull.prototype.start = function (concurrency: any, name: any) {}
-  Bull.prototype.run = function (concurrency: any, handlerName: any) {}
-  // We also don't want to see log spam from events or run onComplete callbacks
-  Bull.prototype.on = function (eventName: any) {}
-  Bull.prototype.constructor = Bull
-}
 
 // The primary process performs one-time validation and spawns worker processes that each run the Express app
 const startAppForPrimary = async () => {

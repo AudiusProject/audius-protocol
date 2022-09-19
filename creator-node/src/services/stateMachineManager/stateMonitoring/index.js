@@ -1,6 +1,5 @@
 const BullQueue = require('bull')
 const _ = require('lodash')
-const cluster = require('cluster')
 
 const config = require('../../../config')
 const {
@@ -51,12 +50,10 @@ class StateMonitoringManager {
         duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
       }
     })
-    if (cluster.worker?.id === 1) {
-      await this.startEndpointToSpIdMapQueue(
-        cNodeEndpointToSpIdMapQueue,
-        prometheusRegistry
-      )
-    }
+    await this.startEndpointToSpIdMapQueue(
+      cNodeEndpointToSpIdMapQueue,
+      prometheusRegistry
+    )
 
     // Create queue to slice through batches of users and gather data to be passed to find-sync and find-replica-set-update jobs
     const monitorStateQueue = makeQueue({
@@ -110,12 +107,7 @@ class StateMonitoringManager {
     await findReplicaSetUpdatesQueue.obliterate({ force: true })
 
     // Enqueue first monitor-state job
-    if (cluster.worker?.id === 1) {
-      await this.startMonitorStateQueue(
-        monitorStateQueue,
-        discoveryNodeEndpoint
-      )
-    }
+    await this.startMonitorStateQueue(monitorStateQueue, discoveryNodeEndpoint)
 
     return {
       monitorStateQueue,
