@@ -32,7 +32,7 @@ class BlacklistManager {
       this.log('Initializing BlacklistManager...')
 
       // Adding to redis only needs to be done once, but multiple workers might all run the app with their own BlacklistManager
-      if (cluster.worker?.id !== 1) {
+      if (cluster.worker?.id === 1) {
         const { trackIdsToBlacklist, userIdsToBlacklist, segmentsToBlacklist } =
           await this.getDataToBlacklist()
         await this.fetchCIDsAndAddToRedis({
