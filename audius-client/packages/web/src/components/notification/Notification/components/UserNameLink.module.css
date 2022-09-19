@@ -13,6 +13,7 @@
   font-size: inherit;
   font-weight: inherit;
   color: var(--secondary);
+  overflow-wrap: break-word;
 }
 
 .badges {
