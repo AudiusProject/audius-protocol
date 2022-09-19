@@ -4,6 +4,7 @@ const fs = require('fs')
 const process = require('process')
 const path = require('path')
 const os = require('os')
+const _ = require('lodash')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -419,7 +420,7 @@ const config = convict({
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
     env: 'snapbackHighestReconfigMode',
-    default: 'ONE_SECONDARY'
+    default: 'PRIMARY_AND_OR_SECONDARIES'
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
@@ -488,7 +489,7 @@ const config = convict({
     doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
-    default: 0
+    default: 1
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -542,7 +543,7 @@ const config = convict({
     doc: 'Maximum number of users to process in each SnapbackSM job',
     format: 'nat',
     env: 'snapbackUsersPerJob',
-    default: 1000
+    default: 2000
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
@@ -554,13 +555,13 @@ const config = convict({
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 30
+    default: 50
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 15
+    default: 25
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
@@ -743,6 +744,12 @@ const config = convict({
     format: String,
     env: 'otelCollectorUrl',
     default: ''
+  },
+  reconfigSPIdBlacklistString: {
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config',
+    format: String,
+    env: 'reconfigSPIdBlacklistString',
+    default: ''
   }
   /**
    * unsupported options at the moment
@@ -795,6 +802,18 @@ if (fs.existsSync(pathTo('contract-config.json'))) {
     dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
+
+// Set reconfigSPIdBlacklist based off of reconfigSPIdBlacklistString
+config.set(
+  'reconfigSPIdBlacklist',
+  _.isEmpty(config.get('reconfigSPIdBlacklistString'))
+    ? []
+    : config
+        .get('reconfigSPIdBlacklistString')
+        .split(',')
+        .filter((e) => e)
+        .map((e) => parseInt(e))
+)
 
 // Perform validation and error any properties are not present on schema
 config.validate()

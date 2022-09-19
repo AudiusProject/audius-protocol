@@ -58,7 +58,7 @@ def generate_unpopulated_trending(
     # tracks we return later may be smaller than the limit.
     # If we don't limit it here, we limit it later after getting the
     # unpopulated tracks.
-    should_apply_limit_early = not exclude_premium
+    should_apply_limit_early = True  # not exclude_premium
     if should_apply_limit_early:
         sorted_track_scores = sorted_track_scores[:limit]
 
@@ -70,6 +70,7 @@ def generate_unpopulated_trending(
     # because of the filtering out of premium tracks
     if not should_apply_limit_early:
         tracks = tracks[:limit]
+        track_ids = [track["track_id"] for track in tracks]
 
     return (tracks, track_ids)
 
@@ -107,7 +108,7 @@ def generate_unpopulated_trending_from_mat_views(
     # tracks we return later may be smaller than the limit.
     # If we don't limit it here, we limit it later after getting the
     # unpopulated tracks.
-    should_apply_limit_early = not exclude_premium
+    should_apply_limit_early = True  # not exclude_premium
     if should_apply_limit_early:
         trending_track_ids = (
             trending_track_ids_query.order_by(
@@ -129,6 +130,7 @@ def generate_unpopulated_trending_from_mat_views(
     # because of the filtering out of premium tracks
     if not should_apply_limit_early:
         tracks = tracks[:limit]
+        track_ids = [track["track_id"] for track in tracks]
 
     return (tracks, track_ids)
 
