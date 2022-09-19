@@ -47,7 +47,7 @@ async function _primarySyncFromSecondary({
   })
   decisionTree.recordStage({ name: 'Begin', log: true })
 
-  let errorResult
+  let errorResult, error
   try {
     const selfEndpoint = config.get('creatorNodeEndpoint')
 
@@ -141,7 +141,11 @@ async function _primarySyncFromSecondary({
         log: true
       })
 
-      const { fetchedCNodeUser, error, abort } = await fetchExportFromNode({
+      const {
+        fetchedCNodeUser,
+        error: fetchExportFromNodeError,
+        abort
+      } = await fetchExportFromNode({
         nodeEndpointToFetchFrom: secondary,
         wallet,
         clockRangeMin: exportClockRangeMin,
@@ -150,15 +154,15 @@ async function _primarySyncFromSecondary({
         forceExport: true
       })
 
-      if (error) {
+      if (fetchExportFromNodeError) {
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Error',
-          data: { error: error.message }
+          data: { error: fetchExportFromNodeError.message }
         })
 
         errorResult = {
-          error: error.message,
-          result: error.code
+          error: fetchExportFromNodeError.message,
+          result: fetchExportFromNodeError.code
         }
 
         throw new Error(errorResult.error)
