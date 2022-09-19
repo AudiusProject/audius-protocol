@@ -155,7 +155,7 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
-    expect(result).to.have.deep.property('error', {})
+    expect(result).to.have.property('error', undefined)
     expect(result).to.have.deep.property('jobsToEnqueue', {
       [QUEUE_NAMES.MANUAL_SYNC]: [],
       [QUEUE_NAMES.RECURRING_SYNC]: []
@@ -208,9 +208,7 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
-    expect(result).to.have.deep.property('error', {
-      message: expectedErrorMessage
-    })
+    expect(result).to.have.deep.property('error', expectedErrorMessage)
     expect(result).to.have.deep.property('jobsToEnqueue', {
       [QUEUE_NAMES.MANUAL_SYNC]: [],
       [QUEUE_NAMES.RECURRING_SYNC]: []
@@ -287,7 +285,7 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
-    expect(result).to.have.deep.property('error', {})
+    expect(result).to.have.deep.property('error', undefined)
     const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
       (job) => {
         const { parentSpanContext, ...rest } = job
@@ -368,7 +366,7 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
-    expect(result).to.have.deep.property('error', {})
+    expect(result).to.have.deep.property('error', undefined)
     const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
       (job) => {
         const { parentSpanContext, ...rest } = job
@@ -434,7 +432,7 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
-    expect(result).to.have.deep.property('error', {})
+    expect(result).to.have.deep.property('error', undefined)
     expect(result).to.have.deep.property('jobsToEnqueue', {
       [QUEUE_NAMES.MANUAL_SYNC]: [],
       [QUEUE_NAMES.RECURRING_SYNC]: []
@@ -504,7 +502,7 @@ describe('test issueSyncRequest job processor', function () {
         syncMode,
         syncRequestParameters
       })
-      expect(result).to.have.deep.property('error', {})
+      expect(result).to.have.deep.property('error', undefined)
       expect(result).to.have.deep.property('jobsToEnqueue', {
         [QUEUE_NAMES.MANUAL_SYNC]: [],
         [QUEUE_NAMES.RECURRING_SYNC]: []
@@ -546,18 +544,15 @@ describe('test issueSyncRequest job processor', function () {
 
       config.set('mergePrimaryAndSecondaryEnabled', true)
 
-      const primarySyncFromSecondaryError = new Error('Sync failure')
-      const primarySyncFromSecondaryStub = sandbox.stub().callsFake((args) => {
-        const { wallet: walletParam, secondary: secondaryParam } = args
-        if (walletParam === wallet && secondaryParam === secondary) {
-          return primarySyncFromSecondaryError
+      const primarySyncFromSecondaryError = 'Sync failure'
+      const primarySyncFromSecondaryStub = sandbox.stub().callsFake(() => {
+        return {
+          error: primarySyncFromSecondaryError,
+          result: 'failure_primary_sync_from_secondary'
         }
-        throw new Error(
-          `primarySyncFromSecondary was not expected to be called with the given args`
-        )
       })
 
-      const expectedErrorMessage = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${wallet} | Secondary: ${secondary}: ${primarySyncFromSecondaryError.message}`
+      const expectedErrorMessage = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${wallet} | Secondary: ${secondary}: ${primarySyncFromSecondaryError}`
 
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
@@ -573,9 +568,7 @@ describe('test issueSyncRequest job processor', function () {
         syncMode,
         syncRequestParameters
       })
-      expect(result).to.have.deep.property('error', {
-        message: expectedErrorMessage
-      })
+      expect(result).to.have.deep.property('error', expectedErrorMessage)
       expect(result).to.have.deep.property('jobsToEnqueue', {
         [QUEUE_NAMES.MANUAL_SYNC]: [],
         [QUEUE_NAMES.RECURRING_SYNC]: []
@@ -636,7 +629,7 @@ describe('test issueSyncRequest job processor', function () {
         syncMode,
         syncRequestParameters
       })
-      expect(result).to.have.deep.property('error', {})
+      expect(result).to.have.deep.property('error', undefined)
       expect(result).to.have.deep.property('jobsToEnqueue', {
         [QUEUE_NAMES.MANUAL_SYNC]: [],
         [QUEUE_NAMES.RECURRING_SYNC]: []

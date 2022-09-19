@@ -26,7 +26,8 @@ const redisClient = require('./redis')
 const startAppForPrimary = async () => {
   const exitWithError = (...msg: any[]) => {
     logger.error('ERROR: ', ...msg)
-    process.exit(1)
+    // eslint-disable-next-line no-process-exit
+  process.exit(1)
   }
 
   const verifyDBConnection = async () => {

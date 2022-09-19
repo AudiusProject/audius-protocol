@@ -160,7 +160,8 @@ const handleSyncFromPrimary = async ({
       selfEndpoint: thisContentNodeEndpoint,
       logger
     })
-    if (!_.isEmpty(error)) {
+
+    if (error) {
       return {
         error: new Error(error.message),
         result: error.code
