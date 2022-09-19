@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import {
   CreatePlaylistSource,
@@ -7,7 +7,6 @@ import {
   addToPlaylistUISelectors,
   newCollectionMetadata
 } from '@audius/common'
-import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
@@ -51,7 +50,6 @@ export const AddToPlaylistDrawer = () => {
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const user = useSelector(getAccountWithOwnPlaylists)
-  const [isDrawerGestureSupported, setIsDrawerGestureSupported] = useState(true)
 
   if (!user || !trackId || !trackTitle) {
     return null
@@ -72,21 +70,11 @@ export const AddToPlaylistDrawer = () => {
     onClose()
   }
 
-  const handleScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { y } = e.nativeEvent.contentOffset
-
-    if (isDrawerGestureSupported && y > 0) {
-      setIsDrawerGestureSupported(false)
-    } else if (!isDrawerGestureSupported && y <= 0) {
-      setIsDrawerGestureSupported(true)
-    }
-  }
-
   return (
     <AppDrawer
       modalName='AddToPlaylist'
       isFullscreen
-      isGestureSupported={isDrawerGestureSupported}
+      isGestureSupported={false}
       title={messages.title}
     >
       <View>
@@ -99,7 +87,6 @@ export const AddToPlaylistDrawer = () => {
           />
         </View>
         <CardList
-          onScrollEndDrag={handleScrollEnd}
           contentContainerStyle={styles.cardList}
           data={userPlaylists}
           renderItem={({ item }) => (
