@@ -26,7 +26,7 @@ function RawStdOutWithLevelName() {
 }
 
 function tracerMixin(klass) {
-  const origFunc = klass.prototype.createChildLogger
+  const origFunc = klass.prototype.createLogger
   klass.prototype.createLogger = function () {
     const theLogger = origFunc.apply(this, arguments)
     const logDebug = klass.prototype.debug
