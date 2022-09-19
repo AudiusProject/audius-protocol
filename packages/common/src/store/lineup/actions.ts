@@ -221,7 +221,11 @@ export class LineupActions {
   }
 
   // If limit is not provided, we use whatever is in the state
-  refreshInView(overwrite = false, payload?: unknown, limit = null) {
+  refreshInView(
+    overwrite = false,
+    payload?: unknown,
+    limit: number | null = null
+  ) {
     return {
       type: addPrefix(this.prefix, REFRESH_IN_VIEW),
       overwrite,
