@@ -112,6 +112,7 @@ class ServiceRegistry {
       await this.sessionExpirationQueue.start()
     } catch (e) {
       this.logError(e.message)
+      // eslint-disable-next-line no-process-exit
       process.exit(1)
     }
 

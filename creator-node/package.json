@@ -2,6 +2,9 @@
   "name": "creator-node",
   "description": "",
   "main": "src/index.js",
+  "engines": {
+    "node": "~14.0.0"
+  },
   "scripts": {
     "start": "nodemon --config nodemon.json src/index.ts | ./node_modules/.bin/bunyan || exit 0",
     "test": "./scripts/run-tests.sh standalone_creator",
@@ -21,7 +24,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@audius/sdk": "0.0.15",
+    "@bull-board/api": "^4.3.1",
     "@bull-board/express": "4.0.1",
+    "@opentelemetry/api": "^1.2.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.32.0",
     "@opentelemetry/instrumentation": "^0.31.0",
     "@opentelemetry/instrumentation-bunyan": "^0.29.0",
@@ -29,6 +34,7 @@
     "@opentelemetry/instrumentation-http": "^0.31.0",
     "@opentelemetry/instrumentation-pg": "^0.30.0",
     "@opentelemetry/instrumentation-redis": "^0.32.0",
+    "@opentelemetry/resources": "^1.7.0",
     "@opentelemetry/sdk-trace-base": "^1.5.0",
     "@opentelemetry/sdk-trace-node": "^1.5.0",
     "@opentelemetry/semantic-conventions": "^1.5.0",
