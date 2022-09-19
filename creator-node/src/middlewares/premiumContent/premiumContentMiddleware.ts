@@ -6,8 +6,8 @@ import {
 } from '../../apiHelpers'
 import { NextFunction, Request, Response } from 'express'
 import { PremiumContentAccessError } from '../../premiumContent/types'
-import { checkAccess } from '../../premiumContent/helpers'
 import type Logger from 'bunyan'
+import { PremiumContentAccessChecker } from '../../premiumContent/premiumContentAccessChecker'
 
 /**
  * Middleware to validate requests to get premium content.
@@ -37,23 +37,28 @@ export const premiumContentMiddleware = async (
       )
     }
 
-    // @ts-ignore
     const premiumContentHeaders = req.headers['x-premium-content'] as string
+    const premiumContentAccessChecker = req.app.get(
+      'premiumContentAccessChecker'
+    ) as PremiumContentAccessChecker
     const libs = req.app.get('audiusLibs')
     const redis = req.app.get('redisClient')
     const logger = (req as any).logger as Logger
 
-    // @ts-ignore
-    const { doesUserHaveAccess, trackId, isPremium, error } = await checkAccess(
-      { cid, premiumContentHeaders, libs, logger, redis }
-    )
+    const { doesUserHaveAccess, trackId, isPremium, error } =
+      await premiumContentAccessChecker.checkPremiumContentAccess({
+        cid,
+        premiumContentHeaders,
+        libs,
+        logger,
+        redis
+      })
     if (doesUserHaveAccess) {
       // Set premium content track id and 'premium-ness' so that next middleware or
       // request handler does not need to make trips to the database to get this info.
       // We need the info because if the content is premium, then we need to set
       // the cache-control response header to no-cache so that nginx does not cache it.
-      // @ts-ignore
-      req.premiumContent = {
+      ;(req as any).premiumContent = {
         trackId,
         isPremium
       }

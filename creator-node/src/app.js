@@ -27,6 +27,9 @@ const {
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
 const replicaSetRoutes = require('./components/replicaSet/replicaSetController')
+const {
+  PremiumContentAccessChecker
+} = require('./premiumContent/premiumContentAccessChecker')
 
 function errorHandler(err, req, res, next) {
   req.logger.error('Internal server error')
@@ -198,6 +201,10 @@ const initializeApp = (port, serviceRegistry) => {
 
   // https://expressjs.com/en/guide/behind-proxies.html
   app.set('trust proxy', true)
+
+  // Initialize premium content access checker and make accessible via app handle
+  const premiumContentAccessChecker = new PremiumContentAccessChecker()
+  app.set('premiumContentAccessChecker', premiumContentAccessChecker)
 
   const server = app.listen(port, () =>
     logger.info(`Listening on port ${port}...`)

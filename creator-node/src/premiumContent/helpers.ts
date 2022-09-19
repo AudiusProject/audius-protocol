@@ -1,93 +1,14 @@
-import { signatureHasExpired, recoverWallet } from '../apiSigning'
-import {
-  PremiumContentAccessError,
-  PremiumContentSignatureData,
-  PremiumContentType
-} from './types'
+import { signatureHasExpired } from '../apiSigning'
+import { PremiumContentSignatureData, PremiumContentType } from './types'
 import { getRegisteredDiscoveryNodes } from '../utils/getRegisteredDiscoveryNodes'
 import { Redis } from 'ioredis'
-import models from '../models'
 import type Logger from 'bunyan'
+
+const models = require('../models')
 
 const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
 
-type CheckAccessArgs = {
-  cid: string
-  premiumContentHeaders: string
-  libs: any
-  logger: Logger
-  redis: Redis
-}
-
-export const checkAccess = async ({
-  cid,
-  premiumContentHeaders,
-  libs,
-  logger,
-  redis
-}: CheckAccessArgs): Promise<
-  | { doesUserHaveAccess: true; trackId: null; isPremium: false }
-  | { doesUserHaveAccess: true; trackId: number; isPremium: boolean }
-  | { error: PremiumContentAccessError }
-> => {
-  // Only apply premium content middleware logic if file is a premium track file
-  const { trackId, isPremium } = await isCIDForPremiumTrack(cid)
-  if (!isPremium) {
-    return { doesUserHaveAccess: true, trackId, isPremium }
-  }
-
-  if (!premiumContentHeaders) {
-    return { error: PremiumContentAccessError.MISSING_HEADERS }
-  }
-
-  const {
-    signedDataFromDiscoveryNode,
-    signatureFromDiscoveryNode,
-    signedDataFromUser,
-    signatureFromUser
-  } = JSON.parse(premiumContentHeaders)
-  if (
-    !signedDataFromDiscoveryNode ||
-    !signatureFromDiscoveryNode ||
-    !signedDataFromUser ||
-    !signatureFromUser
-  ) {
-    return { error: PremiumContentAccessError.MISSING_HEADERS }
-  }
-
-  const discoveryNodeWallet = recoverWallet(
-    signedDataFromDiscoveryNode,
-    signatureFromDiscoveryNode
-  )
-  const isRegisteredDN = await isRegisteredDiscoveryNode({
-    wallet: discoveryNodeWallet,
-    libs,
-    logger,
-    redis
-  })
-  if (!isRegisteredDN) {
-    return { error: PremiumContentAccessError.INVALID_DISCOVERY_NODE }
-  }
-
-  const userWallet = await libs.web3Manager.verifySignature(
-    signedDataFromUser,
-    signatureFromUser
-  )
-  const isMatch = await isPremiumContentMatch({
-    signedDataFromDiscoveryNode,
-    userWallet,
-    premiumContentId: trackId as number,
-    premiumContentType: 'track',
-    logger
-  })
-  if (!isMatch) {
-    return { error: PremiumContentAccessError.FAILED_MATCH }
-  }
-
-  return { doesUserHaveAccess: true, trackId: trackId as number, isPremium }
-}
-
-async function isCIDForPremiumTrack(cid: string): Promise<
+export async function isCIDForPremiumTrack(cid: string): Promise<
   | {
       trackId: null
       isPremium: false
@@ -97,7 +18,6 @@ async function isCIDForPremiumTrack(cid: string): Promise<
       isPremium: boolean
     }
 > {
-  // @ts-ignore
   const cidFile = await models.File.findOne({
     where: { multihash: cid }
   })
@@ -105,7 +25,6 @@ async function isCIDForPremiumTrack(cid: string): Promise<
     return { trackId: null, isPremium: false }
   }
 
-  // @ts-ignore
   const track = await models.Track.findOne({
     where: { blockchainId: cidFile.trackBlockchainId }
   })
@@ -119,7 +38,7 @@ async function isCIDForPremiumTrack(cid: string): Promise<
   }
 }
 
-async function isRegisteredDiscoveryNode({
+export async function isRegisteredDiscoveryNode({
   wallet,
   libs,
   logger,
@@ -154,7 +73,7 @@ type PremiumContentMatchArgs = {
  * Verify that wallet from recovered user signature is the same as that of wallet in the DN-signed data.
  * If all these verifications are successful, then we have a match.
  */
-async function isPremiumContentMatch({
+export async function isPremiumContentMatch({
   signedDataFromDiscoveryNode,
   userWallet,
   premiumContentId,

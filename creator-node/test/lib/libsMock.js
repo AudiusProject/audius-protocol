@@ -45,6 +45,15 @@ function getLibsMock() {
               }
             ]
           }
+          case 'discovery-node': {
+            return [
+              {
+                delegateOwnerWallet:
+                  '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B',
+                type: 'discovery-node'
+              }
+            ]
+          }
           default: {
             return []
           }
@@ -69,6 +78,9 @@ function getLibsMock() {
     },
     discoveryProvider: {
       discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
+    },
+    web3Manager: {
+      verifySignature: () => '0x7c95A677106218A296EcEF1F577c3aE27f0340cd'
     }
   }
 
