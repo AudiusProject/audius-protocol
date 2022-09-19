@@ -269,23 +269,6 @@
   font-weight: var(--font-demi-bold);
 }
 
-.input {
-  padding: 16px;
-  color: var(--neutral);
-  background-color: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
-  font-size: var(--font-xl);
-  font-weight: var(--font-medium);
-}
-
-.rightLabel {
-  bottom: 17px;
-  right: 16px;
-  color: var(--neutral);
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
-}
-
 .error {
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
