@@ -181,6 +181,7 @@ web-deploy-release-candidate:
         build-type: production
         environment: release
         copy-robots: true
+    - web-deploy-sourcemaps-s3
 
 web-deploy-production-s3:
   working_directory: ~/audius-client
@@ -217,6 +218,7 @@ web-deploy-production-cloudflare:
         build-type: production
         environment: production
         copy-robots: true
+    - web-deploy-sourcemaps-s3
 
 web-deploy-sentry-sourcemaps:
   working_directory: ~/audius-client
