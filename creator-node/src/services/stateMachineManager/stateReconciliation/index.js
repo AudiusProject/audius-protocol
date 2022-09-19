@@ -1,3 +1,5 @@
+const cluster = require('cluster')
+
 const config = require('../../../config')
 const {
   QUEUE_HISTORY,
@@ -79,10 +81,12 @@ class StateReconciliationManager {
     await recoverOrphanedDataQueue.obliterate({ force: true })
 
     // Queue the first recoverOrphanedData job, which will re-enqueue itself
-    await this.startRecoverOrphanedDataQueue(
-      recoverOrphanedDataQueue,
-      discoveryNodeEndpoint
-    )
+    if (cluster.worker?.id === 1) {
+      await this.startRecoverOrphanedDataQueue(
+        recoverOrphanedDataQueue,
+        discoveryNodeEndpoint
+      )
+    }
 
     this.registerQueueEventHandlersAndJobProcessors({
       manualSyncQueue,

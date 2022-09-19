@@ -41,6 +41,7 @@ if (cluster.worker?.id !== 1) {
     handler: any
   ) {}
   Bull.prototype.start = function (concurrency: any, name: any) {}
+  Bull.prototype.run = function (concurrency: any, handlerName: any) {}
   // We also don't want to see log spam from events or run onComplete callbacks
   Bull.prototype.on = function (eventName: any) {}
   Bull.prototype.constructor = Bull
