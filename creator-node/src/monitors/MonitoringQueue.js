@@ -42,7 +42,7 @@ class MonitoringQueue {
     this.queue.process(
       PROCESS_NAMES.monitor,
       /* concurrency */ 1,
-      async (job, done) => {
+      async (_) => {
         try {
           this.logStatus('Starting')
 
@@ -55,11 +55,8 @@ class MonitoringQueue {
               this.logStatus(`Error on ${monitor.name} ${e}`)
             }
           })
-
-          done(null, {})
         } catch (e) {
           this.logStatus(`Error ${e}`)
-          done(e)
         }
       }
     )
