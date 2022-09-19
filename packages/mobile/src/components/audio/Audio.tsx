@@ -22,8 +22,6 @@ import type { Dispatch } from 'redux'
 
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
-import { gateways as imageGateways } from '../image/utils'
-
 import { useChromecast } from './GoogleCast'
 import { logListen } from './listens'
 
@@ -47,11 +45,6 @@ const SKIP_DURATION_SEC = 15
 
 const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
-
-const getImageUrl = (cid: string, gateway: string | null): string => {
-  if (!cid) return DEFAULT_IMAGE_URL
-  return `${gateway}${cid}`
-}
 
 const RECORD_LISTEN_SECONDS = 1
 
@@ -192,22 +185,15 @@ const Audio = ({
   // Track Info handler
   useEffect(() => {
     if (track && !track.is_delete && duration !== null) {
-      const imageHash = track.cover_art_sizes
-        ? `${track.cover_art_sizes}/150x150.jpg`
-        : track.cover_art
-      const largeImageHash = track.cover_art_sizes
-        ? `${track.cover_art_sizes}/1000x1000.jpg`
-        : track.cover_art
+      const imageUrl =
+        track._cover_art_sizes?.['1000x1000'] ?? DEFAULT_IMAGE_URL
       // Set the background mode when a song starts
       // playing to ensure audio outside app
       // continues when music isn't being played.
       MusicControl.enableBackgroundMode(true)
       MusicControl.setNowPlaying({
         title: track.title,
-        artwork: getImageUrl(
-          Platform.OS === 'ios' ? imageHash! : largeImageHash!,
-          imageGateways[0]
-        ),
+        artwork: imageUrl,
         artist: trackOwner?.name,
         duration
       })
