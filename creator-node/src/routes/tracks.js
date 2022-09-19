@@ -333,7 +333,9 @@ const validateTrackOwner = async ({
     if (track.blocknumber >= blockNumber) {
       return parseInt(userId) === track.owner_id
     }
-    throw new Error(`Block not yet indexed: Waiting for ${track.blocknumber}, but at ${blockNumber}`)
+    throw new Error(
+      `Block not yet indexed: Waiting for ${track.blocknumber}, but at ${blockNumber}`
+    )
   }
 
   return await asyncRetry({
