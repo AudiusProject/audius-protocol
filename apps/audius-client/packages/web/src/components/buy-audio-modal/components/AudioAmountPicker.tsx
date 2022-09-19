@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
-  Format,
-  TokenValueInput,
   RadioPillButton,
-  RadioButtonGroup
+  RadioButtonGroup,
+  TokenAmountInput,
+  TokenAmountInputChangeHandler
 } from '@audius/stems'
 import { debounce } from 'lodash'
 
@@ -18,7 +18,7 @@ const messages = {
   amountOfAudio: 'Amount of $AUDIO',
   customAmount: 'Custom Amount',
   placeholder: 'Enter an amount',
-  inputLabel: '$AUDIO'
+  tokenLabel: '$AUDIO'
 }
 
 const INPUT_DEBOUNCE_MS = 200
@@ -60,7 +60,9 @@ export const AudioAmountPicker = ({
     useState(false)
   const [value, setValue] = useState<string | null>(null)
   const [presetAmount, setPresetAmount] = useState<string>()
-  const [customAmount, setCustomAmount] = useState<string>()
+  const [customAmount, setCustomAmount] = useState<string>('')
+
+  const customAmountRef = useRef<HTMLInputElement>(null)
 
   const handleChange = useCallback(
     (e) => {
@@ -89,13 +91,20 @@ export const AudioAmountPicker = ({
     debouncedOnAmountChange.cancel()
   }, [debouncedOnAmountChange])
 
-  const handleCustomAmountChange = useCallback(
+  const handleCustomAmountChange = useCallback<TokenAmountInputChangeHandler>(
     (amount) => {
       setCustomAmount(amount)
       debouncedOnAmountChange(amount)
     },
     [setCustomAmount, debouncedOnAmountChange]
   )
+
+  useEffect(() => {
+    if (isCustomAmountInputVisible) {
+      customAmountRef.current?.focus()
+    }
+  }, [isCustomAmountInputVisible, customAmountRef])
+
   return (
     <>
       {!isCustomAmountInputVisible ? (
@@ -131,14 +140,12 @@ export const AudioAmountPicker = ({
         )}
       </RadioButtonGroup>
       {isCustomAmountInputVisible ? (
-        <TokenValueInput
-          rightLabelClassName={styles.customAmountLabel}
-          inputClassName={styles.customAmountInput}
-          format={Format.INPUT}
+        <TokenAmountInput
+          inputRef={customAmountRef}
+          aria-label={messages.customAmount}
           placeholder={messages.placeholder}
-          rightLabel={messages.inputLabel}
+          tokenLabel={messages.tokenLabel}
           value={customAmount}
-          isNumeric
           isWhole
           onChange={handleCustomAmountChange}
         />
