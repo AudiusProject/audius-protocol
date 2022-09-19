@@ -1,12 +1,16 @@
 module.exports = {
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 2020
+    ecmaVersion: 2020,
+    project: ['./tsconfig.json']
   },
   extends: [
     'standard',
+    'eslint:recommended',
     'plugin:node/recommended',
     'plugin:import/typescript',
     'plugin:@typescript-eslint/recommended',
+    // 'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'prettier'
   ],
   env: {
@@ -60,6 +64,10 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'off', // We should turn this one on soon
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-extraneous-class': 'warn',
+    '@typescript-eslint/no-floating-promises': 'warn',
+    '@typescript-eslint/no-misused-promises': 'warn',
+    '@typescript-eslint/no-non-null-asserted-nullish-coalescing': 'error',
 
     'no-use-before-define': 'off',
     camelcase: 'off',
