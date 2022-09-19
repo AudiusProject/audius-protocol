@@ -17,6 +17,7 @@ const redisClient = require('./redis')
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
+  // eslint-disable-next-line no-process-exit
   process.exit(1)
 }
 

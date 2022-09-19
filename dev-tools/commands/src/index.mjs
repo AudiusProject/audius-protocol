@@ -10,6 +10,7 @@ import "./repost-track.mjs";
 import "./repost-playlist.mjs";
 import "./tip-audio.mjs";
 import "./unfollow.mjs";
+import "./auth-headers.mjs";
 
 async function main() {
   program.parseAsync(process.argv);
