@@ -107,16 +107,23 @@ async function issueSyncRequest({
 
   const startTimeMs = Date.now()
 
-  const { syncReqsToEnqueue, additionalSync, result, error } =
+  const { syncReqsToEnqueue, additionalSync, result, error, abort } =
     await _handleIssueSyncRequest({
       syncType,
       syncMode,
       syncRequestParameters,
       logger
     })
+
   if (error) {
     logger.error(
       `Issuing sync request error: ${error}. Prometheus result: ${result}`
+    )
+  }
+
+  if (abort) {
+    logger.warn(
+      `Issuing sync request abort: ${abort}. Prometheus result: ${result}`
     )
   }
 

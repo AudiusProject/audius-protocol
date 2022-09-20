@@ -31,6 +31,7 @@
     "@opentelemetry/instrumentation": "^0.31.0",
     "@opentelemetry/instrumentation-bunyan": "^0.29.0",
     "@opentelemetry/instrumentation-express": "^0.30.0",
+    "@opentelemetry/instrumentation-fs": "^0.5.0",
     "@opentelemetry/instrumentation-http": "^0.31.0",
     "@opentelemetry/instrumentation-pg": "^0.30.0",
     "@opentelemetry/instrumentation-redis": "^0.32.0",
