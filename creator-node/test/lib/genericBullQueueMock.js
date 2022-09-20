@@ -18,7 +18,6 @@ class GenericBullQueue {
       }
     })
     const prometheusRegistry = new PrometheusRegistry()
-    prometheusRegistry.startQueueMetrics(this.queue)
 
     const worker = new Worker(
       'genericBullQueue',
@@ -31,6 +30,8 @@ class GenericBullQueue {
       },
       { connection }
     )
+
+    prometheusRegistry.startQueueMetrics(this.queue, worker)
   }
 
   async addTask(params) {
