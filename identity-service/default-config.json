@@ -4,7 +4,7 @@
   "redisHost": "identity-redis",
   "redisPort": 6379,
   "logLevel": "debug",
-  "ipdataAPIKey":"",
+  "ipdataAPIKey": "",
   "twitterAPIKey": "",
   "twitterAPISecret": "",
   "tikTokAPIKey": "",
@@ -70,5 +70,6 @@
   "hCaptchaSecret": "",
   "solanaFeePayerWallets": "[]",
   "sentryDSN": "",
-  "solanaEndpoint": "https://api.mainnet-beta.solana.com"
+  "solanaEndpoint": "https://api.mainnet-beta.solana.com",
+  "stripeSecretKey": ""
 }
