@@ -24,6 +24,7 @@ import Draggable from 'components/dragndrop/Draggable'
 import Droppable from 'components/dragndrop/Droppable'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Skeleton from 'components/skeleton/Skeleton'
+import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './TestTable.module.css'
 
@@ -195,19 +196,21 @@ export const TestTable = ({
             key={column.id}
           >
             {/* Sorting Container */}
-            <div {...column.getSortByToggleProps()}>
-              <div className={styles.textCell}>{column.render('Header')}</div>
-              {!column.disableSortBy ? (
-                <div className={styles.sortCaretContainer}>
-                  {!column.isSorted || !column.isSortedDesc ? (
-                    <IconCaretUp className={styles.sortCaret} />
-                  ) : null}
-                  {!column.isSorted || column.isSortedDesc ? (
-                    <IconCaretDown className={styles.sortCaret} />
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
+            <Tooltip text={column.sortTitle} mount='page'>
+              <div {...column.getSortByToggleProps()} title=''>
+                <div className={styles.textCell}>{column.render('Header')}</div>
+                {!column.disableSortBy ? (
+                  <div className={styles.sortCaretContainer}>
+                    {!column.isSorted || !column.isSortedDesc ? (
+                      <IconCaretUp className={styles.sortCaret} />
+                    ) : null}
+                    {!column.isSorted || column.isSortedDesc ? (
+                      <IconCaretDown className={styles.sortCaret} />
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            </Tooltip>
             {/* Resizing Container */}
             {!column.disableResizing ? (
               <div

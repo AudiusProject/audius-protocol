@@ -25,6 +25,7 @@ import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import Page from 'components/page/Page'
 import { TestTracksTable } from 'components/test-tracks-table'
+import { TracksTableColumn } from 'components/test-tracks-table/TestTracksTable'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
@@ -40,6 +41,18 @@ const { getInitialFetchStatus } = savedPageSelectors
 const messages = {
   filterPlaceholder: 'Filter Tracks'
 }
+
+const tableColumns: TracksTableColumn[] = [
+  'playButton',
+  'trackName',
+  'artistName',
+  'releaseDate',
+  'addedDate',
+  'length',
+  'plays',
+  'reposts',
+  'overflowActions'
+]
 
 export type SavedPageProps = {
   title: string
@@ -231,6 +244,7 @@ const SavedPage = ({
         />
       ) : isNewTablesEnabled ? (
         <TestTracksTable
+          columns={tableColumns}
           data={dataSource}
           fetchMoreTracks={fetchMoreTracks}
           isVirtualized
