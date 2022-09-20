@@ -4,6 +4,7 @@ import type {
   SpanOptions,
   AttributeValue,
   Tracer
+  // eslint-disable-next-line node/no-extraneous-import
 } from '@opentelemetry/api'
 
 import { trace, context, SpanStatusCode } from '@opentelemetry/api'

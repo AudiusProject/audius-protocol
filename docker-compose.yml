@@ -292,6 +292,26 @@ services:
 
   # discovery-provider
 
+  discovery-provider-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: false
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://localhost:9200/_cluster/health || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    logging: *default-logging
+    deploy:
+      mode: replicated
+      replicas: "${ELASTICSEARCH_REPLICAS}"
+
   discovery-provider:
     build: discovery-provider
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
@@ -318,7 +338,9 @@ services:
 
       audius_discprov_dev_mode: "true"
     volumes:
-      - ./discovery-provider:/audius-discovery-provider
+      - ./discovery-provider/alembic:/audius-discovery-provider/alembic
+      - ./discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
+      - ./discovery-provider/src:/audius-discovery-provider/src
       - poa-contracts-abis:/audius-discovery-provider/build/contracts
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
@@ -330,9 +352,12 @@ services:
         condition: service_healthy
       solana-test-validator:
         condition: service_healthy
+      discovery-provider-elasticsearch:
+        condition: "${ELASTICSEARCH_CONDITION}"
     logging: *default-logging
     deploy:
       mode: replicated
+      replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
 
   # creator-node
 
@@ -380,6 +405,9 @@ services:
     logging: *default-logging
     deploy:
       mode: replicated
+      replicas: "${CREATOR_NODE_REPLICAS}"
+
+  # port forwarder
 
   proxy:
     image: alpine:3.16.0

@@ -54,7 +54,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "semi-dark-purple"
+                  "color": "semi-dark-purple",
+                  "value": null
                 }
               ]
             },
@@ -109,7 +110,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "semi-dark-purple"
+                  "color": "semi-dark-purple",
+                  "value": null
                 }
               ]
             },
@@ -166,9 +168,9 @@
             "custom": {
               "axisCenteredZero": false,
               "axisColorMode": "text",
-              "axisLabel": "%",
-              "axisPlacement": "left",
-              "axisSoftMin": -2,
+              "axisLabel": "",
+              "axisPlacement": "right",
+              "axisSoftMin": 0,
               "barAlignment": 0,
               "drawStyle": "line",
               "fillOpacity": 0,
@@ -194,17 +196,16 @@
                 "mode": "off"
               }
             },
+            "decimals": 1,
             "mappings": [],
             "max": 95,
+            "min": 50,
             "thresholds": {
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
-                },
-                {
-                  "color": "red",
-                  "value": 80
+                  "color": "green",
+                  "value": null
                 }
               ]
             },
@@ -227,10 +228,11 @@
             "showLegend": false
           },
           "tooltip": {
-            "mode": "multi",
+            "mode": "single",
             "sort": "none"
           }
         },
+        "pluginVersion": "9.1.0",
         "targets": [
           {
             "datasource": {
@@ -239,7 +241,7 @@
             "editorMode": "code",
             "expr": "((sum without(run_id,instance) (audius_nm_users_with_all_foundation_node_replica_set{environment=~\"$env\"})) / (sum without(run_id,instance) (audius_nm_user_count{environment=~\"$env\"}))) * 100",
             "hide": false,
-            "legendFormat": "%",
+            "legendFormat": "Users entirely on foundation nodes",
             "range": true,
             "refId": "A"
           }
@@ -289,7 +291,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -349,79 +352,6 @@
         "type": "row"
       },
       {
-        "description": "The number of users with a specific content node as their primary",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "fixedColor": "#FADE2A",
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              }
-            },
-            "decimals": 1,
-            "mappings": [],
-            "unit": "short"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 8
-        },
-        "id": 4,
-        "options": {
-          "displayLabels": [
-            "percent"
-          ],
-          "legend": {
-            "displayMode": "table",
-            "placement": "right",
-            "showLegend": true,
-            "sortBy": "Percent",
-            "sortDesc": false,
-            "values": [
-              "percent",
-              "value"
-            ]
-          },
-          "pieType": "pie",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "tooltip": {
-            "mode": "single",
-            "sort": "none"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "audius_nm_primary_user_count{environment=~\"$env\"}",
-            "instant": true,
-            "legendFormat": "{{endpoint}}",
-            "range": false,
-            "refId": "A"
-          }
-        ],
-        "title": "Primary Users Count by Content Node",
-        "type": "piechart"
-      },
-      {
         "description": "The number of users that have a specific content node in their replica set",
         "fieldConfig": {
           "defaults": {
@@ -444,7 +374,7 @@
         "gridPos": {
           "h": 8,
           "w": 12,
-          "x": 12,
+          "x": 0,
           "y": 8
         },
         "id": 2,
@@ -492,6 +422,77 @@
         "type": "piechart"
       },
       {
+        "description": "The number of users with a specific content node as their primary",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "#FADE2A",
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              }
+            },
+            "decimals": 1,
+            "mappings": [],
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "id": 4,
+        "options": {
+          "displayLabels": [
+            "percent"
+          ],
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "values": [
+              "percent",
+              "value"
+            ]
+          },
+          "pieType": "pie",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "exemplar": false,
+            "expr": "audius_nm_primary_user_count{environment=~\"$env\"}",
+            "instant": true,
+            "legendFormat": "{{endpoint}}",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "Primary Users Count by Content Node",
+        "type": "piechart"
+      },
+      {
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -532,7 +533,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -550,7 +552,7 @@
           "x": 0,
           "y": 16
         },
-        "id": 53,
+        "id": 54,
         "options": {
           "legend": {
             "calcs": [
@@ -576,14 +578,14 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "sum without (run_id,instance) (audius_nm_primary_user_count{environment=~\"$env\"})",
+            "expr": "sum without (run_id,instance) (audius_nm_all_user_count{environment=~\"$env\"})",
             "instant": false,
             "legendFormat": "{{endpoint}}",
             "range": true,
             "refId": "A"
           }
         ],
-        "title": "Primary Users Count by Content Node",
+        "title": "All Users Count by Content Node",
         "type": "timeseries"
       },
       {
@@ -627,7 +629,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -645,7 +648,7 @@
           "x": 12,
           "y": 16
         },
-        "id": 54,
+        "id": 53,
         "options": {
           "legend": {
             "calcs": [
@@ -671,14 +674,14 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "sum without (run_id,instance) (audius_nm_all_user_count{environment=~\"$env\"})",
+            "expr": "sum without (run_id,instance) (audius_nm_primary_user_count{environment=~\"$env\"})",
             "instant": false,
             "legendFormat": "{{endpoint}}",
             "range": true,
             "refId": "A"
           }
         ],
-        "title": "All Users Count by Content Node",
+        "title": "Primary Users Count by Content Node",
         "type": "timeseries"
       },
       {
@@ -756,15 +759,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "orange"
-                },
-                {
-                  "color": "semi-dark-yellow",
-                  "value": 80
-                },
-                {
-                  "color": "semi-dark-green",
-                  "value": 90
+                  "color": "orange",
+                  "value": null
                 }
               ]
             },
@@ -773,7 +769,7 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 8,
+          "h": 10,
           "w": 12,
           "x": 0,
           "y": 27
@@ -861,7 +857,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "purple",
@@ -874,7 +871,7 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 8,
+          "h": 10,
           "w": 6,
           "x": 12,
           "y": 27
@@ -965,7 +962,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "blue"
+                  "color": "blue",
+                  "value": null
                 },
                 {
                   "color": "blue",
@@ -978,7 +976,7 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 8,
+          "h": 10,
           "w": 6,
           "x": 18,
           "y": 27
@@ -1082,7 +1080,7 @@
                 "fill": "solid"
               },
               "lineWidth": 1,
-              "pointSize": 1,
+              "pointSize": 5,
               "scaleDistribution": {
                 "log": 2,
                 "type": "log"
@@ -1118,7 +1116,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 35
+          "y": 37
         },
         "id": 38,
         "options": {
@@ -1245,7 +1243,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 35
+          "y": 37
         },
         "id": 57,
         "options": {
@@ -1321,7 +1319,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 43
+          "y": 45
         },
         "id": 61,
         "panels": [
@@ -1719,7 +1717,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 44
+          "y": 46
         },
         "id": 33,
         "panels": [],
@@ -1775,7 +1773,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 45
+          "y": 47
         },
         "id": 8,
         "options": {
@@ -1851,7 +1849,7 @@
                 "type": "linear"
               },
               "showPoints": "auto",
-              "spanNulls": false,
+              "spanNulls": true,
               "stacking": {
                 "group": "A",
                 "mode": "none"
@@ -1879,8 +1877,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "yellow",
@@ -1900,7 +1897,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 45
+          "y": 47
         },
         "id": 20,
         "options": {
@@ -1938,7 +1935,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 53
+          "y": 55
         },
         "id": 35,
         "panels": [],
@@ -1991,7 +1988,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 54
+          "y": 56
         },
         "id": 18,
         "options": {
@@ -2129,7 +2126,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 54
+          "y": 56
         },
         "id": 65,
         "options": {
@@ -2214,7 +2211,7 @@
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
-              "drawStyle": "line",
+              "drawStyle": "points",
               "fillOpacity": 0,
               "gradientMode": "none",
               "hideFrom": {
@@ -2259,10 +2256,10 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 62
+          "h": 9,
+          "w": 24,
+          "x": 0,
+          "y": 64
         },
         "id": 24,
         "options": {
@@ -2291,7 +2288,7 @@
             "refId": "A"
           }
         ],
-        "title": "Avg Batch Duration",
+        "title": "Avg Batch Duration by Endpoint",
         "type": "timeseries"
       },
       {
@@ -2300,7 +2297,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 70
+          "y": 73
         },
         "id": 29,
         "panels": [
@@ -2460,6 +2457,39 @@
           "skipUrlSync": false,
           "sort": 2,
           "type": "query"
+        },
+        {
+          "hide": 0,
+          "includeAll": false,
+          "label": "Percentile",
+          "multi": false,
+          "name": "percentile",
+          "options": [
+            {
+              "selected": true,
+              "text": "p50",
+              "value": "0.5"
+            },
+            {
+              "selected": false,
+              "text": "p90",
+              "value": "0.9"
+            },
+            {
+              "selected": false,
+              "text": "p95",
+              "value": "0.95"
+            },
+            {
+              "selected": false,
+              "text": "p99",
+              "value": "0.99"
+            }
+          ],
+          "query": "p50 : 0.5, p90 : 0.9, p95 : 0.95, p99 : 0.99",
+          "queryValue": "",
+          "skipUrlSync": false,
+          "type": "custom"
         }
       ]
     },

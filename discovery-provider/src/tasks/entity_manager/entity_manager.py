@@ -147,15 +147,9 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         delete_track(params)
-                    elif (
-                        params.action in create_social_action_types
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
+                    elif params.action in create_social_action_types:
                         create_social_record(params)
-                    elif (
-                        params.action in delete_social_action_types
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
+                    elif params.action in delete_social_action_types:
                         delete_social_record(params)
                 except Exception as e:
                     # swallow exception to keep indexing
@@ -183,6 +177,7 @@ def entity_manager_update(
                     original_records[record_type][entity_id].is_current = False
 
         # insert/update all tracks, playlist records in this block
+        session.flush()  # flush so aggregate triggers have invalidated records ^
         session.bulk_save_objects(records_to_save)
         num_total_changes += len(records_to_save)
 
