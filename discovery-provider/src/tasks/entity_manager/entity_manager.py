@@ -45,7 +45,7 @@ from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 logger = logging.getLogger(__name__)
 
 # Please toggle below variable to true for development
-ENABLE_DEVELOPMENT_FEATURES = False
+ENABLE_DEVELOPMENT_FEATURES = True
 
 
 def entity_manager_update(
