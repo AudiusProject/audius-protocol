@@ -993,7 +993,7 @@ jobs:
       environment:
         description: Target environment
         type: enum
-        enum: [staging, prod]
+        enum: [staging, pre-prod, prod]
         default: "staging"
       service:
         description: Target service
@@ -1204,7 +1204,7 @@ workflows:
           requires:
             - built
       - deploy:
-          name: 🚧-master
+          name: 🚧-🏠
           service: all
           context:
             - slack-secrets
@@ -1226,7 +1226,7 @@ workflows:
             parameters:
               service: [all, discovery, creator, identity]
           requires:
-            - 🚧-master
+            - 🚧-🏠
       - deploy:
           name: 💪-🚧-🏠-<< matrix.service >>
           params: --force
@@ -1250,7 +1250,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-master
+            - 🚧-🏠
       - deploy:
           name: 💪-🚧-🏠-<< matrix.host >>
           params: --force
@@ -1264,13 +1264,27 @@ workflows:
           requires:
             - 💪-🚧-🏠-<< matrix.host >>-🕹️
 
+      # Cut release from `master`
+      - noop:
+          name: cut-release-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - 🚧-🏠
+      - noop:
+          name: cut-release
+          requires:
+            - cut-release-🕹️
+
       # Deploy branch to staging (by service)
       - noop:
           name: 🚧-🌿-<< matrix.service >>-🕹️
           type: approval
           filters:
             branches:
-              ignore: /(^master$)/
+              ignore: /(^master|release-.*$)/
           matrix:
             parameters:
               service: [all, discovery, creator, identity]
@@ -1295,7 +1309,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master$)/
+              ignore: /(^master|release-.*$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
@@ -1317,20 +1331,42 @@ workflows:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
             - 🚧-🌿-<< matrix.host >>-🕹️
-      # Deploy to prod (for release branches, after deploying to staging)
+
+      # Deploy to pre-prod (for release branches)
       - noop:
-          name: 🚧-prod-🕹️
+          name: 🚧-🎁-to-pre-prod-🕹️
           type: approval
           filters:
             branches:
               only: /(^release-.*$)/
           requires:
-            - 🚧-🌿-all
+            - built
       - deploy:
-          name: 🚧-prod
-          environment: prod
+          name: 🚧-🎁-to-pre-prod
+          git_tag: ${CIRCLE_SHA1}
+          environment: pre-prod
+          service: all
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
           requires:
-            - 🚧-prod-🕹️
+            - 🚧-🎁-to-pre-prod-🕹️
+      # Submit Proposal (for release branches)
+      - noop:
+          name: submit-proposal
+          requires:
+            - 🚧-🎁-to-pre-prod
+      # Release (for release branches)
+      - noop:
+          name: release-🕹️
+          type: approval
+          requires:
+            - submit-proposal
+      - noop:
+          name: release
+          requires:
+            - release-🕹️
 
       - test-libs:
           name: test-libs

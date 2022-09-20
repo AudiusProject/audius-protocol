@@ -1,9 +1,9 @@
 const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
-const process = require('process')
 const path = require('path')
 const os = require('os')
+const _ = require('lodash')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -743,6 +743,12 @@ const config = convict({
     format: String,
     env: 'otelCollectorUrl',
     default: ''
+  },
+  reconfigSPIdBlacklistString: {
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config',
+    format: String,
+    env: 'reconfigSPIdBlacklistString',
+    default: ''
   }
   /**
    * unsupported options at the moment
@@ -795,6 +801,18 @@ if (fs.existsSync(pathTo('contract-config.json'))) {
     dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
+
+// Set reconfigSPIdBlacklist based off of reconfigSPIdBlacklistString
+config.set(
+  'reconfigSPIdBlacklist',
+  _.isEmpty(config.get('reconfigSPIdBlacklistString'))
+    ? []
+    : config
+        .get('reconfigSPIdBlacklistString')
+        .split(',')
+        .filter((e) => e)
+        .map((e) => parseInt(e))
+)
 
 // Perform validation and error any properties are not present on schema
 config.validate()

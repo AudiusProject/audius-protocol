@@ -65,7 +65,6 @@ class ServiceRegistry {
     this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
     this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
     this.recoverOrphanedDataQueue = null // Handles jobs for finding+reconciling state on nodes outside of a user's replica set
-    this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
 
     // Flags that indicate whether categories of services have been initialized
     this.synchronousServicesInitialized = false
@@ -112,6 +111,7 @@ class ServiceRegistry {
       await this.sessionExpirationQueue.start()
     } catch (e) {
       this.logError(e.message)
+      // eslint-disable-next-line no-process-exit
       process.exit(1)
     }
 
@@ -196,7 +196,6 @@ class ServiceRegistry {
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
         new BullAdapter(this.recoverOrphanedDataQueue, { readOnlyMode: true }),
-        new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(syncImmediateProcessingQueue, { readOnlyMode: true }),
@@ -301,10 +300,6 @@ class ServiceRegistry {
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
-
-    // SnapbackSM init (requires L1 identity)
-    // Retries indefinitely
-    await this._initSnapbackSM()
 
     // Init StateMachineManager
     this.stateMachineManager = new StateMachineManager()
@@ -462,40 +457,6 @@ class ServiceRegistry {
     }
 
     this.logInfo('URSM Registration completed')
-  }
-
-  /**
-   * Initialize SnapbackSM
-   * Requires L1 identity
-   */
-  async _initSnapbackSM() {
-    this.snapbackSM = new SnapbackSM(config, this.libs)
-    const { stateMachineQueue } = this.snapbackSM
-    this.stateMachineQueue = stateMachineQueue
-
-    let isInitialized = false
-    const retryTimeoutMs = 10000 // ms
-    while (!isInitialized) {
-      try {
-        this.logInfo(
-          `Attempting to init SnapbackSM on ${retryTimeoutMs}ms interval...`
-        )
-
-        await this.snapbackSM.init()
-
-        isInitialized = true
-        // Short circuit earlier instead of waiting for another timeout and loop iteration
-        break
-
-        // Swallow all init errors
-      } catch (e) {
-        this.logError(`_initSnapbackSM Error ${e}`)
-      }
-
-      await utils.timeout(retryTimeoutMs, false)
-    }
-
-    this.logInfo(`SnapbackSM Init completed`)
   }
 
   logInfo(msg) {

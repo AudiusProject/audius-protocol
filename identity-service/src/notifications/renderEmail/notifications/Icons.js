@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MultipleMusicalNotesIcon = exports.MobilePhoneWithArrowIcon = exports.HeadphoneIcon = exports.IncomingEnvelopeIcon = exports.WhiteHeavyCheckMarkIcon = void 0;
+exports.TrebleClefIcon = exports.MoneyMouthFaceIcon = exports.MultipleMusicalNotesIcon = exports.MobilePhoneWithArrowIcon = exports.HeadphoneIcon = exports.IncomingEnvelopeIcon = exports.WhiteHeavyCheckMarkIcon = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -64,3 +64,23 @@ var MultipleMusicalNotesIcon = function MultipleMusicalNotesIcon() {
 };
 
 exports.MultipleMusicalNotesIcon = MultipleMusicalNotesIcon;
+
+var MoneyMouthFaceIcon = function MoneyMouthFaceIcon() {
+  return /*#__PURE__*/_react["default"].createElement("img", {
+    style: iconStyles,
+    alt: "Money Face Icon",
+    src: "https://download.audius.co/static-resources/email/money-mouth-face.png"
+  });
+};
+
+exports.MoneyMouthFaceIcon = MoneyMouthFaceIcon;
+
+var TrebleClefIcon = function TrebleClefIcon() {
+  return /*#__PURE__*/_react["default"].createElement("img", {
+    style: iconStyles,
+    alt: "Treble Clef Icon",
+    src: "https://download.audius.co/static-resources/email/treble-clef.png"
+  });
+};
+
+exports.TrebleClefIcon = TrebleClefIcon;
