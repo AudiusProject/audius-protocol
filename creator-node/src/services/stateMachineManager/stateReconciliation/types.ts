@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-extraneous-import
 import type { SpanContext } from '@opentelemetry/api'
 
 export type SyncRequestAxiosData = {
