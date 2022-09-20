@@ -3,7 +3,8 @@ import {
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as actions,
   savedPageSelectors,
-  waitForValue
+  waitForValue,
+  FeatureFlags
 } from '@audius/common'
 import {
   takeLatest,
@@ -39,6 +40,8 @@ function* watchFetchSaves() {
     const sortMethod = props.sortMethod ?? ''
     const sortDirection = props.sortDirection ?? ''
     const saves = yield select(getSaves)
+    const getFeatureEnabled = yield getContext('getFeatureEnabled')
+    const newTablesEnabled = getFeatureEnabled(FeatureFlags.NEW_TABLES) ?? false
 
     const isSameParams =
       query === currentQuery &&
@@ -73,9 +76,11 @@ function* watchFetchSaves() {
           save_item_id: save.track.track_id
         }))
 
-        const fullSaves = Array(account.track_save_count)
-          .fill(0)
-          .map((_) => ({}))
+        const fullSaves = newTablesEnabled
+          ? Array(account.track_save_count)
+              .fill(0)
+              .map((_) => ({}))
+          : saves
 
         fullSaves.splice(offset, saves.length, ...saves)
 
