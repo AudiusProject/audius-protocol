@@ -1189,14 +1189,15 @@ workflows:
             - test-eth-contracts
             - test-identity-service
             - test-libs
-            - test-mad-dog-e2e
-            - test-sdk
             - test-solana-programs
             - test-solana-programs-anchor
+            # removing these for now as they take a bit long and are flaky
+            # - test-mad-dog-e2e
+            # - test-sdk
 
       # Auto-deploy `master` to staging
       - noop:
-          name: 🚧-🏠-🕹️
+          name: deploy-master-hold
           type: approval
           filters:
             branches:
@@ -1214,7 +1215,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - 🚧-🏠-🕹️
+            - deploy-master-hold
       # Force deploy `master` to staging (by service)
       - noop:
           name: 💪-🚧-🏠-<< matrix.service >>-🕹️
