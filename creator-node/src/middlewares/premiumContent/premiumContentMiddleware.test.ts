@@ -66,7 +66,7 @@ describe('Test premium content middleware', function () {
     assert.deepStrictEqual(nextCalled, false)
   })
 
-  it('returns forbidden when it fails because of missing headers', async () => {
+  it('returns unauthorized when it fails because of missing headers', async () => {
     premiumContentAccessChecker.accessCheckReturnsWith = {
       doesUserHaveAccess: false,
       trackId: 1,
@@ -81,7 +81,7 @@ describe('Test premium content middleware', function () {
         nextCalled = true
       }
     )
-    assert.deepStrictEqual(mockRes.statusCode, 403)
+    assert.deepStrictEqual(mockRes.statusCode, 401)
     assert.deepStrictEqual(nextCalled, false)
   })
 

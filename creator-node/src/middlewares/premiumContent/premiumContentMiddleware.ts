@@ -2,6 +2,7 @@ import {
   sendResponse,
   errorResponseServerError,
   errorResponseForbidden,
+  errorResponseUnauthorized,
   errorResponseBadRequest
 } from '../../apiHelpers'
 import { NextFunction, Request, Response } from 'express'
@@ -70,7 +71,7 @@ export const premiumContentMiddleware = async (
           return sendResponse(
             req,
             res,
-            errorResponseForbidden(
+            errorResponseUnauthorized(
               'Missing request headers for premium content.'
             )
           )
