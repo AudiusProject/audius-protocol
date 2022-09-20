@@ -15,6 +15,7 @@ const {
 } = require('./stateMachineConstants')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
+const SyncRequestDeDuplicator = require('./stateReconciliation/SyncRequestDeDuplicator')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -51,8 +52,10 @@ class StateMachineManager {
       prometheusRegistry
     )
 
-    // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
     if (cluster.worker?.id === 1) {
+      SyncRequestDeDuplicator.clear()
+
+      // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
       const queueNameToQueueMap = {
         [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: {
           queue: cNodeEndpointToSpIdMapQueue,

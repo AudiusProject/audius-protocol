@@ -190,7 +190,8 @@ async function _handleIssueSyncRequest({
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
    * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
    */
-  SyncRequestDeDuplicator.removeSync(
+  // eslint-disable-next-line node/no-sync
+  await SyncRequestDeDuplicator.removeSync(
     syncType,
     userWallet,
     secondaryEndpoint,

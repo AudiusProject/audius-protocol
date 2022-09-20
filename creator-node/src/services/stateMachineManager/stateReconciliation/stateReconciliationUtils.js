@@ -45,12 +45,13 @@ const getNewOrExistingSyncReq = ({
    * If duplicate sync already exists, do not add and instead return existing sync job info
    * Ignore syncMode when checking for duplicates, since it doesn't matter
    */
-  const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
-    syncType,
-    userWallet,
-    secondaryEndpoint,
-    immediate
-  )
+  const duplicateSyncJobInfo =
+    await SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate
+    )
   if (duplicateSyncJobInfo) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
@@ -87,7 +88,8 @@ const getNewOrExistingSyncReq = ({
     parentSpanContext: tracing.currentSpanContext()
   }
 
-  SyncRequestDeDuplicator.recordSync(
+  // eslint-disable-next-line node/no-sync
+  await SyncRequestDeDuplicator.recordSync(
     syncType,
     userWallet,
     secondaryEndpoint,
