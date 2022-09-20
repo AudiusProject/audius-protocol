@@ -20,7 +20,7 @@ from src.tasks.users import (
 logger = logging.getLogger(__name__)
 
 
-def is_valid_user_tx(params: ManageEntityParameters):
+def validate_user_tx(params: ManageEntityParameters):
     user_id = params.user_id
 
     if params.entity_type != EntityType.USER:
@@ -40,7 +40,6 @@ def is_valid_user_tx(params: ManageEntityParameters):
             raise Exception(
                 "Invalid User Transaction, user wallet signer does not match"
             )
-    return True
 
 
 def update_user_record(params: ManageEntityParameters, user: User, metadata: Dict):
@@ -54,8 +53,8 @@ def update_user_record(params: ManageEntityParameters, user: User, metadata: Dic
 
 
 def create_user(params: ManageEntityParameters):
-    if not is_valid_user_tx(params):
-        return
+    validate_user_tx(params)
+
     user_id = params.user_id
 
     user_record = User(
@@ -87,8 +86,7 @@ def create_user(params: ManageEntityParameters):
 
 
 def update_user(params: ManageEntityParameters):
-    if not is_valid_user_tx(params):
-        return
+    validate_user_tx(params)
 
     user_metadata = params.ipfs_metadata[params.metadata_cid]
     user_id = params.entity_id

@@ -1097,14 +1097,6 @@ users_by_content_node_response = make_full_response(
     "users_by_content_node", full_ns, fields.List(fields.Nested(user_replica_set))
 )
 
-users_by_content_node_response = make_full_response(
-    "users_by_content_node", full_ns, fields.List(fields.Nested(user_replica_set))
-)
-
-user_replica_set_response = make_full_response(
-    "users_by_content_node", full_ns, fields.Nested(user_replica_set)
-)
-
 
 @full_ns.route("/content_node/<string:replica_type>", doc=False)
 class UsersByContentNode(Resource):
@@ -1482,6 +1474,9 @@ class GetTokenVerification(Resource):
 
 
 GET_REPLICA_SET = "/<string:id>/replica_set"
+user_replica_set_response = make_full_response(
+    "users_by_content_node", full_ns, fields.Nested(user_replica_set)
+)
 
 
 @full_ns.route(GET_REPLICA_SET)
