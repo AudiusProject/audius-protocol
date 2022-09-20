@@ -232,12 +232,14 @@ export const springToValue = ({
   animation,
   value,
   animationStyle,
+  drawerHeight,
   finished,
   velocity
 }: {
   animation: Animated.Value
   value: number
   animationStyle: DrawerAnimationStyle
+  drawerHeight: number
   finished?: ({ finished }: { finished: boolean }) => void
   velocity?: number
 }) => {
@@ -249,8 +251,11 @@ export const springToValue = ({
       friction = 25
       break
     case DrawerAnimationStyle.SPRINGY:
-      tension = 70
-      friction = 10
+      // Factor the height of the drawer into the spring physics.
+      // Without this, short drawers tend to feel sluggish while
+      // tall drawers really get going.
+      tension = 70 + 60 * (1 - drawerHeight / FULL_DRAWER_HEIGHT)
+      friction = 10 + 2 * (1 - drawerHeight / FULL_DRAWER_HEIGHT)
       break
   }
   Animated.spring(animation, {
@@ -368,6 +373,7 @@ export const Drawer: DrawerComponent = ({
         animation: translationAnim,
         value: position,
         animationStyle,
+        drawerHeight,
         velocity,
         finished: ({ finished }) => {
           if (finished) {
@@ -379,6 +385,7 @@ export const Drawer: DrawerComponent = ({
         springToValue({
           animation: borderRadiusAnim,
           value: 0,
+          drawerHeight,
           animationStyle,
           velocity
         })
@@ -387,11 +394,13 @@ export const Drawer: DrawerComponent = ({
         springToValue({
           animation: shadowAnim,
           value: MAX_SHADOW_OPACITY,
+          drawerHeight,
           animationStyle
         })
         springToValue({
           animation: backgroundOpacityAnim,
           value: BACKGROUND_OPACITY,
+          drawerHeight,
           animationStyle
         })
       }
@@ -403,7 +412,8 @@ export const Drawer: DrawerComponent = ({
       borderRadiusAnim,
       shouldBackgroundDim,
       isFullscreen,
-      animationStyle
+      animationStyle,
+      drawerHeight
     ]
   )
 
@@ -412,6 +422,7 @@ export const Drawer: DrawerComponent = ({
       springToValue({
         animation: translationAnim,
         value: position,
+        drawerHeight,
         animationStyle,
         finished: ({ finished }) => {
           if (finished) {
@@ -426,14 +437,21 @@ export const Drawer: DrawerComponent = ({
         springToValue({
           animation: borderRadiusAnim,
           value: BORDER_RADIUS,
+          drawerHeight,
           animationStyle
         })
       }
       if (shouldBackgroundDim) {
-        springToValue({ animation: shadowAnim, value: 0, animationStyle })
+        springToValue({
+          animation: shadowAnim,
+          value: 0,
+          drawerHeight,
+          animationStyle
+        })
         springToValue({
           animation: backgroundOpacityAnim,
           value: 0,
+          drawerHeight,
           animationStyle
         })
       }
@@ -446,7 +464,8 @@ export const Drawer: DrawerComponent = ({
       isFullscreen,
       shouldBackgroundDim,
       animationStyle,
-      onClosed
+      onClosed,
+      drawerHeight
     ]
   )
 

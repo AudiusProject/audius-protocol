@@ -6,7 +6,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
-import { View, Pressable, StyleSheet } from 'react-native'
+import { View, StyleSheet, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
@@ -117,7 +117,7 @@ export const LineupTileStats = ({
       )}
       {hasEngagement && !isUnlisted && (
         <View style={styles.leftStats}>
-          <Pressable
+          <TouchableOpacity
             style={[
               trackTileStyles.statItem,
               !repostCount ? styles.disabledStatItem : {}
@@ -134,8 +134,8 @@ export const LineupTileStats = ({
               fill={neutralLight4}
               style={[styles.statIcon, styles.repostStat]}
             />
-          </Pressable>
-          <Pressable
+          </TouchableOpacity>
+          <TouchableOpacity
             style={[
               trackTileStyles.statItem,
               !saveCount ? styles.disabledStatItem : {}
@@ -152,7 +152,7 @@ export const LineupTileStats = ({
               width={14}
               fill={neutralLight4}
             />
-          </Pressable>
+          </TouchableOpacity>
         </View>
       )}
       {!hidePlays && (
