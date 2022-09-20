@@ -15,9 +15,9 @@ logging.basicConfig(
 logger = logging.getLogger("cli")
 
 
-ENVIRONMENTS = ("staging",)
+ENVIRONMENTS = ("staging", "prod")
 SERVICES = ("all", "discovery", "creator", "identity")
-CREATOR_NODES = (
+STAGE_CREATOR_NODES = (
     "stage-creator-4",  # canary
     "stage-creator-5",
     "stage-creator-6",
@@ -28,14 +28,35 @@ CREATOR_NODES = (
     "stage-creator-11",
     "stage-user-metadata",
 )
-DISCOVERY_NODES = (
+PROD_CREATOR_NODES = (
+    "prod-creator-1",
+    "prod-creator-2",
+    "prod-creator-3",
+    "prod-creator-4",
+    "prod-creator-5",  # prod-canary
+    "user-metadata",
+)
+CREATOR_NODES = STAGE_CREATOR_NODES + PROD_CREATOR_NODES
+
+STAGE_DISCOVERY_NODES = (
     "stage-discovery-1",
     "stage-discovery-2",
     "stage-discovery-3",
     "stage-discovery-4",  # canary
     "stage-discovery-5",
 )
-IDENTITY_NODES = ("stage-identity",)
+PROD_DISCOVERY_NODES = (
+    "prod-discovery-1",
+    "prod-discovery-2",
+    "prod-discovery-3",
+    "prod-discovery-4",  # prod-canary
+)
+DISCOVERY_NODES = STAGE_DISCOVERY_NODES + PROD_DISCOVERY_NODES
+
+STAGE_IDENTITY_NODES = ("stage-identity",)
+PROD_IDENTITY_NODES = ("prod-identity",)
+IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
+
 ALL_NODES = CREATOR_NODES + DISCOVERY_NODES + IDENTITY_NODES
 
 MASTER = "master"
@@ -292,17 +313,26 @@ def print_release_summary(release_summary):
         pprint(release_summary["failed"], sort_dicts=True)
 
 
-def generate_deploy_list(services, hosts):
+def generate_deploy_list(environment, services, hosts):
     """Create a set of hosts to be deployed to, given possibly conflicting CLI parameters."""
 
     deploy_list = []
     for service in services:
         if service in ["all", "creator"]:
-            deploy_list += CREATOR_NODES
+            if environment == "prod":
+                deploy_list += PROD_CREATOR_NODES
+            else:
+                deploy_list += STAGE_CREATOR_NODES
         if service in ["all", "discovery"]:
-            deploy_list += DISCOVERY_NODES
+            if environment == "prod":
+                deploy_list += PROD_DISCOVERY_NODES
+            else:
+                deploy_list += STAGE_DISCOVERY_NODES
         if service in ["all", "identity"]:
-            deploy_list += IDENTITY_NODES
+            if environment == "prod":
+                deploy_list += PROD_IDENTITY_NODES
+            else:
+                deploy_list += STAGE_IDENTITY_NODES
 
     # make sure hosts is not a superset of deploy_list
     for host in hosts:
@@ -398,7 +428,7 @@ def cli(
 
     # gather and display current release state, pre-deploy
     release_summary = {
-        "deploy_list": generate_deploy_list(services, hosts),
+        "deploy_list": generate_deploy_list(environment, services, hosts),
         "git_tag": git_tag,
     }
     update_release_summary(
@@ -438,29 +468,36 @@ def cli(
             # perform release
             # NOTE: `git pull` and `docker pull` write to stderr,
             # so we can't readily catch "errors"
-            ssh(
-                host,
-                "yes | audius-cli pull",
-                show_output=True,
-                exit_on_error=IGNORE,
-                dry_run=dry_run,
-            )
-            ssh(
-                host,
-                f"yes | audius-cli set-tag {git_tag}",
-                show_output=True,
-                dry_run=dry_run,
-            )
-            ssh(
-                host,
-                f"yes | audius-cli launch {service}",
-                show_output=True,
-                exit_on_error=IGNORE,
-                dry_run=dry_run,
-            )
-
-            # command for production, coming soon
-            # # ssh(host, "yes | audius-cli upgrade", show_output=True, dry_run=dry_run)
+            if environment == "prod":
+                dry_run = True
+                ssh(
+                    host,
+                    "yes | audius-cli upgrade",
+                    show_output=True,
+                    exit_on_error=IGNORE,
+                    dry_run=dry_run,
+                )
+            else:
+                ssh(
+                    host,
+                    "yes | audius-cli pull",
+                    show_output=True,
+                    exit_on_error=IGNORE,
+                    dry_run=dry_run,
+                )
+                ssh(
+                    host,
+                    f"yes | audius-cli set-tag {git_tag}",
+                    show_output=True,
+                    dry_run=dry_run,
+                )
+                ssh(
+                    host,
+                    f"yes | audius-cli launch {service}",
+                    show_output=True,
+                    exit_on_error=IGNORE,
+                    dry_run=dry_run,
+                )
 
             release_summary["upgraded"].append(host)
         except:
