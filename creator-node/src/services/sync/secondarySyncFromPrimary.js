@@ -3,7 +3,8 @@ const _ = require('lodash')
 const {
   logger: genericLogger,
   createChildLogger,
-  logInfoWithDuration
+  logInfoWithDuration,
+  getStartTime
 } = require('../../logging')
 const config = require('../../config')
 const models = require('../../models')
@@ -175,7 +176,7 @@ const handleSyncFromPrimary = async ({
      * Secondary requests export of new data by passing its current max clock value in the request.
      * Primary builds an export object of all data beginning from the next clock value.
      */
-    const startFetchExportDate = Date.now()
+    const startFetchExport = getStartTime()
     const {
       fetchedCNodeUser,
       error: fetchExportFromNodeErrorMessage,
@@ -189,7 +190,7 @@ const handleSyncFromPrimary = async ({
     })
 
     logInfoWithDuration(
-      { logger, startTime: startFetchExportDate },
+      { logger, startTime: startFetchExport },
       'Sync step complete. Fetched export from node',
       'syncStepDurationFetchExport'
     )
@@ -235,10 +236,10 @@ const handleSyncFromPrimary = async ({
     // Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
     let gatewaysToTry = []
     try {
-      const startGetOwnEndpointDate = Date.now()
+      const startGetOwnEndpoint = getStartTime()
       const myCnodeEndpoint = await getAndValidateOwnEndpoint(logger)
       logInfoWithDuration(
-        { logger, startTime: startGetOwnEndpointDate },
+        { logger, startTime: startGetOwnEndpoint },
         'Sync step complete. Found and validated own endpoint',
         'syncStepDurationGetOwnEndpoint'
       )
@@ -340,13 +341,13 @@ const handleSyncFromPrimary = async ({
       let cnodeUser
 
       // Fetch current cnodeUser from DB
-      const startFetchCurrentUserDate = Date.now()
+      const startFetchCurrentUser = getStartTime()
       const cnodeUserRecord = await models.CNodeUser.findOne({
         where: { walletPublicKey: fetchedWalletPublicKey },
         transaction
       })
       logInfoWithDuration(
-        { logger, startTime: startFetchCurrentUserDate },
+        { logger, startTime: startFetchCurrentUser },
         'Sync step complete. Fetched current cnodeUser from DB',
         'syncStepDurationFetchCurrentUser'
       )
@@ -356,7 +357,7 @@ const handleSyncFromPrimary = async ({
        *    creating a new entry with a new auto-generated cnodeUserUUID.
        * Every subsequent sync will enter the if case and update the existing local cnodeUserRecord.
        */
-      const startUpsertDate = Date.now()
+      const startUpsert = getStartTime()
       if (cnodeUserRecord) {
         logger.info(
           `cNodeUserRecord was non-empty -- updating CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}. Clock value: ${fetchedLatestClockVal}`
@@ -418,7 +419,7 @@ const handleSyncFromPrimary = async ({
 
       const cnodeUserUUID = cnodeUser.cnodeUserUUID
       logInfoWithDuration(
-        { logger, startTime: startUpsertDate },
+        { logger, startTime: startUpsert },
         `Sync step complete. Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedLatestClockVal}`,
         'syncStepDurationUpsert'
       )
@@ -435,7 +436,7 @@ const handleSyncFromPrimary = async ({
        *    but tracks cannot be created until metadata and cover art files have been created.
        */
 
-      const startSaveFilesDate = Date.now()
+      const startSaveFiles = getStartTime()
       const trackFiles = fetchedCNodeUser.files.filter((file) =>
         models.File.TrackTypes.includes(file.type)
       )
@@ -535,7 +536,7 @@ const handleSyncFromPrimary = async ({
       logger.info('Saved all non-track files to disk.')
 
       logInfoWithDuration(
-        { logger, startTime: startSaveFilesDate },
+        { logger, startTime: startSaveFiles },
         'Sync step complete. Saved all track and non-track files to disk',
         'syncStepDurationSaveFiles'
       )
