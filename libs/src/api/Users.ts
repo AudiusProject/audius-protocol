@@ -58,6 +58,7 @@ export class Users extends Base {
     this.getSocialFeed = this.getSocialFeed.bind(this)
     this.getTopCreatorsByGenres = this.getTopCreatorsByGenres.bind(this)
     this.uploadProfileImages = this.uploadProfileImages.bind(this)
+    this.createEntityManagerUser = this.createEntityManagerUser.bind(this)
     this.addUser = this.addUser.bind(this)
     this.updateUser = this.updateUser.bind(this)
     this.updateCreator = this.updateCreator.bind(this)
@@ -380,12 +381,126 @@ export class Users extends Base {
     return metadata
   }
 
+  async createEntityManagerUser({ metadata }: { metadata: UserMetadata }) {
+    this.REQUIRES(Services.CREATOR_NODE)
+    const phases = {
+      CLEAN_AND_VALIDATE_METADATA: 'CLEAN_AND_VALIDATE_METADATA',
+      AUTOSELECT_CONTENT_NODES: 'AUTOSELECT_CONTENT_NODES',
+      SYNC_ACROSS_CONTENT_NODES: 'SYNC_ACROSS_CONTENT_NODES',
+      SET_PRIMARY: 'SET_PRIMARY',
+      UPLOAD_METADATA_AND_UPDATE_ON_CHAIN: 'UPLOAD_METADATA_AND_UPDATE_ON_CHAIN'
+    }
+    let phase = ''
+
+    const logPrefix = `[User:assignReplicaSet()]`
+    const fnStartMs = Date.now()
+    let startMs = fnStartMs
+
+    // The new metadata object that will contain the replica set
+    try {
+      // Create starter metadata and validate
+      phase = phases.CLEAN_AND_VALIDATE_METADATA
+
+      // Autoselect a new replica set and update the metadata object with new content node endpoints
+      phase = phases.AUTOSELECT_CONTENT_NODES
+      console.log('get cn')
+      const response = await this.ServiceProvider.autoSelectCreatorNodes({
+        performSyncCheck: false,
+        preferHigherPatchForPrimary: this.preferHigherPatchForPrimary,
+        preferHigherPatchForSecondaries: this.preferHigherPatchForSecondaries
+      })
+      console.log(
+        `${logPrefix} [phase: ${phase}] ServiceProvider.autoSelectCreatorNodes() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
+      startMs = Date.now()
+
+      // Ideally, 1 primary and n-1 secondaries are chosen. The best-worst case scenario is that at least 1 primary
+      // is chosen. If a primary was not selected (which also implies that secondaries were not chosen), throw
+      // an error.
+      const { primary, secondaries } = response
+      if (!primary) {
+        throw new Error('Could not select a primary.')
+      }
+      const spIds = await Promise.all(
+        [primary, ...secondaries].map(
+          async (endpoint) => await this._retrieveSpIDFromEndpoint(endpoint)
+        )
+      )
+
+      // Create the user with entityMananer
+      const userId = Users.generateUserId()
+      const manageEntityResponse =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityManagerClient.EntityType.USER,
+          userId,
+          EntityManagerClient.Action.CREATE,
+          spIds.join(',')
+        )
+
+      await this._waitForReplicaSetDiscoveryIndexing(
+        userId,
+        spIds,
+        manageEntityResponse.txReceipt.blockNumber
+      )
+
+      // Upload metadata and call update user with the metadata
+      const newMetadata = this.cleanUserMetadata({ ...metadata })
+      this._validateUserMetadata(newMetadata)
+
+      const newContentNodeEndpoints = CreatorNode.buildEndpoint(
+        primary,
+        secondaries
+      )
+      newMetadata.wallet = this.web3Manager.getWalletAddress()
+      newMetadata.user_id = userId
+      newMetadata.creator_node_endpoint = newContentNodeEndpoints
+      this.userStateManager.setCurrentUser({
+        ...newMetadata,
+        // Initialize counts to be 0. We don't want to write this data to backends ever really
+        // (hence the cleanUserMetadata above), but we do want to make sure clients
+        // can properly "do math" on these numbers.
+        followee_count: 0,
+        follower_count: 0,
+        repost_count: 0
+      })
+
+      // Update the new primary to the auto-selected primary
+      phase = phases.SET_PRIMARY
+      await this.creatorNode.setEndpoint(primary)
+
+      // Update metadata in CN and on chain of newly assigned replica set
+      phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
+      await this.updateAndUploadMetadata({
+        newMetadata,
+        userId,
+        useEntityManager: true
+      })
+      console.log(
+        `${logPrefix} [phase: ${phase}] updateAndUploadMetadata() completed in ${
+          Date.now() - startMs
+        }ms`
+      )
+
+      console.log(`${logPrefix} completed in ${Date.now() - fnStartMs}ms`)
+      return newMetadata
+    } catch (e) {
+      const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${
+        Date.now() - fnStartMs
+      }ms: ${e}`
+      console.log(errorMsg)
+      throw new Error(errorMsg)
+    }
+  }
+
   /**
    * Create an on-chain non-creator user. Some fields are restricted (ex.
    * creator_node_endpoint); this should error if the metadata given attempts to set them.
    * @param {Object} metadata metadata to associate with the user
    */
-  async addUser(metadata: UserMetadata, useEntityManager: boolean) {
+  async addUser(metadata: UserMetadata) {
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
@@ -395,27 +510,16 @@ export class Users extends Base {
     if (currentUser?.handle) {
       userId = currentUser.user_id
     } else {
-      userId = Users.generateUserId() 
+      userId = (
+        await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
+      ).userId
     }
     let blockHash: string | undefined
     let blockNumber: number
 
-    if (useEntityManager) {
-      // 
-      const response = await this.contracts.EntityManagerClient!.manageEntity(
-        userId,
-        EntityManagerClient.EntityType.USER,
-        userId,
-        EntityManagerClient.Action.CREATE,
-        newMetadata
-      )
-      blockHash = response.txReceipt.blockHash
-      blockNumber = response.txReceipt.blockNumber
-    } else {
-      const result = await this._addUserOperations(userId, newMetadata)
-      blockHash = result.latestBlockHash
-      blockNumber = result.latestBlockNumber
-    }
+    const result = await this._addUserOperations(userId, newMetadata)
+    blockHash = result.latestBlockHash
+    blockNumber = result.latestBlockNumber
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
@@ -430,6 +534,37 @@ export class Users extends Base {
       repost_count: 0
     })
     return { blockHash, blockNumber, userId }
+  }
+
+  async updateEntityManagerReplicaSet({
+    userId,
+    primary,
+    secondaries,
+    oldPrimary,
+    oldSecondaries
+  }: {
+    userId: number
+    primary: number
+    secondaries: number[]
+    oldPrimary: number
+    oldSecondaries: number[]
+  }) {
+    const updateReplica = `${[oldPrimary, ...oldSecondaries].join(',')}:${[
+      primary,
+      ...secondaries
+    ].join(',')}`
+
+    const response = await this.contracts.EntityManagerClient!.manageEntity(
+      userId,
+      EntityManagerClient.EntityType.USER_REPLICA_SET,
+      userId,
+      EntityManagerClient.Action.UPDATE,
+      updateReplica
+    )
+    return {
+      blockHash: response.txReceipt.blockHash,
+      blockNumber: response.txReceipt.blockNumber
+    }
   }
 
   /**
@@ -465,7 +600,11 @@ export class Users extends Base {
   /**
    * Updates a creator (updates their data on the creator node)
    */
-  async updateCreator(userId: number, metadata: UserMetadata) {
+  async updateCreator(
+    userId: number,
+    metadata: UserMetadata,
+    useEntityManager: boolean
+  ) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
@@ -506,7 +645,8 @@ export class Users extends Base {
       const { txReceipt: updateEndpointTxReceipt, replicaSetSPIDs } =
         await this._updateReplicaSetOnChain(
           userId,
-          newMetadata.creator_node_endpoint
+          newMetadata.creator_node_endpoint,
+          true
         )
       updateEndpointTxBlockNumber = updateEndpointTxReceipt?.blockNumber
       console.log(
@@ -621,10 +761,12 @@ export class Users extends Base {
    */
   async updateAndUploadMetadata({
     newMetadata,
-    userId
+    userId,
+    useEntityManager
   }: {
     newMetadata: UserMetadata
     userId: number
+    useEntityManager: boolean
   }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
@@ -658,24 +800,29 @@ export class Users extends Base {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
         const { replicaSetSPIDs } = await this._updateReplicaSetOnChain(
           userId,
-          newMetadata.creator_node_endpoint
+          newMetadata.creator_node_endpoint,
+          useEntityManager
         )
         console.log(
           `${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${
             Date.now() - startMs
           }ms`
         )
-        startMs = Date.now()
+        if (useEntityManager) {
+          // TODO: wait for discovery indexing of replcea set update
+        } else {
+          startMs = Date.now()
 
-        await this._waitForURSMCreatorNodeEndpointIndexing(
-          userId,
-          replicaSetSPIDs
-        )
-        console.log(
-          `${logPrefix} [phase: ${phase}] _waitForURSMCreatorNodeEndpointIndexing() completed in ${
-            Date.now() - startMs
-          }ms`
-        )
+          await this._waitForURSMCreatorNodeEndpointIndexing(
+            userId,
+            replicaSetSPIDs
+          )
+          console.log(
+            `${logPrefix} [phase: ${phase}] _waitForURSMCreatorNodeEndpointIndexing() completed in ${
+              Date.now() - startMs
+            }ms`
+          )
+        }
       }
 
       // Upload new metadata object to CN
@@ -692,32 +839,48 @@ export class Users extends Base {
 
       // Write metadata multihash to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN
-      const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
-      const { txReceipt } =
-        await this.contracts.UserFactoryClient.updateMultihash(
+      let txReceipt
+      let blockNumber
+      if (useEntityManager) {
+        const response = await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityManagerClient.EntityType.USER,
+          userId,
+          EntityManagerClient.Action.UPDATE,
+          metadataMultihash
+        )
+        txReceipt = response.txReceipt
+        blockNumber = txReceipt.blockNumber
+      } else {
+        const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
+        const res = await this.contracts.UserFactoryClient.updateMultihash(
           userId,
           updatedMultihashDecoded.digest
         )
-      console.log(
-        `${logPrefix} [phase: ${phase}] UserFactoryClient.updateMultihash() completed in ${
-          Date.now() - startMs
-        }ms`
-      )
-      startMs = Date.now()
+        txReceipt = res.txReceipt
+        console.log(
+          `${logPrefix} [phase: ${phase}] UserFactoryClient.updateMultihash() completed in ${
+            Date.now() - startMs
+          }ms`
+        )
+        startMs = Date.now()
 
-      // Write remaining metadata fields to chain
-      phase = phases.UPDATE_USER_ON_CHAIN_OPS
-      const { latestBlockNumber } = await this._updateUserOperations(
-        newMetadata,
-        oldMetadata,
-        userId,
-        ['creator_node_endpoint']
-      )
-      console.log(
-        `${logPrefix} [phase: ${phase}] _updateUserOperations() completed in ${
-          Date.now() - startMs
-        }ms`
-      )
+        // Write remaining metadata fields to chain
+        phase = phases.UPDATE_USER_ON_CHAIN_OPS
+        const { latestBlockNumber } = await this._updateUserOperations(
+          newMetadata,
+          oldMetadata,
+          userId,
+          ['creator_node_endpoint']
+        )
+        console.log(
+          `${logPrefix} [phase: ${phase}] _updateUserOperations() completed in ${
+            Date.now() - startMs
+          }ms`
+        )
+        blockNumber = Math.max(txReceipt.blockNumber, latestBlockNumber)
+      }
+
       startMs = Date.now()
 
       // Write to CN to associate blockchain user id with updated metadata and block number
@@ -725,7 +888,7 @@ export class Users extends Base {
       await this.creatorNode.associateCreator(
         userId,
         metadataFileUUID,
-        Math.max(txReceipt.blockNumber, latestBlockNumber)
+        blockNumber
       )
       console.log(
         `${logPrefix} [phase: ${phase}] creatorNode.associateCreator() completed in ${
@@ -785,6 +948,38 @@ export class Users extends Base {
 
       await Utils.wait(500)
     }
+  }
+
+  async _waitForReplicaSetDiscoveryIndexing(
+    userId: number,
+    replicaSetSPIDs: number[],
+    blockNumber: number,
+    timeoutMs = 60000
+  ) {
+    const asyncFn = async () => {
+      while (true) {
+        const encodedUserId = Utils.encodeHashId(userId)
+        const replicaSet = await this.discoveryProvider.getUserReplicaSet({
+          encodedUserId: encodedUserId!,
+          blockNumber
+        })
+        console.log({ replicaSet })
+        if (
+          replicaSet &&
+          replicaSet.primarySpID === replicaSetSPIDs[0] &&
+          replicaSet.secondary1SpID === replicaSetSPIDs[1] &&
+          replicaSet.secondary2SpID === replicaSetSPIDs[2]
+        ) {
+          break
+        }
+        await Utils.wait(500)
+      }
+    }
+    await Utils.racePromiseWithTimeout(
+      asyncFn(),
+      timeoutMs,
+      `[User:_waitForURSMCreatorNodeEndpointIndexing()] Timeout error after ${timeoutMs}ms`
+    )
   }
 
   async _waitForURSMCreatorNodeEndpointIndexing(
@@ -980,7 +1175,11 @@ export class Users extends Base {
   // Perform replica set update
   // Conditionally write to UserFactory contract, else write to UserReplicaSetManager
   // This behavior is to ensure backwards compatibility prior to contract deploy
-  async _updateReplicaSetOnChain(userId: number, creatorNodeEndpoint: string) {
+  async _updateReplicaSetOnChain(
+    userId: number,
+    creatorNodeEndpoint: string,
+    useEntityManager: boolean
+  ) {
     // Attempt to update through UserReplicaSetManagerClient if present
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
@@ -1000,14 +1199,26 @@ export class Users extends Base {
       this._retrieveSpIDFromEndpoint(secondaries[0]!),
       this._retrieveSpIDFromEndpoint(secondaries[1]!)
     ])
-
+    let txReceipt
     // Update in new contract
-    const txReceipt =
-      await this.contracts.UserReplicaSetManagerClient?.updateReplicaSet(
+    if (useEntityManager) {
+      const currentUser = this.userStateManager.getCurrentUser()
+      if (!currentUser) throw new Error('Current user missing')
+      txReceipt = await this.updateEntityManagerReplicaSet({
         userId,
-        primarySpID,
-        [secondary1SpID, secondary2SpID]
-      )
+        primary: primarySpID,
+        secondaries: [secondary1SpID, secondary2SpID],
+        oldPrimary: currentUser.primary_id,
+        oldSecondaries: currentUser.secondary_ids
+      })
+    } else {
+      txReceipt =
+        await this.contracts.UserReplicaSetManagerClient?.updateReplicaSet(
+          userId,
+          primarySpID,
+          [secondary1SpID, secondary2SpID]
+        )
+    }
     const replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
     return {
       txReceipt,
@@ -1035,7 +1246,7 @@ export class Users extends Base {
     }
     return spID
   }
-  
+
   // Minimum user ID, intentionally higher than legacy user ID range
   static MIN_USER_ID = 2000000
 

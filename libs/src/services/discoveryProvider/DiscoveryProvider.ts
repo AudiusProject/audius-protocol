@@ -1040,7 +1040,8 @@ export class DiscoveryProvider {
     requestObj: Record<string, unknown>,
     retry = true,
     attemptedRetries = 0,
-    throwError = false
+    throwError = false,
+    blockNumber?: number
   ): Promise<Response | undefined | null> {
     const returnOrThrow = <ErrorType>(e: ErrorType) => {
       if (throwError) {
@@ -1126,6 +1127,9 @@ export class DiscoveryProvider {
       this.ethContracts && !this.ethContracts.isInRegressedMode()
 
     const blockDiff = await this._getBlocksBehind(parsedResponse)
+    if (blockNumber && parsedResponse.latest_indexed_block < blockNumber) {
+      return null
+    }
     if (notInRegressedMode && blockDiff) {
       const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]`
       if (retry) {
@@ -1164,6 +1168,29 @@ export class DiscoveryProvider {
 
     // Everything looks good, return the data!
     return parsedResponse.data
+  }
+
+  /**
+   * get whether a JWT given by Audius Oauth popup is valid
+   * @param token - JWT
+   * @return profile info of user attached to JWT payload if the JWT is valid, else false
+   */
+  async getUserReplicaSet({
+    encodedUserId,
+    blockNumber
+  }: {
+    encodedUserId: string
+    blockNumber?: number
+  }): Promise<Object | null | undefined> {
+    const req = Requests.getUserReplicaSet(encodedUserId)
+
+    return await this._makeRequest<Object | null>(
+      req,
+      true,
+      0,
+      false,
+      blockNumber
+    )
   }
 
   /**

@@ -56,6 +56,8 @@ export type UserMetadata = {
   metadata_multihash: Nullable<CID>
   has_collectibles: boolean
   collectiblesOrderUnset?: boolean
+  primary_id: number
+  secondary_ids: number[]
 
   // Only present on the "current" account
   does_follow_current_user?: boolean
