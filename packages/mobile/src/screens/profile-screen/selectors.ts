@@ -29,7 +29,7 @@ export const useSelectProfileRoot = (deps: Array<keyof User>) => {
       const profile = isAccountUser
         ? getAccountUser(state)
         : getProfileUser(state, params)
-      if (!profile) return {}
+      if (!profile) return null
 
       const profileSlice = {}
       deps.forEach((dep) => {
