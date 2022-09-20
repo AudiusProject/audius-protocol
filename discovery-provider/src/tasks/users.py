@@ -339,7 +339,14 @@ def parse_user_event(
     if event_type == user_event_types_lookup["update_multihash"]:
         # Look up metadata multihash in IPFS and override with metadata fields
         if ipfs_metadata:
-            user_record = update_user_metadata(session, update_task.redis, user_record, ipfs_metadata, update_task.web3, update_task.challenge_event_bus)
+            user_record = update_user_metadata(
+                session,
+                update_task.redis,
+                user_record,
+                ipfs_metadata,
+                update_task.web3,
+                update_task.challenge_event_bus,
+            )
 
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
@@ -347,7 +354,14 @@ def parse_user_event(
     return user_record
 
 
-def update_user_metadata(session, redis, user_record: User, ipfs_metadata: Dict, web3: Web3, challenge_event_bus: ChallengeEventBus):
+def update_user_metadata(
+    session,
+    redis,
+    user_record: User,
+    ipfs_metadata: Dict,
+    web3: Web3,
+    challenge_event_bus: ChallengeEventBus,
+):
     # Fields also stored on chain
     if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
         user_record.profile_picture = ipfs_metadata["profile_picture"]
@@ -371,10 +385,7 @@ def update_user_metadata(session, redis, user_record: User, ipfs_metadata: Dict,
     ):
         user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
 
-    if (
-        "cover_photo_sizes" in ipfs_metadata
-        and ipfs_metadata["cover_photo_sizes"]
-    ):
+    if "cover_photo_sizes" in ipfs_metadata and ipfs_metadata["cover_photo_sizes"]:
         user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
 
     if (
@@ -407,10 +418,7 @@ def update_user_metadata(session, redis, user_record: User, ipfs_metadata: Dict,
             "sol",
         )
 
-    if (
-        "playlist_library" in ipfs_metadata
-        and ipfs_metadata["playlist_library"]
-    ):
+    if "playlist_library" in ipfs_metadata and ipfs_metadata["playlist_library"]:
         user_record.playlist_library = ipfs_metadata["playlist_library"]
 
     if "is_deactivated" in ipfs_metadata:

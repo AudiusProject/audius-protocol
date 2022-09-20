@@ -32,7 +32,7 @@ from src.queries.get_skipped_transactions import (
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.utils import EntityType
+from src.tasks.entity_manager.utils import Action, EntityType
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.sort_block_transactions import sort_block_transactions
@@ -328,16 +328,20 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_t
                     event_args = entry["args"]
                     user_id = event_args._userId
                     cid = event_args._metadata
-                    if not cid:
+                    event_type = event_args._entityType
+                    action = event_args._action
+                    if not cid or event_type == EntityType.USER_REPLICA_SET:
+                        continue
+                    if action == Action.CREATE and event_type == EntityType.USER:
                         continue
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
-                    if event_args._entityType == EntityType.PLAYLIST:
+                    if event_type == EntityType.PLAYLIST:
                         cid_type[cid] = "playlist_data"
-                    elif event_args._entityType == EntityType.TRACK:
+                    elif event_type == EntityType.TRACK:
                         cid_type[cid] = "track"
-                    elif event_args._entityType == EntityType.USER:
+                    elif event_type == EntityType.USER:
                         cid_type[cid] = "user"
 
         # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster

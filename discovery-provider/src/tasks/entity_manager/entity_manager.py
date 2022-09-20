@@ -14,7 +14,6 @@ from src.models.social.save import Save
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.entity_manager.playlist import (
     create_playlist,
     delete_playlist,
@@ -29,6 +28,7 @@ from src.tasks.entity_manager.social_features import (
 )
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
 from src.tasks.entity_manager.user import create_user, update_user
+from src.tasks.entity_manager.user_replica_set import update_user_replica_set
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
@@ -41,7 +41,6 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
-from src.utils.indexing_errors import EntityMissingRequiredFieldError
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +111,7 @@ def entity_manager_update(
                         existing_records,
                         pending_track_routes,
                         ipfs_metadata,
+                        update_task.eth_manager,
                         update_task.web3,
                         block_timestamp,
                         block_number,
@@ -156,6 +156,24 @@ def entity_manager_update(
                         create_social_record(params)
                     elif params.action in delete_social_action_types:
                         delete_social_record(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.USER
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        create_user(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.USER
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        update_user(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.USER_REPLICA_SET
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        update_user_replica_set(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -213,6 +231,9 @@ def copy_original_records(existing_records):
     return original_records
 
 
+entity_types_to_fetch = set([EntityType.USER, EntityType.TRACK, EntityType.PLAYLIST])
+
+
 def collect_entities_to_fetch(
     update_task,
     entity_manager_txs,
@@ -225,9 +246,10 @@ def collect_entities_to_fetch(
             entity_id = helpers.get_tx_arg(event, "_entityId")
             entity_type = helpers.get_tx_arg(event, "_entityType")
             user_id = helpers.get_tx_arg(event, "_userId")
-            action = helpers.get_tx_arg(event, "_action")
-            entities_to_fetch[entity_type].add(entity_id)
+            if entity_type in entity_types_to_fetch:
+                entities_to_fetch[entity_type].add(entity_id)
             entities_to_fetch[EntityType.USER].add(user_id)
+            action = helpers.get_tx_arg(event, "_action")
 
             # Query follow operations as needed
             if action in action_to_record_type.keys():

@@ -1,6 +1,7 @@
 from celery import Task
 from redis import Redis
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.utils.eth_manager import EthManager
 from src.utils.session_manager import SessionManager
 
 
@@ -19,6 +20,7 @@ class DatabaseTask(Task):
         solana_client_manager=None,
         challenge_event_bus=None,
         anchor_program_indexer=None,
+        eth_manager=None,
     ):
         self._db = db
         self._db_read_replica = db_read_replica
@@ -32,6 +34,7 @@ class DatabaseTask(Task):
         self._solana_client_manager = solana_client_manager
         self._challenge_event_bus = challenge_event_bus
         self._anchor_program_indexer = anchor_program_indexer
+        self._eth_manager = eth_manager
 
     @property
     def abi_values(self):
@@ -39,7 +42,7 @@ class DatabaseTask(Task):
 
     @property
     def eth_abi_values(self):
-        return self._eth_abi_values
+        return self._eth_manager
 
     @property
     def web3(self):
@@ -80,3 +83,7 @@ class DatabaseTask(Task):
     @property
     def anchor_program_indexer(self):
         return self._anchor_program_indexer
+
+    @property
+    def eth_manager(self) -> EthManager:
+        return self._eth_abi_values

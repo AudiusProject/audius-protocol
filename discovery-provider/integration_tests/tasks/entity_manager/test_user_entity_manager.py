@@ -10,10 +10,33 @@ from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-"""
+
+def set_patches(mocker):
+    mocker.patch(
+        "src.tasks.entity_manager.user.get_endpoint_string_from_sp_ids",
+        return_value="https://cn.io,https://cn2.io,https://cn3.io",
+        autospec=True,
+    )
+
+    def fetch_node_info(self, sp_id, sp_type, redis):
+        return {
+            "operator_wallet": "wallet1",
+            "endpoint": "http://endpoint.io",
+            "block_number": sp_id,
+            "delegator_wallet": f"spid{sp_id}",
+        }
+
+    mocker.patch(
+        "src.utils.eth_manager.EthManager.fetch_node_info",
+        side_effect=fetch_node_info,
+        autospec=True,
+    )
+
 
 def test_index_valid_user(app, mocker):
     "Tests valid batch of users create/update/delete actions"
+
+    set_patches(mocker)
 
     # setup db and mocked txs
     with app.app_context():
@@ -31,7 +54,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET,
                         "_action": "Create",
-                        "_metadata": "QmCreateUser1",
+                        "_metadata": "1,2,3",
                         "_signer": "user1wallet",
                     }
                 )
@@ -59,6 +82,20 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 1,
                         "_action": "Create",
+                        "_metadata": "2,3,4",
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateUser2Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 1,
+                        "_action": "Update",
                         "_metadata": "QmCreateUser2",
                         "_signer": "user2wallet",
                     }
@@ -251,7 +288,7 @@ def test_index_valid_user(app, mocker):
 
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 5
+        assert len(all_users) == 6
 
         user_1: User = (
             session.query(User)
@@ -270,10 +307,10 @@ def test_index_valid_user(app, mocker):
         )
         assert user_2.name == "Forrest"
 
-"""
 
 def test_index_invalid_users(app, mocker):
     "Tests invalid batch of useres create/update/delete actions"
+    set_patches(mocker)
 
     # setup db and mocked txs
     with app.app_context():
@@ -333,7 +370,7 @@ def test_index_invalid_users(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET,
                         "_action": "Create",
-                        "_metadata": "QmCreateUser1",
+                        "_metadata": "3,4,5",
                         "_signer": "user1wallet",
                     }
                 )
