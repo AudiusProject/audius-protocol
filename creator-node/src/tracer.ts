@@ -23,6 +23,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 import config from './config'
+import FsInstrumentation from '@opentelemetry/instrumentation-fs'
 
 const SERVICE_NAME = 'content-node'
 const SPID = config.get('spID')
@@ -83,6 +84,9 @@ export const setupTracing = () => {
 
       // Adds spans to redis operations
       new RedisInstrumentation(),
+
+      // Adds spans to filesystem operatioons
+      new FsInstrumentation(),
 
       // Injects traceid, spanid, and SpanContext into bunyan logs
       new BunyanInstrumentation({
