@@ -114,10 +114,16 @@ async function issueSyncRequest({
       syncRequestParameters,
       logger
     })
-  const status = error || abort
-  if (status) {
+
+  if (error) {
     logger.error(
-      `Issuing sync request error or abort: ${status}. Prometheus result: ${result}`
+      `Issuing sync request error: ${error}. Prometheus result: ${result}`
+    )
+  }
+
+  if (abort) {
+    logger.warn(
+      `Issuing sync request abort: ${abort}. Prometheus result: ${result}`
     )
   }
 
