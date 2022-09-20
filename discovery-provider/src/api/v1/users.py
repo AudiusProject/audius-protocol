@@ -1474,8 +1474,11 @@ class GetTokenVerification(Resource):
 
 
 GET_REPLICA_SET = "/<string:id>/replica_set"
-user_replica_set_response = make_full_response(
+user_replica_set_full_response = make_full_response(
     "users_by_content_node", full_ns, fields.Nested(user_replica_set)
+)
+user_replica_set_response = make_response(
+    "users_by_content_node", ns, fields.Nested(user_replica_set)
 )
 
 
@@ -1494,10 +1497,12 @@ class FullGetReplicaSet(Resource):
     @full_ns.doc(
         id="""Get User Replica Set""",
         description="""Gets the user's replica set""",
-        params={},
+        params={
+            "id": "A User ID",
+        },
     )
     @full_ns.expect(current_user_parser)
-    @full_ns.marshal_with(user_replica_set_response)
+    @full_ns.marshal_with(user_replica_set_full_response)
     def get(self, id: str):
         return self._get(id)
 
@@ -1507,7 +1512,9 @@ class GetReplicaSet(FullGetReplicaSet):
     @ns.doc(
         id="""Get User Replica Set""",
         description="""Gets the user's replica set""",
-        params={},
+        params={
+            "id": "A User ID",
+        },
     )
     @ns.expect(current_user_parser)
     @ns.marshal_with(user_replica_set_response)
