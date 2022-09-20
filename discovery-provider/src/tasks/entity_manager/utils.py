@@ -138,8 +138,8 @@ class ManageEntityParameters:
         self.new_records[record_type][key].append(record)  # type: ignore
 
     def add_user_record(self, user_id: int, user: User):
-        self.new_records[EntityType.USER][user_id].append(user)
-        self.existing_records[EntityType.USER][user_id] = user
+        self.new_records[EntityType.USER][user_id].append(user)  # type: ignore
+        self.existing_records[EntityType.USER][user_id] = user  # type: ignore
 
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
