@@ -51,9 +51,7 @@ target 'AudiusReactNative' do
   use_native_modules!
   use_flipper!({ "Flipper-DoubleConversion" => "1.1.7" })
 
-  pod 'RNFS', :path => '../node_modules/react-native-fs'
 
-  pod 'react-native-randombytes', :path => '../node_modules/react-native-randombytes'
 
   post_install do |installer|
     flipper_post_install(installer)
@@ -61,6 +59,21 @@ target 'AudiusReactNative' do
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
     installer.pods_project.build_configurations.each do |config|
       config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+    end
+
+    # https://github.com/bitrise-steplib/steps-xcode-archive/issues/299#issuecomment-1246791398
+    targetsToFix = ["React-Core-AccessibilityResources", "EXConstants-EXConstants"];
+    installer.generated_projects.each do |project|
+      project.targets.each do |target|
+        if targetsToFix.include? target.name
+          puts "Set development team for target #{target.name}"
+          target.build_configurations.each do |config|
+            config.build_settings["DEVELOPMENT_TEAM"] = "LRFCG93S85"
+            config.build_settings["CODE_SIGN_IDENTITY"] = "Apple Distribution";
+            config.build_settings["CODE_SIGN_STYLE"] = "Manual";
+          end
+        end
+      end
     end
   end
 end
