@@ -112,6 +112,7 @@ declare module 'react-table' {
   interface CustomColumn {
     align?: 'right' | 'left'
     accessor?: string
+    sortTitle?: string
   }
 
   export interface ColumnInterface<

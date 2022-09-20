@@ -23,6 +23,7 @@ import { isDescendantElementOf } from 'utils/domUtils'
 import styles from './TestTracksTable.module.css'
 
 export type TracksTableColumn =
+  | 'addedDate'
   | 'artistName'
   | 'date'
   | 'length'
@@ -209,6 +210,11 @@ export const TestTracksTable = ({
     return moment(track.date).format('M/D/YY')
   }, [])
 
+  const renderAddedDateCell = useCallback((cellInfo) => {
+    const track = cellInfo.row.original
+    return moment(track.dateSaved).format('M/D/YY')
+  }, [])
+
   const renderReleaseDateCell = useCallback((cellInfo) => {
     const track = cellInfo.row.original
     return moment(track.created_at).format('M/D/YY')
@@ -321,6 +327,16 @@ export const TestTracksTable = ({
     Partial<ColumnInstance>
   > = useMemo(
     () => ({
+      addedDate: {
+        id: 'dateAdded',
+        Header: 'Added',
+        accessor: 'dateSaved',
+        Cell: renderAddedDateCell,
+        maxWidth: 160,
+        sortTitle: 'Date Added',
+        sorter: dateSorter('dateSaved'),
+        align: 'right'
+      },
       artistName: {
         id: 'artistName',
         Header: 'Artist',
@@ -328,6 +344,7 @@ export const TestTracksTable = ({
         Cell: renderArtistNameCell,
         maxWidth: 300,
         width: 120,
+        sortTitle: 'Artist Name',
         sorter: alphaSorter('artist'),
         align: 'left'
       },
@@ -337,6 +354,7 @@ export const TestTracksTable = ({
         accessor: 'date',
         Cell: renderDateCell,
         maxWidth: 160,
+        sortTitle: 'Date Listened',
         sorter: dateSorter('date'),
         align: 'right'
       },
@@ -346,6 +364,7 @@ export const TestTracksTable = ({
         accessor: 'dateListened',
         Cell: renderListenDateCell,
         maxWidth: 160,
+        sortTitle: 'Date Listened',
         sorter: dateSorter('dateListened'),
         align: 'right'
       },
@@ -355,6 +374,7 @@ export const TestTracksTable = ({
         accessor: 'created_at',
         Cell: renderReleaseDateCell,
         maxWidth: 160,
+        sortTitle: 'Date Released',
         sorter: dateSorter('created_at'),
         align: 'right'
       },
@@ -364,6 +384,7 @@ export const TestTracksTable = ({
         accessor: 'repost_count',
         Cell: renderRepostsCell,
         maxWidth: 160,
+        sortTitle: 'Reposts',
         sorter: numericSorter('repost_count'),
         align: 'right'
       },
@@ -373,6 +394,7 @@ export const TestTracksTable = ({
         accessor: 'plays',
         Cell: renderPlaysCell,
         maxWidth: 160,
+        sortTitle: 'Plays',
         sorter: numericSorter('plays'),
         align: 'right'
       },
@@ -399,6 +421,7 @@ export const TestTracksTable = ({
         accessor: 'time',
         Cell: renderLengthCell,
         maxWidth: 160,
+        sortTitle: 'Track Length',
         sorter: numericSorter('time'),
         align: 'right'
       },
@@ -409,11 +432,13 @@ export const TestTracksTable = ({
         Cell: renderTrackNameCell,
         maxWidth: 300,
         width: 120,
+        sortTitle: 'Track Name',
         sorter: alphaSorter('title'),
         align: 'left'
       }
     }),
     [
+      renderAddedDateCell,
       renderArtistNameCell,
       renderDateCell,
       renderLengthCell,
