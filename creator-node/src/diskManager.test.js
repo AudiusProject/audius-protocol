@@ -3,7 +3,7 @@ const assert = require('assert')
 const config = require('./config')
 const path = require('path')
 
-describe('Test DiskManager', function () {
+describe.only('Test DiskManager', function () {
   before(function () {
     // stub out this function which ensures the directory path exists to return true
     DiskManager.ensureDirPathExists = async () => true

@@ -1,5 +1,5 @@
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs-extra')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 const CID = require('cids')
@@ -146,7 +146,7 @@ class DiskManager {
    * If it does exist, it will not overwrite, effectively a no-op
    * @param {*} dirPath fs directory path to create if it does not exist
    */
-  static ensureDirPathExists(dirPath) {
+  static async ensureDirPathExists(dirPath) {
     try {
       // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
       fs.mkdirSync(dirPath, { recursive: true })
