@@ -92,7 +92,7 @@ class ImageProcessingQueue {
       square,
       logContext
     })
-    const result = await job.finished()
+    const result = await job.waitUntilFinished()
     return result
   }
 }

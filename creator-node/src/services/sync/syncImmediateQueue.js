@@ -129,7 +129,7 @@ class SyncImmediateQueue {
       logContext,
       parentSpanContext
     })
-    const result = await job.finished()
+    const result = await job.waitUntilFinished()
     return result
   }
 }

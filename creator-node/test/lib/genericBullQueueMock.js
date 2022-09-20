@@ -10,7 +10,7 @@ class GenericBullQueue {
       host: config.get('redisHost'),
       port: config.get('redisPort')
     }
-    this.queue = Queue('genericBullQueue', {
+    this.queue = new Queue('genericBullQueue', {
       connection,
       defaultJobOptions: {
         removeOnComplete: 0,

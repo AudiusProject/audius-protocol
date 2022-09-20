@@ -172,7 +172,7 @@ class TranscodingQueue {
       logContext
     )
 
-    const result = await job.finished()
+    const result = await job.waitUntilFinished()
     this.logStatus(
       `Segment job successful, fileDir=${fileDir}, fileName=${fileName}`,
       logContext
@@ -202,7 +202,7 @@ class TranscodingQueue {
       logContext
     )
 
-    const result = await job.finished()
+    const result = await job.waitUntilFinished()
     this.logStatus(
       `Transcode320 job successful, fileDir=${fileDir}, fileName=${fileName}`,
       logContext
