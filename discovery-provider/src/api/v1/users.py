@@ -1516,7 +1516,6 @@ class GetReplicaSet(FullGetReplicaSet):
             "id": "A User ID",
         },
     )
-    @ns.expect(current_user_parser)
     @ns.marshal_with(user_replica_set_response)
     def get(self, id: str):
         return super()._get(id)
