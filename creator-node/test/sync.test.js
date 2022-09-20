@@ -195,16 +195,19 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       // Make chain recognize wallet as owner of track
       const blockchainTrackId = 1
-      const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+      const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
         let trackOwnerId = -1
-        if (blockchainTrackIdArg === blockchainTrackId) {
+        if (trackIds[0] === blockchainTrackId) {
           trackOwnerId = userId
         }
-        return {
-          trackOwnerId
-        }
+        return [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]
       })
-      libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+      libsMock.Track = { getTracks: getTrackStub }
 
       // associate track + track metadata with blockchain ID
       await request(app)
