@@ -12,7 +12,6 @@
 
 .table {
   position: relative;
-  /* overflow: auto hidden; */
   overflow: hidden;
   width: 100%;
   background-color: var(--white);
@@ -89,7 +88,7 @@
   position: relative;
   background: var(--white);
   color: var(--neutral);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -119,7 +118,7 @@
   align-items: center;
   vertical-align: middle;
   justify-content: center;
-  padding: 10px 12px;
+  padding: 20px 12px;
   background: transparent;
   user-select: none;
   transition: all 0.05s ease-in-out;
