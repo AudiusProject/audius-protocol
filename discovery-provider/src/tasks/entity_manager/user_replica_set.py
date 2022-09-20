@@ -1,7 +1,6 @@
 import logging
 from typing import List, Tuple
 
-from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
@@ -21,7 +20,7 @@ def parse_update_sp_id(params) -> Tuple[List[int], List[int]]:
     return parse_sp_ids(sp_ids[0]), parse_sp_ids(sp_ids[1])
 
 
-def parse_sp_ids(sp_ids_str: str) -> Tuple[List[int], List[int]]:
+def parse_sp_ids(sp_ids_str: str) -> List[int]:
     sp_ids = sp_ids_str.split(",")
     for sp_id in sp_ids:
         if not sp_id.isdigit():
@@ -47,7 +46,6 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
         # user does not match signer
         # check the content nodes
         valid_cn_signer = False
-        user: User = params.existing_records[EntityType.USER][user_id]
         user_replica_set_sp_ids = set(user_sp_ids)
         for sp_id in user_replica_set_sp_ids:
             sp_info_cached = params.eth_manager.fetch_node_info(

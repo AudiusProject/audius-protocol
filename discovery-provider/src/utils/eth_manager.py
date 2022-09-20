@@ -108,7 +108,7 @@ class EthManager:
                     # Validate the endpoint on chain
                     # As endpoints get deregistered, this peering system must not slow down with failed connections
                     #   or unanticipated load
-                    eth_sp_endpoint = endpoint_info[1]
+                    eth_sp_endpoint = endpoint_info["endpoint"]
                     valid_endpoint = is_fqdn(eth_sp_endpoint)
                     # Only valid FQDN strings are worth validating
                     if valid_endpoint:

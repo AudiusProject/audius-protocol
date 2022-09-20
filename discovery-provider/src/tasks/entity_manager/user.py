@@ -37,7 +37,9 @@ def is_valid_user_tx(params: ManageEntityParameters):
             raise Exception("Invalid User Transaction, user does not exist")
         wallet = params.existing_records[EntityType.USER][user_id].wallet
         if wallet and wallet.lower() != params.signer.lower():
-            raise Exception("Invalid User Transaction, user wallet signer does not match")
+            raise Exception(
+                "Invalid User Transaction, user wallet signer does not match"
+            )
     return True
 
 

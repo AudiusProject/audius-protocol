@@ -51,6 +51,7 @@ class EntityType(str, Enum):
 class RecordDict(TypedDict):
     Playlist: Dict[int, List[Playlist]]
     Track: Dict[int, List[Track]]
+    User: Dict[int, List[User]]
     Follow: Dict[Tuple, List[Follow]]
     Save: Dict[Tuple, List[Save]]
     Repost: Dict[Tuple, List[Repost]]
