@@ -283,13 +283,14 @@ async function _findSyncsForUser(
       syncMode === SYNC_MODES.MergePrimaryAndSecondary
     ) {
       try {
-        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-          userWallet: wallet,
-          primaryEndpoint: thisContentNodeEndpoint,
-          secondaryEndpoint: secondary,
-          syncType: SyncType.Recurring,
-          syncMode
-        })
+        const { duplicateSyncReq, syncReqToEnqueue } =
+          await getNewOrExistingSyncReq({
+            userWallet: wallet,
+            primaryEndpoint: thisContentNodeEndpoint,
+            secondaryEndpoint: secondary,
+            syncType: SyncType.Recurring,
+            syncMode
+          })
 
         if (!_.isEmpty(syncReqToEnqueue)) {
           result = 'new_sync_request_enqueued'

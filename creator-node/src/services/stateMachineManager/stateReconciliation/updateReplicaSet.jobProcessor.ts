@@ -723,7 +723,7 @@ const _issueUpdateReplicaSetOp = async (
 
     // Enqueue a sync from new primary to new secondary1. If there is no diff, then this is a no-op.
     const { duplicateSyncReq, syncReqToEnqueue: syncToEnqueueToSecondary1 } =
-      getNewOrExistingSyncReq({
+      await getNewOrExistingSyncReq({
         userWallet: wallet,
         primaryEndpoint: newPrimary,
         secondaryEndpoint: newSecondary1,

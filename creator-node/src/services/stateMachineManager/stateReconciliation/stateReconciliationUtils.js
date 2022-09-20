@@ -22,7 +22,7 @@ const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
  *   syncReqToEnqueue
  * }
  */
-const getNewOrExistingSyncReq = ({
+const getNewOrExistingSyncReq = async ({
   userWallet,
   primaryEndpoint,
   secondaryEndpoint,
