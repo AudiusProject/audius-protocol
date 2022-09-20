@@ -68,11 +68,14 @@ export const generateMetrics = async (run_id: number) => {
   );
 
   // Record duration for generating metrics and export to prometheus
+  const endTime = Date.now()
   endTimer({ run_id: run_id });
 
   if (userCount > 0) {
     await publishSlackReport({
-      runStartTime: runStartTime.toString(),
+      runStartTimeView: runStartTime.toString(),
+      // duration in milliseconds / (60_000 milliseconds in a minute)
+      runDuration: `${(endTime - runStartTime.getTime()) / 60_000.0} minutes`, 
       fullySyncedUsersCount:
         ((fullySyncedUsersCount / userCount) * 100).toFixed(2) + "%",
       partiallySyncedUsersCount:
