@@ -19,9 +19,12 @@ export async function isCIDForPremiumTrack(cid: string): Promise<
     }
 > {
   const cidFile = await models.File.findOne({
-    where: { multihash: cid }
+    where: {
+      multihash: cid,
+      type: { [models.Sequelize.Op.in]: ['track', 'copy320'] }
+    }
   })
-  if (!cidFile || (cidFile.type !== 'track' && cidFile.type !== 'copy320')) {
+  if (!cidFile) {
     return { trackId: null, isPremium: false }
   }
 
