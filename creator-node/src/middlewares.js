@@ -762,14 +762,21 @@ async function getReplicaSetSpIDs({
 
       try {
         // will throw error if blocknumber not found
-        replicaSet =
-          await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(
-            userId,
-            blockNumber
-          )
-        errorMsg = null
-        blockNumberIndexed = true
-        break
+        const encodedUserId = libs.Utils.encodeHashId(userId)
+        const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+          encodedUserId,
+          blockNumber
+        })
+
+        if (spResponse) {
+          replicaSet = {
+            primaryId: spResponse.primarySpID,
+            secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+          }
+          errorMsg = null
+          blockNumberIndexed = true
+          break
+        }
       } catch (e) {
         errorMsg = e.message
       } // Ignore all errors until MAX_RETRIES exceeded
@@ -814,10 +821,18 @@ async function getReplicaSetSpIDs({
       )
 
       try {
-        replicaSet =
-          await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
-            userId
-          )
+        // will throw error if blocknumber not found
+        const encodedUserId = libs.Utils.encodeHashId(userId)
+        const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+          encodedUserId
+        })
+
+        if (spResponse && spResponse.primarySpID) {
+          replicaSet = {
+            primaryId: spResponse.primarySpID,
+            secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+          }
+        }
 
         errorMsg = null
 
@@ -863,10 +878,17 @@ async function getReplicaSetSpIDs({
 
     let errorMsg = null
     try {
-      replicaSet =
-        await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
-          userId
-        )
+      const encodedUserId = libs.Utils.encodeHashId(userId)
+      const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+        encodedUserId
+      })
+
+      if (spResponse && spResponse.primarySpID) {
+        replicaSet = {
+          primaryId: spResponse.primarySpID,
+          secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+        }
+      }
     } catch (e) {
       errorMsg = e.message
     }

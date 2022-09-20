@@ -695,17 +695,54 @@ const _issueUpdateReplicaSetOp = async (
         return response
       }
 
-      await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
-        userId,
-        newReplicaSetSPIds[0], // new primary
-        newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
-        // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
-        oldPrimarySpId || chainPrimarySpId,
-        [
-          oldSecondary1SpId || chainSecondarySpIds?.[0],
-          oldSecondary2SpId || chainSecondarySpIds?.[1]
-        ]
+      logger.info(
+        `[_issueUpdateReplicaSetOp] updating replica set now ${
+          Date.now() - startTimeMs
+        }ms for userId=${userId} wallet=${wallet}`
       )
+
+      const { blocknumber, blockHash } =
+        await audiusLibs.User.updateEntityManagerReplicaSet({
+          userId,
+          primary: newReplicaSetSPIds[0], // new primary
+          secondaries: newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+          // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+          oldPrimary: oldPrimarySpId || chainPrimarySpId,
+          oldSecondaries: [
+            oldSecondary1SpId || chainSecondarySpIds?.[0],
+            oldSecondary2SpId || chainSecondarySpIds?.[1]
+          ]
+        })
+      const waitForDiscoveryBlocknumber = async (
+        blocknumber: number,
+        timeout = 0
+      ) => {
+        await new Promise((resolve) => setTimeout(resolve, 3000))
+        // if (timeout > 0) {
+        //   return Promise.race([
+        //     Promise.resolve, // TODO:
+        //     new Promise(resolve => setTimeout(() => resolve('timeout'), timeout))
+        //   ])
+        // }
+        return { error: false }
+      }
+
+      // Wait for blockhash/blocknumber to be indexed
+      const { error: discoveryError } = await waitForDiscoveryBlocknumber(
+        blocknumber
+      )
+      if (discoveryError) {
+        // Error could be from timeout
+      }
+
+      // const getUserReplicaSet = async (userId: number) => { } // TODO
+
+      // const userReplicaSet = await getUserReplicaSet(userId)
+      // const didUpdateReplicaSet = userReplicaSet.length === newReplicaSetSPIds.length && userReplicaSet.every((sp_id, idx) => sp_id === newReplicaSetSPIds[idx])
+      // if (!didUpdateReplicaSet) {
+      //   throw error
+      // }
+      // validate that new primary and secondaries are there
 
       response.issuedReconfig = true
       logger.info(
@@ -807,8 +844,15 @@ const _canReconfig = async ({
 }: CanReconfigParams): Promise<CanReconfigReturnValue> => {
   let error
   try {
-    const { primaryId: chainPrimarySpId, secondaryIds: chainSecondarySpIds } =
-      await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+    const encodedUserId = libs.Utils.encodeHashId(userId)
+    const spResponse = await libs.DiscoveryProvider.getUserReplicaSet({
+      encodedUserId
+    })
+    const chainPrimarySpId = spResponse?.primarySpID
+    const chainSecondarySpIds = [
+      spResponse?.secondary1SpID,
+      spResponse?.secondary2SpID
+    ]
 
     if (
       !chainPrimarySpId ||
