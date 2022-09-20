@@ -14,7 +14,6 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add \
         bash=5.1.16-r0 \
         curl \
-        vim \
         docker=20.10.3-r1 \
         libpq=11.12-r0 \
         nodejs=14.20.0-r0 \
