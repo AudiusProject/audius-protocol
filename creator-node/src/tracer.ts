@@ -15,6 +15,7 @@ import {
   SemanticAttributes,
   SemanticResourceAttributes as ResourceAttributesSC
 } from '@opentelemetry/semantic-conventions'
+import { FsInstrumentation } from '@opentelemetry/instrumentation-fs'
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
@@ -23,7 +24,6 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 
 import config from './config'
-import FsInstrumentation from '@opentelemetry/instrumentation-fs'
 
 const SERVICE_NAME = 'content-node'
 const SPID = config.get('spID')
