@@ -127,11 +127,15 @@ function getDuration({ startTime }) {
  * @param {number} startTime the start time
  * @param {string} msg the message to print
  */
-function logInfoWithDuration({ logger, startTime }, msg) {
+function logInfoWithDuration(
+  { logger, startTime },
+  msg,
+  durationKey = 'duration'
+) {
   const durationMs = getDuration({ startTime })
 
   if (durationMs) {
-    logger.info({ duration: durationMs }, msg)
+    logger.info({ [durationKey]: durationMs }, msg)
   } else {
     logger.info(msg)
   }

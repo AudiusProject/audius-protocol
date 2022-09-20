@@ -1,6 +1,10 @@
 const _ = require('lodash')
 
-const { logger: genericLogger, createChildLogger } = require('../../logging')
+const {
+  logger: genericLogger,
+  createChildLogger,
+  logInfoWithDuration
+} = require('../../logging')
 const config = require('../../config')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
@@ -30,7 +34,7 @@ const handleSyncFromPrimary = async ({
   )
   const thisContentNodeEndpoint = nodeConfig.get('creatorNodeEndpoint')
 
-  let logger = secondarySyncFromPrimaryLogger
+  const logger = secondarySyncFromPrimaryLogger
 
   let errorResponse, error
   try {
@@ -184,11 +188,11 @@ const handleSyncFromPrimary = async ({
       logger
     })
 
-    const fetchExportDurationMs = Date.now() - startFetchExportDate
-    logger = createChildLogger(logger, {
-      syncStepDurationFetchExport: fetchExportDurationMs
-    })
-    logger.info('Sync step complete. Fetched export from node')
+    logInfoWithDuration(
+      { logger, startTime: startFetchExportDate },
+      'Sync step complete. Fetched export from node',
+      'syncStepDurationFetchExport'
+    )
     if (fetchExportFromNodeErrorMessage) {
       error = new Error(fetchExportFromNodeErrorMessage)
       errorResponse = {
@@ -233,11 +237,11 @@ const handleSyncFromPrimary = async ({
     try {
       const startGetOwnEndpointDate = Date.now()
       const myCnodeEndpoint = await getAndValidateOwnEndpoint(logger)
-      const getOwnEndpointDurationMs = Date.now() - startGetOwnEndpointDate
-      logger = createChildLogger(logger, {
-        syncStepDurationGetOwnEndpoint: getOwnEndpointDurationMs
-      })
-      logger.info('Sync step complete. Found and validated own endpoint')
+      logInfoWithDuration(
+        { logger, startTime: startGetOwnEndpointDate },
+        'Sync step complete. Found and validated own endpoint',
+        'syncStepDurationGetOwnEndpoint'
+      )
 
       // Filter out current node from user's replica set
       gatewaysToTry = [
@@ -341,11 +345,11 @@ const handleSyncFromPrimary = async ({
         where: { walletPublicKey: fetchedWalletPublicKey },
         transaction
       })
-      const fetchCurrentUserDurationMs = Date.now() - startFetchCurrentUserDate
-      logger = createChildLogger(logger, {
-        syncStepDurationFetchCurrentUser: fetchCurrentUserDurationMs
-      })
-      logger.info('Sync step complete. Fetched current cnodeUser from DB')
+      logInfoWithDuration(
+        { logger, startTime: startFetchCurrentUserDate },
+        'Sync step complete. Fetched current cnodeUser from DB',
+        'syncStepDurationFetchCurrentUser'
+      )
 
       /**
        * The first sync for a user will enter else case where no local cnodeUserRecord is found
@@ -413,12 +417,10 @@ const handleSyncFromPrimary = async ({
       }
 
       const cnodeUserUUID = cnodeUser.cnodeUserUUID
-      const upsertDurationMs = Date.now() - startUpsertDate
-      logger = createChildLogger(logger, {
-        syncStepDurationUpsert: upsertDurationMs
-      })
-      logger.info(
-        `Sync step complete. Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedLatestClockVal}.`
+      logInfoWithDuration(
+        { logger, startTime: startUpsertDate },
+        `Sync step complete. Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedLatestClockVal}`,
+        'syncStepDurationUpsert'
       )
 
       /**
@@ -532,12 +534,10 @@ const handleSyncFromPrimary = async ({
       }
       logger.info('Saved all non-track files to disk.')
 
-      const saveFilesDurationMs = Date.now() - startSaveFilesDate
-      logger = createChildLogger(logger, {
-        syncStepDurationSaveFiles: saveFilesDurationMs
-      })
-      logger.info(
-        'Sync step complete. Saved all track and non-track files to disk'
+      logInfoWithDuration(
+        { logger, startTime: startSaveFilesDate },
+        'Sync step complete. Saved all track and non-track files to disk',
+        'syncStepDurationSaveFiles'
       )
 
       /**
