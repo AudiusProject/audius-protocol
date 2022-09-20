@@ -1,5 +1,4 @@
 const express = require('express')
-const { Buffer } = require('buffer')
 const fs = require('fs')
 const { promisify } = require('util')
 

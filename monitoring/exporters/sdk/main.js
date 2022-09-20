@@ -73,6 +73,12 @@ const OUTCOME = Object.freeze({
 let PREVIOUSLY_SEEN_PROPOSAL_ID = 0
 const PROPOSAL_OUTCOME_TALLY = {}
 
+const clearTally = () => {
+  for (const outcome in PROPOSAL_OUTCOME_TALLY) {
+    delete PROPOSAL_OUTCOME_TALLY[outcome];
+  }
+}
+
 const tallyProposalOutcomes = (outcome) => {
   if (!PROPOSAL_OUTCOME_TALLY[outcome]) {
     PROPOSAL_OUTCOME_TALLY[outcome] = 0
@@ -89,6 +95,7 @@ const scanGovernanceProposals = async () => {
   // and export new metrics
   if (PREVIOUSLY_SEEN_PROPOSAL_ID !== parseInt(lastProposal.proposalId)) {
     let unknownProposerCount = 0
+    clearTally()
 
     // scan all proposals and...
     for (const proposal of proposals) {
