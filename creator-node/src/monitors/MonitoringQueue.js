@@ -37,12 +37,11 @@ class MonitoringQueue {
       }
     })
 
-    // Clean up anything that might be still stuck in the queue on restart
+    // Clean up anything that might be still stuck in the queue on restart and run once instantly
     if (cluster.worker?.id === 1) {
       this.queue.drain()
+      this.seedInitialValues()
     }
-
-    this.seedInitialValues()
 
     const worker = new Worker(
       'monitoring-queue',
