@@ -1,4 +1,4 @@
-const { Queue, Worker } = require('bullmq')
+const { Queue, QueueEvents, Worker } = require('bullmq')
 const { instrumentTracing, tracing } = require('../../tracer')
 
 const {
@@ -38,6 +38,9 @@ class SyncImmediateQueue {
         removeOnComplete: SYNC_QUEUE_HISTORY,
         removeOnFail: SYNC_QUEUE_HISTORY
       }
+    })
+    this.queueEvents = new QueueEvents('sync-immediate-processing-queue', {
+      connection
     })
 
     const worker = new Worker(
@@ -129,7 +132,7 @@ class SyncImmediateQueue {
       logContext,
       parentSpanContext
     })
-    const result = await job.waitUntilFinished()
+    const result = await job.waitUntilFinished(this.queueEvents)
     return result
   }
 }

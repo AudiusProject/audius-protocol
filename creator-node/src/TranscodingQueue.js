@@ -1,4 +1,4 @@
-const { Queue, Worker } = require('bullmq')
+const { Queue, QueueEvents, Worker } = require('bullmq')
 const os = require('os')
 
 const config = require('./config')
@@ -35,6 +35,9 @@ class TranscodingQueue {
         removeOnComplete: TRANSCODING_QUEUE_HISTORY,
         removeOnFail: TRANSCODING_QUEUE_HISTORY
       }
+    })
+    this.queueEvents = new QueueEvents('transcoding-queue', {
+      connection
     })
     this.logStatus('Initialized TranscodingQueue')
 
@@ -172,7 +175,7 @@ class TranscodingQueue {
       logContext
     )
 
-    const result = await job.waitUntilFinished()
+    const result = await job.waitUntilFinished(this.queueEvents)
     this.logStatus(
       `Segment job successful, fileDir=${fileDir}, fileName=${fileName}`,
       logContext
@@ -202,7 +205,7 @@ class TranscodingQueue {
       logContext
     )
 
-    const result = await job.waitUntilFinished()
+    const result = await job.waitUntilFinished(this.queueEvents)
     this.logStatus(
       `Transcode320 job successful, fileDir=${fileDir}, fileName=${fileName}`,
       logContext

@@ -1,4 +1,5 @@
 const { Queue, Worker } = require('bullmq')
+const cluster = require('cluster')
 
 const models = require('../../models')
 const { logger } = require('../../logging')
@@ -32,7 +33,9 @@ class SkippedCIDsRetryQueue {
     })
 
     // Clean up anything that might be still stuck in the queue on restart
-    this.queue.drain()
+    if (cluster.worker?.id === 1) {
+      this.queue.drain()
+    }
 
     const SkippedCIDsRetryQueueJobIntervalMs = nodeConfig.get(
       'skippedCIDsRetryQueueJobIntervalMs'

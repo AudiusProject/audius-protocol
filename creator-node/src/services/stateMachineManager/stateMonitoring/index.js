@@ -1,4 +1,5 @@
 const _ = require('lodash')
+const cluster = require('cluster')
 
 const config = require('../../../config')
 const {
@@ -115,10 +116,12 @@ class StateMonitoringManager {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await cNodeEndpointToSpIdMapQueue.obliterate({ force: true })
-    await monitorStateQueue.obliterate({ force: true })
-    await findSyncRequestsQueue.obliterate({ force: true })
-    await findReplicaSetUpdatesQueue.obliterate({ force: true })
+    if (cluster.worker?.id === 1) {
+      await cNodeEndpointToSpIdMapQueue.obliterate({ force: true })
+      await monitorStateQueue.obliterate({ force: true })
+      await findSyncRequestsQueue.obliterate({ force: true })
+      await findReplicaSetUpdatesQueue.obliterate({ force: true })
+    }
 
     // Start recurring queues that need an initial job to get started
     await this.startEndpointToSpIdMapQueue(cNodeEndpointToSpIdMapQueue)

@@ -55,7 +55,7 @@ class AsyncProcessingQueue {
 
     const untracedProcessTask = this.processTask
     const worker = new Worker(
-      'asyncProcessing',
+      'async-processing',
       async (job) => {
         const { logContext, parentSpanContext, task } = job.data
         const processTask = instrumentTracing({

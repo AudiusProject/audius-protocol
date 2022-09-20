@@ -125,7 +125,7 @@ const _issueSyncRequestsUntilSynced = async (
     logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
-    await queue.add({
+    await queue.add('manual-sync', {
       enqueuedBy: 'issueSyncRequestsUntilSynced',
       ...syncReqToEnqueue
     })

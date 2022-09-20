@@ -1,4 +1,6 @@
 const { Queue, Worker } = require('bullmq')
+const cluster = require('cluster')
+
 const redis = require('../redis')
 const config = require('../config')
 const { MONITORS, getMonitorRedisKey } = require('./monitors')
@@ -36,12 +38,14 @@ class MonitoringQueue {
     })
 
     // Clean up anything that might be still stuck in the queue on restart
-    this.queue.drain()
+    if (cluster.worker?.id === 1) {
+      this.queue.drain()
+    }
 
     this.seedInitialValues()
 
     const worker = new Worker(
-      PROCESS_NAMES.monitor,
+      'monitoring-queue',
       async (job) => {
         try {
           this.logStatus('Starting')

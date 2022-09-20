@@ -1,7 +1,10 @@
-const { Queue, Worker } = require('bullmq')
+const { Queue, QueueEvents, Worker } = require('bullmq')
+const path = require('path')
 const os = require('os')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
+
+const resizeImage = require('./resizeImage')
 
 const imageProcessingMaxConcurrency = config.get(
   'imageProcessingMaxConcurrency'
@@ -35,17 +38,26 @@ class ImageProcessingQueue {
     })
 
     // Process jobs sandboxed - https://docs.bullmq.io/guide/workers/sandboxed-processors
-    const worker = new Worker(
-      PROCESS_NAMES.resizeImage,
-      `${__dirname}/resizeImage.js`,
-      { connection, concurrency: MAX_CONCURRENCY }
-    )
+    // TODO: Make sandboxed again once this is fixed: https://github.com/taskforcesh/bullmq/issues/1424
+    // const processorFile = path.join(__dirname, 'resizeImage.js')
+    // const worker = new Worker('image-processing-queue', processorFile, {
+    //   connection,
+    //   concurrency: MAX_CONCURRENCY
+    // })
+    const worker = new Worker('image-processing-queue', resizeImage, {
+      connection,
+      concurrency: MAX_CONCURRENCY
+    })
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
     }
 
     this.logStatus = this.logStatus.bind(this)
     this.resizeImage = this.resizeImage.bind(this)
+
+    this.queueEvents = new QueueEvents('image-processing-queue', {
+      connection
+    })
   }
 
   /**
@@ -92,7 +104,8 @@ class ImageProcessingQueue {
       square,
       logContext
     })
-    const result = await job.waitUntilFinished()
+
+    const result = await job.waitUntilFinished(this.queueEvents)
     return result
   }
 }

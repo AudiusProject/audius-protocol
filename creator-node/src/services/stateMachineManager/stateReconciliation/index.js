@@ -1,6 +1,8 @@
+const cluster = require('cluster')
+
 const config = require('../../../config')
 const { QUEUE_HISTORY, QUEUE_NAMES } = require('../stateMachineConstants')
-const { makeQueue, registerQueueEvents } = require('../stateMachineUtils')
+const { makeQueue } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
@@ -105,10 +107,12 @@ class StateReconciliationManager {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await manualSyncQueue.obliterate({ force: true })
-    await recurringSyncQueue.obliterate({ force: true })
-    await updateReplicaSetQueue.obliterate({ force: true })
-    await recoverOrphanedDataQueue.obliterate({ force: true })
+    if (cluster.worker?.id === 1) {
+      await manualSyncQueue.obliterate({ force: true })
+      await recurringSyncQueue.obliterate({ force: true })
+      await updateReplicaSetQueue.obliterate({ force: true })
+      await recoverOrphanedDataQueue.obliterate({ force: true })
+    }
 
     // Queue the first recoverOrphanedData job, which will re-enqueue itself
     await this.startRecoverOrphanedDataQueue(
