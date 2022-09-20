@@ -1,14 +1,12 @@
 const assert = require('assert')
 const request = require('supertest')
 
-const config = require('../src/config')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 const {
   NAMESPACE_PREFIX
 } = require('../src/services/prometheusMonitoring/prometheus.constants')
 const GenericBullQueue = require('./lib/genericBullQueueMock')
-const { QueueEvents } = require('bullmq')
 
 describe('test Prometheus metrics', async function () {
   let app, server, libsMock
@@ -123,16 +121,9 @@ describe('test Prometheus metrics', async function () {
 
   it('Checks the duration of a bull queue job', async function () {
     const genericBullQueue = new GenericBullQueue()
-    const job = await genericBullQueue.addTask({ timeout: 500 })
+    const job = await genericBullQueue.addTask('job-name', { timeout: 500 })
 
-    await job.waitUntilFinished(
-      new QueueEvents('genericBullQueue', {
-        connection: {
-          host: config.get('redisHost'),
-          port: config.get('redisPort')
-        }
-      })
-    )
+    await job.waitUntilFinished(genericBullQueue.queueEvents)
 
     const resp = await request(app).get('/prometheus_metrics').expect(200)
     assert.ok(

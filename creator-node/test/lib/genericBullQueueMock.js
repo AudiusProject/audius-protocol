@@ -1,5 +1,5 @@
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
-const { Queue, Worker } = require('bullmq')
+const { Queue, QueueEvents, Worker } = require('bullmq')
 
 const config = require('../../src/config')
 
@@ -30,6 +30,9 @@ class GenericBullQueue {
       },
       { connection }
     )
+    this.queueEvents = new QueueEvents('genericBullQueue', {
+      connection
+    })
 
     prometheusRegistry.startQueueMetrics(this.queue, worker)
   }
