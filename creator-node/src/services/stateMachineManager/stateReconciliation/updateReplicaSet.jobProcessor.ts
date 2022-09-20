@@ -713,36 +713,19 @@ const _issueUpdateReplicaSetOp = async (
             oldSecondary2SpId || chainSecondarySpIds?.[1]
           ]
         })
-      const waitForDiscoveryBlocknumber = async (
-        blocknumber: number,
-        timeout = 0
-      ) => {
-        await new Promise((resolve) => setTimeout(resolve, 3000))
-        // if (timeout > 0) {
-        //   return Promise.race([
-        //     Promise.resolve, // TODO:
-        //     new Promise(resolve => setTimeout(() => resolve('timeout'), timeout))
-        //   ])
-        // }
-        return { error: false }
-      }
 
       // Wait for blockhash/blocknumber to be indexed
-      const { error: discoveryError } = await waitForDiscoveryBlocknumber(
-        blocknumber
-      )
-      if (discoveryError) {
-        // Error could be from timeout
+      try {
+        await audiusLibs.User._waitForReplicaSetDiscoveryIndexing(
+          userId,
+          newReplicaSetSPIds,
+          blocknumber
+        )
+      } catch (err) {
+        throw new Error(
+          `UserReplicaSetManagerClient._updateReplicaSet() Unable to confirm updated replica set for user ${userId}`
+        )
       }
-
-      // const getUserReplicaSet = async (userId: number) => { } // TODO
-
-      // const userReplicaSet = await getUserReplicaSet(userId)
-      // const didUpdateReplicaSet = userReplicaSet.length === newReplicaSetSPIds.length && userReplicaSet.every((sp_id, idx) => sp_id === newReplicaSetSPIds[idx])
-      // if (!didUpdateReplicaSet) {
-      //   throw error
-      // }
-      // validate that new primary and secondaries are there
 
       response.issuedReconfig = true
       logger.info(

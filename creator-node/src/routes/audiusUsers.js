@@ -118,7 +118,6 @@ router.post(
       encodedUserId,
       blockNumber
     })
-    req.logger.info(`spResponse ${spResponse}`)
     if (
       (spResponse?.wallet ?? '').toLowerCase() !==
       req.session.wallet.toLowerCase()
