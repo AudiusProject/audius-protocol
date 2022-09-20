@@ -53,7 +53,7 @@ PROD_DISCOVERY_NODES = (
 )
 DISCOVERY_NODES = STAGE_DISCOVERY_NODES + PROD_DISCOVERY_NODES
 
-IDENTITY_NODES = ("stage-identity",)
+STAGE_IDENTITY_NODES = ("stage-identity",)
 PROD_IDENTITY_NODES = ("prod-identity",)
 IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
 
@@ -313,7 +313,7 @@ def print_release_summary(release_summary):
         pprint(release_summary["failed"], sort_dicts=True)
 
 
-def generate_deploy_list(services, hosts):
+def generate_deploy_list(environment, services, hosts):
     """Create a set of hosts to be deployed to, given possibly conflicting CLI parameters."""
 
     deploy_list = []
@@ -428,7 +428,7 @@ def cli(
 
     # gather and display current release state, pre-deploy
     release_summary = {
-        "deploy_list": generate_deploy_list(services, hosts),
+        "deploy_list": generate_deploy_list(environment, services, hosts),
         "git_tag": git_tag,
     }
     update_release_summary(
