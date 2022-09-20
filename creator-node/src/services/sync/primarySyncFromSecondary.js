@@ -47,19 +47,19 @@ async function _primarySyncFromSecondary({
   })
   decisionTree.recordStage({ name: 'Begin', log: true })
 
-  let result
+  let errorResult, error
   try {
     const selfEndpoint = config.get('creatorNodeEndpoint')
 
     if (!selfEndpoint) {
       decisionTree.recordStage({ name: 'selfEndpoint missing', log: false })
 
-      result = {
+      errorResult = {
         error: 'Content node endpoint not set on node',
         result: 'failure_content_node_endpoint_not_initialized'
       }
 
-      throw new Error(result.error)
+      throw new Error(errorResult.error)
     }
 
     let libs
@@ -74,12 +74,12 @@ async function _primarySyncFromSecondary({
         data: { errorMsg: e.message }
       })
 
-      result = {
+      errorResult = {
         error: `Could not initialize audiusLibs: ${e.message}`,
         result: 'failure_audius_libs_not_initialized'
       }
 
-      throw new Error(result.error)
+      throw new Error(errorResult.error)
     }
 
     await WalletWriteLock.acquire(
@@ -88,14 +88,29 @@ async function _primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    const userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
-      wallet,
-      blockNumber: null,
-      ensurePrimary: false
+    let userReplicaSet
+    try {
+      userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+        libs,
+        logger,
+        wallet,
+        blockNumber: null,
+        ensurePrimary: false
+      })
+    } catch (e) {
+      error = `Error fetching user replica set: ${e.message}`
+      errorResult = {
+        error,
+        result: 'failure_fetching_user_replica_set'
+      }
+
+      throw new Error(error)
+    }
+
+    decisionTree.recordStage({
+      name: 'getUserReplicaSetEndpointsFromDiscovery() success',
+      log: true
     })
-    decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
 
     // Abort if this node is not primary for user
     if (userReplicaSet.primary !== selfEndpoint) {
@@ -126,7 +141,11 @@ async function _primarySyncFromSecondary({
         log: true
       })
 
-      const { fetchedCNodeUser, error, abort } = await fetchExportFromNode({
+      const {
+        fetchedCNodeUser,
+        error: fetchExportFromNodeError,
+        abort
+      } = await fetchExportFromNode({
         nodeEndpointToFetchFrom: secondary,
         wallet,
         clockRangeMin: exportClockRangeMin,
@@ -135,18 +154,18 @@ async function _primarySyncFromSecondary({
         forceExport: true
       })
 
-      if (error) {
+      if (fetchExportFromNodeError) {
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Error',
-          data: { error: error.message }
+          data: { error: fetchExportFromNodeError.message }
         })
 
-        result = {
-          error: error.message,
-          result: error.code
+        errorResult = {
+          error: fetchExportFromNodeError.message,
+          result: fetchExportFromNodeError.code
         }
 
-        throw new Error(result.error)
+        throw new Error(errorResult.error)
       }
 
       if (abort) {
@@ -204,12 +223,12 @@ async function _primarySyncFromSecondary({
           data: { errorMsg: e.message }
         })
 
-        result = {
+        errorResult = {
           error: `Error - Failed to save files to disk: ${e.message}`,
           result: 'failure_save_files_to_disk'
         }
 
-        throw new Error(result.error)
+        throw new Error(errorResult.error)
       }
 
       // Save all entries from export to DB
@@ -230,12 +249,12 @@ async function _primarySyncFromSecondary({
           data: { errorMsg: e.message }
         })
 
-        result = {
+        errorResult = {
           error: `Error - Failed to save entries to DB: ${e.message}`,
           result: 'failure_save_entries_to_db'
         }
 
-        throw new Error(result.error)
+        throw new Error(errorResult.error)
       }
 
       /**
@@ -274,8 +293,8 @@ async function _primarySyncFromSecondary({
     tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
 
-    if (result) {
-      return result
+    if (errorResult) {
+      return errorResult
     }
 
     // If no error was caught above, then return generic error

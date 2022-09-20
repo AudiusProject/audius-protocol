@@ -288,7 +288,7 @@ describe('Test Render Email Notification', function () {
       5
     )
 
-    assert.deepStrictEqual(notificationCount, 4)
+    assert.deepStrictEqual(notificationCount, 6)
     // assert some notification props
 
     const renderProps = {
