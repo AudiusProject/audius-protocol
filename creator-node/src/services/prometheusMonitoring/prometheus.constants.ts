@@ -96,7 +96,6 @@ export const METRIC_LABELS = Object.freeze({
       'failure_sync_secondary_from_primary',
       'failure_db_transaction',
       'failure_export_wallet',
-      'failure_skip_threshold_not_reached',
       'failure_import_not_consistent',
       'failure_import_not_contiguous',
       'failure_inconsistent_clock'
