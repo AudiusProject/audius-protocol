@@ -502,7 +502,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_track_is_available": {
                 "task": "update_track_is_available",
-                "schedule": timedelta(hours=12),  # run every 12 hours
+                "schedule": timedelta(hours=3),
             }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {

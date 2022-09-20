@@ -275,7 +275,7 @@ describe('Test Send Notifications', function () {
 
     let pushNotifications = pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER
     console.log(pushNotifications)
-    assert.deepStrictEqual(pushNotifications.length, 8)
+    assert.deepStrictEqual(pushNotifications.length, 10)
 
     const notifs = [
       {

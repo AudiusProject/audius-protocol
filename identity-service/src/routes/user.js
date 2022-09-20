@@ -35,7 +35,7 @@ module.exports = function (app) {
           const checkEmailResponse = await axios.get(checkValidEmailUrl, {
             headers: { 'X-API-KEY': config.get('seonApiKey') }
           })
-          isEmailDeliverable = checkEmailResponse.data.deliverable
+          isEmailDeliverable = checkEmailResponse.data.data.deliverable
         } catch (err) {
           req.logger.error(`Unable to fetch validate email from seon for ${email}`, err)
         }
