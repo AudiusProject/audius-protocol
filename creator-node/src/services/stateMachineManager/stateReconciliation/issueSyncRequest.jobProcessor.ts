@@ -69,7 +69,8 @@ type HandleIssueSyncReqParams = {
 }
 type HandleIssueSyncReqResult = {
   result: string
-  error?: { message: string }
+  error?: string
+  abort?: string
   syncReqsToEnqueue: IssueSyncRequestJobParams[]
   additionalSync?: IssueSyncRequestJobParams
 }
@@ -103,25 +104,26 @@ async function issueSyncRequest({
     [QUEUE_NAMES.RECURRING_SYNC]: []
   }
   let metricsToRecord = []
-  let error: any = {}
 
   const startTimeMs = Date.now()
 
-  const {
-    syncReqsToEnqueue,
-    additionalSync,
-    result,
-    error: errorResp
-  } = await _handleIssueSyncRequest({
-    syncType,
-    syncMode,
-    syncRequestParameters,
-    logger
-  })
-  if (errorResp) {
-    error = errorResp
+  const { syncReqsToEnqueue, additionalSync, result, error, abort } =
+    await _handleIssueSyncRequest({
+      syncType,
+      syncMode,
+      syncRequestParameters,
+      logger
+    })
+
+  if (error) {
     logger.error(
-      `Issuing sync request error: ${error.message}. Prometheus result: ${result}`
+      `Issuing sync request error: ${error}. Prometheus result: ${result}`
+    )
+  }
+
+  if (abort) {
+    logger.warn(
+      `Issuing sync request abort: ${abort}. Prometheus result: ${result}`
     )
   }
 
@@ -217,9 +219,7 @@ async function _handleIssueSyncRequest({
   ) {
     return {
       result: 'failure_secondary_failure_count_threshold_met',
-      error: {
-        message: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
-      },
+      error: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`,
       syncReqsToEnqueue
     }
   }
@@ -254,33 +254,41 @@ async function _handleIssueSyncRequest({
         ensurePrimary: false
       })
 
-    const syncCorrectnessError = _ensureSyncsEnqueuedToCorrectNodes(
+    const syncCorrectnessAbort = _ensureSyncsEnqueuedToCorrectNodes(
       userReplicaSet,
       syncMode,
       syncRequestParameters.baseURL
     )
-    if (syncCorrectnessError) {
+    if (syncCorrectnessAbort) {
       return {
-        result: 'failure_sync_correctness',
-        error: {
-          message: `${logMsgString}: ${syncCorrectnessError}`
-        },
+        result: 'abort_sync_correctness',
+        abort: `${logMsgString}: ${syncCorrectnessAbort}`,
         syncReqsToEnqueue
       }
     }
 
-    const error = await primarySyncFromSecondary({
+    const response = await primarySyncFromSecondary({
       wallet: userWallet,
       secondary: secondaryEndpoint
     })
 
-    if (error) {
-      return {
-        result: 'failure_primary_sync_from_secondary',
-        error: {
-          message: `${logMsgString}: ${error.message}`
-        },
-        syncReqsToEnqueue
+    if (response) {
+      const { error, abort, result } = response
+
+      if (error) {
+        return {
+          result,
+          error: `${logMsgString}: ${error}`,
+          syncReqsToEnqueue
+        }
+      }
+
+      if (abort) {
+        return {
+          result,
+          abort: `${logMsgString}: ${abort}`,
+          syncReqsToEnqueue
+        }
       }
     }
 
@@ -355,9 +363,7 @@ async function _handleIssueSyncRequest({
 
     return {
       result: 'failure_issue_sync_request',
-      error: {
-        message: `${logMsgString} || Error issuing sync request: ${e.message}`
-      },
+      error: `${logMsgString} || Error issuing sync request: ${e.message}`,
       syncReqsToEnqueue,
       additionalSync
     }
@@ -518,7 +524,9 @@ const _additionalSyncIsRequired = async (
     )
     outcome = 'success_secondary_caught_up'
     additionalSyncIsRequired = false
-    logger.info(`${logMsgString} || Sync completed in ${monitoringTimeMs}ms`)
+    logger.info(
+      `${logMsgString} || Sync completed in ${monitoringTimeMs}ms. Prometheus result: ${outcome}`
+    )
 
     // Secondary completed sync but is still behind primary since it was behind by more than max export range
     // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
@@ -531,7 +539,7 @@ const _additionalSyncIsRequired = async (
     additionalSyncIsRequired = true
     outcome = 'success_secondary_partially_caught_up'
     logger.info(
-      `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest.`
+      `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest. Prometheus result: ${outcome}`
     )
 
     // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
@@ -544,7 +552,7 @@ const _additionalSyncIsRequired = async (
     additionalSyncIsRequired = true
     outcome = 'failure_secondary_failed_to_progress'
     logger.error(
-      `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`
+      `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest. Prometheus result: ${outcome}`
     )
   }
 
@@ -592,7 +600,7 @@ const _ensureSyncsEnqueuedToCorrectNodes = (
     )}`
   }
 
-  return ''
+  return null
 }
 
 module.exports = async (

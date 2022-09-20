@@ -275,7 +275,7 @@ describe('Test Send Notifications', function () {
 
     let pushNotifications = pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER
     console.log(pushNotifications)
-    assert.deepStrictEqual(pushNotifications.length, 8)
+    assert.deepStrictEqual(pushNotifications.length, 10)
 
     const notifs = [
       {
@@ -283,7 +283,7 @@ describe('Test Send Notifications', function () {
         msg: `You’ve received ${challengeInfoMap['referred'].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
       },
       ...([
-        'profile-completion', 'listen-streak', 'track-upload', 'referrals', 'ref-v', 'connect-verified', 'mobile-install'
+        'profile-completion', 'listen-streak', 'track-upload', 'referrals', 'ref-v', 'connect-verified', 'mobile-install', 'send-first-tip', 'first-playlist'
       ].map(id => ({
         title: challengeInfoMap[id].title,
         msg: `You’ve earned ${challengeInfoMap[id].amount} $AUDIO for completing this challenge!`
