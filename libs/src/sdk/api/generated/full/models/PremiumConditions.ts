@@ -25,5 +25,11 @@ export interface PremiumConditions {
      * @memberof PremiumConditions
      */
     nft_collection?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof PremiumConditions
+     */
+    follow?: number;
 }
 

@@ -75,6 +75,7 @@ premium_conditions = ns.model(
     "premium_conditions",
     {
         "nft-collection": fields.String,
+        "follow": fields.Integer,
     },
 )
 premium_content_signature = ns.model(
