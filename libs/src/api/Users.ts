@@ -339,7 +339,6 @@ export class Users extends Base {
       const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${
         Date.now() - fnStartMs
       }ms: ${e}`
-      console.log(errorMsg)
       throw new Error(errorMsg)
     }
 
@@ -403,7 +402,6 @@ export class Users extends Base {
 
       // Autoselect a new replica set and update the metadata object with new content node endpoints
       phase = phases.AUTOSELECT_CONTENT_NODES
-      console.log('get cn')
       const response = await this.ServiceProvider.autoSelectCreatorNodes({
         performSyncCheck: false,
         preferHigherPatchForPrimary: this.preferHigherPatchForPrimary,
@@ -490,7 +488,6 @@ export class Users extends Base {
       const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${
         Date.now() - fnStartMs
       }ms: ${e}`
-      console.log(errorMsg)
       throw new Error(errorMsg)
     }
   }
@@ -514,12 +511,10 @@ export class Users extends Base {
         await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
       ).userId
     }
-    let blockHash: string | undefined
-    let blockNumber: number
 
     const result = await this._addUserOperations(userId, newMetadata)
-    blockHash = result.latestBlockHash
-    blockNumber = result.latestBlockNumber
+    const blockHash: string | undefined = result.latestBlockHash
+    const blockNumber: number = result.latestBlockNumber
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
@@ -798,7 +793,7 @@ export class Users extends Base {
         newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint
       ) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        const { replicaSetSPIDs } = await this._updateReplicaSetOnChain(
+        const { txReceipt, replicaSetSPIDs } = await this._updateReplicaSetOnChain(
           userId,
           newMetadata.creator_node_endpoint,
           useEntityManager
@@ -809,7 +804,17 @@ export class Users extends Base {
           }ms`
         )
         if (useEntityManager) {
-          // TODO: wait for discovery indexing of replcea set update
+          startMs = Date.now()
+          await this._waitForReplicaSetDiscoveryIndexing(
+            userId,
+            replicaSetSPIDs,
+            txReceipt.blockNumber
+          )
+          console.log(
+            `${logPrefix} [phase: ${phase}] _waitForReplicaSetDiscoveryIndexing() completed in ${
+              Date.now() - startMs
+            }ms`
+          )
         } else {
           startMs = Date.now()
 
@@ -906,7 +911,6 @@ export class Users extends Base {
       const errorMsg = `updateAndUploadMetadata() Error -- Phase ${phase} in ${
         Date.now() - fnStartMs
       }ms: ${e}`
-      console.log(errorMsg)
       throw new Error(errorMsg)
     }
   }
@@ -963,7 +967,6 @@ export class Users extends Base {
           encodedUserId: encodedUserId!,
           blockNumber
         })
-        console.log({ replicaSet })
         if (
           replicaSet &&
           replicaSet.primarySpID === replicaSetSPIDs[0] &&
@@ -1218,6 +1221,9 @@ export class Users extends Base {
           primarySpID,
           [secondary1SpID, secondary2SpID]
         )
+    }
+    if (!txReceipt) {
+      throw new Error('Unable to update replica set on chain')
     }
     const replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
     return {
