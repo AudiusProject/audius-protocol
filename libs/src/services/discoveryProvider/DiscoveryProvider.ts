@@ -783,6 +783,15 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  async getFeelingLuckyTracks(
+    encodedUserId: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getFeelingLuckyTracks(encodedUserId, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
   async getLatest(type: string) {
     const req = Requests.getLatest(type)
     return await this._makeRequest(req)

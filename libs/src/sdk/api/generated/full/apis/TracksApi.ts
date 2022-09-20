@@ -72,6 +72,22 @@ export interface GetMostLovedTracksRequest {
     withUsers?: boolean;
 }
 
+export interface GetFeelingLuckyTracksRequest {
+    /**
+     * The user ID of the user making the request
+     */
+    userId?: string;
+    /**
+     * Number of tracks to fetch
+     */
+    limit?: number;
+    /**
+     * Boolean to include user info with tracks
+     */
+    withUsers?: boolean;
+}
+
+
 export interface GetRecommendedTracksRequest {
     /**
      * The number of items to fetch
@@ -443,6 +459,34 @@ export class TracksApi extends runtime.BaseAPI {
 
         return this.request({
             path: `/tracks/most_loved`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+    }
+
+    /**
+     * Gets random tracks found on the \"Feeling Lucky\" smart playlist
+     */
+     async getFeelingLuckyTracks(requestParameters: GetFeelingLuckyTracksRequest = {}): Promise<NonNullable<FullTracksResponse["data"]>> {
+        const queryParameters: any = {};
+
+        if (requestParameters.userId !== undefined) {
+            queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.withUsers !== undefined) {
+            queryParameters['with_users'] = requestParameters.withUsers;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/tracks/feeling_lucky`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
