@@ -457,7 +457,7 @@ export const TestTable = ({
                             rowCount={
                               debouncedFetchMore ? totalRowCount : rows.length
                             }
-                            rowHeight={44}
+                            rowHeight={64}
                             rowRenderer={renderRow}
                           />
                         )}
