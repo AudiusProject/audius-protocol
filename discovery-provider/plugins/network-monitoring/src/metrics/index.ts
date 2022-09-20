@@ -73,9 +73,9 @@ export const generateMetrics = async (run_id: number) => {
 
   if (userCount > 0) {
     await publishSlackReport({
-      runStartTimeView: runStartTime.toString(),
+      runStartTime: runStartTime.toString(),
       // duration in milliseconds / (60_000 milliseconds in a minute)
-      runDuration: `${(endTime - runStartTime.getTime()) / 60_000.0} minutes`, 
+      runDuration: msToTime(endTime - runStartTime.getTime()),
       fullySyncedUsersCount:
         ((fullySyncedUsersCount / userCount) * 100).toFixed(2) + "%",
       partiallySyncedUsersCount:
@@ -126,3 +126,16 @@ const publishSlackReport = async (metrics: Object) => {
     );
   }
 };
+
+const msToTime = (duration: number) => {
+  const milliseconds = Math.floor((duration % 1000) / 100)
+  const seconds = Math.floor((duration / 1000) % 60)
+  const minutes = Math.floor((duration / (1000 * 60)) % 60)
+  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
+
+  const hoursStr = (hours < 10) ? "0" + hours : hours;
+  const minutesStr = (minutes < 10) ? "0" + minutes : minutes;
+  const secondsStr = (seconds < 10) ? "0" + seconds : seconds;
+
+  return `${hoursStr}:${minutesStr}:${secondsStr}:${milliseconds.toString()}`
+}
