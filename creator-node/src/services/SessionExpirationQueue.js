@@ -68,7 +68,7 @@ class SessionExpirationQueue {
           while (sessionsToDelete > 0) {
             await this.expireSessions(SESSION_EXPIRED_CONDITION)
             progress += (this.batchSize / numExpiredSessions) * 100
-            job.progress(progress)
+            job.updateProgress(progress)
             sessionsToDelete -= this.batchSize
           }
           return {}
