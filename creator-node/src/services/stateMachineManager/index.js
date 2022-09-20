@@ -1,4 +1,6 @@
 const _ = require('lodash')
+const cluster = require('cluster')
+const { QueueEvents } = require('bullmq')
 
 const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
@@ -50,52 +52,66 @@ class StateMachineManager {
     )
 
     // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
-    const queueNameToQueueMap = {
-      [QUEUE_NAMES.MONITOR_STATE]: {
-        queue: monitorStateQueue,
-        maxWaitingJobs: 10
-      },
-      [QUEUE_NAMES.FIND_SYNC_REQUESTS]: {
-        queue: findSyncRequestsQueue,
-        maxWaitingJobs: 10
-      },
-      [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: {
-        queue: findReplicaSetUpdatesQueue,
-        maxWaitingJobs: 10
-      },
-      [QUEUE_NAMES.MANUAL_SYNC]: {
-        queue: manualSyncQueue,
-        maxWaitingJobs: 1000
-      },
-      [QUEUE_NAMES.RECURRING_SYNC]: {
-        queue: recurringSyncQueue,
-        maxWaitingJobs: 100000
-      },
-      [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
-        queue: updateReplicaSetQueue,
-        maxWaitingJobs: 10000
-      },
-      [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
-        queue: recoverOrphanedDataQueue,
-        maxWaitingJobs: 10
+    if (cluster.worker?.id === 1) {
+      const queueNameToQueueMap = {
+        [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: {
+          queue: cNodeEndpointToSpIdMapQueue,
+          maxWaitingJobs: 10
+        },
+        [QUEUE_NAMES.MONITOR_STATE]: {
+          queue: monitorStateQueue,
+          maxWaitingJobs: 10
+        },
+        [QUEUE_NAMES.FIND_SYNC_REQUESTS]: {
+          queue: findSyncRequestsQueue,
+          maxWaitingJobs: 10
+        },
+        [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: {
+          queue: findReplicaSetUpdatesQueue,
+          maxWaitingJobs: 10
+        },
+        [QUEUE_NAMES.MANUAL_SYNC]: {
+          queue: manualSyncQueue,
+          maxWaitingJobs: 1000
+        },
+        [QUEUE_NAMES.RECURRING_SYNC]: {
+          queue: recurringSyncQueue,
+          maxWaitingJobs: 100000
+        },
+        [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
+          queue: updateReplicaSetQueue,
+          maxWaitingJobs: 10000
+        },
+        [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
+          queue: recoverOrphanedDataQueue,
+          maxWaitingJobs: 10
+        }
+      }
+      for (const queueName of Object.keys(queueNameToQueueMap)) {
+        const queueEvents = new QueueEvents(queueName, {
+          connection: {
+            host: config.get('redisHost'),
+            port: config.get('redisPort')
+          }
+        })
+        queueEvents.on(
+          'completed',
+          makeOnCompleteCallback(
+            queueName,
+            queueNameToQueueMap,
+            prometheusRegistry
+          ).bind(this)
+        )
+
+        // Update the mapping in this StateMachineManager whenever a job successfully fetches it
+        if (queueName === QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP) {
+          queueEvents.on(
+            'completed',
+            this.updateMapOnMapFetchJobComplete.bind(this)
+          )
+        }
       }
     }
-    for (const [queueName, { queue }] of Object.entries(queueNameToQueueMap)) {
-      queue.on(
-        'global:completed',
-        makeOnCompleteCallback(
-          queueName,
-          queueNameToQueueMap,
-          prometheusRegistry
-        ).bind(this)
-      )
-    }
-
-    // Update the mapping in this StateMachineManager whenever a job successfully fetches it
-    cNodeEndpointToSpIdMapQueue.on(
-      'global:completed',
-      this.updateMapOnMapFetchJobComplete.bind(this)
-    )
 
     return {
       monitorStateQueue,
@@ -114,16 +130,20 @@ class StateMachineManager {
    * - enabled (to the highest enabled mode configured) if the job fetched the mapping successfully
    * - disabled if the job encountered an error fetching the mapping
    * @param {number} jobId the ID of the job that completed
-   * @param {string} resultString the stringified JSON of the job's returnValue
+   * @param {string} returnvalue the stringified JSON of the job's returnValue
    */
-  async updateMapOnMapFetchJobComplete(jobId, resultString) {
+  updateMapOnMapFetchJobComplete({ jobId, returnvalue }, id) {
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult = {}
     try {
-      jobResult = JSON.parse(resultString) || {}
+      if (typeof returnvalue === 'string' || returnvalue instanceof String) {
+        jobResult = JSON.parse(returnvalue) || {}
+      } else {
+        jobResult = returnvalue || {}
+      }
     } catch (e) {
       baseLogger.warn(
-        `Failed to parse cNodeEndpoint->spId map jobId ${jobId} result string: ${resultString}`
+        `Failed to parse cNodeEndpoint->spId map jobId ${jobId} result string: ${returnvalue}`
       )
       return
     }

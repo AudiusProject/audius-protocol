@@ -301,12 +301,12 @@ const makeQueue = ({
   queue.on(
     'failed',
     onFailCallback ||
-      ((job, err) => {
+      ((job, error, prev) => {
         const loggerWithId = createChildLogger(logger, {
           jobId: job?.id || 'unknown'
         })
         loggerWithId.error(
-          `Job failed to complete. ID=${job?.id}. Error=${err}`
+          `Job failed to complete. ID=${job?.id}. Error=${error}`
         )
       })
   )
@@ -319,21 +319,9 @@ const makeQueue = ({
 }
 
 const _registerQueueEvents = (worker, queueLogger) => {
-  worker.on('waiting', (jobId) => {
-    const logger = createChildLogger(queueLogger, { jobId })
-    logger.info('Job waiting')
-  })
-  worker.on('active', (jobId, jobPromise) => {
-    const logger = createChildLogger(queueLogger, { jobId })
+  worker.on('active', (job, prev) => {
+    const logger = createChildLogger(queueLogger, { jobId: job.id })
     logger.info('Job active')
-  })
-  worker.on('lock-extension-failed', (jobId, err) => {
-    const logger = createChildLogger(queueLogger, { jobId })
-    logger.error(`Job lock extension failed. Error: ${err}`)
-  })
-  worker.on('stalled', (jobId) => {
-    const logger = createChildLogger(queueLogger, { jobId })
-    logger.error('Job stalled')
   })
   worker.on('error', (error) => {
     queueLogger.error(`Queue Job Error - ${error}`)

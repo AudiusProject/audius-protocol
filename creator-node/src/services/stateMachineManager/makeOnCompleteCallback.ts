@@ -53,7 +53,13 @@ function makeOnCompleteCallback(
   queueNameToQueueMap: QueueNameToQueueMap,
   prometheusRegistry: any
 ) {
-  return async function (jobId: string, resultString: string) {
+  return async function (
+    {
+      jobId,
+      returnvalue
+    }: { jobId: string; returnvalue: string | AnyDecoratedJobReturnValue },
+    id: string
+  ) {
     // Create a logger so that we can filter logs by the tags `queue` and `jobId` = <id of the job that successfully completed>
     const logger = createChildLogger(baseLogger, {
       queue: nameOfQueueWithCompletedJob,
@@ -75,8 +81,12 @@ function makeOnCompleteCallback(
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult: AnyDecoratedJobReturnValue
     try {
-      logger.info(`Job successfully completed. Parsing result: ${resultString}`)
-      jobResult = JSON.parse(resultString) || {}
+      logger.info(`Job successfully completed. Parsing result`)
+      if (typeof returnvalue === 'string' || returnvalue instanceof String) {
+        jobResult = JSON.parse(returnvalue as string) || {}
+      } else {
+        jobResult = returnvalue || {}
+      }
     } catch (e: any) {
       logger.error(`Failed to parse job result string: ${e.message}`)
       return

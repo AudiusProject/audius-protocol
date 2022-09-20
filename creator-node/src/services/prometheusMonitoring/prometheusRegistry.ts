@@ -115,11 +115,11 @@ export class PrometheusRegistry {
       queue_name: queue.name
     }
 
-    worker.on('completed', (job: Job) => {
+    worker.on('completed', (job: Job, result: any, prev: string) => {
       const job_name = job?.data?.task || job.name
       this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.COMPLETED, job)
     })
-    worker.on('failed', (job: Job) => {
+    worker.on('failed', (job: Job, error: Error, prev: string) => {
       const job_name = job?.data?.task || job.name
       this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.FAILED, job)
     })
