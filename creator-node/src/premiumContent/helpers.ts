@@ -5,6 +5,7 @@ import { Redis } from 'ioredis'
 import type Logger from 'bunyan'
 
 const models = require('../models')
+const { QueryTypes } = require('sequelize')
 
 const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
 
@@ -18,22 +19,23 @@ export async function isCIDForPremiumTrack(cid: string): Promise<
       isPremium: boolean
     }
 > {
-  const track = await models.sequelize.query(
+  const result = await models.sequelize.query(
     `select t.* from "Tracks" t, "Files" f
       where f."multihash" = :cid
       and f."type" in ('track', 'copy320')
       and f."trackBlockchainId" = t."blockchainId"`,
     {
-      replacements: { cid }
+      replacements: { cid },
+      type: QueryTypes.SELECT
     }
   )
-  if (!track) {
+  if (!result.length) {
     return { trackId: null, isPremium: false }
   }
 
   return {
-    trackId: parseInt(track.blockchainId),
-    isPremium: track.metadataJSON.is_premium
+    trackId: parseInt(result[0].blockchainId),
+    isPremium: result[0].metadataJSON.is_premium
   }
 }
 
