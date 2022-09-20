@@ -27,7 +27,7 @@ const startAppForPrimary = async () => {
   const exitWithError = (...msg: any[]) => {
     logger.error('ERROR: ', ...msg)
     // eslint-disable-next-line no-process-exit
-  process.exit(1)
+    process.exit(1)
   }
 
   const verifyDBConnection = async () => {
