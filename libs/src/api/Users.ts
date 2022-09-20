@@ -793,11 +793,12 @@ export class Users extends Base {
         newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint
       ) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        const { txReceipt, replicaSetSPIDs } = await this._updateReplicaSetOnChain(
-          userId,
-          newMetadata.creator_node_endpoint,
-          useEntityManager
-        )
+        const { txReceipt, replicaSetSPIDs } =
+          await this._updateReplicaSetOnChain(
+            userId,
+            newMetadata.creator_node_endpoint,
+            useEntityManager
+          )
         console.log(
           `${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${
             Date.now() - startMs
