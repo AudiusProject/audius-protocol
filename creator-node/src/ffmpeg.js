@@ -22,7 +22,7 @@ const { logger: genericLogger } = require('./logging')
     m3u8FilePath {string}: the m3u8 file path 
   }
  */
-async function segmentFile(fileDir, fileName, { logContext }) {
+function segmentFile(fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
 
   return new Promise((resolve, reject) => {

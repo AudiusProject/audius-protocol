@@ -4,7 +4,7 @@ const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const sinon = require('sinon')
 const assert = require('assert')
@@ -161,34 +161,32 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = DiskManager.computeFilePath(DIR_CID_SQUARE)
-    assert.ok(fs.existsSync(dirPath))
+    const dirPath = await DiskManager.computeFilePath(DIR_CID_SQUARE)
+    assert.ok(await fs.pathExists(dirPath))
 
     const dirContentCIDs = new Set([CID_150, CID_480, CID_1000, CID_ORIGINAL])
 
     // Iterate through fs files
-    fs.readdir(dirPath, (err, files) => {
-      if (err) assert.fail(`Could not read directory at ${dirPath}`)
+    const files = await fs.readdir(dirPath)
 
-      // Check that 4 files (tentatively 150x150, 480x480, 1000x1000, original) are present
-      assert.deepStrictEqual(files.length, 4)
+    // Check that 4 files (tentatively 150x150, 480x480, 1000x1000, original) are present
+    assert.deepStrictEqual(files.length, 4)
 
-      files.map((file) => {
-        // Check that (150x150, 480x480, 1000x1000, original) files exist
-        assert.ok(dirContentCIDs.has(file))
+    files.map(async (file) => {
+      // Check that (150x150, 480x480, 1000x1000, original) files exist
+      assert.ok(dirContentCIDs.has(file))
 
-        // Check (150x150, 480x480, 1000x1000, original) file contents are proper
-        // by comparing the buffers
-        const fsBuf = fs.readFileSync(path.join(dirPath, file))
-        const expectedBuf = fs.readFileSync(
-          path.join(__dirname, imageTestDir, DIR_CID_SQUARE, file)
-        )
-        // If comparison does not return 0, buffers are not the same
-        assert.deepStrictEqual(fsBuf.compare(expectedBuf), 0)
+      // Check (150x150, 480x480, 1000x1000, original) file contents are proper
+      // by comparing the buffers
+      const fsBuf = await fs.readFile(path.join(dirPath, file))
+      const expectedBuf = await fs.readFile(
+        path.join(__dirname, imageTestDir, DIR_CID_SQUARE, file)
+      )
+      // If comparison does not return 0, buffers are not the same
+      assert.deepStrictEqual(fsBuf.compare(expectedBuf), 0)
 
-        // Remove from set to test that only unique files are added
-        dirContentCIDs.delete(file)
-      })
+      // Remove from set to test that only unique files are added
+      dirContentCIDs.delete(file)
     })
   })
 
@@ -223,33 +221,31 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = DiskManager.computeFilePath(DIR_CID_NOT_SQUARE)
-    assert.ok(fs.existsSync(dirPath))
+    const dirPath = await DiskManager.computeFilePath(DIR_CID_NOT_SQUARE)
+    assert.ok(await fs.pathExists(dirPath))
 
     const dirContentCIDs = new Set([CID_640, CID_2000, CID_ORIGINAL])
 
     // Iterate through fs files
-    fs.readdir(dirPath, (err, files) => {
-      if (err) assert.fail(`Could not read directory at ${dirPath}`)
+    const files = await fs.readdir(dirPath)
+    
+    // Check that 3 files (tentatively 640x, 2000x, original) are present
+    assert.deepStrictEqual(files.length, 3)
 
-      // Check that 3 files (tentatively 640x, 2000x, original) are present
-      assert.deepStrictEqual(files.length, 3)
+    files.map(async (file) => {
+      // Check that (640x, 2000x, original) files exist
+      assert.ok(dirContentCIDs.has(file))
 
-      files.map((file) => {
-        // Check that (640x, 2000x, original) files exist
-        assert.ok(dirContentCIDs.has(file))
+      // Check (640x, 2000x, original) file contents are proper by comparing the buffers
+      const fsBuf = await fs.readFile(path.join(dirPath, file))
+      const expectedBuf = await fs.readFile(
+        path.join(__dirname, imageTestDir, DIR_CID_NOT_SQUARE, file)
+      )
+      // If comparison does not return 0, buffers are not the same
+      assert.deepStrictEqual(expectedBuf.compare(fsBuf), 0)
 
-        // Check (640x, 2000x, original) file contents are proper by comparing the buffers
-        const fsBuf = fs.readFileSync(path.join(dirPath, file))
-        const expectedBuf = fs.readFileSync(
-          path.join(__dirname, imageTestDir, DIR_CID_NOT_SQUARE, file)
-        )
-        // If comparison does not return 0, buffers are not the same
-        assert.deepStrictEqual(expectedBuf.compare(fsBuf), 0)
-
-        // Remove from set to test that only unique files are added
-        dirContentCIDs.delete(file)
-      })
+      // Remove from set to test that only unique files are added
+      dirContentCIDs.delete(file)
     })
   })
 })
