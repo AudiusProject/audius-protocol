@@ -135,5 +135,5 @@ const msToTime = (duration: number) => {
   const minutesStr = (minutes < 10) ? "0" + minutes : minutes;
   const secondsStr = (seconds < 10) ? "0" + seconds : seconds;
 
-  return `${hoursStr}:${minutesStr}:${secondsStr}:${milliseconds.toString()}`
+  return `${hoursStr}hr ${minutesStr}min ${secondsStr}sec ${milliseconds.toString()}ms`
 }
