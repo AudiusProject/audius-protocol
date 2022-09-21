@@ -148,6 +148,7 @@ class SearchPageContent extends Component {
           open={cardToast[toastId] && cardToast[toastId].open}
           placement='bottom'
           fillParent={false}
+          firesOnClick={false}
         >
           <Card
             id={artist.user_id}
@@ -206,6 +207,7 @@ class SearchPageContent extends Component {
             playlist.playlist_id
           )}
           primaryText={playlist.playlist_name}
+          firesOnClick={false}
         >
           <Card
             size={'small'}
@@ -268,6 +270,7 @@ class SearchPageContent extends Component {
             album.playlist_id
           )}
           primaryText={album.playlist_name}
+          firesOnClick={false}
         >
           <Card
             size={'small'}
