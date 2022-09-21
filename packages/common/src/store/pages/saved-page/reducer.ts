@@ -9,7 +9,8 @@ import {
   FETCH_MORE_SAVES_SUCCEEDED,
   FETCH_MORE_SAVES_FAILED,
   ADD_LOCAL_SAVE,
-  REMOVE_LOCAL_SAVE
+  REMOVE_LOCAL_SAVE,
+  END_FETCHING
 } from 'store/pages/saved-page/actions'
 import tracksReducer from 'store/pages/saved-page/lineups/tracks/reducer'
 
@@ -19,7 +20,8 @@ const initialState = {
   // id => uid
   localSaves: {},
   saves: [],
-  initialFetch: false
+  initialFetch: false,
+  hasReachedEnd: false
 }
 
 const actionsMap = {
@@ -31,7 +33,8 @@ const actionsMap = {
   [FETCH_SAVES_REQUESTED](state, action) {
     return {
       ...state,
-      initialFetch: true
+      initialFetch: true,
+      hasReachedEnd: false
     }
   },
   [FETCH_SAVES_SUCCEEDED](state, action) {
@@ -58,6 +61,14 @@ const actionsMap = {
   },
   [FETCH_MORE_SAVES_FAILED](state, action) {
     return { ...state }
+  },
+  [END_FETCHING](state, action) {
+    const savesCopy = state.saves.slice(0, action.endIndex)
+    return {
+      ...state,
+      saves: savesCopy,
+      hasReachedEnd: true
+    }
   },
   [ADD_LOCAL_SAVE](state, action) {
     return {
