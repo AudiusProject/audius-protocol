@@ -1,4 +1,5 @@
 const sinon = require('sinon')
+const { encode, decode } = require('../../src/hashids')
 
 function getLibsMock() {
   const libsMock = {
@@ -67,10 +68,33 @@ function getLibsMock() {
     Playlist: {
       getPlaylists: sinon.mock().atLeast(1)
     },
+    Utils: {
+      encodeHashId: sinon.mock().atLeast(1)
+    },
     discoveryProvider: {
-      discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
+      discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000',
+      getUserReplicaSet: sinon.mock().atLeast(1)
     }
   }
+
+  libsMock.Utils.encodeHashId.callsFake((id) => {
+    return encode(id)
+  })
+
+  libsMock.discoveryProvider.getUserReplicaSet.callsFake(({ encodedUserId }) => {
+    const user_id = decode(encodedUserId)
+    return {
+      user_id,
+      "wallet": '0xadd36bad12002f1097cdb7ee24085c28e960fc32',
+      "primary": 'http://mock-cn1.audius.co',
+      "secondary1": 'http://mock-cn2.audius.co',
+      "secondary2": 'http://mock-cn3.audius.co',
+      "primarySpID": 1,
+      "secondary1SpID": 2,
+      "secondary2SpID": 3
+    }
+  })
+
 
   libsMock.contracts.UserReplicaSetManagerClient.getUserReplicaSet.returns({
     primaryId: 1,

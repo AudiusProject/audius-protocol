@@ -701,7 +701,7 @@ const _issueUpdateReplicaSetOp = async (
         }ms for userId=${userId} wallet=${wallet}`
       )
 
-      const { blocknumber, blockHash } =
+      const { blocknumber } =
         await audiusLibs.User.updateEntityManagerReplicaSet({
           userId,
           primary: newReplicaSetSPIds[0], // new primary
@@ -828,7 +828,7 @@ const _canReconfig = async ({
   let error
   try {
     const encodedUserId = libs.Utils.encodeHashId(userId)
-    const spResponse = await libs.DiscoveryProvider.getUserReplicaSet({
+    const spResponse = await libs.discoveryProvider.getUserReplicaSet({
       encodedUserId
     })
     const chainPrimarySpId = spResponse?.primarySpID
