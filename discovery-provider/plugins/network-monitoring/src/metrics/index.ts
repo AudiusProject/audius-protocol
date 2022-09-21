@@ -73,7 +73,6 @@ export const generateMetrics = async (run_id: number) => {
 
   if (userCount > 0) {
     await publishSlackReport({
-      runDuration: msToTime(endTime - runStartTime.getTime()),
       fullySyncedUsersCount:
         ((fullySyncedUsersCount / userCount) * 100).toFixed(2) + "%",
       partiallySyncedUsersCount:
@@ -86,6 +85,7 @@ export const generateMetrics = async (run_id: number) => {
         ((usersWithAllFoundationNodeReplicaSetCount / userCount) * 100).toFixed(
           2
         ) + "%",
+      runDuration: msToTime(endTime - runStartTime.getTime()),
     });
   }
 
