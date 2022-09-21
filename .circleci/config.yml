@@ -269,6 +269,9 @@ parameters:
   sdk_release_commit:
     type: string
     default: ""
+  deploy_args:
+    type: string
+    default: ""
   slack_mentions_user:
     type: string
     default: ""
@@ -1008,6 +1011,10 @@ jobs:
         description: Additional parameters for deploy-ci.py
         type: string
         default: ""
+      deploy_args:
+        description: When present, the only parameters used for deploy-ci.py
+        type: string
+        default: ""
     steps:
       - slack-basic:
           channel: C03STD3UXMG
@@ -1108,10 +1115,13 @@ jobs:
             # `AddKeysToAgent yes` is os-x only
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
       - when:
-          condition: << parameters.host >>
+          condition:
+            and:
+              - << parameters.host >>
+              - not: << parameters.deploy_args >>
           steps:
             - run:
-                name: Perform Deployment
+                name: Perform Deployment (<< parameters.host >>)
                 command: |
                   cd ~/audius-protocol
                   set -x
@@ -1123,11 +1133,14 @@ jobs:
                     --services "<< parameters.service >>" \
                     --hosts "<< parameters.host >>" \
                     << parameters.params >>
-      - unless:
-          condition: << parameters.host >>
+      - when:
+          condition:
+            and:
+              - not: << parameters.host >>
+              - not: << parameters.deploy_args >>
           steps:
             - run:
-                name: Perform Deployment
+                name: Perform Deployment (w/o --hosts)
                 command: |
                   cd ~/audius-protocol
                   set -x
@@ -1138,6 +1151,18 @@ jobs:
                     --environment "<< parameters.environment >>" \
                     --services "<< parameters.service >>" \
                     << parameters.params >>
+      - when:
+          condition: << parameters.deploy_args >>
+          steps:
+            - run:
+                name: "Perform Deployment (deploy_args: << parameters.deploy_args >>)"
+                command: |
+                  cd ~/audius-protocol
+                  set -x
+                  .circleci/bin/deploy-ci.py \
+                    --github-user ${GH_USER} \
+                    --github-token ${GH_TOKEN} \
+                    << parameters.deploy_args >>
       - run:
           name: Set Slack Detail from /tmp/summary.md
           command: |
@@ -1161,12 +1186,14 @@ jobs:
           command: |
             sudo killall openvpn || true
           when: always
+
 workflows:
   workflows:
     when:
       and:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_commit >>
+         - not: << pipeline.parameters.deploy_args >>
     jobs:
       - noop:
           name: build
@@ -1442,19 +1469,38 @@ workflows:
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
-  # 2. go to your branch of choice
+  # 2. go to the `master` branch
   # 3. click "Trigger Pipeline"
   # 4. Add string paramter "sdk_release_commit" and set to a valid git commit
   sdk-release:
     when: << pipeline.parameters.sdk_release_commit >>
     jobs:
       - publish-sdk:
-          context:
-            - Audius Client
-            - slack-secrets
           name: publish-sdk (<< pipeline.parameters.sdk_release_commit >>)
           sdk_release_commit: << pipeline.parameters.sdk_release_commit >>
           slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
+          context:
+            - Audius Client
+            - slack-secrets
+          filters:
+            branches:
+              only: /(^master$)/
+
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. go to the `master` branch
+  # 3. click "Trigger Pipeline"
+  # 4. Add string paramter "deploy_args" to be passed to deploy-ci.py
+  deploy-args:
+    when: << pipeline.parameters.deploy_args >>
+    jobs:
+      - deploy:
+          name: deploy (<< pipeline.parameters.deploy_args >>)
+          deploy_args: << pipeline.parameters.deploy_args >>
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
           filters:
             branches:
               only: /(^master$)/
