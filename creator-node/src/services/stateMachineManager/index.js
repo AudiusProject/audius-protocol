@@ -16,6 +16,7 @@ const {
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
 const SyncRequestDeDuplicator = require('./stateReconciliation/SyncRequestDeDuplicator')
+const { specialWorkerUtils } = require('../../utils')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -53,8 +54,9 @@ class StateMachineManager {
     )
 
     if (cluster.worker?.id === 1) {
-      SyncRequestDeDuplicator.clear()
-
+      await SyncRequestDeDuplicator.clear()
+    }
+    if (specialWorkerUtils.isThisProcessSpecial()) {
       // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
       const queueNameToQueueMap = {
         [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: {
