@@ -29,6 +29,7 @@ import {
   currentNodeShouldHandleTranscode,
   getAllRegisteredCNodes
 } from './contentNodeUtils'
+import { specialWorkerUtils } from './specialWorkerUtils'
 
 export type { ReplicaSet } from './strToReplicaSet'
 export {
@@ -47,7 +48,8 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   strToReplicaSet,
-  stringifyMap
+  stringifyMap,
+  specialWorkerUtils
 }
 
 module.exports = {
@@ -68,5 +70,6 @@ module.exports = {
   strToReplicaSet,
   stringifyMap,
   verifyCIDMatchesExpected,
-  EMPTY_FILE_CID
+  EMPTY_FILE_CID,
+  specialWorkerUtils
 }

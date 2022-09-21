@@ -2,6 +2,7 @@
 
 import type { Cluster } from 'cluster'
 import type { CpuInfo } from 'os'
+import { specialWorkerUtils } from './utils'
 const cluster: Cluster = require('cluster')
 const { cpus }: { cpus: () => CpuInfo[] } = require('os')
 
@@ -114,13 +115,30 @@ const startAppForPrimary = async () => {
     }
   })
 
+  for (const worker of Object.values(cluster.workers || {})) {
+    worker?.on('message', (msg) => {
+      if (msg?.cmd === 'setSpecialWorkerId') {
+        specialWorkerUtils.specialWorkerId = msg?.val
+      }
+    })
+  }
+
   cluster.on('exit', (worker, code, signal) => {
     logger.info(
       `Worker process with pid=${worker.process.pid} died because ${
         signal || code
       }. Respawning...`
     )
-    cluster.fork()
+    const newWorker = cluster.fork()
+    if (specialWorkerUtils.specialWorkerId === worker.id) {
+      logger.info(
+        'The worker that died was the special worker. Setting a new special worker...'
+      )
+      specialWorkerUtils.specialWorkerId = newWorker.id
+      for (const worker of Object.values(cluster.workers || {})) {
+        worker?.send({ cmd: 'setSpecialWorkerId', val: newWorker.id })
+      }
+    }
   })
 }
 
