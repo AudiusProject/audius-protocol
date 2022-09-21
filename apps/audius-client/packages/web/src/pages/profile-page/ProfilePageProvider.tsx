@@ -60,7 +60,7 @@ const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { makeGetRelatedArtists } = artistRecommendationsUISelectors
+const { getRelatedArtists } = artistRecommendationsUISelectors
 
 const {
   makeGetProfile,
@@ -68,7 +68,7 @@ const {
   getProfileTracksLineup,
   getProfileUserId
 } = profilePageSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -943,7 +943,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 function makeMapStateToProps() {
   const getProfile = makeGetProfile()
   const getCurrentQueueItem = makeGetCurrent()
-  const getRelatedArtists = makeGetRelatedArtists()
   const mapStateToProps = (state: AppState) => ({
     account: getAccountUser(state),
     // @ts-ignore getProfile doesn't strictly need a second arg
