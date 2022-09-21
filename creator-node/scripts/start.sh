@@ -71,9 +71,12 @@ if [[ "$devMode" == "true" ]]; then
         npm link
         cd ../app
         npm link @audius/sdk
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist | tee >(logger)
+        ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
+        # npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist | tee >(logger)
     else
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
+
+        ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
+        # npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     fi
 else
     node --max-old-space-size=4096 build/src/index.js | tee >(logger)
