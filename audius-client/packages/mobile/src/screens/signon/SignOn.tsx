@@ -648,7 +648,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
                     () => {
                       // On unavailable email (e.g. user exists with that email),
                       // Switch to the sign in form
-                      switchForm()
+                      switchForm(true)
                       setIsWorking(false)
                     },
                     () => {
