@@ -133,6 +133,7 @@
       "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336"
     },
     "scriptsComments": {
+      "start": "Runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined",
       "coverage": "Runs nyc on tests/ dir and outputs results in ./nyc_output. Can be used for vscode extensions.",
       "report": "Generates static html files representing code coverage per test file and outputs them into /coverage."
     }
