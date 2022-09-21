@@ -1,5 +1,6 @@
-import type { Nullable, User } from '@audius/common'
+import type { Nullable, User, CommonState } from '@audius/common'
 import {
+  Status,
   useProxySelector,
   accountSelectors,
   profilePageSelectors
@@ -8,12 +9,8 @@ import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
 import { useRoute } from 'app/hooks/useRoute'
-const {
-  getProfileUser,
-  getProfileUserHandle,
-  getProfileUserId,
-  makeGetProfile
-} = profilePageSelectors
+const { getProfileUser, getProfileStatus, makeGetProfile, getProfileUserId } =
+  profilePageSelectors
 const { getAccountUser, getUserId } = accountSelectors
 
 /*
@@ -53,23 +50,16 @@ export const useSelectProfile = (deps: Array<keyof User>) => {
 
 export const getProfile = makeGetProfile()
 
-export const getIsSubscribed = createSelector(
-  [getProfile],
-  (profile) => profile.isSubscribed
-)
-
 export const getIsOwner = createSelector(
-  [getProfileUserId, getUserId],
-  (profileUserId, accountUserId) => profileUserId === accountUserId
+  (state: CommonState, handle: string) => getProfileUserId(state, handle),
+  getUserId,
+  (profileUserId, accountUserId) => accountUserId === profileUserId
 )
 
 export const useIsProfileLoaded = () => {
   const { params } = useRoute<'Profile'>()
+  const { handle } = params
+  const profileStatus = useSelector((state) => getProfileStatus(state, handle))
 
-  const profileHandle = useSelector(getProfileUserHandle)
-  const isOwner = useSelector(getIsOwner)
-  return (
-    profileHandle === params.handle ||
-    (params.handle === 'accountUser' && isOwner)
-  )
+  return handle === 'accountUser' || profileStatus === Status.SUCCESS
 }

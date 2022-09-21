@@ -13,7 +13,6 @@ import {
   formatCount,
   getErrorMessage,
   accountSelectors,
-  lineupSelectors,
   profilePageSelectors,
   CollectionSortMode,
   ProfilePageTabs,
@@ -69,7 +68,6 @@ const {
   getProfileTracksLineup,
   getProfileUserId
 } = profilePageSelectors
-const { makeGetLineupMetadatas } = lineupSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
 const INITIAL_UPDATE_FIELDS = {
@@ -134,9 +132,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   componentDidMount() {
     // If routing from a previous profile page
     // the lineups must be reset to refetch & update for new user
-    this.props.resetProfile()
-    this.props.resetArtistTracks()
-    this.props.resetUserFeedTracks()
     this.fetchProfile(getPathname(this.props.location))
 
     // Switching from profile page => profile page
@@ -146,9 +141,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         getPathname(this.props.location) !== getPathname(location) ||
         action === 'POP'
       ) {
-        this.props.resetProfile()
-        this.props.resetArtistTracks()
-        this.props.resetUserFeedTracks()
         const params = parseUserRoute(getPathname(location))
         if (params) {
           // Fetch profile if this is a new profile page
@@ -183,7 +175,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       !activeTab &&
       profile &&
       profile.profile &&
-      artistTracks.status === Status.SUCCESS
+      artistTracks!.status === Status.SUCCESS
     ) {
       if (profile.profile.track_count > 0) {
         this.setState({
@@ -580,7 +572,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     trackUpdateSort('recent')
     this.props.loadMoreArtistTracks(
       0,
-      artistTracks.entries.length,
+      artistTracks!.entries.length,
       profile.user_id,
       TracksSortMode.RECENT
     )
@@ -597,7 +589,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     this.setState({ tracksLineupOrder: TracksSortMode.POPULAR })
     this.props.loadMoreArtistTracks(
       0,
-      artistTracks.entries.length,
+      artistTracks!.entries.length,
       profile.user_id,
       TracksSortMode.POPULAR
     )
@@ -949,18 +941,15 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 }
 
 function makeMapStateToProps() {
-  const getArtistTracksMetadatas = makeGetLineupMetadatas(
-    getProfileTracksLineup
-  )
-  const getUserFeedMetadatas = makeGetLineupMetadatas(getProfileFeedLineup)
   const getProfile = makeGetProfile()
   const getCurrentQueueItem = makeGetCurrent()
   const getRelatedArtists = makeGetRelatedArtists()
   const mapStateToProps = (state: AppState) => ({
     account: getAccountUser(state),
+    // @ts-ignore getProfile doesn't strictly need a second arg
     profile: getProfile(state),
-    artistTracks: getArtistTracksMetadatas(state),
-    userFeed: getUserFeedMetadatas(state),
+    artistTracks: getProfileTracksLineup(state),
+    userFeed: getProfileFeedLineup(state),
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
@@ -968,7 +957,9 @@ function makeMapStateToProps() {
     isUserConfirming: !getIsDone(state, {
       uid: makeKindId(Kind.USERS, getAccountUser(state)?.user_id)
     }),
-    relatedArtists: getRelatedArtists(state, { id: getProfileUserId(state) })
+    relatedArtists: getRelatedArtists(state, {
+      id: getProfileUserId(state) ?? 0
+    })
   })
   return mapStateToProps
 }
@@ -993,7 +984,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     updateProfile: (metadata: any) =>
       dispatch(profileActions.updateProfile(metadata)),
-    resetProfile: () => dispatch(profileActions.resetProfile()),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     updateCollectionOrder: (mode: CollectionSortMode) =>
@@ -1029,7 +1019,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
         })
       )
     },
-    resetArtistTracks: () => dispatch(tracksActions.reset()),
     playArtistTrack: (uid: string) => dispatch(tracksActions.play(uid)),
     pauseArtistTrack: () => dispatch(tracksActions.pause()),
     // User Feed
@@ -1037,7 +1026,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         feedActions.fetchLineupMetadatas(offset, limit, false, { userId: id })
       ),
-    resetUserFeedTracks: () => dispatch(feedActions.reset()),
     playUserFeedTrack: (uid: UID) => dispatch(feedActions.play(uid)),
     pauseUserFeedTrack: () => dispatch(feedActions.pause()),
     // Followes

@@ -4,10 +4,12 @@ import { useSelector } from 'react-redux'
 import { CollectionList } from 'app/components/collection-list'
 
 import { useEmptyProfileText } from './EmptyProfileTile'
+import { useSelectProfile } from './selectors'
 const { getProfilePlaylists } = profilePageSelectors
 
 export const PlaylistsTab = () => {
-  const playlists = useSelector(getProfilePlaylists)
+  const { handle } = useSelectProfile(['handle'])
+  const playlists = useSelector((state) => getProfilePlaylists(state, handle))
 
   const emptyListText = useEmptyProfileText('playlists')
 

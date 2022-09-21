@@ -36,9 +36,11 @@ const MAX_MUTUALS = 5
 const selectMutuals = createSelector(
   [getFolloweeFollows, getUsers],
   (followeeFollows, users) => {
-    return followeeFollows.userIds
-      .map(({ id }) => users[id])
-      .filter(removeNullable)
+    return (
+      followeeFollows?.userIds
+        .map(({ id }) => users[id])
+        .filter(removeNullable) ?? []
+    )
   }
 )
 
@@ -47,11 +49,11 @@ export const ProfileMutuals = () => {
   const accountId = useSelector(getUserId)
   const profile = useSelector(getProfileUser)
 
-  // @ts-ignore -- fixed in typescript v4
   const mutuals = useSelector(selectMutuals)
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
+    if (!userId) return
     dispatch(
       setUsers({
         userListType: UserListType.MUTUAL_FOLLOWER,

@@ -4,7 +4,7 @@ import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
 import { initialLineupState } from 'store/lineup/reducer'
 import { PREFIX } from 'store/pages/profile/lineups/tracks/actions'
 
-const initialState = {
+export const initialState = {
   ...initialLineupState,
   prefix: PREFIX,
   containsDeleted: false

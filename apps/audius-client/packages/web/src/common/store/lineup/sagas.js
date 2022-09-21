@@ -128,7 +128,8 @@ function* fetchLineupMetadatasAsync(
           action.offset,
           action.limit,
           action.overwrite,
-          action.payload
+          action.payload,
+          action.handle
         )
       )
 
@@ -139,14 +140,12 @@ function* fetchLineupMetadatasAsync(
         yield delay(100)
       }
 
-      const lineupMetadatasResponse = yield call(lineupMetadatasCall, {
-        offset: action.offset,
-        limit: action.limit,
-        payload: action.payload
-      })
+      const lineupMetadatasResponse = yield call(lineupMetadatasCall, action)
 
       if (lineupMetadatasResponse === null) return
-      const lineup = yield select(lineupSelector)
+      const lineup = yield select((state) =>
+        lineupSelector(state, action.handle)
+      )
       const source = sourceSelector
         ? yield select(sourceSelector)
         : lineup.prefix
@@ -271,7 +270,8 @@ function* fetchLineupMetadatasAsync(
           action.offset,
           action.limit,
           deletedCount,
-          nullCount
+          nullCount,
+          action.handle
         )
       )
 

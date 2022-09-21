@@ -5,44 +5,69 @@ import { getUser, getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 import { removeNullable, createDeepEqualSelector } from 'utils'
 
-import { ID, UserCollection } from '../../../models'
+import { ID, Status, User, UserCollection } from '../../../models'
 
+import { initialState as initialFeedState } from './lineups/feed/reducer'
+import { initialState as initialTracksState } from './lineups/tracks/reducer'
 import { CollectionSortMode } from './types'
 
+const getProfile = (state: CommonState, handle?: string) => {
+  const profileHandle = handle ?? state.pages.profile.currentUser
+  if (!profileHandle) return null
+  return state.pages.profile.entries[profileHandle]
+}
+
+const emptyList: any[] = []
+
 // Profile selectors
-export const getProfileStatus = (state: CommonState) =>
-  state.pages.profile.status
-export const getProfileError = (state: CommonState) => state.pages.profile.error
-export const getProfileUserId = (state: CommonState) =>
-  state.pages.profile.userId
+export const getProfileStatus = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.status ?? Status.IDLE
+export const getProfileError = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.error
+export const getProfileUserId = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.userId
 export const getProfileUserHandle = (state: CommonState) =>
-  state.pages.profile.handle
-export const getProfileMostUsedTags = (state: CommonState) =>
-  state.pages.profile.mostUsedTags
-export const getProfileCollectionSortMode = (state: CommonState) =>
-  state.pages.profile.collectionSortMode
-export const getProfileFollowers = (state: CommonState) =>
-  state.pages.profile.followers
-export const getProfileFollowees = (state: CommonState) =>
-  state.pages.profile.followees
-export const getFolloweeFollows = (state: CommonState) =>
-  state.pages.profile.followeeFollows
-export const getIsSubscribed = (state: CommonState) =>
-  state.pages.profile.isNotificationSubscribed
+  state.pages.profile.currentUser
+export const getProfileMostUsedTags = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.mostUsedTags ?? ([] as string[])
+export const getProfileCollectionSortMode = (
+  state: CommonState,
+  handle: string
+) => getProfile(state, handle)?.collectionSortMode
+export const getProfileFollowers = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.followers
+export const getProfileFollowees = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.followees
+export const getFolloweeFollows = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.followeeFollows
+export const getIsSubscribed = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.isNotificationSubscribed
 export const getProfileUser = (
   state: CommonState,
-  params: { handle?: string | null; id?: ID } = { id: getProfileUserId(state) }
-) => getUser(state, params)
+  params?: { handle?: string | null; id?: ID }
+) => {
+  const profileHandle = getProfileUserHandle(state)
+  if (!params) return getUser(state, { handle: profileHandle })
 
-export const getProfileFeedLineup = (state: CommonState) =>
-  state.pages.profile.feed
-export const getProfileTracksLineup = (state: CommonState) =>
-  state.pages.profile.tracks
+  const { id, handle } = params
+  if (id) return getUser(state, params)
+  return getUser(state, { handle: handle ?? profileHandle })
+}
+
+export const getProfileFeedLineup = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.feed ?? initialFeedState
+export const getProfileTracksLineup = (state: CommonState, handle?: string) =>
+  getProfile(state, handle)?.tracks ?? initialTracksState
 
 export const getProfileCollections = createDeepEqualSelector(
-  [getProfileUserId, getUsers, getCollections],
+  [
+    (state: CommonState, handle: string) => getProfileUserId(state, handle),
+    getUsers,
+    getCollections
+  ],
   (userId, users, collections) => {
-    const user = users[userId]
+    if (!userId) return []
+    const user: User = users[userId]
     if (!user) return []
     const { handle, _collectionIds } = user
     const userCollections = _collectionIds
@@ -107,6 +132,7 @@ export const makeGetProfile = () => {
         status
       }
       if (error) return { ...emptyState, error: true }
+      if (!userId) return emptyState
       if (!(userId in users)) return emptyState
 
       // Get playlists & albums.
@@ -140,24 +166,33 @@ export const makeGetProfile = () => {
           (a, b) => moment(b.created_at) - moment(a.created_at)
         )
       }
-      const followersPopulated = followers.userIds
-        .map(({ id }) => {
-          if (id in users) return users[id]
-          return null
-        })
-        .filter(removeNullable)
-      const followeesPopulated = followees.userIds
-        .map(({ id }) => {
-          if (id in users) return users[id]
-          return null
-        })
-        .filter(removeNullable)
+      const followersPopulated =
+        followers?.userIds
+          .map(({ id }) => {
+            if (id in users) return users[id]
+            return null
+          })
+          .filter(removeNullable) ?? (emptyList as User[])
+
+      const followeesPopulated =
+        followees?.userIds
+          .map(({ id }) => {
+            if (id in users) return users[id]
+            return null
+          })
+          .filter(removeNullable) ?? (emptyList as User[])
 
       return {
         profile: {
           ...users[userId],
-          followers: { status: followers.status, users: followersPopulated },
-          followees: { status: followees.status, users: followeesPopulated }
+          followers: {
+            status: followers?.status ?? Status.IDLE,
+            users: followersPopulated
+          },
+          followees: {
+            status: followees?.status ?? Status.IDLE,
+            users: followeesPopulated
+          }
         },
         mostUsedTags,
         playlists,

@@ -1,4 +1,5 @@
 import { getAccountUser } from 'store/account/selectors'
+import { getProfileUserHandle } from 'store/pages/profile/selectors'
 
 import { Status } from '../../../models/Status'
 import { CommonState } from '../../commonStore'
@@ -118,8 +119,11 @@ export const getOrderedCompletionStages = (state: CommonState) => {
   ]
 }
 
-export const getProfilePageMeterDismissed = (state: CommonState) =>
-  state.pages.profile.profileMeterDismissed
+export const getProfilePageMeterDismissed = (state: CommonState) => {
+  const profileHandle = getProfileUserHandle(state)
+  if (!profileHandle) return false
+  return state.pages.profile.entries[profileHandle]?.profileMeterDismissed
+}
 
 export const getIsAccountLoaded = (state: CommonState) =>
   state.account.status === Status.SUCCESS

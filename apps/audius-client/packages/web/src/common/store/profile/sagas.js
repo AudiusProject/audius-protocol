@@ -318,8 +318,10 @@ function* fetchMostUsedTags(userId, trackCount) {
 }
 
 function* fetchFolloweeFollows(action) {
+  const { handle } = action
+  if (!handle) return
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const profileUserId = yield select(getProfileUserId)
+  const profileUserId = yield select((state) => getProfileUserId(state, handle))
   if (!profileUserId) return
   const followeeFollows = yield call(
     audiusBackendInstance.getFolloweeFollows,
