@@ -105,7 +105,12 @@ const startAppForPrimary = async () => {
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    logger.info(`Worker process with pid=${worker.process.pid} died`)
+    logger.info(
+      `Worker process with pid=${worker.process.pid} died because ${
+        signal || code
+      }. Respawning...`
+    )
+    cluster.fork()
   })
 }
 
