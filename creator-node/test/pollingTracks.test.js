@@ -682,16 +682,19 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     // Make chain recognize wallet as owner of track
     const blockchainTrackId = 1
-    const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
       let trackOwnerId = -1
-      if (blockchainTrackIdArg === blockchainTrackId) {
+      if (trackIds[0] === blockchainTrackId) {
         trackOwnerId = userId
       }
-      return {
-        trackOwnerId
-      }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
     })
-    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -741,8 +744,13 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     // Make chain NOT recognize wallet as owner of track
     const blockchainTrackId = 1
-    const getTrackStub = sinon.stub().resolves(-1)
-    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+    const getTrackStub = sinon.stub().resolves([
+      {
+        blocknumber: 0,
+        owner_id: -1
+      }
+    ])
+    libsMock.Track = { getTracks: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -847,16 +855,19 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     // Make chain recognize wallet as owner of track
     const blockchainTrackId = 1
-    const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
       let trackOwnerId = -1
-      if (blockchainTrackIdArg === blockchainTrackId) {
+      if (trackIds[0] === blockchainTrackId) {
         trackOwnerId = userId
       }
-      return {
-        trackOwnerId
-      }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
     })
-    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -1106,16 +1117,19 @@ describe('test Polling Tracks with real files', function () {
 
     // Make chain recognize wallet as owner of track
     const blockchainTrackId = 1
-    const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
       let trackOwnerId = -1
-      if (blockchainTrackIdArg === blockchainTrackId) {
+      if (trackIds[0] === blockchainTrackId) {
         trackOwnerId = userId
       }
-      return {
-        trackOwnerId
-      }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
     })
-    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     // Complete track creation
     await request(app2)
@@ -1191,19 +1205,22 @@ describe('test Polling Tracks with real files', function () {
     // Make chain recognize wallet as owner of track
     const track1BlockchainId = 1
     const track2BlockchainId = 2
-    const getTrackStub = sinon.stub().callsFake((blockchainTrackId) => {
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
       let trackOwnerId = -1
       if (
-        blockchainTrackId === track1BlockchainId ||
-        blockchainTrackId === track2BlockchainId
+        trackIds[0] === track1BlockchainId ||
+        trackIds[0] === track2BlockchainId
       ) {
         trackOwnerId = userId
       }
-      return {
-        trackOwnerId
-      }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
     })
-    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     // Complete track1 creation
     await request(app2)

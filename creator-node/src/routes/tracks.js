@@ -22,6 +22,7 @@ const {
   validateStateForImageDirCIDAndReturnFileUUID,
   currentNodeShouldHandleTranscode
 } = require('../utils')
+const asyncRetry = require('../utils/asyncRetry')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -308,6 +309,37 @@ router.post(
   })
 )
 
+const validateTrackOwner = async ({
+  libs,
+  logger,
+  trackId,
+  userId,
+  blockNumber
+}) => {
+  const asyncFn = async () => {
+    const discoveryTrackResponse = await libs.Track.getTracks(1, 0, [trackId])
+    if (
+      !Array.isArray(discoveryTrackResponse) ||
+      discoveryTrackResponse.length === 0 ||
+      !discoveryTrackResponse[0].hasOwnProperty('blocknumber')
+    ) {
+      throw new Error('Missing or malformatted track fetched from discprov.')
+    }
+    const track = discoveryTrackResponse[0]
+    if (track.blocknumber >= blockNumber) {
+      return parseInt(userId) === track.owner_id
+    }
+    throw new Error(
+      `Block not yet indexed: Waiting for ${track.blocknumber}, but at ${blockNumber}`
+    )
+  }
+
+  return await asyncRetry({
+    asyncFn,
+    logger
+  })
+}
+
 /**
  * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
  * and associates segment & image file entries with track. Ends track creation/update process.
@@ -423,19 +455,18 @@ router.post(
           throw new Error('Cannot create track without transcodedTrackUUID.')
         }
 
-        // Verify that blockchain track id is owned by user attempting to upload it
-        const serviceRegistry = req.app.get('serviceRegistry')
-        const { libs } = serviceRegistry
-        const trackResp = await libs.contracts.TrackFactoryClient.getTrack(
-          blockchainTrackId
-        )
-        if (
-          !trackResp?.trackOwnerId ||
-          parseInt(trackResp.trackOwnerId, 10) !==
-            parseInt(req.session.userId, 10)
-        ) {
+        // Verify that track id is owned by user attempting to upload it
+        const libs = req.app.get('audiusLibs')
+        const isValidTrackOwner = await validateTrackOwner({
+          libs,
+          trackId: blockchainTrackId,
+          userId: req.session.userId,
+          logger: req.logger,
+          blockNumber
+        })
+        if (!isValidTrackOwner) {
           throw new Error(
-            `Owner ID ${trackResp.trackOwnerId} of blockchainTrackId ${blockchainTrackId} does not match the ID of the user attempting to write this track: ${req.session.userId}`
+            `Owner ID of track ${blockchainTrackId} does not match ${req.session.userId}`
           )
         }
 
