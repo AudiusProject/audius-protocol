@@ -1140,7 +1140,7 @@ jobs:
               - not: << parameters.deploy_args >>
           steps:
             - run:
-                name: Perform Deployment (w/o --hosts)
+                name: Perform Deployment
                 command: |
                   cd ~/audius-protocol
                   set -x
