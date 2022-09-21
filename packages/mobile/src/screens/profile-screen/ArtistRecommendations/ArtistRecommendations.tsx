@@ -4,10 +4,11 @@ import {
   FollowSource,
   usersSocialActions,
   artistRecommendationsUISelectors,
-  artistRecommendationsUIActions
+  artistRecommendationsUIActions,
+  useProxySelector
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import IconFollow from 'app/assets/images/iconFollow.svg'
@@ -24,7 +25,7 @@ import { useSelectProfile } from '../selectors'
 
 import { ArtistLink } from './ArtistLink'
 const { fetchRelatedArtists } = artistRecommendationsUIActions
-const { makeGetRelatedArtists } = artistRecommendationsUISelectors
+const { getRelatedArtists } = artistRecommendationsUISelectors
 const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
@@ -80,8 +81,6 @@ type ArtistRecommendationsProps = {
   onClose: () => void
 }
 
-const getRelatedArtistIds = makeGetRelatedArtists()
-
 export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const { onClose } = props
   const styles = useStyles()
@@ -101,9 +100,9 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
     )
   })
 
-  const suggestedArtists = useSelector(
-    (state) => getRelatedArtistIds(state, { id: user_id }),
-    (a, b) => a.length === b.length
+  const suggestedArtists = useProxySelector(
+    (state) => getRelatedArtists(state, { id: user_id }),
+    [user_id]
   )
 
   const isFollowingAllArtists = suggestedArtists.every(
