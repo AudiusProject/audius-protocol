@@ -259,7 +259,10 @@ const SavedPage = ({
           playing={queuedAndPlaying}
           playingIndex={playingIndex}
           scrollRef={mainContentRef}
-          totalRowCount={account?.track_save_count}
+          totalRowCount={Math.min(
+            dataSource.length,
+            account?.track_save_count ?? Infinity
+          )}
           userId={account ? account.user_id : 0}
         />
       ) : (
