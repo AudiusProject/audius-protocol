@@ -325,6 +325,30 @@ describe('watchNext', () => {
     expect(storeState.queue.index).toEqual(0)
   })
 
+  // Note: This test is untested, as the unit testing process was broken when it was written
+  // If it breaks on first run, it may be bugged
+  it('repeats the same track when in shuffle mode', async () => {
+    const initialQueue = makeInitialQueue({
+      index: 0,
+      repeat: RepeatMode.SINGLE,
+      shuffle: true,
+      shuffleIndex: 0
+    })
+    const playingEntry =
+      initialQueue.order[initialQueue.shuffleOrder[initialQueue.shuffleIndex]]
+    const initialPlayer = makeInitialPlayer({
+      uid: playingEntry.uid,
+      trackId: playingEntry.id,
+      playing: true
+    })
+    const { storeState } = await expectNextSagaAndGetStoreState(
+      initialPlayer,
+      initialQueue,
+      playingEntry
+    )
+    expect(storeState.queue.index).toEqual(0)
+  })
+
   it('does not repeat the same track if skipped', async () => {
     const initialQueue = makeInitialQueue({
       index: 0,
