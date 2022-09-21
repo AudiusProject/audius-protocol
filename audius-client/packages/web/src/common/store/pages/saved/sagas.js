@@ -76,15 +76,18 @@ function* watchFetchSaves() {
           save_item_id: save.track.track_id
         }))
 
-        const fullSaves = newTablesEnabled
-          ? Array(account.track_save_count)
-              .fill(0)
-              .map((_) => ({}))
-          : saves
+        const fullSaves = Array(account.track_save_count)
+          .fill(0)
+          .map((_) => ({}))
 
         fullSaves.splice(offset, saves.length, ...saves)
 
-        yield put(actions.fetchSavesSucceeded(fullSaves))
+        yield put(
+          actions.fetchSavesSucceeded(newTablesEnabled ? fullSaves : saves)
+        )
+        if (limit > 0 && saves.length < limit) {
+          yield put(actions.endFetching(offset + saves.length))
+        }
         yield fork(fetchTracksLineup)
       } catch (e) {
         yield put(actions.fetchSavesFailed())
@@ -124,6 +127,9 @@ function* watchFetchMoreSaves() {
       }))
       yield put(actions.fetchMoreSavesSucceeded(saves, offset))
 
+      if (limit > 0 && saves.length < limit) {
+        yield put(actions.endFetching(offset + saves.length))
+      }
       yield fork(fetchTracksLineup)
     } catch (e) {
       yield put(actions.fetchMoreSavesFailed())

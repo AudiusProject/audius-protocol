@@ -39,7 +39,7 @@ import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/Sa
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
-const { getSavedTracksLineup } = savedPageSelectors
+const { getSavedTracksLineup, hasReachedEnd } = savedPageSelectors
 const { updatePlaylistLastViewedAt } = notificationsActions
 const { getPlaylistUpdates } = notificationsSelectors
 const { makeGetTableMetadatas } = lineupSelectors
@@ -101,6 +101,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }, 300)
 
   handleFetchMoreSavedTracks = (offset: number, limit: number) => {
+    if (this.props.hasReachedEnd) return
     const { filterText, sortMethod, sortDirection } = this.state
     this.props.fetchMoreSavedTracks(
       filterText,
@@ -485,7 +486,8 @@ function makeMapStateToProps() {
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),
-      playlistUpdates: getPlaylistUpdates(state)
+      playlistUpdates: getPlaylistUpdates(state),
+      hasReachedEnd: hasReachedEnd(state)
     }
   }
   return mapStateToProps

@@ -1,13 +1,17 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
 export const FETCH_SAVES = 'SAVED/FETCH_SAVES'
-export const FETCH_SAVES_REQUESTED = 'SAVED/FETCH_SAVES_REQUESTEd'
+export const FETCH_SAVES_REQUESTED = 'SAVED/FETCH_SAVES_REQUESTED'
 export const FETCH_SAVES_SUCCEEDED = 'SAVED/FETCH_SAVES_SUCCEEDED'
 export const FETCH_SAVES_FAILED = 'SAVED/FETCH_SAVES_FAILED'
 
 export const FETCH_MORE_SAVES = 'SAVED/FETCH_MORE_SAVES'
 export const FETCH_MORE_SAVES_SUCCEEDED = 'SAVED/FETCH_MORE_SAVES_SUCCEEDED'
 export const FETCH_MORE_SAVES_FAILED = 'SAVED/FETCH_MORE_SAVES_FAILED'
+
+// Reached the end of the list before hitting the total number of saves
+// Usually when filtering
+export const END_FETCHING = 'SAVED/END_FETCHING'
 
 export const ADD_LOCAL_SAVE = 'SAVED/ADD_LOCAL_SAVE'
 export const REMOVE_LOCAL_SAVE = 'SAVED/REMOVE_LOCAL_SAVE'
@@ -73,6 +77,11 @@ export const fetchMoreSavesSucceeded = (saves, offset) => ({
 
 export const fetchMoreSavesFailed = () => ({
   type: FETCH_MORE_SAVES_FAILED
+})
+
+export const endFetching = (endIndex) => ({
+  type: END_FETCHING,
+  endIndex
 })
 
 export const addLocalSave = (trackId, uid) => ({
