@@ -19,7 +19,7 @@ const governanceKey = web3.utils.utf8ToHex('Governance')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 
 // Known service types
-const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
+const serviceTypeCN = web3.utils.utf8ToHex('content-node')
 // Creator node 
 // Minimum: 200,000
 // Maximum: 3,000,000
@@ -28,7 +28,7 @@ const cnTypeMax = _lib.audToWei(3000000)
 // Discovery provider
 // Minimum: 200,000
 // Maximum: 2,000,000
-const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
+const serviceTypeDP = web3.utils.utf8ToHex('discovery-node')
 const dpTypeMin = _lib.audToWei(200000)
 const dpTypeMax = _lib.audToWei(2000000)
 // stake lockup duration = 1 wk in blocks
