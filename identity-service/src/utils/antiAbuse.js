@@ -77,7 +77,8 @@ const detectAbuse = async (user, reqIP) => {
     }
   }
 
-  if (user.isBlockedFromRelay !== blockedFromRelay || user.isBlockedFromNotifications !== blockedFromNotifications) {
+  // Use !! for nullable columns :(
+  if (!!user.isBlockedFromRelay !== blockedFromRelay || !!user.isBlockedFromNotifications !== blockedFromNotifications) {
     await user.update({ isBlockedFromRelay: blockedFromRelay, isBlockedFromNotifications: blockedFromNotifications, appliedRules })
   }
 }
