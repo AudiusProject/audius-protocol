@@ -122,7 +122,7 @@ const streamFromFileSystem = async (
 
     // If content is premium, set cache-control to no-cache.
     // Otherwise, set the CID cache-control so that client caches the response for 30 days.
-    if (req.premiumContent && req.premiumContent.isPremium) {
+    if (req.premiumContent?.isPremium) {
       res.setHeader('cache-control', 'no-cache')
     } else {
       res.setHeader('cache-control', 'public, max-age=2592000, immutable')

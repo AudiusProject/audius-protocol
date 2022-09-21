@@ -29,7 +29,7 @@ export const premiumContentMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const cid = req.params && req.params.CID
+    const cid = req.params?.CID
     if (!cid) {
       return sendResponse(
         req,
@@ -65,34 +65,34 @@ export const premiumContentMiddleware = async (
       }
       next()
       return
-    } else {
-      switch (error) {
-        case PremiumContentAccessError.MISSING_HEADERS:
-          return sendResponse(
-            req,
-            res,
-            errorResponseUnauthorized(
-              'Missing request headers for premium content.'
-            )
+    }
+
+    switch (error) {
+      case PremiumContentAccessError.MISSING_HEADERS:
+        return sendResponse(
+          req,
+          res,
+          errorResponseUnauthorized(
+            'Missing request headers for premium content.'
           )
-        case PremiumContentAccessError.INVALID_DISCOVERY_NODE:
-          return sendResponse(
-            req,
-            res,
-            errorResponseForbidden(
-              'Failed discovery node signature validation for premium content.'
-            )
+        )
+      case PremiumContentAccessError.INVALID_DISCOVERY_NODE:
+        return sendResponse(
+          req,
+          res,
+          errorResponseForbidden(
+            'Failed discovery node signature validation for premium content.'
           )
-        case PremiumContentAccessError.FAILED_MATCH:
-        default:
-          return sendResponse(
-            req,
-            res,
-            errorResponseForbidden(
-              'Failed match verification for premium content.'
-            )
+        )
+      case PremiumContentAccessError.FAILED_MATCH:
+      default:
+        return sendResponse(
+          req,
+          res,
+          errorResponseForbidden(
+            'Failed match verification for premium content.'
           )
-      }
+        )
     }
   } catch (e) {
     const error = `Could not validate premium content access: ${
