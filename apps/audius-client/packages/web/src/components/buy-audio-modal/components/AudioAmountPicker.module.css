@@ -44,3 +44,12 @@
   font-size: var(--font-2xl);
   color: var(--secondary);
 }
+
+.label {
+  width: 100%;
+  margin-bottom: 8px;
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+}

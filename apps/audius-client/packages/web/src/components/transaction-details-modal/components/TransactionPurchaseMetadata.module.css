@@ -19,3 +19,12 @@
 .link:hover svg path {
   fill: var(--secondary);
 }
+
+.amount,
+.label {
+  font-weight: var(--font-bold);
+}
+
+.label {
+  color: var(--neutral-light-4);
+}

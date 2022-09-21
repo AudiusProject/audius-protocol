@@ -6,7 +6,7 @@ import {
   TokenAmountInput,
   TokenAmountInputChangeHandler
 } from '@audius/stems'
-import { debounce } from 'lodash'
+import { debounce, uniqueId } from 'lodash'
 
 import IconAUDIOSrc from 'assets/img/iconAUDIO.png'
 
@@ -105,17 +105,23 @@ export const AudioAmountPicker = ({
     }
   }, [isCustomAmountInputVisible, customAmountRef])
 
+  const id = useMemo(() => uniqueId(), [])
+
   return (
     <>
       {!isCustomAmountInputVisible ? (
         <AmountPreview amount={presetAmount} />
       ) : null}
       <RadioButtonGroup
+        aria-labelledby={`audioAmountPicker-label-${id}`}
         className={styles.presetAmountButtons}
         name='AmountPicker'
         value={value}
         onChange={handleChange}
       >
+        <div id={`audioAmountPicker-label-${id}`} className={styles.label}>
+          {messages.amountOfAudio}
+        </div>
         {presetAmounts.map((amount) => (
           <RadioPillButton
             key={amount}
