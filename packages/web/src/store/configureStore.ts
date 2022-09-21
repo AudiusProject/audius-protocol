@@ -47,6 +47,9 @@ const onSagaError = (
 // Can't send up the entire Redux state b/c it's too fat
 // for Sentry to handle, and there is sensitive data
 const statePruner = (state: AppState) => {
+  const currentProfileHandle = state.pages.profile.currentUser ?? ''
+  const currentProfile = state.pages.profile.entries[currentProfileHandle] ?? {}
+
   return {
     account: {
       status: state.account.status,
@@ -54,12 +57,12 @@ const statePruner = (state: AppState) => {
     },
     pages: {
       profile: {
-        handle: state.pages.profile.handle,
-        status: state.pages.profile.status,
-        updateError: state.pages.profile.updateError,
-        updateSuccess: state.pages.profile.updateSuccess,
-        updating: state.pages.profile.updating,
-        userId: state.pages.profile.userId
+        handle: currentProfile.handle,
+        status: currentProfile.status,
+        updateError: currentProfile.updateError,
+        updateSuccess: currentProfile.updateSuccess,
+        updating: currentProfile.updating,
+        userId: currentProfile.userId
       }
     },
     router: {

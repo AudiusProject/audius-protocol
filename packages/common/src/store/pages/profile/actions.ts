@@ -12,8 +12,6 @@ export const UPDATE_PROFILE = 'PROFILE/UPDATE_PROFILE'
 export const UPDATE_PROFILE_SUCCEEDED = 'PROFILE/UPDATE_PROFILE_SUCCEEDED'
 export const UPDATE_PROFILE_FAILED = 'PROFILE/UPDATE_PROFILE_FAILED'
 
-export const RESET_PROFILE = 'PROFILE/RESET_PROFILE'
-
 export const UPDATE_COLLECTION_SORT_MODE = 'PROFILE/UPDATE_COLLECTION_SORT_MODE'
 export const SET_PROFILE_FIELD = 'PROFILE/SET_PROFILE_FIELD'
 export const UPDATE_CURRENT_USER_FOLLOWS = 'PROFILE/UPDATE_CURRENT_USER_FOLLOWS'
@@ -58,8 +56,8 @@ export function fetchProfileSucceeded(
   return { type: FETCH_PROFILE_SUCCEEDED, handle, userId, fetchOnly }
 }
 
-export function fetchProfileFailed() {
-  return { type: FETCH_PROFILE_FAILED }
+export function fetchProfileFailed(handle: string) {
+  return { type: FETCH_PROFILE_FAILED, handle }
 }
 
 export function updateProfile(metadata: UserMetadata) {
@@ -74,16 +72,12 @@ export function updateProfileFailed() {
   return { type: UPDATE_PROFILE_FAILED }
 }
 
-export function resetProfile() {
-  return { type: RESET_PROFILE }
-}
-
 export function updateCollectionSortMode(mode: CollectionSortMode) {
   return { type: UPDATE_COLLECTION_SORT_MODE, mode }
 }
 
-export function setProfileField(field: string, value: string) {
-  return { type: SET_PROFILE_FIELD, field, value }
+export function setProfileField(field: string, value: string, handle: string) {
+  return { type: SET_PROFILE_FIELD, field, value, handle }
 }
 
 export function updateCurrentUserFollows(follow = false) {
@@ -93,32 +87,42 @@ export function updateCurrentUserFollows(follow = false) {
 export function fetchFollowUsers(
   followerGroup: User[],
   limit = 15,
-  offset = 0
+  offset = 0,
+  handle?: string
 ) {
-  return { type: FETCH_FOLLOW_USERS, followerGroup, offset, limit }
+  return { type: FETCH_FOLLOW_USERS, followerGroup, offset, limit, handle }
 }
 
 export function fetchFollowUsersSucceeded(
   followerGroup: User[],
   userIds: ID[],
   limit: number,
-  offset: number
+  offset: number,
+  handle: string
 ) {
   return {
     type: FETCH_FOLLOW_USERS_SUCCEEDED,
     followerGroup,
     userIds,
     limit,
-    offset
+    offset,
+    handle
   }
 }
 
 export function fetchFollowUsersFailed(
   followerGroup: User[],
   limit: number,
-  offset: number
+  offset: number,
+  handle: string
 ) {
-  return { type: FETCH_FOLLOW_USERS_FAILED, followerGroup, limit, offset }
+  return {
+    type: FETCH_FOLLOW_USERS_FAILED,
+    followerGroup,
+    limit,
+    offset,
+    handle
+  }
 }
 
 export function profileMeterDismissed() {

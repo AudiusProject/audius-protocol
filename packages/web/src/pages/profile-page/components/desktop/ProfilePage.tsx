@@ -382,8 +382,8 @@ const ProfilePage = ({
     const elements = [
       <div key={ProfilePageTabs.TRACKS} className={styles.tiles}>
         {renderProfileCompletionCard()}
-        {status !== Status.LOADING ? (
-          artistTracks.status !== Status.LOADING &&
+        {status === Status.SUCCESS ? (
+          artistTracks.status === Status.SUCCESS &&
           artistTracks.entries.length === 0 ? (
             <EmptyTab
               isOwner={isOwner}
@@ -430,8 +430,8 @@ const ProfilePage = ({
         )}
       </div>,
       <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
-        {status !== Status.LOADING ? (
-          (userFeed.status !== Status.LOADING &&
+        {status === Status.SUCCESS ? (
+          (userFeed.status === Status.SUCCESS &&
             userFeed.entries.length === 0) ||
           profile.repost_count === 0 ? (
             <EmptyTab

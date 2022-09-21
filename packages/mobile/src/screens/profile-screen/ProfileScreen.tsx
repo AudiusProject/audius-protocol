@@ -7,9 +7,7 @@ import {
   profilePageSelectors,
   profilePageActions,
   reachabilitySelectors,
-  shareModalUIActions,
-  profilePageTracksLineupActions as tracksActions,
-  profilePageFeedLineupActions as feedActions
+  shareModalUIActions
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
@@ -34,7 +32,7 @@ import { ProfileHeader } from './ProfileHeader'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { fetchProfile: fetchProfileAction, resetProfile } = profilePageActions
+const { fetchProfile: fetchProfileAction } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
 const getUserId = accountSelectors.getUserId
@@ -72,7 +70,7 @@ export const ProfileScreen = () => {
       : profile?.handle
   const accountId = useSelector(getUserId)
   const dispatch = useDispatch()
-  const status = useSelector(getProfileStatus)
+  const status = useSelector((state) => getProfileStatus(state, handle))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { neutralLight4, accentOrange } = useThemeColors()
   const navigation = useNavigation<ProfileTabScreenParamList>()
@@ -82,16 +80,9 @@ export const ProfileScreen = () => {
     dispatch(fetchProfileAction(handle, null, true, true, false))
   }, [dispatch, handle])
 
-  const clearProfile = useCallback(() => {
-    dispatch(resetProfile())
-    dispatch(tracksActions.reset())
-    dispatch(feedActions.reset())
-  }, [dispatch])
-
   const handleLoadProfile = useCallback(() => {
     fetchProfile()
-    return clearProfile
-  }, [fetchProfile, clearProfile])
+  }, [fetchProfile])
 
   useFocusEffect(handleLoadProfile)
 

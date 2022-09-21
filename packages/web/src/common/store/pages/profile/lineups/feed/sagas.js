@@ -21,14 +21,15 @@ const { getTracks } = cacheTracksSelectors
 const { getCollections } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
-function* getReposts({ offset, limit }) {
-  const handle = yield select(getProfileUserHandle)
+function* getReposts({ offset, limit, handle }) {
   const profileId = yield select(getProfileUserId)
+  const currentProfileHandle = yield select(getProfileUserHandle)
+  const profileHandle = handle ?? currentProfileHandle
 
   yield waitForAccount()
   const currentUserId = yield select(getUserId)
   let reposts = yield call(retrieveUserReposts, {
-    handle,
+    handle: profileHandle,
     currentUserId,
     offset,
     limit

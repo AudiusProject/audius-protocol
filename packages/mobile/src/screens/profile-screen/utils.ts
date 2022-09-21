@@ -1,3 +1,4 @@
+import type { CommonState } from '@audius/common'
 import { badgeTiers, useSelectTierInfo } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -17,19 +18,21 @@ import { getIsOwner, useSelectProfile } from './selectors'
  */
 export const useShouldShowCollectiblesTab = () => {
   const {
+    handle,
     user_id,
     has_collectibles,
     collectibleList,
     solanaCollectibleList,
     collectibles
   } = useSelectProfile([
+    'handle',
     'user_id',
     'has_collectibles',
     'collectibleList',
     'solanaCollectibleList',
     'collectibles'
   ])
-  const isOwner = useSelector(getIsOwner)
+  const isOwner = useSelector((state: CommonState) => getIsOwner(state, handle))
   const { tierNumber } = useSelectTierInfo(user_id)
 
   const hasCollectiblesTierRequirement =

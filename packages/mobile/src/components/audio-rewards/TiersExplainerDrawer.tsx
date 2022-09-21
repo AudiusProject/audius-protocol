@@ -68,7 +68,7 @@ export const TiersExplainerDrawer = () => {
   const styles = useStyles()
 
   const profileId = useSelector(getProfileUserId)
-  const { tier, tierNumber } = useSelectTierInfo(profileId)
+  const { tier, tierNumber } = useSelectTierInfo(profileId!)
 
   const { minAudio } = badgeTiers.find(
     (tierReq) => tierReq.tier === tier

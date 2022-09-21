@@ -1,9 +1,10 @@
+import { useMemo } from 'react'
+
 import {
-  lineupSelectors,
   profilePageSelectors,
-  profilePageFeedLineupActions as feedActions
+  profilePageFeedLineupActions as feedActions,
+  useProxySelector
 } from '@audius/common'
-import { useSelector } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'
 
@@ -11,24 +12,30 @@ import { EmptyProfileTile } from './EmptyProfileTile'
 import { useSelectProfile } from './selectors'
 
 const { getProfileFeedLineup } = profilePageSelectors
-const { makeGetLineupMetadatas } = lineupSelectors
-
-const getUserFeedMetadatas = makeGetLineupMetadatas(getProfileFeedLineup)
 
 export const RepostsTab = () => {
-  const lineup = useSelector(getUserFeedMetadatas)
+  const { handle } = useSelectProfile(['handle'])
+  const lineup = useProxySelector(
+    (state) => getProfileFeedLineup(state, handle),
+    [handle]
+  )
   const { repost_count } = useSelectProfile(['repost_count'])
+
+  const extraFetchOptions = useMemo(() => ({ handle }), [handle])
+
+  if (!lineup) return null
 
   return (
     <Lineup
       listKey='profile-reposts'
+      selfLoad
       actions={feedActions}
       lineup={lineup}
-      selfLoad
       limit={repost_count}
       disableTopTabScroll
       ListEmptyComponent={<EmptyProfileTile tab='reposts' />}
       showsVerticalScrollIndicator={false}
+      extraFetchOptions={extraFetchOptions}
     />
   )
 }

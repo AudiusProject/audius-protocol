@@ -1,5 +1,4 @@
 import {
-  profilePageReducer as profile,
   queueReducer as queue,
   remoteConfigReducer as remoteConfig,
   reducers as clientStoreReducers
@@ -57,7 +56,6 @@ const createRootReducer = (routeHistory: History) =>
 
     // Pages
     upload,
-    profile,
     dashboard,
     serviceSelection,
 

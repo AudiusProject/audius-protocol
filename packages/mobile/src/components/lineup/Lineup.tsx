@@ -150,6 +150,7 @@ export const Lineup = ({
   selfLoad,
   includeLineupStatus,
   limit = Infinity,
+  extraFetchOptions,
   ...listProps
 }: LineupProps) => {
   const showTip = useSelector(getShowTip)
@@ -159,7 +160,8 @@ export const Lineup = ({
   const [refreshing, setRefreshing] = useState(refreshingProp)
   const selectedLineup = useSelector(lineupSelector)
   const lineup = selectedLineup ?? lineupProp
-  const { status } = lineup
+  const { status, entries } = lineup
+  const lineupLength = entries.length
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true)
@@ -208,7 +210,6 @@ export const Lineup = ({
       status
     } = lineup
 
-    const lineupLength = entries.length
     const offset = lineupLength + deleted + nullCount
 
     const shouldLoadMore =
@@ -234,7 +235,13 @@ export const Lineup = ({
         loadMore(offset, limit, page === 0)
       } else {
         dispatch(
-          actions.fetchLineupMetadatas(offset, limit, page === 0, fetchPayload)
+          actions.fetchLineupMetadatas(
+            offset,
+            limit,
+            page === 0,
+            fetchPayload,
+            extraFetchOptions
+          )
         )
       }
     }
@@ -247,24 +254,26 @@ export const Lineup = ({
     itemCounts,
     limit,
     lineup,
+    lineupLength,
     loadMore,
-    pageItemCount
+    pageItemCount,
+    extraFetchOptions
   ])
 
   // When scrolled past the end threshold of the lineup and the lineup is not loading,
   // trigger another load
   useEffect(() => {
-    if (isPastLoadThreshold && lineup.status !== Status.LOADING) {
+    if (isPastLoadThreshold && status !== Status.LOADING) {
       setIsPastLoadThreshold(false)
       handleLoadMore()
     }
-  }, [isPastLoadThreshold, lineup.status, handleLoadMore])
+  }, [isPastLoadThreshold, status, handleLoadMore])
 
   useEffect(() => {
-    if (selfLoad && lineup.entries.length === 0) {
+    if (selfLoad && lineupLength === 0 && status !== Status.LOADING) {
       handleLoadMore()
     }
-  }, [handleLoadMore, selfLoad, lineup])
+  }, [handleLoadMore, selfLoad, lineupLength, status])
 
   const togglePlay = useCallback(
     ({ uid, id, source, isPlayingUid, isPlaying }: TogglePlayConfig) => {

@@ -27,10 +27,11 @@ const { DELETE_TRACK } = cacheTracksActions
 const getUserId = accountSelectors.getUserId
 const PREFIX = tracksActions.prefix
 
-function* getTracks({ offset, limit, payload }) {
-  const handle = yield select(getProfileUserHandle)
+function* getTracks({ offset, limit, payload, handle }) {
   yield waitForAccount()
   const currentUserId = yield select(getUserId)
+  const currentProfileHandle = yield select(getProfileUserHandle)
+  const profileHandle = handle ?? currentProfileHandle
 
   // Wait for user to receive social handles
   // We need to know ahead of time whether we want to request
@@ -40,7 +41,7 @@ function* getTracks({ offset, limit, payload }) {
     waitForValue,
     getUser,
     {
-      handle: handle.toLowerCase()
+      handle: profileHandle.toLowerCase()
     },
     (user) => 'twitter_handle' in user
   )
@@ -51,7 +52,7 @@ function* getTracks({ offset, limit, payload }) {
     let [pinnedTrack, processed] = yield all([
       call(retrieveTracks, { trackIds: [user._artist_pick] }),
       call(retrieveUserTracks, {
-        handle,
+        handle: profileHandle,
         currentUserId,
         sort,
         limit,
@@ -94,7 +95,7 @@ function* getTracks({ offset, limit, payload }) {
     }
   } else {
     const processed = yield call(retrieveUserTracks, {
-      handle,
+      handle: profileHandle,
       currentUserId,
       sort,
       limit,

@@ -57,6 +57,11 @@ export type LineupProps = {
   fetchPayload?: any
 
   /**
+   * Extra fetch payload (merged in with fetch action) used to pass extra information to lineup actions/reducers/sagas
+   */
+  extraFetchOptions?: Record<string, unknown>
+
+  /**
    * A header to display at the top of the lineup,
    * will scroll with the rest of the content
    */

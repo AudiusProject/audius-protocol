@@ -35,6 +35,7 @@ export const storeContext: CommonStoreContext = {
   isElectron: isElectron(),
   env,
   explore,
+  // @ts-ignore js file
   getLineupSelectorForRoute,
   audioPlayer,
   solanaClient: new SolanaClient({
