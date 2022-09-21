@@ -14,7 +14,10 @@ const messages = {
   cost: 'Cost',
   purchased: 'Purchased',
   convertedTo: 'Converted To',
-  viewOnExplorer: 'View on Solana Explorer'
+  viewOnExplorer: 'View on Solana Explorer',
+  usd: 'USD',
+  sol: 'SOL',
+  audio: '$AUDIO'
 }
 
 export const TransactionPurchaseMetadata = ({
@@ -26,7 +29,10 @@ export const TransactionPurchaseMetadata = ({
     <BlockContainer>
       <Block header={messages.cost}>
         <IconUSD />
-        {formatNumberString(metadata.usd, { minDecimals: 2, maxDecimals: 2 })}
+        <span className={styles.amount}>
+          {formatNumberString(metadata.usd, { minDecimals: 2, maxDecimals: 2 })}
+        </span>
+        <span className={styles.label}>{messages.usd}</span>
       </Block>
       <Block
         header={
@@ -42,7 +48,11 @@ export const TransactionPurchaseMetadata = ({
         }
       >
         <IconSOL />
-        {formatNumberString(metadata.sol, { maxDecimals: 2 })}
+
+        <span className={styles.amount}>
+          {formatNumberString(metadata.sol, { maxDecimals: 2 })}
+        </span>
+        <span className={styles.label}>{messages.sol}</span>
       </Block>
       <Block
         header={
@@ -58,7 +68,10 @@ export const TransactionPurchaseMetadata = ({
         }
       >
         <IconAUDIO />
-        {formatNumberString(metadata.audio, { maxDecimals: 2 })}
+        <span className={styles.amount}>
+          {formatNumberString(metadata.audio, { maxDecimals: 2 })}
+        </span>
+        <span className={styles.label}>{messages.audio}</span>
       </Block>
     </BlockContainer>
   )

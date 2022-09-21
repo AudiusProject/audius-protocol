@@ -21,10 +21,10 @@ import { AmountInputPage } from './components/AmountInputPage'
 import { InProgressPage } from './components/InProgressPage'
 import { SuccessPage } from './components/SuccessPage'
 
-const { getBuyAudioFlowStage } = buyAudioSelectors
+const { getBuyAudioFlowStage, getBuyAudioFlowError } = buyAudioSelectors
 
 const messages = {
-  buyAudio: 'Buy Audio'
+  buyAudio: 'Buy $AUDIO'
 }
 
 const IconGoldBadge = () => (
@@ -56,6 +56,7 @@ export const BuyAudioModal = () => {
   const dispatch = useDispatch()
   const [isOpen, setIsOpen] = useModalState('BuyAudio')
   const stage = useSelector(getBuyAudioFlowStage)
+  const error = useSelector(getBuyAudioFlowError)
   const currentPage = stageToPage(stage)
   const inProgress = currentPage === 1
 
@@ -74,9 +75,12 @@ export const BuyAudioModal = () => {
       onClose={handleClose}
       onClosed={handleClosed}
       bodyClassName={styles.modal}
-      dismissOnClickOutside={!inProgress}
+      dismissOnClickOutside={!inProgress || error}
     >
-      <ModalHeader onClose={handleClose} showDismissButton={!inProgress}>
+      <ModalHeader
+        onClose={handleClose}
+        showDismissButton={!inProgress || error}
+      >
         <ModalTitle title={messages.buyAudio} icon={<IconGoldBadge />} />
       </ModalHeader>
       <ModalContentPages
