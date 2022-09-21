@@ -27,14 +27,14 @@ class DiskManager {
    * is we should be able to delete the contents of this folder without scanning through other folders with the
    * naming scheme.
    */
-  static getTmpTrackUploadArtifactsPath() {
+  static async getTmpTrackUploadArtifactsPath() {
     const dirPath = path.join(
       config.get('storagePath'),
       'files',
       'tmp_track_artifacts'
     )
     if (!TMP_TRACK_ARTIFACTS_CREATED) {
-      this.ensureDirPathExists(dirPath)
+      await this.ensureDirPathExists(dirPath)
       TMP_TRACK_ARTIFACTS_CREATED = true
     }
     return dirPath
@@ -51,7 +51,7 @@ class DiskManager {
    *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
    * @param {String} cid file system destination, either filename or directory
    */
-  static computeFilePath(cid, ensureDirPathExists = true) {
+  static async computeFilePath(cid, ensureDirPathExists = true) {
     try {
       CID.isCID(new CID(cid))
     } catch (e) {
@@ -76,7 +76,7 @@ class DiskManager {
 
     // create the subdirectories in parentDirHash if they don't exist
     if (ensureDirPathExists) {
-      this.ensureDirPathExists(parentDirPath)
+      await this.ensureDirPathExists(parentDirPath)
     }
 
     return path.join(parentDirPath, cid)
@@ -115,7 +115,7 @@ class DiskManager {
    * @param {String} dirName directory name
    * @param {String} fileName file name
    */
-  static computeFilePathInDir(dirName, fileName) {
+  static async computeFilePathInDir(dirName, fileName) {
     if (!dirName || !fileName) {
       genericLogger.error(
         `Invalid dirName and/or fileName, dirName=${dirName}, fileName=${fileName}`
@@ -135,7 +135,7 @@ class DiskManager {
       )
     }
 
-    const parentDirPath = this.computeFilePath(dirName)
+    const parentDirPath = await this.computeFilePath(dirName)
     const absolutePath = path.join(parentDirPath, fileName)
     genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
     return absolutePath
@@ -149,7 +149,7 @@ class DiskManager {
   static async ensureDirPathExists(dirPath) {
     try {
       // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
-      fs.mkdirSync(dirPath, { recursive: true })
+      await fs.mkdir(dirPath, { recursive: true })
     } catch (e) {
       genericLogger.error(
         `Error making directory, dirName=${dirPath}, error=${e.toString()}`

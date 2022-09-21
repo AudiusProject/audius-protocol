@@ -1,7 +1,6 @@
 const express = require('express')
 const path = require('path')
-const fs = require('fs')
-const { promisify } = require('util')
+const fs = require('fs-extra')
 
 const config = require('../config')
 const models = require('../models')
@@ -37,8 +36,6 @@ const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
-
-const readFile = promisify(fs.readFile)
 
 const router = express.Router()
 
@@ -174,7 +171,7 @@ router.get(
       )
     }
 
-    const basePath = getTmpTrackUploadArtifactsPathWithInputUUID(uuid)
+    const basePath = await getTmpTrackUploadArtifactsPathWithInputUUID(uuid)
     let pathToFile
     if (fileType === 'transcode') {
       pathToFile = path.join(basePath, fileName)
@@ -355,7 +352,7 @@ router.post(
     }
     let metadataJSON
     try {
-      const fileBuffer = await readFile(file.storagePath)
+      const fileBuffer = await fs.readFile(file.storagePath)
       metadataJSON = JSON.parse(fileBuffer)
       if (
         !metadataJSON ||

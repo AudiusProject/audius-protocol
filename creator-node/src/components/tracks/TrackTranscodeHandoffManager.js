@@ -1,5 +1,5 @@
 const axios = require('axios')
-const fs = require('fs')
+const fs = require('fs-extra')
 const fsExtra = require('fs-extra')
 const FormData = require('form-data')
 const _ = require('lodash')

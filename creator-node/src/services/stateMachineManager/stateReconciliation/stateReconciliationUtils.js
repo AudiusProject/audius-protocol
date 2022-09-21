@@ -87,6 +87,7 @@ const getNewOrExistingSyncReq = ({
     parentSpanContext: tracing.currentSpanContext()
   }
 
+  // eslint-disable-next-line node/no-sync
   SyncRequestDeDuplicator.recordSync(
     syncType,
     userWallet,
