@@ -37,6 +37,9 @@
 .trackActionsContainer .tableActionButton {
   opacity: 0;
 }
+.trackActionsContainer .placeholderButton {
+  width: 14px;
+}
 
 .tableActionButton.active {
   opacity: 1;
