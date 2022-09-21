@@ -809,6 +809,12 @@ const config = convict({
     format: String,
     env: 'cognitoRetrySecret',
     default: ''
+  },
+  stripeSecretKey: {
+    doc: 'Secret key for Stripe Crypto On-Ramp Integration',
+    format: String,
+    env: 'stripeSecretKey',
+    default: ''
   }
 })
 
