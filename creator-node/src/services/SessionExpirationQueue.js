@@ -23,6 +23,8 @@ class SessionExpirationQueue {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
     this.runInterval = RUN_INTERVAL
+    this.logStatus = this.logStatus.bind(this)
+    this.expireSessions = this.expireSessions.bind(this)
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -34,12 +36,39 @@ class SessionExpirationQueue {
         removeOnFail: true
       }
     })
-    this.logStatus = this.logStatus.bind(this)
-    this.expireSessions = this.expireSessions.bind(this)
+  }
+
+  async expireSessions(sessionExpiredCondition) {
+    const sessionsToDelete = await SessionToken.findAll(
+      Object.assign(sessionExpiredCondition, { limit: this.batchSize })
+    )
+    await sessionManager.deleteSessions(sessionsToDelete)
+  }
+
+  /**
+   * Logs a status message and includes current queue info
+   * @param {string} message
+   */
+  async logStatus(message) {
+    const { waiting, active, completed, failed, delayed } =
+      await this.queue.getJobCounts()
+    logger.info(
+      `Session Expiration Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+    )
+  }
+
+  /**
+   * Starts the session expiration queue on a daily cron.
+   */
+  async start() {
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
 
     // Clean up anything that might be still stuck in the queue on restart
     if (cluster.worker?.id === 1) {
-      await this.queue.drain()
+      await this.queue.drain(true)
     }
 
     const worker = new Worker(
@@ -79,31 +108,7 @@ class SessionExpirationQueue {
       },
       { connection }
     )
-  }
 
-  async expireSessions(sessionExpiredCondition) {
-    const sessionsToDelete = await SessionToken.findAll(
-      Object.assign(sessionExpiredCondition, { limit: this.batchSize })
-    )
-    await sessionManager.deleteSessions(sessionsToDelete)
-  }
-
-  /**
-   * Logs a status message and includes current queue info
-   * @param {string} message
-   */
-  async logStatus(message) {
-    const { waiting, active, completed, failed, delayed } =
-      await this.queue.getJobCounts()
-    logger.info(
-      `Session Expiration Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
-    )
-  }
-
-  /**
-   * Starts the session expiration queue on a daily cron.
-   */
-  async start() {
     try {
       // Run the job immediately
       await this.queue.add(PROCESS_NAMES.expire_sessions, {})

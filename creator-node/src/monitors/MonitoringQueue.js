@@ -39,7 +39,7 @@ class MonitoringQueue {
 
     // Clean up anything that might be still stuck in the queue on restart and run once instantly
     if (cluster.worker?.id === 1) {
-      this.queue.drain()
+      this.queue.drain(true)
       this.seedInitialValues()
     }
 
@@ -47,7 +47,7 @@ class MonitoringQueue {
       'monitoring-queue',
       async (job) => {
         try {
-          this.logStatus('Starting')
+          await this.logStatus('Starting')
 
           // Iterate over each monitor and set a new value if the cached
           // value is not fresh.
@@ -85,16 +85,16 @@ class MonitoringQueue {
     if (isFresh) return
 
     const value = await monitor.func()
-    this.logStatus(`Computed value for ${monitor.name} ${value}`)
+    await this.logStatus(`Computed value for ${monitor.name} ${value}`)
 
     // Set the value
-    redis.set(key, value)
+    await redis.set(key, value)
 
     if (monitor.ttl) {
       // Set a TTL (in seconds) key to track when this value needs refreshing.
       // We store a separate TTL key rather than expiring the value itself
       // so that in the case of an error, the current value can still be read
-      redis.set(ttlKey, 1, 'EX', monitor.ttl)
+      await redis.set(ttlKey, 1, 'EX', monitor.ttl)
     }
   }
 

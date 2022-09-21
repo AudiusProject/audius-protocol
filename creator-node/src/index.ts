@@ -104,9 +104,15 @@ const startAppForPrimary = async () => {
   const logicalCores = cpus().length
   const numWorkers = config.get('expressAppConcurrency') || logicalCores
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
-  for (let i = 0; i < numWorkers; i++) {
-    cluster.fork()
-  }
+  const firstWorker = cluster.fork()
+  // Wait for the first worker to perform one-time init logic before spawning other workers
+  firstWorker.on('message', (msg) => {
+    if (msg?.cmd === 'initComplete') {
+      for (let i = 0; i < numWorkers - 1; i++) {
+        cluster.fork()
+      }
+    }
+  })
 
   cluster.on('exit', (worker, code, signal) => {
     logger.info(
@@ -148,12 +154,13 @@ const startAppForWorker = async () => {
   const appInfo = initializeApp(getPort(), serviceRegistry)
   logger.info('Initialized app and server')
 
-  // Initialize services that do not require the server, but do not need to be awaited.
+  // Make the first worker wait for some services to be fully up before spinning up other workers
   serviceRegistry.initServicesAsynchronously()
-
-  // Some Services cannot start until server is up. Start them now
-  // No need to await on this as this process can take a while and can run in the background
-  serviceRegistry.initServicesThatRequireServer(appInfo.app)
+  if (cluster.worker?.id === 1) {
+    await serviceRegistry.initServicesThatRequireServer(appInfo.app)
+  } else {
+    serviceRegistry.initServicesThatRequireServer(appInfo.app)
+  }
 
   // When app terminates, close down any open DB connections gracefully
   ON_DEATH((signal: any, error: any) => {
@@ -166,11 +173,17 @@ const startAppForWorker = async () => {
       appInfo.server.close()
     }
   })
+
+  if (cluster.worker?.id === 1 && process.send) {
+    process.send({ cmd: 'initComplete' })
+  }
 }
 
 if (cluster.isMaster) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   startAppForPrimary()
 } else if (cluster.isWorker) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   startAppForWorker()
 } else {
   throw new Error("Can't determine if process is primary or worker in cluster")

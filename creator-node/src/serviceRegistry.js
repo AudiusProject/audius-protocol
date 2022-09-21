@@ -106,9 +106,9 @@ class ServiceRegistry {
 
     // If error occurs in initializing these services, do not continue with app start up.
     try {
-      await this.blacklistManager.init()
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
+      await this.blacklistManager.init()
     } catch (e) {
       this.logError(e.message)
       // eslint-disable-next-line no-process-exit

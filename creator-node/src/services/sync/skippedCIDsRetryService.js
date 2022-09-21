@@ -18,7 +18,8 @@ class SkippedCIDsRetryQueue {
     if (!nodeConfig || !libs) {
       throw new Error(`${LogPrefix} Cannot start without nodeConfig, libs`)
     }
-
+    this.nodeConfig = nodeConfig
+    this.libs = libs
     const connection = {
       host: nodeConfig.get('redisHost'),
       port: nodeConfig.get('redisPort')
@@ -31,33 +32,6 @@ class SkippedCIDsRetryQueue {
         removeOnFail: RETRY_QUEUE_HISTORY
       }
     })
-
-    // Clean up anything that might be still stuck in the queue on restart
-    if (cluster.worker?.id === 1) {
-      this.queue.drain()
-    }
-
-    const SkippedCIDsRetryQueueJobIntervalMs = nodeConfig.get(
-      'skippedCIDsRetryQueueJobIntervalMs'
-    )
-    const CIDMaxAgeMs =
-      nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
-
-    const worker = new Worker(
-      'skipped-cids-retry-queue',
-      async (job) => {
-        try {
-          await this.process(CIDMaxAgeMs, libs)
-        } catch (e) {
-          this.logError(`Failed to process job || Error: ${e.message}`)
-        }
-
-        // Re-enqueue job after some interval
-        await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs, false)
-        await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
-      },
-      { connection }
-    )
   }
 
   logInfo(msg) {
@@ -68,9 +42,41 @@ class SkippedCIDsRetryQueue {
     logger.error(`${LogPrefix} ${msg}`)
   }
 
-  // Add first job to queue
   async init() {
     try {
+      const connection = {
+        host: this.nodeConfig.get('redisHost'),
+        port: this.nodeConfig.get('redisPort')
+      }
+
+      // Clean up anything that might be still stuck in the queue on restart
+      if (cluster.worker?.id === 1) {
+        await this.queue.drain(true)
+      }
+
+      const SkippedCIDsRetryQueueJobIntervalMs = this.nodeConfig.get(
+        'skippedCIDsRetryQueueJobIntervalMs'
+      )
+      const CIDMaxAgeMs =
+        this.nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
+
+      const worker = new Worker(
+        'skipped-cids-retry-queue',
+        async (job) => {
+          try {
+            await this.process(CIDMaxAgeMs, this.libs)
+          } catch (e) {
+            this.logError(`Failed to process job || Error: ${e.message}`)
+          }
+
+          // Re-enqueue job after some interval
+          await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs, false)
+          await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
+        },
+        { connection }
+      )
+
+      // Add first job to queue
       await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
       this.logInfo(`Successfully initialized and enqueued initial job.`)
     } catch (e) {
