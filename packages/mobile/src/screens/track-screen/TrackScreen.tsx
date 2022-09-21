@@ -56,7 +56,7 @@ export const TrackScreen = () => {
   const dispatch = useDispatch()
 
   // params is incorrectly typed and can sometimes be undefined
-  const { searchTrack, id } = params ?? {}
+  const { searchTrack, id, canBeUnlisted = true } = params ?? {}
 
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
@@ -72,12 +72,12 @@ export const TrackScreen = () => {
   const remixParentTrack = useSelector(getRemixParentTrack)
   const trackUserExists = user != null
   useEffect(() => {
-    dispatch(fetchTrack(id, undefined, user?.handle, true))
+    dispatch(fetchTrack(id, undefined, user?.handle, canBeUnlisted))
     return () => {
       dispatch(resetTrackPage())
       dispatch(tracksActions.reset())
     }
-  }, [dispatch, id, trackUserExists, user?.handle])
+  }, [canBeUnlisted, dispatch, id, trackUserExists, user?.handle])
 
   if (!track || !user) {
     console.warn(
