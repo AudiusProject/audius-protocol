@@ -2,10 +2,8 @@
 
 import type { Cluster } from 'cluster'
 import type { CpuInfo } from 'os'
-import type { LoDashStatic } from 'lodash'
 const cluster: Cluster = require('cluster')
 const { cpus }: { cpus: () => CpuInfo[] } = require('os')
-const _: LoDashStatic = require('lodash')
 
 const { setupTracing } = require('./tracer')
 setupTracing('content-node')
@@ -102,7 +100,9 @@ const startAppForPrimary = async () => {
   const logicalCores = cpus().length
   const numWorkers = config.get('expressAppConcurrency') || logicalCores
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
-  _.times(numWorkers, () => cluster.fork())
+  for (let i = 0; i < numWorkers; i++) {
+    cluster.fork()
+  }
 
   cluster.on('exit', (worker, code, signal) => {
     logger.info(`Worker process with pid=${worker.process.pid} died`)

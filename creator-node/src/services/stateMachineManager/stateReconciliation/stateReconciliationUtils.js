@@ -114,7 +114,7 @@ const _issueSyncRequestsUntilSynced = async (
   queue
 ) => {
   // Issue syncRequest before polling secondary for replication
-  const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+  const { duplicateSyncReq, syncReqToEnqueue } = await getNewOrExistingSyncReq({
     userWallet: wallet,
     secondaryEndpoint: secondaryUrl,
     primaryEndpoint: primaryUrl,

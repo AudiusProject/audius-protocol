@@ -1,3 +1,5 @@
+const _ = require('lodash')
+
 const redisClient = require('../../../redis')
 
 /**
@@ -71,8 +73,11 @@ class SyncRequestDeDuplicator {
       immediate
     )
 
-    const duplicateSyncJobInfo = await redisClient.get(syncKey)
-    return JSON.parse(duplicateSyncJobInfo || '{}')
+    const duplicateSyncJobInfo = JSON.parse(
+      (await redisClient.get(syncKey)) || '{}'
+    )
+    if (_.isEmpty(duplicateSyncJobInfo)) return null
+    return duplicateSyncJobInfo
   }
 
   /** Record job info for sync with given properties */
