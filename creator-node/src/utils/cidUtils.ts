@@ -151,9 +151,11 @@ export async function findCIDInNetwork(
       })
     } catch (e: any) {
       // Do not error and stop the flow of execution for functions that call it
-      logger.error(
-        `findCIDInNetwork error from ${endpoint} for ${cid} - ${e.message}`
-      )
+      // only log err message if legitimate error, not if content is not found
+      if (!e.message.includes('Content is not available'))
+        logger.error(
+          `findCIDInNetwork error from ${endpoint} for ${cid} - ${e.message}`
+        )
     }
   }
 

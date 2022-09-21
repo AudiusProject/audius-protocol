@@ -75,7 +75,9 @@ function makeOnCompleteCallback(
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult: AnyDecoratedJobReturnValue
     try {
-      logger.info(`Job successfully completed. Parsing result: ${resultString}`)
+      logger.debug(
+        `Job successfully completed. Parsing result: ${resultString}`
+      )
       jobResult = JSON.parse(resultString) || {}
     } catch (e: any) {
       logger.error(`Failed to parse job result string: ${e.message}`)

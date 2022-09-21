@@ -479,7 +479,6 @@ async function saveFileForMultihashToFS(
 async function removeTrackFolder({ logContext }, fileDir) {
   const logger = genericLogger.child(logContext)
   try {
-    logger.info(`Removing track folder at fileDir ${fileDir}...`)
     if (!fileDir) {
       throw new Error('Cannot remove null fileDir')
     }
@@ -520,7 +519,6 @@ async function removeTrackFolder({ logContext }, fileDir) {
         await fs.rmdir(curPath)
       } else {
         // Delete file inside /fileDir/
-        logger.info(`Removing ${curPath}`)
         await fs.unlink(curPath)
       }
     }
@@ -651,8 +649,9 @@ function checkFileType(logger, { fileName, fileMimeType }) {
     ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) &&
     AUDIO_MIME_TYPE_REGEX.test(fileMimeType)
   ) {
-    logger.info(`Filetype: ${fileExtension}`)
-    logger.info(`Mimetype: ${fileMimeType}`)
+    logger.info(
+      `fileManager#checkFileType - FileName: ${fileName}, Filetype: ${fileExtension}, Mimetype: ${fileMimeType}`
+    )
   } else {
     throw new Error(
       `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${fileMimeType}`

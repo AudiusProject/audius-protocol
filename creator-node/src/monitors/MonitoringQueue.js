@@ -56,6 +56,8 @@ class MonitoringQueue {
             }
           })
 
+          this.logStatus('Completed')
+
           done(null, {})
         } catch (e) {
           this.logStatus(`Error ${e}`)
@@ -84,7 +86,6 @@ class MonitoringQueue {
     if (isFresh) return
 
     const value = await monitor.func()
-    this.logStatus(`Computed value for ${monitor.name} ${value}`)
 
     // Set the value
     redis.set(key, value)

@@ -66,6 +66,7 @@ module.exports.handleResponseWithHeartbeat = (func) => {
 }
 
 const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
+  const skipErrorLogStatusCodes = [403, 404] // skip logging response error
   const duration = getDuration(req)
   let logger = createChildLogger(req.logger, {
     duration,
@@ -90,7 +91,9 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
         req.query
       )
     } else {
-      logger.info('Error processing request:', resp.object.error)
+      if (!skipErrorLogStatusCodes.includes(resp.statusCode)) {
+        logger.info('Error processing request:', resp.object.error)
+      }
     }
   }
 
