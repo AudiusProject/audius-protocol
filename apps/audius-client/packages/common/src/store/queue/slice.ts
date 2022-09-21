@@ -125,15 +125,15 @@ const slice = createSlice({
 
       if (state.order.length === 0) return
 
+      if (state.repeat === RepeatMode.SINGLE && !skip) {
+        return
+      }
+
       if (state.shuffle) {
         const newShuffleIndex =
           (state.shuffleIndex + 1) % state.shuffleOrder.length
         state.shuffleIndex = newShuffleIndex
         state.index = state.shuffleOrder[newShuffleIndex]
-        return
-      }
-
-      if (state.repeat === RepeatMode.SINGLE && !skip) {
         return
       }
 
