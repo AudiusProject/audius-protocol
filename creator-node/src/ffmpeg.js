@@ -106,7 +106,7 @@ async function transcodeFileTo320(fileDir, fileName, { logContext }) {
   logger.info(`Transcoding file ${sourcePath}...`)
 
   // Exit if dl-copy file already exists at target path.
-  if (await fs.exists(targetPath)) {
+  if (await fs.pathExists(targetPath)) {
     logger.info(`Downloadable copy already exists at ${targetPath}.`)
     return targetPath
   }
@@ -137,7 +137,7 @@ async function transcodeFileTo320(fileDir, fileName, { logContext }) {
     proc.on('close', (code) => {
       async function asyncFn() {
         if (code === 0) {
-          if (await fs.exists(targetPath)) {
+          if (await fs.pathExists(targetPath)) {
             logger.info(`Transcoded file ${targetPath}`)
             resolve(targetPath)
           } else {
