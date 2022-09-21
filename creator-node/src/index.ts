@@ -20,40 +20,13 @@ const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
 const redisClient = require('./redis')
 
-// The primary process performs one-time validation and spawns worker processes that each run the Express app
-const startAppForPrimary = async () => {
-  const exitWithError = (...msg: any[]) => {
-    logger.error('ERROR: ', ...msg)
-    // eslint-disable-next-line no-process-exit
-    process.exit(1)
-  }
+const exitWithError = (...msg: any[]) => {
+  logger.error('ERROR: ', ...msg)
+  // eslint-disable-next-line no-process-exit
+  process.exit(1)
+}
 
-  const verifyDBConnection = async () => {
-    try {
-      logger.info('Verifying DB connection...')
-      await sequelize.authenticate() // runs SELECT 1+1 AS result to check db connection
-      logger.info('DB connected successfully!')
-    } catch (connectionError) {
-      exitWithError('Error connecting to DB:', connectionError)
-    }
-  }
-
-  const runDBMigrations = async () => {
-    try {
-      logger.info('Executing database migrations...')
-      await runMigrations()
-      logger.info('Migrations completed successfully')
-    } catch (migrationError) {
-      exitWithError('Error in migrations:', migrationError)
-    }
-  }
-
-  const connectToDBAndRunMigrations = async () => {
-    await verifyDBConnection()
-    await clearRunningQueries()
-    await runDBMigrations()
-  }
-
+const verifyConfigAndDb = async () => {
   await config.asyncConfig()
   const delegateOwnerWallet = config.get('delegateOwnerWallet')
   const delegatePrivateKey = config.get('delegatePrivateKey')
@@ -65,8 +38,6 @@ const startAppForPrimary = async () => {
     )
   }
 
-  logger.info(`Primary process with pid=${process.pid} is running`)
-
   // Fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
   const privateKeyBuffer = Buffer.from(
     config.get('delegatePrivateKey').replace('0x', ''),
@@ -76,6 +47,18 @@ const startAppForPrimary = async () => {
     EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
   if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
+  }
+  try {
+    const solDelegateKeypair = Keypair.fromSeed(privateKeyBuffer)
+    const solDelegatePrivateKey = solDelegateKeypair.secretKey
+    config.set(
+      'solDelegatePrivateKeyBase64',
+      Buffer.from(solDelegatePrivateKey).toString('base64')
+    )
+  } catch (e: any) {
+    logger.error(
+      `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
+    )
   }
 
   // Fail if Trusted Notifier isn't configured properly
@@ -87,7 +70,28 @@ const startAppForPrimary = async () => {
     )
   }
 
-  await connectToDBAndRunMigrations()
+  try {
+    logger.info('Verifying DB connection...')
+    await sequelize.authenticate() // runs SELECT 1+1 AS result to check db connection
+    logger.info('DB connected successfully!')
+  } catch (connectionError) {
+    exitWithError('Error connecting to DB:', connectionError)
+  }
+}
+
+// The primary process performs one-time validation and spawns worker processes that each run the Express app
+const startAppForPrimary = async () => {
+  logger.info(`Primary process with pid=${process.pid} is running`)
+
+  await verifyConfigAndDb()
+  await clearRunningQueries()
+  try {
+    logger.info('Executing database migrations...')
+    await runMigrations()
+    logger.info('Migrations completed successfully')
+  } catch (migrationError) {
+    exitWithError('Error in migrations:', migrationError)
+  }
 
   // Clear all redis locks
   try {
@@ -135,23 +139,7 @@ const startAppForWorker = async () => {
     `Worker process with pid=${process.pid} and worker ID=${cluster.worker?.id} is running`
   )
 
-  await config.asyncConfig()
-  const privateKeyBuffer = Buffer.from(
-    config.get('delegatePrivateKey').replace('0x', ''),
-    'hex'
-  )
-  try {
-    const solDelegateKeypair = Keypair.fromSeed(privateKeyBuffer)
-    const solDelegatePrivateKey = solDelegateKeypair.secretKey
-    config.set(
-      'solDelegatePrivateKeyBase64',
-      Buffer.from(solDelegatePrivateKey).toString('base64')
-    )
-  } catch (e: any) {
-    logger.error(
-      `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
-    )
-  }
+  await verifyConfigAndDb()
 
   const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
 
