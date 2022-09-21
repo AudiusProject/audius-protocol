@@ -468,36 +468,26 @@ def cli(
             # perform release
             # NOTE: `git pull` and `docker pull` write to stderr,
             # so we can't readily catch "errors"
-            if environment == "prod":
-                dry_run = True
-                ssh(
-                    host,
-                    "yes | audius-cli upgrade",
-                    show_output=True,
-                    exit_on_error=IGNORE,
-                    dry_run=dry_run,
-                )
-            else:
-                ssh(
-                    host,
-                    "yes | audius-cli pull",
-                    show_output=True,
-                    exit_on_error=IGNORE,
-                    dry_run=dry_run,
-                )
-                ssh(
-                    host,
-                    f"yes | audius-cli set-tag {git_tag}",
-                    show_output=True,
-                    dry_run=dry_run,
-                )
-                ssh(
-                    host,
-                    f"yes | audius-cli launch {service}",
-                    show_output=True,
-                    exit_on_error=IGNORE,
-                    dry_run=dry_run,
-                )
+            ssh(
+                host,
+                "yes | audius-cli pull",
+                show_output=True,
+                exit_on_error=IGNORE,
+                dry_run=dry_run,
+            )
+            ssh(
+                host,
+                f"yes | audius-cli set-tag {git_tag}",
+                show_output=True,
+                dry_run=dry_run,
+            )
+            ssh(
+                host,
+                f"yes | audius-cli launch {service}",
+                show_output=True,
+                exit_on_error=IGNORE,
+                dry_run=dry_run,
+            )
 
             release_summary["upgraded"].append(host)
         except:
