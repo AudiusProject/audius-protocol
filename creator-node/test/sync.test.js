@@ -53,7 +53,7 @@ const sampleExportDummyCIDFromClock2Path = path.resolve(
 
 const libsMock = getLibsMock()
 
-describe.only('Test secondarySyncFromPrimary()', async function () {
+describe('Test secondarySyncFromPrimary()', async function () {
   let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get(
