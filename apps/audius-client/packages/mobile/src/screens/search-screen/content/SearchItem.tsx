@@ -115,7 +115,11 @@ const TrackSearchResult = ({ isLast, item: track }: TrackSearchResultProps) => {
 
   const handlePress = useCallback(() => {
     appendSearchItem(track.title)
-    navigation.push('Track', { id: track.track_id, searchTrack: track })
+    navigation.push('Track', {
+      id: track.track_id,
+      searchTrack: track,
+      canBeUnlisted: false
+    })
   }, [track, navigation, appendSearchItem])
 
   return (
