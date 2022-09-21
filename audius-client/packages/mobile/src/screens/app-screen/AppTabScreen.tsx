@@ -40,7 +40,7 @@ import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
 import { useAppScreenOptions } from './useAppScreenOptions'
 
 export type AppTabScreenParamList = {
-  Track: { id: ID; searchTrack?: SearchTrack }
+  Track: { id: ID; searchTrack?: SearchTrack; canBeUnlisted?: boolean }
   TrackRemixes: { id: ID }
   Profile: { handle: string }
   Collection: { id: ID; searchCollection?: SearchPlaylist }
