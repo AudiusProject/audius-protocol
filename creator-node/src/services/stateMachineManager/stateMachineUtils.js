@@ -324,7 +324,11 @@ const _registerQueueEvents = (worker, queueLogger) => {
     logger.info('Job active')
   })
   worker.on('error', (error) => {
-    queueLogger.error(`Queue Job Error - ${error}`)
+    queueLogger.error(`Job error - ${error}`)
+  })
+  worker.on('stalled', (jobId, prev) => {
+    const logger = createChildLogger(queueLogger, { jobId })
+    logger.info('Job stalled')
   })
 }
 

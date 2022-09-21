@@ -105,7 +105,7 @@ export class PrometheusRegistry {
 
   /**
    * @param queue the bull queue to collect metrics on
-   * @param useGlobal whether to search jobs via global callbacks or not
+   * @param worker the bull worker to collect metrics on
    *
    * This function is used to collect prometheus metrics on bull queues
    * by registering callbacks when jobs fail, wait, or complete
@@ -126,29 +126,43 @@ export class PrometheusRegistry {
 
     const metricInterval = setInterval(() => {
       queue
-        .getJobCounts()
-        .then(({ completed, failed, delayed, active, waiting }) => {
-          this.getMetric(this.metricNames.JOBS_COMPLETED_TOTAL_GAUGE).set(
-            labels,
-            completed || 0
-          )
-          this.getMetric(this.metricNames.JOBS_FAILED_TOTAL_GAUGE).set(
-            labels,
-            failed || 0
-          )
-          this.getMetric(this.metricNames.JOBS_DELAYED_TOTAL_GAUGE).set(
-            labels,
-            delayed || 0
-          )
-          this.getMetric(this.metricNames.JOBS_ACTIVE_TOTAL_GAUGE).set(
-            labels,
-            active || 0
-          )
-          this.getMetric(this.metricNames.JOBS_WAITING_TOTAL_GAUGE).set(
-            labels,
-            waiting || 0
-          )
-        })
+        .getJobCounts('completed', 'failed', 'delayed', 'active', 'waiting')
+        .then(
+          ({
+            completed,
+            failed,
+            delayed,
+            active,
+            waiting
+          }: {
+            completed: number
+            failed: number
+            delayed: number
+            active: number
+            waiting: number
+          }) => {
+            this.getMetric(this.metricNames.JOBS_COMPLETED_TOTAL_GAUGE).set(
+              labels,
+              completed || 0
+            )
+            this.getMetric(this.metricNames.JOBS_FAILED_TOTAL_GAUGE).set(
+              labels,
+              failed || 0
+            )
+            this.getMetric(this.metricNames.JOBS_DELAYED_TOTAL_GAUGE).set(
+              labels,
+              delayed || 0
+            )
+            this.getMetric(this.metricNames.JOBS_ACTIVE_TOTAL_GAUGE).set(
+              labels,
+              active || 0
+            )
+            this.getMetric(this.metricNames.JOBS_WAITING_TOTAL_GAUGE).set(
+              labels,
+              waiting || 0
+            )
+          }
+        )
     }, QUEUE_INTERVAL)
 
     return {

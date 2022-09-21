@@ -39,14 +39,14 @@ class SessionExpirationQueue {
 
     // Clean up anything that might be still stuck in the queue on restart
     if (cluster.worker?.id === 1) {
-      this.queue.drain()
+      await this.queue.drain()
     }
 
     const worker = new Worker(
       'session-expiration-queue',
       async (job) => {
         try {
-          this.logStatus('Starting')
+          await this.logStatus('Starting')
           let progress = 0
           const SESSION_EXPIRED_CONDITION = {
             where: {
@@ -60,7 +60,7 @@ class SessionExpirationQueue {
           const numExpiredSessions = await SessionToken.count(
             SESSION_EXPIRED_CONDITION
           )
-          this.logStatus(
+          await this.logStatus(
             `${numExpiredSessions} expired sessions ready for deletion.`
           )
 
@@ -73,7 +73,7 @@ class SessionExpirationQueue {
           }
           return {}
         } catch (e) {
-          this.logStatus(`Error ${e}`)
+          await this.logStatus(`Error ${e}`)
           return e
         }
       },
@@ -113,11 +113,11 @@ class SessionExpirationQueue {
         try {
           await this.queue.add(PROCESS_NAMES.expire_sessions, {})
         } catch (e) {
-          this.logStatus('Failed to enqueue!')
+          await this.logStatus('Failed to enqueue!')
         }
       }, this.runInterval)
     } catch (e) {
-      this.logStatus('Startup failed!')
+      await this.logStatus('Startup failed!')
     }
   }
 }
