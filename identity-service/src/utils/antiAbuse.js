@@ -52,28 +52,23 @@ const getAbuseData = async (handle, reqIP) => {
 }
 
 const detectAbuse = async (user, reqIP) => {
+  if (config.get('skipAbuseCheck') || !user.handle) {
+    return
+  }
+
   let blockedFromRelay = false
   let blockedFromNotifications = false
   let appliedRules = null
 
-  if (!user.handle) {
-    // Something went wrong during sign up and identity has no knowledge
-    // of this user's handle. Flag them as abusive.
-    blockedFromRelay = true
-  } else {
-    try {
-      // Write out the latest user IP to Identity DB - AAO will request it back
-      await recordIP(reqIP, user.handle)
+  try {
+    // Write out the latest user IP to Identity DB - AAO will request it back
+    await recordIP(reqIP, user.handle)
 
-      // Perform abuse check conditional on environment
-      if (config.get('skipAbuseCheck')) {
-        logger.info(`Skipping abuse check for user ${user.handle}`)
-      } else {
-        ;({ appliedRules, blockedFromRelay, blockedFromNotifications } = await getAbuseData(user.handle, reqIP))
-      }
-    } catch (e) {
-      logger.warn(`antiAbuse: aao request failed ${e.message}`)
-    }
+    // Perform abuse check conditional on environment
+    ;({ appliedRules, blockedFromRelay, blockedFromNotifications } = await getAbuseData(user.handle, reqIP))
+    logger.info(`detectAbuse: got info for user id ${user.blockchainUserId} handle ${user.handle}: ${JSON.stringify({ appliedRules, blockedFromRelay, blockedFromNotifications })}`)
+  } catch (e) {
+    logger.warn(`detectAbuse: aao request failed ${e.message}`)
   }
 
   // Use !! for nullable columns :(
