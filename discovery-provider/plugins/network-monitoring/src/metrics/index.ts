@@ -23,9 +23,9 @@ import {
   getUserCount,
   getRunStartTime,
 } from "./queries";
-import { tracing } from "..//tracer"
+import { instrumentTracing, tracing } from "..//tracer"
 
-export const generateMetrics = async (run_id: number) => {
+const _generateMetrics = async (run_id: number) => {
   const { foundationNodes } = getEnv();
 
   tracing.info(`[${run_id}] generating metrics`);
@@ -105,6 +105,10 @@ export const generateMetrics = async (run_id: number) => {
 
   tracing.info(`[${run_id}] finish generating metrics`);
 };
+
+export const generateMetrics = instrumentTracing({
+  fn: _generateMetrics,
+})
 
 const publishSlackReport = async (metrics: Object) => {
   const { slackUrl } = getEnv();

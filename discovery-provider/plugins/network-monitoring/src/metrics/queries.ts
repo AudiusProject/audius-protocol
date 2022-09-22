@@ -1,7 +1,7 @@
 
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
-import { tracing } from "../tracer"
+import { instrumentTracing, tracing } from "../tracer"
 
 /*
  * Metrics from the discovery DB
@@ -11,7 +11,7 @@ import { tracing } from "../tracer"
  */ 
 
 // Get the current user count from discovery nodes
-export const getUserCount = async (run_id: number): Promise<number> => {
+const _getUserCount = async (run_id: number): Promise<number> => {
 
     const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
@@ -27,11 +27,15 @@ export const getUserCount = async (run_id: number): Promise<number> => {
     return usersCount
 }
 
+export const getUserCount = instrumentTracing({
+    fn: _getUserCount,
+})
+
 /* 
  * Core metrics
  */
 
-export const getRunStartTime = async (run_id: number): Promise<Date> => {
+const _getRunStartTime = async (run_id: number): Promise<Date> => {
     const runStartTimeResp: unknown[] = await sequelizeConn.query(`
         SELECT created_at
         FROM 
@@ -49,7 +53,11 @@ export const getRunStartTime = async (run_id: number): Promise<Date> => {
     return runStartTime
 }
 
-export const getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_node_spid: string, cid_count: number }[]> => {
+export const getRunStartTime = instrumentTracing({
+    fn: _getRunStartTime,
+})
+
+const _getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_node_spid: string, cid_count: number }[]> => {
 
     const cidsListResp = await sequelizeConn.query(`
         SELECT content_node_spid, COUNT(*) as cid_count
@@ -78,7 +86,11 @@ export const getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ co
     return cids
 }
 
-export const getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
+export const getCidsReplicatedAtLeastOnce = instrumentTracing({
+    fn: _getCidsReplicatedAtLeastOnce,
+})
+
+const _getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
 
     tracing.info(`[${run_id}] metric: primary user count`);
     const primaryCountResp: unknown[] = await sequelizeConn.query(`
@@ -106,9 +118,13 @@ export const getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: s
     return primaryCount
 }
 
+export const getPrimaryUserCount = instrumentTracing({
+    fn: _getPrimaryUserCount,
+})
+
 // Count of users who have a specific content node in their replica set 
 // This is different from `getUserCount()` which literally just gets the number of users on Audius
-export const getAllUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
+const _getAllUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
     tracing.info(`[${run_id}] metric: all user count`);
     const userListResp: unknown[] = await sequelizeConn.query(`
         SELECT joined.endpoint, COUNT(*) 
@@ -137,7 +153,11 @@ export const getAllUserCount = async (run_id: number): Promise<{ endpoint: strin
     return userList
 }
 
-export const getCidReplicationFactor = async (run_id: number): Promise<number> => {
+export const getAllUserCount = instrumentTracing({
+    fn: _getAllUserCount,
+})
+
+const _getCidReplicationFactor = async (run_id: number): Promise<number> => {
     const replicationFactorResp: unknown[] = await sequelizeConn.query(`
         SELECT AVG(cid_counts.count) 
         FROM (
@@ -169,9 +189,13 @@ export const getCidReplicationFactor = async (run_id: number): Promise<number> =
     return replicationFactor
 }
 
+export const getCidReplicationFactor = instrumentTracing({
+    fn: _getCidReplicationFactor,
+})
+
 // The number of users whose primary content node is in sync 
 // with all of their secondary content nodes in their replica set
-export const getFullySyncedUsersCount = async (run_id: number): Promise<number> => {
+const _getFullySyncedUsersCount = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
         FROM network_monitoring_users
@@ -193,9 +217,13 @@ export const getFullySyncedUsersCount = async (run_id: number): Promise<number> 
     return usersCount
 }
 
+export const getFullySyncedUsersCount = instrumentTracing({
+    fn: _getFullySyncedUsersCount,
+})
+
 // The number of users whose primary content node is only in sync
 // with one of their secondary content nodes in their replica set
-export const getPartiallySyncedUsersCount = async (run_id: number): Promise<number> => {
+const _getPartiallySyncedUsersCount = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
         FROM network_monitoring_users
@@ -220,9 +248,13 @@ export const getPartiallySyncedUsersCount = async (run_id: number): Promise<numb
     return usersCount
 }
 
+export const getPartiallySyncedUsersCount = instrumentTracing({
+    fn: _getPartiallySyncedUsersCount,
+})
+
 // The number of users whose primary content node isn't in sync 
 // with any of their other secondary content nodes in their replica set
-export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => {
+const _getUnsyncedUsersCount = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
         FROM network_monitoring_users
@@ -244,8 +276,12 @@ export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => 
     return usersCount
 }
 
+export const getUnsyncedUsersCount = instrumentTracing({
+    fn: _getUnsyncedUsersCount,
+})
+
 // The number of users whose primary content node clock value is null
-export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> => {
+const _getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
     FROM network_monitoring_users
@@ -263,7 +299,11 @@ export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<numb
     return usersCount
 }
 
-export const getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidSet: number[]): Promise<number> => {
+export const getUsersWithNullPrimaryClock = instrumentTracing({
+    fn: _getUsersWithNullPrimaryClock,
+})
+
+const _getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidSet: number[]): Promise<number> => {
 
     const spidSetStr = `{${spidSet.join(",")}}`
 
@@ -287,3 +327,7 @@ export const getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number,
 
     return usersCount
 }
+
+export const getUsersWithEntireReplicaSetInSpidSetCount = instrumentTracing({
+    fn: _getUsersWithEntireReplicaSetInSpidSetCount,
+})

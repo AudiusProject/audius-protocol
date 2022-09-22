@@ -24,9 +24,9 @@ import {
     indexingContentDurationGauge,
     userBatchDurationGauge,
 } from "../prometheus"
-import { tracing } from "../tracer"
+import { instrumentTracing, tracing } from "../tracer"
 
-export const indexContent = async (run_id: number) => {
+const _indexContent = async (run_id: number) => {
 
     tracing.info(`[${run_id}] indexing content node`)
 
@@ -82,11 +82,15 @@ export const indexContent = async (run_id: number) => {
     tracing.info(`[${run_id}] finished indexing content nodes`)
 }
 
+export const indexContent = instrumentTracing({
+    fn: _indexContent,
+})
+
 // for batch in batches
 //      get clock value
 //      save results in non-blocking way
 // make sure all results are saved
-const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
+const _checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     tracing.info(`[${run_id}:${spid}] check users`)
 
     const batchSize = 5000
@@ -185,12 +189,16 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     tracing.info(`[${run_id}:${spid}] finish saving user content node data to db`)
 }
 
+const checkUsers = instrumentTracing({
+    fn: _checkUsers,
+})
+
 // for batch in batches
 //      check cids
 //      go run sql query in background and don't block
 // end for
 // wait until sql queries are finished
-export const checkCID = async (
+const _checkCID = async (
     run_id: number,
     spid: number,
     endpoint: string,
@@ -252,7 +260,11 @@ export const checkCID = async (
     tracing.info(`[${run_id}:${spid}] finish saving cid content node data to db`)
 }
 
-const checkIfCIDsExistOnCN = async (
+export const checkCID = instrumentTracing({
+    fn: _checkCID,
+})
+
+const _checkIfCIDsExistOnCN = async (
     endpoint: string,
     batch: { cid: string, user_id: number }[],
     deregisteredCN: string[],
@@ -300,7 +312,11 @@ const checkIfCIDsExistOnCN = async (
     }
 }
 
-const getUserClockValues = async (
+const checkIfCIDsExistOnCN = instrumentTracing({
+    fn: _checkIfCIDsExistOnCN,
+})
+
+const _getUserClockValues = async (
     endpoint: string,
     walletPublicKeys: string[],
     deregisteredCN: string[],
@@ -367,3 +383,7 @@ const getUserClockValues = async (
         }
     }
 }
+
+const getUserClockValues = instrumentTracing({
+    fn: _getUserClockValues,
+})

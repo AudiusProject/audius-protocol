@@ -8,7 +8,7 @@ import axios from 'axios';
 import * as http from 'http';
 import * as https from 'https';
 import retry from 'async-retry';
-import { tracing } from './tracer';
+import { instrumentTracing, tracing } from './tracer';
 
 // const UnhealthyTimeRangeMs = 1_800_000 // 30min
 const UnhealthyTimeRangeMs = 300_000 // 5min
@@ -18,7 +18,7 @@ axios.defaults.timeout = 300_000 // 5min
 axios.defaults.httpAgent = new http.Agent({ timeout: 60000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 60000, rejectUnauthorized: false })
 
-export const makeRequest = async (
+const _makeRequest = async (
     request: {
         baseURL: string,
         url: string
@@ -79,7 +79,11 @@ export const makeRequest = async (
     }
 }
 
-export const generateSPSignatureParams = (signatureSpID: number, signatureSPDelegatePrivateKey: string) => {
+export const makeRequest = instrumentTracing({
+    fn: _makeRequest,
+})
+
+const _generateSPSignatureParams = (signatureSpID: number, signatureSPDelegatePrivateKey: string) => {
     const { timestamp, signature } = generateTimestampAndSignature(
         { spID: signatureSpID },
         signatureSPDelegatePrivateKey
@@ -92,12 +96,16 @@ export const generateSPSignatureParams = (signatureSpID: number, signatureSPDele
     }
 }
 
+export const generateSPSignatureParams = instrumentTracing({
+    fn: _generateSPSignatureParams,
+})
+
 /**
  * Generate the timestamp and signature for api signing
  * @param {object} data
  * @param {string} privateKey
  */
-export const generateTimestampAndSignature = (data: object, privateKey: string) => {
+const _generateTimestampAndSignature = (data: object, privateKey: string) => {
     const timestamp = new Date().toISOString()
     const toSignObj = { ...data, timestamp }
     // JSON stringify automatically removes white space given 1 param
@@ -108,17 +116,25 @@ export const generateTimestampAndSignature = (data: object, privateKey: string) 
     return { timestamp, signature: signedResponse.signature }
 }
 
+export const generateTimestampAndSignature = instrumentTracing({
+    fn: _generateTimestampAndSignature,
+})
+
 /**
  * used to track unhealthy nodes and avoid frequent repeated requests to speed up processing
  */
 
-export const nodeRecentlyMarkedUnhealthy = (endpoint: string) => {
+const _nodeRecentlyMarkedUnhealthy = (endpoint: string) => {
     if (!(endpoint in unhealthyNodes)) {
         return false
     }
 
     return ((Date.now() - unhealthyNodes[endpoint]!) <= UnhealthyTimeRangeMs)
 }
+
+export const nodeRecentlyMarkedUnhealthy = instrumentTracing({
+    fn: _nodeRecentlyMarkedUnhealthy,
+})
 
 
 // Appends suffixes to log msg based on duration, for easy log parsing

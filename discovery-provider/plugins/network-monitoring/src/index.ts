@@ -1,5 +1,5 @@
 
-import { setupTracing, tracing } from './tracer'
+import { instrumentTracing, setupTracing, tracing } from './tracer'
 setupTracing()
 
 import {
@@ -43,8 +43,8 @@ const main = async () => {
         tracing.recordException(e)
         tracing.error(`[generateMetrics] error pushing metrics to pushgateway - ${e.message}`)
     }
-
-    process.exit(0)
 }
 
-main()
+instrumentTracing({
+    fn: main
+})()

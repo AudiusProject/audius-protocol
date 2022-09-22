@@ -1,8 +1,8 @@
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
-import { tracing } from "../tracer"
+import { instrumentTracing, tracing } from "../tracer"
 
-export const createNewRun = async (): Promise<number> => {
+const _createNewRun = async (): Promise<number> => {
     tracing.info('[+] starting new run')
 
     // Get block number
@@ -50,8 +50,12 @@ export const createNewRun = async (): Promise<number> => {
     return run_id
 }
 
+export const createNewRun = instrumentTracing({
+    fn: _createNewRun,
+})
+
 // Delete old runs so the postgres DB doesn't hog disk space
-export const deleteOldRunData = async (run_id: number): Promise<void> => {
+const _deleteOldRunData = async (run_id: number): Promise<void> => {
     tracing.info(`[${run_id}] deleting old run data`)
 
     // Number of runs to keep in the DB
@@ -75,7 +79,11 @@ export const deleteOldRunData = async (run_id: number): Promise<void> => {
 
 }
 
-export const importContentNodes = async (run_id: number) => {
+export const deleteOldRunData = instrumentTracing({
+    fn: _deleteOldRunData,
+})
+
+const _importContentNodes = async (run_id: number) => {
     tracing.info(`[${run_id}] importing content nodes`)
 
     await sequelizeConn.query(`
@@ -93,7 +101,11 @@ export const importContentNodes = async (run_id: number) => {
     })
 }
 
-export const importUsers = async (run_id: number) => {
+export const importContentNodes = instrumentTracing({
+    fn: _importContentNodes,
+})
+
+const _importUsers = async (run_id: number) => {
     tracing.info(`[${run_id}] importing users`)
 
     await sequelizeConn.query(`
@@ -122,7 +134,11 @@ export const importUsers = async (run_id: number) => {
     })
 }
 
-export const importCids = async (run_id: number) => {
+export const importUsers = instrumentTracing({
+    fn: _importUsers,
+})
+
+const _importCids = async (run_id: number) => {
     tracing.info(`[${run_id}] importing cids`)
 
     await sequelizeConn.query(`
@@ -261,3 +277,7 @@ export const importCids = async (run_id: number) => {
 
     tracing.info(`\t -> tracks.track_segments->'multihash'`)
 }
+
+export const importCids = instrumentTracing({
+    fn: _importCids,
+})

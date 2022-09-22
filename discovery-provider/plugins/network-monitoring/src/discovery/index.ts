@@ -7,10 +7,10 @@ import {
     importContentNodes,
     importUsers
 } from "./queries"
-import { tracing } from "../tracer"
+import { instrumentTracing, tracing } from "../tracer"
 
 
-export const indexDiscovery = async (): Promise<number> => {
+const _indexDiscovery = async (): Promise<number> => {
 
     tracing.info('[+] indexing discovery database')
 
@@ -38,3 +38,7 @@ export const indexDiscovery = async (): Promise<number> => {
 
     return run_id
 }
+
+export const indexDiscovery = instrumentTracing({
+    fn: _indexDiscovery,
+})
