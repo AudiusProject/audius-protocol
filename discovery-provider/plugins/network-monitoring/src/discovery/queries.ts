@@ -1,8 +1,9 @@
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
+import { tracing } from "../tracer"
 
 export const createNewRun = async (): Promise<number> => {
-    console.log('[+] starting new run')
+    tracing.info('[+] starting new run')
 
     // Get block number
     const latestBlockNumberResp = await sequelizeConn.query(`
@@ -11,7 +12,7 @@ export const createNewRun = async (): Promise<number> => {
         type: QueryTypes.SELECT,
     })
 
-    console.log(`[+] latest block number : `, (latestBlockNumberResp as { number: number }[])[0]!.number)
+    tracing.info(`[+] latest block number : `, (latestBlockNumberResp as { number: number }[])[0]!.number)
     const latestBlockNumber = (latestBlockNumberResp[0] as { number: number }).number
 
     const runs = await sequelizeConn.query(`
@@ -44,26 +45,26 @@ export const createNewRun = async (): Promise<number> => {
     })
 
     const run_id: number = (runs[0] as any)[0].run_id
-    console.log(`[+] current run id : ${run_id}`)
+    tracing.info(`[+] current run id : ${run_id}`)
 
     return run_id
 }
 
 // Delete old runs so the postgres DB doesn't hog disk space
 export const deleteOldRunData = async (run_id: number): Promise<void> => {
-    console.log(`[${run_id}] deleting old run data`)
+    tracing.info(`[${run_id}] deleting old run data`)
 
     // Number of runs to keep in the DB
     const latestRunsToKeep = 3
     const toDelete = run_id - latestRunsToKeep
 
     if (toDelete <= 0) {
-        console.log("\t-> nothing to delete")
+        tracing.info("\t-> nothing to delete")
         return
     }
 
     // Delete old runs
-    console.log("\t-> network_monitoring_index_blocks + cascading")
+    tracing.info("\t-> network_monitoring_index_blocks + cascading")
     await sequelizeConn.query(`
         DELETE FROM network_monitoring_index_blocks
         WHERE run_id < :toDelete;
@@ -75,7 +76,7 @@ export const deleteOldRunData = async (run_id: number): Promise<void> => {
 }
 
 export const importContentNodes = async (run_id: number) => {
-    console.log(`[${run_id}] importing content nodes`)
+    tracing.info(`[${run_id}] importing content nodes`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_content_nodes (
@@ -93,7 +94,7 @@ export const importContentNodes = async (run_id: number) => {
 }
 
 export const importUsers = async (run_id: number) => {
-    console.log(`[${run_id}] importing users`)
+    tracing.info(`[${run_id}] importing users`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_users (
@@ -122,7 +123,7 @@ export const importUsers = async (run_id: number) => {
 }
 
 export const importCids = async (run_id: number) => {
-    console.log(`[${run_id}] importing cids`)
+    tracing.info(`[${run_id}] importing cids`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -135,7 +136,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> users.metadata_multihash`)
+    tracing.info(`\t -> users.metadata_multihash`)
 
     await sequelizeConn.query(`
             INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -150,7 +151,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> users.profile_picture`)
+    tracing.info(`\t -> users.profile_picture`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -163,7 +164,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> users.profile_picture_sizes`)
+    tracing.info(`\t -> users.profile_picture_sizes`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -176,7 +177,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> users.cover_photo`)
+    tracing.info(`\t -> users.cover_photo`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -189,7 +190,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> users.cover_photo_sizes`)
+    tracing.info(`\t -> users.cover_photo_sizes`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -202,7 +203,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> tracks.cover_art`)
+    tracing.info(`\t -> tracks.cover_art`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -215,7 +216,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> tracks.cover_art_sizes`)
+    tracing.info(`\t -> tracks.cover_art_sizes`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -228,7 +229,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> tracks.metadata_multihash`)
+    tracing.info(`\t -> tracks.metadata_multihash`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -241,7 +242,7 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> tracks.download->'cid'`)
+    tracing.info(`\t -> tracks.download->'cid'`)
 
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_cids_from_discovery (cid, run_id, ctype, user_id)
@@ -258,5 +259,5 @@ export const importCids = async (run_id: number) => {
         logging: false,
     })
 
-    console.log(`\t -> tracks.track_segments->'multihash'`)
+    tracing.info(`\t -> tracks.track_segments->'multihash'`)
 }

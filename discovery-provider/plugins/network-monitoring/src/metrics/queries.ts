@@ -79,7 +79,7 @@ export const getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ co
 
 export const getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
 
-    console.log(`[${run_id}] metric: primary user count`);
+    tracing.info(`[${run_id}] metric: primary user count`);
     const primaryCountResp: unknown[] = await sequelizeConn.query(`
         SELECT 
             joined.endpoint, COUNT(*) 
@@ -108,7 +108,7 @@ export const getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: s
 // Count of users who have a specific content node in their replica set 
 // This is different from `getUserCount()` which literally just gets the number of users on Audius
 export const getAllUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
-    console.log(`[${run_id}] metric: all user count`);
+    tracing.info(`[${run_id}] metric: all user count`);
     const userListResp: unknown[] = await sequelizeConn.query(`
         SELECT joined.endpoint, COUNT(*) 
         FROM (

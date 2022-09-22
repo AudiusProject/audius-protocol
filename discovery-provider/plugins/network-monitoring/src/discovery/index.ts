@@ -7,11 +7,12 @@ import {
     importContentNodes,
     importUsers
 } from "./queries"
+import { tracing } from "../tracer"
 
 
 export const indexDiscovery = async (): Promise<number> => {
 
-    console.log('[+] indexing discovery database')
+    tracing.info('[+] indexing discovery database')
 
     const endTimer = indexingDiscoveryDurationGauge.startTimer()
 
@@ -33,7 +34,7 @@ export const indexDiscovery = async (): Promise<number> => {
     // Record indexing duration and export to push-gateway
     endTimer({ run_id: run_id })
 
-    console.log(`[${run_id}] finished indexing discovery database`)
+    tracing.info(`[${run_id}] finished indexing discovery database`)
 
     return run_id
 }

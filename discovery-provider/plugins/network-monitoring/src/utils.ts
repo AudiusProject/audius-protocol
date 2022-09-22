@@ -9,6 +9,7 @@ import axios from 'axios';
 import * as http from 'http';
 import * as https from 'https';
 import retry from 'async-retry';
+import { tracing } from './tracer';
 
 // const UnhealthyTimeRangeMs = 1_800_000 // 30min
 const UnhealthyTimeRangeMs = 300_000 // 5min
@@ -41,14 +42,14 @@ export const makeRequest = async (
 
     // Exit early to avoid wasting time on a deregistered node
     if (deregisteredCN.includes(endpoint)) {
-        console.log(`[makeRequest] Skipping request to ${endpoint} since it has been deregistered`)
+        tracing.info(`[makeRequest] Skipping request to ${endpoint} since it has been deregistered`)
 
         return { attemptCount: 0, canceled: true }
     }
 
     // Exit early to avoid wasting time on a node recently marked unhealthy
     if (nodeRecentlyMarkedUnhealthy(endpoint)) {
-        console.log(`[makeRequest] Skipping request to ${endpoint} since it was recently confirmed unhealthy`)
+        tracing.info(`[makeRequest] Skipping request to ${endpoint} since it was recently confirmed unhealthy`)
         return { attemptCount: 0, canceled: true }
     }
 
@@ -63,19 +64,20 @@ export const makeRequest = async (
                 minTimeout: 30_000,
                 onRetry: (e: Error) => {
                     attemptCount++
-                    console.debug(`\t[makeRequest Retrying] (${fullURL}) - ${attemptCount} attempts - Error ${e.message} - ${logDuration(Date.now() - startMs)}${additionalInfoMsg}`)
+                    tracing.debug(`\t[makeRequest Retrying] (${fullURL}) - ${attemptCount} attempts - Error ${e.message} - ${logDuration(Date.now() - startMs)}${additionalInfoMsg}`)
                 }
             }
         )
-        if (log) console.debug(`\t[makeRequest Success] (${fullURL}) - ${attemptCount} attempts - ${logDuration(Date.now() - startMs)}${additionalInfoMsg}`)
+        if (log) tracing.debug(`\t[makeRequest Success] (${fullURL}) - ${attemptCount} attempts - ${logDuration(Date.now() - startMs)}${additionalInfoMsg}`)
         return { response, attemptCount, canceled: false }
-    } catch (e) {
+    } catch (e: any) {
         // mark node as unhealthy to speed up future processing
-        console.log(`\t[makeRequest] Adding ${endpoint} to unhealthyNodes at ${Date.now()}`)
+        tracing.recordException(e)
+        tracing.info(`\t[makeRequest] Adding ${endpoint} to unhealthyNodes at ${Date.now()}`)
         unhealthyNodes[endpoint] = Date.now()
 
-        const errorMsg = `[makeRequest Error] (${fullURL}) - ${attemptCount} attempts - ${logDuration(Date.now() - startMs)}${additionalInfoMsg} - ${(e as Error).message}`
-        console.log(`\t${errorMsg}`)
+        const errorMsg = `[makeRequest Error] (${fullURL}) - ${attemptCount} attempts - ${logDuration(Date.now() - startMs)}${additionalInfoMsg} - ${e.message}`
+        tracing.error(`\t${errorMsg}`)
         throw new Error(`${errorMsg}`)
     }
 }
@@ -151,13 +153,13 @@ export const getEnv = () => {
         const nodeEnv = process.env['NODE_ENV']
 
         if (nodeEnv === "production") {
-            console.log('[+] running in production (.env.prod)')
+            tracing.info('[+] running in production (.env.prod)')
             dotenv.config({ path: '.env.prod' })
         } else if (nodeEnv === "staging") {
-            console.log('[+] running in staging (.env.stage)')
+            tracing.info('[+] running in staging (.env.stage)')
             dotenv.config({ path: '.env.stage' })
         } else {
-            console.log('[+] running locally (.env.local)')
+            tracing.info('[+] running locally (.env.local)')
             dotenv.config({ path: '.env.local' })
 
         }
@@ -200,6 +202,9 @@ export const getEnv = () => {
 
     const slackUrl = process.env['SLACK_URL'] || ''
 
+    const tracingEnabled = process.env['TRACING_ENABLED'] || true
+    const collectorUrl = process.env['COLLECTOR_URL'] || ''
+
     return { 
         db, 
         fdb, 
@@ -209,6 +214,8 @@ export const getEnv = () => {
         foundationNodes,
         pushGatewayUrl,
         slackUrl,
+        tracingEnabled,
+        collectorUrl,
     }
 }
 

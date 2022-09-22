@@ -2,6 +2,7 @@
 
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
+import { tracing } from "../tracer"
 const retry = require('async-retry')
 
 
@@ -22,7 +23,7 @@ export const getAllContentNodes = async (run_id: number): Promise<{ spid: number
 
 // Create a table containing every content node (endpoint+spid) and the number of CIDs (non-image) that should be on that content node
 export const getEndpointToCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
-    console.log(`[${run_id}] get endpoint => cidcount mapping`)
+    tracing.info(`[${run_id}] get endpoint => cidcount mapping`)
 
     const endpointToCIDCountResp = await sequelizeConn.query(`
         SELECT prejoin.cid_count, cnodes.spid, cnodes.endpoint 
@@ -53,14 +54,14 @@ export const getEndpointToCIDCount = async (run_id: number): Promise<{ spid: num
     const endpointToCIDCount = endpointToCIDCountResp as { spid: number, endpoint: string, cid_count: string }[];
 
 
-    console.log(`[${run_id}] finish getting endpoint => cidcount mapping`)
+    tracing.info(`[${run_id}] finish getting endpoint => cidcount mapping`)
 
     return endpointToCIDCount
 }
 
 // Create a table containing every content node (endpoint+spid) and the number of image CIDs that should be on that content node
 export const getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
-    console.log(`[${run_id}] get endpoint => imageCidcount mapping`)
+    tracing.info(`[${run_id}] get endpoint => imageCidcount mapping`)
 
     const endpointToCIDCountResp = await sequelizeConn.query(`
         SELECT prejoin.cid_count, cnodes.spid, cnodes.endpoint 
@@ -90,7 +91,7 @@ export const getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid
 
     const endpointToCIDCount = endpointToCIDCountResp as { spid: number, endpoint: string, cid_count: string }[];
 
-    console.log(`[${run_id}] finish getting endpoint => imageCidcount mapping`)
+    tracing.info(`[${run_id}] finish getting endpoint => imageCidcount mapping`)
 
     return endpointToCIDCount
 }
@@ -102,7 +103,7 @@ export const getCIDBatch = async (
     offset: number,
     limit: number
 ): Promise<{ cid: string, user_id: number }[]> => {
-    console.log(`[${run_id}:${endpoint}] get batch - offset: ${offset}, limit: ${limit}`)
+    tracing.info(`[${run_id}:${endpoint}] get batch - offset: ${offset}, limit: ${limit}`)
 
     try {
 
@@ -140,8 +141,9 @@ export const getCIDBatch = async (
         })
 
         return cidBatch
-    } catch (e) {
-        console.log(`[getCIDBatch:${endpoint}:${offset}:${limit}] error - ${(e as Error).message}`)
+    } catch (e: any) {
+        tracing.recordException(e)
+        tracing.error(`[getCIDBatch:${endpoint}:${offset}:${limit}] error - ${e.message}`)
         return []
     }
 }
@@ -153,7 +155,7 @@ export const getImageCIDBatch = async (
     offset: number,
     limit: number
 ): Promise<{ cid: string, user_id: number }[]> => {
-    console.log(`[${run_id}:${endpoint}] get image batch - offset: ${offset}, limit: ${limit}`)
+    tracing.info(`[${run_id}:${endpoint}] get image batch - offset: ${offset}, limit: ${limit}`)
 
     try {
 
@@ -191,8 +193,9 @@ export const getImageCIDBatch = async (
         })
 
         return cidBatch
-    } catch (e) {
-        console.log(`[getImageCIDBatch:${endpoint}:${offset}:${limit}] error - ${(e as Error).message}`)
+    } catch (e: any) {
+        tracing.recordException(e)
+        tracing.error(`[getImageCIDBatch:${endpoint}:${offset}:${limit}] error - ${e.message}`)
         return []
     }
 }
@@ -205,7 +208,7 @@ export const saveCIDResults = async (
     results: boolean[]
 ) => {
 
-    console.log(`[${run_id}:${spid}] saving batch [size:${cidBatch.length}]`)
+    tracing.info(`[${run_id}:${spid}] saving batch [size:${cidBatch.length}]`)
 
     try {
         await Promise.all(
@@ -235,14 +238,16 @@ export const saveCIDResults = async (
                             logging: false,
                         })
                     }
-                } catch (e) {
-                    console.log(`[${run_id}:${spid}:saveBatch] error saving cid - ${(e as Error).message}`)
+                } catch (e: any) {
+                    tracing.recordException(e)
+                    tracing.error(`[${run_id}:${spid}:saveBatch] error saving cid - ${e.message}`)
                     return
                 }
             })
         )
-    } catch (e) {
-        console.log(`[${run_id}:${spid}:saveBatch] error saving batch - ${(e as Error).message}`)
+    } catch (e: any) {
+        tracing.recordException(e)
+        tracing.error(`[${run_id}:${spid}:saveBatch] error saving batch - ${e.message}`)
         return
     }
 }
@@ -252,7 +257,7 @@ export const saveCIDResults = async (
 // i.e. { spid: { primary_count, secondary1_count, secondary2_count } }[]
 export const getUserCounts = async (run_id: number, spid: number): Promise<[number, number, number]> => {
 
-    console.log(`[${run_id}:${spid}] get user counts`)
+    tracing.info(`[${run_id}:${spid}] get user counts`)
 
     const userCountsResp: unknown[] = await sequelizeConn.query(`
         SELECT primary_group.spid as spid, primary_count, secondary1_count, secondary2_count
@@ -415,8 +420,9 @@ export const savePrimaryUserResults = async (
                     randomize: true,
                 }
             )
-        } catch (e) {
-            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        } catch (e: any) {
+            tracing.recordException(e)
+            tracing.error(`[${run_id}:${spid}:saveUserResults] error saving batch - ${e.message}`)
             missedUsers += end - offset
         }
     }
@@ -464,8 +470,9 @@ export const saveSecondary1UserResults = async (
                     randomize: true,
                 }
             )
-        } catch (e) {
-            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        } catch (e: any) {
+            tracing.recordException(e)
+            tracing.error(`[${run_id}:${spid}:saveUserResults] error saving batch - ${e.message}`)
             missedUsers += end - offset
         }
     }
@@ -513,8 +520,9 @@ export const saveSecondary2UserResults = async (
                     randomize: true,
                 }
             )
-        } catch (e) {
-            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        } catch (e: any) {
+            tracing.recordException(e)
+            tracing.error(`[${run_id}:${spid}:saveUserResults] error saving batch - ${e.message}`)
             missedUsers += end - offset
         }
     }

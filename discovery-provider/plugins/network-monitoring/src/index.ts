@@ -1,4 +1,7 @@
 
+import { setupTracing, tracing } from './tracer'
+setupTracing()
+
 import {
     closeDBConnection,
     connectToDBAndRunMigrations
@@ -34,10 +37,11 @@ const main = async () => {
 
     try {
         // Finish by publishing any outstanding metrics to prometheus push gateway
-        console.log(`[${run_id}] pushing metrics to gateway`);
+        tracing.info(`[${run_id}] pushing metrics to gateway`);
         await gateway.pushAdd({ jobName: 'network-monitoring' })
-    } catch (e) {
-        console.log(`[generateMetrics] error pushing metrics to pushgateway - ${(e as Error).message}`)
+    } catch (e: any) {
+        tracing.recordException(e)
+        tracing.error(`[generateMetrics] error pushing metrics to pushgateway - ${e.message}`)
     }
 
     process.exit(0)
