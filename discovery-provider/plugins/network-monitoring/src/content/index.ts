@@ -14,10 +14,10 @@ import {
     saveSecondary2UserResults,
 } from "./queries"
 import {
-    getEnv,
     generateSPSignatureParams,
     makeRequest,
 } from "../utils"
+import { getEnv } from "../config"
 import {
     missedUsersCountGauge,
     gateway,

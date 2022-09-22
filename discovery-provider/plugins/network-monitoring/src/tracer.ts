@@ -19,7 +19,7 @@ import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { SequelizeInstrumentation } from "opentelemetry-instrumentation-sequelize";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { getEnv } from "./utils";
+import { getEnv } from "./config";
 
 const { tracingEnabled, collectorUrl } = getEnv();
 

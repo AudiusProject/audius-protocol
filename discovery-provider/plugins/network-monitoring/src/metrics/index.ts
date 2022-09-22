@@ -11,7 +11,7 @@ import {
   userCountGauge,
   usersWithAllFoundationNodeReplicaSetGauge,
 } from "../prometheus";
-import { getEnv } from "../utils";
+import { getEnv } from "../config";
 import {
   getPrimaryUserCount,
   getAllUserCount,
