@@ -7,7 +7,6 @@ const { logger: genericLogger } = require('./logging')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 const DiskManager = require('./diskManager')
-const DecisionTree = require('./utils/decisionTree')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xffffffff
@@ -22,23 +21,22 @@ const MIME_TYPE_JPEG = 'image/jpeg'
  * @return {Buffer} the converted image
  * @dev TODO - replace with child node process bc need for speed
  */
-async function resizeImage(image, maxWidth, square, decisionTree) {
+async function resizeImage(image, maxWidth, square, logger) {
   let img = image.clone()
   // eslint-disable-next-line
   let exif
-
-  decisionTree.recordStage({
-    name: `Start resizeImage for maxWidth: ${maxWidth}`,
-    data: {
-      maxWidth,
-      square
-    }
-  })
+  let time = Date.now()
+  logger.info(`resize image ${maxWidth} - start`)
   try {
     exif = ExifParser.create(img).parse()
+    logger.info(`resize image ${maxWidth} - create time ${Date.now() - time}`)
+    time = Date.now()
   } catch (error) {
+    logger.error(error)
     exif = null
   }
+
+  logger.info(`resize image ${maxWidth} - read time ${Date.now() - time}`)
 
   img = _exifRotate(img, exif)
   img.background(COLOR_WHITE)
@@ -65,9 +63,6 @@ async function resizeImage(image, maxWidth, square, decisionTree) {
 
   // Very high quality, decent size reduction
   img.quality(IMAGE_QUALITY)
-  decisionTree.recordStage({
-    name: `Finished resizeImage for maxWidth: ${maxWidth}`
-  })
 
   return img.getBufferAsync(MIME_TYPE_JPEG)
 }
@@ -113,92 +108,72 @@ module.exports = async (job) => {
   const { file, fileName, sizes, square, logContext } = job.data
   const logger = genericLogger.child(logContext)
 
-  const decisionTree = new DecisionTree({
-    name: `resizeImage`,
-    logger
-  })
-
+  // Read the image once, clone it later on
+  let img
   try {
-    // Read the image once, clone it later on
-    let img
-    try {
-      img = await Jimp.read(file)
-    } catch (e) {
-      throw new Error(
-        `Could not generate image buffer during image resize: ${e}`
-      )
-    }
+    img = await Jimp.read(file)
+  } catch (e) {
+    throw new Error(`Could not generate image buffer during image resize: ${e}`)
+  }
 
-    // Resize all the images
-    const resizes = await Promise.all(
-      Object.keys(sizes).map((size) => {
-        return resizeImage(img, sizes[size], square, decisionTree)
+  // Resize all the images
+  const resizes = await Promise.all(
+    Object.keys(sizes).map((size) => {
+      return resizeImage(img, sizes[size], square, logger)
+    })
+  )
+
+  // Compute multihash/CID of all the images, including the original
+  const toAdd = Object.keys(sizes).map((size, i) => {
+    return {
+      path: path.join(fileName, size),
+      content: resizes[i]
+    }
+  })
+  const original = await img.getBufferAsync(MIME_TYPE_JPEG)
+  toAdd.push({
+    path: path.join(fileName, 'original.jpg'),
+    content: original
+  })
+  resizes.push(original)
+
+  const multihashes = await Utils.fileHasher.generateImageCids(toAdd)
+
+  // Write all the images to file storage and
+  // return the CIDs and storage paths to write to db
+  // in the main thread
+  const dirCID = multihashes[multihashes.length - 1].cid
+  const dirDestPath = DiskManager.computeFilePath(dirCID)
+
+  const resp = {
+    dir: { dirCID, dirDestPath },
+    files: []
+  }
+
+  // Create dir on disk
+  await fs.ensureDir(dirDestPath)
+
+  // Save all image file buffers to disk
+  try {
+    // Slice multihashes to remove dir entry at last index
+    const multihashesMinusDir = multihashes.slice(0, multihashes.length - 1)
+
+    await Promise.all(
+      multihashesMinusDir.map(async (multihash, i) => {
+        // Save file to disk
+        const destPath = DiskManager.computeFilePathInDir(dirCID, multihash.cid)
+        await fs.writeFile(destPath, resizes[i])
+
+        // Append saved file info to response object
+        resp.files.push({
+          multihash: multihash.cid,
+          sourceFile: multihash.path,
+          storagePath: destPath
+        })
       })
     )
-
-    // Compute multihash/CID of all the images, including the original
-    const toAdd = Object.keys(sizes).map((size, i) => {
-      return {
-        path: path.join(fileName, size),
-        content: resizes[i]
-      }
-    })
-    const original = await img.getBufferAsync(MIME_TYPE_JPEG)
-    toAdd.push({
-      path: path.join(fileName, 'original.jpg'),
-      content: original
-    })
-    resizes.push(original)
-
-    const multihashes = await Utils.fileHasher.generateImageCids(toAdd)
-
-    // Write all the images to file storage and
-    // return the CIDs and storage paths to write to db
-    // in the main thread
-    const dirCID = multihashes[multihashes.length - 1].cid
-    const dirDestPath = DiskManager.computeFilePath(dirCID)
-
-    const resp = {
-      dir: { dirCID, dirDestPath },
-      files: []
-    }
-
-    // Create dir on disk
-    await fs.ensureDir(dirDestPath)
-
-    // Save all image file buffers to disk
-    try {
-      // Slice multihashes to remove dir entry at last index
-      const multihashesMinusDir = multihashes.slice(0, multihashes.length - 1)
-
-      await Promise.all(
-        multihashesMinusDir.map(async (multihash, i) => {
-          // Save file to disk
-          const destPath = DiskManager.computeFilePathInDir(
-            dirCID,
-            multihash.cid
-          )
-          await fs.writeFile(destPath, resizes[i])
-
-          // Append saved file info to response object
-          resp.files.push({
-            multihash: multihash.cid,
-            sourceFile: multihash.path,
-            storagePath: destPath
-          })
-        })
-      )
-    } catch (e) {
-      throw new Error(`Failed to write files to disk after resizing ${e}`)
-    }
   } catch (e) {
-    decisionTree.recordStage({
-      name: 'resizeImage error',
-      data: { error: e.message }
-    })
-    throw e
-  } finally {
-    decisionTree.printTree()
+    throw new Error(`Failed to write files to disk after resizing ${e}`)
   }
 
   return Promise.resolve(resp)

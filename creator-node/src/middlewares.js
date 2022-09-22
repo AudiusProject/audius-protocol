@@ -19,7 +19,6 @@ const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
 const { instrumentTracing, tracing } = require('./tracer')
-const DecisionTree = require('./utils/decisionTree')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -544,205 +543,170 @@ async function getUserReplicaSetEndpointsFromDiscovery({
   ensurePrimary,
   myCnodeEndpoint
 }) {
-  const decisionTree = new DecisionTree({
-    name: `getUserReplicaSetEndpointsFromDiscovery`,
-    logger
-  })
-  let userReplicaSet
+  logger.info(
+    `Starting getUserReplicaSetEndpointsFromDiscovery for wallet ${wallet}`
+  )
+  const start = Date.now()
 
-  try {
-    decisionTree.recordStage({
-      name: 'Starting getUserReplicaSetEndpointsFromDiscovery',
-      data: {
-        wallet,
-        blockNumber,
-        ensurePrimary,
-        myCnodeEndpoint
-      }
-    })
+  let user = null
 
-    let user = null
+  if (blockNumber) {
+    /**
+     * If blockNumber provided, polls discprov until it has indexed that blocknumber (for up to 200 seconds)
+     */
+    const start2 = Date.now()
 
-    if (blockNumber) {
-      /**
-       * If blockNumber provided, polls discprov until it has indexed that blocknumber (for up to 200 seconds)
-       */
-      decisionTree.recordStage({
-        name: 'Starting getUserReplicaSetEndpointsFromDiscovery blocknumber flow'
-      })
-      const start2 = Date.now()
+    // In total, will try for 200 seconds.
+    const MaxRetries = 201
+    const RetryTimeout = 1000 // 1 seconds
 
-      // In total, will try for 200 seconds.
-      const MaxRetries = 201
-      const RetryTimeout = 1000 // 1 seconds
+    let discprovBlockNumber = -1
+    for (let retry = 1; retry <= MaxRetries; retry++) {
+      logger.info(
+        `getUserReplicaSetEndpointsFromDiscovery retry #${retry}/${MaxRetries} || time from start: ${
+          Date.now() - start2
+        } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
+      )
 
-      let discprovBlockNumber = -1
-      for (let retry = 1; retry <= MaxRetries; retry++) {
-        logger.debug(
-          `getUserReplicaSetEndpointsFromDiscovery retry #${retry}/${MaxRetries} || time from start: ${
-            Date.now() - start2
-          } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
-        )
+      try {
+        const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
 
-        try {
-          const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
-
-          if (
-            !fetchedUser ||
-            fetchedUser.length === 0 ||
-            !fetchedUser[0].hasOwnProperty('blocknumber') ||
-            !fetchedUser[0].hasOwnProperty('track_blocknumber')
-          ) {
-            throw new Error(
-              'Missing or malformatted user fetched from discprov.'
-            )
-          }
-
-          user = fetchedUser
-          discprovBlockNumber = Math.max(
-            user[0].blocknumber,
-            user[0].track_blocknumber
-          )
-
-          if (discprovBlockNumber >= blockNumber) {
-            break
-          }
-        } catch (e) {
-          // Ignore all errors until MaxRetries exceeded.
-          logger.debug(e)
+        if (
+          !fetchedUser ||
+          fetchedUser.length === 0 ||
+          !fetchedUser[0].hasOwnProperty('blocknumber') ||
+          !fetchedUser[0].hasOwnProperty('track_blocknumber')
+        ) {
+          throw new Error('Missing or malformatted user fetched from discprov.')
         }
 
-        await utils.timeout(RetryTimeout)
-        logger.debug(
-          `getUserReplicaSetEndpointsFromDiscovery AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
-            Date.now() - start2
-          } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
-        )
-      }
-
-      // Error if discprov doesn't return any user for wallet
-      if (!user) {
-        throw new Error(
-          `Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`
-        )
-      }
-
-      // Error if discprov has still not indexed to target blockNumber
-      if (discprovBlockNumber < blockNumber) {
-        throw new Error(
-          `Discprov still outdated after ${MaxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`
-        )
-      }
-
-      decisionTree.recordStage({
-        name: 'Successfully retrieved user from discovery for blocknumber flow'
-      })
-    } else if (ensurePrimary && myCnodeEndpoint) {
-      /**
-       * Else if ensurePrimary required, polls discprov until it has indexed myCnodeEndpoint (for up to 60 seconds)
-       * Errors if retrieved primary does not match myCnodeEndpoint
-       */
-      decisionTree.recordStage({
-        name: 'Starting getUserReplicaSetEndpointsFromDiscovery ensurePrimary && myCnodeEndpoint flow'
-      })
-
-      const start2 = Date.now()
-
-      // Will poll every sec for up to 1 minute (60 sec)
-      const MaxRetries = 61
-      const RetryTimeout = 1000 // 1 seconds
-
-      let returnedPrimaryEndpoint = null
-      for (let retry = 1; retry <= MaxRetries; retry++) {
-        logger.debug(
-          `getUserReplicaSetEndpointsFromDiscovery retry #${retry}/${MaxRetries} || time from start: ${
-            Date.now() - start2
-          } myCnodeEndpoint ${myCnodeEndpoint}`
+        user = fetchedUser
+        discprovBlockNumber = Math.max(
+          user[0].blocknumber,
+          user[0].track_blocknumber
         )
 
-        try {
-          const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
-
-          if (
-            !fetchedUser ||
-            fetchedUser.length === 0 ||
-            !fetchedUser[0].hasOwnProperty('creator_node_endpoint')
-          ) {
-            throw new Error(
-              'Missing or malformatted user fetched from discprov.'
-            )
-          }
-
-          user = fetchedUser
-          returnedPrimaryEndpoint = user[0].creator_node_endpoint.split(',')[0]
-
-          if (returnedPrimaryEndpoint === myCnodeEndpoint) {
-            break
-          }
-        } catch (e) {
-          // Ignore all errors until MaxRetries exceeded
-          logger.debug(e)
+        if (discprovBlockNumber >= blockNumber) {
+          break
         }
-
-        await utils.timeout(RetryTimeout)
-        logger.debug(
-          `getUserReplicaSetEndpointsFromDiscovery AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
-            Date.now() - start2
-          } myCnodeEndpoint ${myCnodeEndpoint}`
-        )
+      } catch (e) {
+        // Ignore all errors until MaxRetries exceeded.
+        logger.info(e)
       }
 
-      // Error if discprov doesn't return any user for wallet
-      if (!user) {
-        throw new Error(
-          `Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`
-        )
-      }
-
-      // Error if discprov has still not returned own endpoint as primary
-      if (returnedPrimaryEndpoint !== myCnodeEndpoint) {
-        throw new Error(
-          `Discprov still hasn't returned own endpoint as primary after ${MaxRetries} retries. Discprov primary ${returnedPrimaryEndpoint} || own endpoint ${myCnodeEndpoint}`
-        )
-      }
-
-      decisionTree.recordStage({
-        name: 'Successfully retrieved user from discovery for ensurePrimary && myCnodeEndpoint flow'
-      })
-    } else {
-      /**
-       * If neither of above conditions are met, falls back to single discprov query without polling
-       */
-      decisionTree.recordStage({
-        name: 'Starting getUserReplicaSetEndpointsFromDiscovery default flow'
-      })
-      user = await libs.User.getUsers(1, 0, null, wallet)
-      decisionTree.recordStage({
-        name: 'Successfully retrieved user from discovery for default flow'
-      })
-    }
-
-    if (
-      !user ||
-      user.length === 0 ||
-      !user[0].hasOwnProperty('creator_node_endpoint')
-    ) {
-      throw new Error(
-        `Invalid return data from discovery provider for user with wallet ${wallet}`
+      await utils.timeout(RetryTimeout)
+      logger.info(
+        `getUserReplicaSetEndpointsFromDiscovery AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
+          Date.now() - start2
+        } discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`
       )
     }
 
-    const endpoint = user[0].creator_node_endpoint
-    userReplicaSet = strToReplicaSet(endpoint || ',,')
-  } catch (e) {
-    decisionTree.recordStage({
-      name: 'getUserReplicaSetEndpointsFromDiscovery error',
-      data: { error: e.message }
-    })
-    throw e
-  } finally {
-    decisionTree.printTree()
+    // Error if discprov doesn't return any user for wallet
+    if (!user) {
+      throw new Error(
+        `Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`
+      )
+    }
+
+    // Error if discprov has still not indexed to target blockNumber
+    if (discprovBlockNumber < blockNumber) {
+      throw new Error(
+        `Discprov still outdated after ${MaxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`
+      )
+    }
+  } else if (ensurePrimary && myCnodeEndpoint) {
+    /**
+     * Else if ensurePrimary required, polls discprov until it has indexed myCnodeEndpoint (for up to 60 seconds)
+     * Errors if retrieved primary does not match myCnodeEndpoint
+     */
+    logger.info(
+      `getUserReplicaSetEndpointsFromDiscovery || no blockNumber passed, retrying until DN returns same endpoint`
+    )
+
+    const start2 = Date.now()
+
+    // Will poll every sec for up to 1 minute (60 sec)
+    const MaxRetries = 61
+    const RetryTimeout = 1000 // 1 seconds
+
+    let returnedPrimaryEndpoint = null
+    for (let retry = 1; retry <= MaxRetries; retry++) {
+      logger.info(
+        `getUserReplicaSetEndpointsFromDiscovery retry #${retry}/${MaxRetries} || time from start: ${
+          Date.now() - start2
+        } myCnodeEndpoint ${myCnodeEndpoint}`
+      )
+
+      try {
+        const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+
+        if (
+          !fetchedUser ||
+          fetchedUser.length === 0 ||
+          !fetchedUser[0].hasOwnProperty('creator_node_endpoint')
+        ) {
+          throw new Error('Missing or malformatted user fetched from discprov.')
+        }
+
+        user = fetchedUser
+        returnedPrimaryEndpoint = user[0].creator_node_endpoint.split(',')[0]
+
+        if (returnedPrimaryEndpoint === myCnodeEndpoint) {
+          break
+        }
+      } catch (e) {
+        // Ignore all errors until MaxRetries exceeded
+        logger.info(e)
+      }
+
+      await utils.timeout(RetryTimeout)
+      logger.info(
+        `getUserReplicaSetEndpointsFromDiscovery AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${
+          Date.now() - start2
+        } myCnodeEndpoint ${myCnodeEndpoint}`
+      )
+    }
+
+    // Error if discprov doesn't return any user for wallet
+    if (!user) {
+      throw new Error(
+        `Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`
+      )
+    }
+
+    // Error if discprov has still not returned own endpoint as primary
+    if (returnedPrimaryEndpoint !== myCnodeEndpoint) {
+      throw new Error(
+        `Discprov still hasn't returned own endpoint as primary after ${MaxRetries} retries. Discprov primary ${returnedPrimaryEndpoint} || own endpoint ${myCnodeEndpoint}`
+      )
+    }
+  } else {
+    /**
+     * If neither of above conditions are met, falls back to single discprov query without polling
+     */
+    logger.info(
+      `getUserReplicaSetEndpointsFromDiscovery || ensurePrimary === false, fetching user without retries`
+    )
+    user = await libs.User.getUsers(1, 0, null, wallet)
   }
+
+  if (
+    !user ||
+    user.length === 0 ||
+    !user[0].hasOwnProperty('creator_node_endpoint')
+  ) {
+    throw new Error(
+      `Invalid return data from discovery provider for user with wallet ${wallet}`
+    )
+  }
+
+  const endpoint = user[0].creator_node_endpoint
+  const userReplicaSet = strToReplicaSet(endpoint || ',,')
+
+  logger.info(
+    `getUserReplicaSetEndpointsFromDiscovery route time ${Date.now() - start}`
+  )
   return userReplicaSet
 }
 
