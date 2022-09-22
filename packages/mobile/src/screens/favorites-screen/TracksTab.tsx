@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
+  useProxySelector,
   savedPageActions,
   playerSelectors,
   Status,
@@ -13,8 +14,8 @@ import {
   savedPageSelectors,
   tracksSocialActions
 } from '@audius/common'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
+import { useFocusEffect } from '@react-navigation/native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
 import { TrackList } from 'app/components/track-list'
@@ -60,21 +61,23 @@ export const TracksTab = () => {
   const dispatch = useDispatch()
   const styles = useStyles()
 
-  useEffectOnce(() => {
+  const handleFetchSaves = useCallback(() => {
     dispatch(fetchSaves())
-  })
+  }, [dispatch])
+
+  useFocusEffect(handleFetchSaves)
 
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)
   const playingUid = useSelector(getUid)
   const savedTracksStatus = useSelector(getSavedTracksStatus)
-  const savedTracks = useSelector(getTracks, shallowEqual)
+  const savedTracks = useProxySelector(getTracks, [])
 
   const filterTrack = (track: TrackMetadata) => {
-    const matchValue = filterValue.toLowerCase()
+    const matchValue = filterValue?.toLowerCase()
     return (
-      track.title.toLowerCase().indexOf(matchValue) > -1 ||
-      track.user.name.toLowerCase().indexOf(matchValue) > -1
+      track.title?.toLowerCase().indexOf(matchValue) > -1 ||
+      track.user?.name.toLowerCase().indexOf(matchValue) > -1
     )
   }
 
@@ -112,14 +115,13 @@ export const TracksTab = () => {
     [dispatch, isPlaying, playingUid]
   )
 
+  const isLoading = savedTracksStatus !== Status.SUCCESS
+  const hasNoFavorites = savedTracks.entries.length === 0
+
   return (
-    <WithLoader
-      loading={
-        savedTracksStatus === Status.LOADING && savedTracks.entries.length === 0
-      }
-    >
+    <WithLoader loading={isLoading}>
       <VirtualizedScrollView listKey='favorites-screen'>
-        {!savedTracks.entries.length && !filterValue ? (
+        {!isLoading && hasNoFavorites && !filterValue ? (
           <EmptyTab message={messages.emptyTabText} />
         ) : (
           <>
