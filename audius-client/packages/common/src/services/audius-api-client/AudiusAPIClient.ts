@@ -811,7 +811,8 @@ export class AudiusAPIClient {
     const encodedCurrentUserId = encodeHashId(currentUserId)
     const params = {
       id: encodedTrackIds,
-      user_id: encodedCurrentUserId || undefined
+      user_id: encodedCurrentUserId || undefined,
+      limit: encodedTrackIds.length
     }
 
     const trackResponse: Nullable<APIResponse<APITrack[]>> =
