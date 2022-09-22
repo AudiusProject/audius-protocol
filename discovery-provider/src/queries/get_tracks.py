@@ -140,7 +140,7 @@ def _get_tracks(session, args):
         elif sort_method == SortMethod.artist_name:
             base_query = base_query.join(
                 TrackWithAggregates.user, aliased=True
-            ).order_by(sort_fn(TrackWithAggregates.user.name))
+            ).order_by(sort_fn(User.name))
         elif sort_method == SortMethod.release_date:
             base_query = base_query.order_by(
                 sort_fn(
