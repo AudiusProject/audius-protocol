@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
-import { accountActions, accountSelectors } from '@audius/common'
-import { useDispatch, useSelector } from 'react-redux'
+import type { CommonState, UserCollection } from '@audius/common'
+import { accountActions, useProxySelector } from '@audius/common'
+import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -9,9 +10,8 @@ import { VirtualizedScrollView } from 'app/components/core'
 
 import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
-import type { ExtendedCollection } from './types'
+import { getAccountCollections } from './selectors'
 
-const { getAccountWithAlbums } = accountSelectors
 const { fetchSavedAlbums } = accountActions
 
 const messages = {
@@ -27,24 +27,14 @@ export const AlbumsTab = () => {
   })
 
   const [filterValue, setFilterValue] = useState('')
-  const user = useSelector(getAccountWithAlbums)
 
-  const matchesFilter = (playlist: ExtendedCollection) => {
-    const matchValue = filterValue.toLowerCase()
-    return (
-      playlist.playlist_name.toLowerCase().indexOf(matchValue) > -1 ||
-      playlist.ownerName.toLowerCase().indexOf(matchValue) > -1
-    )
-  }
-
-  const userAlbums = user?.albums
-    ?.filter(
-      (playlist) =>
-        playlist.is_album &&
-        playlist.ownerHandle !== user.handle &&
-        matchesFilter(playlist)
-    )
-    .map((playlist) => ({ ...playlist, user }))
+  const userAlbums = useProxySelector(
+    (state: CommonState) =>
+      getAccountCollections(state, filterValue).filter(
+        (collection) => collection.is_album
+      ),
+    [filterValue]
+  )
 
   return (
     <VirtualizedScrollView listKey='favorites-albums-view'>
@@ -60,7 +50,7 @@ export const AlbumsTab = () => {
           <CollectionList
             listKey='favorites-albums'
             scrollEnabled={false}
-            collection={userAlbums ?? []}
+            collection={(userAlbums as UserCollection[]) ?? []}
             style={{ marginVertical: 12 }}
           />
         </>
