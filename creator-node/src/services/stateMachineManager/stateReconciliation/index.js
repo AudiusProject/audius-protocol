@@ -143,7 +143,9 @@ class StateReconciliationManager {
     }
 
     // Enqueue first recoverOrphanedData job after a delay. This job requeues itself upon completion or failure
-    await queue.add('first-job', { discoveryNodeEndpoint })
+    if (cluster.worker?.id === 1) {
+      await queue.add('first-job', { discoveryNodeEndpoint })
+    }
   }
 
   makeProcessJob(processor, logger, prometheusRegistry) {

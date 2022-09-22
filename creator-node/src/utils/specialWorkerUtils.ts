@@ -15,7 +15,7 @@ class SpecialWorkerUtils {
   }
 
   isThisProcessSpecial() {
-    return cluster.worker?.id === this.specialWorkerId
+    return cluster.worker?.id === this._specialWorkerId
   }
 }
 const specialWorkerUtils = new SpecialWorkerUtils()

@@ -173,14 +173,16 @@ class StateMonitoringManager {
     const lastProcessedUserId = _.random(0, latestUserId)
 
     // Enqueue first monitorState job after a delay. This job requeues itself upon completion or failure
-    await queue.add(
-      'first-job',
-      {
-        lastProcessedUserId,
-        discoveryNodeEndpoint
-      },
-      { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
-    )
+    if (cluster.worker?.id === 1) {
+      await queue.add(
+        'first-job',
+        {
+          lastProcessedUserId,
+          discoveryNodeEndpoint
+        },
+        { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
+      )
+    }
   }
 
   /**
@@ -198,7 +200,9 @@ class StateMonitoringManager {
     }
 
     // Enqueue first job, which requeues itself upon completion or failure
-    await queue.add('first-job', {})
+    if (cluster.worker?.id === 1) {
+      await queue.add('first-job', {})
+    }
   }
 
   makeProcessJob(processor, logger, prometheusRegistry) {
