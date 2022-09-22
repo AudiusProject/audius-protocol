@@ -64,6 +64,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         "karma": number
         "listens": number
         "owner_verified": boolean
+        "is_premium": boolean
     }
     """
 
@@ -108,6 +109,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             AggregatePlay.count,
             Track.created_at,
             follower_query.c.is_verified,
+            Track.is_premium,
         )
         .join(Track, Track.track_id == AggregatePlay.play_item_id)
         .join(follower_query, follower_query.c.user_id == Track.owner_id)
@@ -139,6 +141,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "karma": 1,
             "listens": record[3],
             "owner_verified": record[5],
+            "is_premium": record[6],
         }
         for record in base_query
     }
@@ -192,26 +195,17 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
     def wrapped():
         # Score and sort
         track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
-        scored_tracks = [
-            strategy.get_track_score("week", track) for track in track_scoring_data
-        ]
 
         # If SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS is true, then filter out track ids
         # belonging to premium tracks before applying the limit.
         if SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS:
-            ids = [track["track_id"] for track in scored_tracks]
-            non_premium_track_ids = (
-                session.query(Track.track_id)
-                .filter(Track.track_id.in_(ids), Track.is_premium == False)
-                .all()
-            )
-            non_premium_track_id_set = set(map(lambda t: t[0], non_premium_track_ids))
-            scored_tracks = list(
-                filter(
-                    lambda t: t["track_id"] in non_premium_track_id_set, scored_tracks
-                )
+            track_scoring_data = list(
+                filter(lambda item: not item["is_premium"], track_scoring_data)
             )
 
+        scored_tracks = [
+            strategy.get_track_score("week", track) for track in track_scoring_data
+        ]
         sorted_tracks = sorted(scored_tracks, key=lambda k: k["score"], reverse=True)
         sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
 
