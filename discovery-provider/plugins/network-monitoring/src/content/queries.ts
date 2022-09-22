@@ -2,12 +2,12 @@
 
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
-import { tracing } from "../tracer"
+import { instrumentTracing, tracing } from "../tracer"
 const retry = require('async-retry')
 
 
 // Fetch all content nodes from a specfic run
-export const getAllContentNodes = async (run_id: number): Promise<{ spid: number, endpoint: string }[]> => {
+const _getAllContentNodes = async (run_id: number): Promise<{ spid: number, endpoint: string }[]> => {
 
     const endpointsResp: unknown[] = await sequelizeConn.query(`
         SELECT spid, endpoint FROM network_monitoring_content_nodes WHERE run_id = :run_id; 
@@ -21,8 +21,12 @@ export const getAllContentNodes = async (run_id: number): Promise<{ spid: number
     return endpoints
 }
 
+export const getAllContentNodes = instrumentTracing({
+    fn: _getAllContentNodes,
+})
+
 // Create a table containing every content node (endpoint+spid) and the number of CIDs (non-image) that should be on that content node
-export const getEndpointToCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
+const _getEndpointToCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
     tracing.info(`[${run_id}] get endpoint => cidcount mapping`)
 
     const endpointToCIDCountResp = await sequelizeConn.query(`
@@ -59,8 +63,12 @@ export const getEndpointToCIDCount = async (run_id: number): Promise<{ spid: num
     return endpointToCIDCount
 }
 
+export const getEndpointToCIDCount = instrumentTracing({
+    fn: _getEndpointToCIDCount,
+})
+
 // Create a table containing every content node (endpoint+spid) and the number of image CIDs that should be on that content node
-export const getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
+const _getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
     tracing.info(`[${run_id}] get endpoint => imageCidcount mapping`)
 
     const endpointToCIDCountResp = await sequelizeConn.query(`
@@ -96,8 +104,12 @@ export const getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid
     return endpointToCIDCount
 }
 
+export const getEndpointToImageCIDCount = instrumentTracing({
+    fn: _getEndpointToImageCIDCount,
+})
+
 // Fetch a batch of CIDs (non-image) for a specific content node from the table `network_monitoring_cids_from_discovery`
-export const getCIDBatch = async (
+const _getCIDBatch = async (
     run_id: number,
     endpoint: string,
     offset: number,
@@ -148,8 +160,12 @@ export const getCIDBatch = async (
     }
 }
 
+export const getCIDBatch = instrumentTracing({
+    fn: _getCIDBatch,
+})
+
 // Fetch a batch of image CIDs for a specific content node from the table `network_monitoring_cids_from_discovery`
-export const getImageCIDBatch = async (
+const _getImageCIDBatch = async (
     run_id: number,
     endpoint: string,
     offset: number,
@@ -200,8 +216,12 @@ export const getImageCIDBatch = async (
     }
 }
 
+export const getImageCIDBatch = instrumentTracing({
+    fn: _getImageCIDBatch,
+})
+
 // Save a batch of CIDs for a specfic content node into the table `network_monitoring_cids_from_content`
-export const saveCIDResults = async (
+const _saveCIDResults = async (
     run_id: number,
     spid: number,
     cidBatch: { cid: string, user_id: number }[],
@@ -252,10 +272,14 @@ export const saveCIDResults = async (
     }
 }
 
+export const saveCIDResults = instrumentTracing({
+    fn: _saveCIDResults,
+})
+
 // Create a table containing every content node 
 // and the number of users with that content node as their primary, secondary1, or secondary2
 // i.e. { spid: { primary_count, secondary1_count, secondary2_count } }[]
-export const getUserCounts = async (run_id: number, spid: number): Promise<[number, number, number]> => {
+const _getUserCounts = async (run_id: number, spid: number): Promise<[number, number, number]> => {
 
     tracing.info(`[${run_id}:${spid}] get user counts`)
 
@@ -305,8 +329,12 @@ export const getUserCounts = async (run_id: number, spid: number): Promise<[numb
     ]
 }
 
+export const getUserCounts = instrumentTracing({
+    fn: _getUserCounts,
+})
+
 // Fetch a batch of users with a specific content node as their primary from the table `network_monitoring_users`
-export const getPrimaryWalletBatch = async (
+const _getPrimaryWalletBatch = async (
     run_id: number,
     spid: number,
     offset: number,
@@ -330,8 +358,12 @@ export const getPrimaryWalletBatch = async (
     return walletBatch
 }
 
+export const getPrimaryWalletBatch = instrumentTracing({
+    fn: _getPrimaryWalletBatch,
+})
+
 // Fetch a batch of users with a specific content node as their secondary1 from the table `network_monitoring_users`
-export const getSecondary1WalletBatch = async (
+const _getSecondary1WalletBatch = async (
     run_id: number,
     spid: number,
     offset: number,
@@ -355,8 +387,12 @@ export const getSecondary1WalletBatch = async (
     return walletBatch
 }
 
+export const getSecondary1WalletBatch = instrumentTracing({
+    fn: _getSecondary1WalletBatch,
+})
+
 // Fetch a batch of users with a specific content node as their secondary2 from the table `network_monitoring_users`
-export const getSecondary2WalletBatch = async (
+const _getSecondary2WalletBatch = async (
     run_id: number,
     spid: number,
     offset: number,
@@ -380,8 +416,12 @@ export const getSecondary2WalletBatch = async (
     return walletBatch
 }
 
+export const getSecondary2WalletBatch = instrumentTracing({
+    fn: _getSecondary2WalletBatch,
+})
+
 // Save the clock value for batch of users with a specific content node as their primary from the table `network_monitoring_users`
-export const savePrimaryUserResults = async (
+const _savePrimaryUserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
@@ -430,8 +470,12 @@ export const savePrimaryUserResults = async (
     return missedUsers
 }
 
+export const savePrimaryUserResults = instrumentTracing({
+    fn: _savePrimaryUserResults,
+})
+
 // Save the clock value for batch of users with a specific content node as their secondary1 from the table `network_monitoring_users`
-export const saveSecondary1UserResults = async (
+const _saveSecondary1UserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
@@ -480,8 +524,12 @@ export const saveSecondary1UserResults = async (
     return missedUsers
 }
 
+export const saveSecondary1UserResults = instrumentTracing({
+    fn: _saveSecondary1UserResults,
+})
+
 // Save the clock value for batch of users with a specific content node as their secondary2 from the table `network_monitoring_users`
-export const saveSecondary2UserResults = async (
+const _saveSecondary2UserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
@@ -529,6 +577,10 @@ export const saveSecondary2UserResults = async (
 
     return missedUsers
 }
+
+export const saveSecondary2UserResults = instrumentTracing({
+    fn: _saveSecondary2UserResults,
+})
 
 // Helper function to format an array of clock values as a string to be injected into a SQL query string
 // i.e. 1, { walletPublicKey: '0x12345', clock: 1 } => '(1, '0x12345', 1)'

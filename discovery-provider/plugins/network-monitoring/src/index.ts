@@ -1,5 +1,5 @@
 
-import { instrumentTracing, setupTracing, tracing } from './tracer'
+import { setupTracing, tracing } from './tracer'
 setupTracing()
 
 import {
@@ -45,6 +45,4 @@ const main = async () => {
     }
 }
 
-instrumentTracing({
-    fn: main
-})()
+main()
