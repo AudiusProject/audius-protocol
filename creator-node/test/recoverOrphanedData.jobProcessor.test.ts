@@ -107,7 +107,7 @@ describe('test recoverOrphanedData job processor', function () {
       }
     }
 
-    orphanedUsers.forEach((orphanedUser) => {
+    for (const orphanedUser of orphanedUsers) {
       // Mock fetching the primary endpoint for each orphaned user
       nock(DISCOVERY_NODE_ENDPOINT)
         .get('/users')
@@ -129,7 +129,7 @@ describe('test recoverOrphanedData job processor', function () {
           forceWipe: true
         })
         .reply(200)
-    })
+    }
 
     return proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/recoverOrphanedData.jobProcessor.ts',
