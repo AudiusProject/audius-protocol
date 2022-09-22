@@ -494,9 +494,9 @@ def cli(
             if environment == "prod":
                 # check healthcheck post-deploy
                 wait_time = time.time() + (5 * 60)
-                while (time.time() < wait_time):
+                while time.time() < wait_time:
                     # throttle the amount of logs and request load during startup
-                    sleep(30)
+                    time.sleep(30)
 
                     # this resets on each loop since we only care about the last run
                     failed_post_check = False
@@ -535,7 +535,9 @@ def cli(
 
     # save release states as artifacts
     format_artifacts("Failed precheck (unhealthy)", release_summary["failed_pre_check"])
-    format_artifacts("Failed postcheck (unhealthy)", release_summary["failed_post_check"])
+    format_artifacts(
+        "Failed postcheck (unhealthy)", release_summary["failed_post_check"]
+    )
     format_artifacts(
         f"Upgraded to `{git_tag if git_tag else 'master'}`",
         release_summary["upgraded"],
