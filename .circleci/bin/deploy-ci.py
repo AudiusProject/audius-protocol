@@ -2,6 +2,7 @@
 
 import json
 import logging
+import time
 from pprint import pprint
 from subprocess import PIPE, Popen
 from threading import Thread
@@ -445,6 +446,7 @@ def cli(
     print("v" * 40)
     release_summary["upgraded"] = []
     release_summary["failed_pre_check"] = []
+    release_summary["failed_post_check"] = []
     release_summary["failed"] = []
     for host in release_summary["upgradeable"]:
         try:
@@ -489,7 +491,33 @@ def cli(
                 dry_run=dry_run,
             )
 
+            if environment == "prod":
+                # check healthcheck post-deploy
+                wait_time = time.time() + (5 * 60)
+                while time.time() < wait_time:
+                    # throttle the amount of logs and request load during startup
+                    time.sleep(30)
+
+                    # this resets on each loop since we only care about the last run
+                    failed_post_check = False
+
+                    health_check = ssh(
+                        host, f"audius-cli health-check {service}", show_output=False
+                    )
+                    health_check = health_check.split("\n")[-1]
+                    logger.info(f"health_check: {health_check}")
+
+                    if health_check != "Service is healthy":
+                        failed_post_check = True
+
             release_summary["upgraded"].append(host)
+
+            if environment == "prod":
+                # if the post-check fails, add it to the above `upgraded` list,
+                # but end the release early
+                if failed_post_check:
+                    release_summary["failed_post_check"].append(host)
+                    break
         except:
             release_summary["failed"].append(host)
         print("-" * 40)
@@ -508,11 +536,18 @@ def cli(
     # save release states as artifacts
     format_artifacts("Failed precheck (unhealthy)", release_summary["failed_pre_check"])
     format_artifacts(
+        "Failed postcheck (unhealthy)", release_summary["failed_post_check"]
+    )
+    format_artifacts(
         f"Upgraded to `{git_tag if git_tag else 'master'}`",
         release_summary["upgraded"],
     )
     format_artifacts("Failed", release_summary["failed"])
     format_artifacts(release_summary=release_summary)
+
+    # report back to CircleCI that this deployment has failed
+    if release_summary["failed_post_check"]:
+        exit(1)
 
 
 if __name__ == "__main__":
