@@ -268,7 +268,7 @@ describe('Test premium content access', function () {
           })
         assert.deepStrictEqual(access, {
           doesUserHaveAccess: true,
-          trackId: null,
+          trackId: 1,
           isPremium: false,
           error: null
         })
