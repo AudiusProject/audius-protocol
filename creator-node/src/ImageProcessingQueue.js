@@ -39,13 +39,8 @@ class ImageProcessingQueue {
     })
 
     // Process jobs sandboxed - https://docs.bullmq.io/guide/workers/sandboxed-processors
-    // TODO: Make sandboxed again once this is fixed: https://github.com/taskforcesh/bullmq/issues/1424
-    // const processorFile = path.join(__dirname, 'resizeImage.js')
-    // const worker = new Worker('image-processing-queue', processorFile, {
-    //   connection,
-    //   concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
-    // })
-    const worker = new Worker('image-processing-queue', resizeImage, {
+    const processorFile = path.join(__dirname, 'resizeImage.js')
+    const worker = new Worker('image-processing-queue', processorFile, {
       connection,
       concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
     })

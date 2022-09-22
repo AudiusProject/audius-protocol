@@ -66,6 +66,7 @@ if [[ "$contentCacheLayerEnabled" == "true" ]]; then
 fi
 
 # index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
+npm run postinstall
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]; then
         cd ../audius-libs

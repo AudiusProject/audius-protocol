@@ -51,12 +51,15 @@ class TranscodingQueue {
             const { fileDir, fileName, logContext } = job.data
 
             try {
-              this.logStatus(`Segmenting ${fileDir} ${fileName}`, logContext)
+              await this.logStatus(
+                `Segmenting ${fileDir} ${fileName}`,
+                logContext
+              )
 
               const response = await ffmpeg.segmentFile(fileDir, fileName, {
                 logContext
               })
-              this.logStatus(
+              await this.logStatus(
                 `Successfully completed segment job ${fileDir} ${fileName} in duration ${
                   Date.now() - start
                 }ms`,
@@ -64,7 +67,7 @@ class TranscodingQueue {
               )
               return response
             } catch (e) {
-              this.logStatus(
+              await this.logStatus(
                 `Segment Job Error ${e} in duration ${Date.now() - start}ms`,
                 logContext
               )
