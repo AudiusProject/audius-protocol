@@ -1,6 +1,7 @@
 import { reachabilityActions } from '@audius/common'
 import type { NetInfoState } from '@react-native-community/netinfo'
 import NetInfo from '@react-native-community/netinfo'
+import { debounce } from 'lodash'
 
 import { dispatch } from './../store/store'
 
@@ -17,7 +18,8 @@ export const checkConnectivity = (netInfo: NetInfoState | null) => {
 
 // Latest connectivity value
 export const Connectivity: { netInfo: NetInfoState | null } = { netInfo: null }
-NetInfo.addEventListener((state: NetInfoState) => {
+
+const updateConnectivity = (state: NetInfoState) => {
   Connectivity.netInfo = state
   const newValue = checkConnectivity(state)
   if (!newValue) {
@@ -25,4 +27,6 @@ NetInfo.addEventListener((state: NetInfoState) => {
   } else {
     dispatch(reachabilityActions.setReachable())
   }
-})
+}
+
+NetInfo.addEventListener(debounce(updateConnectivity, 2000, { maxWait: 5000 }))
