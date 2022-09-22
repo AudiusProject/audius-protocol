@@ -8,6 +8,7 @@ const config = require('../config')
 /**
  * Some tasks are only done on one worker, which is determined by this util. Those tasks are:
  * - listen for state machine jobs to complete and run onComplete callbacks
+ * - regularly add jobs to the session expiration queue on an interval
  */
 class ClusterUtils {
   private _specialWorkerId = 1

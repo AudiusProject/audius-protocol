@@ -6,6 +6,7 @@ const sessionManager = require('../sessionManager')
 const config = require('../config')
 const { logger } = require('../logging')
 const { SessionToken } = require('../models')
+const { clusterUtils } = require('../utils')
 
 const RUN_INTERVAL = 60 * 1000 * 60 * 24 // daily run
 const SESSION_EXPIRATION_AGE = 60 * 1000 * 60 * 24 * 14 // 2 weeks
@@ -110,17 +111,19 @@ class SessionExpirationQueue {
     )
 
     try {
-      // Run the job immediately
-      await this.queue.add(PROCESS_NAMES.expire_sessions, {})
+      if (clusterUtils.isThisProcessSpecial()) {
+        // Run the job immediately
+        await this.queue.add(PROCESS_NAMES.expire_sessions, {})
 
-      // Then enqueue the job to run on a regular interval
-      setInterval(async () => {
-        try {
-          await this.queue.add(PROCESS_NAMES.expire_sessions, {})
-        } catch (e) {
-          await this.logStatus('Failed to enqueue!')
-        }
-      }, this.runInterval)
+        // Then enqueue the job to run on a regular interval
+        setInterval(async () => {
+          try {
+            await this.queue.add(PROCESS_NAMES.expire_sessions, {})
+          } catch (e) {
+            await this.logStatus('Failed to enqueue!')
+          }
+        }, this.runInterval)
+      }
     } catch (e) {
       await this.logStatus('Startup failed!')
     }
