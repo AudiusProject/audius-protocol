@@ -478,7 +478,12 @@ function* addTrackToPlaylistAsync(action) {
   yield put(
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )
-  yield put(setOptimisticChallengeCompleted({ challengeId: 'first-playlist' }))
+  yield put(
+    setOptimisticChallengeCompleted({
+      challengeId: 'first-playlist',
+      specifier: userId
+    })
+  )
 }
 
 function* confirmAddTrackToPlaylist(
