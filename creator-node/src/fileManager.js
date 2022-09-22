@@ -194,7 +194,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
           }
         },
         logger,
-        logLabel: 'fetchFileFromTargetGatewayAndWriteToDisk',
+        log: false,
         options: {
           retries: numRetries,
           minTimeout: 3000
