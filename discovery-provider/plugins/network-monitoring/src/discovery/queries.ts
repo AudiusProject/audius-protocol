@@ -12,7 +12,7 @@ export const createNewRun = async (): Promise<number> => {
         type: QueryTypes.SELECT,
     })
 
-    tracing.info(`[+] latest block number : `, (latestBlockNumberResp as { number: number }[])[0]!.number)
+    tracing.info(`[+] latest block number : ${(latestBlockNumberResp as { number: number }[])[0]!.number}`)
     const latestBlockNumber = (latestBlockNumberResp[0] as { number: number }).number
 
     const runs = await sequelizeConn.query(`

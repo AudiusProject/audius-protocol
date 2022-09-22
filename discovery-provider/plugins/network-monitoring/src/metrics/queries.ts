@@ -1,6 +1,7 @@
 
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
+import { tracing } from "../tracer"
 
 /*
  * Metrics from the discovery DB
