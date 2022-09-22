@@ -40,7 +40,7 @@ class StateReconciliationManager {
         prometheusRegistry
       ).bind(this),
       logger: manualSyncLogger,
-      concurrency: config.get('maxManualRequestSyncJobConcurrency'),
+      globalConcurrency: config.get('maxManualRequestSyncJobConcurrency'),
       removeOnComplete: QUEUE_HISTORY.MANUAL_SYNC,
       removeOnFail: QUEUE_HISTORY.MANUAL_SYNC,
       prometheusRegistry
@@ -54,7 +54,7 @@ class StateReconciliationManager {
         prometheusRegistry
       ).bind(this),
       logger: recurringSyncLogger,
-      concurrency: config.get('maxRecurringRequestSyncJobConcurrency'),
+      globalConcurrency: config.get('maxRecurringRequestSyncJobConcurrency'),
       removeOnComplete: QUEUE_HISTORY.RECURRING_SYNC,
       removeOnFail: QUEUE_HISTORY.RECURRING_SYNC,
       prometheusRegistry
@@ -68,7 +68,7 @@ class StateReconciliationManager {
         prometheusRegistry
       ).bind(this),
       logger: updateReplicaSetLogger,
-      concurrency: config.get('maxUpdateReplicaSetJobConcurrency'),
+      globalConcurrency: config.get('maxUpdateReplicaSetJobConcurrency'),
       removeOnComplete: QUEUE_HISTORY.UPDATE_REPLICA_SET,
       removeOnFail: QUEUE_HISTORY.UPDATE_REPLICA_SET,
       prometheusRegistry

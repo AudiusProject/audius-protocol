@@ -2,6 +2,7 @@ const { Queue, Worker } = require('bullmq')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
+const { clusterUtils } = require('./utils')
 
 // Processing fns
 const {
@@ -82,7 +83,10 @@ class AsyncProcessingQueue {
 
         await processTask(job)
       },
-      { connection, concurrency: MAX_CONCURRENCY }
+      {
+        connection,
+        concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
+      }
     )
     prometheusRegistry.startQueueMetrics(this.queue, worker)
 

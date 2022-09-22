@@ -19,6 +19,7 @@ const {
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
 } = require('./stateMachineConstants')
 const { instrumentTracing, tracing } = require('../../tracer')
+const { clusterUtils } = require('../../utils')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
@@ -272,7 +273,7 @@ const makeQueue = ({
   removeOnComplete,
   removeOnFail,
   prometheusRegistry,
-  concurrency = 1,
+  globalConcurrency = 1,
   limiter = null,
   onFailCallback = null
 }) => {
@@ -290,7 +291,7 @@ const makeQueue = ({
 
   const worker = new Worker(name, processor, {
     connection,
-    concurrency,
+    concurrency: clusterUtils.getConcurrencyPerWorker(globalConcurrency),
     limiter
   })
   if (limiter) {

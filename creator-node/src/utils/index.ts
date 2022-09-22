@@ -29,7 +29,7 @@ import {
   currentNodeShouldHandleTranscode,
   getAllRegisteredCNodes
 } from './contentNodeUtils'
-import { specialWorkerUtils } from './specialWorkerUtils'
+import { clusterUtils } from './clusterUtils'
 
 export type { ReplicaSet } from './strToReplicaSet'
 export {
@@ -49,7 +49,7 @@ export {
   validateMetadata,
   strToReplicaSet,
   stringifyMap,
-  specialWorkerUtils
+  clusterUtils
 }
 
 module.exports = {
@@ -71,5 +71,5 @@ module.exports = {
   stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID,
-  specialWorkerUtils
+  clusterUtils
 }

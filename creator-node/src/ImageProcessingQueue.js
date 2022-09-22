@@ -1,9 +1,10 @@
 const { Queue, QueueEvents, Worker } = require('bullmq')
 const path = require('path')
 const os = require('os')
+
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-
+const { clusterUtils } = require('./utils')
 const resizeImage = require('./resizeImage')
 
 const imageProcessingMaxConcurrency = config.get(
@@ -42,11 +43,11 @@ class ImageProcessingQueue {
     // const processorFile = path.join(__dirname, 'resizeImage.js')
     // const worker = new Worker('image-processing-queue', processorFile, {
     //   connection,
-    //   concurrency: MAX_CONCURRENCY
+    //   concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
     // })
     const worker = new Worker('image-processing-queue', resizeImage, {
       connection,
-      concurrency: MAX_CONCURRENCY
+      concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
     })
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)

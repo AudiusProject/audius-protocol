@@ -1,6 +1,7 @@
 const { Queue, QueueEvents, Worker } = require('bullmq')
-const { instrumentTracing, tracing } = require('../../tracer')
 
+const { clusterUtils } = require('../../utils')
+const { instrumentTracing, tracing } = require('../../tracer')
 const {
   logger,
   logInfoWithDuration,
@@ -78,7 +79,9 @@ class SyncImmediateQueue {
       },
       {
         connection,
-        concurrency: this.nodeConfig.get('syncQueueMaxConcurrency')
+        concurrency: clusterUtils.getConcurrencyPerWorker(
+          this.nodeConfig.get('syncQueueMaxConcurrency')
+        )
       }
     )
   }

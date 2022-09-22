@@ -4,6 +4,7 @@ const os = require('os')
 const config = require('./config')
 const ffmpeg = require('./ffmpeg')
 const { logger: genericLogger } = require('./logging')
+const { clusterUtils } = require('./utils')
 
 const TRANSCODING_MAX_CONCURRENCY = config.get('transcodingMaxConcurrency')
 const MAX_ACTIVE_JOBS = config.get('maximumTranscodingActiveJobs')
@@ -106,7 +107,7 @@ class TranscodingQueue {
       },
       {
         connection,
-        concurrency: MAX_CONCURRENCY
+        concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
       }
     )
 

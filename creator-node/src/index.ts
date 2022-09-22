@@ -1,10 +1,8 @@
 'use strict'
 
 import type { Cluster } from 'cluster'
-import type { CpuInfo } from 'os'
-import { specialWorkerUtils } from './utils'
+import { clusterUtils } from './utils'
 const cluster: Cluster = require('cluster')
-const { cpus }: { cpus: () => CpuInfo[] } = require('os')
 
 const { setupTracing } = require('./tracer')
 setupTracing('content-node')
@@ -101,9 +99,7 @@ const startAppForPrimary = async () => {
     logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
   }
 
-  // This is called `cpus()` but it actually returns the # of logical cores, which is possibly higher than # of physical cores if there's hyperthreading
-  const logicalCores = cpus().length
-  const numWorkers = config.get('expressAppConcurrency') || logicalCores
+  const numWorkers = clusterUtils.getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
   const firstWorker = cluster.fork()
   // Wait for the first worker to perform one-time init logic before spawning other workers
@@ -118,7 +114,7 @@ const startAppForPrimary = async () => {
   for (const worker of Object.values(cluster.workers || {})) {
     worker?.on('message', (msg) => {
       if (msg?.cmd === 'setSpecialWorkerId') {
-        specialWorkerUtils.specialWorkerId = msg?.val
+        clusterUtils.specialWorkerId = msg?.val
       }
     })
   }
@@ -130,11 +126,11 @@ const startAppForPrimary = async () => {
       }. Respawning...`
     )
     const newWorker = cluster.fork()
-    if (specialWorkerUtils.specialWorkerId === worker.id) {
+    if (clusterUtils.specialWorkerId === worker.id) {
       logger.info(
         'The worker that died was the special worker. Setting a new special worker...'
       )
-      specialWorkerUtils.specialWorkerId = newWorker.id
+      clusterUtils.specialWorkerId = newWorker.id
       for (const worker of Object.values(cluster.workers || {})) {
         worker?.send({ cmd: 'setSpecialWorkerId', val: newWorker.id })
       }
