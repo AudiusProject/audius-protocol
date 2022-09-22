@@ -196,21 +196,23 @@ export const TestTable = ({
             key={column.id}
           >
             {/* Sorting Container */}
-            <Tooltip text={column.sortTitle} mount='page'>
-              <div {...column.getSortByToggleProps()} title=''>
-                <div className={styles.textCell}>{column.render('Header')}</div>
-                {!column.disableSortBy ? (
-                  <div className={styles.sortCaretContainer}>
-                    {!column.isSorted || !column.isSortedDesc ? (
-                      <IconCaretUp className={styles.sortCaret} />
-                    ) : null}
-                    {!column.isSorted || column.isSortedDesc ? (
-                      <IconCaretDown className={styles.sortCaret} />
-                    ) : null}
-                  </div>
-                ) : null}
+            <div {...column.getSortByToggleProps()} title=''>
+              <div className={styles.textCell}>
+                <Tooltip text={column.sortTitle} mount='page'>
+                  {column.render('Header')}
+                </Tooltip>
               </div>
-            </Tooltip>
+              {!column.disableSortBy ? (
+                <div className={styles.sortCaretContainer}>
+                  {!column.isSorted || !column.isSortedDesc ? (
+                    <IconCaretUp className={styles.sortCaret} />
+                  ) : null}
+                  {!column.isSorted || column.isSortedDesc ? (
+                    <IconCaretDown className={styles.sortCaret} />
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
             {/* Resizing Container */}
             {!column.disableResizing ? (
               <div
