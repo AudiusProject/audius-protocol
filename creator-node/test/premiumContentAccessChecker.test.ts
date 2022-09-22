@@ -43,8 +43,8 @@ describe('Test premium content access', function () {
     server = app.server
   })
 
-  after(() => {
-    server.close()
+  after(async () => {
+    await server.close()
   })
 
   beforeEach(() => {
