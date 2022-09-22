@@ -118,6 +118,8 @@ module.exports = async (job) => {
     logger
   })
 
+  let resp = null
+
   try {
     // Read the image once, clone it later on
     let img
@@ -158,7 +160,7 @@ module.exports = async (job) => {
     const dirCID = multihashes[multihashes.length - 1].cid
     const dirDestPath = DiskManager.computeFilePath(dirCID)
 
-    const resp = {
+    resp = {
       dir: { dirCID, dirDestPath },
       files: []
     }
