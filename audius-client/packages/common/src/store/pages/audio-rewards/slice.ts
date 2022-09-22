@@ -162,11 +162,15 @@ const slice = createSlice({
     },
     setOptimisticChallengeCompleted: (
       state,
-      action: PayloadAction<{ challengeId: ChallengeRewardID }>
+      action: PayloadAction<{
+        challengeId: ChallengeRewardID
+        specifier: string
+      }>
     ) => {
-      const { challengeId } = action.payload
+      const { challengeId, specifier } = action.payload
       state.userChallengesOverrides[challengeId] = {
         ...state.userChallengesOverrides[challengeId],
+        specifier,
         is_complete: true
       }
     },
