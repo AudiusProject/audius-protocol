@@ -69,9 +69,8 @@ const detectAbuse = async (user, reqIP) => {
       if (config.get('skipAbuseCheck')) {
         logger.info(`Skipping abuse check for user ${user.handle}`)
       } else {
-        ;({ appliedRules, blockedFromRelay, blockedFromNotifications } = await getAbuseData(user.handle, reqIP, shouldSkipAbuseCheck))
+        ;({ appliedRules, blockedFromRelay, blockedFromNotifications } = await getAbuseData(user.handle, reqIP))
       }
-
     } catch (e) {
       logger.warn(`antiAbuse: aao request failed ${e.message}`)
     }

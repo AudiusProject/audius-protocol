@@ -42,11 +42,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     isBlockedFromRelay: {
       type: DataTypes.BOOLEAN,
-      allowNull: true,
+      allowNull: true
     },
     isBlockedFromNotifications: {
       type: DataTypes.BOOLEAN,
-      allowNull: true,
+      allowNull: true
     },
     appliedRules: {
       type: DataTypes.JSONB,

@@ -5,12 +5,12 @@ module.exports = {
     return queryInterface.sequelize.transaction(async (transaction) => {
       await queryInterface.addColumn('Users', 'isBlockedFromRelay', {
         type: Sequelize.BOOLEAN,
-        allowNull: true,
+        allowNull: true
       }, { transaction })
 
       await queryInterface.addColumn('Users', 'isBlockedFromNotifications', {
         type: Sequelize.BOOLEAN,
-        allowNull: true,
+        allowNull: true
       }, { transaction })
 
       await queryInterface.addColumn('Users', 'appliedRules', {
@@ -28,7 +28,7 @@ module.exports = {
         { transaction }
       )
 
-      // Safe to drop this now since we've moved users 
+      // Safe to drop this now since we've moved users
       await queryInterface.removeColumn('Users', 'isAbusive', { transaction })
       await queryInterface.removeColumn('Users', 'isAbusiveErrorCode', { transaction })
     })
