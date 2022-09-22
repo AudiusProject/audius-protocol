@@ -20,7 +20,8 @@ describe('Test premium content access', function () {
     '0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad'
   const badDNPrivateKey =
     '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
-  const dummyDNDelegateOwnerWallet = '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
+  const dummyDNDelegateOwnerWallet =
+    '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
   const dummyUserWallet = '0x7c95A677106218A296EcEF1F577c3aE27f0340cd'
 
   const cid = 'QmcbnrugPPDrRXb5NeYKwPb7HWUj7aN2tXmhgwRfw2pRXo'
@@ -50,14 +51,17 @@ describe('Test premium content access', function () {
   beforeEach(() => {
     premiumContentAccessChecker = new PremiumContentAccessChecker()
     redisMock = new Map()
-    redisMock.set('all_registered_dnodes', JSON.stringify([{
-      delegateOwnerWallet: dummyDNDelegateOwnerWallet,
-      type: 'discovery-node'
-    }]))
+    redisMock.set(
+      'all_registered_dnodes',
+      JSON.stringify([
+        {
+          delegateOwnerWallet: dummyDNDelegateOwnerWallet,
+          type: 'discovery-node'
+        }
+      ])
+    )
     loggerMock = loggerFactory()
   })
-
-
 
   describe('premium content', () => {
     beforeEach(async () => {
@@ -83,28 +87,42 @@ describe('Test premium content access', function () {
         signedDataFromDiscoveryNode,
         badDNPrivateKey
       )
-      const accessWithoutHeaders = await premiumContentAccessChecker.checkPremiumContentAccess({
-        cid,
-        premiumContentHeaders: null as unknown as string,
-        libs: libsMock,
-        logger: loggerMock,
-        redis: redisMock
+      const accessWithoutHeaders =
+        await premiumContentAccessChecker.checkPremiumContentAccess({
+          cid,
+          premiumContentHeaders: null as unknown as string,
+          libs: libsMock,
+          logger: loggerMock,
+          redis: redisMock
+        })
+      assert.deepStrictEqual(accessWithoutHeaders, {
+        doesUserHaveAccess: false,
+        trackId: 1,
+        isPremium: true,
+        error: PremiumContentAccessError.MISSING_HEADERS
       })
-      assert.deepStrictEqual(accessWithoutHeaders, { doesUserHaveAccess: false, trackId: 1, isPremium: true, error: PremiumContentAccessError.MISSING_HEADERS })
 
       const missingPremiumContentHeadersObj = {
         signedDataFromDiscoveryNode,
         signatureFromDiscoveryNode,
         signedDataFromUser
       }
-      const accessWithMissingHeaders = await premiumContentAccessChecker.checkPremiumContentAccess({
-        cid,
-        premiumContentHeaders: JSON.stringify(missingPremiumContentHeadersObj),
-        libs: libsMock,
-        logger: loggerMock,
-        redis: redisMock
+      const accessWithMissingHeaders =
+        await premiumContentAccessChecker.checkPremiumContentAccess({
+          cid,
+          premiumContentHeaders: JSON.stringify(
+            missingPremiumContentHeadersObj
+          ),
+          libs: libsMock,
+          logger: loggerMock,
+          redis: redisMock
+        })
+      assert.deepStrictEqual(accessWithMissingHeaders, {
+        doesUserHaveAccess: false,
+        trackId: 1,
+        isPremium: true,
+        error: PremiumContentAccessError.MISSING_HEADERS
       })
-      assert.deepStrictEqual(accessWithMissingHeaders, { doesUserHaveAccess: false, trackId: 1, isPremium: true, error: PremiumContentAccessError.MISSING_HEADERS })
     })
 
     it('fails when recovered DN wallet is not from registered DN', async () => {
@@ -118,14 +136,20 @@ describe('Test premium content access', function () {
         signedDataFromUser,
         signatureFromUser
       }
-      const access = await premiumContentAccessChecker.checkPremiumContentAccess({
-        cid,
-        premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
-        libs: libsMock,
-        logger: loggerMock,
-        redis: redisMock
+      const access =
+        await premiumContentAccessChecker.checkPremiumContentAccess({
+          cid,
+          premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
+          libs: libsMock,
+          logger: loggerMock,
+          redis: redisMock
+        })
+      assert.deepStrictEqual(access, {
+        doesUserHaveAccess: false,
+        trackId: 1,
+        isPremium: true,
+        error: PremiumContentAccessError.INVALID_DISCOVERY_NODE
       })
-      assert.deepStrictEqual(access, { doesUserHaveAccess: false, trackId: 1, isPremium: true, error: PremiumContentAccessError.INVALID_DISCOVERY_NODE })
     })
 
     it('passes when everything matches', async () => {
@@ -139,27 +163,39 @@ describe('Test premium content access', function () {
         signedDataFromUser,
         signatureFromUser
       }
-      const access = await premiumContentAccessChecker.checkPremiumContentAccess({
-        cid,
-        premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
-        libs: libsMock,
-        logger: loggerMock,
-        redis: redisMock
+      const access =
+        await premiumContentAccessChecker.checkPremiumContentAccess({
+          cid,
+          premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
+          libs: libsMock,
+          logger: loggerMock,
+          redis: redisMock
+        })
+      assert.deepStrictEqual(access, {
+        doesUserHaveAccess: true,
+        trackId: 1,
+        isPremium: true,
+        error: null
       })
-      assert.deepStrictEqual(access, { doesUserHaveAccess: true, trackId: 1, isPremium: true, error: null })
     })
   })
 
   describe('non-premium content', () => {
     it('passes when the CID is missing', async () => {
-      const access = await premiumContentAccessChecker.checkPremiumContentAccess({
-        cid,
-        premiumContentHeaders: 'premium-content-headers',
-        libs: libsMock,
-        logger: loggerMock,
-        redis: redisMock
+      const access =
+        await premiumContentAccessChecker.checkPremiumContentAccess({
+          cid,
+          premiumContentHeaders: 'premium-content-headers',
+          libs: libsMock,
+          logger: loggerMock,
+          redis: redisMock
+        })
+      assert.deepStrictEqual(access, {
+        doesUserHaveAccess: true,
+        trackId: null,
+        isPremium: false,
+        error: null
       })
-      assert.deepStrictEqual(access, { doesUserHaveAccess: true, trackId: null, isPremium: false, error: null })
     })
 
     it('passes when there is no track for the cid', async () => {
@@ -180,16 +216,22 @@ describe('Test premium content access', function () {
       }
 
       try {
-        createRecords()
-        const access = await premiumContentAccessChecker.checkPremiumContentAccess({
-          cid,
-          premiumContentHeaders: 'premium-content-headers',
-          libs: libsMock,
-          logger: loggerMock,
-          redis: redisMock
+        await createRecords()
+        const access =
+          await premiumContentAccessChecker.checkPremiumContentAccess({
+            cid,
+            premiumContentHeaders: 'premium-content-headers',
+            libs: libsMock,
+            logger: loggerMock,
+            redis: redisMock
+          })
+        assert.deepStrictEqual(access, {
+          doesUserHaveAccess: true,
+          trackId: null,
+          isPremium: false,
+          error: null
         })
-        assert.deepStrictEqual(access, { doesUserHaveAccess: true, trackId: null, isPremium: false, error: null })
-        deleteRecords()
+        await deleteRecords()
       } catch (e) {
         assert.fail(`Failed to check access: ${(e as Error).message}`)
       }
@@ -215,16 +257,22 @@ describe('Test premium content access', function () {
       }
 
       try {
-        createRecords()
-        const access = await premiumContentAccessChecker.checkPremiumContentAccess({
-          cid,
-          premiumContentHeaders: 'premium-content-headers',
-          libs: libsMock,
-          logger: loggerMock,
-          redis: redisMock
+        await createRecords()
+        const access =
+          await premiumContentAccessChecker.checkPremiumContentAccess({
+            cid,
+            premiumContentHeaders: 'premium-content-headers',
+            libs: libsMock,
+            logger: loggerMock,
+            redis: redisMock
+          })
+        assert.deepStrictEqual(access, {
+          doesUserHaveAccess: true,
+          trackId: null,
+          isPremium: false,
+          error: null
         })
-        assert.deepStrictEqual(access, { doesUserHaveAccess: true, trackId: null, isPremium: false, error: null })
-        deleteRecords()
+        await deleteRecords()
       } catch (e) {
         assert.fail(`Failed to check access: ${(e as Error).message}`)
       }
@@ -232,64 +280,88 @@ describe('Test premium content access', function () {
   })
 
   async function createTrack(transaction: any, isPremium = true) {
-    await models.Track.create({
-      cnodeUserUUID,
-      clock: 1,
-      blockchainId: trackBlockchainId,
-      metadataFileUUID: fileUUID,
-      metadataJSON: { is_premium: isPremium }
-    }, { transaction })
+    await models.Track.create(
+      {
+        cnodeUserUUID,
+        clock: 1,
+        blockchainId: trackBlockchainId,
+        metadataFileUUID: fileUUID,
+        metadataJSON: { is_premium: isPremium }
+      },
+      { transaction }
+    )
   }
 
   async function deleteTrack(transaction: any) {
-    await models.Track.destroy({
-      where: { blockchainId: trackBlockchainId }
-    }, { transaction })
+    await models.Track.destroy(
+      {
+        where: { blockchainId: trackBlockchainId }
+      },
+      { transaction }
+    )
   }
 
   async function createFile(transaction: any) {
-    await models.File.create({
-      fileUUID,
-      cnodeUserUUID,
-      multihash: cid,
-      storagePath: 'storagePath',
-      trackBlockchainId,
-      type: 'track',
-      clock: 1
-    }, { transaction })
+    await models.File.create(
+      {
+        fileUUID,
+        cnodeUserUUID,
+        multihash: cid,
+        storagePath: 'storagePath',
+        trackBlockchainId,
+        type: 'track',
+        clock: 1
+      },
+      { transaction }
+    )
   }
 
   async function deleteFile(transaction: any) {
-    await models.File.destroy({
-      where: { multihash: cid }
-    }, { transaction })
+    await models.File.destroy(
+      {
+        where: { multihash: cid }
+      },
+      { transaction }
+    )
   }
 
   async function createClockRecord(transaction: any) {
-    await models.ClockRecord.create({
-      cnodeUserUUID,
-      clock: 1,
-      sourceTable: 'File'
-    }, { transaction })
+    await models.ClockRecord.create(
+      {
+        cnodeUserUUID,
+        clock: 1,
+        sourceTable: 'File'
+      },
+      { transaction }
+    )
   }
 
   async function deleteClockRecord(transaction: any) {
-    await models.ClockRecord.destroy({
-      where: { cnodeUserUUID }
-    }, { transaction })
+    await models.ClockRecord.destroy(
+      {
+        where: { cnodeUserUUID }
+      },
+      { transaction }
+    )
   }
 
   async function createCNodeUser(transaction: any) {
-    await models.CNodeUser.create({
-      cnodeUserUUID,
-      walletPublicKey: 'wallet-public-key',
-      clock: 1
-    }, { transaction })
+    await models.CNodeUser.create(
+      {
+        cnodeUserUUID,
+        walletPublicKey: 'wallet-public-key',
+        clock: 1
+      },
+      { transaction }
+    )
   }
 
   async function deleteCNodeUser(transaction: any) {
-    await models.CNodeUser.destroy({
-      where: { cnodeUserUUID }
-    }, { transaction })
+    await models.CNodeUser.destroy(
+      {
+        where: { cnodeUserUUID }
+      },
+      { transaction }
+    )
   }
 })
