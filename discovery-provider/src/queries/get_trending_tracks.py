@@ -56,7 +56,12 @@ def generate_unpopulated_trending(
         ids = [track["track_id"] for track in track_scores]
         non_premium_track_ids = (
             session.query(Track.track_id)
-            .filter(Track.track_id.in_(ids), Track.is_premium == False)
+            .filter(
+                Track.track_id.in_(ids),
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.is_premium == False,
+            )
             .all()
         )
         non_premium_track_id_set = set(map(lambda t: t[0], non_premium_track_ids))
@@ -107,16 +112,26 @@ def generate_unpopulated_trending_from_mat_views(
     # If exclude_premium is true, then filter out track ids belonging to
     # premium tracks before applying the limit.
     if exclude_premium:
+        trending_track_ids_subquery = trending_track_ids_query.subquery()
         trending_track_ids = (
-            trending_track_ids_query.join(
-                Track, Track.track_id == trending_track_ids_query.c.track_id
+            session.query(
+                trending_track_ids_subquery.c.track_id,
+                trending_track_ids_subquery.c.score,
+                Track.track_id,
+            )
+            .join(
+                trending_track_ids_subquery,
+                Track.track_id == trending_track_ids_subquery.c.track_id,
             )
             .filter(
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_premium == False,
             )
-            .order_by(desc(TrackTrendingScore.score), desc(TrackTrendingScore.track_id))
+            .order_by(
+                desc(trending_track_ids_subquery.c.score),
+                desc(trending_track_ids_subquery.c.track_id),
+            )
             .limit(limit)
             .all()
         )
