@@ -134,7 +134,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     )
 
     // Verify that the queue has the correct initial job in it
-    expect(queueAdd).to.have.been.calledOnceWithExactly('retry-after-failure', {
+    expect(queueAdd).to.have.been.calledOnceWithExactly('retry-after-fail', {
       lastProcessedUserId: prevJobProcessedUserId,
       discoveryNodeEndpoint: discoveryNodeEndpoint
     })
