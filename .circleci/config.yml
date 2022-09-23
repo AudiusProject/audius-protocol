@@ -996,7 +996,7 @@ jobs:
       environment:
         description: Target environment
         type: enum
-        enum: [staging, pre-prod, prod]
+        enum: [staging, prod]
         default: "staging"
       service:
         description: Target service
@@ -1360,41 +1360,95 @@ workflows:
           requires:
             - 🚧-🌿-<< matrix.host >>-🕹️
 
-      # Deploy to pre-prod (for release branches)
+      # Bump Tags (for release branch hot-fixes)
       - noop:
-          name: 🚧-🎁-to-pre-prod-🕹️
-          type: approval
+          name: bump-hotfix-tags
           filters:
             branches:
               only: /(^release-.*$)/
           requires:
             - built
+      # Deploy Discovery Nodes to prod (for release branches)
+      - noop:
+          name: 🚧-🎁-to-🔍-prod-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - bump-hotfix-tags
       - deploy:
-          name: 🚧-🎁-to-pre-prod
+          name: 🚧-🎁-to-🔍-prod
           git_tag: ${CIRCLE_SHA1}
-          environment: pre-prod
-          service: all
+          environment: prod
+          service: discovery
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
           requires:
-            - 🚧-🎁-to-pre-prod-🕹️
-      # Submit Proposal (for release branches)
+            - 🚧-🎁-to-🔍-prod-🕹️
+      # Deploy Identity to prod (for release branches)
       - noop:
-          name: submit-proposal
-          requires:
-            - 🚧-🎁-to-pre-prod
-      # Release (for release branches)
-      - noop:
-          name: release-🕹️
+          name: 🚧-🎁-to-🆔🪪-prod-🕹️
           type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
           requires:
-            - submit-proposal
+            - bump-hotfix-tags
+      - deploy:
+          name: 🚧-🎁-to-🆔🪪-prod
+          git_tag: ${CIRCLE_SHA1}
+          environment: prod
+          service: identity
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          requires:
+            - 🚧-🎁-to-🆔🪪-prod-🕹️
+      # Deploy Creator Nodes to prod (for release branches)
       - noop:
-          name: release
+          name: 🚧-🎁-to-💿-prod-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
           requires:
-            - release-🕹️
+            - bump-hotfix-tags
+      # no-op currently since Content Nodes have manual version patching
+      - noop:
+          name: 🚧-🎁-to-💿-prod
+          requires:
+            - 🚧-🎁-to-💿-prod-🕹️
+      # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
+      - noop:
+          name: 🚧-🎁-to-SPs-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - bump-hotfix-tags
+      - noop:
+          # ensure Slack pings Dheeraj, Ray, Roneil, Forrest
+          name: 🚧-🎁-to-SPs
+          requires:
+            - 🚧-🎁-to-SPs-🕹️
+      # Execute Governance Proposal (for release branches)
+      - noop:
+          name: execute-proposal-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - 🚧-🎁-to-SPs
+      - noop:
+          name: execute-proposal
+          requires:
+            - execute-proposal-🕹️
 
       - test-libs:
           name: test-libs
