@@ -31,1994 +31,1188 @@
     "liveNow": false,
     "panels": [
       {
-        "collapsed": false,
+        "collapsed": true,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
           "y": 0
         },
-        "id": 92,
-        "panels": [],
-        "title": "General Sync Count and Duration",
-        "type": "row"
-      },
-      {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            }
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 9,
-          "w": 24,
-          "x": 0,
-          "y": 1
-        },
-        "id": 65,
-        "options": {
-          "legend": {
-            "calcs": [
-              "last",
-              "mean"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Mean",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "single",
-            "sort": "none"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_type=~\"$sync_type\", sync_mode=~\"$sync_mode\"}[10m])",
-            "legendFormat": "{{host}} // {{result}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Issue Sync Request Counts by Host & Result",
-        "type": "timeseries"
-      },
-      {
-        "description": "Count of all issue_sync_request jobs by Host, excluding success_mode_disabled",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            }
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 10,
-          "w": 12,
-          "x": 0,
-          "y": 10
-        },
-        "id": 67,
-        "options": {
-          "legend": {
-            "calcs": [
-              "lastNotNull",
-              "max",
-              "mean",
-              "sum"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Total",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "none"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "sum by(host) (increase(audius_cn_issue_sync_request_duration_seconds_count{host=~\"$host\", environment=~\"$env\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[10m]))",
-            "legendFormat": "{{host}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "issue_sync_request counts by host",
-        "type": "timeseries"
-      },
-      {
-        "description": "Count of all issue_sync_request jobs by Host, excluding success_mode_disabled",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            }
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 10,
-          "w": 12,
-          "x": 12,
-          "y": 10
-        },
-        "id": 82,
-        "options": {
-          "legend": {
-            "calcs": [
-              "lastNotNull",
-              "max",
-              "mean",
-              "sum"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Total",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "none"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "sum by(result) (increase(audius_cn_issue_sync_request_duration_seconds_count{host=~\"$host\", environment=~\"$env\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[10m]))",
-            "legendFormat": "{{result}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "issue_sync_request counts by result",
-        "type": "timeseries"
-      },
-      {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "points",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 10,
-          "w": 12,
-          "x": 0,
-          "y": 20
-        },
-        "id": 69,
-        "options": {
-          "legend": {
-            "calcs": [
-              "mean"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Mean",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "histogram_quantile($percentile, sum by(le, host) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{host=~\"$host\", environment=~\"$env\", mode=~\"$sync_mode\", result=~\"$process_sync_result\"}[$__rate_interval])))",
-            "hide": false,
-            "legendFormat": "{{host}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Sync request duration by host ($percentile)",
-        "type": "timeseries"
-      },
-      {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "points",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 10,
-          "w": 12,
-          "x": 12,
-          "y": 20
-        },
-        "id": 83,
-        "options": {
-          "legend": {
-            "calcs": [
-              "mean"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Mean",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "histogram_quantile($percentile, sum by(le, result) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{host=~\"$host\", environment=~\"$env\", mode=~\"$sync_mode\", result=~\"$process_sync_result\"}[$__rate_interval])))",
-            "hide": false,
-            "legendFormat": "{{result}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Sync request duration by result ($percentile)",
-        "type": "timeseries"
-      },
-      {
-        "collapsed": false,
-        "gridPos": {
-          "h": 1,
-          "w": 24,
-          "x": 0,
-          "y": 30
-        },
         "id": 38,
-        "panels": [],
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of issuing an outgoing sync request",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "success.*"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-green",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "failure.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-red",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "abort.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "orange",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 9,
+              "x": 0,
+              "y": 2
+            },
+            "hideTimeOverride": true,
+            "id": 39,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "right",
+                "showLegend": true,
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "value",
+                  "percent"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum by(result) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "timeTo": "now",
+            "title": "Result for Issuing Outgoing Sync (Past Hour)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Percent Success for Issuing Outgoing Sync (Past Hour)",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "min": 0,
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green"
+                    }
+                  ]
+                },
+                "unit": "percentunit"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 3,
+              "x": 9,
+              "y": 2
+            },
+            "hideTimeOverride": true,
+            "id": 76,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "horizontal",
+              "reduceOptions": {
+                "calcs": [],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\", sync_type=~\"$sync_type\"}[1h])) / (sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"success.*\"}[1h])) + sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"failure.*\"}[1h])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Success",
+                "range": true,
+                "refId": "success"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "title": "Success % (1 Hour)",
+            "transparent": true,
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of processing an incoming sync",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "success.*"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-green",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "failure.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-red",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "abort.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "orange",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 9,
+              "x": 12,
+              "y": 2
+            },
+            "hideTimeOverride": true,
+            "id": 40,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "right",
+                "showLegend": true,
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(result) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", mode=~\"$sync_mode\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "timeTo": "now",
+            "title": "Result for Processing Incoming Sync (Past Hour)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Percent Success for Processing Incoming Sync (Past Hour)",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "min": 0,
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green"
+                    }
+                  ]
+                },
+                "unit": "percentunit"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 3,
+              "x": 21,
+              "y": 2
+            },
+            "hideTimeOverride": true,
+            "id": 79,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "horizontal",
+              "reduceOptions": {
+                "calcs": [],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[1h])) / (sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[1h])) + sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"failure.*\"}[1h])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Successes",
+                "range": true,
+                "refId": "success"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "title": "Success % (1 Hour)",
+            "transparent": true,
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of issuing an outgoing sync request",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "success.*"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-green",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "failure.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-red",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "abort.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "orange",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "gridPos": {
+              "h": 7,
+              "w": 9,
+              "x": 0,
+              "y": 10
+            },
+            "hideTimeOverride": true,
+            "id": 41,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "right",
+                "showLegend": true,
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "value",
+                  "percent"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum by(result) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[24h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-1d",
+            "timeTo": "now",
+            "title": "Result for Issuing Outgoing Sync (Past Day)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Percent Success for Issuing Outgoing Sync (Past Day)",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "min": 0,
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green"
+                    }
+                  ]
+                },
+                "unit": "percentunit"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 7,
+              "w": 3,
+              "x": 9,
+              "y": 10
+            },
+            "hideTimeOverride": true,
+            "id": 77,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "horizontal",
+              "reduceOptions": {
+                "calcs": [],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\", sync_type=~\"$sync_type\"}[24h])) / (sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"success.*\"}[24h])) + sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"failure.*\"}[24h])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Successes",
+                "range": true,
+                "refId": "success"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "title": "Success % (1 Day)",
+            "transparent": true,
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of processing an incoming sync",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "success.*"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-green",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "failure.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-red",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "abort.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "orange",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "gridPos": {
+              "h": 7,
+              "w": 9,
+              "x": 12,
+              "y": 10
+            },
+            "hideTimeOverride": true,
+            "id": 42,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "right",
+                "showLegend": true,
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(result) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", mode=~\"$sync_mode\"}[24h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-1d",
+            "timeTo": "now",
+            "title": "Result for Processing Incoming Sync (Past Day)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Percent Success for Processing Incoming Sync (Past Day)",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "min": 0,
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green"
+                    }
+                  ]
+                },
+                "unit": "percentunit"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 7,
+              "w": 3,
+              "x": 21,
+              "y": 10
+            },
+            "hideTimeOverride": true,
+            "id": 80,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "horizontal",
+              "reduceOptions": {
+                "calcs": [],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[24h])) / (sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[24h])) + sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"failure.*\"}[24h])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Successes",
+                "range": true,
+                "refId": "success"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "title": "Success % (1 Day)",
+            "transparent": true,
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of issuing an outgoing sync request",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "success.*"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-green",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "failure.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-red",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "abort.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "orange",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "gridPos": {
+              "h": 7,
+              "w": 9,
+              "x": 0,
+              "y": 17
+            },
+            "hideTimeOverride": true,
+            "id": 43,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "right",
+                "showLegend": true,
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum by(result) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[7d]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-7d",
+            "timeTo": "now",
+            "title": "Result for Issuing Outgoing Sync (Past Week)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Percent Success for Issuing Outgoing Sync (Past Week)",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "min": 0,
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green"
+                    }
+                  ]
+                },
+                "unit": "percentunit"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 7,
+              "w": 3,
+              "x": 9,
+              "y": 17
+            },
+            "hideTimeOverride": true,
+            "id": 78,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "horizontal",
+              "reduceOptions": {
+                "calcs": [],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\", sync_type=~\"$sync_type\"}[7d])) / (sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"success.*\"}[7d])) + sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"failure.*\"}[7d])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Successes",
+                "range": true,
+                "refId": "success"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "title": "Success % (1 Week)",
+            "transparent": true,
+            "type": "stat"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Counts for each result of processing an incoming sync",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  }
+                },
+                "mappings": [],
+                "unit": "none"
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "success.*"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-green",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "failure.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "semi-dark-red",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byRegexp",
+                    "options": "abort.+"
+                  },
+                  "properties": [
+                    {
+                      "id": "color",
+                      "value": {
+                        "fixedColor": "orange",
+                        "mode": "fixed"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "gridPos": {
+              "h": 7,
+              "w": 9,
+              "x": 12,
+              "y": 17
+            },
+            "hideTimeOverride": true,
+            "id": 44,
+            "options": {
+              "displayLabels": [
+                "percent"
+              ],
+              "legend": {
+                "displayMode": "table",
+                "placement": "right",
+                "showLegend": true,
+                "sortBy": "Percent",
+                "sortDesc": true,
+                "values": [
+                  "percent",
+                  "value"
+                ]
+              },
+              "pieType": "pie",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum by(result) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", mode=~\"$sync_mode\"}[7d]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "counts"
+              }
+            ],
+            "timeFrom": "now-7d",
+            "timeTo": "now",
+            "title": "Result for Processing Incoming Sync (Past Week)",
+            "type": "piechart"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Percent Success for Processing Incoming Sync (Past Week)",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "mappings": [],
+                "min": 0,
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green"
+                    }
+                  ]
+                },
+                "unit": "percentunit"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 7,
+              "w": 3,
+              "x": 21,
+              "y": 17
+            },
+            "hideTimeOverride": true,
+            "id": 81,
+            "options": {
+              "colorMode": "value",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "horizontal",
+              "reduceOptions": {
+                "calcs": [],
+                "fields": "",
+                "values": false
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "9.1.0",
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[7d])) / (sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[7d])) + sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"failure.*\"}[7d])))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Successes",
+                "range": true,
+                "refId": "success"
+              }
+            ],
+            "timeFrom": "now-1h",
+            "title": "Success % (1 Week)",
+            "transparent": true,
+            "type": "stat"
+          }
+        ],
         "title": "Sync Results",
         "type": "row"
-      },
-      {
-        "description": "Counts for each result of issuing an outgoing sync request",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              }
-            },
-            "mappings": [],
-            "unit": "none"
-          },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "success.*"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-green",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "failure.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-red",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "abort.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "orange",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 9,
-          "x": 0,
-          "y": 31
-        },
-        "hideTimeOverride": true,
-        "id": 39,
-        "options": {
-          "displayLabels": [
-            "percent"
-          ],
-          "legend": {
-            "displayMode": "table",
-            "placement": "right",
-            "showLegend": true,
-            "sortBy": "Percent",
-            "sortDesc": true,
-            "values": [
-              "value",
-              "percent"
-            ]
-          },
-          "pieType": "pie",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum by(result) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "{{result}}",
-            "range": true,
-            "refId": "counts"
-          }
-        ],
-        "timeFrom": "now-1h",
-        "timeTo": "now",
-        "title": "Result for Issuing Outgoing Sync (Past Hour)",
-        "type": "piechart"
-      },
-      {
-        "description": "Percent Success for Issuing Outgoing Sync (Past Hour)",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "min": 0,
-            "thresholds": {
-              "mode": "percentage",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "unit": "percentunit"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 3,
-          "x": 9,
-          "y": 31
-        },
-        "hideTimeOverride": true,
-        "id": 76,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "none",
-          "justifyMode": "auto",
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [],
-            "fields": "",
-            "values": false
-          },
-          "textMode": "auto"
-        },
-        "pluginVersion": "9.1.0",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\", sync_type=~\"$sync_type\"}[1h])) / (sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"success.*\"}[1h])) + sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"failure.*\"}[1h])))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Success",
-            "range": true,
-            "refId": "success"
-          }
-        ],
-        "timeFrom": "now-1h",
-        "title": "Success % (1 Hour)",
-        "transparent": true,
-        "type": "stat"
-      },
-      {
-        "description": "Counts for each result of processing an incoming sync",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              }
-            },
-            "mappings": [],
-            "unit": "none"
-          },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "success.*"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-green",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "failure.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-red",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "abort.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "orange",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 9,
-          "x": 12,
-          "y": 31
-        },
-        "hideTimeOverride": true,
-        "id": 40,
-        "options": {
-          "displayLabels": [
-            "percent"
-          ],
-          "legend": {
-            "displayMode": "table",
-            "placement": "right",
-            "showLegend": true,
-            "sortBy": "Percent",
-            "sortDesc": true,
-            "values": [
-              "percent",
-              "value"
-            ]
-          },
-          "pieType": "pie",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "sum by(result) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", mode=~\"$sync_mode\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "{{result}}",
-            "range": true,
-            "refId": "counts"
-          }
-        ],
-        "timeFrom": "now-1h",
-        "timeTo": "now",
-        "title": "Result for Processing Incoming Sync (Past Hour)",
-        "type": "piechart"
-      },
-      {
-        "description": "Percent Success for Processing Incoming Sync (Past Hour)",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "min": 0,
-            "thresholds": {
-              "mode": "percentage",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "unit": "percentunit"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 3,
-          "x": 21,
-          "y": 31
-        },
-        "hideTimeOverride": true,
-        "id": 79,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "none",
-          "justifyMode": "auto",
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [],
-            "fields": "",
-            "values": false
-          },
-          "textMode": "auto"
-        },
-        "pluginVersion": "9.1.0",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[1h])) / (sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[1h])) + sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"failure.*\"}[1h])))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Successes",
-            "range": true,
-            "refId": "success"
-          }
-        ],
-        "timeFrom": "now-1h",
-        "title": "Success % (1 Hour)",
-        "transparent": true,
-        "type": "stat"
-      },
-      {
-        "description": "Counts for each result of issuing an outgoing sync request",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              }
-            },
-            "mappings": [],
-            "unit": "none"
-          },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "success.*"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-green",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "failure.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-red",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "abort.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "orange",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "gridPos": {
-          "h": 7,
-          "w": 9,
-          "x": 0,
-          "y": 39
-        },
-        "hideTimeOverride": true,
-        "id": 41,
-        "options": {
-          "displayLabels": [
-            "percent"
-          ],
-          "legend": {
-            "displayMode": "table",
-            "placement": "right",
-            "showLegend": true,
-            "sortBy": "Percent",
-            "sortDesc": true,
-            "values": [
-              "value",
-              "percent"
-            ]
-          },
-          "pieType": "pie",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum by(result) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[24h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "{{result}}",
-            "range": true,
-            "refId": "counts"
-          }
-        ],
-        "timeFrom": "now-1d",
-        "timeTo": "now",
-        "title": "Result for Issuing Outgoing Sync (Past Day)",
-        "type": "piechart"
-      },
-      {
-        "description": "Percent Success for Issuing Outgoing Sync (Past Day)",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "min": 0,
-            "thresholds": {
-              "mode": "percentage",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "unit": "percentunit"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 7,
-          "w": 3,
-          "x": 9,
-          "y": 39
-        },
-        "hideTimeOverride": true,
-        "id": 77,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "none",
-          "justifyMode": "auto",
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [],
-            "fields": "",
-            "values": false
-          },
-          "textMode": "auto"
-        },
-        "pluginVersion": "9.1.0",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\", sync_type=~\"$sync_type\"}[24h])) / (sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"success.*\"}[24h])) + sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"failure.*\"}[24h])))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Successes",
-            "range": true,
-            "refId": "success"
-          }
-        ],
-        "timeFrom": "now-1h",
-        "title": "Success % (1 Day)",
-        "transparent": true,
-        "type": "stat"
-      },
-      {
-        "description": "Counts for each result of processing an incoming sync",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              }
-            },
-            "mappings": [],
-            "unit": "none"
-          },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "success.*"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-green",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "failure.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-red",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "abort.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "orange",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "gridPos": {
-          "h": 7,
-          "w": 9,
-          "x": 12,
-          "y": 39
-        },
-        "hideTimeOverride": true,
-        "id": 42,
-        "options": {
-          "displayLabels": [
-            "percent"
-          ],
-          "legend": {
-            "displayMode": "table",
-            "placement": "right",
-            "showLegend": true,
-            "sortBy": "Percent",
-            "sortDesc": true,
-            "values": [
-              "percent",
-              "value"
-            ]
-          },
-          "pieType": "pie",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "sum by(result) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", mode=~\"$sync_mode\"}[24h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "{{result}}",
-            "range": true,
-            "refId": "counts"
-          }
-        ],
-        "timeFrom": "now-1d",
-        "timeTo": "now",
-        "title": "Result for Processing Incoming Sync (Past Day)",
-        "type": "piechart"
-      },
-      {
-        "description": "Percent Success for Processing Incoming Sync (Past Day)",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "min": 0,
-            "thresholds": {
-              "mode": "percentage",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "unit": "percentunit"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 7,
-          "w": 3,
-          "x": 21,
-          "y": 39
-        },
-        "hideTimeOverride": true,
-        "id": 80,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "none",
-          "justifyMode": "auto",
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [],
-            "fields": "",
-            "values": false
-          },
-          "textMode": "auto"
-        },
-        "pluginVersion": "9.1.0",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[24h])) / (sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[24h])) + sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"failure.*\"}[24h])))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Successes",
-            "range": true,
-            "refId": "success"
-          }
-        ],
-        "timeFrom": "now-1h",
-        "title": "Success % (1 Day)",
-        "transparent": true,
-        "type": "stat"
-      },
-      {
-        "description": "Counts for each result of issuing an outgoing sync request",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              }
-            },
-            "mappings": [],
-            "unit": "none"
-          },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "success.*"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-green",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "failure.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-red",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "abort.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "orange",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "gridPos": {
-          "h": 7,
-          "w": 9,
-          "x": 0,
-          "y": 46
-        },
-        "hideTimeOverride": true,
-        "id": 43,
-        "options": {
-          "displayLabels": [
-            "percent"
-          ],
-          "legend": {
-            "displayMode": "table",
-            "placement": "right",
-            "showLegend": true,
-            "sortBy": "Percent",
-            "sortDesc": true,
-            "values": [
-              "percent",
-              "value"
-            ]
-          },
-          "pieType": "pie",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum by(result) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[7d]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "{{result}}",
-            "range": true,
-            "refId": "counts"
-          }
-        ],
-        "timeFrom": "now-7d",
-        "timeTo": "now",
-        "title": "Result for Issuing Outgoing Sync (Past Week)",
-        "type": "piechart"
-      },
-      {
-        "description": "Percent Success for Issuing Outgoing Sync (Past Week)",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "min": 0,
-            "thresholds": {
-              "mode": "percentage",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "unit": "percentunit"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 7,
-          "w": 3,
-          "x": 9,
-          "y": 46
-        },
-        "hideTimeOverride": true,
-        "id": 78,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "none",
-          "justifyMode": "auto",
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [],
-            "fields": "",
-            "values": false
-          },
-          "textMode": "auto"
-        },
-        "pluginVersion": "9.1.0",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\", sync_type=~\"$sync_type\"}[7d])) / (sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"success.*\"}[7d])) + sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\", result=~\"failure.*\"}[7d])))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Successes",
-            "range": true,
-            "refId": "success"
-          }
-        ],
-        "timeFrom": "now-1h",
-        "title": "Success % (1 Week)",
-        "transparent": true,
-        "type": "stat"
-      },
-      {
-        "description": "Counts for each result of processing an incoming sync",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              }
-            },
-            "mappings": [],
-            "unit": "none"
-          },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "success.*"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-green",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "failure.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "semi-dark-red",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byRegexp",
-                "options": "abort.+"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "orange",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "gridPos": {
-          "h": 7,
-          "w": 9,
-          "x": 12,
-          "y": 46
-        },
-        "hideTimeOverride": true,
-        "id": 44,
-        "options": {
-          "displayLabels": [
-            "percent"
-          ],
-          "legend": {
-            "displayMode": "table",
-            "placement": "right",
-            "showLegend": true,
-            "sortBy": "Percent",
-            "sortDesc": true,
-            "values": [
-              "percent",
-              "value"
-            ]
-          },
-          "pieType": "pie",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum by(result) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", mode=~\"$sync_mode\"}[7d]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "{{result}}",
-            "range": true,
-            "refId": "counts"
-          }
-        ],
-        "timeFrom": "now-7d",
-        "timeTo": "now",
-        "title": "Result for Processing Incoming Sync (Past Week)",
-        "type": "piechart"
-      },
-      {
-        "description": "Percent Success for Processing Incoming Sync (Past Week)",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "min": 0,
-            "thresholds": {
-              "mode": "percentage",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            },
-            "unit": "percentunit"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 7,
-          "w": 3,
-          "x": 21,
-          "y": 46
-        },
-        "hideTimeOverride": true,
-        "id": 81,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "none",
-          "justifyMode": "auto",
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [],
-            "fields": "",
-            "values": false
-          },
-          "textMode": "auto"
-        },
-        "pluginVersion": "9.1.0",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[7d])) / (sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"success.*\"}[7d])) + sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_mode=~\"$sync_mode\", result=~\"failure.*\"}[7d])))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Successes",
-            "range": true,
-            "refId": "success"
-          }
-        ],
-        "timeFrom": "now-1h",
-        "title": "Success % (1 Week)",
-        "transparent": true,
-        "type": "stat"
-      },
-      {
-        "collapsed": false,
-        "gridPos": {
-          "h": 1,
-          "w": 24,
-          "x": 0,
-          "y": 53
-        },
-        "id": 34,
-        "panels": [],
-        "title": "Syncs Issued vs Processed Overview",
-        "type": "row"
-      },
-      {
-        "description": "Number of times per hour that a node successfully issues an outgoing sync request vs number of times per hour a node successfully processes an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are processed correctly.",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "Syncs Per Hour",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "none"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 12,
-          "w": 8,
-          "x": 0,
-          "y": 54
-        },
-        "id": 35,
-        "options": {
-          "legend": {
-            "calcs": [
-              "mean",
-              "max",
-              "lastNotNull"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Mean",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Syncs Processed Successfully Per Hour (Incoming)",
-            "range": true,
-            "refId": "incoming per hour"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Syncs Issued Successfully Per Hour (Outgoing)",
-            "range": true,
-            "refId": "outgoing per hour"
-          }
-        ],
-        "title": "Outgoing vs Incoming Sync Successes (Aggregate)",
-        "type": "timeseries"
-      },
-      {
-        "description": "Number of times per hour that a node fails when issuing+monitoring an outgoing sync request vs number of times per hour a node fails to process an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are failing for reasons that are tracked when processing syncs.",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "Syncs Per Hour",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "none"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 12,
-          "w": 8,
-          "x": 8,
-          "y": 54
-        },
-        "id": 36,
-        "options": {
-          "legend": {
-            "calcs": [
-              "mean",
-              "max",
-              "lastNotNull"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Mean",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "sum by(le) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result!~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Syncs Issued Unsuccessfully Per Hour (Outgoing)",
-            "range": true,
-            "refId": "incoming per hour"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "sum by(le) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"failure_missing_wallet|failure_secondary_failure_count_threshold_met|failure_primary_sync_from_secondary|failure_issue_sync_request|failure_secondary_failed_to_progress\", host=~\"$host\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Syncs Processed Unsuccessfully Per Hour (Incoming)",
-            "range": true,
-            "refId": "outgoing per hour"
-          }
-        ],
-        "title": "Outgoing vs Incoming Sync Failures (Aggregate)",
-        "type": "timeseries"
-      },
-      {
-        "description": "Number of times per hour that a node successfully issues an outgoing sync request vs number of times per hour a node successfully processes an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are processed correctly.",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "Syncs Per Hour",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "none"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 12,
-          "w": 8,
-          "x": 16,
-          "y": 54
-        },
-        "id": 56,
-        "options": {
-          "legend": {
-            "calcs": [
-              "mean",
-              "max",
-              "lastNotNull"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Max",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "max(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Max Syncs Processed Successfully Per Hour (Incoming)",
-            "range": true,
-            "refId": "A"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "min(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Min Syncs Processed Successfully Per Hour (Incoming)",
-            "range": true,
-            "refId": "B"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "max(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Max Syncs Issued Successfully Per Hour (Outgoing)",
-            "range": true,
-            "refId": "C"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "exemplar": false,
-            "expr": "min(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
-            "format": "time_series",
-            "hide": false,
-            "instant": false,
-            "legendFormat": "Min Syncs Issued Successfully Per Hour (Outgoing)",
-            "range": true,
-            "refId": "D"
-          }
-        ],
-        "title": "Outgoing vs Incoming Sync Successes (Outliers)",
-        "type": "timeseries"
       },
       {
         "collapsed": true,
@@ -2026,7 +1220,405 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 66
+          "y": 1
+        },
+        "id": 34,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that a node successfully issues an outgoing sync request vs number of times per hour a node successfully processes an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are processed correctly.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "Syncs Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 12,
+              "w": 8,
+              "x": 0,
+              "y": 3
+            },
+            "id": 35,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true,
+                "sortBy": "Mean",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Syncs Processed Successfully Per Hour (Incoming)",
+                "range": true,
+                "refId": "incoming per hour"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Syncs Issued Successfully Per Hour (Outgoing)",
+                "range": true,
+                "refId": "outgoing per hour"
+              }
+            ],
+            "title": "Outgoing vs Incoming Sync Successes (Aggregate)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that a node fails when issuing+monitoring an outgoing sync request vs number of times per hour a node fails to process an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are failing for reasons that are tracked when processing syncs.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "Syncs Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 12,
+              "w": 8,
+              "x": 8,
+              "y": 3
+            },
+            "id": 36,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true,
+                "sortBy": "Mean",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "code",
+                "exemplar": false,
+                "expr": "sum by(le) (increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result!~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Syncs Issued Unsuccessfully Per Hour (Outgoing)",
+                "range": true,
+                "refId": "incoming per hour"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "sum by(le) (increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"failure_missing_wallet|failure_secondary_failure_count_threshold_met|failure_primary_sync_from_secondary|failure_issue_sync_request|failure_secondary_failed_to_progress\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Syncs Processed Unsuccessfully Per Hour (Incoming)",
+                "range": true,
+                "refId": "outgoing per hour"
+              }
+            ],
+            "title": "Outgoing vs Incoming Sync Failures (Aggregate)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Number of times per hour that a node successfully issues an outgoing sync request vs number of times per hour a node successfully processes an incoming sync request (aggregated across all nodes). These should be very similar to indicate that outgoing syncs are processed correctly.",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "Syncs Per Hour",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 12,
+              "w": 8,
+              "x": 16,
+              "y": 3
+            },
+            "id": 56,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true,
+                "sortBy": "Max",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "max(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Max Syncs Processed Successfully Per Hour (Incoming)",
+                "range": true,
+                "refId": "A"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "min(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", result=~\"success|success_clocks_already_match\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Min Syncs Processed Successfully Per Hour (Incoming)",
+                "range": true,
+                "refId": "B"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "max(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Max Syncs Issued Successfully Per Hour (Outgoing)",
+                "range": true,
+                "refId": "C"
+              },
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "exemplar": false,
+                "expr": "min(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", result=~\"success|success_secondary_caught_up|success_secondary_partially_caught_up|success_mode_disabled\", host=~\"$host\"}[1h]))",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "legendFormat": "Min Syncs Issued Successfully Per Hour (Outgoing)",
+                "range": true,
+                "refId": "D"
+              }
+            ],
+            "title": "Outgoing vs Incoming Sync Successes (Outliers)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "Syncs Issued vs Processed Overview",
+        "type": "row"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 2
         },
         "id": 54,
         "panels": [
@@ -2176,7 +1768,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 67
+          "y": 3
         },
         "id": 26,
         "panels": [
@@ -2636,7 +2228,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 68
+          "y": 4
         },
         "id": 16,
         "panels": [
@@ -2899,7 +2491,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 69
+          "y": 5
         },
         "id": 21,
         "panels": [
@@ -3329,7 +2921,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 70
+          "y": 6
         },
         "id": 30,
         "panels": [
@@ -3549,7 +3141,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 71
+          "y": 7
         },
         "id": 6,
         "panels": [
@@ -3812,7 +3404,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 72
+          "y": 8
         },
         "id": 8,
         "panels": [
@@ -4024,6 +3616,696 @@
         ],
         "title": "Issue and Wait for Outgoing Sync - Duration By Success/Failure",
         "type": "row"
+      },
+      {
+        "collapsed": true,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 9
+        },
+        "id": 92,
+        "panels": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 9,
+              "w": 24,
+              "x": 0,
+              "y": 10
+            },
+            "id": 65,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "last",
+                  "mean"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true,
+                "sortBy": "Mean",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "single",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "expr": "increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", sync_type=~\"$sync_type\", sync_mode=~\"$sync_mode\"}[10m])",
+                "legendFormat": "{{host}} // {{result}}",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "Issue Sync Request Counts by Host & Result",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Count of all issue_sync_request jobs by Host, excluding success_mode_disabled",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 12,
+              "x": 0,
+              "y": 19
+            },
+            "id": 67,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "lastNotNull",
+                  "max",
+                  "mean",
+                  "sum"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true,
+                "sortBy": "Total",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "expr": "sum by(host) (increase(audius_cn_issue_sync_request_duration_seconds_count{host=~\"$host\", environment=~\"$env\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[10m]))",
+                "legendFormat": "{{host}}",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "issue_sync_request counts by host",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "description": "Count of all issue_sync_request jobs by Host, excluding success_mode_disabled",
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 12,
+              "x": 12,
+              "y": 19
+            },
+            "id": 82,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "lastNotNull",
+                  "max",
+                  "mean",
+                  "sum"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true,
+                "sortBy": "Total",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "none"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "expr": "sum by(result) (increase(audius_cn_issue_sync_request_duration_seconds_count{host=~\"$host\", environment=~\"$env\", sync_mode=~\"$sync_mode\", sync_type=~\"$sync_type\"}[10m]))",
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "issue_sync_request counts by result",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "points",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 12,
+              "x": 0,
+              "y": 29
+            },
+            "id": 69,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true,
+                "sortBy": "Mean",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "expr": "histogram_quantile($percentile, sum by(le, host) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{host=~\"$host\", environment=~\"$env\", mode=~\"$sync_mode\", result=~\"$process_sync_result\"}[$__rate_interval])))",
+                "hide": false,
+                "legendFormat": "{{host}}",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "Sync request duration by host ($percentile)",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "points",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green"
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "gridPos": {
+              "h": 10,
+              "w": 12,
+              "x": 12,
+              "y": 29
+            },
+            "id": 83,
+            "options": {
+              "legend": {
+                "calcs": [
+                  "mean"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true,
+                "sortBy": "Mean",
+                "sortDesc": true
+              },
+              "tooltip": {
+                "mode": "multi",
+                "sort": "desc"
+              }
+            },
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "r2_nnDL7z"
+                },
+                "editorMode": "builder",
+                "expr": "histogram_quantile($percentile, sum by(le, result) (rate(audius_cn_secondary_sync_from_primary_duration_seconds_bucket{host=~\"$host\", environment=~\"$env\", mode=~\"$sync_mode\", result=~\"$process_sync_result\"}[$__rate_interval])))",
+                "hide": false,
+                "legendFormat": "{{result}}",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "title": "Sync request duration by result ($percentile)",
+            "type": "timeseries"
+          }
+        ],
+        "title": "General Sync Count and Duration",
+        "type": "row"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 10
+        },
+        "id": 103,
+        "panels": [],
+        "title": "Orphaned Data",
+        "type": "row"
+      },
+      {
+        "description": "Number of wallets with orphaned data on each node",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 11
+        },
+        "id": 99,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "expr": "audius_cn_recover_orphaned_data_wallet_counts{host=~\"$host\", environment=\"$env\"}",
+            "legendFormat": "{{host}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Orphaned Users By Node",
+        "type": "timeseries"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 11
+        },
+        "id": 101,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "expr": "increase(audius_cn_recover_orphaned_data_sync_counts{host=~\"$host\", environment=\"$env\"}[1h])",
+            "legendFormat": "{{host}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Hourly Syncs Issued to Recover Orphaned Data by Node",
+        "type": "timeseries"
       }
     ],
     "refresh": "30m",

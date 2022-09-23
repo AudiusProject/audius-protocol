@@ -823,6 +823,102 @@
             "custom": {
               "axisCenteredZero": false,
               "axisColorMode": "text",
+              "axisLabel": "Latency",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "points",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 12,
+          "y": 26
+        },
+        "id": 46,
+        "options": {
+          "legend": {
+            "calcs": [
+              "mean",
+              "max",
+              "lastNotNull"
+            ],
+            "displayMode": "table",
+            "placement": "bottom",
+            "showLegend": true,
+            "sortBy": "Last *",
+            "sortDesc": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "desc"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "expr": "histogram_quantile($percentile, sum by(le, path) (rate(audius_cn_http_request_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", path=~\"$path\", status_code=~\"$status_code\"}[$__rate_interval])))",
+            "hide": false,
+            "interval": "",
+            "legendFormat": "{{path}}",
+            "range": true,
+            "refId": "B"
+          }
+        ],
+        "title": "Latency by Path ($percentile)",
+        "type": "timeseries"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -871,8 +967,8 @@
         "gridPos": {
           "h": 10,
           "w": 12,
-          "x": 12,
-          "y": 26
+          "x": 0,
+          "y": 36
         },
         "id": 28,
         "options": {
@@ -963,12 +1059,12 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 9,
+          "h": 10,
           "w": 12,
-          "x": 0,
+          "x": 12,
           "y": 36
         },
-        "id": 46,
+        "id": 50,
         "options": {
           "legend": {
             "calcs": [
@@ -993,7 +1089,7 @@
               "type": "prometheus"
             },
             "editorMode": "builder",
-            "expr": "histogram_quantile($percentile, sum by(le, path) (rate(audius_cn_http_request_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", path=~\"$path\", status_code=~\"$status_code\"}[$__rate_interval])))",
+            "expr": "histogram_quantile(0.99, sum by(le, host) (rate(audius_cn_http_request_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", path=~\"$path\", status_code=~\"$status_code\"}[$__rate_interval])))",
             "hide": false,
             "interval": "",
             "legendFormat": "{{path}}",
@@ -1001,7 +1097,101 @@
             "refId": "B"
           }
         ],
-        "title": "Latency by Path ($percentile)",
+        "title": "Latency by Host ($percentile)",
+        "type": "timeseries"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 0,
+          "y": 46
+        },
+        "id": 49,
+        "options": {
+          "legend": {
+            "calcs": [
+              "lastNotNull",
+              "max",
+              "mean"
+            ],
+            "displayMode": "table",
+            "placement": "bottom",
+            "showLegend": true,
+            "sortBy": "Mean",
+            "sortDesc": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "desc"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "expr": "sum by(host, path, status_code) (increase(audius_cn_http_request_duration_seconds_count{host=~\"$host\", environment=~\"$env\", path=~\"$path\", status_code=~\"$status_code\"}[$__rate_interval]))",
+            "legendFormat": "{{host}} -- '{{path}}' -- {{status_code}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Request counts by Host, Path, and Status Code",
         "type": "timeseries"
       },
       {
@@ -1028,8 +1218,7 @@
               "lineWidth": 1,
               "pointSize": 5,
               "scaleDistribution": {
-                "log": 2,
-                "type": "log"
+                "type": "linear"
               },
               "showPoints": "auto",
               "spanNulls": false,
@@ -1060,12 +1249,12 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 9,
+          "h": 10,
           "w": 12,
           "x": 12,
-          "y": 36
+          "y": 46
         },
-        "id": 47,
+        "id": 51,
         "options": {
           "legend": {
             "calcs": [
@@ -1090,15 +1279,15 @@
               "type": "prometheus"
             },
             "editorMode": "builder",
-            "expr": "histogram_quantile($percentile, sum by(le, path) (rate(audius_cn_http_request_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", path=~\"$path\", status_code=~\"$status_code\"}[$__rate_interval])))",
+            "expr": "histogram_quantile(0.99, sum by(le, host, path) (rate(audius_cn_http_request_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\", path=~\"$path\", status_code=~\"$status_code\"}[$__rate_interval])))",
             "hide": false,
             "interval": "",
-            "legendFormat": "{{path}}",
+            "legendFormat": "{{host}} -- {{path}}",
             "range": true,
             "refId": "B"
           }
         ],
-        "title": "Latency by Path (Logarithmic) ($percentile)",
+        "title": "Latency by Host & Path ($percentile)",
         "type": "timeseries"
       },
       {
@@ -1107,7 +1296,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 45
+          "y": 56
         },
         "id": 12,
         "panels": [],
@@ -1169,7 +1358,7 @@
           "h": 10,
           "w": 24,
           "x": 0,
-          "y": 46
+          "y": 57
         },
         "id": 10,
         "options": {
@@ -1231,7 +1420,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 56
+          "y": 67
         },
         "id": 6,
         "panels": [],
@@ -1290,8 +1479,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "yellow",
@@ -1342,7 +1530,7 @@
           "h": 9,
           "w": 24,
           "x": 0,
-          "y": 57
+          "y": 68
         },
         "id": 4,
         "options": {
@@ -1396,7 +1584,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 66
+          "y": 77
         },
         "id": 8,
         "panels": [],
@@ -1444,8 +1632,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1461,7 +1648,7 @@
           "h": 9,
           "w": 12,
           "x": 0,
-          "y": 67
+          "y": 78
         },
         "id": 44,
         "options": {
@@ -1537,8 +1724,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1554,7 +1740,7 @@
           "h": 9,
           "w": 12,
           "x": 12,
-          "y": 67
+          "y": 78
         },
         "id": 2,
         "options": {
@@ -1673,7 +1859,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 76
+          "y": 87
         },
         "id": 40,
         "panels": [],
@@ -1737,7 +1923,7 @@
           "h": 9,
           "w": 12,
           "x": 0,
-          "y": 77
+          "y": 88
         },
         "id": 38,
         "options": {
@@ -1830,7 +2016,7 @@
           "h": 9,
           "w": 12,
           "x": 12,
-          "y": 77
+          "y": 88
         },
         "id": 45,
         "options": {
@@ -1872,7 +2058,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 86
+          "y": 97
         },
         "id": 43,
         "panels": [],
@@ -1938,7 +2124,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 87
+          "y": 98
         },
         "id": 41,
         "options": {
@@ -2032,7 +2218,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 87
+          "y": 98
         },
         "id": 48,
         "options": {
@@ -2184,12 +2370,12 @@
               "value": "0.9"
             },
             {
-              "selected": true,
+              "selected": false,
               "text": "p95",
               "value": "0.95"
             },
             {
-              "selected": false,
+              "selected": true,
               "text": "p99",
               "value": "0.99"
             }

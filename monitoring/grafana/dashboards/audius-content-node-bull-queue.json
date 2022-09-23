@@ -707,7 +707,7 @@
             "sortDesc": true
           },
           "tooltip": {
-            "mode": "multi",
+            "mode": "single",
             "sort": "desc"
           }
         },
@@ -1898,8 +1898,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
