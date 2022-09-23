@@ -1,6 +1,5 @@
 const axios = require('axios')
-const fs = require('fs')
-const fsExtra = require('fs-extra')
+const fs = require('fs-extra')
 const FormData = require('form-data')
 const _ = require('lodash')
 
@@ -380,7 +379,7 @@ class TrackTranscodeHandoffManager {
    * @returns formData object passed in axios to send a transcode and segment request
    */
   static async createFormData(pathToFile) {
-    const fileExists = await fsExtra.pathExists(pathToFile)
+    const fileExists = await fs.pathExists(pathToFile)
     if (!fileExists) {
       throw new Error(`File does not exist at path=${pathToFile}`)
     }

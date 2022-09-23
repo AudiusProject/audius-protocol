@@ -269,6 +269,9 @@ parameters:
   sdk_release_commit:
     type: string
     default: ""
+  deploy_args:
+    type: string
+    default: ""
   slack_mentions_user:
     type: string
     default: ""
@@ -993,7 +996,7 @@ jobs:
       environment:
         description: Target environment
         type: enum
-        enum: [staging, pre-prod, prod]
+        enum: [staging, prod]
         default: "staging"
       service:
         description: Target service
@@ -1008,11 +1011,12 @@ jobs:
         description: Additional parameters for deploy-ci.py
         type: string
         default: ""
+      deploy_args:
+        description: When present, the only parameters used for deploy-ci.py
+        type: string
+        default: ""
     steps:
-      - slack-basic:
-          channel: C03STD3UXMG
-          event: always
-          slack_mentions_user: "@joaquin"
+      - slack-basic
       - add_ssh_keys:
           fingerprints:
             # ~/.ssh/audius_infrastructure
@@ -1108,10 +1112,13 @@ jobs:
             # `AddKeysToAgent yes` is os-x only
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
       - when:
-          condition: << parameters.host >>
+          condition:
+            and:
+              - << parameters.host >>
+              - not: << parameters.deploy_args >>
           steps:
             - run:
-                name: Perform Deployment
+                name: Perform Deployment (<< parameters.host >>)
                 command: |
                   cd ~/audius-protocol
                   set -x
@@ -1123,8 +1130,11 @@ jobs:
                     --services "<< parameters.service >>" \
                     --hosts "<< parameters.host >>" \
                     << parameters.params >>
-      - unless:
-          condition: << parameters.host >>
+      - when:
+          condition:
+            and:
+              - not: << parameters.host >>
+              - not: << parameters.deploy_args >>
           steps:
             - run:
                 name: Perform Deployment
@@ -1138,18 +1148,26 @@ jobs:
                     --environment "<< parameters.environment >>" \
                     --services "<< parameters.service >>" \
                     << parameters.params >>
+      - when:
+          condition: << parameters.deploy_args >>
+          steps:
+            - run:
+                name: "Perform Deployment (deploy_args: << parameters.deploy_args >>)"
+                command: |
+                  cd ~/audius-protocol
+                  set -x
+                  .circleci/bin/deploy-ci.py \
+                    --github-user ${GH_USER} \
+                    --github-token ${GH_TOKEN} \
+                    << parameters.deploy_args >>
       - run:
           name: Set Slack Detail from /tmp/summary.md
           command: |
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
-      - slack-fail:
-          channel: C03STD3UXMG
-          slack_mentions_user: "@joaquin"
+      - slack-fail
       - slack-success:
-          channel: C03STD3UXMG
           detail: ${SLACK_DETAIL}
-          slack_mentions_user: "@joaquin"
       - store_artifacts:
           path: /tmp/summary.md
           destination: summary.md
@@ -1161,12 +1179,14 @@ jobs:
           command: |
             sudo killall openvpn || true
           when: always
+
 workflows:
   workflows:
     when:
       and:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_commit >>
+         - not: << pipeline.parameters.deploy_args >>
     jobs:
       - noop:
           name: build
@@ -1183,27 +1203,19 @@ workflows:
       - noop:
           name: verified
           requires:
-            - test-contracts
             - test-creator-node
             - test-discovery-provider
-            - test-eth-contracts
             - test-identity-service
             - test-libs
-            - test-solana-programs
-            - test-solana-programs-anchor
             # removing these for now as they take a bit long and are flaky
+            # - test-contracts
+            # - test-solana-programs
+            # - test-solana-programs-anchor
+            # - test-eth-contracts
             # - test-mad-dog-e2e
             # - test-sdk
 
       # Auto-deploy `master` to staging
-      - noop:
-          name: deploy-master-hold
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-          requires:
-            - built
       - deploy:
           name: 🚧-🏠
           service: all
@@ -1215,7 +1227,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - deploy-master-hold
+            - built
       # Force deploy `master` to staging (by service)
       - noop:
           name: 💪-🚧-🏠-<< matrix.service >>-🕹️
@@ -1333,41 +1345,95 @@ workflows:
           requires:
             - 🚧-🌿-<< matrix.host >>-🕹️
 
-      # Deploy to pre-prod (for release branches)
+      # Bump Tags (for release branch hot-fixes)
       - noop:
-          name: 🚧-🎁-to-pre-prod-🕹️
-          type: approval
+          name: bump-hotfix-tags
           filters:
             branches:
               only: /(^release-.*$)/
           requires:
             - built
+      # Deploy Discovery Nodes to prod (for release branches)
+      - noop:
+          name: 🚧-🎁-to-dn-prod-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - bump-hotfix-tags
       - deploy:
-          name: 🚧-🎁-to-pre-prod
+          name: 🚧-🎁-to-dn-prod
           git_tag: ${CIRCLE_SHA1}
-          environment: pre-prod
-          service: all
+          environment: prod
+          service: discovery
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
           requires:
-            - 🚧-🎁-to-pre-prod-🕹️
-      # Submit Proposal (for release branches)
+            - 🚧-🎁-to-dn-prod-🕹️
+      # Deploy Identity to prod (for release branches)
       - noop:
-          name: submit-proposal
-          requires:
-            - 🚧-🎁-to-pre-prod
-      # Release (for release branches)
-      - noop:
-          name: release-🕹️
+          name: 🚧-🎁-to-is-prod-🕹️
           type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
           requires:
-            - submit-proposal
+            - bump-hotfix-tags
+      - deploy:
+          name: 🚧-🎁-to-is-prod
+          git_tag: ${CIRCLE_SHA1}
+          environment: prod
+          service: identity
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          requires:
+            - 🚧-🎁-to-is-prod-🕹️
+      # Deploy Creator Nodes to prod (for release branches)
       - noop:
-          name: release
+          name: 🚧-🎁-to-cn-prod-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
           requires:
-            - release-🕹️
+            - bump-hotfix-tags
+      # no-op currently since Content Nodes have manual version patching
+      - noop:
+          name: 🚧-🎁-to-cn-prod
+          requires:
+            - 🚧-🎁-to-cn-prod-🕹️
+      # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
+      - noop:
+          name: 🚧-🎁-to-SPs-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - bump-hotfix-tags
+      - noop:
+          # ensure Slack pings Dheeraj, Ray, Roneil, Forrest
+          name: 🚧-🎁-to-SPs
+          requires:
+            - 🚧-🎁-to-SPs-🕹️
+      # Execute Governance Proposal (for release branches)
+      - noop:
+          name: execute-proposal-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - 🚧-🎁-to-SPs
+      - noop:
+          name: execute-proposal
+          requires:
+            - execute-proposal-🕹️
 
       - test-libs:
           name: test-libs
@@ -1442,19 +1508,38 @@ workflows:
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
-  # 2. go to your branch of choice
+  # 2. go to the `master` branch
   # 3. click "Trigger Pipeline"
   # 4. Add string paramter "sdk_release_commit" and set to a valid git commit
   sdk-release:
     when: << pipeline.parameters.sdk_release_commit >>
     jobs:
       - publish-sdk:
-          context:
-            - Audius Client
-            - slack-secrets
           name: publish-sdk (<< pipeline.parameters.sdk_release_commit >>)
           sdk_release_commit: << pipeline.parameters.sdk_release_commit >>
           slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
+          context:
+            - Audius Client
+            - slack-secrets
+          filters:
+            branches:
+              only: /(^master$)/
+
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. go to the `master` branch
+  # 3. click "Trigger Pipeline"
+  # 4. Add string paramter "deploy_args" to be passed to deploy-ci.py
+  deploy-args:
+    when: << pipeline.parameters.deploy_args >>
+    jobs:
+      - deploy:
+          name: deploy (<< pipeline.parameters.deploy_args >>)
+          deploy_args: << pipeline.parameters.deploy_args >>
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
           filters:
             branches:
               only: /(^master$)/

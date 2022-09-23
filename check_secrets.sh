@@ -14,5 +14,8 @@ git secrets --register-aws
 # rds urls
 git secrets --add '.*[a-z0-9]*.rds.amazonaws.com:[0-9]*\/.*'
 
+# match any postgres db with an IP hostname
+git secrets --add 'postgres:\/\/.*\:.*@([0-9]*\.?)*:[0-9]{4}\/.*'
+
 # scan the repository
 git secrets --scan --cached

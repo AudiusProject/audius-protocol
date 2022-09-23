@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('fs-extra')
 const uuid = require('uuid/v4')
 const path = require('path')
 const crypto = require('crypto')
@@ -9,8 +9,8 @@ const {
   handleTrackContentRoute
 } = require('../../src/components/tracks/tracksComponentService')
 
-const uploadTrack = async (filePath, cnodeUserUUID, blacklistManager) => {
-  const { fileUUID, fileDir } = saveFileToStorage(filePath)
+const uploadTrack = async (filePath, cnodeUserUUID) => {
+  const { fileUUID, fileDir } = await saveFileToStorage(filePath)
   const resp = await handleTrackContentRoute(
     {
       logContext: {
@@ -31,16 +31,16 @@ const uploadTrack = async (filePath, cnodeUserUUID, blacklistManager) => {
   return resp
 }
 
-const saveFileToStorage = (filePath) => {
-  const file = fs.readFileSync(filePath)
+const saveFileToStorage = async (filePath) => {
+  const file = await fs.readFile(filePath)
   const fileName = uuid()
   const fileDir = path.join(
-    DiskManager.getTmpTrackUploadArtifactsPath(),
+    await DiskManager.getTmpTrackUploadArtifactsPath(),
     fileName
   )
-  fs.mkdirSync(fileDir)
-  fs.mkdirSync(fileDir + '/segments')
-  fs.writeFileSync(path.join(fileDir, `${fileName}.mp3`), file)
+  await fs.mkdir(fileDir)
+  await fs.mkdir(fileDir + '/segments')
+  await fs.writeFile(path.join(fileDir, `${fileName}.mp3`), file)
 
   return { fileUUID: fileName, fileDir }
 }

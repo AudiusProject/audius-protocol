@@ -2,6 +2,7 @@
 
 import json
 import logging
+import time
 from pprint import pprint
 from subprocess import PIPE, Popen
 from threading import Thread
@@ -32,8 +33,8 @@ PROD_CREATOR_NODES = (
     "prod-creator-1",
     "prod-creator-2",
     "prod-creator-3",
-    "prod-creator-4",
-    "prod-creator-5",  # prod-canary
+    "prod-creator-4",  # prod-canary
+    "prod-creator-5",
     "user-metadata",
 )
 CREATOR_NODES = STAGE_CREATOR_NODES + PROD_CREATOR_NODES
@@ -58,6 +59,12 @@ PROD_IDENTITY_NODES = ("prod-identity",)
 IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
 
 ALL_NODES = CREATOR_NODES + DISCOVERY_NODES + IDENTITY_NODES
+CANARIES = (
+    "stage-creator-4",  # canary
+    "stage-discovery-4",  # canary
+    "prod-creator-4",  # prod-canary
+    "prod-discovery-4",  # prod-canary
+)
 
 MASTER = "master"
 MISSING = "missing"
@@ -294,6 +301,11 @@ def update_release_summary(
                 release_summary["upgradeable"].append(host)
             else:
                 release_summary["skipped"][host] = metadata
+        release_summary["upgradeable"].sort()
+        for canary in CANARIES:
+            if canary in release_summary["upgradeable"]:
+                release_summary["upgradeable"].remove(canary)
+                release_summary["upgradeable"].insert(0, canary)
 
 
 def print_release_summary(release_summary):
@@ -445,6 +457,7 @@ def cli(
     print("v" * 40)
     release_summary["upgraded"] = []
     release_summary["failed_pre_check"] = []
+    release_summary["failed_post_check"] = []
     release_summary["failed"] = []
     for host in release_summary["upgradeable"]:
         try:
@@ -468,38 +481,54 @@ def cli(
             # perform release
             # NOTE: `git pull` and `docker pull` write to stderr,
             # so we can't readily catch "errors"
+            ssh(
+                host,
+                "yes | audius-cli pull",
+                show_output=True,
+                exit_on_error=IGNORE,
+                dry_run=dry_run,
+            )
+            ssh(
+                host,
+                f"yes | audius-cli set-tag {git_tag}",
+                show_output=True,
+                dry_run=dry_run,
+            )
+            ssh(
+                host,
+                f"yes | audius-cli launch {service}",
+                show_output=True,
+                exit_on_error=IGNORE,
+                dry_run=dry_run,
+            )
+
             if environment == "prod":
-                dry_run = True
-                ssh(
-                    host,
-                    "yes | audius-cli upgrade",
-                    show_output=True,
-                    exit_on_error=IGNORE,
-                    dry_run=dry_run,
-                )
-            else:
-                ssh(
-                    host,
-                    "yes | audius-cli pull",
-                    show_output=True,
-                    exit_on_error=IGNORE,
-                    dry_run=dry_run,
-                )
-                ssh(
-                    host,
-                    f"yes | audius-cli set-tag {git_tag}",
-                    show_output=True,
-                    dry_run=dry_run,
-                )
-                ssh(
-                    host,
-                    f"yes | audius-cli launch {service}",
-                    show_output=True,
-                    exit_on_error=IGNORE,
-                    dry_run=dry_run,
-                )
+                # check healthcheck post-deploy
+                wait_time = time.time() + (5 * 60)
+                while time.time() < wait_time:
+                    # throttle the amount of logs and request load during startup
+                    time.sleep(30)
+
+                    # this resets on each loop since we only care about the last run
+                    failed_post_check = False
+
+                    health_check = ssh(
+                        host, f"audius-cli health-check {service}", show_output=False
+                    )
+                    health_check = health_check.split("\n")[-1]
+                    logger.info(f"health_check: {health_check}")
+
+                    if health_check != "Service is healthy":
+                        failed_post_check = True
 
             release_summary["upgraded"].append(host)
+
+            if environment == "prod":
+                # if the post-check fails, add it to the above `upgraded` list,
+                # but end the release early
+                if failed_post_check:
+                    release_summary["failed_post_check"].append(host)
+                    break
         except:
             release_summary["failed"].append(host)
         print("-" * 40)
@@ -518,11 +547,18 @@ def cli(
     # save release states as artifacts
     format_artifacts("Failed precheck (unhealthy)", release_summary["failed_pre_check"])
     format_artifacts(
+        "Failed postcheck (unhealthy)", release_summary["failed_post_check"]
+    )
+    format_artifacts(
         f"Upgraded to `{git_tag if git_tag else 'master'}`",
         release_summary["upgraded"],
     )
     format_artifacts("Failed", release_summary["failed"])
     format_artifacts(release_summary=release_summary)
+
+    # report back to CircleCI that this deployment has failed
+    if release_summary["failed_post_check"]:
+        exit(1)
 
 
 if __name__ == "__main__":
