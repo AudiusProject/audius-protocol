@@ -93,7 +93,7 @@ describe('test updateReplicaSet job processor', function () {
       },
       User: {
         updateEntityManagerReplicaSet: _updateReplicaSet,
-        _waitForReplicaSetDiscoveryIndexing: sandbox.stub()
+        waitForReplicaSetDiscoveryIndexing: sandbox.stub()
       },
       contracts: {
         UserReplicaSetManagerClient: {

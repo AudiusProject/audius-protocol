@@ -716,7 +716,7 @@ const _issueUpdateReplicaSetOp = async (
 
       // Wait for blockhash/blocknumber to be indexed
       try {
-        await audiusLibs.User._waitForReplicaSetDiscoveryIndexing(
+        await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
           userId,
           newReplicaSetSPIds,
           blocknumber

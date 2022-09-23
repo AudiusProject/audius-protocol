@@ -769,13 +769,23 @@ async function getReplicaSetSpIDs({
         })
 
         if (spResponse) {
-          replicaSet = {
-            primaryId: spResponse.primarySpID,
-            secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+          if (spResponse.primarySpID) {
+            replicaSet = {
+              primaryId: spResponse.primarySpID,
+              secondaryIds: [
+                spResponse.secondary1SpID,
+                spResponse.secondary2SpID
+              ]
+            }
+            errorMsg = null
+            blockNumberIndexed = true
+            break
+          } else {
+            // The blocknumber was indexed by discovery, but there's still no user replica set returned
+            errorMsg = `User replica not found in discovery`
+            blockNumberIndexed = true
+            break
           }
-          errorMsg = null
-          blockNumberIndexed = true
-          break
         }
       } catch (e) {
         errorMsg = e.message
@@ -821,7 +831,6 @@ async function getReplicaSetSpIDs({
       )
 
       try {
-        // will throw error if blocknumber not found
         const encodedUserId = libs.Utils.encodeHashId(userId)
         const spResponse = await libs.discoveryProvider.getUserReplicaSet({
           encodedUserId
@@ -832,9 +841,10 @@ async function getReplicaSetSpIDs({
             primaryId: spResponse.primarySpID,
             secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
           }
+          errorMsg = null
+        } else {
+          errorMsg = `User replica not found in discovery`
         }
-
-        errorMsg = null
 
         if (
           replicaSet &&
