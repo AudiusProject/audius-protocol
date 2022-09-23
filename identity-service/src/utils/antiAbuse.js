@@ -6,7 +6,7 @@ const models = require('../models')
 const aaoEndpoint = config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
 
 const blockRelayAbuseErrorCodes = new Set([0, 8, 10])
-const blockNotificationsErrorCodes = new Set([9])
+const blockNotificationsErrorCodes = new Set([7, 9])
 
 /**
  * Gets IP of a user by using the leftmost forwarded-for entry
