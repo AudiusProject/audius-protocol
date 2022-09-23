@@ -161,6 +161,18 @@ const startAppForWorker = async () => {
 
   await verifyConfigAndDb()
 
+  // When app terminates, close down any open DB connections gracefully
+  ON_DEATH((signal: any, error: any) => {
+    // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
+    // default in `npm start` command). To see messages emitted after a kill signal, do not
+    // use the bunyan CLI.
+    logger.info('Shutting down db and express app...', signal, error)
+    sequelize.close()
+    if (appInfo) {
+      appInfo.server.close()
+    }
+  })
+
   const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
 
   await serviceRegistry.initServices()
@@ -175,18 +187,6 @@ const startAppForWorker = async () => {
   } else {
     serviceRegistry.initServicesThatRequireServer(appInfo.app)
   }
-
-  // When app terminates, close down any open DB connections gracefully
-  ON_DEATH((signal: any, error: any) => {
-    // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
-    // default in `npm start` command). To see messages emitted after a kill signal, do not
-    // use the bunyan CLI.
-    logger.info('Shutting down db and express app...', signal, error)
-    sequelize.close()
-    if (appInfo) {
-      appInfo.server.close()
-    }
-  })
 
   if (cluster.worker?.id === 1 && process.send) {
     process.send({ cmd: 'initComplete' })

@@ -74,7 +74,7 @@ describe('test ContentBlacklist', function () {
     const expectedIds = [1, 2, 3, 4, 5, 6, 7]
     const addTrackData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         values: expectedIds
       },
       DELEGATE_PRIVATE_KEY
@@ -83,7 +83,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         'values[]': expectedIds,
         signature: addTrackData.signature,
         timestamp: addTrackData.timestamp
@@ -115,7 +115,7 @@ describe('test ContentBlacklist', function () {
     const ids = [43021]
     const addUserData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().user,
+        type: BlacklistManager._getTypes().user,
         values: ids
       },
       DELEGATE_PRIVATE_KEY
@@ -124,7 +124,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().user,
+        type: BlacklistManager._getTypes().user,
         'values[]': ids,
         signature: addUserData.signature,
         timestamp: addUserData.timestamp
@@ -133,7 +133,7 @@ describe('test ContentBlacklist', function () {
 
     const addTrackData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         values: ids
       },
       DELEGATE_PRIVATE_KEY
@@ -142,7 +142,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         'values[]': ids,
         signature: addTrackData.signature,
         timestamp: addTrackData.timestamp
@@ -152,7 +152,7 @@ describe('test ContentBlacklist', function () {
     const cids = [generateRandomCID()]
     const addCIDData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().cid,
+        type: BlacklistManager._getTypes().cid,
         values: cids
       },
       DELEGATE_PRIVATE_KEY
@@ -161,7 +161,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().cid,
+        type: BlacklistManager._getTypes().cid,
         'values[]': cids,
         signature: addCIDData.signature,
         timestamp: addCIDData.timestamp
@@ -188,7 +188,7 @@ describe('test ContentBlacklist', function () {
     const ids = [43021]
     const addUserData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().user,
+        type: BlacklistManager._getTypes().user,
         values: ids
       },
       trustedNotifierConfig.privateKey
@@ -197,7 +197,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().user,
+        type: BlacklistManager._getTypes().user,
         'values[]': ids,
         signature: addUserData.signature,
         timestamp: addUserData.timestamp
@@ -206,7 +206,7 @@ describe('test ContentBlacklist', function () {
 
     const addTrackData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         values: ids
       },
       trustedNotifierConfig.privateKey
@@ -215,7 +215,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         'values[]': ids,
         signature: addTrackData.signature,
         timestamp: addTrackData.timestamp
@@ -225,7 +225,7 @@ describe('test ContentBlacklist', function () {
     const cids = [generateRandomCID()]
     const addCIDData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().cid,
+        type: BlacklistManager._getTypes().cid,
         values: cids
       },
       trustedNotifierConfig.privateKey
@@ -234,7 +234,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().cid,
+        type: BlacklistManager._getTypes().cid,
         'values[]': cids,
         signature: addCIDData.signature,
         timestamp: addCIDData.timestamp
@@ -256,7 +256,7 @@ describe('test ContentBlacklist', function () {
 
   it('should add user type and id to db and redis', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -284,7 +284,7 @@ describe('test ContentBlacklist', function () {
 
   it('should add track type and id to db and redis', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -313,7 +313,7 @@ describe('test ContentBlacklist', function () {
 
   it('should remove user type and id from db and redis', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -346,7 +346,7 @@ describe('test ContentBlacklist', function () {
 
   it('should remove track type and id from db and redis', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -379,7 +379,7 @@ describe('test ContentBlacklist', function () {
 
   it('should return success when removing a user that does not exist', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -407,7 +407,7 @@ describe('test ContentBlacklist', function () {
 
   it('should return success when removing a track that does not exist', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -435,7 +435,7 @@ describe('test ContentBlacklist', function () {
 
   it('should ignore duplicate add for track', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -471,7 +471,7 @@ describe('test ContentBlacklist', function () {
 
   it('should ignore duplicate add for user', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -508,7 +508,7 @@ describe('test ContentBlacklist', function () {
   it('should only blacklist partial user ids list if only some ids are found', async () => {
     const ids = [Utils.getRandomInt(MAX_ID), Utils.getRandomInt(MAX_ID)]
     libsMock.User.getUsers.returns([{ user_id: ids[0] }]) // only user @ index 0 is found
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -540,7 +540,7 @@ describe('test ContentBlacklist', function () {
   it('should only blacklist partial track ids list if only some ids are found', async () => {
     const ids = [Utils.getRandomInt(MAX_ID), Utils.getRandomInt(MAX_ID)]
     libsMock.Track.getTracks.returns([{ track_id: ids[0] }]) // only user @ index 0 is found
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -571,7 +571,7 @@ describe('test ContentBlacklist', function () {
 
   it('should add cids to db and redis', async () => {
     const cids = [generateRandomCID()]
-    const type = BlacklistManager.getTypes().cid
+    const type = BlacklistManager._getTypes().cid
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: cids },
       DELEGATE_PRIVATE_KEY
@@ -596,7 +596,7 @@ describe('test ContentBlacklist', function () {
 
   it('should remove cids from db and redis', async () => {
     const cids = [generateRandomCID()]
-    const type = BlacklistManager.getTypes().cid
+    const type = BlacklistManager._getTypes().cid
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: cids },
       DELEGATE_PRIVATE_KEY
@@ -625,7 +625,7 @@ describe('test ContentBlacklist', function () {
 
   it("should throw an error if delegate private key does not match that of the creator node's", async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const BAD_KEY =
       '0xBADKEY4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
 
@@ -642,7 +642,7 @@ describe('test ContentBlacklist', function () {
 
   it('should throw an error if query params does not contain all necessary keys', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
 
     await request(app)
       .post('/blacklist/add')
@@ -682,7 +682,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -712,7 +712,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -737,7 +737,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -780,7 +780,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -813,7 +813,7 @@ describe('test ContentBlacklist', function () {
     const ids = [track1.track.blockchainId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -836,7 +836,7 @@ describe('test ContentBlacklist', function () {
 
   it('should throw an error when adding a cid to the blacklist and streaming /ipfs/:CID', async () => {
     const cids = [generateRandomCID()]
-    const type = BlacklistManager.getTypes().cid
+    const type = BlacklistManager._getTypes().cid
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: cids },
       DELEGATE_PRIVATE_KEY
@@ -853,7 +853,7 @@ describe('test ContentBlacklist', function () {
   it('should throw an error if user id does not exist', async () => {
     libsMock.User.getUsers.returns([])
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const resp1 = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -890,7 +890,7 @@ describe('test ContentBlacklist', function () {
   it('should throw an error if track id does not exist', async () => {
     libsMock.Track.getTracks.returns([])
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const resp1 = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -927,7 +927,7 @@ describe('test ContentBlacklist', function () {
   it('should throw an error if disc prov is unable to lookup ids', async () => {
     libsMock.User.getUsers.returns([])
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const resp1 = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -968,9 +968,9 @@ describe('test ContentBlacklist', function () {
       Utils.getRandomInt(MAX_ID),
       '###%^&'
     ]
-    const type = BlacklistManager.getTypes().cid
+    const type = BlacklistManager._getTypes().cid
     const { timestamp, signature } = generateTimestampAndSignature(
-      { type: BlacklistManager.getTypes().cid, values: cids },
+      { type: BlacklistManager._getTypes().cid, values: cids },
       DELEGATE_PRIVATE_KEY
     )
 
@@ -992,7 +992,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY

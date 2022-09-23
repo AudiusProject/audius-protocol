@@ -28,6 +28,7 @@ const PROCESS_STATES = Object.freeze({
   DONE: 'DONE',
   FAILED: 'FAILED'
 })
+const QUEUE_NAME = 'async-processing'
 
 const ASYNC_PROCESSING_QUEUE_HISTORY = 500
 
@@ -44,7 +45,7 @@ class AsyncProcessingQueue {
       host: config.get('redisHost'),
       port: config.get('redisPort')
     }
-    this.queue = new Queue('async-processing', {
+    this.queue = new Queue(QUEUE_NAME, {
       connection,
       defaultJobOptions: {
         removeOnComplete: ASYNC_PROCESSING_QUEUE_HISTORY,
@@ -56,7 +57,7 @@ class AsyncProcessingQueue {
 
     const untracedProcessTask = this.processTask
     const worker = new Worker(
-      'async-processing',
+      QUEUE_NAME,
       async (job) => {
         const { logContext, parentSpanContext, task } = job.data
         const processTask = instrumentTracing({
@@ -192,12 +193,12 @@ class AsyncProcessingQueue {
   async addTask(params) {
     const { logContext, task } = params
 
-    this.logStatus(
+    await this.logStatus(
       `Adding ${task} task! uuid=${logContext.requestID}}`,
       logContext
     )
 
-    const job = await this.queue.add('async-processing', params)
+    const job = await this.queue.add(QUEUE_NAME, params)
 
     return job
   }

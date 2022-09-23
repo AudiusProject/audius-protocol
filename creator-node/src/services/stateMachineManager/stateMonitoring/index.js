@@ -57,7 +57,7 @@ class StateMonitoringManager {
         cNodeEndpointToSpIdMapQueueLogger.error(
           `Queue Job Failed - ID ${job?.id} - Error ${error}`
         )
-        cNodeEndpointToSpIdMapQueue.add('first-job', {})
+        cNodeEndpointToSpIdMapQueue.add('retry-after-fail', {})
       }
     })
 
@@ -145,7 +145,7 @@ class StateMonitoringManager {
       data: { lastProcessedUserId, discoveryNodeEndpoint }
     } = failedJob
 
-    monitoringQueue.add('retry-after-failure', {
+    monitoringQueue.add('retry-after-fail', {
       lastProcessedUserId,
       discoveryNodeEndpoint
     })
