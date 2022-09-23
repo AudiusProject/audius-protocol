@@ -362,12 +362,6 @@ const config = convict({
     env: 'spOwnerWallet',
     default: null
   },
-  oldSpOwnerWallet: {
-    doc: 'Service provider owner wallet',
-    format: String,
-    env: 'oldSpOwnerWallet',
-    default: null
-  },
   ethWallets: {
     doc: 'all unlocked accounts from eth chain',
     format: Array,
