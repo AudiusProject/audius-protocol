@@ -3,7 +3,8 @@ import { useCallback, useRef, useLayoutEffect } from 'react'
 import {
   cacheUsersSelectors,
   tippingSelectors,
-  useProxySelector
+  useProxySelector,
+  removeNullable
 } from '@audius/common'
 import { LayoutAnimation, Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -88,7 +89,9 @@ const useSelectTopSupporters = (userId: number) =>
 
       const supporterUsers = getUsers(state, { ids: topSupporterIds })
 
-      const topSupporters = topSupporterIds.map((id) => supporterUsers[id])
+      const topSupporters = topSupporterIds
+        .map((id) => supporterUsers[id])
+        .filter(removeNullable)
       return topSupporters
     },
     [userId]
